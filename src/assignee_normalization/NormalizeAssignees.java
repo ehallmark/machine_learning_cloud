@@ -30,12 +30,42 @@ import java.util.stream.Stream;
  */
 public class NormalizeAssignees {
     private static Map<String,Pair<String,Double>> rawToNormalizedAssigneeNameMapWithScores;
-    private static Map<String,String> rawToNormalizedAssigneeNameMap;
     private static final File rawToNormalizedAssigneeNameFile = new File(Constants.DATA_FOLDER+"raw_to_normalized_assignee_name_map.jobj");
+    private static final int MIN_ASSIGNEE_LENGTH = 3;
+    public static String manualMerge(String rawAssignee) {
+        switch(rawAssignee) {
+            case "SK HYNIX": {
+                return "HYNIX";
+            }
+            default: {
+                return rawAssignee;
+            }
+        }
+    }
+
+    static Collection<String> manualBadPrefixes = Arrays.asList(
+            "KABUSHIKI KAISHA ",
+            "SK "
+    );
+
+    public static String manualCleanse(String cleanIsh) {
+        if(cleanIsh.length() > MIN_ASSIGNEE_LENGTH) {
+            // clean prefixes
+            for (String pref : manualBadPrefixes) {
+                if (cleanIsh.startsWith(pref) && cleanIsh.length() > pref.length()) {
+                    cleanIsh = cleanIsh.substring(pref.length());
+                }
+            }
+            // check for manual changes
+            cleanIsh = manualMerge(cleanIsh);
+        }
+        return cleanIsh;
+    }
 
     public static void saveAs(String name) {
         System.out.println("Starting to save: "+name);
-        rawToNormalizedAssigneeNameMap = rawToNormalizedAssigneeNameMapWithScores.entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue()._1));
+
+        Map<String,String> rawToNormalizedAssigneeNameMap = rawToNormalizedAssigneeNameMapWithScores.entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue()._1));
         Database.trySaveObject(rawToNormalizedAssigneeNameMap,new File(name));
         // save to csv
         try {
@@ -59,11 +89,8 @@ public class NormalizeAssignees {
         saveAs(rawToNormalizedAssigneeNameFile.getAbsolutePath());
     }
 
-    public static Map<String,String> getRawToNormalizedAssigneeNameMap() {
-        if(rawToNormalizedAssigneeNameMap==null) {
-            rawToNormalizedAssigneeNameMap = (Map<String,String>) Database.tryLoadObject(rawToNormalizedAssigneeNameFile);
-        }
-        return rawToNormalizedAssigneeNameMap;
+    public static synchronized Map<String,String> getRawToNormalizedAssigneeNameMap() {
+        return (Map<String,String>) Database.tryLoadObject(rawToNormalizedAssigneeNameFile);
     }
 
     private static boolean badPrefix(String s1, String s2) {
@@ -137,13 +164,16 @@ public class NormalizeAssignees {
 
         allAssignees = allAssignees.parallelStream().map(assignee->{
             if(assignee.length()<=1) return null;
+            // do manual cleans
+            assignee = manualCleanse(assignee);
+
             // get assignee words
             String[] words = assignee.split("\\s+");
             if(words[0].equals("THE") && assignee.length()<5) words = Arrays.copyOfRange(words,1,words.length);
 
             // get rid of lone characters at the end
-            while(String.join(" ",words).length() >= 5 && words.length > 2) {
-                if(words[words.length-1].length()<=2) {
+            while(String.join(" ",words).length() >= 5 && words.length > 3) {
+                if(words[words.length-1].length()<=3) {
                     words = Arrays.copyOf(words,words.length-1);
                 } else {
                     break;
@@ -183,7 +213,7 @@ public class NormalizeAssignees {
 
         mergeLargestAssignees(largestAssignees, assigneeToPortfolioSizeMap, levenshtein);
 
-        saveAs("test1");
+        saveAs("test 1");
 
 
         RadixTree<String> assigneePrefixTrie = Database.getAssigneePrefixTrie();
