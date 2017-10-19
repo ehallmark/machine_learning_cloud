@@ -404,7 +404,8 @@ var showTemplateFormHelper = function(formSelector,json) {
         })
         list.append(elems);
     });
-    setupLists();
+    $('.nested-form-list').sortable();
+    $('.nested-form-list').disableSelection();
 };
 
 var showTemplateFunction = function(e){
