@@ -310,7 +310,7 @@ public class NormalizeAssignees {
             Pair<String,Double> mostSimilarCandidate = largestAssigneeSamples.stream().map(candidate->{
                 return new Pair<>(candidate,distanceFunction.distance(candidate,rawAssignee));
             }).reduce((p1,p2)->p1._2<p2._2 ? p1 : p2).get();
-            double maxDistance = 0.02 * Math.max(rawAssignee.split(" ").length, mostSimilarCandidate._1.split(" ").length);
+            double maxDistance = Math.min(0.2,0.02 * Math.log(Math.E+Math.max(rawAssignee.split(" ").length, mostSimilarCandidate._1.split(" ").length)));
             // make sure that if begins with abbreviation, they are the same
             // do this by making sure a high degree of similarity in the first word
             String otherFirstWord = mostSimilarCandidate._1.split(" ")[0];
