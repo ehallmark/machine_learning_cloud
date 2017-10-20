@@ -3,8 +3,10 @@ package assignee_normalization;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
+import info.debatty.java.stringsimilarity.JaroWinkler;
 import info.debatty.java.stringsimilarity.Levenshtein;
 import info.debatty.java.stringsimilarity.NormalizedLevenshtein;
+import info.debatty.java.stringsimilarity.QGram;
 import info.debatty.java.stringsimilarity.interfaces.StringDistance;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
@@ -20,6 +22,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -29,13 +32,28 @@ import java.util.stream.Stream;
  * Created by Evan on 10/8/2017.
  */
 public class NormalizeAssignees {
-    private static Map<String,Pair<String,Double>> rawToNormalizedAssigneeNameMapWithScores;
+   // private static Map<String,Pair<String,Double>> rawToNormalizedAssigneeNameMapWithScores;
     private static final File rawToNormalizedAssigneeNameFile = new File(Constants.DATA_FOLDER+"raw_to_normalized_assignee_name_map.jobj");
     private static final int MIN_ASSIGNEE_LENGTH = 3;
     public static String manualMerge(String rawAssignee) {
         switch(rawAssignee) {
             case "SK HYNIX": {
                 return "HYNIX";
+            }
+            case "MATSUSHITA ELECTRIC INDUSTRIAL": {
+                return "PANASONIC";
+            }
+            case "YAMAHA HATSUDOKI": {
+                return "YAMAHA";
+            }
+            case "YAMAHA MOTOR": {
+                return "YAMAHA";
+            }
+            case "TOYOTA JIDOSHA": {
+                return "TOYOTA";
+            }
+            case "SONY COMPUTER ENTERTAINMENT": {
+                return "SONY INTERACTIVE ENTERTAINMENT";
             }
             default: {
                 return rawAssignee;
@@ -45,15 +63,70 @@ public class NormalizeAssignees {
 
     static Collection<String> manualBadPrefixes = Arrays.asList(
             "KABUSHIKI KAISHA ",
-            "SK "
+            "SK ",
+            "THE "
     );
 
+    static Collection<String> manualBadSuffixes = Arrays.asList(
+            " KABUSHIKI KAISHA",
+            " LP",
+            " CORPORATION"
+    );
+
+    private Map<String,String> rawToNormalizedMap;
+    public NormalizeAssignees(Map<String,String> rawToNormalizedMap) {
+        this.rawToNormalizedMap=rawToNormalizedMap;
+    }
+    public NormalizeAssignees() {
+
+    }
+    public String normalizedAssignee(String assignee, Map<String,Integer> portfolioSizeMap) {
+        if(rawToNormalizedMap==null) {
+            synchronized (this) {
+                rawToNormalizedMap=getRawToNormalizedAssigneeNameMap();
+            }
+        }
+        Set<String> seen = new HashSet<>();
+        seen.add(assignee);
+        boolean keepGoing = true;
+        while(keepGoing && rawToNormalizedMap.containsKey(assignee)) {
+            assignee = rawToNormalizedMap.get(assignee);
+            if(seen.contains(assignee)) {
+                keepGoing = false;
+            }
+            seen.add(assignee);
+        }
+        assignee = seen.stream().sorted((a1,a2)->Integer.compare(portfolioSizeMap.getOrDefault(a2,0),portfolioSizeMap.getOrDefault(a1,0))).findFirst().get();
+        return manualCleanse(assignee);
+    }
+
     public static String manualCleanse(String cleanIsh) {
-        if(cleanIsh.length() > MIN_ASSIGNEE_LENGTH) {
+        if(cleanIsh.length() > MIN_ASSIGNEE_LENGTH && cleanIsh.contains(" ")) {
             // clean prefixes
-            for (String pref : manualBadPrefixes) {
-                if (cleanIsh.startsWith(pref) && cleanIsh.length() > pref.length()) {
-                    cleanIsh = cleanIsh.substring(pref.length());
+            boolean prefixProblem = true;
+            while(prefixProblem) {
+                prefixProblem = false;
+                for (String pref : manualBadPrefixes) {
+                    if (cleanIsh.startsWith(pref) && cleanIsh.length() > pref.length() + MIN_ASSIGNEE_LENGTH) {
+                        cleanIsh = cleanIsh.substring(pref.length());
+                        prefixProblem = true;
+                    }
+                }
+            }
+            // clean suffixes
+            boolean suffixProblem = true;
+            while(suffixProblem) {
+                suffixProblem = false;
+                for (String suff : manualBadSuffixes) {
+                    if (cleanIsh.endsWith(suff) && cleanIsh.length() > suff.length() + MIN_ASSIGNEE_LENGTH) {
+                        cleanIsh = cleanIsh.substring(0, cleanIsh.length() - suff.length());
+                        suffixProblem = true;
+                    }
+                }
+                String[] words = cleanIsh.split(" ");
+                if(words.length > 1 && cleanIsh.length() - words[words.length-1].length() > MIN_ASSIGNEE_LENGTH && words[words.length-1].length() <= 2) {
+                    cleanIsh = String.join(" ",Arrays.copyOf(words,words.length-1));
+                    suffixProblem = true;
                 }
             }
             // check for manual changes
@@ -62,18 +135,19 @@ public class NormalizeAssignees {
         return cleanIsh;
     }
 
-    public static void saveAs(String name) {
+    public static void saveAs(String name, Map<String,Pair<String,Double>> rawToNormalizedMap,Map<String,Integer> portfolioSizeMap) {
         System.out.println("Starting to save: "+name);
 
-        Map<String,String> rawToNormalizedAssigneeNameMap = rawToNormalizedAssigneeNameMapWithScores.entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue()._1));
+        Map<String,String> rawToNormalizedAssigneeNameMap = rawToNormalizedMap.entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue()._1));
         Database.trySaveObject(rawToNormalizedAssigneeNameMap,new File(name));
         // save to csv
+        NormalizeAssignees normalizer = new NormalizeAssignees(rawToNormalizedAssigneeNameMap);
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(name+".csv")));
             writer.write("Original Name, Normalized Name\n");
-            rawToNormalizedAssigneeNameMap.forEach((raw, norm) -> {
+            new TreeSet<>(rawToNormalizedAssigneeNameMap.keySet()).forEach(raw -> {
                 try {
-                    writer.write("\"" + raw + "\",\"" + norm + "\"\n");
+                    writer.write("\"" + raw + "\",\"" + normalizer.normalizedAssignee(raw,portfolioSizeMap) + "\"\n");
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
@@ -85,8 +159,8 @@ public class NormalizeAssignees {
         }
     }
 
-    public static void save() {
-        saveAs(rawToNormalizedAssigneeNameFile.getAbsolutePath());
+    public static void save(Map<String,String> rawToNormalizedMap, Map<String,Integer> portfolioSizeMap) {
+        saveAs(rawToNormalizedAssigneeNameFile.getAbsolutePath(), rawToNormalizedMap.entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey(),e->new Pair<>(e.getValue(),0d))),portfolioSizeMap);
     }
 
     public static synchronized Map<String,String> getRawToNormalizedAssigneeNameMap() {
@@ -96,40 +170,53 @@ public class NormalizeAssignees {
     private static boolean badPrefix(String s1, String s2) {
         return !s1.contains(" ")&&s1.length()<s2.length()&&!s2.startsWith(s1+" ");
     }
-    private static void prefixSearchHelper(Collection<String> assignees, RadixTree<String> prefixTrie, StringDistance distanceFunction, Map<String,Integer> portfolioSizeMap) {
+    private static void prefixSearchHelper(Collection<String> assignees, RadixTree<String> prefixTrie, StringDistance distanceFunction, Map<String,Pair<String,Double>> rawToNormalizedMap, Map<String,Integer> portfolioSizeMap) {
+        AtomicInteger cnt = new AtomicInteger(0);
+        AtomicInteger changes = new AtomicInteger(0);
         assignees.parallelStream().forEach(assignee->{
             String lookup = assignee.contains(" ") ? assignee : (assignee+" ");
+            if(cnt.getAndIncrement()%10000==9999) {
+                System.out.println("Finished prefix search: "+changes.get()+" / "+cnt.get());
+            }
+            AtomicBoolean changed = new AtomicBoolean(false);
             prefixTrie.getValuesForClosestKeys(lookup).forEach(val->{
                 if(!val.equals(assignee)) {
                     if(badPrefix(assignee,val)||badPrefix(val,assignee)) {
                         return; // special case
                     }
+                    if(Math.abs(assignee.length()-val.length()) > Math.min(assignee.length(),val.length())) {
+                        return; // too much change
+                    }
+
                     if(assignees.contains(val)) {
                         // if other assignee has larger size, return
-                        int size1 = portfolioSizeMap.get(val);
-                        int size2 = portfolioSizeMap.get(assignee);
+                        int size1 = portfolioSizeMap.getOrDefault(val,0);
+                        int size2 = portfolioSizeMap.getOrDefault(assignee,0);
                         if(size2 > size1) {
                             return;
                         }
                     }
                     double distance = distanceFunction.distance(assignee, val) / Math.log(Math.E+portfolioSizeMap.get(assignee));
-                    Pair<String, Double> previousNormalization = rawToNormalizedAssigneeNameMapWithScores.get(val);
+                    Pair<String, Double> previousNormalization = rawToNormalizedMap.get(val);
                     if (previousNormalization == null || previousNormalization._2 > distance) {
-                        rawToNormalizedAssigneeNameMapWithScores.put(val, new Pair<>(assignee, distance));
+                        rawToNormalizedMap.put(val, new Pair<>(assignee, distance));
+                        changed.set(true);
                         //System.out.println(val + " => " + assignee + ": " + distance);
                     }
                 }
             });
+            if(changed.get()) changes.getAndIncrement();
         });
     }
 
-    private static void mergeLargestAssignees(Collection<String> largestAssignees, Map<String,Integer> assigneeToPortfolioSizeMap, StringDistance distance) {
+    private static void mergeAssignees(Collection<String> allAssignees, Collection<String> largeAssignees, Map<String,Pair<String,Double>> rawToNormalizedMap, Map<String,Integer> assigneeToPortfolioSizeMap, StringDistance distance) {
         RadixTree<String> radix = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
-        largestAssignees.forEach(assignee->radix.put(assignee,assignee));
-        prefixSearchHelper(largestAssignees, radix, distance, assigneeToPortfolioSizeMap);
+        allAssignees.forEach(assignee->radix.put(assignee,assignee));
+        prefixSearchHelper(largeAssignees, radix, distance, rawToNormalizedMap, assigneeToPortfolioSizeMap);
         // check if any large assignees have been normalized
-        Collection<String> updatedFromLargeAssignees = largestAssignees.parallelStream().filter(assignee->rawToNormalizedAssigneeNameMapWithScores.containsKey(assignee)).collect(Collectors.toList());
-        largestAssignees.removeAll(updatedFromLargeAssignees);
+        Collection<String> updatedFromLargeAssignees = allAssignees.parallelStream().filter(assignee->rawToNormalizedMap.containsKey(assignee)).collect(Collectors.toList());
+        allAssignees.removeAll(updatedFromLargeAssignees);
+        largeAssignees.removeAll(updatedFromLargeAssignees);
         System.out.println("Num Large Assignees Merged: "+updatedFromLargeAssignees.size());
     }
 
@@ -152,25 +239,19 @@ public class NormalizeAssignees {
         return suffixList.stream().map(p->p._1).collect(Collectors.toSet());
     }
 
-    public static void main(String[] args) {
-        // find most common suffixes
-        List<String> allAssignees = Collections.synchronizedList(new ArrayList<>(Database.getAssignees()));
-
-        Map<String,Integer> assigneeToPortfolioSizeMap = allAssignees.parallelStream().collect(Collectors.toMap(a->a,a->{
-            return Database.getAssetCountFor(a);
-        }));
-
+    private static Collection<String> runIteration(Collection<String> allAssignees, Map<String,Pair<String,Double>> rawToNormalizedMap, Map<String,Integer> assigneeToPortfolioSizeMap, StringDistance distanceFunction, int epoch) {
         Set<String> badSuffixes = buildBadSuffixes(allAssignees);
 
         allAssignees = allAssignees.parallelStream().map(assignee->{
             if(assignee.length()<=1) return null;
 
+            String newWord = manualCleanse(assignee);
+
             // get assignee words
-            String[] words = assignee.split("\\s+");
-            if(words[0].equals("THE") && assignee.length()<5) words = Arrays.copyOfRange(words,1,words.length);
+            String[] words = newWord.split("\\s+");
 
             // get rid of lone characters at the end
-            while(String.join(" ",words).length() >= 5 && words.length > 3) {
+            while(String.join(" ",words).length() >= 7 && words.length > MIN_ASSIGNEE_LENGTH) {
                 if(words[words.length-1].length()<=3) {
                     words = Arrays.copyOf(words,words.length-1);
                 } else {
@@ -181,7 +262,7 @@ public class NormalizeAssignees {
             while(words.length >= MIN_ASSIGNEE_LENGTH && String.join(" ", Arrays.copyOf(words,words.length-1)).length() > MIN_ASSIGNEE_LENGTH+2 && badSuffixes.contains(words[words.length-1])) {
                 words = Arrays.copyOf(words,words.length-1);
             }
-            String newWord = String.join(" ",words);
+            newWord = String.join(" ",words);
 
             // do manual cleans
             newWord = manualCleanse(newWord);
@@ -200,113 +281,103 @@ public class NormalizeAssignees {
             }
         });
 
-        Levenshtein levenshtein = new Levenshtein();
-        rawToNormalizedAssigneeNameMapWithScores = Collections.synchronizedMap(new HashMap<>());
+        int minPortfolioSize = 20;
+        Collection<String> largestAssignees = new HashSet<>(allAssignees.parallelStream().map(a->new Pair<>(a,assigneeToPortfolioSizeMap.getOrDefault(a,0)))
+                .filter(e->e._2>minPortfolioSize)
+                .sorted((e1,e2)->e2._2.compareTo(e1._2))
+                .map(e->e._1).collect(Collectors.toList()));
 
-        int minPortfolioSize = 25;
-        Collection<String> largestAssignees = new HashSet<>(assigneeToPortfolioSizeMap.entrySet().parallelStream().filter(e->e.getValue()>=minPortfolioSize)
-                .map(e->e.getKey()).collect(Collectors.toList()));
         System.out.println("Num large assignees: "+largestAssignees.size());
 
-        mergeLargestAssignees(largestAssignees, assigneeToPortfolioSizeMap, levenshtein);
+        mergeAssignees(allAssignees, largestAssignees, rawToNormalizedMap, assigneeToPortfolioSizeMap, distanceFunction);
 
-        saveAs("test 1");
+        int maxNumAssigneeSamples = 500;
+        Random rand = new Random();
+        Collection<String> largestAssigneeSamples = new HashSet<>(assigneeToPortfolioSizeMap.entrySet().parallelStream()
+                .filter(e->e.getValue()>minPortfolioSize)
+                .filter(e->rand.nextDouble()>(0.5*minPortfolioSize/e.getValue()))
+                .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
+                .limit(maxNumAssigneeSamples)
+                .map(e->e.getKey()).collect(Collectors.toList()));
 
-
-        RadixTree<String> assigneePrefixTrie = Database.getAssigneePrefixTrie();
-        prefixSearchHelper(largestAssignees, assigneePrefixTrie, levenshtein, assigneeToPortfolioSizeMap);
-
-        System.out.println("Total normalizations after prefix search: "+rawToNormalizedAssigneeNameMapWithScores.size() + " / "+allAssignees.size());
-        saveAs("test 2");
-
-        mergeLargestAssignees(largestAssignees, assigneeToPortfolioSizeMap, levenshtein);
-
-        saveAs("test 3");
+        System.out.println("Total normalizations after prefix search: "+rawToNormalizedMap.size() + " / "+allAssignees.size());
+        saveAs("test 0-"+epoch, rawToNormalizedMap, assigneeToPortfolioSizeMap);
 
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger changes = new AtomicInteger(0);
-        allAssignees.parallelStream().filter(a->!largestAssignees.contains(a)).forEach(rawAssignee->{
-            Pair<String,Double> mostSimilarCandidate = largestAssignees.stream().map(candidate->{
-                return new Pair<>(candidate,levenshtein.distance(candidate,rawAssignee));
+        Collection<String> changedAssignees = new HashSet<>();
+        allAssignees.parallelStream().filter(a->!largestAssigneeSamples.contains(a)).forEach(rawAssignee->{
+            Pair<String,Double> mostSimilarCandidate = largestAssigneeSamples.stream().map(candidate->{
+                return new Pair<>(candidate,distanceFunction.distance(candidate,rawAssignee));
             }).reduce((p1,p2)->p1._2<p2._2 ? p1 : p2).get();
-            double maxDistance = 0.05 * (rawAssignee.length()+mostSimilarCandidate._1.length());
-            if(mostSimilarCandidate._2<maxDistance) {
-                Pair<String,Double> previousNormalization = rawToNormalizedAssigneeNameMapWithScores.get(rawAssignee);
-                if(previousNormalization==null || previousNormalization._2 > mostSimilarCandidate._2) {
-                    //System.out.println(rawAssignee + " => " + mostSimilarCandidate._1 + ": " + mostSimilarCandidate._2);
-                    rawToNormalizedAssigneeNameMapWithScores.put(rawAssignee,mostSimilarCandidate);
-                    changes.getAndIncrement();
+            double maxDistance = 0.02 * Math.max(rawAssignee.split(" ").length, mostSimilarCandidate._1.split(" ").length);
+            // make sure that if begins with abbreviation, they are the same
+            // do this by making sure a high degree of similarity in the first word
+            String otherFirstWord = mostSimilarCandidate._1.split(" ")[0];
+            String firstWord = rawAssignee.split(" ")[0];
+            if(firstWord.length() > 5 || otherFirstWord.equals(firstWord)) {
+                if (mostSimilarCandidate._2 < maxDistance) {
+                    Pair<String, Double> previousNormalization = rawToNormalizedMap.get(rawAssignee);
+                    if (previousNormalization == null || previousNormalization._2 > mostSimilarCandidate._2) {
+                        //System.out.println(rawAssignee + " => " + mostSimilarCandidate._1 + ": " + mostSimilarCandidate._2);
+                        rawToNormalizedMap.put(rawAssignee, mostSimilarCandidate);
+                        changedAssignees.add(rawAssignee);
+                        changes.getAndIncrement();
+                    }
                 }
             }
             if(cnt.getAndIncrement()%10000==9999) {
                 System.out.println("Finished assignee: "+changes.get()+" / "+cnt.get());
             }
-
+        });
+        allAssignees.removeAll(changedAssignees);
+        System.out.println("CHANGED ASSIGNEES: ");
+        changedAssignees.stream().sorted().forEach(a->{
+            System.out.println(a+" => "+ rawToNormalizedMap.get(a));
         });
 
-        save();
+        saveAs("test 1-"+epoch,rawToNormalizedMap, assigneeToPortfolioSizeMap);
 
-        System.out.println("Total normalizations after distance search: "+rawToNormalizedAssigneeNameMapWithScores.size() + " / "+allAssignees.size());
+        System.out.println("Total normalizations after distance search: "+rawToNormalizedMap.size() + " / "+allAssignees.size());
 
+        return allAssignees;
+    }
 
-        /*
-        int MAX_DOC_FREQUENCY = 70000;
+    public static void main(String[] args) {
+        // find most common suffixes
+        Collection<String> allAssignees = Collections.synchronizedList(new ArrayList<>(Database.getAssignees()));
 
-        // sum of word counts after first word
-        Map<String,Integer> wordCountMap = allAssignees.parallelStream().flatMap(assignee->{
-            String[] words = assignee.split("\\s+");
-            if(words.length<=1) return Stream.empty();
-            Set<String> seen = new HashSet<>();
-            return IntStream.range(1,words.length).mapToObj(i->{
-                String word = words[i];
-                if (!seen.contains(word)) {
-                    seen.add(word);
-                    return new Pair<>(word,i*i);
+        Map<String,Integer> assigneeToPortfolioSizeMap = new HashMap<>(allAssignees
+                .parallelStream()
+                .collect(Collectors.toMap(a->a,a->Database.getAssetCountFor(a))));
+
+        int numEpochs = 10;
+        Map<String,String> rawToNormalizedAssigneeNameMap = Collections.synchronizedMap(new HashMap<>());
+        for(int i = 0; i < numEpochs; i++) {
+            System.out.println("Starting epoch: "+(i+1)+"/"+numEpochs);
+            Set<String> newAssignees = new HashSet<>(allAssignees);
+            newAssignees.removeAll(rawToNormalizedAssigneeNameMap.keySet());
+            newAssignees.addAll(rawToNormalizedAssigneeNameMap.values());
+            System.out.println("Looking thru "+newAssignees.size()+" assignees.");
+            Map<String,Pair<String,Double>> tempMap = Collections.synchronizedMap(new HashMap<>());
+            allAssignees = runIteration(newAssignees,tempMap,assigneeToPortfolioSizeMap, new JaroWinkler(), i);
+            tempMap.entrySet().parallelStream().forEach(newEntry->{
+                if(rawToNormalizedAssigneeNameMap.containsValue(newEntry.getKey())) {
+                    // update
+                    rawToNormalizedAssigneeNameMap.entrySet().forEach(oldEntry->{
+                        if(oldEntry.getValue().equals(newEntry.getKey())) {
+                            // update
+                            rawToNormalizedAssigneeNameMap.put(oldEntry.getKey(),newEntry.getValue()._1);
+                        }
+                    });
                 }
-                return null;
-            }).filter(p->p!=null);
-        }).collect(Collectors.groupingBy(pair->pair._1,Collectors.summingInt(pair->pair._2)));
-
-        {
-            List<Pair<String, Integer>> wordCountList = wordCountMap.entrySet().parallelStream().sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue())).map(e -> new Pair<>(e.getKey(), e.getValue())).collect(Collectors.toList());
-
-            wordCountList.stream().limit(100).forEach(pair -> {
-                System.out.println("word " + pair._1 + ": " + pair._2);
+                if(rawToNormalizedAssigneeNameMap.containsKey(newEntry.getValue()._1)) {
+                    rawToNormalizedAssigneeNameMap.remove(newEntry.getValue()._1);
+                }
+                rawToNormalizedAssigneeNameMap.put(newEntry.getKey(),newEntry.getValue()._1);
             });
+            save(rawToNormalizedAssigneeNameMap,assigneeToPortfolioSizeMap);
+        }
 
-            Set<String> stopWords = new HashSet<>();
-            stopWords.add("OF");
-            stopWords.add("THE");
-            stopWords.add("AND");
-
-            AtomicInteger numChanges = new AtomicInteger(0);
-            Map<String, String> originalToNormalizedAssigneeMap = allAssignees.parallelStream().collect(Collectors.toMap(k -> k, assignee -> {
-                String[] words = assignee.split("\\s+");
-                StringJoiner sj = new StringJoiner(" ");
-                int i;
-                for (i = 0; i < (words.length + 1) / 2; i++) {
-                    sj.add(words[i]);
-                }
-                for (i = i; i < words.length; i++) {
-                    String word = words[i];
-                    double maxScore = ((double) MAX_DOC_FREQUENCY);
-                    double wordScore = Math.log(Math.E + i) * wordCountMap.get(word) / Math.log(Math.E + words.length);
-                    //System.out.println("score for word: "+word+" = "+wordScore);
-                    if (stopWords.contains(word) || maxScore > wordScore) {
-                        sj.add(word);
-                    } else {
-                        break;
-                    }
-                }
-                String normalized = sj.toString();
-                if (!assignee.equals(normalized)) {
-                    System.out.println(numChanges.getAndIncrement());
-                    System.out.println(assignee + ": " + normalized);
-                }
-                return normalized;
-            }));
-
-            System.out.println("Total num changes: " + numChanges.get());
-        } */
     }
 }
