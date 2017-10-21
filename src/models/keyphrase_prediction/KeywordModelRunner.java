@@ -53,7 +53,7 @@ public class KeywordModelRunner {
     public static void runModel() {
         Model model = new TimeDensityModel();
 
-        boolean runStage1 = true;
+        boolean runStage1 = false;
         boolean runStage2 = true;
         boolean runStage3 = true;
         boolean runStage4 = true;

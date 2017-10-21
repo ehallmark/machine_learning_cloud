@@ -31,7 +31,7 @@ public class Stage2 extends Stage<Set<MultiStem>> {
         if(alwaysRerun || !getFile().exists()) {
             // filter outliers
 
-            KeywordModelRunner.reindex(data);
+            KeywordModelRunner.reindex(documentsAppearedInCounter.keySet());
 
             // compute scores
             data = new ArrayList<>(documentsAppearedInCounter.entrySet()).parallelStream().map(e->{
