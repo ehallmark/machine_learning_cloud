@@ -74,7 +74,7 @@ public class KeywordModelRunner {
         multiStems = stage2.get();
 
 
-        System.out.println("Pre-grouping data for stage 4...");
+        System.out.println("Pre-grouping data for time density stage...");
         TimeDensityStage timeDensityStage = new TimeDensityStage(multiStems, model);
         timeDensityStage.run(alwaysRerun);
         if(alwaysRerun) timeDensityStage.createVisualization();
@@ -88,7 +88,7 @@ public class KeywordModelRunner {
         multiStems = stage3.get();
 
         // stage 4
-        System.out.println("Pre-grouping data for stage 4...");
+        System.out.println("Pre-grouping data for cpc density stage...");
         CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model);
         CPCDensityStage.run(alwaysRerun);
         CPCDensityStage.createVisualization();
