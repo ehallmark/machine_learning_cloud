@@ -16,7 +16,7 @@ $(document).ready(function() {
         var dataMap = {};
         $(containerSelector+" "+itemSelector).find('textarea,input,select,div.attribute').each(function(i,e) {
             var $elem = $(this);
-            if($elem.attr('id') && ! $elem.prop('disabled')) {
+            if($elem.attr('id') && ! ($elem.prop('disabled') || $elem.hasClass('disabled')) {
                 dataMap[$elem.attr("id")]=$elem.val();
                 dataMap["order_"+$elem.attr("id")]=i;
             }
@@ -189,14 +189,16 @@ $(document).ready(function() {
         $hiddenOptions.each(function(i,option){
             var id = $(option).val();
             var $draggable = $('.attributeElement[data-model="'+id+'"]');
-            $draggable.find('input, select, textarea, div.attribute').prop('disabled', true).val(null).filter('.nested-filter-select').trigger('change');
+            $draggable.find('input, select, textarea').prop('disabled', true).val(null).filter('.nested-filter-select').trigger('change');
+            $draggable.find("div.attribute").addClass("disabled");
             $draggable.parent().hide();
             return true;
         });
         $options.each(function(i,option){
             var id = $(option).val();
             var $draggable = $('.attributeElement[data-model="'+id+'"]');
-            $draggable.find('input, select, textarea, div.attribute').prop('disabled', false).filter('.nested-filter-select').trigger('change');
+            $draggable.find('input, select, textarea').prop('disabled', false).filter('.nested-filter-select').trigger('change');
+            $draggable.find("div.attribute").removeClass("disabled");
             $draggable.parent().show();
         });
         return true;
@@ -317,7 +319,8 @@ $(document).ready(function() {
 
 var resetSearchForm = function() {
     $('.target .collapsible-header .remove-button').click();
-    $('.draggable').find('select,textarea,input,div.attribute').prop("disabled",true).val(null).trigger('change');
+    $('.draggable').find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
+    $('div.attribute').addClass("disabled");
     $('#results').html('');
 };
 
