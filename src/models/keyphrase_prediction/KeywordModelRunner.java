@@ -53,17 +53,13 @@ public class KeywordModelRunner {
     public static void runModel() {
         Model model = new TimeDensityModel();
 
-        boolean runStage1 = false;
-        boolean runStage2 = true;
-        boolean runStage3 = true;
-        boolean runStage4 = true;
-        boolean runStage5 = true;
+        boolean alwaysRerun = false;
 
         // stage 1
 
         Stage1 stage1 = new Stage1(model);
-        stage1.run(runStage1);
-        stage1.createVisualization();
+        stage1.run(alwaysRerun);
+        if(alwaysRerun)stage1.createVisualization();
 
         // time density stage
         System.out.println("Computing time densities...");
@@ -73,35 +69,35 @@ public class KeywordModelRunner {
         // stage 2
         System.out.println("Pre-grouping data for stage 2...");
         Stage2 stage2 = new Stage2(stage1.get(), model);
-        stage2.run(runStage2);
-        stage2.createVisualization();
+        stage2.run(alwaysRerun);
+        if(alwaysRerun)stage2.createVisualization();
         multiStems = stage2.get();
 
 
         System.out.println("Pre-grouping data for stage 4...");
         TimeDensityStage timeDensityStage = new TimeDensityStage(multiStems, model);
-        timeDensityStage.run(runStage4);
-        timeDensityStage.createVisualization();
+        timeDensityStage.run(alwaysRerun);
+        if(alwaysRerun) timeDensityStage.createVisualization();
         multiStems = timeDensityStage.get();
 
         // stage 3
         System.out.println("Pre-grouping data for stage 3...");
         Stage3 stage3 = new Stage3(multiStems, model);
-        stage3.run(runStage3);
-        stage3.createVisualization();
+        stage3.run(alwaysRerun);
+        if(alwaysRerun) stage3.createVisualization();
         multiStems = stage3.get();
 
         // stage 4
         System.out.println("Pre-grouping data for stage 4...");
         CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model);
-        CPCDensityStage.run(runStage4);
+        CPCDensityStage.run(alwaysRerun);
         CPCDensityStage.createVisualization();
         multiStems = CPCDensityStage.get();
 
         // stage 5
         System.out.println("Starting stage 5...");
         Stage5 stage5 = new Stage5(stage1, multiStems, model);
-        stage5.run(runStage5);
+        stage5.run(alwaysRerun);
 
 
         saveModelMap(model,stage5.get());

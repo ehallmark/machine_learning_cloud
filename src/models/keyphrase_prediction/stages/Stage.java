@@ -158,8 +158,6 @@ public abstract class Stage<V> {
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
-        Map<String,Map<String,AtomicInteger>> stemToPhraseCountMap = Collections.synchronizedMap(new HashMap<>());
-
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
@@ -233,6 +231,7 @@ public abstract class Stage<V> {
                 }
                 Map<String,Object> attributes = new HashMap<>();
                 attributes.put(APPEARED,appeared);
+                attributes.put(DATE,date);
                 attributesFunction.apply(attributes);
 
             });
