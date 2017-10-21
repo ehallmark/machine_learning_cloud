@@ -304,7 +304,7 @@ public class NormalizeAssignees {
 
         mergeAssignees(allAssignees, largestAssignees, rawToNormalizedMap, assigneeToPortfolioSizeMap, distanceFunction);
 
-        int maxNumAssigneeSamples = 2000;
+        int maxNumAssigneeSamples = 500;
         Random rand = new Random();
         Collection<String> largestAssigneeSamples = new HashSet<>(assigneeToPortfolioSizeMap.entrySet().parallelStream()
                 .filter(e->e.getValue()>minPortfolioSize)
@@ -320,29 +320,22 @@ public class NormalizeAssignees {
         AtomicInteger changes = new AtomicInteger(0);
         Collection<String> changedAssignees = new HashSet<>();
         allAssignees.parallelStream().filter(a->!largestAssigneeSamples.contains(a)).forEach(rawAssignee->{
-            StringDistance simpleDist = new NGram(1);
             Pair<String,Double> mostSimilarCandidate = largestAssigneeSamples.stream().map(candidate->{
-                if(simpleDist.distance(candidate,rawAssignee)>0.75) {
-                    return new Pair<>(candidate, distanceFunction.distance(candidate, rawAssignee));
-                } else {
-                    return new Pair<>(candidate, 0d);
-                }
+                return new Pair<>(candidate, distanceFunction.distance(candidate, rawAssignee));
             }).reduce((p1,p2)->p1._2<p2._2 ? p1 : p2).get();
-            if(mostSimilarCandidate._2 > 0d) {
-                double maxDistance = Math.min(0.2, 0.01 * Math.log(Math.E + Math.max(rawAssignee.split(" ").length, mostSimilarCandidate._1.split(" ").length)));
-                // make sure that if begins with abbreviation, they are the same
-                // do this by making sure a high degree of similarity in the first word
-                String otherFirstWord = mostSimilarCandidate._1.split(" ")[0];
-                String firstWord = rawAssignee.split(" ")[0];
-                if (firstWord.length() > 5 || otherFirstWord.equals(firstWord)) {
-                    if (mostSimilarCandidate._2 < maxDistance) {
-                        Pair<String, Double> previousNormalization = rawToNormalizedMap.get(rawAssignee);
-                        if (previousNormalization == null || previousNormalization._2 > mostSimilarCandidate._2) {
-                            //System.out.println(rawAssignee + " => " + mostSimilarCandidate._1 + ": " + mostSimilarCandidate._2);
-                            rawToNormalizedMap.put(rawAssignee, mostSimilarCandidate);
-                            changedAssignees.add(rawAssignee);
-                            changes.getAndIncrement();
-                        }
+            double maxDistance = Math.min(0.2, 0.01 * Math.log(Math.E + Math.max(rawAssignee.split(" ").length, mostSimilarCandidate._1.split(" ").length)));
+            // make sure that if begins with abbreviation, they are the same
+            // do this by making sure a high degree of similarity in the first word
+            String otherFirstWord = mostSimilarCandidate._1.split(" ")[0];
+            String firstWord = rawAssignee.split(" ")[0];
+            if (firstWord.length() > 5 || otherFirstWord.equals(firstWord)) {
+                if (mostSimilarCandidate._2 < maxDistance) {
+                    Pair<String, Double> previousNormalization = rawToNormalizedMap.get(rawAssignee);
+                    if (previousNormalization == null || previousNormalization._2 > mostSimilarCandidate._2) {
+                        //System.out.println(rawAssignee + " => " + mostSimilarCandidate._1 + ": " + mostSimilarCandidate._2);
+                        rawToNormalizedMap.put(rawAssignee, mostSimilarCandidate);
+                        changedAssignees.add(rawAssignee);
+                        changes.getAndIncrement();
                     }
                 }
             }
