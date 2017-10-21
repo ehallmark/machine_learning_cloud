@@ -1,10 +1,12 @@
 package seeding.ai_db_updater;
 
+import assignee_normalization.NormalizeAssignees;
 import elasticsearch.DataIngester;
 import elasticsearch.MongoDBClient;
 import seeding.Database;
 import seeding.compdb.CreateCompDBAssigneeTransactionData;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
 
 /**
  * Created by Evan on 7/6/2017.
@@ -38,8 +40,11 @@ public class UpdateAll {
                     UpdateAssignmentData.main(args);
                     Database.main(args);
                 } else if (arg.equals("9")) {
+                    NormalizeAssignees.main(args);
+                    new AssetToAssigneeMap().save();
+                } else if (args.equals("10")) {
                     UpdateAssetGraphs.main(args);
-                } else if (arg.equals("10")) {
+                } else if (arg.equals("11")) {
                     UpdateExtraneousComputableAttributeData.main(args);
                 }
             }

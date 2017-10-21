@@ -47,9 +47,13 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
             }
         }
         assigneeToAssetsMap.save();
+        // save normalizations
+        AssetToNormalizedAssigneeMap normalized = new AssetToNormalizedAssigneeMap();
+        normalized.normalize(this);
+        normalized.save();
     }
 
-    private void assigneeToAssetHelper(Map<String,String> assetToAssignee, Map<String,Collection<String>> assigneeToAssets) {
+    protected void assigneeToAssetHelper(Map<String,String> assetToAssignee, Map<String,Collection<String>> assigneeToAssets) {
         assigneeToAssets.clear();
         assetToAssignee.entrySet().parallelStream().forEach(e->{
             if(assigneeToAssets.containsKey(e.getValue())) {

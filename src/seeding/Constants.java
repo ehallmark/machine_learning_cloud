@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 
 public class Constants {
 	public static final String ASSIGNEE_NAME_AJAX_URL = "/data/assignee/02395328523985293085923dgkld0938592385902835902";
+	public static final String NORMALIZED_ASSIGNEE_NAME_AJAX_URL = "/data/normalized_assignee/02395328523985293085923dgkld0938592385902835902";
 	public static final String GATHER = "gather";
 	public static final String GATHER_VALUE = "gatherValue";
 	public static final String GATHER_STAGE = "gatherStage";
@@ -28,7 +29,9 @@ public class Constants {
 	public static final String SMALL = "small";
 	public static final String MICRO = "micro";
 	public static final String LARGE = "large";
+	public static final String NORMALIZED_PORTFOLIO_SIZE = "normalizedPortfolioSize";
 	public static final String REEL_NO = "reelNo";
+	public static final String NORMALIZED_LATEST_ASSIGNEE = "normalizedAssignee";
 	public static final String USER_TEMPLATE_FOLDER = "userTemplates/";
 	public static final String REINSTATED = "reinstated";
 	public static final String FRAME_NO = "frameNo";

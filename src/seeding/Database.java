@@ -37,11 +37,15 @@ public class Database {
 	private static Map<String,String> classCodeToClassTitleMap;
 	private static Map<String,String> technologyMap;
 	private static Map<String,Collection<String>>  assigneeToPatentsMap;
+	private static Map<String,Collection<String>>  normalizedAssigneeToPatentsMap;
 	private static Map<String,Collection<String>> assigneeToAppsMap;
+	private static Map<String,Collection<String>> normalizedAssigneeToAppsMap;
 	private static Map<String,Collection<String>> etsiStandardToPatentsMap;
 	private static RadixTree<String> assigneePrefixTrie;
+	private static RadixTree<String> normalizedAssigneePrefixTrie;
 	private static RadixTree<String> classCodesPrefixTrie;
 	public static Set<String> allAssignees;
+	private static Set<String> allNormalizedAssignees;
 	public static Set<String> gatherAssets;
 	public static final File gatherAssetsFile = new File(Constants.DATA_FOLDER+"gather_assets_set.jobj");
 	public static Set<String> compdbReelFrames;
@@ -211,6 +215,21 @@ public class Database {
 		return assigneeToAppsMap;
 	}
 
+	public synchronized static Map<String,Collection<String>> getNormalizedAssigneeToPatentsMap() {
+		if(normalizedAssigneeToPatentsMap==null) {
+			normalizedAssigneeToPatentsMap = new NormalizedAssigneeToAssetsMap().getPatentDataMap();
+		}
+		return normalizedAssigneeToPatentsMap;
+	}
+
+	public synchronized static Map<String,Collection<String>> getNormalizedAssigneeToAppsMap() {
+		if(normalizedAssigneeToAppsMap==null) {
+			normalizedAssigneeToAppsMap = new NormalizedAssigneeToAssetsMap().getApplicationDataMap();
+		}
+		return normalizedAssigneeToAppsMap;
+	}
+
+
 
 	public synchronized static Set<String> getClassCodes() {
 		if(allClassCodes==null) {
@@ -227,6 +246,15 @@ public class Database {
 		}
 		return Collections.unmodifiableSet(allAssignees);
 	}
+
+	public synchronized static Set<String> getNormalizedAssignees() {
+		if(allNormalizedAssignees==null) {
+			allNormalizedAssignees=new HashSet<>(getNormalizedAssigneeToAppsMap().keySet());
+			allNormalizedAssignees.addAll(getNormalizedAssigneeToPatentsMap().keySet());
+		}
+		return Collections.unmodifiableSet(allNormalizedAssignees);
+	}
+
 
 	public synchronized static void setupGatherConn() throws SQLException {
 		gatherDBConn = DriverManager.getConnection(gatherDBUrl);
@@ -364,6 +392,10 @@ public class Database {
 		return Math.max(getAssigneeToAppsMap().getOrDefault(assignee,Collections.emptySet()).size(),getAssigneeToPatentsMap().getOrDefault(assignee,Collections.emptySet()).size());
 	}
 
+	public synchronized static int getNormalizedAssetCountFor(String assignee) {
+		return Math.max(getNormalizedAssigneeToAppsMap().getOrDefault(assignee,Collections.emptySet()).size(),getNormalizedAssigneeToPatentsMap().getOrDefault(assignee,Collections.emptySet()).size());
+	}
+
 	public synchronized static int getAssetsSoldCountFor(String assignee) {
 		return getAssigneeToAssetsSoldCountMap().getOrDefault(assignee,0);
 	}
@@ -408,6 +440,20 @@ public class Database {
 		return assigneePrefixTrie;
 	}
 
+	public static RadixTree<String> getNormalizedAssigneePrefixTrie() {
+		// prefix trie for assignees
+		if(normalizedAssigneePrefixTrie==null) {
+			System.out.println("Building assignee trie...");
+			normalizedAssigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+			getNormalizedAssignees().forEach(assignee -> {
+				if(assignee!=null&&assignee.length() > 0) {
+					normalizedAssigneePrefixTrie.put(assignee, assignee);
+				}
+			});
+		}
+		return normalizedAssigneePrefixTrie;
+	}
+
 	public static RadixTree<String> getClassCodesPrefixTrie() {
 		if(classCodesPrefixTrie==null) {
 			System.out.println("Building class code trie...");
@@ -439,6 +485,16 @@ public class Database {
 		SortedSet<String> possible = new TreeSet<>();
 		if(getAssignees().contains(cleanBase)) possible.add(cleanBase);
 		getAssigneePrefixTrie().getValuesForKeysStartingWith(cleanBase).forEach(a->possible.add(a));
+		return new ArrayList<>(possible);
+	}
+
+	public synchronized static List<String> sortedPossibleNormalizedAssignees(String base) {
+		if(base==null||base.isEmpty()) return Collections.emptyList();
+		final String cleanBase = AssigneeTrimmer.standardizedAssignee(base);
+		if(cleanBase.isEmpty()) return Collections.emptyList();
+		SortedSet<String> possible = new TreeSet<>();
+		if(getAssignees().contains(cleanBase)) possible.add(cleanBase);
+		getNormalizedAssigneePrefixTrie().getValuesForKeysStartingWith(cleanBase).forEach(a->possible.add(a));
 		return new ArrayList<>(possible);
 	}
 

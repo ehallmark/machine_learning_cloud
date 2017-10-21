@@ -719,40 +719,54 @@ public class SimilarPatentServer {
 
         // setup select2 ajax remote data sources
         get(Constants.ASSIGNEE_NAME_AJAX_URL, (req,res)->{
-            int PER_PAGE = 30;
-            String search = req.queryParams("search");
-            int page = Integer.valueOf(req.queryParamOrDefault("page","1"));
+            Function<String,List<String>> resultsSearchFunction = search -> Database.sortedPossibleAssignees(search);
+            Function<String,String> displayFunction = result ->  result + " (" + Database.getAssetCountFor(result)+")";
+            return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
+        });
 
-            System.out.println("Search: "+search);
-            System.out.println("Page: "+page);
-
-            List<String> allResults = Database.sortedPossibleAssignees(search);
-
-            int start = (page-1) * PER_PAGE;
-            int end = start + PER_PAGE;
-
-            List<Map<String,Object>> results;
-            if(start >= allResults.size()) {
-                results = Collections.emptyList();
-            } else {
-                results = allResults.subList(start,Math.min(allResults.size(),end)).stream().map(result->{
-                    Map<String,Object> map = new HashMap<>();
-                    map.put("id", result);
-                    map.put("text", result + " (" + Database.getAssetCountFor(result)+")");
-                    return map;
-                }).collect(Collectors.toList());
-            }
-
-            Map<String,Boolean> pagination = new HashMap<>();
-            pagination.put("more", end < allResults.size());
-
-            Map<String,Object> response = new HashMap<>();
-            response.put("results",results);
-            response.put("pagination", pagination);
-
-            return new Gson().toJson(response);
+        // setup select2 ajax remote data sources
+        get(Constants.NORMALIZED_ASSIGNEE_NAME_AJAX_URL, (req,res)->{
+            Function<String,List<String>> resultsSearchFunction = search -> Database.sortedPossibleNormalizedAssignees(search);
+            Function<String,String> displayFunction = result ->  result + " (" + Database.getNormalizedAssetCountFor(result)+")";
+            return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
         });
     }
+
+    private static Object handleAjaxRequest(Request req, Function<String,List<String>> resultsSearchFunction, Function<String,String> displayFunction) {
+        int PER_PAGE = 30;
+        String search = req.queryParams("search");
+        int page = Integer.valueOf(req.queryParamOrDefault("page","1"));
+
+        System.out.println("Search: "+search);
+        System.out.println("Page: "+page);
+
+        List<String> allResults = resultsSearchFunction.apply(search);
+
+        int start = (page-1) * PER_PAGE;
+        int end = start + PER_PAGE;
+
+        List<Map<String,Object>> results;
+        if(start >= allResults.size()) {
+            results = Collections.emptyList();
+        } else {
+            results = allResults.subList(start,Math.min(allResults.size(),end)).stream().map(result->{
+                Map<String,Object> map = new HashMap<>();
+                map.put("id", result);
+                map.put("text", displayFunction.apply(result));
+                return map;
+            }).collect(Collectors.toList());
+        }
+
+        Map<String,Boolean> pagination = new HashMap<>();
+        pagination.put("more", end < allResults.size());
+
+        Map<String,Object> response = new HashMap<>();
+        response.put("results",results);
+        response.put("pagination", pagination);
+
+        return new Gson().toJson(response);
+    }
+
 
     private static Object handleExcel(Request req, Response res) {
         try {

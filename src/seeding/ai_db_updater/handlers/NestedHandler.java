@@ -119,7 +119,7 @@ public abstract class NestedHandler extends CustomHandler{
                     if (flag.compareTag(localName)) {
                         flag.reset();
                         if (flag.isLeaf()) {
-                            final String text = String.join("", documentPieces).trim();
+                            final String text = String.join(" ", documentPieces).trim();
                             shouldClear.set(true);
                             Object value = flag.apply(text);
                             if (value != null && flag.validValue(value.toString())) {

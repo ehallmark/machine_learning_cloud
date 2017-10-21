@@ -16,17 +16,17 @@ import java.util.Map;
  * Created by ehallmark on 6/15/17.
  */
 public abstract class ComputableAssigneeAttribute<T> extends ComputableAttribute<T> {
-    private static Map<String,String> patentToAssigneeMap;
-    private static Map<String,String> appToAssigneeMap;
+    protected Map<String,String> patentToAssigneeMap;
+    protected Map<String,String> appToAssigneeMap;
 
-    public static Map<String,String> getAppToAssigneeMap() {
+    public Map<String,String> getAppToAssigneeMap() {
         if(appToAssigneeMap==null) {
             appToAssigneeMap = new AssetToAssigneeMap().getApplicationDataMap();
         }
         return appToAssigneeMap;
     }
 
-    public static Map<String,String> getPatentToAssigneeMap() {
+    public Map<String,String> getPatentToAssigneeMap() {
         if(patentToAssigneeMap==null) {
             patentToAssigneeMap = new AssetToAssigneeMap().getPatentDataMap();
         }

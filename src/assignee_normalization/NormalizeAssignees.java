@@ -34,6 +34,8 @@ import java.util.stream.Stream;
 public class NormalizeAssignees {
    // private static Map<String,Pair<String,Double>> rawToNormalizedAssigneeNameMapWithScores;
     private static final File rawToNormalizedAssigneeNameFile = new File(Constants.DATA_FOLDER+"raw_to_normalized_assignee_name_map.jobj");
+    private static final File portfolioSizeMapFile = new File(Constants.DATA_FOLDER+"normalized_portfolio_size_map.jobj");
+
     private static final int MIN_ASSIGNEE_LENGTH = 3;
     public static String manualMerge(String rawAssignee) {
         switch(rawAssignee) {
@@ -74,18 +76,30 @@ public class NormalizeAssignees {
     );
 
     private Map<String,String> rawToNormalizedMap;
-    public NormalizeAssignees(Map<String,String> rawToNormalizedMap) {
+    private Map<String,Integer> portfolioSizeMap;
+    public NormalizeAssignees(Map<String,String> rawToNormalizedMap, Map<String,Integer> portfolioSizeMap) {
         this.rawToNormalizedMap=rawToNormalizedMap;
+        this.portfolioSizeMap=portfolioSizeMap;
     }
     public NormalizeAssignees() {
-
     }
-    public String normalizedAssignee(String assignee, Map<String,Integer> portfolioSizeMap) {
+
+    public String normalizedAssignee(String assignee) {
         if(rawToNormalizedMap==null) {
             synchronized (this) {
-                rawToNormalizedMap=getRawToNormalizedAssigneeNameMap();
+                if(rawToNormalizedMap==null) {
+                    rawToNormalizedMap = getRawToNormalizedAssigneeNameMap();
+                }
             }
         }
+        if(portfolioSizeMap==null) {
+            synchronized (this) {
+                if(portfolioSizeMap==null) {
+                    portfolioSizeMap = (Map<String, Integer>) Database.tryLoadObject(portfolioSizeMapFile);
+                }
+            }
+        }
+
         Set<String> seen = new HashSet<>();
         seen.add(assignee);
         boolean keepGoing = true;
@@ -140,14 +154,16 @@ public class NormalizeAssignees {
 
         Map<String,String> rawToNormalizedAssigneeNameMap = rawToNormalizedMap.entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue()._1));
         Database.trySaveObject(rawToNormalizedAssigneeNameMap,new File(name));
+        // save portoflio size map
+        Database.trySaveObject(portfolioSizeMap,portfolioSizeMapFile);
         // save to csv
-        NormalizeAssignees normalizer = new NormalizeAssignees(rawToNormalizedAssigneeNameMap);
+        NormalizeAssignees normalizer = new NormalizeAssignees(rawToNormalizedAssigneeNameMap,portfolioSizeMap);
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(name+".csv")));
             writer.write("Original Name, Normalized Name\n");
             new TreeSet<>(rawToNormalizedAssigneeNameMap.keySet()).forEach(raw -> {
                 try {
-                    writer.write("\"" + raw + "\",\"" + normalizer.normalizedAssignee(raw,portfolioSizeMap) + "\"\n");
+                    writer.write("\"" + raw + "\",\"" + normalizer.normalizedAssignee(raw) + "\"\n");
                 } catch(Exception e) {
                     e.printStackTrace();
                 }

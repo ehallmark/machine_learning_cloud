@@ -62,11 +62,6 @@ public abstract class ValueAttr extends ComputableAttribute<Number> {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return div();
-    }
-
-    @Override
     public String getType() {
         return "double";
     }
