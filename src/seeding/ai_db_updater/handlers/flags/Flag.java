@@ -36,7 +36,9 @@ public class Flag {
 
     public static final Function<Flag,Function<String,?>> claimTextFunction = f -> s -> {
         if(s==null) return null;
-        return Helper.fixPunctuationSpaces(s);
+        String claim = Helper.fixPunctuationSpaces(s);
+        if(claim==null) return null;
+        return claim;
     };
 
     public static  Function<Flag,Function<String,?>> smallestIndClaimTransformationFunction(EndFlag documentFlag) {

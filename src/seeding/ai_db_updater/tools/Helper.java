@@ -5,7 +5,7 @@ package seeding.ai_db_updater.tools;
  */
 public class Helper {
     public static String fixPunctuationSpaces(String text) {
-        String noPunct = text.replace(",",", ").replace(";", "; ").replace(".", ". ").replace(":", ": ").trim();
+        String noPunct = text.replaceAll("\\s+"," ").replace(",",", ").replace(";", "; ").replace(".", ". ").replace(":", ": ").trim();
         while(noPunct.contains("  ")) noPunct = noPunct.replace("  "," ");
         return noPunct;
     }
