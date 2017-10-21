@@ -352,6 +352,7 @@ public class DataSearcher {
                     for(Text fragment : fragments) {
                         sj.add(fragment.toString());
                     }
+                    System.out.println("HIGHLIGHT FIELD "+e.getKey()+":\n"+Helper.fixPunctuationSpaces(sj.toString()));
                     item.addData(e.getKey()+Constants.HIGHLIGHTED, Helper.fixPunctuationSpaces(sj.toString()));
                 }
             });
@@ -422,6 +423,7 @@ public class DataSearcher {
         } else {
             if(attrName.equals(CLAIM_TEXT_ATTR_NAME)) {
                 v = Helper.fixPunctuationSpaces(v.toString());
+                System.out.println("CLAIM TEXT :\n"+v);
             }
             itemDataMap.put(attrName, v);
         }

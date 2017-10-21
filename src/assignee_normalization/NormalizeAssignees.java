@@ -281,7 +281,7 @@ public class NormalizeAssignees {
             }
         });
 
-        int minPortfolioSize = 20;
+        int minPortfolioSize = 10;
         Collection<String> largestAssignees = new HashSet<>(allAssignees.parallelStream().map(a->new Pair<>(a,assigneeToPortfolioSizeMap.getOrDefault(a,0)))
                 .filter(e->e._2>minPortfolioSize)
                 .sorted((e1,e2)->e2._2.compareTo(e1._2))
@@ -291,7 +291,7 @@ public class NormalizeAssignees {
 
         mergeAssignees(allAssignees, largestAssignees, rawToNormalizedMap, assigneeToPortfolioSizeMap, distanceFunction);
 
-        int maxNumAssigneeSamples = 500;
+        int maxNumAssigneeSamples = 50;
         Random rand = new Random();
         Collection<String> largestAssigneeSamples = new HashSet<>(assigneeToPortfolioSizeMap.entrySet().parallelStream()
                 .filter(e->e.getValue()>minPortfolioSize)
