@@ -8,6 +8,6 @@ public class Helper {
         if(text==null) return null;
         String noPunct = text.replaceAll("\\s+"," ").replace(",",", ").replace(";", "; ").replace(".", ". ").replace(":", ": ").trim();
         while(noPunct.contains("  ")) noPunct = noPunct.replace("  "," ");
-        return noPunct;
+        return noPunct.trim();
     }
 }
