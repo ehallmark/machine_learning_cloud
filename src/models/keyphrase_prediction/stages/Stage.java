@@ -92,7 +92,7 @@ public abstract class Stage<V> {
 
     private void createVisualization(Collection<MultiStem> multiStems) {
         System.out.println("Starting to make visualization graph...");
-        File visualizationFile = new File("data/visualizations-"+this.getClass().getSimpleName()+"-"+LocalDate.now().toString());
+        File visualizationFile = new File("data/technologyPredictionStages/"+model.getClass().getSimpleName()+"/visualizations-"+this.getClass().getSimpleName()+"-"+LocalDate.now().toString());
         Map<String,Node> nodeMap = Collections.synchronizedMap(new HashMap<>());
         Visualizer visualizer = new Visualizer(visualizationFile.getAbsolutePath());
         // now we have keywords

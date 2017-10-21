@@ -53,7 +53,7 @@ public class KeywordModelRunner {
     public static void runModel() {
         Model model = new TimeDensityModel();
 
-        boolean alwaysRerun = false;
+        boolean alwaysRerun = true;
 
         // stage 1
 

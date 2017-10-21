@@ -7,13 +7,13 @@ import lombok.Getter;
  */
 public class TimeDensityModel implements Model {
     @Getter
-    final long Kw = 8000;
+    final long Kw = 50000;
     @Getter
-    final int k1 = 15;
+    final int k1 = 20;
     @Getter
-    final int k2 = 5;
+    final int k2 = 10;
     @Getter
-    final int k3 = 1;
+    final int k3 = 2;
 
     @Getter
     final int minTokenFrequency = 30;
@@ -46,7 +46,7 @@ public class TimeDensityModel implements Model {
     @Getter
     double stage4Lower = 0.2;
     @Getter
-    double stage4Min = 0.05;
+    double stage4Min = 0d;
 
     @Getter
     double stage3Upper = 1d;
@@ -60,6 +60,6 @@ public class TimeDensityModel implements Model {
     @Getter
     double stage2Lower = 0.05;
     @Getter
-    double stage2Min = minTokenFrequency;
+    double stage2Min = 0d;
 
 }
