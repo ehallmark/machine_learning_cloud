@@ -3,10 +3,7 @@ package assignee_normalization;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
-import info.debatty.java.stringsimilarity.JaroWinkler;
-import info.debatty.java.stringsimilarity.Levenshtein;
-import info.debatty.java.stringsimilarity.NormalizedLevenshtein;
-import info.debatty.java.stringsimilarity.QGram;
+import info.debatty.java.stringsimilarity.*;
 import info.debatty.java.stringsimilarity.interfaces.StringDistance;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
@@ -184,7 +181,7 @@ public class NormalizeAssignees {
     }
 
     private static boolean badPrefix(String s1, String s2) {
-        return !s1.contains(" ")&&s1.length()<s2.length()&&!s2.startsWith(s1+" ");
+        return !s1.contains(" ");
     }
     private static void prefixSearchHelper(Collection<String> assignees, RadixTree<String> prefixTrie, StringDistance distanceFunction, Map<String,Pair<String,Double>> rawToNormalizedMap, Map<String,Integer> portfolioSizeMap) {
         AtomicInteger cnt = new AtomicInteger(0);
@@ -307,7 +304,7 @@ public class NormalizeAssignees {
 
         mergeAssignees(allAssignees, largestAssignees, rawToNormalizedMap, assigneeToPortfolioSizeMap, distanceFunction);
 
-        int maxNumAssigneeSamples = 50;
+        int maxNumAssigneeSamples = 2000;
         Random rand = new Random();
         Collection<String> largestAssigneeSamples = new HashSet<>(assigneeToPortfolioSizeMap.entrySet().parallelStream()
                 .filter(e->e.getValue()>minPortfolioSize)
@@ -323,22 +320,29 @@ public class NormalizeAssignees {
         AtomicInteger changes = new AtomicInteger(0);
         Collection<String> changedAssignees = new HashSet<>();
         allAssignees.parallelStream().filter(a->!largestAssigneeSamples.contains(a)).forEach(rawAssignee->{
+            StringDistance simpleDist = new NGram(1);
             Pair<String,Double> mostSimilarCandidate = largestAssigneeSamples.stream().map(candidate->{
-                return new Pair<>(candidate,distanceFunction.distance(candidate,rawAssignee));
+                if(simpleDist.distance(candidate,rawAssignee)>0.75) {
+                    return new Pair<>(candidate, distanceFunction.distance(candidate, rawAssignee));
+                } else {
+                    return new Pair<>(candidate, 0d);
+                }
             }).reduce((p1,p2)->p1._2<p2._2 ? p1 : p2).get();
-            double maxDistance = Math.min(0.2,0.02 * Math.log(Math.E+Math.max(rawAssignee.split(" ").length, mostSimilarCandidate._1.split(" ").length)));
-            // make sure that if begins with abbreviation, they are the same
-            // do this by making sure a high degree of similarity in the first word
-            String otherFirstWord = mostSimilarCandidate._1.split(" ")[0];
-            String firstWord = rawAssignee.split(" ")[0];
-            if(firstWord.length() > 5 || otherFirstWord.equals(firstWord)) {
-                if (mostSimilarCandidate._2 < maxDistance) {
-                    Pair<String, Double> previousNormalization = rawToNormalizedMap.get(rawAssignee);
-                    if (previousNormalization == null || previousNormalization._2 > mostSimilarCandidate._2) {
-                        //System.out.println(rawAssignee + " => " + mostSimilarCandidate._1 + ": " + mostSimilarCandidate._2);
-                        rawToNormalizedMap.put(rawAssignee, mostSimilarCandidate);
-                        changedAssignees.add(rawAssignee);
-                        changes.getAndIncrement();
+            if(mostSimilarCandidate._2 > 0d) {
+                double maxDistance = Math.min(0.2, 0.01 * Math.log(Math.E + Math.max(rawAssignee.split(" ").length, mostSimilarCandidate._1.split(" ").length)));
+                // make sure that if begins with abbreviation, they are the same
+                // do this by making sure a high degree of similarity in the first word
+                String otherFirstWord = mostSimilarCandidate._1.split(" ")[0];
+                String firstWord = rawAssignee.split(" ")[0];
+                if (firstWord.length() > 5 || otherFirstWord.equals(firstWord)) {
+                    if (mostSimilarCandidate._2 < maxDistance) {
+                        Pair<String, Double> previousNormalization = rawToNormalizedMap.get(rawAssignee);
+                        if (previousNormalization == null || previousNormalization._2 > mostSimilarCandidate._2) {
+                            //System.out.println(rawAssignee + " => " + mostSimilarCandidate._1 + ": " + mostSimilarCandidate._2);
+                            rawToNormalizedMap.put(rawAssignee, mostSimilarCandidate);
+                            changedAssignees.add(rawAssignee);
+                            changes.getAndIncrement();
+                        }
                     }
                 }
             }
