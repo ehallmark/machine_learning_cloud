@@ -197,13 +197,15 @@ public class ExcelHandler {
                 int row = headerRow + 1 + r;
                 WritableCell cell;
                 String excelCell = rowData.get(attributes.get(c));
-
                 if(excelCell==null) {
                     cell = new Label(col, row, "", getDefaultFormat());
                 } else if (isNumber(excelCell)) {
-                    cell = new Number(col, row, Double.valueOf(excelCell.toString()), getNumberFormat());
+                    cell = new Number(col, row, Double.valueOf(excelCell), getNumberFormat());
                 } else {
-                    cell = new Label(col, row, excelCell.toString(), getDefaultFormat());
+                    if(excelCell.length()>5000) {
+                        excelCell = excelCell.substring(0,5000);
+                    }
+                    cell = new Label(col, row, excelCell, getDefaultFormat());
                 }
                 sheet.addCell(cell);
             }
