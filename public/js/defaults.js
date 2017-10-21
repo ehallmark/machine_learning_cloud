@@ -16,7 +16,7 @@ $(document).ready(function() {
         var dataMap = {};
         $(containerSelector+" "+itemSelector).find('textarea,input,select,div.attribute').each(function(i,e) {
             var $elem = $(this);
-            if($elem.attr('id') && ! ($elem.prop('disabled') || $elem.hasClass('disabled')) {
+            if($elem.attr('id') && ! ($elem.prop('disabled') || $elem.hasClass('disabled'))) {
                 dataMap[$elem.attr("id")]=$elem.val();
                 dataMap["order_"+$elem.attr("id")]=i;
             }
