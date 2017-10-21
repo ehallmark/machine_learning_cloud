@@ -253,6 +253,20 @@ public class NormalizeAssignees {
         return suffixList.stream().map(p->p._1).collect(Collectors.toSet());
     }
 
+    private static String stripPrefixesAndSuffixes(String raw) {
+        String[] badStrings = new String[]{
+                "UNIVERSITY COURT OF THE ",
+                "UNIVERSITY OF ",
+                "NATIONAL INSTITUTE OF "
+        };
+        for(String badString : badStrings) {
+            if (raw.startsWith(badString) && raw.length() > badString.length()) {
+                raw = raw.substring(badString.length());
+            }
+        }
+        return raw;
+    }
+
     private static Collection<String> runIteration(Collection<String> allAssignees, Map<String,Pair<String,Double>> rawToNormalizedMap, Map<String,Integer> assigneeToPortfolioSizeMap, StringDistance distanceFunction, int epoch) {
         Set<String> badSuffixes = buildBadSuffixes(allAssignees);
 
@@ -308,7 +322,7 @@ public class NormalizeAssignees {
 
         mergeAssignees(allAssignees, largestAssignees, rawToNormalizedMap, assigneeToPortfolioSizeMap, distanceFunction);
 
-        int maxNumAssigneeSamples = 5000;
+        int maxNumAssigneeSamples = 1000;
         Collection<String> largestAssigneeSamples = new HashSet<>(allAssignees.parallelStream()
                 .map(a->new Pair<>(a,assigneeToPortfolioSizeMap.getOrDefault(a,0)))
                 .filter(e->e._2>minPortfolioSize)
@@ -324,9 +338,9 @@ public class NormalizeAssignees {
         Collection<String> changedAssignees = new HashSet<>();
         allAssignees.parallelStream().filter(a->!largestAssigneeSamples.contains(a)).forEach(rawAssignee->{
             Pair<String,Double> mostSimilarCandidate = largestAssigneeSamples.stream().map(candidate->{
-                return new Pair<>(candidate, distanceFunction.distance(candidate, rawAssignee));
+                return new Pair<>(candidate, distanceFunction.distance(stripPrefixesAndSuffixes(candidate), stripPrefixesAndSuffixes(rawAssignee)));
             }).reduce((p1,p2)->p1._2<p2._2 ? p1 : p2).get();
-            double maxDistance = Math.min(0.2, 0.02 * Math.log(Math.E + Math.max(rawAssignee.split(" ").length, mostSimilarCandidate._1.split(" ").length)));
+            double maxDistance = Math.min(0.1, 0.01 * Math.log(Math.E + Math.max(rawAssignee.split(" ").length, mostSimilarCandidate._1.split(" ").length)));
             // make sure that if begins with abbreviation, they are the same
             // do this by making sure a high degree of similarity in the first word
             String otherFirstWord = mostSimilarCandidate._1.split(" ")[0];
@@ -367,7 +381,7 @@ public class NormalizeAssignees {
                 .parallelStream()
                 .collect(Collectors.toMap(a->a,a->Database.getAssetCountFor(a))));
 
-        int numEpochs = 2;
+        int numEpochs = 3;
         Map<String,String> rawToNormalizedAssigneeNameMap = Collections.synchronizedMap(new HashMap<>());
         for(int i = 0; i < numEpochs; i++) {
             System.out.println("Starting epoch: "+(i+1)+"/"+numEpochs);
