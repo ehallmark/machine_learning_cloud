@@ -63,6 +63,7 @@ public class NormalizeAssignees {
     static Collection<String> manualBadPrefixes = Arrays.asList(
             "KABUSHIKI KAISHA ",
             "SK ",
+            "UNITED STATES OF AMERICA AS REPRESENTED BY ",
             "THE "
     );
 
@@ -279,10 +280,13 @@ public class NormalizeAssignees {
 
             // do manual cleans
             newWord = manualCleanse(newWord);
-
             int portfolioSize = assigneeToPortfolioSizeMap.get(assignee);
-            int newSize = assigneeToPortfolioSizeMap.getOrDefault(newWord, 0);
-            assigneeToPortfolioSizeMap.put(newWord, Math.max(portfolioSize,newSize));
+            if(newWord.equals(assignee)) {
+                assigneeToPortfolioSizeMap.put(newWord, portfolioSize);
+            } else {
+                int newSize = assigneeToPortfolioSizeMap.getOrDefault(newWord, 0);
+                assigneeToPortfolioSizeMap.put(newWord, portfolioSize+newSize);
+            }
             return newWord;
 
         }).filter(a->a!=null).distinct().collect(Collectors.toList());
@@ -304,14 +308,13 @@ public class NormalizeAssignees {
 
         mergeAssignees(allAssignees, largestAssignees, rawToNormalizedMap, assigneeToPortfolioSizeMap, distanceFunction);
 
-        int maxNumAssigneeSamples = 500;
-        Random rand = new Random();
-        Collection<String> largestAssigneeSamples = new HashSet<>(assigneeToPortfolioSizeMap.entrySet().parallelStream()
-                .filter(e->e.getValue()>minPortfolioSize)
-                .filter(e->rand.nextDouble()>(0.5*minPortfolioSize/e.getValue()))
-                .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
+        int maxNumAssigneeSamples = 5000;
+        Collection<String> largestAssigneeSamples = new HashSet<>(allAssignees.parallelStream()
+                .map(a->new Pair<>(a,assigneeToPortfolioSizeMap.getOrDefault(a,0)))
+                .filter(e->e._2>minPortfolioSize)
+                .sorted((e1,e2)->e2._2.compareTo(e1._2))
                 .limit(maxNumAssigneeSamples)
-                .map(e->e.getKey()).collect(Collectors.toList()));
+                .map(e->e._1).collect(Collectors.toList()));
 
         System.out.println("Total normalizations after prefix search: "+rawToNormalizedMap.size() + " / "+allAssignees.size());
         saveAs("test 0-"+epoch, rawToNormalizedMap, assigneeToPortfolioSizeMap);
@@ -364,7 +367,7 @@ public class NormalizeAssignees {
                 .parallelStream()
                 .collect(Collectors.toMap(a->a,a->Database.getAssetCountFor(a))));
 
-        int numEpochs = 10;
+        int numEpochs = 2;
         Map<String,String> rawToNormalizedAssigneeNameMap = Collections.synchronizedMap(new HashMap<>());
         for(int i = 0; i < numEpochs; i++) {
             System.out.println("Starting epoch: "+(i+1)+"/"+numEpochs);
