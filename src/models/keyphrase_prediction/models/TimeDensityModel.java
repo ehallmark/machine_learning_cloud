@@ -9,7 +9,7 @@ public class TimeDensityModel implements Model {
     @Getter
     final long Kw = 10000;
     @Getter
-    final int k1 = 25;
+    final int k1 = 50;
     @Getter
     final int k2 = 10;
     @Getter
@@ -24,26 +24,26 @@ public class TimeDensityModel implements Model {
     }
 
     @Getter
-    double stage4Upper = 1d;
+    double stage4Upper = 0.95;
     @Getter
-    double stage4Lower = 0.2;
+    double stage4Lower = 0.4;
     @Getter
     double stage4Min = Double.MIN_VALUE;
 
     @Getter
-    double stage3Upper = 1d;
+    double stage3Upper = 0.95;
     @Getter
-    double stage3Lower = 0.2;
+    double stage3Lower = 0.4;
     @Getter
     double stage3Min = Double.MIN_VALUE;
 
     @Getter
     double stage2Upper = 0.95;
     @Getter
-    double stage2Lower = 0.05;
+    double stage2Lower = 0.4;
 
     @Getter
-    double stage1Upper = 0.80;
+    double stage1Upper = 0.9;
     @Getter
-    double stage1Lower = 0.2;
+    double stage1Lower = 0.3;
 }

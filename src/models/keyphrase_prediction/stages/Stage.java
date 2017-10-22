@@ -232,6 +232,7 @@ public abstract class Stage<V> {
                 Map<String,Object> attributes = new HashMap<>();
                 attributes.put(APPEARED,appeared);
                 attributes.put(DATE,date);
+                attributes.put(ASSET_ID,asset);
                 attributesFunction.apply(attributes);
 
             });

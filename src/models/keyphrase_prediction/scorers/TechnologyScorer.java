@@ -21,16 +21,17 @@ public class TechnologyScorer implements KeywordScorer {
         int length = matrix.getRowDimension();
         double[] squaredRowSums = new double[length];
         double[] sumOfSquares = new double[length];
+        double[] sums = new double[length];
         IntStream.range(0,length).parallel().forEach(i->{
             double[] row = matrix.getRow(i);
-            squaredRowSums[i] = DoubleStream.of(row).sum();
-            squaredRowSums[i] = Math.pow(squaredRowSums[i],2);
+            sums[i] = DoubleStream.of(row).sum();
+            squaredRowSums[i] = Math.pow(sums[i],2);
             sumOfSquares[i] = DoubleStream.of(row).map(d->d*d).sum();
         });
 
         double[] scores = new double[sumOfSquares.length];
         IntStream.range(0,squaredRowSums.length).parallel().forEach(i->{
-            double score = sumOfSquares[i]/squaredRowSums[i];
+            double score = Math.log(Math.E+sums[i])*sumOfSquares[i]/squaredRowSums[i];
             if(Double.isNaN(score)) score = 0d;
             scores[i]=score;
         });
