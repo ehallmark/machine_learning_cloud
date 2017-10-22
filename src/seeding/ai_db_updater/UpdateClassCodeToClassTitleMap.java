@@ -23,7 +23,7 @@ public class UpdateClassCodeToClassTitleMap {
         Map<String,String> classCodeToTitleMap = Collections.synchronizedMap(new HashMap<>());
 
         // parse html data
-        Arrays.stream(cpcInputDataFile.listFiles((dir,name)->name.endsWith(".xml")&&!name.chars().anyMatch(c->Character.isDigit(c)))).parallel().forEach(file->{
+        Arrays.stream(cpcInputDataFile.listFiles((dir,name)->name.endsWith(".xml"))).parallel().forEach(file->{
             try {
                 parse(file, classCodeToTitleMap);
             } catch(Exception e) {
@@ -47,33 +47,37 @@ public class UpdateClassCodeToClassTitleMap {
         NodeList classifications = doc.getElementsByTagName("classification-item");
         for (int temp = 0; temp < classifications.getLength(); temp++) {
             Node classification = classifications.item(temp);
-            if (classification.getNodeType() == Node.ELEMENT_NODE) {
-                Element classElement = (Element) classification;
-                Node symbol = classElement.getFirstChild();
-                if(symbol!=null) {
-                    String classSymbol = symbol.getTextContent();
-                    if(classSymbol.length() > 0) {
-                        Node node = symbol.getNextSibling().getFirstChild();
-                        List<String> titleParts = new ArrayList<>();
-                        while (node != null) {
-                            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                                Element elem = (Element) node;
-                                if (elem.getTagName().equals("title-part")) {
-                                    NodeList references = elem.getElementsByTagName("reference");
-                                    for(int i = 0; i < references.getLength(); i++) {
-                                        elem.removeChild(references.item(i));
+            try {
+                if (classification.getNodeType() == Node.ELEMENT_NODE) {
+                    Element classElement = (Element) classification;
+                    Node symbol = classElement.getFirstChild();
+                    if (symbol != null) {
+                        String classSymbol = symbol.getTextContent();
+                        if (classSymbol.length() > 0) {
+                            Node node = symbol.getNextSibling().getFirstChild();
+                            List<String> titleParts = new ArrayList<>();
+                            while (node != null) {
+                                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                                    Element elem = (Element) node;
+                                    if (elem.getTagName().equals("title-part")) {
+                                        NodeList references = elem.getElementsByTagName("reference");
+                                        for (int i = 0; i < references.getLength(); i++) {
+                                            elem.removeChild(references.item(i));
+                                        }
+                                        titleParts.add(elem.getTextContent());
+                                        break;
                                     }
-                                    titleParts.add(elem.getTextContent());
-                                    break;
                                 }
+                                node = node.getNextSibling();
                             }
-                            node = node.getNextSibling();
+                            String title = String.join("; ", titleParts);
+                            System.out.println(classSymbol + "," + title);
+                            map.put(classSymbol, title);
                         }
-                        String title = String.join("; ",titleParts);
-                        System.out.println(classSymbol+"," + title);
-                        map.put(classSymbol, title);
                     }
                 }
+            } catch(Exception e) {
+                e.printStackTrace();
             }
         }
     }
