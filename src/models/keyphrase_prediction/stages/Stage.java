@@ -185,6 +185,14 @@ public abstract class Stage<V> {
                     for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
                         // this is the text of the token
                         String word = token.get(CoreAnnotations.TextAnnotation.class);
+                        boolean valid = true;
+                        for(int i = 0; i < word.length(); i++) {
+                            if(!Character.isAlphabetic(word.charAt(i))) {
+                                valid = false;
+                            }
+                        }
+                        if(!valid) continue;
+
                         // could be the stem
                         String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
 
