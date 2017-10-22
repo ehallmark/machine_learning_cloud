@@ -61,9 +61,9 @@ public class UpdateClassCodeToClassTitleMap {
                                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                                     Element elem = (Element) node;
                                     if (elem.getTagName().equals("title-part")) {
-                                        //NodeList references = elem.getElementsByTagName("reference");
+                                        NodeList references = elem.getElementsByTagName("reference");
                                         //for (int i = 0; i < references.getLength(); i++) {
-                                        //    elem.removeChild(references.item(i));
+                                        //    elem.remo(references.item(i));
                                         //}
                                         titleParts.add(elem.getTextContent());
                                         break;

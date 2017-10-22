@@ -37,8 +37,8 @@ import java.util.stream.Stream;
  * Created by ehallmark on 9/12/17.
  */
 public abstract class Stage<V> {
-    private static Collection<String> validPOS = Arrays.asList("JJ","JJR","JJS","NN","NNS","NNP","NNPS","VBG","VBN");
-    private static Collection<String> adjectivesPOS = Arrays.asList("JJ","JJR","JJS");
+    public static final Collection<String> validPOS = Arrays.asList("JJ","JJR","JJS","NN","NNS","NNP","NNPS","VBG","VBN");
+    public static final Collection<String> adjectivesPOS = Arrays.asList("JJ","JJR","JJS");
     static double scoreThreshold = 200f;
     static double minEdgeScore = 50f;
     protected static final String APPEARED = "APPEARED";
