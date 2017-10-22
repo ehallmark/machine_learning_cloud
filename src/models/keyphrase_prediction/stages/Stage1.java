@@ -94,14 +94,15 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
 
 
     @Override
-    protected void checkStem(String[] stems, String label, Set<MultiStem> appeared) {
+    protected void checkStem(String[] stems, String label, Map<MultiStem,AtomicInteger> appeared) {
         MultiStem multiStem = new MultiStem(stems,-1);
         String stemPhrase = multiStem.toString();
         phraseCountMap.putIfAbsent(stemPhrase,Collections.synchronizedMap(new HashMap<>()));
         Map<String,AtomicInteger> innerMap = phraseCountMap.get(stemPhrase);
         innerMap.putIfAbsent(label,new AtomicInteger(0));
         innerMap.get(label).getAndIncrement();
-        appeared.add(multiStem);
+        appeared.putIfAbsent(multiStem,new AtomicInteger(0));
+        appeared.get(multiStem).getAndIncrement();
     }
 
 

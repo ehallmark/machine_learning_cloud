@@ -62,4 +62,7 @@ public class NewestModel implements Model {
     @Getter
     double stage2Min = Double.MIN_VALUE;
 
+    @Getter
+    int minDocFrequency = 5;
+
 }
