@@ -32,6 +32,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 9/11/17.
@@ -46,7 +47,7 @@ public class CPCKeywordModel {
 
     public static void runModel() {
         int cpcLength = 8;
-        List<String> CPCs = new ArrayList<>(Database.getClassCodes().parallelStream().map(c->ClassCodeHandler.convertToLabelFormat(c)).map(c->c.length()>cpcLength?c.substring(0,cpcLength).trim():c).distinct().collect(Collectors.toList()));
+        List<String> CPCs = Database.getClassCodes().parallelStream().map(c->ClassCodeHandler.convertToLabelFormat(c)).map(c->c.length()>cpcLength?c.substring(0,cpcLength).trim():c).distinct().collect(Collectors.toList());
         Map<String,String> cpcToTitleMap = Database.getClassCodeToClassTitleMap();
         RadixTree<String> titlesTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
         cpcToTitleMap.entrySet().parallelStream().forEach(e->{
@@ -60,6 +61,8 @@ public class CPCKeywordModel {
             }
         });
         System.out.println("Missing: "+missing.get());
+
+        List<String> allWords = cpcToTitleMap.values().parallelStream().flatMap(t-> Stream.of(t.split("\\s+"))).distinct().collect(Collectors.toList());
 
     }
 
