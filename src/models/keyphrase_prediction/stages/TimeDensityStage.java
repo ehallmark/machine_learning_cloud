@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
  */
 public class TimeDensityStage extends Stage<Set<MultiStem>> {
     private static final boolean debug = false;
-    private double lowerBound = 0.5d;
+    private double lowerBound = 0.2d;
     private double upperBound = 1d;
-    private double minValue = 0f;
+    private double minValue = Double.MIN_VALUE;
     public TimeDensityStage(Set<MultiStem> keywords, Model model) {
         super(model);
         this.data = keywords;
@@ -36,8 +36,11 @@ public class TimeDensityStage extends Stage<Set<MultiStem>> {
             // apply filter 3
             RealMatrix T = buildTMatrix()._2;
 
+            System.out.println("Num keywords before stage time density: " + data.size());
             data = applyFilters(new TechnologyScorer(), T, data, lowerBound, upperBound, minValue);
             data = data.parallelStream().filter(d->d.getScore()>0f).collect(Collectors.toSet());
+            System.out.println("Num keywords before time density: " + data.size());
+
             Database.saveObject(data, getFile());
             // write to csv for records
             KeywordModelRunner.writeToCSV(data, new File(getFile().getAbsoluteFile() + ".csv"));

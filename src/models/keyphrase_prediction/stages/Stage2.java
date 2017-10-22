@@ -30,7 +30,7 @@ public class Stage2 extends Stage<Set<MultiStem>> {
     public Set<MultiStem> run(boolean alwaysRerun) {
         if(alwaysRerun || !getFile().exists()) {
             // filter outliers
-
+            System.out.println("Num keywords before stage 2: " + documentsAppearedInCounter.size());
             KeywordModelRunner.reindex(documentsAppearedInCounter.keySet());
 
             // compute scores
@@ -44,6 +44,7 @@ public class Stage2 extends Stage<Set<MultiStem>> {
                 multiStem.setScore((float)score);
                 return multiStem;
             }).sorted((s1,s2)->Float.compare(s2.getScore(),s1.getScore())).limit(targetCardinality).collect(Collectors.toSet());
+            System.out.println("Num keywords after stage 2: " + data.size());
 
             Database.saveObject(data, getFile());
             // write to csv for records
