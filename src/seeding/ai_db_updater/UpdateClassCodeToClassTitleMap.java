@@ -6,6 +6,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import seeding.Constants;
 import seeding.Database;
+import tools.ClassCodeHandler;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -70,6 +71,7 @@ public class UpdateClassCodeToClassTitleMap {
                                 }
                                 node = node.getNextSibling();
                             }
+                            classSymbol = ClassCodeHandler.convertToLabelFormat(classSymbol);
                             String title = String.join("; ", titleParts);
                             System.out.println(classSymbol + "," + title);
                             map.put(classSymbol, title);

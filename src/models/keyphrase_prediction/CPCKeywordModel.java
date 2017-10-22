@@ -22,6 +22,7 @@ import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilders;
 import seeding.Constants;
 import seeding.Database;
+import tools.ClassCodeHandler;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.io.BufferedWriter;
@@ -54,7 +55,7 @@ public class CPCKeywordModel {
 
         AtomicInteger missing = new AtomicInteger(0);
         CPCs.forEach(cpc->{
-            if(!titlesTrie.getKeysStartingWith(cpc).iterator().hasNext()) {
+            if(!titlesTrie.getKeysStartingWith(ClassCodeHandler.convertToLabelFormat(cpc)).iterator().hasNext()) {
                 missing.getAndIncrement();
             }
         });
