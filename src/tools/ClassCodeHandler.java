@@ -15,5 +15,5 @@ public class ClassCodeHandler {
         if(code.length()<14) return code;
         return code.substring(0,4).trim()+" "+code.substring(4,8).trim() + "/" + code.substring(8,14).trim();
     }
-    
+
 }
