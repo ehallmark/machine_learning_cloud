@@ -1,5 +1,8 @@
 package models.keyphrase_prediction;
 
+import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
+import com.googlecode.concurrenttrees.radix.RadixTree;
+import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.models.Model;
@@ -27,6 +30,7 @@ import java.io.FileWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 9/11/17.
@@ -40,16 +44,22 @@ public class CPCKeywordModel {
     }
 
     public static void runModel() {
-        List<String> CPCs = new ArrayList<>(Database.getClassCodes());
+        int cpcLength = 8;
+        List<String> CPCs = new ArrayList<>(Database.getClassCodes().parallelStream().map(c->c.length()>cpcLength?c.substring(0,cpcLength):c).distinct().collect(Collectors.toList()));
         Map<String,String> cpcToTitleMap = Database.getClassCodeToClassTitleMap();
+        RadixTree<String> titlesTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+        cpcToTitleMap.entrySet().parallelStream().forEach(e->{
+            titlesTrie.put(e.getKey(),e.getValue());
+        });
+
         AtomicInteger missing = new AtomicInteger(0);
         CPCs.forEach(cpc->{
-            if(!cpcToTitleMap.containsKey(cpc)) {
+            if(!titlesTrie.getKeysStartingWith(cpc).iterator().hasNext()) {
                 missing.getAndIncrement();
             }
         });
         System.out.println("Missing: "+missing.get());
-    
+
     }
 
 }
