@@ -18,14 +18,14 @@ import java.util.stream.Collectors;
 public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
 
     private static final boolean debug = false;
-    private int minTokenFrequency;
-    private int maxTokenFrequency;
+    private double lowerBound;
+    private double upperBound;
     private  Map<String,Map<String,AtomicInteger>> phraseCountMap;
     public Stage1(Model model) {
         super(model);
         phraseCountMap = Collections.synchronizedMap(new HashMap<>());
-        this.minTokenFrequency=model.getMinTokenFrequency();
-        this.maxTokenFrequency=model.getMaxTokenFrequency();
+        this.lowerBound=model.getStage1Lower();
+        this.upperBound=model.getStage1Upper();
     }
 
     @Override
@@ -45,10 +45,12 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
     }
 
     private Map<MultiStem,AtomicLong> truncateBetweenLengths() {
-        return data.entrySet().parallelStream().filter(e->{
-            double val = data.getOrDefault(e.getKey(), new AtomicLong(0)).get();
-            return val>=minTokenFrequency&&val<=maxTokenFrequency;
-        }).collect(Collectors.toMap(e->e.getKey(), e->e.getValue()));
+        long skip = (long)((1d-upperBound)*data.size());
+        return data.entrySet().parallelStream()
+                .sorted((e1,e2)->Long.compare(e2.getValue().get(),e1.getValue().get()))
+                .skip(skip)
+                .limit((long)((1d-lowerBound)*data.size())-skip)
+                .collect(Collectors.toMap(e->e.getKey(), e->e.getValue()));
     }
 
 

@@ -16,11 +16,6 @@ public class TimeDensityModel implements Model {
     final int k3 = 1;
 
     @Getter
-    final int minTokenFrequency = 30;
-    @Getter
-    final int maxTokenFrequency = Math.round(getSampling() * 0.3f);
-
-    @Getter
     final int maxCpcLength = 8;
 
     @Override
@@ -46,4 +41,9 @@ public class TimeDensityModel implements Model {
     double stage2Upper = 0.95;
     @Getter
     double stage2Lower = 0.05;
+
+    @Getter
+    double stage1Upper = 0.95;
+    @Getter
+    double stage1Lower = 0.2;
 }

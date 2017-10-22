@@ -8,8 +8,8 @@ public interface Model {
     int getK1();
     int getK2();
     int getK3();
-    int getMinTokenFrequency();
-    int getMaxTokenFrequency();
+    double getStage1Lower();
+    double getStage1Upper();
     int getMaxCpcLength();
     String getModelName();
     double getStage3Lower();
