@@ -31,7 +31,7 @@ public class TechnologyScorer implements KeywordScorer {
 
         double[] scores = new double[sumOfSquares.length];
         IntStream.range(0,squaredRowSums.length).parallel().forEach(i->{
-            double score = Math.log(Math.E+sums[i])*sumOfSquares[i]/squaredRowSums[i];
+            double score = sumOfSquares[i]/squaredRowSums[i];
             if(Double.isNaN(score)) score = 0d;
             scores[i]=score;
         });

@@ -23,7 +23,7 @@ public class Stage2 extends Stage<Set<MultiStem>> {
     public Stage2(Map<MultiStem,AtomicLong> documentsAppearedInCounter, Model model) {
         super(model);
         this.documentsAppearedInCounter=documentsAppearedInCounter;
-        this.targetCardinality=model.getKw()*model.getK1();
+        this.targetCardinality=model.getKw();
     }
 
     @Override
@@ -36,10 +36,10 @@ public class Stage2 extends Stage<Set<MultiStem>> {
             // compute scores
             data = new ArrayList<>(documentsAppearedInCounter.entrySet()).parallelStream().map(e->{
                 MultiStem multiStem = e.getKey();
-                double score = e.getValue().doubleValue();
+                double score = e.getValue().doubleValue()*Math.sqrt(multiStem.getStems().length);
                 if(multiStem.getStems().length > 1) {
-                    double denom = Math.pow(Stream.of(multiStem.getStems()).map(s -> documentsAppearedInCounter.getOrDefault(new MultiStem(new String[]{s}, -1), new AtomicLong(1))).mapToDouble(d -> d.doubleValue()).reduce((d1, d2) -> d1 * d2).getAsDouble(), 1d / multiStem.getStems().length);
-                    score = (score * e.getValue().doubleValue() * multiStem.getStems().length) / denom;
+                    double denom = Stream.of(multiStem.getStems()).map(s -> documentsAppearedInCounter.getOrDefault(new MultiStem(new String[]{s}, -1),e.getValue())).mapToDouble(d -> d.doubleValue()).average().orElse(e.getValue().doubleValue());
+                    score = score * e.getValue().doubleValue() / denom;
                 }
                 multiStem.setScore((float)score);
                 return multiStem;

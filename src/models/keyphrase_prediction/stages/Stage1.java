@@ -20,12 +20,14 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
     private static final boolean debug = false;
     private double lowerBound;
     private double upperBound;
+    private int minDocFrequency;
     private  Map<String,Map<String,AtomicInteger>> phraseCountMap;
     public Stage1(Model model) {
         super(model);
         phraseCountMap = Collections.synchronizedMap(new HashMap<>());
         this.lowerBound=model.getStage1Lower();
         this.upperBound=model.getStage1Upper();
+        this.minDocFrequency=model.getMinDocFrequency();
     }
 
     @Override

@@ -5,9 +5,6 @@ package models.keyphrase_prediction.models;
  */
 public interface Model {
     long getKw();
-    int getK1();
-    int getK2();
-    int getK3();
     double getStage1Lower();
     double getStage1Upper();
     int getMaxCpcLength();
@@ -18,5 +15,6 @@ public interface Model {
     double getStage4Upper();
     double getStage4Min();
     double getStage3Min();
+    int getMinDocFrequency();
     default int getSampling() { return 400000; }
 }

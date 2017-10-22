@@ -36,34 +36,21 @@ import java.util.stream.Stream;
  */
 public class Stage5 extends Stage<Map<String,List<String>>> {
     private static final boolean debug = false;
-    private Set<MultiStem> multiStems;
-    private int maxCpcLength;
-    private final SparseRealMatrix cooccurenceTable;
-    private Map<MultiStem,Integer> oldMultiStemToIdxMap;
-    private Map<Integer,MultiStem> idxToMultiStemMap;
-    private Collection<MultiStem> oldMultiStems;
-    private Map<Integer,AtomicLong> oldMultiStemsCountMap;
-    private AtomicInteger defaultToWIPOCounter = new AtomicInteger(0);
+    private Map<MultiStem,MultiStem> multiStemToSelfMap;
+    private Map<MultiStem,AtomicLong> multiStemToDocumentCountMap;
     private AtomicInteger notFoundCounter = new AtomicInteger(0);
     private AtomicInteger cnt = new AtomicInteger(0);
     public Stage5(Stage1 stage1, Set<MultiStem> multiStems, Model model) {
         super(model);
-        this.multiStems=multiStems;
-        this.maxCpcLength=model.getMaxCpcLength();
-        this.oldMultiStems=new HashSet<>(stage1.get().keySet());
-        AtomicInteger cnt = new AtomicInteger(0);
-        oldMultiStemToIdxMap = oldMultiStems.stream().collect(Collectors.toMap(s->s,s->cnt.getAndIncrement()));
-        this.oldMultiStemsCountMap = stage1.get().entrySet().stream().collect(Collectors.toMap(e->oldMultiStemToIdxMap.get(e.getKey()),e->e.getValue()));
-        cooccurenceTable = new OpenMapBigRealMatrix(oldMultiStems.size(),multiStems.size());
+        KeywordModelRunner.reindex(multiStems);
+        multiStemToDocumentCountMap = stage1.get();
+        multiStemToSelfMap=multiStems.stream().collect(Collectors.toMap(e->e,e->e));
+        this.sampling=-1;
     }
 
     @Override
     public Map<String, List<String>> run(boolean alwaysRerun) {
         if(alwaysRerun || !getFile().exists()) {
-            // get cooccurrence map
-            KeywordModelRunner.reindex(multiStems);
-            idxToMultiStemMap = this.multiStems.stream().collect(Collectors.toMap(s -> s.getIndex(), s -> s));
-            getCooccurrenceMap();
             // run model
             runModel();
             Database.saveObject(data, getFile());
@@ -91,212 +78,36 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
         return data;
     }
 
-    private void getCooccurrenceMap() {
-        Function<SearchHit,Item> transformer = hit-> {
-            String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
-            String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
-            // SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
-            // Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
-            // LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
-            String text = String.join(". ", Stream.of(inventionTitle, abstractText).filter(t -> t != null && t.length() > 0).collect(Collectors.toList())).replaceAll("[^a-z .,]", " ");
-
-            Collection<MultiStem> documentStems = new HashSet<>();
-
-            if(debug) System.out.println("Text: "+text);
-            String prevWord = null;
-            String prevPrevWord = null;
-            for (String word: text.split("\\s+")) {
-                word = word.replace(".","").replace(",","").trim();
-                // this is the text of the token
-
-                String lemma = word; // no lemmatizer
-                if(Constants.STOP_WORD_SET.contains(lemma)) {
-                    continue;
-                }
-
-                try {
-                    String stem = new Stemmer().stem(lemma);
-                    if (stem.length() > 3 && !Constants.STOP_WORD_SET.contains(stem)) {
-                        // this is the POS tag of the token
-                        documentStems.add(new MultiStem(new String[]{stem},-1));
-                        if(prevWord != null) {
-                            documentStems.add(new MultiStem(new String[]{prevWord,stem},-1));
-                            if (prevPrevWord != null) {
-                                documentStems.add(new MultiStem(new String[]{prevPrevWord,prevWord,stem},-1));
-                            }
-                        }
-                    } else {
-                        stem = null;
-                    }
-                    prevPrevWord = prevWord;
-                    prevWord = stem;
-
-                } catch(Exception e) {
-                    System.out.println("Error while stemming: "+lemma);
-                    prevWord = null;
-                    prevPrevWord = null;
-                }
-            }
-
-            documentStems.removeIf(stem->!oldMultiStems.contains(stem));
-
-            Collection<MultiStem> cooccurringStems = Collections.synchronizedCollection(new ArrayList<>());
-            multiStems.parallelStream().forEach(stem->{
-                if(documentStems.contains(stem)) {
-                    cooccurringStems.add(stem);
-                }
-            });
-
-            int[] documentStemIndices = documentStems.stream().map(stem->oldMultiStemToIdxMap.get(stem)).filter(i->i!=null).mapToInt(i->i).toArray();
-
-            if(debug)
-                System.out.println("Num coocurrences: "+cooccurringStems.size());
-
-            for (int idx : documentStemIndices) {
-                for(MultiStem stem : cooccurringStems) {
-                    cooccurenceTable.addToEntry(idx,stem.getIndex(),1);
-                }
-            }
-
-            return null;
-        };
-
-        KeywordModelRunner.streamElasticSearchData(transformer, sampling);
-    }
-
     private void runModel() {
-        Pair<Map<String,Integer>,RealMatrix> pair = new CPCDensityStage(multiStems,model).buildTMatrix(maxCpcLength);
-        RealMatrix T = pair._2;
-        Map<String,Integer> cpcToIndexMap = pair._1;
-        Map<String,Set<String>> patentCPCMap = new AssetToCPCMap().getPatentDataMap();
-        Map<String,Set<String>> appCPCMap = new AssetToCPCMap().getApplicationDataMap();
-
-
         data = Collections.synchronizedMap(new HashMap<>());
-        Function<SearchHit,Item> transformer = hit-> {
-            String asset = hit.getId();
+        Function<Map<String,Object>,Void> attributesFunction = map-> {
+            String asset = map.get(ASSET_ID).toString();
+            Map<MultiStem,AtomicInteger> documentStems = (Map<MultiStem,AtomicInteger>)map.get(APPEARED_WITH_COUNTS);
 
-            // handle design and plant patents
-            if(asset.startsWith("P")) {
-                data.put(asset, Arrays.asList(WIPOHelper.PLANT_TECHNOLOGY));
-                return null;
-            } else if(asset.startsWith("D")) {
-                data.put(asset, Arrays.asList(WIPOHelper.DESIGN_TECHNOLOGY));
-                return null;
-            }
+            Pair<MultiStem,Double> result = documentStems.entrySet().parallelStream().map(e->{
+                MultiStem stem = multiStemToSelfMap.get(e.getKey());
+                if(stem==null)return null;
+                double df = multiStemToDocumentCountMap.getOrDefault(e.getKey(),new AtomicLong(0)).get();
+                double tf = documentStems.getOrDefault(e.getKey(),new AtomicInteger(0)).get();
+                double score = tf / Math.log(Math.E+df);
+                return new Pair<>(stem,score);
+            }).filter(s->s!=null).reduce((p1,p2)->{
+                if(p1._2>p2._2) return p1;
+                else return p2;
+            }).orElse(null);
 
-            String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
-            String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
-            SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
-            Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
-            LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
-            String text = String.join(". ", Stream.of(inventionTitle, abstractText).filter(t -> t != null && t.length() > 0).collect(Collectors.toList())).replaceAll("[^a-z .,]", " ");
-
-            Collection<MultiStem> documentStems = new HashSet<>();
-
-            if(debug) System.out.println("Text: "+text);
-            String prevWord = null;
-            String prevPrevWord = null;
-            for (String word: text.split("\\s+")) {
-                word = word.replace(".","").replace(",","").trim();
-                // this is the text of the token
-
-                String lemma = word; // no lemmatizer
-                if(Constants.STOP_WORD_SET.contains(lemma)) {
-                    continue;
-                }
-
-                try {
-                    String stem = new Stemmer().stem(lemma);
-                    if (stem.length() > 3 && !Constants.STOP_WORD_SET.contains(stem)) {
-                        // this is the POS tag of the token
-                        documentStems.add(new MultiStem(new String[]{stem},-1));
-                        if(prevWord != null) {
-                            documentStems.add(new MultiStem(new String[]{prevWord,stem},-1));
-                            if (prevPrevWord != null) {
-                                documentStems.add(new MultiStem(new String[]{prevPrevWord,prevWord,stem},-1));
-                            }
-                        }
-                    } else {
-                        stem = null;
-                    }
-                    prevPrevWord = prevWord;
-                    prevWord = stem;
-
-                } catch(Exception e) {
-                    System.out.println("Error while stemming: "+lemma);
-                    prevWord = null;
-                    prevPrevWord = null;
-                }
-            }
-
-            int[] documentStemIndices = documentStems.stream().map(stem->oldMultiStemToIdxMap.get(stem)).filter(i->i!=null).mapToInt(i->i).toArray();
-
-            double[] stemRow = IntStream.of(documentStemIndices).mapToObj(i->{
-                double idf = (1+Math.log(Math.E+oldMultiStemsCountMap.get(i).get())); // inverse document frequency
-                return cooccurenceTable.getRowVector(i).mapDivide(idf);
-            }).reduce((t1,t2)->{
-                return t1.add(t2);
-            }).orElse(new ArrayRealVector(new double[]{})).toArray();
-
-            int[] cpcIndices = appCPCMap.getOrDefault(asset,patentCPCMap.getOrDefault(asset,Collections.emptySet())).stream()
-                    .map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct()
-                    .map(cpc->cpcToIndexMap.get(cpc)).filter(idx->idx!=null).mapToInt(i->i).toArray();
-
-            double[] cpcRow = IntStream.of(cpcIndices).mapToObj(i->{
-                synchronized (T) {
-                    return T.getColumnVector(i);
-                }
-            }).reduce((t1,t2)->{
-                return t1.add(t2);
-            }).orElse(new ArrayRealVector(new double[]{})).toArray();
-
-            double[] row;
-            if(stemRow.length>0||cpcRow.length>0) {
-                row = new double[cooccurenceTable.getColumnDimension()];
-                Arrays.fill(row,1d);
-                for (int i = 0; i < row.length; i++) {
-                    if (stemRow.length>0) {
-                        row[i]*=(1d+Math.log(1d+stemRow[i]));
-                    }
-                    if (cpcRow.length>0) {
-                        row[i]*=(1d+cpcRow[i]);
-                    }
-                }
-            } else row = null;
-
-            AtomicBoolean foundTechnology = new AtomicBoolean(false);
             List<String> technologies = null;
-            if(row!=null) {
-                double max = DoubleStream.of(row).max().getAsDouble();
-                if(max>1d) {
-                    if (debug) System.out.println("Max: " + max);
-                    technologies = IntStream.range(0, row.length).filter(i -> row[i] >= max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().limit(3).collect(Collectors.toList());
-                    if (technologies.size() > 0) {
-                        foundTechnology.set(true);
-                        data.put(asset, technologies);
-                        if (debug)
-                            System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
-                    } else {
-                        throw new RuntimeException("Technologies should never be empty...");
-                    }
-                }
+            if(result!=null) {
+                technologies = Arrays.asList(result._1.getBestPhrase());
+                data.put(asset,technologies);
+                if (debug)
+                    System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
             }
 
-            if(!foundTechnology.get()) {
-                // default to wipo
-                Object wipoTechnology = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.WIPO_TECHNOLOGY));
-                if(wipoTechnology!=null) {
-                    data.put(asset, Arrays.asList(wipoTechnology.toString()));
-                    defaultToWIPOCounter.getAndIncrement();
-                    if(defaultToWIPOCounter.get()%10000==9999) {
-                        System.out.println("Defaulted to wipo cnt: "+defaultToWIPOCounter.get());
-                    }
-                } else {
-                    notFoundCounter.getAndIncrement();
-                    if(notFoundCounter.get()%10000==9999) {
-                        System.out.println("Missing technologies for: "+notFoundCounter.get());
-                    }
+            if(technologies==null) {
+                notFoundCounter.getAndIncrement();
+                if(notFoundCounter.get()%10000==9999) {
+                    System.out.println("Missing technologies for: "+notFoundCounter.get());
                 }
             } else {
                 if(technologies!=null&&cnt.getAndIncrement()%10000==9999) {
@@ -306,6 +117,6 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(transformer, -1);
+        runSamplingIterator(attributesFunction);
     }
 }

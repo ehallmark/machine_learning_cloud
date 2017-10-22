@@ -42,6 +42,7 @@ public abstract class Stage<V> {
     static double scoreThreshold = 200f;
     static double minEdgeScore = 50f;
     protected static final String APPEARED = "APPEARED";
+    protected static final String APPEARED_WITH_COUNTS = "APPEARED_WITH_COUNTS";
     protected static final String ASSET_ID = "ID";
     protected static final String DATE = "DATE";
 
@@ -75,8 +76,10 @@ public abstract class Stage<V> {
 
     public abstract V run(boolean run);
 
-    protected void checkStem(String[] stems, String label, Set<MultiStem> appeared) {
-        appeared.add(new MultiStem(stems,-1));
+    protected void checkStem(String[] stems, String label, Map<MultiStem,AtomicInteger> appeared) {
+        MultiStem stem = new MultiStem(stems,-1);
+        appeared.putIfAbsent(stem,new AtomicInteger(0));
+        appeared.get(stem).getAndIncrement();
     }
 
     public void createVisualization() {
@@ -171,7 +174,7 @@ public abstract class Stage<V> {
             pipeline.annotate(doc, d -> {
                 if(debug) System.out.println("Text: "+text);
                 List<CoreMap> sentences = d.get(CoreAnnotations.SentencesAnnotation.class);
-                Set<MultiStem> appeared = new HashSet<>();
+                Map<MultiStem,AtomicInteger> appeared = new HashMap<>();
                 for(CoreMap sentence: sentences) {
                     // traversing the words in the current sentence
                     // a CoreLabel is a CoreMap with additional token-specific methods
@@ -230,7 +233,8 @@ public abstract class Stage<V> {
                     }
                 }
                 Map<String,Object> attributes = new HashMap<>();
-                attributes.put(APPEARED,appeared);
+                attributes.put(APPEARED,new HashSet<>(appeared.keySet()));
+                attributes.put(APPEARED_WITH_COUNTS,appeared);
                 attributes.put(DATE,date);
                 attributes.put(ASSET_ID,asset);
                 attributesFunction.apply(attributes);

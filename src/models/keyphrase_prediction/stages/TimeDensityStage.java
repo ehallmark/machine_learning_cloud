@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
  */
 public class TimeDensityStage extends Stage<Set<MultiStem>> {
     private static final boolean debug = false;
-    private double lowerBound = 0.4;
-    private double upperBound = 0.95;
+    private double lowerBound = 0.5;
+    private double upperBound = 1;
     private double minValue = Double.MIN_VALUE;
     public TimeDensityStage(Set<MultiStem> keywords, Model model) {
         super(model);
