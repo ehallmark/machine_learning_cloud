@@ -9,7 +9,7 @@ public class TimeDensityModel implements Model {
     @Getter
     final long Kw = 10000;
     @Getter
-    final int k1 = 20;
+    final int k1 = 10;
     @Getter
     final int k2 = 10;
     @Getter

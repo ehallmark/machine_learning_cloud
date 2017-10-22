@@ -97,9 +97,9 @@ public class KeywordModelRunner {
         // stage 5
         System.out.println("Starting stage 5...");
         Stage5 stage5 = new Stage5(stage1, multiStems, model);
-        stage5.run(alwaysRerun);
+        stage5.run(true);
         try {
-            stage5.createVisualization();
+            //stage5.createVisualization();
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Error on visualization...");

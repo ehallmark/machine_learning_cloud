@@ -45,6 +45,7 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
     private Map<Integer,AtomicLong> oldMultiStemsCountMap;
     private AtomicInteger defaultToWIPOCounter = new AtomicInteger(0);
     private AtomicInteger notFoundCounter = new AtomicInteger(0);
+    private AtomicInteger cnt = new AtomicInteger(0);
     public Stage5(Stage1 stage1, Set<MultiStem> multiStems, Model model) {
         super(model);
         this.multiStems=multiStems;
@@ -265,11 +266,12 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
             } else row = null;
 
             AtomicBoolean foundTechnology = new AtomicBoolean(false);
+            List<String> technologies = null;
             if(row!=null) {
                 double max = DoubleStream.of(row).max().getAsDouble();
                 if(max>1d) {
                     if (debug) System.out.println("Max: " + max);
-                    List<String> technologies = IntStream.range(0, row.length).filter(i -> row[i] >= max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().limit(3).collect(Collectors.toList());
+                    technologies = IntStream.range(0, row.length).filter(i -> row[i] >= max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().limit(3).collect(Collectors.toList());
                     if (technologies.size() > 0) {
                         foundTechnology.set(true);
                         data.put(asset, technologies);
@@ -295,6 +297,10 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
                     if(notFoundCounter.get()%10000==9999) {
                         System.out.println("Missing technologies for: "+notFoundCounter.get());
                     }
+                }
+            } else {
+                if(technologies!=null&&cnt.getAndIncrement()%10000==9999) {
+                    System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
                 }
             }
             return null;
