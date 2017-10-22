@@ -21,20 +21,7 @@ public class TimeDensityModel implements Model {
     final int maxTokenFrequency = Math.round(getSampling() * 0.3f);
 
     @Getter
-    final int windowSize = 4;
-    @Getter
     final int maxCpcLength = 8;
-
-    @Getter
-    boolean runStage1 = false;
-    @Getter
-    boolean runStage2 = false;
-    @Getter
-    boolean runStage3 = true;
-    @Getter
-    boolean runStage4 = true;
-    @Getter
-    boolean runStage5 = true;
 
     @Override
     public String getModelName() {
@@ -59,7 +46,4 @@ public class TimeDensityModel implements Model {
     double stage2Upper = 0.95;
     @Getter
     double stage2Lower = 0.05;
-    @Getter
-    double stage2Min = 0d;
-
 }
