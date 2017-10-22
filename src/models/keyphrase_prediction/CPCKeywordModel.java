@@ -68,37 +68,37 @@ public class CPCKeywordModel {
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
-        cpcToRawTitleMap.entrySet().parallelStream().forEach(e->{
+        cpcToRawTitleMap.entrySet().parallelStream().forEach(e-> {
             Annotation doc = new Annotation(e.getValue().toUpperCase());
             pipeline.annotate(doc, d -> {
                 List<CoreMap> sentences = d.get(CoreAnnotations.SentencesAnnotation.class);
                 Set<MultiStem> appeared = new HashSet<>();
-                for(CoreMap sentence: sentences) {
+                for (CoreMap sentence : sentences) {
                     // traversing the words in the current sentence
                     // a CoreLabel is a CoreMap with additional token-specific methods
                     String prevStem = null;
                     String prevPrevStem = null;
                     String prevWord = null;
                     String prevPrevWord = null;
-                    for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+                    for (CoreLabel token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
                         // this is the text of the token
                         String word = token.get(CoreAnnotations.TextAnnotation.class);
                         boolean valid = true;
-                        for(int i = 0; i < word.length(); i++) {
-                            if(!Character.isAlphabetic(word.charAt(i))) {
+                        for (int i = 0; i < word.length(); i++) {
+                            if (!Character.isAlphabetic(word.charAt(i))) {
                                 valid = false;
                             }
                         }
-                        if(!valid) continue;
+                        if (!valid) continue;
 
                         // could be the stem
                         String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
 
-                        if(Constants.STOP_WORD_SET.contains(lemma)||Constants.STOP_WORD_SET.contains(word)) {
-                            prevPrevStem=null;
-                            prevStem=null;
-                            prevWord=null;
-                            prevPrevWord=null;
+                        if (Constants.STOP_WORD_SET.contains(lemma) || Constants.STOP_WORD_SET.contains(word)) {
+                            prevPrevStem = null;
+                            prevStem = null;
+                            prevWord = null;
+                            prevPrevWord = null;
                             continue;
                         }
 
@@ -109,8 +109,8 @@ public class CPCKeywordModel {
                                 String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
                                 if (Stage.validPOS.contains(pos)) {
                                     // don't want to end in adjectives (nor past tense verb)
-                                    if (!Stage.adjectivesPOS.contains(pos) && !pos.equals("VBD") && !((!pos.startsWith("N"))&&(word.endsWith("ing")||word.endsWith("ed")))) {
-                                        appeared.add(new MultiStem(new String[]{stem},-1);
+                                    if (!Stage.adjectivesPOS.contains(pos) && !pos.equals("VBD") && !((!pos.startsWith("N")) && (word.endsWith("ing") || word.endsWith("ed")))) {
+                                        appeared.add(new MultiStem(new String[]{stem}, -1));
                                         if (prevStem != null) {
                                             appeared.add(new MultiStem(new String[]{prevStem, stem}, -1));
                                             if (prevPrevStem != null) {
@@ -129,21 +129,20 @@ public class CPCKeywordModel {
                             prevPrevWord = prevWord;
                             prevWord = word;
 
-                        } catch(Exception e2) {
-                            System.out.println("Error while stemming: "+lemma);
+                        } catch (Exception e2) {
+                            System.out.println("Error while stemming: " + lemma);
                             prevStem = null;
                             prevPrevStem = null;
-                            prevWord=null;
-                            prevPrevWord=null;
+                            prevWord = null;
+                            prevPrevWord = null;
                         }
                     }
                 }
 
 
             });
+        });
 
-            return null;
-        };
 
         RadixTree<Collection<MultiStem>> titlesTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
         cpcToTitleMap.entrySet().parallelStream().forEach(e->{
