@@ -18,15 +18,11 @@ import java.util.stream.Collectors;
 public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
 
     private static final boolean debug = false;
-    private double lowerBound;
-    private double upperBound;
     private int minDocFrequency;
     private  Map<String,Map<String,AtomicInteger>> phraseCountMap;
     public Stage1(Model model) {
         super(model);
         phraseCountMap = Collections.synchronizedMap(new HashMap<>());
-        this.lowerBound=model.getStage1Lower();
-        this.upperBound=model.getStage1Upper();
         this.minDocFrequency=model.getMinDocFrequency();
     }
 
@@ -47,11 +43,8 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
     }
 
     private Map<MultiStem,AtomicLong> truncateBetweenLengths() {
-        long skip = (long)((1d-upperBound)*data.size());
         return data.entrySet().parallelStream()
-                .sorted((e1,e2)->Long.compare(e2.getValue().get(),e1.getValue().get()))
-                .skip(skip)
-                .limit((long)((1d-lowerBound)*data.size())-skip)
+                .filter(e->e.getValue().get()>=minDocFrequency)
                 .collect(Collectors.toMap(e->e.getKey(), e->e.getValue()));
     }
 
