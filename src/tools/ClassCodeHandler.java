@@ -6,28 +6,7 @@ package tools;
  */
 public class ClassCodeHandler {
     public static String convertToLabelFormat(String code) {
-        if(code==null)return null;
-        code=code.toUpperCase().trim();
-        while(code.contains(" ")) code.replaceAll(" ","");
-        int len = code.length();
-
-        if(len<7||!code.contains("/")||code.indexOf("/")<5||code.endsWith("/")||!(code.indexOf("/")==code.lastIndexOf("/"))) {
-            return code.replaceAll("/","");
-        }
-
-        String mainGroup = code.substring(4,code.indexOf("/"));
-        String lPad = "";
-        for(int i = 0; i < 4 - mainGroup.length(); i++) {
-            lPad+=" ";
-        }
-        String subGroup = code.substring(code.indexOf("/")+1,code.length());
-        String rPad = "";
-        for(int i = 0; i < 6 - subGroup.length(); i++) {
-            rPad+=" ";
-        }
-        String formattedCode = code.substring(0,4)+ lPad + mainGroup + subGroup + rPad;
-        if(formattedCode.length()!=14) throw new RuntimeException("Error converting class code: "+code);
-        return formattedCode;
+        return code.replace("/","").replace(" ","");
     }
 
     public static String convertToHumanFormat(String code) {
@@ -36,8 +15,5 @@ public class ClassCodeHandler {
         if(code.length()<14) return code;
         return code.substring(0,4).trim()+" "+code.substring(4,8).trim() + "/" + code.substring(8,14).trim();
     }
-
-    public static boolean isClassCode(String code) {
-        return code.length()==14&&code.replaceAll("[^0-9]","").length()>0;
-    }
+    
 }

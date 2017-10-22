@@ -46,7 +46,7 @@ public class CPCKeywordModel {
 
     public static void runModel() {
         int cpcLength = 7;
-        List<String> CPCs = new ArrayList<>(Database.getClassCodes().parallelStream().map(c->c.length()>cpcLength?c.substring(0,cpcLength):c).distinct().collect(Collectors.toList()));
+        List<String> CPCs = new ArrayList<>(Database.getClassCodes().parallelStream().map(c->c.length()>cpcLength?c.substring(0,cpcLength).trim():c).distinct().collect(Collectors.toList()));
         Map<String,String> cpcToTitleMap = Database.getClassCodeToClassTitleMap();
         RadixTree<String> titlesTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
         cpcToTitleMap.entrySet().parallelStream().forEach(e->{
