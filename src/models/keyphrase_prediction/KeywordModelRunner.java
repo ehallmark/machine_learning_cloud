@@ -91,14 +91,19 @@ public class KeywordModelRunner {
         System.out.println("Pre-grouping data for cpc density stage...");
         CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model);
         CPCDensityStage.run(alwaysRerun);
-        CPCDensityStage.createVisualization();
+       // CPCDensityStage.createVisualization();
         multiStems = CPCDensityStage.get();
 
         // stage 5
         System.out.println("Starting stage 5...");
         Stage5 stage5 = new Stage5(stage1, multiStems, model);
         stage5.run(alwaysRerun);
-
+        try {
+            stage5.createVisualization();
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Error on visualization...");
+        }
 
         saveModelMap(model,stage5.get());
         System.out.println("Num assets classified: "+stage5.get().size());
