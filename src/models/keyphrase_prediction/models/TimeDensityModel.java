@@ -7,9 +7,9 @@ import lombok.Getter;
  */
 public class TimeDensityModel implements Model {
     @Getter
-    final long Kw = 50000;
+    final long Kw = 10000;
     @Getter
-    final int k1 = 20;
+    final int k1 = 25;
     @Getter
     final int k2 = 10;
     @Getter
@@ -43,7 +43,7 @@ public class TimeDensityModel implements Model {
     double stage2Lower = 0.05;
 
     @Getter
-    double stage1Upper = 0.95;
+    double stage1Upper = 0.80;
     @Getter
     double stage1Lower = 0.2;
 }
