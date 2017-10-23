@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
@@ -41,10 +42,11 @@ public abstract class Stage<V> {
     public static final Collection<String> adjectivesPOS = Arrays.asList("JJ","JJR","JJS");
     static double scoreThreshold = 200f;
     static double minEdgeScore = 50f;
-    protected static final String APPEARED = "APPEARED";
-    protected static final String APPEARED_WITH_COUNTS = "APPEARED_WITH_COUNTS";
-    protected static final String ASSET_ID = "ID";
-    protected static final String DATE = "DATE";
+    public static final String APPEARED = "APPEARED";
+    public static final String APPEARED_WITH_COUNTS = "APPEARED_WITH_COUNTS";
+    public static final String ASSET_ID = "ID";
+    public static final String DATE = "DATE";
+    public static final String TEXT = "TEXT";
 
     private static final boolean debug = false;
     private static final File baseDir = new File(Constants.DATA_FOLDER+"technologyPredictionStages/");
@@ -156,12 +158,123 @@ public abstract class Stage<V> {
         return node;
     }
 
-    protected void runSamplingIterator(Function<Map<String,Object>,Void> attributesFunction) {
+
+    protected void runSamplingIterator(Function<?,Item> transformer, Function<Function,Void> transformerRunner, Function<Map<String,Object>,Consumer<Annotation>> annotatorFunction, Function<Map<String,Object>,Void> attributesFunction) {
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
-        Function<SearchHit,Item> transformer = hit-> {
+        Function<Map<String,Object>,Void> preDataFunction = data -> {
+            String text = data.get(TEXT).toString();
+            Annotation doc = new Annotation(text);
+            pipeline.annotate(doc, annotatorFunction.apply(data));
+            attributesFunction.apply(data);
+            return null;
+        };
+
+        transformer = transformer.andThen(item->{
+            preDataFunction.apply(item.getDataMap());
+            return null;
+        });
+        transformerRunner.apply(transformer);
+    }
+
+    public void runSamplingIterator(Function<?,Item> transformer, Function<Function,Void> transformerRunner, Function<Map<String,Object>,Void> attributesFunction) {
+        runSamplingIterator(transformer,transformerRunner,getDefaultAnnotator(),attributesFunction);
+    }
+
+    protected Function<Map<String,Object>,Consumer<Annotation>> getDefaultAnnotator() {
+        return dataMap -> d -> {
+            List<CoreMap> sentences = d.get(CoreAnnotations.SentencesAnnotation.class);
+            Map<MultiStem,AtomicInteger> appeared = new HashMap<>();
+            for(CoreMap sentence: sentences) {
+                // traversing the words in the current sentence
+                // a CoreLabel is a CoreMap with additional token-specific methods
+                String prevStem = null;
+                String prevPrevStem = null;
+                String prevWord = null;
+                String prevPrevWord = null;
+                String prevPos = null;
+                String prevPrevPos = null;
+                for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+                    // this is the text of the token
+                    String word = token.get(CoreAnnotations.TextAnnotation.class);
+                    boolean valid = true;
+                    for(int i = 0; i < word.length(); i++) {
+                        if(!Character.isAlphabetic(word.charAt(i))) {
+                            valid = false;
+                        }
+                    }
+                    if(!valid) continue;
+
+                    // could be the stem
+                    String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
+
+                    if(Constants.STOP_WORD_SET.contains(lemma)||Constants.STOP_WORD_SET.contains(word)) {
+                        prevPrevStem=null;
+                        prevStem=null;
+                        prevWord=null;
+                        prevPrevWord=null;
+                        prevPos=null;
+                        prevPrevPos=null;
+                        continue;
+                    }
+
+                    try {
+                        String stem = new Stemmer().stem(lemma);
+                        String pos = null;
+                        if (stem.length() > 3 && !Constants.STOP_WORD_SET.contains(stem)) {
+                            // this is the POS tag of the token
+                            pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
+                            if (validPOS.contains(pos)) {
+                                // don't want to end in adjectives (nor past tense verb)
+                                if (!adjectivesPOS.contains(pos) && !pos.equals("VBD") && !((!pos.startsWith("N"))&&(word.endsWith("ing")||word.endsWith("ed")))) {
+                                    checkStem(new String[]{stem}, word, appeared);
+                                    if (prevStem != null && !prevStem.equals(stem)) {
+                                        long numNouns = Stream.of(pos,prevPos).filter(p->p!=null&&p.startsWith("N")).count();
+                                        if(numNouns<=1) {
+                                            checkStem(new String[]{prevStem, stem}, String.join(" ", prevWord, word), appeared);
+                                            if (prevPrevStem != null && !prevStem.equals(prevPrevStem) && !prevPrevStem.equals(stem)) {
+                                                // maximum 1 noun
+                                                numNouns = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("N")).count();
+                                                if (numNouns <= 1) {
+                                                    checkStem(new String[]{prevPrevStem, prevStem, stem}, String.join(" ", prevPrevWord, prevWord, word), appeared);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                stem = null;
+                            }
+                        } else {
+                            stem = null;
+                        }
+                        prevPrevStem = prevStem;
+                        prevStem = stem;
+                        prevPrevWord = prevWord;
+                        prevWord = word;
+                        prevPrevPos=prevPos;
+                        prevPos=pos;
+
+                    } catch(Exception e) {
+                        System.out.println("Error while stemming: "+lemma);
+                        prevStem = null;
+                        prevPrevStem = null;
+                        prevWord=null;
+                        prevPrevWord=null;
+                        prevPos=null;
+                        prevPrevPos=null;
+                    }
+                }
+            }
+            dataMap.put(APPEARED,new HashSet<>(appeared.keySet()));
+            dataMap.put(APPEARED_WITH_COUNTS,appeared);
+        };
+    }
+
+    protected void runSamplingIterator(Function<Map<String,Object>,Void> attributesFunction) {
+        Function<SearchHit,Item> transformer = hit -> {
             String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
             String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
@@ -170,87 +283,18 @@ public abstract class Stage<V> {
             LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
             String text = String.join(". ", Stream.of(inventionTitle,abstractText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList())).replaceAll("[^a-z .,]"," ");
 
-            Annotation doc = new Annotation(text);
-            pipeline.annotate(doc, d -> {
-                if(debug) System.out.println("Text: "+text);
-                List<CoreMap> sentences = d.get(CoreAnnotations.SentencesAnnotation.class);
-                Map<MultiStem,AtomicInteger> appeared = new HashMap<>();
-                for(CoreMap sentence: sentences) {
-                    // traversing the words in the current sentence
-                    // a CoreLabel is a CoreMap with additional token-specific methods
-                    String prevStem = null;
-                    String prevPrevStem = null;
-                    String prevWord = null;
-                    String prevPrevWord = null;
-                    for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-                        // this is the text of the token
-                        String word = token.get(CoreAnnotations.TextAnnotation.class);
-                        boolean valid = true;
-                        for(int i = 0; i < word.length(); i++) {
-                            if(!Character.isAlphabetic(word.charAt(i))) {
-                                valid = false;
-                            }
-                        }
-                        if(!valid) continue;
+            Item item = new Item(asset);
+            item.addData(TEXT,text);
+            item.addData(DATE,date);
+            item.addData(ASSET_ID,asset);
+            return item;
+        };
 
-                        // could be the stem
-                        String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
-
-                        if(Constants.STOP_WORD_SET.contains(lemma)||Constants.STOP_WORD_SET.contains(word)) {
-                            prevPrevStem=null;
-                            prevStem=null;
-                            prevWord=null;
-                            prevPrevWord=null;
-                            continue;
-                        }
-
-                        try {
-                            String stem = new Stemmer().stem(lemma);
-                            if (stem.length() > 3 && !Constants.STOP_WORD_SET.contains(stem)) {
-                                // this is the POS tag of the token
-                                String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
-                                if (validPOS.contains(pos)) {
-                                    // don't want to end in adjectives (nor past tense verb)
-                                    if (!adjectivesPOS.contains(pos) && !pos.equals("VBD") && !((!pos.startsWith("N"))&&(word.endsWith("ing")||word.endsWith("ed")))) {
-                                        checkStem(new String[]{stem}, word, appeared);
-                                        if (prevStem != null) {
-                                            checkStem(new String[]{prevStem, stem}, String.join(" ", prevWord, word), appeared);
-                                            if (prevPrevStem != null) {
-                                                checkStem(new String[]{prevPrevStem, prevStem, stem}, String.join(" ", prevPrevWord, prevWord, word), appeared);
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    stem = null;
-                                }
-                            } else {
-                                stem = null;
-                            }
-                            prevPrevStem = prevStem;
-                            prevStem = stem;
-                            prevPrevWord = prevWord;
-                            prevWord = word;
-
-                        } catch(Exception e) {
-                            System.out.println("Error while stemming: "+lemma);
-                            prevStem = null;
-                            prevPrevStem = null;
-                            prevWord=null;
-                            prevPrevWord=null;
-                        }
-                    }
-                }
-                Map<String,Object> attributes = new HashMap<>();
-                attributes.put(APPEARED,new HashSet<>(appeared.keySet()));
-                attributes.put(APPEARED_WITH_COUNTS,appeared);
-                attributes.put(DATE,date);
-                attributes.put(ASSET_ID,asset);
-                attributesFunction.apply(attributes);
-
-            });
-
+        Function<Function,Void> transformerRunner = v -> {
+            KeywordModelRunner.streamElasticSearchData(v,sampling);
             return null;
         };
-        KeywordModelRunner.streamElasticSearchData(transformer,sampling);
+
+        runSamplingIterator(transformer,transformerRunner,attributesFunction);
     }
 }

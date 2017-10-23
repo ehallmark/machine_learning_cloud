@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -59,126 +60,104 @@ public class CPCKeywordModel {
     }
 
     public static void runModel() {
-        int cpcLength = 8;
+        int cpcLength = 15;
         List<String> CPCs = Database.getClassCodes().parallelStream().map(c->ClassCodeHandler.convertToLabelFormat(c)).map(c->c.length()>cpcLength?c.substring(0,cpcLength).trim():c).distinct().collect(Collectors.toList());
         Map<String,String> cpcToRawTitleMap = Database.getClassCodeToClassTitleMap();
         Map<String,Collection<MultiStem>> cpcToTitleMap = new HashMap<>();
+        Stage1 stage1 = new Stage1(new TimeDensityModel(),1);
 
-        Properties props = new Properties();
-        props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+        Function<Map.Entry<String,String>,Item> transformer = hit -> {
+            String text = hit.getValue().toLowerCase();
+            Item item = new Item(hit.getKey());
+            item.addData(Stage.ASSET_ID,hit.getKey());
+            item.addData(Stage.TEXT,text);
+            return item;
+        };
 
-        cpcToRawTitleMap.entrySet().parallelStream().forEach(e-> {
-            Annotation doc = new Annotation(e.getValue().toUpperCase());
-            pipeline.annotate(doc, d -> {
-                List<CoreMap> sentences = d.get(CoreAnnotations.SentencesAnnotation.class);
-                Set<MultiStem> appeared = new HashSet<>();
-                for (CoreMap sentence : sentences) {
-                    // traversing the words in the current sentence
-                    // a CoreLabel is a CoreMap with additional token-specific methods
-                    String prevStem = null;
-                    String prevPrevStem = null;
-                    String prevWord = null;
-                    String prevPrevWord = null;
-                    for (CoreLabel token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-                        // this is the text of the token
-                        String word = token.get(CoreAnnotations.TextAnnotation.class);
-                        boolean valid = true;
-                        for (int i = 0; i < word.length(); i++) {
-                            if (!Character.isAlphabetic(word.charAt(i))) {
-                                valid = false;
-                            }
-                        }
-                        if (!valid) continue;
-
-                        // could be the stem
-                        String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
-
-                        if (Constants.STOP_WORD_SET.contains(lemma) || Constants.STOP_WORD_SET.contains(word)) {
-                            prevPrevStem = null;
-                            prevStem = null;
-                            prevWord = null;
-                            prevPrevWord = null;
-                            continue;
-                        }
-
-                        try {
-                            String stem = new Stemmer().stem(lemma);
-                            if (stem.length() > 3 && !Constants.STOP_WORD_SET.contains(stem)) {
-                                // this is the POS tag of the token
-                                String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
-                                if (Stage.validPOS.contains(pos)) {
-                                    // don't want to end in adjectives (nor past tense verb)
-                                    if (!Stage.adjectivesPOS.contains(pos) && !pos.equals("VBD") && !((!pos.startsWith("N")) && (word.endsWith("ing") || word.endsWith("ed")))) {
-                                        appeared.add(new MultiStem(new String[]{stem}, -1));
-                                        if (prevStem != null) {
-                                            appeared.add(new MultiStem(new String[]{prevStem, stem}, -1));
-                                            if (prevPrevStem != null) {
-                                                appeared.add(new MultiStem(new String[]{prevPrevStem, prevStem, stem}, -1));
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    stem = null;
-                                }
-                            } else {
-                                stem = null;
-                            }
-                            prevPrevStem = prevStem;
-                            prevStem = stem;
-                            prevPrevWord = prevWord;
-                            prevWord = word;
-
-                        } catch (Exception e2) {
-                            System.out.println("Error while stemming: " + lemma);
-                            prevStem = null;
-                            prevPrevStem = null;
-                            prevWord = null;
-                            prevPrevWord = null;
-                        }
-                    }
-                }
-
-
+        Function<Function,Void> transformerRunner = v -> {
+            new HashMap<>(cpcToRawTitleMap).entrySet().parallelStream().forEach(e->{
+                v.apply(e);
             });
+            return null;
+        };
+
+        Function<Function<Map<String,Object>,Void>,Void> function = attrFunction -> {
+            stage1.runSamplingIterator(transformer, transformerRunner, attrFunction);
+            return null;
+        };
+
+        stage1.buildVocabularyCounts(function,attributes->{
+            cpcToTitleMap.put((String)attributes.get(Stage.ASSET_ID),(Collection<MultiStem>)attributes.get(Stage.APPEARED));
+            return null;
         });
 
+        Map<MultiStem,MultiStem> selfMap = stage1.get().keySet().parallelStream().collect(Collectors.toMap(e->e,e->e));
 
-        RadixTree<Collection<MultiStem>> titlesTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+        System.out.println("Finished vocabulary counts...");
+
+        Map<MultiStem,AtomicLong> wordToDocCounter = stage1.get();
+        System.out.println("Vocab size: "+wordToDocCounter.size());
+
+        Map<String,Collection<MultiStem>> cpcToFullTitleMap = new HashMap<>();
+        RadixTree<Collection<MultiStem>> prefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
         cpcToTitleMap.entrySet().parallelStream().forEach(e->{
-            titlesTrie.put(e.getKey(),e.getValue());
+            prefixTrie.put(ClassCodeHandler.convertToLabelFormat(e.getKey()),e.getValue());
         });
 
-        AtomicInteger missing = new AtomicInteger(0);
-        CPCs.forEach(cpc->{
-            if(!titlesTrie.getKeysStartingWith(ClassCodeHandler.convertToLabelFormat(cpc)).iterator().hasNext()) {
-                missing.getAndIncrement();
-            }
-        });
-        System.out.println("Missing: "+missing.get());
-        List<MultiStem> allWords = cpcToTitleMap.values().parallelStream().flatMap(t-> t.stream()).distinct().collect(Collectors.toList());
-        KeywordModelRunner.reindex(allWords);
-
-        Map<String,Integer> cpcToIdx = IntStream.range(0,CPCs.size()).mapToObj(i->new Pair<>(CPCs.get(i),i)).collect(Collectors.toMap(p->p._1, p->p._2));
-        Map<MultiStem,Integer> wordToIdx = allWords.parallelStream().map(w->new Pair<>(w,w.getIndex())).collect(Collectors.toMap(p->p._1, p->p._2));
-
-        OpenMapBigRealMatrix matrix = new OpenMapBigRealMatrix(allWords.size(),CPCs.size());
-        CPCs.forEach(cpc->{
-           int cpcIdx = cpcToIdx.get(cpc);
-           titlesTrie.getValuesForKeysStartingWith(cpc).forEach(title->{
-               for(MultiStem word : title) {
-                   matrix.addToEntry(word.getIndex(), cpcIdx, 1d);
+        final int buffer = 2;
+        CPCs.parallelStream().forEach(cpc->{
+           Collection<MultiStem> texts = new HashSet<>();
+           for(int i = cpc.length()-buffer; i < cpc.length(); i++) {
+               Collection<MultiStem> stems = prefixTrie.getValueForExactKey(cpc.substring(0,i));
+               if(stems!=null) {
+                   texts.addAll(stems);
+               }
+           }
+           prefixTrie.getKeyValuePairsForKeysStartingWith(cpc).forEach(pair->{
+               if(pair.getKey().length() <= cpc.length()+buffer) {
+                   texts.addAll(pair.getValue());
                }
            });
+
+           if(texts.size()>0) {
+               cpcToFullTitleMap.put(cpc, texts);
+           }
+        });
+
+        List<MultiStem> allWords = cpcToFullTitleMap.values().parallelStream().flatMap(t-> t.stream()).distinct().collect(Collectors.toList());
+        KeywordModelRunner.reindex(allWords);
+        Map<String,Integer> cpcToIdx = IntStream.range(0,CPCs.size()).mapToObj(i->new Pair<>(CPCs.get(i),i)).collect(Collectors.toMap(p->p._1, p->p._2));
+        Map<MultiStem,Integer> wordToIdx = IntStream.range(0,allWords.size()).mapToObj(i->new Pair<>(allWords.get(i),allWords.get(i).getIndex())).collect(Collectors.toMap(p->p._1, p->p._2));
+        OpenMapBigRealMatrix matrix = new OpenMapBigRealMatrix(allWords.size(),CPCs.size());
+
+        cpcToFullTitleMap.entrySet().parallelStream().forEach(e-> {
+            if (e.getValue().isEmpty()) return;
+            // pick the one with best tfidf
+            e.getValue().forEach(word -> {
+                double tf = 1d;
+                double idf = Math.log(cpcToTitleMap.size() / (wordToDocCounter.getOrDefault(word, new AtomicLong(1)).get()));
+                double u = Math.log(1 + word.getStems().length);
+                word.setScore((float) (u * tf * idf));
+            });
+            Set<MultiStem> temp = new HashSet<>();
+            temp.addAll(e.getValue().stream().sorted((s1, s2) -> Float.compare(s2.getScore(), s1.getScore())).limit(5).collect(Collectors.toList()));
+            e.getValue().clear();
+            e.getValue().addAll(temp.stream().map(m -> selfMap.get(m)).collect(Collectors.toList()));
+            if (e.getValue().size() > 0) {
+                int cpcIdx = cpcToIdx.get(e.getKey());
+                System.out.println("CPC " + e.getKey() + ": " + String.join("; ", e.getValue().stream().map(m -> m.getBestPhrase()).collect(Collectors.toList())));
+                e.getValue().forEach(word->{
+                    matrix.addToEntry(wordToIdx.get(word),cpcIdx,1d);
+                });
+            }
         });
 
         System.out.println("Stems before: "+allWords.size());
-        Map<MultiStem,Double> stemMap = new TechnologyScorer().scoreKeywords(allWords,matrix);
-        System.out.println("Found: "+stemMap.size());
-
-        stemMap.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(30).forEach(word->{
-            System.out.println("BEST: "+word.getKey());
+        Collection<MultiStem> stemMap = Stage.applyFilters(new TechnologyScorer(), matrix, allWords, 0.5,1d,0.1);
+        stemMap.forEach(stem->{
+            System.out.println("Good stem: "+selfMap.get(stem).getBestPhrase());
         });
+        System.out.println("Stems after: "+stemMap.size());
     }
 
 }

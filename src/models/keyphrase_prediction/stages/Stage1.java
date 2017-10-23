@@ -26,6 +26,11 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
         this.minDocFrequency=model.getMinDocFrequency();
     }
 
+    public Stage1(Model model, int minDocFrequency) {
+        this(model);
+        this.minDocFrequency=minDocFrequency;
+    }
+
     @Override
     public Map<MultiStem,AtomicLong> run(boolean alwaysRerun) {
         if(alwaysRerun || !getFile().exists()) {
@@ -48,10 +53,16 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
                 .collect(Collectors.toMap(e->e.getKey(), e->e.getValue()));
     }
 
-
     private Map<MultiStem,AtomicLong> buildVocabularyCounts() {
+        return this.buildVocabularyCounts(function->{
+            runSamplingIterator(function);
+            return null;
+        },attr->null);
+    }
+
+    public Map<MultiStem, AtomicLong> buildVocabularyCounts(Function<Function<Map<String,Object>,Void>,Void> iteratorFunction, Function<Map<String,Object>,Void> andThen) {
         data = Collections.synchronizedMap(new HashMap<>());
-        Function<Map<String,Object>,Void> attributesFunction = attributes -> {
+        Function<Map<String,Object>,Map<String,Object>> attributesFunction = attributes -> {
             Collection<MultiStem> appeared = (Collection<MultiStem>)attributes.get(APPEARED);
             appeared.forEach(stem->{
                 AtomicLong docCnt = data.get(stem);
@@ -61,10 +72,10 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
                     docCnt.getAndIncrement();
                 }
             });
-            return null;
+            return attributes;
         };
 
-        runSamplingIterator(attributesFunction);
+        iteratorFunction.apply(attributesFunction.andThen(andThen));
 
         System.out.println("Starting to find best phrases for each stemmed phrase.");
         new ArrayList<>(data.keySet()).parallelStream().forEach(stem->{
