@@ -14,7 +14,9 @@ import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.models.TimeDensityModel;
 import models.keyphrase_prediction.scorers.TechnologyScorer;
+import models.keyphrase_prediction.scorers.TermhoodScorer;
 import models.keyphrase_prediction.stages.*;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
@@ -61,7 +63,7 @@ public class CPCKeywordModel {
     }
 
     public static void runModel() {
-        int cpcLength = 6;
+        int cpcLength = 8;
         List<String> CPCs = Database.getClassCodes().parallelStream().map(c->ClassCodeHandler.convertToLabelFormat(c)).map(c->c.length()>cpcLength?c.substring(0,cpcLength).trim():c).distinct().collect(Collectors.toList());
         Map<String,String> cpcToRawTitleMap = Database.getClassCodeToClassTitleMap();
         Map<String,Collection<MultiStem>> cpcToTitleMap = Collections.synchronizedMap(new HashMap<>());
@@ -111,8 +113,8 @@ public class CPCKeywordModel {
             prefixTrie.put(ClassCodeHandler.convertToLabelFormat(e.getKey()),e.getValue());
         });
 
-        final int preBuffer = cpcLength;
-        final int postBuffer = 3;
+        final int preBuffer = 4;
+        final int postBuffer = 2;
         CPCs.parallelStream().forEach(cpc->{
            Collection<MultiStem> texts = new HashSet<>();
            for(int i = cpc.length()-preBuffer; i < cpc.length(); i++) {
@@ -132,10 +134,23 @@ public class CPCKeywordModel {
            }
         });
 
-        List<MultiStem> allWords = cpcToFullTitleMap.values().parallelStream().flatMap(t-> t.stream()).distinct().collect(Collectors.toList());
+        Collection<MultiStem> allWords = cpcToFullTitleMap.values().parallelStream().flatMap(t-> t.stream()).distinct().collect(Collectors.toList());
+        KeywordModelRunner.reindex(allWords);
+        System.out.println("Starting to build M matrix...");
+        Function<Function<Map<String,Object>,Void>,Void> stage3Function = attrFunction -> {
+            stage1.runSamplingIterator(transformer, transformerRunner, attrFunction);
+            return null;
+        };
+        Stage3 stage3 = new Stage3(allWords,new TimeDensityModel());
+        System.out.println("Stems before M: "+allWords.size());
+        RealMatrix M = stage3.buildMMatrix(allWords,selfMap,stage3Function);
+        allWords = Stage.applyFilters(new TermhoodScorer(), M, allWords,0.5,1d,0.1);
+        System.out.println("Finished M matrix");
+        System.out.println("Stems after M: "+allWords.size());
+
         KeywordModelRunner.reindex(allWords);
         Map<String,Integer> cpcToIdx = IntStream.range(0,CPCs.size()).mapToObj(i->new Pair<>(CPCs.get(i),i)).collect(Collectors.toMap(p->p._1, p->p._2));
-        Map<MultiStem,Integer> wordToIdx = IntStream.range(0,allWords.size()).mapToObj(i->new Pair<>(allWords.get(i),allWords.get(i).getIndex())).collect(Collectors.toMap(p->p._1, p->p._2));
+        Map<MultiStem,Integer> wordToIdx = allWords.parallelStream().collect(Collectors.toMap(word->word,word->word.getIndex()));
         OpenMapBigRealMatrix matrix = new OpenMapBigRealMatrix(allWords.size(),CPCs.size());
 
         cpcToFullTitleMap.entrySet().parallelStream().forEach(e-> {

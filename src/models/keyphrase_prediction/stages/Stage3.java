@@ -74,6 +74,13 @@ public class Stage3 extends Stage<Set<MultiStem>> {
     }
 
     public SparseRealMatrix buildMMatrix(Collection<MultiStem> data, Map<MultiStem,MultiStem> multiStemToSelfMap) {
+        return this.buildMMatrix(data,multiStemToSelfMap,attrFunc->{
+            runSamplingIterator(attrFunc);
+            return null;
+        });
+    }
+
+    public SparseRealMatrix buildMMatrix(Collection<MultiStem> data, Map<MultiStem,MultiStem> multiStemToSelfMap, Function<Function<Map<String,Object>,Void>,Void> function) {
         SparseRealMatrix matrix = new OpenMapBigRealMatrix(data.size(),data.size());
         KeywordModelRunner.reindex(data);
 
@@ -93,7 +100,7 @@ public class Stage3 extends Stage<Set<MultiStem>> {
             return null;
         };
 
-        runSamplingIterator(attributesFunction);
+        function.apply(attributesFunction);
         return matrix;
     }
 
