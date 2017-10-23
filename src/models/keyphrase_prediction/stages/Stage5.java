@@ -40,12 +40,12 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
     private Map<MultiStem,AtomicLong> multiStemToDocumentCountMap;
     private AtomicInteger notFoundCounter = new AtomicInteger(0);
     private AtomicInteger cnt = new AtomicInteger(0);
+    private Collection<MultiStem> multiStems;
     public Stage5(Stage1 stage1, Set<MultiStem> multiStems, Model model) {
         super(model);
-        KeywordModelRunner.reindex(multiStems);
+        this.multiStems=multiStems;
         multiStemToDocumentCountMap = stage1.get();
-        multiStemToSelfMap=multiStems.stream().collect(Collectors.toMap(e->e,e->e));
-        this.sampling=-1;
+        multiStemToSelfMap=multiStemToDocumentCountMap.keySet().parallelStream().collect(Collectors.toMap(e->e,e->e));
     }
 
     @Override
@@ -79,26 +79,60 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
     }
 
     private void runModel() {
+        Collection<MultiStem> allStems = new HashSet<>(multiStemToDocumentCountMap.keySet());
+        SparseRealMatrix matrix = new OpenMapBigRealMatrix(allStems.size(),multiStems.size());
+        KeywordModelRunner.reindex(allStems);
+        AtomicInteger idx = new AtomicInteger(0);
+        Map<MultiStem,Integer> importantToIndex = multiStems.parallelStream().collect(Collectors.toMap(m->m,m->idx.getAndIncrement()));
+        Map<Integer,MultiStem> indexToImportant = importantToIndex.entrySet().parallelStream().collect(Collectors.toMap(e->e.getValue(),e->e.getKey()));
+
+        Function<Map<String,Object>,Void> cooccurrenceFunction = attributes -> {
+            Map<MultiStem,AtomicInteger> appeared = (Map<MultiStem,AtomicInteger>)attributes.get(APPEARED_WITH_COUNTS);
+            Map<MultiStem,AtomicInteger> allCooocurrences = appeared.entrySet().stream().filter(e->multiStemToSelfMap.containsKey(e.getKey())).collect(Collectors.toMap(e->multiStemToSelfMap.get(e.getKey()),e->e.getValue()));
+            Map<MultiStem,AtomicInteger> importantCoocurrences = allCooocurrences.entrySet().stream().filter(e->multiStems.contains(e.getKey())).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+
+            if(debug)
+                System.out.println("Num coocurrences: "+importantCoocurrences.size());
+
+            // Unavoidable n-squared part
+            allCooocurrences.entrySet().forEach(s1->{
+                importantCoocurrences.entrySet().forEach(s2->{
+                    matrix.addToEntry(importantToIndex.get(s1.getKey()),s2.getKey().getIndex(),(double) s1.getValue().get()*s2.getValue().get());
+                });
+            });
+            return null;
+        };
+        runSamplingIterator(cooccurrenceFunction);
+
+        // turn of sampling
+        this.sampling=-1;
+
         data = Collections.synchronizedMap(new HashMap<>());
         Function<Map<String,Object>,Void> attributesFunction = map-> {
             String asset = map.get(ASSET_ID).toString();
             Map<MultiStem,AtomicInteger> documentStems = (Map<MultiStem,AtomicInteger>)map.get(APPEARED_WITH_COUNTS);
 
-            Pair<MultiStem,Double> result = documentStems.entrySet().parallelStream().map(e->{
+            RealVector result = documentStems.entrySet().parallelStream().map(e->{
                 MultiStem stem = multiStemToSelfMap.get(e.getKey());
                 if(stem==null)return null;
+
                 double df = multiStemToDocumentCountMap.getOrDefault(e.getKey(),new AtomicLong(0)).get();
-                double tf = documentStems.getOrDefault(e.getKey(),new AtomicInteger(0)).get();
+                double tf = e.getValue().get();
                 double score = tf / Math.log(Math.E+df);
-                return new Pair<>(stem,score);
+
+                RealVector vector = matrix.getRowVector(stem.getIndex()).mapMultiply(score);
+
+                return vector;
             }).filter(s->s!=null).reduce((p1,p2)->{
-                if(p1._2>p2._2) return p1;
-                else return p2;
+                return p1.add(p2);
             }).orElse(null);
 
             List<String> technologies = null;
             if(result!=null) {
-                technologies = Arrays.asList(result._1.getBestPhrase());
+                int maxIndex = result.getMaxIndex();
+                if(maxIndex >= 0) {
+                    technologies = Arrays.asList(indexToImportant.get(maxIndex).getBestPhrase());
+                }
                 data.put(asset,technologies);
                 if (debug)
                     System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
