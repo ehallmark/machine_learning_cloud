@@ -1,5 +1,6 @@
 package models.keyphrase_prediction;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
@@ -60,10 +61,10 @@ public class CPCKeywordModel {
     }
 
     public static void runModel() {
-        int cpcLength = 15;
+        int cpcLength = 6;
         List<String> CPCs = Database.getClassCodes().parallelStream().map(c->ClassCodeHandler.convertToLabelFormat(c)).map(c->c.length()>cpcLength?c.substring(0,cpcLength).trim():c).distinct().collect(Collectors.toList());
         Map<String,String> cpcToRawTitleMap = Database.getClassCodeToClassTitleMap();
-        Map<String,Collection<MultiStem>> cpcToTitleMap = new HashMap<>();
+        Map<String,Collection<MultiStem>> cpcToTitleMap = Collections.synchronizedMap(new HashMap<>());
         Stage1 stage1 = new Stage1(new TimeDensityModel(),1);
 
         Function<Map.Entry<String,String>,Item> transformer = hit -> {
@@ -86,35 +87,42 @@ public class CPCKeywordModel {
             return null;
         };
 
+        Map<MultiStem,AtomicDouble> docCounts = Collections.synchronizedMap(new HashMap<>());
         stage1.buildVocabularyCounts(function,attributes->{
             cpcToTitleMap.put((String)attributes.get(Stage.ASSET_ID),(Collection<MultiStem>)attributes.get(Stage.APPEARED));
+            Map<MultiStem,AtomicInteger> appeared = (Map<MultiStem,AtomicInteger>)attributes.get(Stage.APPEARED_WITH_COUNTS);
+            appeared.entrySet().forEach(e->{
+                MultiStem stem = e.getKey();
+                double val = 1d/Math.log(stem.getLength());
+                docCounts.putIfAbsent(stem,new AtomicDouble(0));
+                docCounts.get(stem).getAndAdd(val);
+            });
             return null;
         });
 
+        Map<MultiStem,AtomicLong> wordToDocCounter = stage1.get();
         Map<MultiStem,MultiStem> selfMap = stage1.get().keySet().parallelStream().collect(Collectors.toMap(e->e,e->e));
 
-        System.out.println("Finished vocabulary counts...");
-
-        Map<MultiStem,AtomicLong> wordToDocCounter = stage1.get();
         System.out.println("Vocab size: "+wordToDocCounter.size());
 
-        Map<String,Collection<MultiStem>> cpcToFullTitleMap = new HashMap<>();
+        Map<String,Collection<MultiStem>> cpcToFullTitleMap = Collections.synchronizedMap(new HashMap<>());
         RadixTree<Collection<MultiStem>> prefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
         cpcToTitleMap.entrySet().parallelStream().forEach(e->{
             prefixTrie.put(ClassCodeHandler.convertToLabelFormat(e.getKey()),e.getValue());
         });
 
-        final int buffer = 2;
+        final int preBuffer = cpcLength;
+        final int postBuffer = 3;
         CPCs.parallelStream().forEach(cpc->{
            Collection<MultiStem> texts = new HashSet<>();
-           for(int i = cpc.length()-buffer; i < cpc.length(); i++) {
+           for(int i = cpc.length()-preBuffer; i < cpc.length(); i++) {
                Collection<MultiStem> stems = prefixTrie.getValueForExactKey(cpc.substring(0,i));
                if(stems!=null) {
                    texts.addAll(stems);
                }
            }
            prefixTrie.getKeyValuePairsForKeysStartingWith(cpc).forEach(pair->{
-               if(pair.getKey().length() <= cpc.length()+buffer) {
+               if(pair.getKey().length() <= cpc.length()+postBuffer) {
                    texts.addAll(pair.getValue());
                }
            });
@@ -135,7 +143,7 @@ public class CPCKeywordModel {
             // pick the one with best tfidf
             e.getValue().forEach(word -> {
                 double tf = 1d;
-                double idf = Math.log(cpcToTitleMap.size() / (wordToDocCounter.getOrDefault(word, new AtomicLong(1)).get()));
+                double idf = Math.log(cpcToTitleMap.size() / (docCounts.getOrDefault(word, new AtomicDouble(1)).get()));
                 double u = Math.log(1 + word.getStems().length);
                 word.setScore((float) (u * tf * idf));
             });
