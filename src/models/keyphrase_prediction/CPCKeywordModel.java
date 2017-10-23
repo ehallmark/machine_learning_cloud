@@ -63,7 +63,7 @@ public class CPCKeywordModel {
     }
 
     public static void runModel() {
-        int cpcLength = 8;
+        int cpcLength = 6;
         List<String> CPCs = Database.getClassCodes().parallelStream().map(c->ClassCodeHandler.convertToLabelFormat(c)).map(c->c.length()>cpcLength?c.substring(0,cpcLength).trim():c).distinct().collect(Collectors.toList());
         Map<String,String> cpcToRawTitleMap = Database.getClassCodeToClassTitleMap();
         Map<String,Collection<MultiStem>> cpcToTitleMap = Collections.synchronizedMap(new HashMap<>());
@@ -113,7 +113,7 @@ public class CPCKeywordModel {
             prefixTrie.put(ClassCodeHandler.convertToLabelFormat(e.getKey()),e.getValue());
         });
 
-        final int preBuffer = 4;
+        final int preBuffer = 2;
         final int postBuffer = 2;
         CPCs.parallelStream().forEach(cpc->{
            Collection<MultiStem> texts = new HashSet<>();
@@ -134,20 +134,7 @@ public class CPCKeywordModel {
            }
         });
 
-        Collection<MultiStem> allWords = cpcToFullTitleMap.values().parallelStream().flatMap(t-> t.stream()).distinct().collect(Collectors.toList());
-        KeywordModelRunner.reindex(allWords);
-        System.out.println("Starting to build M matrix...");
-        Function<Function<Map<String,Object>,Void>,Void> stage3Function = attrFunction -> {
-            stage1.runSamplingIterator(transformer, transformerRunner, attrFunction);
-            return null;
-        };
-        Stage3 stage3 = new Stage3(allWords,new TimeDensityModel());
-        System.out.println("Stems before M: "+allWords.size());
-        RealMatrix M = stage3.buildMMatrix(allWords,selfMap,stage3Function);
-        allWords = Stage.applyFilters(new TermhoodScorer(), M, allWords,0.5,1d,0.1);
-        System.out.println("Finished M matrix");
-        System.out.println("Stems after M: "+allWords.size());
-
+        Collection<MultiStem> allWords = selfMap.keySet().stream().collect(Collectors.toList());
         KeywordModelRunner.reindex(allWords);
         Map<String,Integer> cpcToIdx = IntStream.range(0,CPCs.size()).mapToObj(i->new Pair<>(CPCs.get(i),i)).collect(Collectors.toMap(p->p._1, p->p._2));
         Map<MultiStem,Integer> wordToIdx = allWords.parallelStream().collect(Collectors.toMap(word->word,word->word.getIndex()));
@@ -159,7 +146,7 @@ public class CPCKeywordModel {
             e.getValue().forEach(word -> {
                 double tf = 1d;
                 double idf = Math.log(cpcToTitleMap.size() / (docCounts.getOrDefault(word, new AtomicDouble(1)).get()));
-                double u = Math.log(1 + word.getStems().length);
+                double u = word.getStems().length;
                 word.setScore((float) (u * tf * idf));
             });
             Set<MultiStem> temp = new HashSet<>();
@@ -175,12 +162,31 @@ public class CPCKeywordModel {
             }
         });
 
-        System.out.println("Stems before: "+allWords.size());
-        Collection<MultiStem> stemMap = Stage.applyFilters(new TechnologyScorer(), matrix, allWords, 0.5,1d,0.1);
-        stemMap.forEach(stem->{
-            System.out.println("Good stem: "+selfMap.get(stem).getBestPhrase());
+        System.out.println("Stems before T: "+allWords.size());
+        allWords = Stage.applyFilters(new TechnologyScorer(), matrix, allWords, 0.5,1d,0.1);
+        allWords.forEach(stem->{
+            System.out.println("Good stem T: "+selfMap.get(stem).getBestPhrase());
         });
-        System.out.println("Stems after: "+stemMap.size());
+        System.out.println("Stems after T: "+allWords.size());
+
+
+        KeywordModelRunner.reindex(allWords);
+        System.out.println("Starting to build M matrix...");
+        Stage3 stage3 = new Stage3(allWords,new TimeDensityModel());
+        Function<Function<Map<String,Object>,Void>,Void> stage3Function = attrFunction -> {
+            stage3.runSamplingIterator(transformer, transformerRunner, attrFunction);
+            return null;
+        };
+
+        System.out.println("Stems before M: "+allWords.size());
+        RealMatrix M = stage3.buildMMatrix(allWords,selfMap,stage3Function);
+        allWords = Stage.applyFilters(new TermhoodScorer(), M, allWords,0.5,1d,0.1);
+        System.out.println("Finished M matrix");
+        System.out.println("Stems after M: "+allWords.size());
+        allWords.forEach(stem->{
+            System.out.println("Good stem M: "+selfMap.get(stem).getBestPhrase());
+        });
+
     }
 
 }
