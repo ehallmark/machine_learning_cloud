@@ -95,9 +95,10 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
                 System.out.println("Num coocurrences: "+importantCoocurrences.size());
 
             // Unavoidable n-squared part
-            allCooocurrences.entrySet().forEach(s1->{
-                importantCoocurrences.entrySet().forEach(s2->{
-                    matrix.addToEntry(importantToIndex.get(s1.getKey()),s2.getKey().getIndex(),(double) s1.getValue().get()*s2.getValue().get());
+            importantCoocurrences.entrySet().forEach(s2->{
+                int idx2 = importantToIndex.get(s2.getKey());
+                allCooocurrences.entrySet().forEach(s1->{
+                    matrix.addToEntry(s1.getKey().getIndex(),idx2,(double) s1.getValue().get()*s2.getValue().get());
                 });
             });
             return null;
