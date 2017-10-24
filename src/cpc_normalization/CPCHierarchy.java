@@ -49,7 +49,7 @@ public class CPCHierarchy {
         i.set(0);
         RadixTree<CPC> prefixTrie = new ConcurrentRadixTree<>(new DefaultCharArrayNodeFactory());
         allNodes.forEach(node->{
-            prefixTrie.put(node.getName(),node);
+            prefixTrie.put(new String(node.getName()),node);
         });
 
         AtomicInteger connectionCounter = new AtomicInteger(0);
@@ -120,7 +120,9 @@ public class CPCHierarchy {
     public void loadGraph() {
         topLevel = (Collection<CPC> ) Database.tryLoadObject(cpcHierarchyTopLevelFile);
         labelToCPCMap = (Map<String,CPC>) Database.tryLoadObject(cpcHierarchyMapFile);
-
+        labelToCPCMap.values().forEach(v->{
+            if(v.getName()==null) throw new RuntimeException("Should not be null...");
+        });
     }
 
 
