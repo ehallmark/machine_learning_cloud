@@ -1,5 +1,8 @@
 package cpc_normalization;
 
+import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
+import com.googlecode.concurrenttrees.radix.RadixTree;
+import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
 import lombok.Getter;
 import model.graphs.BayesianNet;
 import model.graphs.Graph;
@@ -39,15 +42,20 @@ public class CPCHierarchy {
         }).collect(Collectors.toList());
 
         i.set(0);
+        RadixTree<CPC> prefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+        allNodes.forEach(node->{
+            prefixTrie.put(node.getName(),node);
+        });
+
         allNodes.parallelStream().forEach(n1->{
-            allNodes.forEach(n2->{
+            if(i.getAndIncrement() % 10000==9999) {
+                System.out.println("Completed "+i.get()+" cpcs.");
+            }
+            prefixTrie.getValuesForKeysStartingWith(n1.getName().substring(0,Math.max(2,n1.getName().lastIndexOf(-2)))).forEach(n2->{
                 if(!n1.equals(n2)) {
                     if(n1.isParentOf(n2)) {
                         n2.setParent(n1);
                         n1.addChild(n2);
-                        if(i.getAndIncrement() % 10000==9999) {
-                            System.out.println("Completed "+i.get()+" cpcs.");
-                        }
                     }
                 }
             });
