@@ -71,7 +71,7 @@ public class CPCKeywordModel {
         CPCHierarchy cpcHierarchy = new CPCHierarchy();
         cpcHierarchy.loadGraph();
 
-        int CPC_DEPTH = 3;
+        int CPC_DEPTH = 4;
         Collection<CPC> mainGroup = CPCCleaner.getCPCsAtDepth(cpcHierarchy.getTopLevel(),CPC_DEPTH);
 
         System.out.println("Num group level cpcs: "+mainGroup.size());
