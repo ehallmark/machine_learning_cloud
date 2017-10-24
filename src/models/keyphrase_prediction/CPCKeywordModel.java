@@ -105,12 +105,7 @@ public class CPCKeywordModel {
             CPC cpc = cpcHierarchy.getLabelToCPCMap().get(cpcLabel);
             cpcToTitleMap.put(cpcLabel,(Collection<MultiStem>)attributes.get(Stage.APPEARED));
             Map<MultiStem,AtomicInteger> appeared = (Map<MultiStem,AtomicInteger>)attributes.get(Stage.APPEARED_WITH_COUNTS);
-            double val;
-            if(cpc.getChildren().size()>0) {
-                val = cpc.numSubclasses();
-            } else {
-                val = 1d;
-            }
+            double val = 1d;
             appeared.entrySet().forEach(e->{
                 MultiStem stem = e.getKey();
                 docCounts.putIfAbsent(stem,new AtomicDouble(0));
@@ -129,27 +124,7 @@ public class CPCKeywordModel {
             cpc.setKeywords(Collections.synchronizedSet(new HashSet<>(e.getValue())));
         });
 
-        Map<String,Collection<MultiStem>> cpcToFullTitleMap = Collections.synchronizedMap(new HashMap<>());
-        CPCs.parallelStream().forEach(cpcLabel->{
-           Collection<MultiStem> texts = new HashSet<>();
-           CPC cpc = cpcHierarchy.getLabelToCPCMap().get(cpcLabel);
-           if(cpc==null) return;
-           if(cpc.getKeywords()!=null) {
-               texts.addAll(cpc.getKeywords());
-           }
-           CPC iter = cpc;
-           if(iter.getParent()!=null) {
-               if (iter.getParent().getKeywords() != null) {
-                   texts.addAll(iter.getParent().getKeywords());
-               }
-               iter = iter.getParent();
-           }
-           if(texts.size()>0) {
-               cpcToFullTitleMap.put(cpcLabel, texts);
-           }
-        });
-
-
+        AtomicInteger cnt = new AtomicInteger(0);
         cpcHierarchy.getLabelToCPCMap().values().parallelStream().forEach(cpc-> {
             if (cpc.getKeywords()==null||cpc.getKeywords().isEmpty()) return;
             // pick the one with best tfidf
@@ -170,8 +145,8 @@ public class CPCKeywordModel {
             temp.addAll(cpc.getKeywords().stream().sorted((s1, s2) -> Float.compare(s2.getScore(), s1.getScore())).limit(5).collect(Collectors.toList()));
             cpc.getKeywords().clear();
             cpc.getKeywords().addAll(temp.stream().map(m -> selfMap.get(m)).collect(Collectors.toList()));
-            if (cpc.getKeywords().size() > 0) {
-                System.out.println("CPC " + cpc.toString() + ": " + String.join("; ", cpc.getKeywords().stream().map(m -> m.getBestPhrase()).collect(Collectors.toList())));
+            if (cnt.getAndIncrement()%10000==9999) {
+                System.out.println(""+cnt.get()+" / "+cpcHierarchy.getLabelToCPCMap().size());
             }
         });
 
