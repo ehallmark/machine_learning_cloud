@@ -70,75 +70,82 @@ public class CPCKeywordModel {
         CPCHierarchy cpcHierarchy = new CPCHierarchy();
         cpcHierarchy.loadGraph();
 
-        int CPC_DEPTH = 3;
-        Collection<CPC> mainGroup = CPCCleaner.getCPCsAtDepth(cpcHierarchy.getTopLevel(),CPC_DEPTH);
+        for(int CPC_DEPTH = 1; CPC_DEPTH <= 4; CPC_DEPTH++) {
+            System.out.println("STARTING CPC DEPTH: "+CPC_DEPTH);
+            Collection<CPC> mainGroup = CPCCleaner.getCPCsAtDepth(cpcHierarchy.getTopLevel(), CPC_DEPTH);
+            //mainGroup.forEach(cpc->{
+            //    cpcHierarchy.getLabelToCPCMap().put(cpc.getName(),cpc);
+            //});
 
-        System.out.println("Num group level cpcs: "+mainGroup.size());
+            System.out.println("Num group level cpcs: " + mainGroup.size());
 
-        Stage1 stage1 = new Stage1(new TimeDensityModel(),1);
+            Stage1 stage1 = new Stage1(new TimeDensityModel(), 1);
 
-        Function<Pair<CPC,String>,Item> transformer = hit -> {
-            String text = hit._2.toLowerCase();
-            Item item = new Item(hit._1.getName());
-            item.addData(Stage.ASSET_ID,hit._1.getName());
-            item.addData(Stage.TEXT,text);
-            item.addData("CPC",hit._1);
-            return item;
-        };
+            Function<Pair<CPC, String>, Item> transformer = hit -> {
+                String text = hit._2.toLowerCase();
+                Item item = new Item(hit._1.getName());
+                item.addData(Stage.ASSET_ID, hit._1.getName());
+                item.addData(Stage.TEXT, text);
+                item.addData("CPC", hit._1);
+                return item;
+            };
 
-        Function<Function,Void> transformerRunner = v -> {
-            mainGroup.parallelStream().map(cpc->new Pair<>(cpc,cpcToRawTitleMap.get(cpc.getName()))).forEach(e->{
-                v.apply(e);
+            Function<Function, Void> transformerRunner = v -> {
+                mainGroup.parallelStream().map(cpc -> new Pair<>(cpc, cpcToRawTitleMap.get(cpc.getName()))).forEach(e -> {
+                    v.apply(e);
+                });
+                return null;
+            };
+
+            Function<Function<Map<String, Object>, Void>, Void> function = attrFunction -> {
+                stage1.runSamplingIterator(transformer, transformerRunner, attrFunction);
+                return null;
+            };
+
+            stage1.buildVocabularyCounts(function, attributes -> {
+                CPC cpc = (CPC) attributes.get("CPC");
+                cpc.setKeywords(new HashSet<>((Collection<MultiStem>) attributes.get(Stage.APPEARED)));
+                return null;
             });
-            return null;
-        };
 
-        Function<Function<Map<String,Object>,Void>,Void> function = attrFunction -> {
-            stage1.runSamplingIterator(transformer, transformerRunner, attrFunction);
-            return null;
-        };
+            Map<MultiStem, AtomicLong> wordToDocCounter = stage1.get();
+            Map<MultiStem, MultiStem> selfMap = stage1.get().keySet().parallelStream().collect(Collectors.toMap(e -> e, e -> e));
+            System.out.println("Vocab size: " + wordToDocCounter.size());
 
-        stage1.buildVocabularyCounts(function,attributes->{
-            CPC cpc = (CPC) attributes.get("CPC");
-            cpc.setKeywords(new HashSet<>((Collection<MultiStem>)attributes.get(Stage.APPEARED)));
-            return null;
-        });
-
-        Map<MultiStem,AtomicLong> wordToDocCounter = stage1.get();
-        Map<MultiStem,MultiStem> selfMap = stage1.get().keySet().parallelStream().collect(Collectors.toMap(e->e,e->e));
-        System.out.println("Vocab size: "+wordToDocCounter.size());
-
-        AtomicInteger cnt = new AtomicInteger(0);
-        cpcHierarchy.getLabelToCPCMap().values().parallelStream().filter(cpc->mainGroup.contains(cpc)).forEach(cpc-> {
-            if (cpc.getKeywords()==null||cpc.getKeywords().isEmpty()) {
-                return;
-            }
-            // pick the one with best tfidf
-            cpc.getKeywords().forEach(word -> {
-                double docCount = wordToDocCounter.getOrDefault(word, new AtomicLong(1)).get();
-                double tf = 1d;
-                double idf = Math.log(cpcHierarchy.getLabelToCPCMap().size() / (docCount));
-                double u = word.getStems().length;
-                double l = word.toString().length();
-                double score = tf * idf * u * u * l;
-                if(word.getStems().length>1) {
-                    double denom = Stream.of(word.getStems()).mapToDouble(stem->wordToDocCounter.getOrDefault(new MultiStem(new String[]{stem},-1),new AtomicLong(1)).get()).average().getAsDouble();
-                    score *= docCount/Math.sqrt(denom);
+            AtomicInteger cnt = new AtomicInteger(0);
+            cpcHierarchy.getLabelToCPCMap().values().parallelStream().filter(cpc -> mainGroup.contains(cpc)).forEach(cpc -> {
+                if (cpc.getKeywords() == null || cpc.getKeywords().isEmpty()) {
+                    return;
                 }
-                word.setScore((float) score);
+                // pick the one with best tfidf
+                cpc.getKeywords().forEach(word -> {
+                    double docCount = wordToDocCounter.getOrDefault(word, new AtomicLong(1)).get();
+                    double tf = 1d;
+                    double idf = Math.log(cpcHierarchy.getLabelToCPCMap().size() / (docCount));
+                    double u = word.getStems().length;
+                    double l = word.toString().length();
+                    double score = tf * idf * u * u * l;
+                    if (word.getStems().length > 1) {
+                        double denom = Stream.of(word.getStems()).mapToDouble(stem -> wordToDocCounter.getOrDefault(new MultiStem(new String[]{stem}, -1), new AtomicLong(1)).get()).average().getAsDouble();
+                        score *= docCount / Math.sqrt(denom);
+                    }
+                    word.setScore((float) score);
+                });
+                Set<MultiStem> temp = Collections.synchronizedSet(new HashSet<>());
+                temp.addAll(cpc.getKeywords().stream().sorted((s1, s2) -> Float.compare(s2.getScore(), s1.getScore())).map(word -> selfMap.get(word)).limit(5).collect(Collectors.toList()));
+                cpc.setKeywords(temp);
+                if (cnt.getAndIncrement() % 10000 == 9999) {
+                    System.out.println("" + cnt.get() + " / " + cpcHierarchy.getLabelToCPCMap().size());
+                }
             });
-            Set<MultiStem> temp = Collections.synchronizedSet(new HashSet<>());
-            temp.addAll(cpc.getKeywords().stream().sorted((s1, s2) -> Float.compare(s2.getScore(), s1.getScore())).map(word->selfMap.get(word)).limit(5).collect(Collectors.toList()));
-            cpc.setKeywords(temp);
-            if (cnt.getAndIncrement()%10000==9999) {
-                System.out.println(""+cnt.get()+" / "+cpcHierarchy.getLabelToCPCMap().size());
-            }
-        });
 
-        System.out.println("Main group: "+mainGroup.size());
-        Set<MultiStem> stems = mainGroup.parallelStream().filter(cpc->cpc.getKeywords()!=null).flatMap(cpc->cpc.getKeywords().stream()).collect(Collectors.toSet());
-        System.out.println("num stems: "+stems.size());
-        System.out.println("total words: "+stage1.get().size());
+            System.out.println("Main group: " + mainGroup.size());
+            Set<MultiStem> stems = mainGroup.parallelStream().filter(cpc -> cpc.getKeywords() != null).flatMap(cpc -> cpc.getKeywords().stream()).collect(Collectors.toSet());
+            System.out.println("num stems: " + stems.size());
+            System.out.println("total words: " + stage1.get().size());
+        }
+        Set<MultiStem> stems = cpcHierarchy.getLabelToCPCMap().values().parallelStream().filter(cpc -> cpc.getKeywords() != null).flatMap(cpc -> cpc.getKeywords().stream()).collect(Collectors.toSet());
+        System.out.println("total num stems: " + stems.size());
         //Stage5 stage5 = new Stage5(stage1, stems, new TimeDensityModel());
         //stage5.run(true);
     }

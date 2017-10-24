@@ -45,6 +45,20 @@ public class CPC implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        if(name==null) return super.hashCode();
+        return name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if(other instanceof CPC) {
+            return name.equals(((CPC) other).name);
+        }
+        return false;
+    }
+
+    @Override
     public String toString() {
         return name;
     }
