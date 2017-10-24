@@ -3,6 +3,7 @@ package cpc_normalization;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
+import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
 import lombok.Getter;
 import model.graphs.BayesianNet;
 import model.graphs.Graph;
@@ -42,7 +43,7 @@ public class CPCHierarchy {
         }).collect(Collectors.toList());
 
         i.set(0);
-        RadixTree<CPC> prefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+        RadixTree<CPC> prefixTrie = new ConcurrentRadixTree<>(new DefaultCharArrayNodeFactory());
         allNodes.forEach(node->{
             prefixTrie.put(node.getName(),node);
         });

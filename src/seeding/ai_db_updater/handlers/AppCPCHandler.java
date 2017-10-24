@@ -30,22 +30,22 @@ public class AppCPCHandler implements LineHandler {
     public void handleLine(String line) {
         if (line.length() >= 35) {
             String patNum = line.substring(10, 21).trim();
-            if(patNum.startsWith("20")) {
+            if(assetToFilingMap.getApplicationDataMap().containsKey(patNum)) {
                 String cpcSection = line.substring(21, 22);
                 String cpcClass = cpcSection + line.substring(22, 24);
                 String cpcSubclass = cpcClass + line.substring(24, 25);
                 String cpcMainGroup = cpcSubclass + line.substring(25, 29);
                 String cpcSubGroup = cpcMainGroup + line.substring(30, 36);
-                Map<String,Object> doc = new HashMap<>();
+                Map<String, Object> doc = new HashMap<>();
                 Set<String> data = appToClassificationHash.get(patNum);
-                if(data==null) {
+                if (data == null) {
                     data = new HashSet<>();
                     appToClassificationHash.put(patNum, data);
                 }
                 data.add(ClassCodeHandler.convertToHumanFormat(cpcSubGroup));
                 doc.put(Constants.CPC_CODES, data);
                 String filingName = assetToFilingMap.getApplicationDataMap().get(patNum);
-                if(filingName!=null) {
+                if (filingName != null) {
                     DataIngester.ingestBulk(patNum, filingName, doc, false);
                 }
             }

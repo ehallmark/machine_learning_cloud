@@ -30,7 +30,7 @@ public class PatentCPCHandler implements LineHandler {
         if (line.length() >= 32) {
             String patNum = line.substring(10, 17).trim();
             try {
-                if (patNum.length() >= 7 && (patNum.startsWith("RE")||Integer.valueOf(patNum.substring(0, patNum.length() - 6)) >= 6)) {
+                if (assetToFilingMap.getPatentDataMap().containsKey(patNum)) {
                     String cpcSection = line.substring(17, 18);
                     String cpcClass = cpcSection + line.substring(18, 20);
                     String cpcSubclass = cpcClass + line.substring(20, 21);

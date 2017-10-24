@@ -11,9 +11,9 @@ public class ClassCodeHandler {
 
     public static String convertToHumanFormat(String code) {
         if(code==null)return null;
-        if(code.contains("/")) return code;
-        if(code.length()<14) return code;
-        return code.substring(0,4).trim()+" "+code.substring(4,8).trim() + "/" + code.substring(8,14).trim();
+        if(code.contains("/")) return code.replace(" ","");
+        if(code.length()<14) return code.replace(" ","");
+        return code.substring(0,4).trim()+code.substring(4,8).trim() + "/" + code.substring(8,14).trim();
     }
 
 }
