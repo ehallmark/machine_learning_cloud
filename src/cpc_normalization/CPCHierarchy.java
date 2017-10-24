@@ -63,6 +63,12 @@ public class CPCHierarchy {
                 }
             });
         });
+
+        allNodes.parallelStream().forEach(cpc->{
+            if(cpc.getParent()==null) {
+                System.out.println("NO PARENT FOR: "+cpc.toString());
+            }
+        });
     }
 
     public void save() {
