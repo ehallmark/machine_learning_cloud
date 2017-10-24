@@ -54,7 +54,7 @@ public class UpdateClassCodeToClassTitleMap {
                     Node symbol = classElement.getFirstChild();
                     if (symbol != null) {
                         String classSymbol = symbol.getTextContent();
-                        if (classSymbol.length() > 1) {
+                        if (classSymbol.length() >= 1) {
                             Node node = symbol.getNextSibling().getFirstChild();
                             List<String> titleParts = new ArrayList<>();
                             while (node != null) {
