@@ -15,6 +15,7 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Evan on 10/24/2017.
@@ -54,7 +55,7 @@ public class CPCHierarchy {
                 System.out.println("Completed "+i.get()+" cpcs.");
                 System.out.println("Num connections: "+connectionCounter.get());
             }
-            String name = String.join("",n1.getParts());
+            String name = String.join("", Stream.of(n1.getParts()).filter(p->p!=null).collect(Collectors.toList()));
             prefixTrie.getValuesForKeysStartingWith(name).forEach(n2->{
                 if(!n1.equals(n2)) {
                     if(n1.isParentOf(n2)) {
