@@ -65,11 +65,15 @@ public class CPCHierarchy {
             });
         });
 
+        AtomicInteger noParents = new AtomicInteger(0);
         allNodes.parallelStream().forEach(cpc->{
             if(cpc.getParent()==null) {
-                System.out.println("NO PARENT FOR: "+cpc.toString());
+                noParents.getAndIncrement();
+                //System.out.println("NO PARENT FOR: "+cpc.toString());
             }
         });
+
+        System.out.println("No parents for: "+noParents.get()+" / "+allNodes.size());
     }
 
     public void save() {
