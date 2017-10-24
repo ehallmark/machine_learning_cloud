@@ -67,7 +67,6 @@ public class CPCKeywordModel {
 
     public static void runModel() {
         Map<String,String> cpcToRawTitleMap = Database.getClassCodeToClassTitleMap();
-        Map<String,Collection<MultiStem>> cpcToTitleMap = Collections.synchronizedMap(new HashMap<>());
         CPCHierarchy cpcHierarchy = new CPCHierarchy();
         cpcHierarchy.loadGraph();
 
@@ -115,13 +114,7 @@ public class CPCKeywordModel {
 
         Map<MultiStem,AtomicLong> wordToDocCounter = stage1.get();
         Map<MultiStem,MultiStem> selfMap = stage1.get().keySet().parallelStream().collect(Collectors.toMap(e->e,e->e));
-
         System.out.println("Vocab size: "+wordToDocCounter.size());
-
-        cpcToTitleMap.entrySet().parallelStream().forEach(e->{
-            CPC cpc = cpcHierarchy.getLabelToCPCMap().get(e.getKey());
-            cpc.setKeywords(Collections.synchronizedSet(new HashSet<>(e.getValue())));
-        });
 
         AtomicInteger cnt = new AtomicInteger(0);
         cpcHierarchy.getLabelToCPCMap().values().parallelStream().forEach(cpc-> {
@@ -130,7 +123,7 @@ public class CPCKeywordModel {
             cpc.getKeywords().forEach(word -> {
                 double docCount = docCounts.getOrDefault(word, new AtomicDouble(1)).get();
                 double tf = 1d;
-                double idf = Math.log(cpcToTitleMap.size() / (docCount));
+                double idf = Math.log(cpcHierarchy.getLabelToCPCMap().size() / (docCount));
                 double u = word.getStems().length;
                 double l = word.toString().length();
                 double score = tf * idf * u * u * l;
