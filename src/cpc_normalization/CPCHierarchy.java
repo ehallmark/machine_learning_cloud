@@ -28,13 +28,17 @@ public class CPCHierarchy {
         topLevel = Collections.synchronizedCollection(new HashSet<>());
         labelToCPCMap = Collections.synchronizedMap(new HashMap<>());
 
+        AtomicInteger i = new AtomicInteger(0);
         Collection<CPC> allNodes = allCPCs.parallelStream().map(cpc->{
             CPC c = new CPC(cpc);
+            if(i.getAndIncrement()%10000==9999) {
+                System.out.println("Completed "+i.get()+" / "+allCPCs.size()+" cpcs.");
+            }
             labelToCPCMap.put(cpc,c);
             return c;
         }).collect(Collectors.toList());
 
-        AtomicInteger i = new AtomicInteger(0);
+        i.set(0);
         allNodes.parallelStream().forEach(n1->{
             allNodes.forEach(n2->{
                 if(!n1.equals(n2)) {
