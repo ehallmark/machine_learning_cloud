@@ -4,13 +4,15 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * Created by Evan on 10/24/2017.
  */
-public class CPC {
+public class CPC implements Serializable {
+    private static final long serialVersionUID = 1L;
     @Getter
     private Set<CPC> children;
     @Getter @Setter
