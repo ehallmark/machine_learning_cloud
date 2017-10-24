@@ -52,7 +52,7 @@ public class CPC implements Serializable {
 
     public static String[] cpcToParts(String cpc) {
         String[] parts = new String[5];
-       // if(cpc.endsWith("/00")) cpc=cpc.substring(0,cpc.length()-3);
+        if(cpc.endsWith("/00")) cpc=cpc.substring(0,cpc.length()-3);
         if(cpc.length()>=1) parts[0] = cpc.substring(0,1);
         if(cpc.length()>=3) parts[1] = cpc.substring(1,3);
         if(cpc.length()>=4) parts[2] = cpc.substring(3,4);
