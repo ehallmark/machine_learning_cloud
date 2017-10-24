@@ -73,9 +73,9 @@ public class CPCKeywordModel {
         for(int CPC_DEPTH = 1; CPC_DEPTH <= 4; CPC_DEPTH++) {
             System.out.println("STARTING CPC DEPTH: "+CPC_DEPTH);
             Collection<CPC> mainGroup = CPCCleaner.getCPCsAtDepth(cpcHierarchy.getTopLevel(), CPC_DEPTH);
-            //mainGroup.forEach(cpc->{
-            //    cpcHierarchy.getLabelToCPCMap().put(cpc.getName(),cpc);
-            //});
+            mainGroup.forEach(cpc->{
+                cpcHierarchy.getLabelToCPCMap().put(cpc.getName(),cpc);
+            });
 
             System.out.println("Num group level cpcs: " + mainGroup.size());
 
