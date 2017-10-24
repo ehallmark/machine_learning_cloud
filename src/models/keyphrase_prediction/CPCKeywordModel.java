@@ -175,9 +175,8 @@ public class CPCKeywordModel {
             }
         });
 
-        Set<MultiStem> stems = mainGroup.parallelStream().flatMap(cpc->cpc.getKeywords().stream()).collect(Collectors.toSet());
+        Set<MultiStem> stems = mainGroup.parallelStream().filter(cpc->cpc.getKeywords()!=null).flatMap(cpc->cpc.getKeywords().stream()).collect(Collectors.toSet());
         Stage5 stage5 = new Stage5(stage1, stems, new TimeDensityModel());
-
         stage5.run(true);
     }
 
