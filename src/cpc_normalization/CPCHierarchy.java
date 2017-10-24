@@ -83,9 +83,6 @@ public class CPCHierarchy {
     }
 
 
-
-
-
     public static void main(String[] args) {
         CPCHierarchy hierarchy = new CPCHierarchy();
         hierarchy.run(new ArrayList<>(Database.getClassCodeToClassTitleMap().keySet()));

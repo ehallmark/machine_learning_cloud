@@ -71,7 +71,6 @@ public class UpdateClassCodeToClassTitleMap {
                                 }
                                 node = node.getNextSibling();
                             }
-                            classSymbol = ClassCodeHandler.convertToLabelFormat(classSymbol);
                             String title = String.join("; ", titleParts);
                             System.out.println(classSymbol + "," + title);
                             map.put(classSymbol, title);
