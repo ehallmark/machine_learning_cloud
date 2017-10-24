@@ -69,7 +69,7 @@ public class CPC implements Serializable {
         String[] parentParts = parts;
         String[] childParts = child.parts;
 
-        if(numParts!=child.numParts+1) return false;
+        if(numParts!=child.numParts-1) return false;
 
         boolean same = true;
         for(int i = 0; i < 5; i++) {
