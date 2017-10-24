@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Created by Evan on 10/24/2017.
@@ -21,10 +22,12 @@ public class CPC implements Serializable {
     private String name;
     @Getter
     private String[] parts;
+    private int numParts;
     public CPC(@NonNull String name) {
         this.name=name;
         this.children = new HashSet<>();
         this.parts = cpcToParts(name);
+        this.numParts = (int) Stream.of(parts).filter(p->p!=null).count();
     }
 
     @Override
@@ -66,7 +69,7 @@ public class CPC implements Serializable {
         String[] parentParts = parts;
         String[] childParts = child.parts;
 
-        if(parentParts.length!=childParts.length-1) return false;
+        if(numParts!=child.numParts+1) return false;
 
         boolean same = true;
         for(int i = 0; i < 5; i++) {
