@@ -4,6 +4,9 @@ import com.google.common.util.concurrent.AtomicDouble;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
+import cpc_normalization.CPC;
+import cpc_normalization.CPCCleaner;
+import cpc_normalization.CPCHierarchy;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -63,10 +66,17 @@ public class CPCKeywordModel {
     }
 
     public static void runModel() {
-        int cpcLength = 6;
-        List<String> CPCs = Database.getClassCodes().parallelStream().map(c->ClassCodeHandler.convertToLabelFormat(c)).map(c->c.length()>cpcLength?c.substring(0,cpcLength).trim():c).distinct().collect(Collectors.toList());
         Map<String,String> cpcToRawTitleMap = Database.getClassCodeToClassTitleMap();
+        List<String> CPCs = Collections.synchronizedList(new ArrayList<>(cpcToRawTitleMap.keySet()));
         Map<String,Collection<MultiStem>> cpcToTitleMap = Collections.synchronizedMap(new HashMap<>());
+        CPCHierarchy cpcHierarchy = new CPCHierarchy();
+        cpcHierarchy.loadGraph();
+
+        int CPC_DEPTH = 3;
+        Collection<CPC> mainGroup = CPCCleaner.getCPCsAtDepth(cpcHierarchy.getTopLevel(),CPC_DEPTH);
+
+        System.out.println("Num group level cpcs: "+mainGroup.size());
+
         Stage1 stage1 = new Stage1(new TimeDensityModel(),1);
 
         Function<Map.Entry<String,String>,Item> transformer = hit -> {
@@ -91,11 +101,18 @@ public class CPCKeywordModel {
 
         Map<MultiStem,AtomicDouble> docCounts = Collections.synchronizedMap(new HashMap<>());
         stage1.buildVocabularyCounts(function,attributes->{
-            cpcToTitleMap.put((String)attributes.get(Stage.ASSET_ID),(Collection<MultiStem>)attributes.get(Stage.APPEARED));
+            String cpcLabel = (String)attributes.get(Stage.ASSET_ID);
+            CPC cpc = cpcHierarchy.getLabelToCPCMap().get(cpcLabel);
+            cpcToTitleMap.put(cpcLabel,(Collection<MultiStem>)attributes.get(Stage.APPEARED));
             Map<MultiStem,AtomicInteger> appeared = (Map<MultiStem,AtomicInteger>)attributes.get(Stage.APPEARED_WITH_COUNTS);
+            double val;
+            if(cpc.getChildren().size()>0) {
+                val = cpc.numSubclasses();
+            } else {
+                val = 1d;
+            }
             appeared.entrySet().forEach(e->{
                 MultiStem stem = e.getKey();
-                double val = 1d/Math.log(stem.getLength());
                 docCounts.putIfAbsent(stem,new AtomicDouble(0));
                 docCounts.get(stem).getAndAdd(val);
             });
@@ -107,86 +124,61 @@ public class CPCKeywordModel {
 
         System.out.println("Vocab size: "+wordToDocCounter.size());
 
-        Map<String,Collection<MultiStem>> cpcToFullTitleMap = Collections.synchronizedMap(new HashMap<>());
-        RadixTree<Collection<MultiStem>> prefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
         cpcToTitleMap.entrySet().parallelStream().forEach(e->{
-            prefixTrie.put(ClassCodeHandler.convertToLabelFormat(e.getKey()),e.getValue());
+            CPC cpc = cpcHierarchy.getLabelToCPCMap().get(e.getKey());
+            cpc.setKeywords(Collections.synchronizedSet(new HashSet<>(e.getValue())));
         });
 
-        final int preBuffer = 2;
-        final int postBuffer = 2;
-        CPCs.parallelStream().forEach(cpc->{
+        Map<String,Collection<MultiStem>> cpcToFullTitleMap = Collections.synchronizedMap(new HashMap<>());
+        CPCs.parallelStream().forEach(cpcLabel->{
            Collection<MultiStem> texts = new HashSet<>();
-           for(int i = cpc.length()-preBuffer; i < cpc.length(); i++) {
-               Collection<MultiStem> stems = prefixTrie.getValueForExactKey(cpc.substring(0,i));
-               if(stems!=null) {
-                   texts.addAll(stems);
-               }
+           CPC cpc = cpcHierarchy.getLabelToCPCMap().get(cpcLabel);
+           if(cpc==null) return;
+           if(cpc.getKeywords()!=null) {
+               texts.addAll(cpc.getKeywords());
            }
-           prefixTrie.getKeyValuePairsForKeysStartingWith(cpc).forEach(pair->{
-               if(pair.getKey().length() <= cpc.length()+postBuffer) {
-                   texts.addAll(pair.getValue());
+           CPC iter = cpc;
+           if(iter.getParent()!=null) {
+               if (iter.getParent().getKeywords() != null) {
+                   texts.addAll(iter.getParent().getKeywords());
                }
-           });
-
+               iter = iter.getParent();
+           }
            if(texts.size()>0) {
-               cpcToFullTitleMap.put(cpc, texts);
+               cpcToFullTitleMap.put(cpcLabel, texts);
            }
         });
 
-        Collection<MultiStem> allWords = selfMap.keySet().stream().collect(Collectors.toList());
-        KeywordModelRunner.reindex(allWords);
-        Map<String,Integer> cpcToIdx = IntStream.range(0,CPCs.size()).mapToObj(i->new Pair<>(CPCs.get(i),i)).collect(Collectors.toMap(p->p._1, p->p._2));
-        Map<MultiStem,Integer> wordToIdx = allWords.parallelStream().collect(Collectors.toMap(word->word,word->word.getIndex()));
-        OpenMapBigRealMatrix matrix = new OpenMapBigRealMatrix(allWords.size(),CPCs.size());
 
-        cpcToFullTitleMap.entrySet().parallelStream().forEach(e-> {
-            if (e.getValue().isEmpty()) return;
+        cpcHierarchy.getLabelToCPCMap().values().parallelStream().forEach(cpc-> {
+            if (cpc.getKeywords()==null||cpc.getKeywords().isEmpty()) return;
             // pick the one with best tfidf
-            e.getValue().forEach(word -> {
+            cpc.getKeywords().forEach(word -> {
+                double docCount = docCounts.getOrDefault(word, new AtomicDouble(1)).get();
                 double tf = 1d;
-                double idf = Math.log(cpcToTitleMap.size() / (docCounts.getOrDefault(word, new AtomicDouble(1)).get()));
+                double idf = Math.log(cpcToTitleMap.size() / (docCount));
                 double u = word.getStems().length;
-                word.setScore((float) (u * tf * idf));
+                double l = word.toString().length();
+                double score = tf * idf * u * u * l;
+                if(word.getStems().length>1) {
+                    double denom = Stream.of(word.getStems()).mapToDouble(stem->docCounts.getOrDefault(new MultiStem(new String[]{stem},-1),new AtomicDouble(1d)).get()).average().getAsDouble();
+                    score *= docCount/Math.sqrt(denom);
+                }
+                word.setScore((float) score);
             });
             Set<MultiStem> temp = new HashSet<>();
-            temp.addAll(e.getValue().stream().sorted((s1, s2) -> Float.compare(s2.getScore(), s1.getScore())).limit(5).collect(Collectors.toList()));
-            e.getValue().clear();
-            e.getValue().addAll(temp.stream().map(m -> selfMap.get(m)).collect(Collectors.toList()));
-            if (e.getValue().size() > 0) {
-                int cpcIdx = cpcToIdx.get(e.getKey());
-                System.out.println("CPC " + e.getKey() + ": " + String.join("; ", e.getValue().stream().map(m -> m.getBestPhrase()).collect(Collectors.toList())));
-                e.getValue().forEach(word->{
-                    matrix.addToEntry(wordToIdx.get(word),cpcIdx,1d);
-                });
+            temp.addAll(cpc.getKeywords().stream().sorted((s1, s2) -> Float.compare(s2.getScore(), s1.getScore())).limit(5).collect(Collectors.toList()));
+            cpc.getKeywords().clear();
+            cpc.getKeywords().addAll(temp.stream().map(m -> selfMap.get(m)).collect(Collectors.toList()));
+            if (cpc.getKeywords().size() > 0) {
+                System.out.println("CPC " + cpc.toString() + ": " + String.join("; ", cpc.getKeywords().stream().map(m -> m.getBestPhrase()).collect(Collectors.toList())));
             }
         });
 
-        System.out.println("Stems before T: "+allWords.size());
-        allWords = Stage.applyFilters(new TechnologyScorer(), matrix, allWords, 0.5,1d,0.1);
-        allWords.forEach(stem->{
-            System.out.println("Good stem T: "+selfMap.get(stem).getBestPhrase());
-        });
-        System.out.println("Stems after T: "+allWords.size());
+        Set<MultiStem> stems = mainGroup.parallelStream().flatMap(cpc->cpc.getKeywords().stream()).collect(Collectors.toSet());
+        Stage5 stage5 = new Stage5(stage1, stems, new TimeDensityModel());
 
-
-        KeywordModelRunner.reindex(allWords);
-        System.out.println("Starting to build M matrix...");
-        Stage3 stage3 = new Stage3(allWords,new TimeDensityModel());
-        Function<Function<Map<String,Object>,Void>,Void> stage3Function = attrFunction -> {
-            stage3.runSamplingIterator(transformer, transformerRunner, attrFunction);
-            return null;
-        };
-
-        System.out.println("Stems before M: "+allWords.size());
-        RealMatrix M = stage3.buildMMatrix(allWords,selfMap,stage3Function);
-        allWords = Stage.applyFilters(new TermhoodScorer(), M, allWords,0.5,1d,0.1);
-        System.out.println("Finished M matrix");
-        System.out.println("Stems after M: "+allWords.size());
-        allWords.forEach(stem->{
-            System.out.println("Good stem M: "+selfMap.get(stem).getBestPhrase());
-        });
-
+        stage5.run(true);
     }
 
 }

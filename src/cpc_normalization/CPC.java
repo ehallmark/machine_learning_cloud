@@ -3,8 +3,11 @@ package cpc_normalization;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import models.keyphrase_prediction.MultiStem;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -22,12 +25,23 @@ public class CPC implements Serializable {
     private String name;
     @Getter
     private String[] parts;
+    @Getter
     private int numParts;
+    @Setter @Getter
+    private Set<MultiStem> keywords;
     public CPC(@NonNull String name) {
         this.name=name;
-        this.children = new HashSet<>();
+        this.children = Collections.synchronizedSet(new HashSet<>());
         this.parts = cpcToParts(name);
         this.numParts = (int) Stream.of(parts).filter(p->p!=null).count();
+    }
+
+    public int numSubclasses() {
+        if(children.isEmpty()) {
+            return 0;
+        } else {
+            return children.stream().mapToInt(child->child.numSubclasses()).sum();
+        }
     }
 
     @Override
@@ -38,6 +52,9 @@ public class CPC implements Serializable {
 
     @Override
     public int hashCode() {
+        if(name==null) {
+            return super.hashCode();
+        }
         return name.hashCode();
     }
 
