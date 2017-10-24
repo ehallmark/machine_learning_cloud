@@ -71,7 +71,7 @@ public class CPCHierarchy {
         allNodes.parallelStream().forEach(cpc->{
             if(cpc.getParent()==null) {
                 noParents.getAndIncrement();
-                //System.out.println("NO PARENT FOR: "+cpc.toString());
+                System.out.println("NO PARENT FOR: "+cpc.toString());
             }
         });
 
