@@ -6,7 +6,7 @@ package tools;
  */
 public class ClassCodeHandler {
     public static String convertToLabelFormat(String code) {
-        return code.replace("/","").replace(" ","");
+        return code.replace(" ","");
     }
 
     public static String convertToHumanFormat(String code) {
