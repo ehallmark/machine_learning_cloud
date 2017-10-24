@@ -142,7 +142,7 @@ public class CPCKeywordModel {
             }
         });
 
-        Set<MultiStem> stems = mainGroup.parallelStream().filter(cpc->cpc.getKeywords()!=null).flatMap(cpc->cpc.getKeywords().stream()).collect(Collectors.toSet());
+        Set<MultiStem> stems = cpcHierarchy.getLabelToCPCMap().values().parallelStream().filter(cpc->cpc.getKeywords()!=null).flatMap(cpc->cpc.getKeywords().stream()).collect(Collectors.toSet());
         System.out.println("num stems: "+stems.size());
         System.out.println("total words: "+stage1.get().size());
         Stage5 stage5 = new Stage5(stage1, stems, new TimeDensityModel());
