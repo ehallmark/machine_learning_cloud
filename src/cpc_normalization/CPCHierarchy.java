@@ -47,15 +47,18 @@ public class CPCHierarchy {
             prefixTrie.put(node.getName(),node);
         });
 
+        AtomicInteger connectionCounter = new AtomicInteger(0);
         allNodes.parallelStream().forEach(n1->{
             if(i.getAndIncrement() % 10000==9999) {
                 System.out.println("Completed "+i.get()+" cpcs.");
+                System.out.println("Num connections: "+connectionCounter.get());
             }
-            prefixTrie.getValuesForKeysStartingWith(n1.getName().substring(0,Math.max(2,n1.getName().lastIndexOf(-2)))).forEach(n2->{
+            prefixTrie.getValuesForKeysStartingWith(n1.getName()).forEach(n2->{
                 if(!n1.equals(n2)) {
                     if(n1.isParentOf(n2)) {
                         n2.setParent(n1);
                         n1.addChild(n2);
+                        connectionCounter.getAndIncrement();
                     }
                 }
             });
