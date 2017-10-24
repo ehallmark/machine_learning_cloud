@@ -54,7 +54,8 @@ public class CPCHierarchy {
                 System.out.println("Completed "+i.get()+" cpcs.");
                 System.out.println("Num connections: "+connectionCounter.get());
             }
-            prefixTrie.getValuesForKeysStartingWith(n1.getName()).forEach(n2->{
+            String name = String.join("",n1.getParts());
+            prefixTrie.getValuesForKeysStartingWith(name).forEach(n2->{
                 if(!n1.equals(n2)) {
                     if(n1.isParentOf(n2)) {
                         n2.setParent(n1);
