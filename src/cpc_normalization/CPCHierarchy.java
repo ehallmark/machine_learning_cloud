@@ -24,7 +24,7 @@ public class CPCHierarchy {
 
     public void run(Collection<String> allCPCs) {
         graph = new BayesianNet();
-        Collection<Node> allNodes = allCPCs.parallelStream().map(cpc->{
+        Collection<Node> allNodes = allCPCs.stream().map(cpc->{
             return graph.addBinaryNode(cpc);
         }).collect(Collectors.toList());
 
