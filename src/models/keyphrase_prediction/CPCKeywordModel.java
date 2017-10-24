@@ -67,7 +67,6 @@ public class CPCKeywordModel {
 
     public static void runModel() {
         Map<String,String> cpcToRawTitleMap = Database.getClassCodeToClassTitleMap();
-        List<String> CPCs = Collections.synchronizedList(new ArrayList<>(cpcToRawTitleMap.keySet()));
         Map<String,Collection<MultiStem>> cpcToTitleMap = Collections.synchronizedMap(new HashMap<>());
         CPCHierarchy cpcHierarchy = new CPCHierarchy();
         cpcHierarchy.loadGraph();
@@ -103,7 +102,7 @@ public class CPCKeywordModel {
         stage1.buildVocabularyCounts(function,attributes->{
             String cpcLabel = (String)attributes.get(Stage.ASSET_ID);
             CPC cpc = cpcHierarchy.getLabelToCPCMap().get(cpcLabel);
-            cpcToTitleMap.put(cpcLabel,(Collection<MultiStem>)attributes.get(Stage.APPEARED));
+            cpc.setKeywords(new HashSet<>((Collection<MultiStem>)attributes.get(Stage.APPEARED)));
             Map<MultiStem,AtomicInteger> appeared = (Map<MultiStem,AtomicInteger>)attributes.get(Stage.APPEARED_WITH_COUNTS);
             double val = 1d;
             appeared.entrySet().forEach(e->{
@@ -151,6 +150,8 @@ public class CPCKeywordModel {
         });
 
         Set<MultiStem> stems = mainGroup.parallelStream().filter(cpc->cpc.getKeywords()!=null).flatMap(cpc->cpc.getKeywords().stream()).collect(Collectors.toSet());
+        System.out.println("num stems: "+stems.size());
+        System.out.println("total words: "+stage1.get().size());
         Stage5 stage5 = new Stage5(stage1, stems, new TimeDensityModel());
         stage5.run(true);
     }
