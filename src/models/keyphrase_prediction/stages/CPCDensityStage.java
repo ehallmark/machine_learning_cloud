@@ -134,13 +134,12 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
                     Map<Integer,Double> cpcIndicesToScores = cpcToScoreMap.entrySet().stream().filter(e->cpcCodeIndexMap.containsKey(e.getKey().getName()))
                             .collect(Collectors.toMap(e->cpcCodeIndexMap.get(e.getKey().getName()),e->e.getValue()/e.getKey().numSubclasses()));
                     if (cpcIndicesToScores.size()>0) {
-                        double[] cpcScores = new double[cpcCodeIndexMap.size()];
                         cpcIndicesToScores.entrySet().forEach(e->{
-                            cpcScores[e.getKey()]=e.getValue();
+                            for (int stemIdx : multiStemIndices) {
+                                matrix.addToEntry(stemIdx, e.getKey(), e.getValue());
+                            }
                         });
-                        for (int stemIdx : multiStemIndices) {
-                            matrix.setRowVector(stemIdx, matrix.getRowVector(stemIdx).add(new ArrayRealVector(cpcScores)));
-                        }
+
                     }
                     cpcToScoreMap = cpcToScoreMap.entrySet().stream().filter(e -> e.getKey().getParent()!=null)
                             .collect(Collectors.groupingBy(e->e.getKey().getParent(),Collectors.summingDouble(e->e.getValue())));

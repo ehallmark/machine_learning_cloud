@@ -167,7 +167,7 @@ public class KeywordModelRunner {
                 .setScroll(new TimeValue(120000))
                 .setExplain(false)
                 .setFrom(0)
-                .setSize(1000)
+                .setSize(5000)
                 .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
                 .setQuery(query);
         if(sampling>0) {

@@ -68,7 +68,7 @@ public class DataSearcher {
     private static TransportClient client = MyClient.get();
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
-    private static final int PAGE_LIMIT = 1000;
+    private static final int PAGE_LIMIT = 5000;
     private static final String CLAIM_TEXT_ATTR_NAME = Constants.CLAIMS+"."+Constants.CLAIM;
     private static final boolean debug = false;
 
