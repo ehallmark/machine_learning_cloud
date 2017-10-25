@@ -1,5 +1,6 @@
 package models.keyphrase_prediction.stages;
 
+import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import elasticsearch.DataIngester;
 import models.classification_models.WIPOHelper;
@@ -43,9 +44,11 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
     private AtomicInteger notFoundCounter = new AtomicInteger(0);
     private AtomicInteger cnt = new AtomicInteger(0);
     private Set<MultiStem> multiStems;
-    public Stage5(Stage1 stage1, Set<MultiStem> multiStems, Model model,int year) {
+    private Map<MultiStem,Set<CPC>> multiStemCPCMap;
+    public Stage5(Stage1 stage1, Set<MultiStem> multiStems, Model model, int year, Map<MultiStem,Set<CPC>> multiStemCPCMap) {
         super(model,year);
         this.multiStems=multiStems;
+        this.multiStemCPCMap=multiStemCPCMap;
         multiStemToDocumentCountMap = stage1.get();
         multiStemToSelfMap=multiStemToDocumentCountMap.keySet().parallelStream().collect(Collectors.toMap(e->e,e->e));
     }

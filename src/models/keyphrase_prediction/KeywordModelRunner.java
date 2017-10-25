@@ -1,5 +1,6 @@
 package models.keyphrase_prediction;
 
+import cpc_normalization.CPC;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.models.*;
@@ -56,6 +57,8 @@ public class KeywordModelRunner {
 
         boolean alwaysRerun = false;
 
+        Map<MultiStem, Set<CPC>> multiStemCPCMap = new CPCKeywordModel().run(true);
+
         LocalDate now = LocalDate.now();
         int year;
         int maxYear = now.getYear();
@@ -98,7 +101,7 @@ public class KeywordModelRunner {
             // stage 4
             System.out.println("Pre-grouping data for cpc density stage...");
             System.out.println("Num multistems before CPC Density: "+multiStems.size());
-            CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model, year);
+            CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model, year, multiStemCPCMap);
             CPCDensityStage.run(alwaysRerun);
             // CPCDensityStage.createVisualization();
             multiStems = CPCDensityStage.get();
@@ -106,7 +109,7 @@ public class KeywordModelRunner {
 
             // stage 5
             System.out.println("Starting stage 5...");
-            Stage5 stage5 = new Stage5(stage1, multiStems, model, year);
+            Stage5 stage5 = new Stage5(stage1, multiStems, model, year, multiStemCPCMap);
             stage5.run(alwaysRerun||year==maxYear);
             try {
                 //stage5.createVisualization();
