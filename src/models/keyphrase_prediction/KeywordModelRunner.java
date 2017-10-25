@@ -54,7 +54,7 @@ public class KeywordModelRunner {
     public static void runModel() {
         Model model = new TimeDensityModel();
 
-        boolean alwaysRerun = true;
+        boolean alwaysRerun = false;
 
         LocalDate now = LocalDate.now();
         int year;
@@ -98,7 +98,7 @@ public class KeywordModelRunner {
             // stage 4
             System.out.println("Pre-grouping data for cpc density stage...");
             CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model, year);
-            CPCDensityStage.run(alwaysRerun);
+            CPCDensityStage.run(true);
             // CPCDensityStage.createVisualization();
             multiStems = CPCDensityStage.get();
 

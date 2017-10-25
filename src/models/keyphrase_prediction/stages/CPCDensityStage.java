@@ -96,7 +96,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             if(currentCpcs==null||currentCpcs.isEmpty()) return null;
 
             currentCpcs = currentCpcs.stream().map(cpc->ClassCodeHandler.convertToLabelFormat(cpc)).collect(Collectors.toList());
-            Collection<CPC> cpcs = currentCpcs.stream().map(cpc->hierarchy.getLabelToCPCMap().get(cpc)).filter(cpc->cpc!=null).collect(Collectors.toList());
+            Collection<CPC> cpcs = currentCpcs.stream().map(cpc->hierarchy.getLabelToCPCMap().get(cpc)).filter(cpc->cpc!=null).distinct().collect(Collectors.toList());
             Collection<MultiStem> multiStems = (Collection<MultiStem>) attributes.get(APPEARED);
             int[] multiStemIndices = multiStems.stream().map(m->multiStemIdxMap.get(m)).filter(i->i!=null).mapToInt(i->i).toArray();
             if(multiStemIndices.length>0) {
@@ -111,7 +111,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
 
                         }
                     }
-                    cpcs = cpcs.stream().map(cpc -> cpc.getParent()).filter(p -> p != null).collect(Collectors.toList());
+                    cpcs = cpcs.stream().map(cpc -> cpc.getParent()).filter(p -> p != null).distinct().collect(Collectors.toList());
                 }
             }
             return null;
