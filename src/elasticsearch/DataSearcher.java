@@ -54,6 +54,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static user_interface.server.SimilarPatentServer.SORT_DIRECTION_FIELD;
@@ -67,7 +68,7 @@ public class DataSearcher {
     private static TransportClient client = MyClient.get();
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
-    private static final int PAGE_LIMIT = 10000;
+    private static final int PAGE_LIMIT = 1000;
     private static final String CLAIM_TEXT_ATTR_NAME = Constants.CLAIMS+"."+Constants.CLAIM;
     private static final boolean debug = false;
 
@@ -210,7 +211,6 @@ public class DataSearcher {
             request.set(request.get().setQuery(queryBuilder.get()));
 
             SearchResponse response = request.get().get();
-
             return iterateOverSearchResults(response, hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore)), maxLimit, merge);
 
         } catch(Exception e) {
@@ -221,21 +221,25 @@ public class DataSearcher {
 
     public static Item[] iterateOverSearchResults(SearchResponse response, Function<SearchHit,Item> hitTransformer, int maxLimit, boolean merge) {
         //Scroll until no hits are returned
-        Item[] items = new Item[]{};
+        List<Item[]> items = Collections.synchronizedList(new ArrayList<>());
         long count = 0;
         do {
             System.out.println("Starting new batch. Num items = " + count);
-            Stream<SearchHit> searchHitStream = Arrays.stream(response.getHits().getHits());
-            if(!merge) {
-                // run in parallel
-                searchHitStream = searchHitStream.parallel();
+            SearchHit[] searchHits = response.getHits().getHits();
+            Item[] newItems = new Item[searchHits.length];
+            IntStream.range(0,newItems.length).parallel().forEach(i->{
+                Item transformation = hitTransformer.apply(searchHits[i]);
+                if(transformation!=null) {
+                    newItems[i]=transformation;
+                }
+            });
+            count+=searchHits.length;
+            if(merge) {
+                items.add(newItems);
             }
-            Item[] newItems = searchHitStream.map(hit->hitTransformer.apply(hit)).toArray(size->new Item[size]);
-            count+=newItems.length;
-            if(merge) items=merge(items,newItems);
             response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
         } while(response.getHits().getHits().length != 0 && (maxLimit < 0 || count < maxLimit)); // Zero hits mark the end of the scroll and the while loop.
-        return items;
+        return items.stream().flatMap(itemArray->Stream.of(itemArray)).toArray(size->new Item[size]);
     }
 
     private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, @NonNull String comparator, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request, AtomicReference<InnerHitBuilder> innerHitBuilder) {
