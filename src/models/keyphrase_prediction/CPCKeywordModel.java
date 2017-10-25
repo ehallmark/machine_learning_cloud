@@ -143,7 +143,6 @@ public class CPCKeywordModel extends Stage<Map<String,Collection<String>>> {
         Stage1 stage1 = new Stage1(model);
         stage1.run(alwaysRerun);
         Map<MultiStem,AtomicLong> multiStemToDocumentCount = stage1.get();
-        Map<MultiStem,MultiStem> multiStemToSelfMap = Collections.synchronizedMap(stage1.get().keySet().parallelStream().collect(Collectors.toMap(e->e,e->e)));
         //if(alwaysRerun)stage1.createVisualization();
 
         // time density stage
@@ -184,6 +183,7 @@ public class CPCKeywordModel extends Stage<Map<String,Collection<String>>> {
         AtomicInteger idx = new AtomicInteger(0);
         Map<MultiStem,Integer> importantToIndex = technologyStems.parallelStream().collect(Collectors.toMap(m->m,m->idx.getAndIncrement()));
         Map<Integer,MultiStem> indexToImportant = importantToIndex.entrySet().parallelStream().collect(Collectors.toMap(e->e.getValue(),e->e.getKey()));
+        Map<MultiStem,MultiStem> multiStemToSelfMap = Collections.synchronizedMap(multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e)));
 
         Function<Map<String,Object>,Void> cooccurrenceFunction = attributes -> {
             Map<MultiStem,AtomicInteger> appeared = (Map<MultiStem,AtomicInteger>)attributes.get(Stage.APPEARED_WITH_COUNTS);
