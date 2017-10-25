@@ -54,7 +54,6 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             RealMatrix T = buildTMatrix()._2;
             // save t matrix
             data = applyFilters(new TechnologyScorer(), T, data, defaultLower, defaultUpper, minValue);
-            data = data.parallelStream().filter(d->d.getScore()>0f).collect(Collectors.toSet());
             Database.saveObject(data, getFile());
             // write to csv for records
             KeywordModelRunner.writeToCSV(data, new File(getFile().getAbsoluteFile() + ".csv"));
@@ -108,7 +107,6 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
                             cpcIndicesToScores.entrySet().forEach(e->{
                                 matrix.addToEntry(stemIdx, e.getKey(), e.getValue());
                             });
-
                         }
                     }
                     cpcs = cpcs.stream().map(cpc -> cpc.getParent()).filter(p -> p != null).distinct().collect(Collectors.toList());

@@ -81,6 +81,8 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
     }
 
     private void runModel() {
+        System.out.println("Num all stems: "+multiStemToDocumentCountMap.size());
+        System.out.println("Num multistems important: "+multiStems.size());
         Set<MultiStem> allStems = new HashSet<>(multiStemToDocumentCountMap.keySet());
         SparseRealMatrix matrix = new OpenMapBigRealMatrix(allStems.size(),multiStems.size());
         KeywordModelRunner.reindex(allStems);

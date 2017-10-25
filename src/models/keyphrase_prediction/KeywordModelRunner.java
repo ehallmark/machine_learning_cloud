@@ -59,7 +59,7 @@ public class KeywordModelRunner {
         LocalDate now = LocalDate.now();
         int year;
         int maxYear = now.getYear();
-
+        Map<String,List<String>> technologyMap = Collections.synchronizedMap(new HashMap<>());
         for(year=maxYear-25;year<=maxYear;year++) {
 
             // stage 1
@@ -97,25 +97,30 @@ public class KeywordModelRunner {
 
             // stage 4
             System.out.println("Pre-grouping data for cpc density stage...");
+            System.out.println("Num multistems before CPC Density: "+multiStems.size());
             CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model, year);
-            CPCDensityStage.run(true);
+            CPCDensityStage.run(alwaysRerun);
             // CPCDensityStage.createVisualization();
             multiStems = CPCDensityStage.get();
+            System.out.println("Num multistems after CPC Density: "+multiStems.size());
 
             // stage 5
             System.out.println("Starting stage 5...");
             Stage5 stage5 = new Stage5(stage1, multiStems, model, year);
-            stage5.run(true);
+            stage5.run(alwaysRerun||year==maxYear);
             try {
                 //stage5.createVisualization();
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Error on visualization...");
             }
-
-            saveModelMap(model, stage5.get());
+            technologyMap.putAll(stage5.get());
             System.out.println("Num assets classified: " + stage5.get().size());
+            System.out.println("Total num assets so far: " + technologyMap.size());
         }
+
+        saveModelMap(model,technologyMap);
+
     }
 
 
