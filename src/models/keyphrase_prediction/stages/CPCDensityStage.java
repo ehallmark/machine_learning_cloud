@@ -3,6 +3,7 @@ package models.keyphrase_prediction.stages;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import elasticsearch.DataIngester;
+import lombok.Getter;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
@@ -35,6 +36,7 @@ import java.util.stream.Stream;
  */
 public class CPCDensityStage extends Stage<Set<MultiStem>> {
     private double minValue;
+    @Getter
     private static CPCHierarchy hierarchy = new CPCHierarchy();
     static {
         hierarchy.loadGraph();
@@ -98,17 +100,17 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             Collection<MultiStem> multiStems = (Collection<MultiStem>) attributes.get(APPEARED);
             int[] multiStemIndices = multiStems.stream().map(m->multiStemIdxMap.get(m)).filter(i->i!=null).mapToInt(i->i).toArray();
             if(multiStemIndices.length>0) {
-                double score = 1d;
                 while (cpcs.size() > 0) {
-                    int[] cpcIndices = cpcs.stream().map(cpc -> cpcCodeIndexMap.get(cpc.getName())).filter(cpc -> cpc != null).mapToInt(i -> i).toArray();
-                    if (!(cpcIndices == null || cpcIndices.length == 0)) {
+                    Map<Integer,Double> cpcIndicesToScores = cpcs.stream().filter(cpc->cpcCodeIndexMap.containsKey(cpc.getName()))
+                            .collect(Collectors.toMap(cpc->cpcCodeIndexMap.get(cpc.getName()),cpc->1d/cpc.numSubclasses()));
+                    if (cpcIndicesToScores.size()>0) {
                         for (int stemIdx : multiStemIndices) {
-                            for (int cpcIdx : cpcIndices) {
-                                matrix.addToEntry(stemIdx, cpcIdx, score);
-                            }
+                            cpcIndicesToScores.entrySet().forEach(e->{
+                                matrix.addToEntry(stemIdx, e.getKey(), e.getValue());
+                            });
+
                         }
                     }
-                    score /= 2d;
                     cpcs = cpcs.stream().map(cpc -> cpc.getParent()).filter(p -> p != null).collect(Collectors.toList());
                 }
             }

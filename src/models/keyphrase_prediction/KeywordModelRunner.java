@@ -54,7 +54,7 @@ public class KeywordModelRunner {
     public static void runModel() {
         Model model = new TimeDensityModel();
 
-        boolean alwaysRerun = false;
+        boolean alwaysRerun = true;
 
         LocalDate now = LocalDate.now();
         int year;

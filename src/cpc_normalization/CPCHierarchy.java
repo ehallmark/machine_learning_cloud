@@ -31,6 +31,16 @@ public class CPCHierarchy {
     public CPCHierarchy() {
     }
 
+    public Collection<CPC> cpcWithAncestors(String label) {
+        CPC cpc = labelToCPCMap.get(label);
+        List<CPC> list = new ArrayList<>();
+        while(cpc!=null) {
+            list.add(cpc);
+            cpc=cpc.getParent();
+        }
+        return list;
+    }
+
     public void run(Collection<String> allCPCs) {
         topLevel = Collections.synchronizedCollection(new HashSet<>());
         labelToCPCMap = Collections.synchronizedMap(new HashMap<>());

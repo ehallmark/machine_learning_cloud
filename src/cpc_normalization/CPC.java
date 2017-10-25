@@ -29,6 +29,7 @@ public class CPC implements Serializable {
     private int numParts;
     @Setter @Getter
     private Set<MultiStem> keywords;
+    private transient Integer numSubclasses;
     public CPC(@NonNull String name) {
         this.name=name;
         this.children = Collections.synchronizedSet(new HashSet<>());
@@ -37,11 +38,14 @@ public class CPC implements Serializable {
     }
 
     public int numSubclasses() {
+        if(numSubclasses!=null) return numSubclasses;
+
         if(children.isEmpty()) {
-            return 0;
+            numSubclasses = 0;
         } else {
-            return children.stream().mapToInt(child->child.numSubclasses()).sum();
+            numSubclasses = children.stream().mapToInt(child->child.numSubclasses()).sum();
         }
+        return numSubclasses;
     }
 
     @Override

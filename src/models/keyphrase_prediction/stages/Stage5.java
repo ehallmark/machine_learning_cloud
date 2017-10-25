@@ -1,5 +1,6 @@
 package models.keyphrase_prediction.stages;
 
+import cpc_normalization.CPCHierarchy;
 import elasticsearch.DataIngester;
 import models.classification_models.WIPOHelper;
 import models.keyphrase_prediction.KeywordModelRunner;
@@ -58,7 +59,7 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
             // print sample
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(getFile().getAbsolutePath() + ".csv")))) {
                 writer.write("Asset,Technologies\n");
-                data.entrySet().stream().limit(10000).forEach(e -> {
+                data.entrySet().stream().filter(e->e.getValue()!=null).limit(10000).forEach(e -> {
                     try {
                         writer.write(e.getKey() + "," + String.join("; ", e.getValue()) + "\n");
                     } catch (Exception _e) {
@@ -141,10 +142,12 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
                 return p1.add(p2);
             }).orElse(null);
 
+            CPCHierarchy hierarchy = cpcStage.getHierarchy();
             RealVector cpcResult = patentCPCMap.getOrDefault(asset, appCPCMap.getOrDefault(asset,Collections.emptySet())).stream()
                     .map(cpc-> ClassCodeHandler.convertToLabelFormat(cpc))
-                    .map(cpc->cpcToIdx.get(cpc)).filter(i->i!=null)
-                    .map(i->T.getColumnVector(i)).reduce((v1,v2)->{
+                    .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
+                    .filter(cpc->cpcToIdx.containsKey(cpc.getName()))
+                    .map(cpc->T.getColumnVector(cpcToIdx.get(cpc.getName())).mapDivide(cpc.numSubclasses())).reduce((v1,v2)->{
                         return v1.add(v2);
                     }).orElse(null);
             // unit length
@@ -165,11 +168,10 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
             if(result!=null) {
                 int maxIndex = result.getMaxIndex();
                 if(maxIndex >= 0) {
-                    technologies = Arrays.asList(indexToImportant.get(maxIndex).getBestPhrase());
+                    technologies = Arrays.asList(multiStemToSelfMap.get(indexToImportant.get(maxIndex)).getBestPhrase());
                 }
-                data.put(asset,technologies);
                 if (debug)
-                    System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
+                    System.out.println("Technologies for " + asset + ": " + technologies==null?null:String.join("; ", technologies));
             }
 
             if(technologies==null) {
@@ -178,7 +180,8 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
                     System.out.println("Missing technologies for: "+notFoundCounter.get());
                 }
             } else {
-                if(technologies!=null&&cnt.getAndIncrement()%10000==9999) {
+                data.put(asset,technologies);
+                if(cnt.getAndIncrement()%10000==9999) {
                     System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
                 }
             }
