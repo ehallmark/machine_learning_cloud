@@ -191,7 +191,7 @@ public class KeywordModelRunner {
                 ).must(QueryBuilders.boolQuery()
                         .should(QueryBuilders.termQuery(Constants.GRANTED,false))
                         .should(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()))
-                        .minimumShouldMatch(1).filter(query)
+                        .minimumShouldMatch(1)
                 );
 
         if(sampling > 0) {
