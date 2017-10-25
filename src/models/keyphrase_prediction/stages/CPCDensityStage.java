@@ -107,42 +107,24 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             String asset = (String)attributes.get(ASSET_ID);
             Map<MultiStem,AtomicInteger> wordCounts = (Map<MultiStem,AtomicInteger>)attributes.get(APPEARED_WITH_COUNTS);
             total.getAndIncrement();
-            Collection<String> currentCpcs = assetToCPCMap.getApplicationDataMap().getOrDefault(asset,assetToCPCMap.getPatentDataMap().getOrDefault(asset,Collections.emptySet()));
-            // add potential cpcs from keywords
-            currentCpcs = currentCpcs.stream().map(cpc->ClassCodeHandler.convertToLabelFormat(cpc)).collect(Collectors.toList());
-            Collection<CPC> cpcs = currentCpcs.stream().map(cpc->hierarchy.getLabelToCPCMap().get(cpc)).filter(cpc->cpc!=null).distinct().collect(Collectors.toList());
-            Map<CPC,Double> cpcToScoreMap = new HashMap<>(wordCounts.entrySet().stream().flatMap(e->{
-                Set<CPC> found = multiStemCPCMap.getOrDefault(e.getKey(),Collections.emptySet());
-                double count = e.getValue().get();
-                return found.stream().map(cpc->new Pair<>(cpc,(count/(found.size()*cpc.getKeywords().size()))));
-            }).collect(Collectors.groupingBy(pair->pair._1,Collectors.summingDouble(p->p._2))));
-            for(CPC cpc : cpcs) {
-                if(cpcToScoreMap.containsKey(cpc)) {
-                    cpcToScoreMap.put(cpc,cpcToScoreMap.get(cpc)+1d);
-                } else {
-                    cpcToScoreMap.put(cpc,1d);
-                }
-            }
+
+            Map<CPC,Double> cpcToScoreMap = computeCPCToScoreMap(asset,assetToCPCMap.getPatentDataMap(),assetToCPCMap.getApplicationDataMap(),
+                    hierarchy, wordCounts, multiStemCPCMap);
             if(cpcToScoreMap.isEmpty()) {
                 return null;
             }
-            cpcCount.getAndIncrement();
             Collection<MultiStem> multiStems = (Collection<MultiStem>) attributes.get(APPEARED);
             int[] multiStemIndices = multiStems.stream().map(m->multiStemIdxMap.get(m)).filter(i->i!=null).mapToInt(i->i).toArray();
             if(multiStemIndices.length>0) {
-                while (cpcToScoreMap.size() > 0) {
-                    Map<Integer,Double> cpcIndicesToScores = cpcToScoreMap.entrySet().stream().filter(e->cpcCodeIndexMap.containsKey(e.getKey().getName()))
-                            .collect(Collectors.toMap(e->cpcCodeIndexMap.get(e.getKey().getName()),e->e.getValue()/e.getKey().numSubclasses()));
-                    if (cpcIndicesToScores.size()>0) {
-                        cpcIndicesToScores.entrySet().forEach(e->{
-                            for (int stemIdx : multiStemIndices) {
-                                matrix.addToEntry(stemIdx, e.getKey(), e.getValue());
-                            }
-                        });
-
-                    }
-                    cpcToScoreMap = cpcToScoreMap.entrySet().stream().filter(e -> e.getKey().getParent()!=null)
-                            .collect(Collectors.groupingBy(e->e.getKey().getParent(),Collectors.summingDouble(e->e.getValue())));
+                Map<Integer,Double> cpcIndicesToScores = cpcToScoreMap.entrySet().stream().filter(e->cpcCodeIndexMap.containsKey(e.getKey().getName()))
+                        .collect(Collectors.toMap(e->cpcCodeIndexMap.get(e.getKey().getName()),e->e.getValue()/e.getKey().numSubclasses()));
+                if (cpcIndicesToScores.size()>0) {
+                    cpcIndicesToScores.entrySet().forEach(e->{
+                        for (int stemIdx : multiStemIndices) {
+                            matrix.addToEntry(stemIdx, e.getKey(), e.getValue());
+                        }
+                    });
+                    cpcCount.getAndIncrement();
                 }
             }
             return null;
@@ -153,6 +135,40 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         cpcRatio = new Double(cpcCount.get())/total.get();
 
         return new Pair<>(cpcCodeIndexMap,matrix);
+    }
+
+    public static Map<CPC,Double> computeCPCToScoreMap(String asset, Map<String,Set<String>> patentCPCMap, Map<String,Set<String>> appCPCMap, CPCHierarchy hierarchy, Map<MultiStem,AtomicInteger> wordCounts, Map<MultiStem,Set<CPC>> multiStemCPCMap) {
+        Collection<String> currentCpcs = patentCPCMap.getOrDefault(asset,appCPCMap.getOrDefault(asset,Collections.emptySet()));
+        // add potential cpcs from keywords
+        currentCpcs = currentCpcs.stream().map(cpc->ClassCodeHandler.convertToLabelFormat(cpc)).collect(Collectors.toList());
+        Map<CPC,Double> cpcToScoreMap = new HashMap<>(wordCounts.entrySet().stream().flatMap(e->{
+            Set<CPC> found = multiStemCPCMap.getOrDefault(e.getKey(),Collections.emptySet());
+            double count = e.getValue().get();
+            return found.stream().map(cpc->new Pair<>(cpc,(count/(found.size()*cpc.getKeywords().size()))));
+        }).collect(Collectors.groupingBy(pair->pair._1,Collectors.summingDouble(p->p._2))));
+        Collection<CPC> cpcs = currentCpcs.stream().map(cpc->hierarchy.getLabelToCPCMap().get(cpc)).filter(cpc->cpc!=null).flatMap(cpc->hierarchy.cpcWithAncestors(cpc.getName()).stream()).collect(Collectors.toList());
+        for(CPC cpc : cpcs) {
+            if(cpcToScoreMap.containsKey(cpc)) {
+                cpcToScoreMap.put(cpc,cpcToScoreMap.get(cpc)+1d/cpc.numSubclasses());
+            } else {
+                cpcToScoreMap.put(cpc,1d/cpc.numSubclasses());
+            }
+        }
+
+        Map<CPC,Double> toReturn = cpcToScoreMap;
+        while (cpcToScoreMap.size() > 0) {
+            cpcToScoreMap = cpcToScoreMap.entrySet().stream().filter(e -> e.getKey().getParent()!=null)
+                    .collect(Collectors.groupingBy(e->e.getKey().getParent(),Collectors.summingDouble(e->e.getValue())));
+            cpcToScoreMap.entrySet().forEach(e->{
+                toReturn.merge(e.getKey(),e.getValue(),(d1,d2)->{
+                    if(d1==null)d1=0d;
+                    if(d2==null)d2=0d;
+                    return d1+d2;
+                });
+            });
+        }
+
+        return toReturn;
     }
 
 }

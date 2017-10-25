@@ -150,11 +150,11 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
             }).orElse(null);
 
             CPCHierarchy hierarchy = cpcStage.getHierarchy();
-            RealVector cpcResult = patentCPCMap.getOrDefault(asset, appCPCMap.getOrDefault(asset,Collections.emptySet())).stream()
-                    .map(cpc-> ClassCodeHandler.convertToLabelFormat(cpc))
-                    .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
-                    .filter(cpc->cpcToIdx.containsKey(cpc.getName()))
-                    .map(cpc->T.getColumnVector(cpcToIdx.get(cpc.getName())).mapDivide(cpc.numSubclasses())).reduce((v1,v2)->{
+            Map<CPC,Double> cpcToScoreMap = CPCDensityStage.computeCPCToScoreMap(asset,patentCPCMap,appCPCMap,hierarchy, documentStems, multiStemCPCMap);
+
+            RealVector cpcResult = cpcToScoreMap.entrySet().stream()
+                    .filter(e->cpcToIdx.containsKey(e.getKey().getName()))
+                    .map(e->T.getColumnVector(cpcToIdx.get(e.getKey().getName())).mapMultiply(e.getValue()/e.getKey().numSubclasses())).reduce((v1,v2)->{
                         return v1.add(v2);
                     }).orElse(null);
             // unit length
