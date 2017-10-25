@@ -20,8 +20,8 @@ import java.util.stream.Stream;
 public class Stage2 extends Stage<Set<MultiStem>> {
     private long targetCardinality;
     private Map<MultiStem,AtomicLong> documentsAppearedInCounter;
-    public Stage2(Map<MultiStem,AtomicLong> documentsAppearedInCounter, Model model) {
-        super(model);
+    public Stage2(Map<MultiStem,AtomicLong> documentsAppearedInCounter, Model model, int year) {
+        super(model, year);
         this.documentsAppearedInCounter=documentsAppearedInCounter;
         this.targetCardinality=model.getKw();
     }

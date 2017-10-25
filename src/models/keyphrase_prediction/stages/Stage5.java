@@ -10,6 +10,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import seeding.Constants;
 import seeding.Database;
+import tools.ClassCodeHandler;
 import tools.OpenMapBigRealMatrix;
 import tools.Stemmer;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
@@ -40,9 +41,9 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
     private Map<MultiStem,AtomicLong> multiStemToDocumentCountMap;
     private AtomicInteger notFoundCounter = new AtomicInteger(0);
     private AtomicInteger cnt = new AtomicInteger(0);
-    private Collection<MultiStem> multiStems;
-    public Stage5(Stage1 stage1, Set<MultiStem> multiStems, Model model) {
-        super(model);
+    private Set<MultiStem> multiStems;
+    public Stage5(Stage1 stage1, Set<MultiStem> multiStems, Model model,int year) {
+        super(model,year);
         this.multiStems=multiStems;
         multiStemToDocumentCountMap = stage1.get();
         multiStemToSelfMap=multiStemToDocumentCountMap.keySet().parallelStream().collect(Collectors.toMap(e->e,e->e));
@@ -79,7 +80,7 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
     }
 
     private void runModel() {
-        Collection<MultiStem> allStems = new HashSet<>(multiStemToDocumentCountMap.keySet());
+        Set<MultiStem> allStems = new HashSet<>(multiStemToDocumentCountMap.keySet());
         SparseRealMatrix matrix = new OpenMapBigRealMatrix(allStems.size(),multiStems.size());
         KeywordModelRunner.reindex(allStems);
         AtomicInteger idx = new AtomicInteger(0);
@@ -105,8 +106,20 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
         };
         runSamplingIterator(cooccurrenceFunction);
 
+        // load T matrix
+        importantToIndex.entrySet().parallelStream().forEach(e->e.getKey().setIndex(e.getValue())); // ensure proper indices
+        CPCDensityStage cpcStage = new CPCDensityStage(multiStems,model,year);
+        Pair<Map<String,Integer>,RealMatrix> pair = cpcStage.buildTMatrix(false);
+
+        Map<String,Integer> cpcToIdx = pair._1;
+        RealMatrix T = pair._2;
+
         // turn of sampling
         this.sampling=-1;
+
+        AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
+        Map<String,Set<String>> patentCPCMap = assetToCPCMap.getPatentDataMap();
+        Map<String,Set<String>> appCPCMap = assetToCPCMap.getApplicationDataMap();
 
         data = Collections.synchronizedMap(new HashMap<>());
         Function<Map<String,Object>,Void> attributesFunction = map-> {
@@ -128,7 +141,27 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
                 return p1.add(p2);
             }).orElse(null);
 
+            RealVector cpcResult = patentCPCMap.getOrDefault(asset, appCPCMap.getOrDefault(asset,Collections.emptySet())).stream()
+                    .map(cpc-> ClassCodeHandler.convertToLabelFormat(cpc))
+                    .map(cpc->cpcToIdx.get(cpc)).filter(i->i!=null)
+                    .map(i->T.getColumnVector(i)).reduce((v1,v2)->{
+                        return v1.add(v2);
+                    }).orElse(null);
+            // unit length
+            if(cpcResult!=null) {
+                cpcResult = cpcResult.mapDivide(cpcResult.getNorm());
+            }
+            if(result!=null) {
+                result = result.mapDivide(result.getNorm());
+            }
+
             List<String> technologies = null;
+
+            if(result == null) {
+                result = cpcResult;
+            } else if (cpcResult!=null) {
+                result = result.add(cpcResult);
+            }
             if(result!=null) {
                 int maxIndex = result.getMaxIndex();
                 if(maxIndex >= 0) {

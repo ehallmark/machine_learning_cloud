@@ -40,8 +40,8 @@ public class Stage3 extends Stage<Set<MultiStem>> {
     private double lowerBound;
     private double upperBound;
     private double minValue;
-    public Stage3(Collection<MultiStem> multiStems, Model model) {
-        super(model);
+    public Stage3(Collection<MultiStem> multiStems, Model model, int year) {
+        super(model, year);
         this.data = new HashSet<>(multiStems);
         this.multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
         this.lowerBound=model.getStage3Lower();

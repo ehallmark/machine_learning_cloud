@@ -54,8 +54,10 @@ public abstract class Stage<V> {
     protected V data;
     protected int sampling;
     protected Model model;
-    public Stage(Model model) {
+    protected int year;
+    protected Stage(Model model, int year) {
         this.model=model;
+        this.year=year;
         this.sampling=model.getSampling();
         if(!baseDir.exists()) baseDir.mkdir();
         if(!baseDir.isDirectory()) throw new RuntimeException(baseDir.getAbsolutePath()+" must be a directory.");
@@ -73,7 +75,7 @@ public abstract class Stage<V> {
         this.data=data;
     }
     public File getFile() {
-        return new File(mainDir,this.getClass().getSimpleName());
+        return new File(mainDir,this.getClass().getSimpleName()+"-"+year);
     }
 
     public abstract V run(boolean run);
@@ -103,7 +105,7 @@ public abstract class Stage<V> {
         // now we have keywords
         KeywordModelRunner.reindex(multiStems);
         Map<MultiStem,MultiStem> multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
-        double[][] matrix = new Stage3(multiStems,model).buildMMatrix(multiStems,multiStemToSelfMap).getData();
+        double[][] matrix = new Stage3(multiStems,model,year).buildMMatrix(multiStems,multiStemToSelfMap).getData();
         double[] sums = Stream.of(matrix).mapToDouble(row-> DoubleStream.of(row).sum()).toArray();
 
         multiStems.forEach(stem->{
@@ -297,7 +299,7 @@ public abstract class Stage<V> {
         };
 
         Function<Function,Void> transformerRunner = v -> {
-            KeywordModelRunner.streamElasticSearchData(v,sampling);
+            KeywordModelRunner.streamElasticSearchData(v,year,sampling);
             return null;
         };
 

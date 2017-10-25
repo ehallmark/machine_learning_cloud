@@ -35,12 +35,12 @@ public class CPCKeywordModel extends Stage<Map<String,Collection<String>>> {
     public static final boolean debug = false;
     private static final File modelFile = new File(Constants.DATA_FOLDER+"cpc_keyword_model.jobj");
 
-    public CPCKeywordModel() {
-        super(new TimeDensityModel());
+    public CPCKeywordModel(int year) {
+        super(new TimeDensityModel(),year);
     }
 
     public static void main(String[] args) {
-        Map<String,Collection<String>> technologyMap = new CPCKeywordModel().run(true);
+        Map<String,Collection<String>> technologyMap = new CPCKeywordModel(2010).run(true);
         System.out.println("Tech map size: "+technologyMap.size());
         Database.trySaveObject(technologyMap,modelFile);
     }
@@ -60,7 +60,7 @@ public class CPCKeywordModel extends Stage<Map<String,Collection<String>>> {
 
             System.out.println("Num group level cpcs: " + mainGroup.size());
 
-            Stage1 stage1 = new Stage1(new TimeDensityModel(), 1);
+            Stage1 stage1 = new Stage1(new TimeDensityModel(),1,year);
 
             Function<Pair<CPC, String>, Item> transformer = hit -> {
                 String text = hit._2.toLowerCase();
@@ -140,7 +140,7 @@ public class CPCKeywordModel extends Stage<Map<String,Collection<String>>> {
 
         // stage 1
 
-        Stage1 stage1 = new Stage1(model);
+        Stage1 stage1 = new Stage1(model,year);
         stage1.run(alwaysRerun);
         Map<MultiStem,AtomicLong> multiStemToDocumentCount = stage1.get();
         //if(alwaysRerun)stage1.createVisualization();
@@ -152,28 +152,28 @@ public class CPCKeywordModel extends Stage<Map<String,Collection<String>>> {
 
         // stage 2
         System.out.println("Pre-grouping data for stage 2...");
-        Stage2 stage2 = new Stage2(stage1.get(), model);
+        Stage2 stage2 = new Stage2(stage1.get(), model, year);
         stage2.run(alwaysRerun);
         //if(alwaysRerun)stage2.createVisualization();
         multiStems = stage2.get();
 
 
         System.out.println("Pre-grouping data for time density stage...");
-        TimeDensityStage timeDensityStage = new TimeDensityStage(multiStems, model);
+        TimeDensityStage timeDensityStage = new TimeDensityStage(multiStems, model, year);
         timeDensityStage.run(alwaysRerun);
         //if(alwaysRerun) timeDensityStage.createVisualization();
         multiStems = timeDensityStage.get();
 
         // stage 3
         System.out.println("Pre-grouping data for stage 3...");
-        Stage3 stage3 = new Stage3(multiStems, model);
+        Stage3 stage3 = new Stage3(multiStems, model, year);
         stage3.run(alwaysRerun);
         //if(alwaysRerun) stage3.createVisualization();
         multiStems = stage3.get();
 
         // stage 4
         System.out.println("Pre-grouping data for cpc density stage...");
-        CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model);
+        CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model, year);
         CPCDensityStage.run(alwaysRerun);
         // CPCDensityStage.createVisualization();
         multiStems = CPCDensityStage.get();

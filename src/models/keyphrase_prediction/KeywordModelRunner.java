@@ -46,6 +46,7 @@ public class KeywordModelRunner {
     public static final boolean debug = false;
 
 
+
     public static void main(String[] args) {
         runModel();
     }
@@ -55,58 +56,65 @@ public class KeywordModelRunner {
 
         boolean alwaysRerun = false;
 
-        // stage 1
+        LocalDate now = LocalDate.now();
+        int year;
+        int maxYear = now.getYear();
 
-        Stage1 stage1 = new Stage1(model);
-        stage1.run(alwaysRerun);
-        //if(alwaysRerun)stage1.createVisualization();
+        for(year=maxYear-25;year<maxYear;year++) {
 
-        // time density stage
-        System.out.println("Computing time densities...");
+            // stage 1
 
-        Set<MultiStem> multiStems;
+            Stage1 stage1 = new Stage1(model,year);
+            stage1.run(alwaysRerun);
+            //if(alwaysRerun)stage1.createVisualization();
 
-        // stage 2
-        System.out.println("Pre-grouping data for stage 2...");
-        Stage2 stage2 = new Stage2(stage1.get(), model);
-        stage2.run(alwaysRerun);
-        //if(alwaysRerun)stage2.createVisualization();
-        multiStems = stage2.get();
+            // time density stage
+            System.out.println("Computing time densities...");
+
+            Set<MultiStem> multiStems;
+
+            // stage 2
+            System.out.println("Pre-grouping data for stage 2...");
+            Stage2 stage2 = new Stage2(stage1.get(), model, year);
+            stage2.run(alwaysRerun);
+            //if(alwaysRerun)stage2.createVisualization();
+            multiStems = stage2.get();
 
 
-        System.out.println("Pre-grouping data for time density stage...");
-        TimeDensityStage timeDensityStage = new TimeDensityStage(multiStems, model);
-        timeDensityStage.run(alwaysRerun);
-        //if(alwaysRerun) timeDensityStage.createVisualization();
-        multiStems = timeDensityStage.get();
+            System.out.println("Pre-grouping data for time density stage...");
+            TimeDensityStage timeDensityStage = new TimeDensityStage(multiStems, model, year);
+            timeDensityStage.run(alwaysRerun);
+            //if(alwaysRerun) timeDensityStage.createVisualization();
+            multiStems = timeDensityStage.get();
 
-        // stage 3
-        System.out.println("Pre-grouping data for stage 3...");
-        Stage3 stage3 = new Stage3(multiStems, model);
-        stage3.run(alwaysRerun);
-        //if(alwaysRerun) stage3.createVisualization();
-        multiStems = stage3.get();
+            // stage 3
+            System.out.println("Pre-grouping data for stage 3...");
+            Stage3 stage3 = new Stage3(multiStems, model, year);
+            stage3.run(alwaysRerun);
+            //if(alwaysRerun) stage3.createVisualization();
+            multiStems = stage3.get();
 
-        // stage 4
-        System.out.println("Pre-grouping data for cpc density stage...");
-        CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model);
-        CPCDensityStage.run(alwaysRerun);
-        // CPCDensityStage.createVisualization();
-        multiStems = CPCDensityStage.get();
+            // stage 4
+            System.out.println("Pre-grouping data for cpc density stage...");
+            CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model, year);
+            CPCDensityStage.run(alwaysRerun);
+            // CPCDensityStage.createVisualization();
+            multiStems = CPCDensityStage.get();
 
-        // stage 5
-        System.out.println("Starting stage 5...");
-        Stage5 stage5 = new Stage5(stage1, multiStems, model);
-        stage5.run(true);
-        try {
-            //stage5.createVisualization();
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Error on visualization...");
+            // stage 5
+            System.out.println("Starting stage 5...");
+            Stage5 stage5 = new Stage5(stage1, multiStems, model, year);
+            stage5.run(true);
+            try {
+                //stage5.createVisualization();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Error on visualization...");
+            }
+
+            saveModelMap(model, stage5.get());
+            System.out.println("Num assets classified: " + stage5.get().size());
         }
-
-        saveModelMap(model,stage5.get());
-        System.out.println("Num assets classified: "+stage5.get().size());
     }
 
 
@@ -152,10 +160,15 @@ public class KeywordModelRunner {
         DataSearcher.iterateOverSearchResults(response, transformer, sampling, false);
     }
 
-    public static void streamElasticSearchData(Function<SearchHit,Item> transformer, int sampling) {
+    public static void streamElasticSearchData(Function<SearchHit,Item> transformer, int year, int sampling) {
         QueryBuilder query;
         if(sampling>0) {
-            query = QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(),ScoreFunctionBuilders.randomFunction(23));
+            query = QueryBuilders.boolQuery()
+                    .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(),ScoreFunctionBuilders.randomFunction(23)))
+                    .filter(QueryBuilders.rangeQuery(Constants.FILING_DATE)
+                            .gte(""+(year-2)+"-01-01")
+                            .lt(""+(year+3)+"-01-01")
+                    );
         } else {
             query = QueryBuilders.matchAllQuery();
         }
@@ -167,7 +180,7 @@ public class KeywordModelRunner {
 
         if(sampling > 0) {
             // remove plant and design patents
-            QueryBuilders.boolQuery()
+            query = QueryBuilders.boolQuery()
                     .must(query)
                     .filter(
                             QueryBuilders.boolQuery()

@@ -7,18 +7,15 @@ import lombok.Getter;
  */
 public class TimeDensityModel implements Model {
     @Getter
-    final long Kw = 500000;
-
-    @Getter
-    final int maxCpcLength = 9;
+    final long Kw = 100000;
 
     @Override
     public String getModelName() {
         return "timedensity";
     }
 
-    @Override
-    public  int getSampling() { return 500000; }
+    @Getter
+    int sampling = 200000;
 
     @Getter
     double stage4Upper = 1d;
@@ -44,5 +41,5 @@ public class TimeDensityModel implements Model {
     @Getter
     double stage1Lower = 0.0;
     @Getter
-    int minDocFrequency = 3;
+    int minDocFrequency = 10;
 }

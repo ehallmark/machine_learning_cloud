@@ -22,11 +22,11 @@ import java.util.stream.Collectors;
  */
 public class TimeDensityStage extends Stage<Set<MultiStem>> {
     private static final boolean debug = false;
-    private double lowerBound = 0.3;
+    private double lowerBound = 0.20;
     private double upperBound = 1;
     private double minValue = 0d;
-    public TimeDensityStage(Set<MultiStem> keywords, Model model) {
-        super(model);
+    public TimeDensityStage(Set<MultiStem> keywords, Model model, int year) {
+        super(model, year);
         this.data = keywords;
     }
 
@@ -60,9 +60,9 @@ public class TimeDensityStage extends Stage<Set<MultiStem>> {
         Map<MultiStem,Integer> multiStemIdxMap = data.parallelStream().collect(Collectors.toMap(e->e,e->e.getIndex()));
         Map<Integer,Integer> dateToIndexMap = Collections.synchronizedMap(new HashMap<>());
         {
-            LocalDate date = LocalDate.now().minusYears(25);
+            LocalDate date = LocalDate.of(year,1,1).minusYears(2);
             int i = 0;
-            while (date.isBefore(LocalDate.now())) {
+            while (date.isBefore(LocalDate.of(year+3,1,1))) {
                 int time = date.getYear() * 12 + date.getMonthValue();
                 dateToIndexMap.put(time, i);
                 date = date.plusMonths(1);

@@ -5,9 +5,6 @@ package models.keyphrase_prediction.models;
  */
 public interface Model {
     long getKw();
-    double getStage1Lower();
-    double getStage1Upper();
-    int getMaxCpcLength();
     String getModelName();
     double getStage3Lower();
     double getStage3Upper();

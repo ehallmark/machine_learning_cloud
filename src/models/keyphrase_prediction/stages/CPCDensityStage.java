@@ -11,6 +11,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.elasticsearch.search.SearchHit;
 import seeding.Constants;
 import seeding.Database;
+import tools.ClassCodeHandler;
 import tools.OpenMapBigRealMatrix;
 import tools.Stemmer;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
@@ -32,14 +33,12 @@ import java.util.stream.Stream;
  */
 public class CPCDensityStage extends Stage<Set<MultiStem>> {
     private static final boolean debug = false;
-    private final int maxCpcLength;
     private double lowerBound;
     private double upperBound;
     private double minValue;
-    public CPCDensityStage(Set<MultiStem> keywords, Model model) {
-        super(model);
+    public CPCDensityStage(Set<MultiStem> keywords, Model model, int year) {
+        super(model,year);
         this.data = keywords;
-        this.maxCpcLength=model.getMaxCpcLength();
         this.upperBound=model.getStage4Upper();
         this.lowerBound=model.getStage4Lower();
         this.minValue = model.getStage4Min();
@@ -49,8 +48,8 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
     public Set<MultiStem> run(boolean alwaysRerun) {
         if(alwaysRerun || !getFile().exists()) {
             // apply filter 3
-            RealMatrix T = buildTMatrix(maxCpcLength)._2;
-
+            RealMatrix T = buildTMatrix()._2;
+            // save t matrix
             data = applyFilters(new TechnologyScorer(), T, data, lowerBound, upperBound, minValue);
             data = data.parallelStream().filter(d->d.getScore()>0f).collect(Collectors.toSet());
             Database.saveObject(data, getFile());
@@ -66,13 +65,16 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         return data;
     }
 
+    public Pair<Map<String,Integer>,RealMatrix> buildTMatrix() {
+        return buildTMatrix(true);
+    }
 
-    public Pair<Map<String,Integer>,RealMatrix> buildTMatrix(int maxCpcLength) {
-        KeywordModelRunner.reindex(data);
+    public Pair<Map<String,Integer>,RealMatrix> buildTMatrix(boolean reindex) {
+        if(reindex) KeywordModelRunner.reindex(data);
         Map<MultiStem,Integer> multiStemIdxMap = data.parallelStream().collect(Collectors.toMap(e->e,e->e.getIndex()));
 
         // create cpc code co-occurrrence statistics
-        List<String> allCpcCodes = Database.getClassCodes().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
+        List<String> allCpcCodes = Database.getClassCodes().stream().map(cpc-> ClassCodeHandler.convertToLabelFormat(cpc)).distinct().collect(Collectors.toList());
         System.out.println("Num cpc codes found: "+allCpcCodes.size());
         Map<String,Integer> cpcCodeIndexMap = Collections.synchronizedMap(new HashMap<>());
 
@@ -90,7 +92,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             Collection<String> currentCpcs = assetToCPCMap.getApplicationDataMap().getOrDefault(asset,assetToCPCMap.getPatentDataMap().get(asset));
             if(currentCpcs==null||currentCpcs.isEmpty()) return null;
 
-            int[] cpcIndices = currentCpcs.stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).map(cpc->cpcCodeIndexMap.get(cpc)).filter(cpc->cpc!=null).mapToInt(i->i).toArray();
+            int[] cpcIndices = currentCpcs.stream().map(cpc->ClassCodeHandler.convertToLabelFormat(cpc)).map(cpc->cpcCodeIndexMap.get(cpc)).filter(cpc->cpc!=null).mapToInt(i->i).toArray();
             if(cpcIndices==null||cpcIndices.length==0) return null;
 
             Collection<MultiStem> cooccurringStems = Collections.synchronizedCollection(new ArrayList<>());
