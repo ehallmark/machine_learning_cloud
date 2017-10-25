@@ -182,16 +182,17 @@ public class KeywordModelRunner {
                             .lt(""+(year+1)+"-01-01")
                     );
         }
-        BoolQueryBuilder innerQuery = QueryBuilders.boolQuery().must(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, query,false)
-                .innerHit(new InnerHitBuilder()
-                        .setSize(1)
-                        .setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE,Constants.WIPO_TECHNOLOGY}, new String[]{}))
-                )).must(
-                QueryBuilders.boolQuery()
+        BoolQueryBuilder innerQuery = QueryBuilders.boolQuery()
+                .must(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, query,false)
+                        .innerHit(new InnerHitBuilder()
+                                        .setSize(1)
+                                        .setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE,Constants.WIPO_TECHNOLOGY}, new String[]{}))
+                        )
+                ).must(QueryBuilders.boolQuery()
                         .should(QueryBuilders.termQuery(Constants.GRANTED,false))
                         .should(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()))
                         .minimumShouldMatch(1).filter(query)
-        );
+                );
 
         if(sampling > 0) {
             // remove plant and design patents
