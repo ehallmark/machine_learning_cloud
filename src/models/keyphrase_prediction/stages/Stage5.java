@@ -114,7 +114,7 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
 
         // load T matrix
         importantToIndex.entrySet().parallelStream().forEach(e->e.getKey().setIndex(e.getValue())); // ensure proper indices
-        CPCDensityStage cpcStage = new CPCDensityStage(multiStems,model,year);
+        CPCDensityStage cpcStage = new CPCDensityStage(multiStems,model,year,multiStemCPCMap);
         Pair<Map<String,Integer>,RealMatrix> pair = cpcStage.buildTMatrix(false);
 
         Map<String,Integer> cpcToIdx = pair._1;
