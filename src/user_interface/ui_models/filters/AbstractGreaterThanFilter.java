@@ -80,8 +80,9 @@ public class AbstractGreaterThanFilter extends AbstractFilter {
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+        String type = getFieldType().equals(FieldType.Date) ? "text" : "number";
         return div().with(
-                input().withClass("form-control").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withType("number").withName(getName())
+                input().withClass("form-control").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withType(type).withName(getName())
         );
     }
 }
