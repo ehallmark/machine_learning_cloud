@@ -75,13 +75,13 @@ public class AbstractBetweenFilter extends AbstractFilter {
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         if(getFieldType().equals(FieldType.Date)) {
-            this.min = SimilarPatentServer.extractString(params, minName, null);
-            this.max = SimilarPatentServer.extractString(params, maxName, null);
-            if(min != null) {
+            this.min = SimilarPatentServer.extractArray(params, minName).stream().findFirst().orElse(null);
+            this.max = SimilarPatentServer.extractArray(params, maxName).stream().findFirst().orElse(null);
+            if(min != null && min.toString().length()>0) {
                 min = LocalDate.parse(min.toString()).format(DateTimeFormatter.ISO_DATE);
                 System.out.println("Found start date: "+min);
             }
-            if(max != null) {
+            if(max != null && max.toString().length()>0) {
                 max = LocalDate.parse(max.toString()).format(DateTimeFormatter.ISO_DATE);
                 System.out.println("Found end date: "+max);
             }
@@ -95,13 +95,14 @@ public class AbstractBetweenFilter extends AbstractFilter {
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+        String type = getFieldType().equals(FieldType.Date) ? "text" : "number";
         return div().withClass("row").with(
                 div().withClass("col-6").with(
                         label("Min"),
-                        input().withClass("form-control").withType("number").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()+minName.replaceAll("[\\[\\]]","")).withName(minName)
+                        input().withClass("form-control").withType(type).withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()+minName.replaceAll("[\\[\\]]","")).withName(minName)
                 ), div().withClass("col-6").with(
                         label("Max"),
-                        input().withClass("form-control").withType("number").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()+maxName.replaceAll("[\\[\\]]","")).withName(maxName)
+                        input().withClass("form-control").withType(type).withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()+maxName.replaceAll("[\\[\\]]","")).withName(maxName)
                 )
         );
     }
