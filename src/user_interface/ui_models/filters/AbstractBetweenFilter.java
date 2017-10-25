@@ -5,6 +5,7 @@ import lombok.NonNull;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import scala.tools.nsc.Global;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
@@ -78,12 +79,24 @@ public class AbstractBetweenFilter extends AbstractFilter {
             this.min = SimilarPatentServer.extractArray(params, minName).stream().findFirst().orElse(null);
             this.max = SimilarPatentServer.extractArray(params, maxName).stream().findFirst().orElse(null);
             if(min != null && min.toString().length()>0) {
-                min = LocalDate.parse(min.toString()).format(DateTimeFormatter.ISO_DATE);
+                try {
+                    min = LocalDate.parse(min.toString()).format(DateTimeFormatter.ISO_DATE);
+                } catch(Exception e) {
+                    throw new RuntimeException("Error parsing date: "+min);
+                }
                 System.out.println("Found start date: "+min);
+            } else {
+                min = null;
             }
             if(max != null && max.toString().length()>0) {
-                max = LocalDate.parse(max.toString()).format(DateTimeFormatter.ISO_DATE);
+                try {
+                    max = LocalDate.parse(max.toString()).format(DateTimeFormatter.ISO_DATE);
+                } catch(Exception e) {
+                    throw new RuntimeException("Error parsing date: "+max);
+                }
                 System.out.println("Found end date: "+max);
+            } else {
+                max = null;
             }
         } else {
             this.min = SimilarPatentServer.extractDoubleFromArrayField(params, minName, null);

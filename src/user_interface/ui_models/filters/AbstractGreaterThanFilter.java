@@ -67,9 +67,15 @@ public class AbstractGreaterThanFilter extends AbstractFilter {
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         if(getFieldType().equals(FieldType.Date)) {
-            this.limit = SimilarPatentServer.extractString(params, getName(), null);
-            if(limit != null) {
-                limit = LocalDate.parse(limit.toString()).format(DateTimeFormatter.ISO_DATE);
+            this.limit = SimilarPatentServer.extractArray(params, getName()).stream().findFirst().orElse(null);
+            if(limit != null && limit.toString().length()>0) {
+                try {
+                    limit = LocalDate.parse(limit.toString()).format(DateTimeFormatter.ISO_DATE);
+                } catch(Exception e) {
+                    throw new RuntimeException("Error parsing date: "+limit);
+                }
+            } else {
+                limit = null;
             }
         } else {
             this.limit = SimilarPatentServer.extractDoubleFromArrayField(params, getName(), null);
