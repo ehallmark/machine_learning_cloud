@@ -9,6 +9,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.compdb.CreateCompDBAssigneeTransactionData;
 import assignee_normalization.AssigneeTrimmer;
+import tools.ClassCodeHandler;
 import user_interface.ui_models.attributes.AssetNumberAttribute;
 import user_interface.ui_models.attributes.ReelFrameAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.*;
@@ -485,6 +486,16 @@ public class Database {
 		SortedSet<String> possible = new TreeSet<>();
 		if(getAssignees().contains(cleanBase)) possible.add(cleanBase);
 		getAssigneePrefixTrie().getValuesForKeysStartingWith(cleanBase).forEach(a->possible.add(a));
+		return new ArrayList<>(possible);
+	}
+
+	public synchronized static List<String> sortedPossibleClassCodes(String base) {
+		if(base==null||base.isEmpty()) return Collections.emptyList();
+		final String cleanBase = ClassCodeHandler.convertToLabelFormat(base);
+		if(cleanBase.isEmpty()) return Collections.emptyList();
+		SortedSet<String> possible = new TreeSet<>();
+		if(getClassCodes().contains(cleanBase)) possible.add(cleanBase);
+		getClassCodesPrefixTrie().getValuesForKeysStartingWith(cleanBase).forEach(a->possible.add(a));
 		return new ArrayList<>(possible);
 	}
 

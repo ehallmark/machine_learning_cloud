@@ -143,6 +143,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Assignee Acquisitions (CompDB)", Constants.COMPDB_ASSETS_PURCHASED);
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Patents",PortfolioList.Type.patents.toString());
+            humanAttrToJavaAttrMap.put("(Normalized) Assignee",Constants.NORMALIZED_LATEST_ASSIGNEE);
+            humanAttrToJavaAttrMap.put("(Normalized) Portfolio Size", Constants.NORMALIZED_PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Cited Date", Constants.CITED_DATE);
@@ -721,6 +723,21 @@ public class SimilarPatentServer {
         get(Constants.ASSIGNEE_NAME_AJAX_URL, (req,res)->{
             Function<String,List<String>> resultsSearchFunction = search -> Database.sortedPossibleAssignees(search);
             Function<String,String> displayFunction = result ->  result + " (" + Database.getAssetCountFor(result)+")";
+            return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
+        });
+
+        // setup select2 ajax remote data sources
+        get(Constants.CPC_CODE_AJAX_URL, (req,res)->{
+            Function<String,List<String>> resultsSearchFunction = search -> Database.sortedPossibleClassCodes(search);
+            Function<String,String> displayFunction = result -> result;
+            return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
+        });
+
+        // TODO get technology filtering for AJAX
+        // setup select2 ajax remote data sources
+        get(Constants.GTT_TECHNOLOGY_AJAX_URL, (req,res)->{
+            Function<String,List<String>> resultsSearchFunction = search -> new ArrayList<>();
+            Function<String,String> displayFunction = result -> result;
             return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
         });
 

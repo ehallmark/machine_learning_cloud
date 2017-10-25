@@ -4,6 +4,7 @@ import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
 import tools.ClassCodeHandler;
+import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
@@ -16,9 +17,9 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class CPCAttribute extends AbstractAttribute {
+public class CPCAttribute extends AbstractAttribute implements AjaxMultiselect {
     public CPCAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.PrefixInclude, AbstractFilter.FilterType.PrefixExclude));
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }
 
     @Override
@@ -34,7 +35,12 @@ public class CPCAttribute extends AbstractAttribute {
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Text;
+        return AbstractFilter.FieldType.Multiselect;
+    }
+
+    @Override
+    public String ajaxUrl() {
+        return Constants.CPC_CODE_AJAX_URL;
     }
 
 }
