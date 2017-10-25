@@ -36,6 +36,7 @@ import java.util.stream.Stream;
  */
 public class CPCDensityStage extends Stage<Set<MultiStem>> {
     private double minValue;
+    double cpcRatio = 0d;
     @Getter
     private static CPCHierarchy hierarchy = new CPCHierarchy();
     static {
@@ -44,7 +45,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
     public CPCDensityStage(Set<MultiStem> keywords, Model model, int year) {
         super(model,year);
         this.data = keywords;
-        this.minValue = model.getDefaultMinValue();
+        this.minValue = Double.MIN_VALUE;
     }
 
     @Override
@@ -52,8 +53,12 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         if(alwaysRerun || !getFile().exists()) {
             // apply filter 3
             RealMatrix T = buildTMatrix()._2;
-            // save t matrix
-            data = applyFilters(new TechnologyScorer(), T, data, defaultLower, defaultUpper, minValue);
+            if(cpcRatio >= 1d-(1d-defaultUpper)+defaultLower) {
+                System.out.println("Applying filters...");
+                data = applyFilters(new TechnologyScorer(), T, data, defaultLower, defaultUpper, minValue);
+            } else {
+                System.out.println("Not enough cpc codes to apply filters...");
+            }
             Database.saveObject(data, getFile());
             // write to csv for records
             KeywordModelRunner.writeToCSV(data, new File(getFile().getAbsoluteFile() + ".csv"));
@@ -87,12 +92,17 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
 
         RealMatrix matrix = new OpenMapBigRealMatrix(data.size(),allCpcCodes.size());
 
+        AtomicInteger cpcCount = new AtomicInteger(0);
+        AtomicInteger total = new AtomicInteger(0);
         final AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
         Function<Map<String,Object>,Void> attributesFunction = attributes-> {
             String asset = (String)attributes.get(ASSET_ID);
-
+            total.getAndIncrement();
             Collection<String> currentCpcs = assetToCPCMap.getApplicationDataMap().getOrDefault(asset,assetToCPCMap.getPatentDataMap().get(asset));
-            if(currentCpcs==null||currentCpcs.isEmpty()) return null;
+            if(currentCpcs==null||currentCpcs.isEmpty()) {
+                return null;
+            }
+            cpcCount.getAndIncrement();
 
             currentCpcs = currentCpcs.stream().map(cpc->ClassCodeHandler.convertToLabelFormat(cpc)).collect(Collectors.toList());
             Collection<CPC> cpcs = currentCpcs.stream().map(cpc->hierarchy.getLabelToCPCMap().get(cpc)).filter(cpc->cpc!=null).distinct().collect(Collectors.toList());
@@ -116,6 +126,8 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         };
 
         runSamplingIterator(attributesFunction);
+        System.out.println("Found "+cpcCount.get()+" / "+total.get()+" CPCS.");
+        cpcRatio = new Double(cpcCount.get())/total.get();
 
         return new Pair<>(cpcCodeIndexMap,matrix);
     }
