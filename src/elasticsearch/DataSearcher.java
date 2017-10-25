@@ -116,7 +116,7 @@ public class DataSearcher {
 
             //String[] attrArray = attributes.stream().flatMap(attr->SimilarPatentServer.attributeNameHelper(attr,"").stream()).toArray(size -> new String[size]);
             AtomicReference<SearchRequestBuilder> request = new AtomicReference<>(client.prepareSearch(INDEX_NAME)
-                    .setScroll(new TimeValue(60000))
+                    .setScroll(new TimeValue(120000))
                     .setTypes(TYPE_NAME)
                     .setFetchSource(attrNames,new String[]{})
                     .setSize(Math.min(PAGE_LIMIT,maxLimit))
@@ -237,7 +237,7 @@ public class DataSearcher {
             if(merge) {
                 items.add(newItems);
             }
-            response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
+            response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(120000)).execute().actionGet();
         } while(response.getHits().getHits().length != 0 && (maxLimit < 0 || count < maxLimit)); // Zero hits mark the end of the scroll and the while loop.
         return items.stream().flatMap(itemArray->Stream.of(itemArray)).toArray(size->new Item[size]);
     }

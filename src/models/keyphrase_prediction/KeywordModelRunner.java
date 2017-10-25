@@ -164,10 +164,10 @@ public class KeywordModelRunner {
         TransportClient client = DataSearcher.getClient();
         SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
                 .setTypes(DataIngester.TYPE_NAME)
-                .setScroll(new TimeValue(60000))
+                .setScroll(new TimeValue(120000))
                 .setExplain(false)
                 .setFrom(0)
-                .setSize(10000)
+                .setSize(1000)
                 .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
                 .setQuery(query);
         if(sampling>0) {
