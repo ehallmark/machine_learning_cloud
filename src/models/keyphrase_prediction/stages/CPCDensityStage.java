@@ -108,13 +108,13 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             Map<CPC,Double> cpcToScoreMap = new HashMap<>(wordCounts.entrySet().stream().flatMap(e->{
                 Set<CPC> found = multiStemCPCMap.getOrDefault(e.getKey(),Collections.emptySet());
                 double count = e.getValue().get();
-                return found.stream().map(cpc->new Pair<>(cpc,count/found.size()));
+                return found.stream().map(cpc->new Pair<>(cpc,(count/(found.size()*cpc.getKeywords().size()))));
             }).collect(Collectors.groupingBy(pair->pair._1,Collectors.summingDouble(p->p._2))));
             for(CPC cpc : cpcs) {
                 if(cpcToScoreMap.containsKey(cpc)) {
-                    cpcToScoreMap.put(cpc,cpcToScoreMap.get(cpc)+2d);
+                    cpcToScoreMap.put(cpc,cpcToScoreMap.get(cpc)+1d);
                 } else {
-                    cpcToScoreMap.put(cpc,2d);
+                    cpcToScoreMap.put(cpc,1d);
                 }
             }
             if(cpcToScoreMap.isEmpty()) {
