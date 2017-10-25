@@ -3,15 +3,12 @@ package models.keyphrase_prediction.models;
 /**
  * Created by Evan on 9/15/2017.
  */
-public interface Model {
-    long getKw();
-    String getModelName();
-    double getStage3Lower();
-    double getStage3Upper();
-    double getStage4Lower();
-    double getStage4Upper();
-    double getStage4Min();
-    double getStage3Min();
-    int getMinDocFrequency();
-    default int getSampling() { return 400000; }
+public abstract class Model {
+    public long getKw() { return 50000L; }
+    public abstract String getModelName();
+    public double getDefaultUpperBound() { return 1d; }
+    public double getDefaultLowerBound() { return 0.25; }
+    public double getDefaultMinValue() { return 0.0; }
+    public int getMinDocFrequency() { return 5; };
+    public int getSampling() { return 200000; }
 }

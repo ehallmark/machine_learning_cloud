@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * Created by Evan on 9/15/2017.
  */
-public class NewestModel implements Model {
+public class NewestModel extends Model {
     @Getter
     final long Kw = 8000;
     @Getter

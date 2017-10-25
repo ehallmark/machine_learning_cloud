@@ -1,5 +1,7 @@
 package models.keyphrase_prediction.stages;
 
+import cpc_normalization.CPC;
+import cpc_normalization.CPCHierarchy;
 import elasticsearch.DataIngester;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
@@ -32,16 +34,15 @@ import java.util.stream.Stream;
  * Created by ehallmark on 9/12/17.
  */
 public class CPCDensityStage extends Stage<Set<MultiStem>> {
-    private static final boolean debug = false;
-    private double lowerBound;
-    private double upperBound;
     private double minValue;
+    private static CPCHierarchy hierarchy = new CPCHierarchy();
+    static {
+        hierarchy.loadGraph();
+    }
     public CPCDensityStage(Set<MultiStem> keywords, Model model, int year) {
         super(model,year);
         this.data = keywords;
-        this.upperBound=model.getStage4Upper();
-        this.lowerBound=model.getStage4Lower();
-        this.minValue = model.getStage4Min();
+        this.minValue = model.getDefaultMinValue();
     }
 
     @Override
@@ -50,7 +51,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             // apply filter 3
             RealMatrix T = buildTMatrix()._2;
             // save t matrix
-            data = applyFilters(new TechnologyScorer(), T, data, lowerBound, upperBound, minValue);
+            data = applyFilters(new TechnologyScorer(), T, data, defaultLower, defaultUpper, minValue);
             data = data.parallelStream().filter(d->d.getScore()>0f).collect(Collectors.toSet());
             Database.saveObject(data, getFile());
             // write to csv for records
@@ -74,7 +75,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         Map<MultiStem,Integer> multiStemIdxMap = data.parallelStream().collect(Collectors.toMap(e->e,e->e.getIndex()));
 
         // create cpc code co-occurrrence statistics
-        List<String> allCpcCodes = Database.getClassCodes().stream().map(cpc-> ClassCodeHandler.convertToLabelFormat(cpc)).distinct().collect(Collectors.toList());
+        List<String> allCpcCodes = Database.getClassCodeToClassTitleMap().keySet().parallelStream().map(cpc-> ClassCodeHandler.convertToLabelFormat(cpc)).distinct().collect(Collectors.toList());
         System.out.println("Num cpc codes found: "+allCpcCodes.size());
         Map<String,Integer> cpcCodeIndexMap = Collections.synchronizedMap(new HashMap<>());
 
@@ -92,29 +93,25 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             Collection<String> currentCpcs = assetToCPCMap.getApplicationDataMap().getOrDefault(asset,assetToCPCMap.getPatentDataMap().get(asset));
             if(currentCpcs==null||currentCpcs.isEmpty()) return null;
 
-            int[] cpcIndices = currentCpcs.stream().map(cpc->ClassCodeHandler.convertToLabelFormat(cpc)).map(cpc->cpcCodeIndexMap.get(cpc)).filter(cpc->cpc!=null).mapToInt(i->i).toArray();
-            if(cpcIndices==null||cpcIndices.length==0) return null;
-
-            Collection<MultiStem> cooccurringStems = Collections.synchronizedCollection(new ArrayList<>());
-
-            Collection<MultiStem> multiStems = (Collection<MultiStem>)attributes.get(APPEARED);
-            multiStems.parallelStream().forEach(stem->{
-                Integer idx = multiStemIdxMap.get(stem);
-                if(idx!=null) {
-                    cooccurringStems.add(stem);
-                }
-            });
-
-            if(debug)
-                System.out.println("Num coocurrences: "+cooccurringStems.size());
-
-            for(MultiStem stem : cooccurringStems) {
-                int stemIdx = multiStemIdxMap.get(stem);
-                for (int cpcIdx : cpcIndices) {
-                    matrix.addToEntry(stemIdx, cpcIdx, 1);
+            currentCpcs = currentCpcs.stream().map(cpc->ClassCodeHandler.convertToLabelFormat(cpc)).collect(Collectors.toList());
+            Collection<CPC> cpcs = currentCpcs.stream().map(cpc->hierarchy.getLabelToCPCMap().get(cpc)).filter(cpc->cpc!=null).collect(Collectors.toList());
+            Collection<MultiStem> multiStems = (Collection<MultiStem>) attributes.get(APPEARED);
+            int[] multiStemIndices = multiStems.stream().map(m->multiStemIdxMap.get(m)).filter(i->i!=null).mapToInt(i->i).toArray();
+            if(multiStemIndices.length>0) {
+                double score = 1d;
+                while (cpcs.size() > 0) {
+                    int[] cpcIndices = cpcs.stream().map(cpc -> cpcCodeIndexMap.get(cpc.getName())).filter(cpc -> cpc != null).mapToInt(i -> i).toArray();
+                    if (!(cpcIndices == null || cpcIndices.length == 0)) {
+                        for (int stemIdx : multiStemIndices) {
+                            for (int cpcIdx : cpcIndices) {
+                                matrix.addToEntry(stemIdx, cpcIdx, score);
+                            }
+                        }
+                    }
+                    score /= 2d;
+                    cpcs = cpcs.stream().map(cpc -> cpc.getParent()).filter(p -> p != null).collect(Collectors.toList());
                 }
             }
-
             return null;
         };
 

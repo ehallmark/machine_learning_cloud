@@ -22,8 +22,6 @@ import java.util.stream.Collectors;
  */
 public class TimeDensityStage extends Stage<Set<MultiStem>> {
     private static final boolean debug = false;
-    private double lowerBound = 0.20;
-    private double upperBound = 1;
     private double minValue = 0d;
     public TimeDensityStage(Set<MultiStem> keywords, Model model, int year) {
         super(model, year);
@@ -37,7 +35,7 @@ public class TimeDensityStage extends Stage<Set<MultiStem>> {
             RealMatrix T = buildTMatrix()._2;
 
             System.out.println("Num keywords before time density: " + data.size());
-            data = applyFilters(new TechnologyScorer(), T, data, lowerBound, upperBound, minValue);
+            data = applyFilters(new TechnologyScorer(), T, data, defaultLower, defaultUpper, minValue);
             data = data.parallelStream().filter(d->d.getScore()>0f).collect(Collectors.toSet());
             System.out.println("Num keywords after time density: " + data.size());
 

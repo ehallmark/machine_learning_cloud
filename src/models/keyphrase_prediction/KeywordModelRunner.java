@@ -60,9 +60,10 @@ public class KeywordModelRunner {
         int year;
         int maxYear = now.getYear();
 
-        for(year=maxYear-25;year<maxYear;year++) {
+        for(year=maxYear-25;year<=maxYear;year++) {
 
             // stage 1
+            System.out.println("Starting year: "+year);
 
             Stage1 stage1 = new Stage1(model,year);
             stage1.run(alwaysRerun);
@@ -170,7 +171,11 @@ public class KeywordModelRunner {
                             .lt(""+(year+3)+"-01-01")
                     );
         } else {
-            query = QueryBuilders.matchAllQuery();
+            query = QueryBuilders.boolQuery()
+                    .filter(QueryBuilders.rangeQuery(Constants.FILING_DATE)
+                            .gte(""+year+"-01-01")
+                            .lt(""+(year+1)+"-01-01")
+                    );
         }
         query = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, query,false)
                 .innerHit(new InnerHitBuilder()

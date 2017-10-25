@@ -55,10 +55,14 @@ public abstract class Stage<V> {
     protected int sampling;
     protected Model model;
     protected int year;
+    protected double defaultUpper;
+    protected double defaultLower;
     protected Stage(Model model, int year) {
         this.model=model;
         this.year=year;
-        this.sampling=model.getSampling();
+        this.defaultUpper = model.getDefaultUpperBound();
+        this.defaultLower = model.getDefaultLowerBound();
+        this.sampling = model.getSampling();
         if(!baseDir.exists()) baseDir.mkdir();
         if(!baseDir.isDirectory()) throw new RuntimeException(baseDir.getAbsolutePath()+" must be a directory.");
         this.mainDir = new File(baseDir, model.getModelName());

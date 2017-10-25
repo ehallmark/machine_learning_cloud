@@ -37,16 +37,12 @@ import java.util.stream.Stream;
 public class Stage3 extends Stage<Set<MultiStem>> {
     private static final boolean debug = false;
     private Map<MultiStem,MultiStem> multiStemToSelfMap;
-    private double lowerBound;
-    private double upperBound;
     private double minValue;
     public Stage3(Collection<MultiStem> multiStems, Model model, int year) {
         super(model, year);
         this.data = new HashSet<>(multiStems);
         this.multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
-        this.lowerBound=model.getStage3Lower();
-        this.upperBound=model.getStage3Upper();
-        this.minValue = model.getStage3Min();
+        this.minValue = model.getDefaultMinValue();
     }
 
 
@@ -57,7 +53,7 @@ public class Stage3 extends Stage<Set<MultiStem>> {
             // apply filter 2
             System.out.println("Num keywords before stage 3: " + data.size());
             SparseRealMatrix M = buildMMatrix(data,multiStemToSelfMap);
-            data = applyFilters(new TermhoodScorer(), M, data, lowerBound, upperBound, minValue);
+            data = applyFilters(new TermhoodScorer(), M, data, defaultLower, defaultUpper, minValue);
             System.out.println("Num keywords after stage 3: " + data.size());
 
             Database.saveObject(data, getFile());

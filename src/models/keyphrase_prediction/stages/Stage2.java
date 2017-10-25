@@ -18,12 +18,10 @@ import java.util.stream.Stream;
  * Created by ehallmark on 9/12/17.
  */
 public class Stage2 extends Stage<Set<MultiStem>> {
-    private long targetCardinality;
     private Map<MultiStem,AtomicLong> documentsAppearedInCounter;
     public Stage2(Map<MultiStem,AtomicLong> documentsAppearedInCounter, Model model, int year) {
         super(model, year);
         this.documentsAppearedInCounter=documentsAppearedInCounter;
-        this.targetCardinality=model.getKw();
     }
 
     @Override
@@ -32,18 +30,19 @@ public class Stage2 extends Stage<Set<MultiStem>> {
             // filter outliers
             System.out.println("Num keywords before stage 2: " + documentsAppearedInCounter.size());
             KeywordModelRunner.reindex(documentsAppearedInCounter.keySet());
-
+            int toSkip = (int) (1d-defaultUpper)*documentsAppearedInCounter.size();
+            int toKeep = documentsAppearedInCounter.size()-toSkip-(int)(documentsAppearedInCounter.size()*defaultLower);
             // compute scores
             data = new ArrayList<>(documentsAppearedInCounter.entrySet()).parallelStream().map(e->{
                 MultiStem multiStem = e.getKey();
-                double score = e.getValue().doubleValue()*Math.sqrt(multiStem.getStems().length);
+                double score = e.getValue().doubleValue()*multiStem.getStems().length*Math.log(multiStem.toString().length());
                 if(multiStem.getStems().length > 1) {
                     double denom = Stream.of(multiStem.getStems()).map(s -> documentsAppearedInCounter.getOrDefault(new MultiStem(new String[]{s}, -1),e.getValue())).mapToDouble(d -> d.doubleValue()).average().orElse(e.getValue().doubleValue());
-                    score = score * e.getValue().doubleValue() / denom;
+                    score = score * e.getValue().doubleValue() / Math.sqrt(denom);
                 }
                 multiStem.setScore((float)score);
                 return multiStem;
-            }).sorted((s1,s2)->Float.compare(s2.getScore(),s1.getScore())).limit(targetCardinality).collect(Collectors.toSet());
+            }).sorted((s1,s2)->Float.compare(s2.getScore(),s1.getScore())).skip(toSkip).limit(toKeep).collect(Collectors.toSet());
             System.out.println("Num keywords after stage 2: " + data.size());
 
             Database.saveObject(data, getFile());

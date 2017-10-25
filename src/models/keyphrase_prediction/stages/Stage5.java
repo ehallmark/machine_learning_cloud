@@ -131,7 +131,7 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
                 if(stem==null)return null;
 
                 double df = multiStemToDocumentCountMap.getOrDefault(e.getKey(),new AtomicLong(0)).get();
-                double tf = e.getValue().get();
+                double tf = e.getValue().get()*Math.sqrt(stem.getLength());
                 double score = tf / Math.log(Math.E+df);
 
                 RealVector vector = matrix.getRowVector(stem.getIndex()).mapMultiply(score);
