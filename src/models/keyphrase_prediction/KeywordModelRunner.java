@@ -6,6 +6,7 @@ import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.models.*;
 
 import models.keyphrase_prediction.stages.*;
+import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
@@ -54,8 +55,16 @@ public class KeywordModelRunner {
 
     public static void runModel() {
         Model model = new TimeDensityModel();
+        boolean alwaysRerun = true;
 
-        boolean alwaysRerun = false;
+        if(alwaysRerun) {
+            File dir = new File(Stage.getBaseDir(),model.getModelName());
+            try {
+                FileUtils.deleteDirectory(dir);
+            } catch(Exception e) {
+                System.out.println("UNABLE TO DELETE DIRECTORY");
+            }
+        }
 
         Map<MultiStem, Set<CPC>> multiStemCPCMap = new CPCKeywordModel().run(true);
 

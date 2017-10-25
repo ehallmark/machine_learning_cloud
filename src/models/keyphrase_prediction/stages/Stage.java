@@ -6,6 +6,7 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 import elasticsearch.DataIngester;
+import lombok.Getter;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
@@ -49,6 +50,7 @@ public abstract class Stage<V> {
     public static final String TEXT = "TEXT";
 
     private static final boolean debug = false;
+    @Getter
     private static final File baseDir = new File(Constants.DATA_FOLDER+"technologyPredictionStages/");
     protected File mainDir;
     protected V data;
