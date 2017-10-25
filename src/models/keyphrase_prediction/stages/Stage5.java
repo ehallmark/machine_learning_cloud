@@ -45,8 +45,10 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
     private AtomicInteger cnt = new AtomicInteger(0);
     private Set<MultiStem> multiStems;
     private Map<MultiStem,Set<CPC>> multiStemCPCMap;
-    public Stage5(Stage1 stage1, Set<MultiStem> multiStems, Model model, int year, Map<MultiStem,Set<CPC>> multiStemCPCMap) {
+    private CPCHierarchy hierarchy;
+    public Stage5(Stage1 stage1, Set<MultiStem> multiStems, Model model, int year, Map<MultiStem,Set<CPC>> multiStemCPCMap, CPCHierarchy hierarchy) {
         super(model,year);
+        this.hierarchy=hierarchy;
         this.multiStems=multiStems;
         this.multiStemCPCMap=multiStemCPCMap;
         multiStemToDocumentCountMap = stage1.get();
@@ -114,7 +116,7 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
 
         // load T matrix
         importantToIndex.entrySet().parallelStream().forEach(e->e.getKey().setIndex(e.getValue())); // ensure proper indices
-        CPCDensityStage cpcStage = new CPCDensityStage(multiStems,model,year,multiStemCPCMap);
+        CPCDensityStage cpcStage = new CPCDensityStage(multiStems,model,year,multiStemCPCMap,hierarchy);
         Pair<Map<String,Integer>,RealMatrix> pair = cpcStage.buildTMatrix(false);
 
         Map<String,Integer> cpcToIdx = pair._1;

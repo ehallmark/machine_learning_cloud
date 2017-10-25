@@ -38,13 +38,11 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
     private double minValue;
     double cpcRatio = 0d;
     @Getter
-    private static CPCHierarchy hierarchy = new CPCHierarchy();
-    static {
-        hierarchy.loadGraph();
-    }
+    private CPCHierarchy hierarchy = new CPCHierarchy();
     private Map<MultiStem,Set<CPC>> multiStemCPCMap;
-    public CPCDensityStage(Set<MultiStem> keywords, Model model, int year, Map<MultiStem,Set<CPC>> multiStemCPCMap) {
+    public CPCDensityStage(Set<MultiStem> keywords, Model model, int year, Map<MultiStem,Set<CPC>> multiStemCPCMap, CPCHierarchy hierarchy) {
         super(model,year);
+        this.hierarchy=hierarchy;
         this.multiStemCPCMap=multiStemCPCMap;
         this.data = keywords;
         this.minValue = Double.MIN_VALUE;
@@ -135,7 +133,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
                         }
                     }
                     cpcToScoreMap = cpcToScoreMap.entrySet().stream().filter(e -> e.getKey().getParent()!=null)
-                            .collect(Collectors.groupingBy(e->e.getKey(),Collectors.summingDouble(e->e.getValue())));
+                            .collect(Collectors.groupingBy(e->e.getKey().getParent(),Collectors.summingDouble(e->e.getValue())));
                 }
             }
             return null;

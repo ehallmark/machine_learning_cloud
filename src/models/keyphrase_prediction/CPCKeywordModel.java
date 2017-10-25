@@ -5,6 +5,7 @@ import cpc_normalization.CPC;
 import cpc_normalization.CPCCleaner;
 import cpc_normalization.CPCHierarchy;
 
+import lombok.Getter;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.models.TimeDensityModel;
 
@@ -35,6 +36,8 @@ public class CPCKeywordModel extends Stage<Map<MultiStem,Set<CPC>>> {
     public static final boolean debug = false;
     private static final File modelFile = new File(Constants.DATA_FOLDER+"cpc_keyword_model.jobj");
 
+    @Getter
+    private CPCHierarchy cpcHierarchy;
     public CPCKeywordModel() {
         super(new TimeDensityModel(),-1);
     }
@@ -48,7 +51,7 @@ public class CPCKeywordModel extends Stage<Map<MultiStem,Set<CPC>>> {
     @Override
     public Map<MultiStem,Set<CPC>> run(boolean _t) {
         Map<String,String> cpcToRawTitleMap = Database.getClassCodeToClassTitleMap();
-        CPCHierarchy cpcHierarchy = new CPCHierarchy();
+        cpcHierarchy = new CPCHierarchy();
         cpcHierarchy.loadGraph();
 
         for(int CPC_DEPTH = 1; CPC_DEPTH <= 4; CPC_DEPTH++) {
