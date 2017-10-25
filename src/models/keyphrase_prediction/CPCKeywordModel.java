@@ -236,11 +236,13 @@ public class CPCKeywordModel extends Stage<Map<String,Collection<String>>> {
                 if(!cpcs.isEmpty()) {
                     cpcs.forEach(cpcLabel->{
                         CPC cpc = cpcHierarchy.getLabelToCPCMap().get(cpcLabel);
-                        cpc.getKeywords().forEach(word->{
-                            int i = importantToIndex.get(word);
-                            result.addToEntry(i,1d/cpcs.size());
-                            result.setEntry(i,result.getEntry(i)*2);
-                        });
+                        if(cpc!=null&&cpc.getKeywords()!=null) {
+                            cpc.getKeywords().forEach(word -> {
+                                int i = importantToIndex.get(word);
+                                result.addToEntry(i, 1d / cpcs.size());
+                                result.setEntry(i, result.getEntry(i) * 2);
+                            });
+                        }
                     });
                 }
 
