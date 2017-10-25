@@ -9,6 +9,8 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
 
 import static j2html.TagCreator.div;
@@ -18,7 +20,7 @@ import static j2html.TagCreator.input;
  * Created by Evan on 6/17/2017.
  */
 public class AbstractLessThanFilter extends AbstractFilter {
-    protected Number limit;
+    protected Object limit;
 
     public AbstractLessThanFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
@@ -32,7 +34,7 @@ public class AbstractLessThanFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        if(limit == null || limit.doubleValue() <= 0d) {
+        if(limit == null) {
             return QueryBuilders.boolQuery();
         } else {
             if(isScriptFilter) {
@@ -49,11 +51,18 @@ public class AbstractLessThanFilter extends AbstractFilter {
         return "("+script+") < "+limit;
     }
 
-    public boolean isActive() { return limit!=null && limit.doubleValue() > 0d; }
+    public boolean isActive() { return limit!=null; }
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        this.limit = SimilarPatentServer.extractDoubleFromArrayField(params,getName(),null);
+        if(getFieldType().equals(FieldType.Date)) {
+            this.limit = SimilarPatentServer.extractString(params, getName(), null);
+            if(limit != null) {
+                limit = LocalDate.parse(limit.toString()).format(DateTimeFormatter.ISO_DATE);
+            }
+        } else {
+            this.limit = SimilarPatentServer.extractDoubleFromArrayField(params, getName(), null);
+        }
         System.out.println("Filter "+getName()+": less than "+limit);
     }
 

@@ -10,6 +10,8 @@ import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.StringJoiner;
 import java.util.function.Function;
 
@@ -21,8 +23,8 @@ import static j2html.TagCreator.label;
  * Created by Evan on 6/17/2017.
  */
 public class AbstractBetweenFilter extends AbstractFilter {
-    protected Number max;
-    protected Number min;
+    protected Object max;
+    protected Object min;
     protected String minName;
     protected String maxName;
     public AbstractBetweenFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
@@ -72,9 +74,21 @@ public class AbstractBetweenFilter extends AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        this.min = SimilarPatentServer.extractDoubleFromArrayField(params,minName,null);
-        this.max = SimilarPatentServer.extractDoubleFromArrayField(params,maxName,null);
-
+        if(getFieldType().equals(FieldType.Date)) {
+            this.min = SimilarPatentServer.extractString(params, minName, null);
+            this.max = SimilarPatentServer.extractString(params, maxName, null);
+            if(min != null) {
+                min = LocalDate.parse(min.toString()).format(DateTimeFormatter.ISO_DATE);
+                System.out.println("Found start date: "+min);
+            }
+            if(max != null) {
+                max = LocalDate.parse(max.toString()).format(DateTimeFormatter.ISO_DATE);
+                System.out.println("Found end date: "+max);
+            }
+        } else {
+            this.min = SimilarPatentServer.extractDoubleFromArrayField(params, minName, null);
+            this.max = SimilarPatentServer.extractDoubleFromArrayField(params, maxName, null);
+        }
         System.out.println(("Filter "+getName()+": between "+min)+ " and "+max);
 
     }
@@ -84,10 +98,10 @@ public class AbstractBetweenFilter extends AbstractFilter {
         return div().withClass("row").with(
                 div().withClass("col-6").with(
                         label("Min"),
-                        input().withClass("form-control").withType("number").withValue("0").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()+minName.replaceAll("[\\[\\]]","")).withName(minName)
+                        input().withClass("form-control").withType("number").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()+minName.replaceAll("[\\[\\]]","")).withName(minName)
                 ), div().withClass("col-6").with(
                         label("Max"),
-                        input().withClass("form-control").withType("number").withValue("0").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()+maxName.replaceAll("[\\[\\]]","")).withName(maxName)
+                        input().withClass("form-control").withType("number").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()+maxName.replaceAll("[\\[\\]]","")).withName(maxName)
                 )
         );
     }

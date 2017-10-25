@@ -104,7 +104,7 @@ public class DataSearcher {
             float similarityThreshold = 0f;
             for(AbstractFilter filter : filters) {
                 if((filter instanceof AbstractGreaterThanFilter) && filter.getPrerequisite().equals(Constants.SIMILARITY)) {
-                    Number threshold = ((AbstractGreaterThanFilter)filter).getLimit();
+                    Number threshold = (Number)((AbstractGreaterThanFilter)filter).getLimit();
                     if(threshold!=null) {
                         similarityThreshold = threshold.floatValue();
                         System.out.println("Setting custom minimum score: " + similarityThreshold);
