@@ -9,6 +9,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.InnerHitBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -22,6 +23,7 @@ import org.gephi.graph.api.Node;
 import seeding.Constants;
 import seeding.Database;
 
+import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 import visualization.Visualizer;
 
@@ -45,8 +47,6 @@ import java.util.stream.Stream;
 public class KeywordModelRunner {
     public static final boolean debug = false;
 
-
-
     public static void main(String[] args) {
         runModel();
     }
@@ -54,7 +54,7 @@ public class KeywordModelRunner {
     public static void runModel() {
         Model model = new TimeDensityModel();
 
-        boolean alwaysRerun = false;
+        boolean alwaysRerun = true;
 
         LocalDate now = LocalDate.now();
         int year;
@@ -167,7 +167,7 @@ public class KeywordModelRunner {
     }
 
     public static void streamElasticSearchData(Function<SearchHit,Item> transformer, int year, int sampling) {
-        QueryBuilder query;
+        BoolQueryBuilder query;
         if(sampling>0) {
             query = QueryBuilders.boolQuery()
                     .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(),ScoreFunctionBuilders.randomFunction(23)))
@@ -182,22 +182,26 @@ public class KeywordModelRunner {
                             .lt(""+(year+1)+"-01-01")
                     );
         }
-        query = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, query,false)
+        BoolQueryBuilder innerQuery = QueryBuilders.boolQuery().must(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, query,false)
                 .innerHit(new InnerHitBuilder()
                         .setSize(1)
                         .setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE,Constants.WIPO_TECHNOLOGY}, new String[]{}))
-                );
+                )).must(
+                QueryBuilders.boolQuery()
+                        .should(QueryBuilders.termQuery(Constants.GRANTED,false))
+                        .should(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()))
+                        .minimumShouldMatch(1).filter(query)
+        );
 
         if(sampling > 0) {
             // remove plant and design patents
-            query = QueryBuilders.boolQuery()
-                    .must(query)
-                    .filter(
-                            QueryBuilders.boolQuery()
-                                    .mustNot(QueryBuilders.prefixQuery(Constants.NAME, "PP"))
-                                    .mustNot(QueryBuilders.prefixQuery(Constants.NAME, "D"))
-                    );
+            innerQuery = innerQuery
+                    .mustNot(QueryBuilders.prefixQuery(Constants.NAME, "PP"))
+                    .mustNot(QueryBuilders.prefixQuery(Constants.NAME, "D"));
         }
+
+        query = QueryBuilders.boolQuery()
+                .filter(innerQuery);
 
         streamElasticSearchData(query,transformer,sampling);
     }
