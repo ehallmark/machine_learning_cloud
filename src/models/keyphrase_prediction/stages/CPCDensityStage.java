@@ -9,7 +9,9 @@ import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.scorers.TechnologyScorer;
 import models.keyphrase_prediction.scorers.TermhoodScorer;
+import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
+import org.apache.commons.math3.linear.OpenMapRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.elasticsearch.search.SearchHit;
 import seeding.Constants;
@@ -53,11 +55,13 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         if(alwaysRerun || !getFile().exists()) {
             // apply filter 3
             RealMatrix T = buildTMatrix()._2;
-            if(cpcRatio >= 1d-(1d-defaultUpper)+defaultLower) {
+            double threshold = 1d-(1d-defaultUpper)-defaultLower;
+            if(cpcRatio >= threshold) {
                 System.out.println("Applying filters...");
                 data = applyFilters(new TechnologyScorer(), T, data, defaultLower, defaultUpper, minValue);
             } else {
                 System.out.println("Not enough cpc codes to apply filters...");
+                System.out.println(""+threshold+ " > "+cpcRatio);
             }
             Database.saveObject(data, getFile());
             // write to csv for records
@@ -81,7 +85,11 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         Map<MultiStem,Integer> multiStemIdxMap = data.parallelStream().collect(Collectors.toMap(e->e,e->e.getIndex()));
 
         // create cpc code co-occurrrence statistics
-        List<String> allCpcCodes = Database.getClassCodeToClassTitleMap().keySet().parallelStream().map(cpc-> ClassCodeHandler.convertToLabelFormat(cpc)).distinct().collect(Collectors.toList());
+        List<String> allCpcCodes = Database.getClassCodeToClassTitleMap().keySet().parallelStream().map(cpc-> ClassCodeHandler.convertToLabelFormat(cpc)).distinct()
+                .filter(label->{
+                    CPC cpc = hierarchy.getLabelToCPCMap().get(label);
+                    return cpc!=null&&cpc.getNumParts()<5;
+                }).collect(Collectors.toList());
         System.out.println("Num cpc codes found: "+allCpcCodes.size());
         Map<String,Integer> cpcCodeIndexMap = Collections.synchronizedMap(new HashMap<>());
 
@@ -126,10 +134,12 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
                     Map<Integer,Double> cpcIndicesToScores = cpcToScoreMap.entrySet().stream().filter(e->cpcCodeIndexMap.containsKey(e.getKey().getName()))
                             .collect(Collectors.toMap(e->cpcCodeIndexMap.get(e.getKey().getName()),e->e.getValue()/e.getKey().numSubclasses()));
                     if (cpcIndicesToScores.size()>0) {
+                        double[] cpcScores = new double[cpcCodeIndexMap.size()];
+                        cpcIndicesToScores.entrySet().forEach(e->{
+                            cpcScores[e.getKey()]=e.getValue();
+                        });
                         for (int stemIdx : multiStemIndices) {
-                            cpcIndicesToScores.entrySet().forEach(e->{
-                                matrix.addToEntry(stemIdx, e.getKey(), e.getValue());
-                            });
+                            matrix.setRowVector(stemIdx, matrix.getRowVector(stemIdx).add(new ArrayRealVector(cpcScores)));
                         }
                     }
                     cpcToScoreMap = cpcToScoreMap.entrySet().stream().filter(e -> e.getKey().getParent()!=null)
