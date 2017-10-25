@@ -60,7 +60,7 @@ public class KeywordModelRunner {
         int year;
         int maxYear = now.getYear();
         Map<String,List<String>> technologyMap = Collections.synchronizedMap(new HashMap<>());
-        for(year=maxYear-25;year<=maxYear;year++) {
+        for(year=maxYear;year>=maxYear-25;year--) {
 
             // stage 1
             System.out.println("Starting year: "+year);
