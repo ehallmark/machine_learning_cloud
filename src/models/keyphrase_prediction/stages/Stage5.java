@@ -140,7 +140,7 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
                 MultiStem stem = multiStemToSelfMap.get(e.getKey());
                 if(stem==null)return null;
 
-                double df = multiStemToDocumentCountMap.getOrDefault(e.getKey(),new AtomicLong(0)).get();
+                double df = multiStemToDocumentCountMap.getOrDefault(e.getKey(),new AtomicLong(1)).get();
                 double tf = e.getValue().get()*Math.sqrt(stem.getLength());
                 double score = tf / Math.log(Math.E+df);
 
@@ -161,12 +161,16 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
             if(cpcResult!=null) {
                 cpcResult = cpcResult.mapDivide(cpcResult.getNorm());
             } else {
-                System.out.println("Missing cpc result... "+missingCPCs.incrementAndGet());
+                if(missingCPCs.getAndIncrement()%1000==999) {
+                    System.out.println("Missing cpc result... "+missingCPCs.get());
+                }
             }
             if(result!=null) {
                 result = result.mapDivide(result.getNorm());
             } else {
-                System.out.println("Missing main result... "+missing.incrementAndGet());
+                if(missing.getAndIncrement()%1000==999) {
+                    System.out.println("Missing main result... "+missing.incrementAndGet());
+                }
             }
 
             List<String> technologies = null;
