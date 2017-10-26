@@ -34,7 +34,7 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel {
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 4;
+    public static final int MAX_CPC_DEPTH = 3;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private CPCHierarchy hierarchy;
@@ -148,7 +148,9 @@ public class SignatureSimilarityModel {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
             trainIter.forEach(ds->{
                 net.fit(ds);
-                System.out.print("-");
+                if(iterationCount.get() % 1000 == 999) {
+                    System.out.print("Completed: "+iterationCount.get());
+                }
                 //Every N=100 minibatches:
                 // (a) collect the test set latent space values for later plotting
                 // (b) collect the reconstructions at each point in the grid
@@ -176,7 +178,7 @@ public class SignatureSimilarityModel {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 10;
+        int batchSize = 5;
 
         Map<String,Set<String>> patentToCPCStringMap = Collections.synchronizedMap(new HashMap<>());
         patentToCPCStringMap.putAll(new AssetToCPCMap().getApplicationDataMap());
@@ -184,7 +186,9 @@ public class SignatureSimilarityModel {
         CPCHierarchy hierarchy = new CPCHierarchy();
         hierarchy.loadGraph();
         Map<String,Set<CPC>> cpcMap = patentToCPCStringMap.entrySet().parallelStream()
-                .collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label))).filter(cpc->cpc!=null).collect(Collectors.toSet())));
+                .collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
+                        .filter(cpc->cpc!=null).collect(Collectors.toSet())));
+        cpcMap = cpcMap.entrySet().parallelStream().filter(e->e.getValue().size()>0).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
 
         List<String> allAssets = new ArrayList<>(cpcMap.keySet());
         SignatureSimilarityModel model = new SignatureSimilarityModel(allAssets,cpcMap,hierarchy,batchSize);
