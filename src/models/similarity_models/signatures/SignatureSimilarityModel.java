@@ -68,6 +68,7 @@ public class SignatureSimilarityModel {
             AtomicInteger idx = new AtomicInteger(0);
             cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e -> e.getValue().getNumParts() < 5).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
             numInputs = cpcToIdxMap.size();
+            System.out.println("Input size: "+numInputs);
         }
         System.out.println("Finished splitting test and train.");
     }
@@ -94,7 +95,10 @@ public class SignatureSimilarityModel {
                 vec[idx]+= 1d/cpc.numSubclasses();
             });
             INDArray a = Nd4j.create(vec);
-            a.divi(a.norm2Number());
+            Number norm2 = a.norm2Number();
+            if(norm2.doubleValue()>0) {
+                a.divi(norm2);
+            }
             matrix.putRow(batch.get(),a);
             batch.getAndIncrement();
         });
@@ -114,8 +118,8 @@ public class SignatureSimilarityModel {
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .activation(Activation.LEAKYRELU)
-                        .encoderLayerSizes(1000, 1000)        //2 encoder layers, each of size 256
-                        .decoderLayerSizes(1000, 1000)        //2 decoder layers, each of size 256
+                        .encoderLayerSizes(500, 500)
+                        .decoderLayerSizes(500, 500)
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
                         .nIn(numInputs)                       //Input size: 28x28
@@ -140,7 +144,7 @@ public class SignatureSimilarityModel {
             while (trainIter.hasNext()) {
                 DataSet ds = trainIter.next();
                 net.fit(ds);
-
+                System.out.print("-");
                 //Every N=100 minibatches:
                 // (a) collect the test set latent space values for later plotting
                 // (b) collect the reconstructions at each point in the grid
