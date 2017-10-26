@@ -55,7 +55,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         if(alwaysRerun || !getFile().exists()) {
             // apply filter 3
             RealMatrix T = buildTMatrix()._2;
-            double threshold = 1d-(1d-defaultUpper)-defaultLower;
+            double threshold = 0.5;
             if(cpcRatio >= threshold) {
                 System.out.println("Applying filters...");
                 data = applyFilters(new TechnologyScorer(), T, data, defaultLower, defaultUpper, minValue);
