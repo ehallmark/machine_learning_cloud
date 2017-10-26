@@ -293,9 +293,10 @@ public abstract class Stage<V> {
         Function<SearchHit,Item> transformer = hit -> {
             String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
-            String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
+            String abstractText = null;
             String firstClaimText = null;
             if(sampling<=0) { // only run claim text when not sampling (last pass)
+                abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
                 List<Map<String, Object>> claimObjects = (List<Map<String, Object>>) hit.getSourceAsMap().getOrDefault(Constants.CLAIMS, new ArrayList<>());
                 if (claimObjects != null && claimObjects.size() > 0) {
                     Object firstClaim = claimObjects.get(0).get(Constants.CLAIM);
