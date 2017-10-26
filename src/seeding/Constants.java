@@ -49,6 +49,8 @@ public class Constants {
 	public static final String CORRESPONDENT = "correspondent";
 	public static final String EXISTS_IN_COMPDB_FILTER = "existsInCompDBFilter";
 	public static final String EXISTS_IN_GATHER_FILTER = "existsInGatherFilter";
+	public static final String DOES_NOT_EXIST_IN_COMPDB_FILTER = "doesNotExistInCompDBFilter";
+	public static final String DOES_NOT_EXIST_IN_GATHER_FILTER = "doesNotExistInGatherFilter";
 	public static final String CORRESPONDENT_ADDRESS_ID = "correspondentAddressId";
 	public static final String APPLICATION_TYPE = "applicationType";
 	public static final String APPLICATION_CONFIRMATION_NUM = "applicationConfirmationNumber";

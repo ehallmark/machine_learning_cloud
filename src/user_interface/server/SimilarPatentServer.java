@@ -208,6 +208,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Expiration Date (estimated)", Constants.ESTIMATED_EXPIRATION_DATE);
             humanAttrToJavaAttrMap.put("Exists in CompDB", Constants.EXISTS_IN_COMPDB_FILTER);
             humanAttrToJavaAttrMap.put("Exists in Gather", Constants.EXISTS_IN_GATHER_FILTER);
+            humanAttrToJavaAttrMap.put("Does not exist in CompDB", Constants.DOES_NOT_EXIST_IN_COMPDB_FILTER);
+            humanAttrToJavaAttrMap.put("Does not exist in Gather", Constants.DOES_NOT_EXIST_IN_GATHER_FILTER);
             humanAttrToJavaAttrMap.put("Related Docs", Constants.ALL_RELATED_ASSETS);
             // nested attrs
             humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
@@ -348,6 +350,8 @@ public class SimilarPatentServer {
                 });
                 preFilterModelMap.put(Constants.EXISTS_IN_COMPDB_FILTER, new ExistsInCompDBFilter());
                 preFilterModelMap.put(Constants.EXISTS_IN_GATHER_FILTER, new ExistsInGatherFilter());
+                preFilterModelMap.put(Constants.DOES_NOT_EXIST_IN_COMPDB_FILTER, new DoesNotExistInCompDBFilter());
+                preFilterModelMap.put(Constants.DOES_NOT_EXIST_IN_GATHER_FILTER, new DoesNotExistInGatherFilter());
                 buildJavaToHumanAttrMap();
                 List<AbstractAttribute> nestedAttributes = new ArrayList<>(allAttributes.getAttributes());
                 nestedAttributes.addAll(similarityEngine.getEngineMap().values().stream().map(engine->(AbstractAttribute)engine).collect(Collectors.toList()));

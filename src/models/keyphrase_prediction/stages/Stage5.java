@@ -150,7 +150,9 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
                 return p1.add(p2);
             }).orElse(null);
 
+            System.out.println("Starting cpc to score map...");
             Map<CPC,Double> cpcToScoreMap = CPCDensityStage.computeCPCToScoreMap(asset,patentCPCMap,appCPCMap,hierarchy, documentStems, multiStemCPCMap);
+            System.out.println("... Done");
 
             RealVector cpcResult = cpcToScoreMap.entrySet().stream()
                     .filter(e->cpcToIdx.containsKey(e.getKey().getName()))
