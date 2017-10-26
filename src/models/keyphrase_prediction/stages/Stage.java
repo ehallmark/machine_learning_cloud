@@ -300,7 +300,7 @@ public abstract class Stage<V> {
                 Object firstClaim = claimObjects.get(0).get(Constants.CLAIM);
                 if(firstClaim!=null) {
                     firstClaimText = Helper.fixPunctuationSpaces(firstClaim.toString());
-                    System.out.println("FOUND CLAIM: "+firstClaimText);
+                    //System.out.println("FOUND CLAIM: "+firstClaimText);
                 }
             }
             SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
