@@ -11,6 +11,8 @@ import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.concurrent.Future;
+import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
 
 import static j2html.TagCreator.*;
@@ -26,7 +28,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
         return Constants.ASSIGNEE_SIMILARITY;
     }
 
-    public AssigneeSimilarityEngine(AbstractSimilarityModel model) {
+    public AssigneeSimilarityEngine(RecursiveTask<AbstractSimilarityModel> model) {
         super(model);
     }
 

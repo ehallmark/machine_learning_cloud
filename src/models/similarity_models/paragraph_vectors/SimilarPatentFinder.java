@@ -21,6 +21,7 @@ import user_interface.ui_models.portfolios.items.Item;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,7 +43,8 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
     private static void loadLookupTable() {
         if(paragraphVectors!=null)return;
         try {
-            paragraphVectors = ParagraphVectorModel.getNet();
+            paragraphVectors =  ParagraphVectorModel.getNet();
+
             if(paragraphVectors==null) {
                 paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
             } else {

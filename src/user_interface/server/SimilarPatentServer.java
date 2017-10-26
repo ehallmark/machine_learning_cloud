@@ -7,6 +7,7 @@ import elasticsearch.DataIngester;
 import lombok.Getter;
 
 import models.keyphrase_prediction.models.NewestModel;
+import org.jetbrains.annotations.NotNull;
 import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import spark.Session;
@@ -49,7 +50,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -94,9 +95,9 @@ public class SimilarPatentServer {
     public static final String ANALYST_USER = "analyst";
     public static final String INTERNAL_USER = "internal";
     public static final List<String> USER_ROLES = Arrays.asList(ANALYST_USER,INTERNAL_USER);
-    private static AbstractSimilarityModel DEFAULT_SIMILARITY_MODEL;
+    private static RecursiveTask<AbstractSimilarityModel> DEFAULT_SIMILARITY_MODEL;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
-    public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
+    public static Map<String,RecursiveTask<AbstractSimilarityModel>> similarityModelMap = new HashMap<>();
     public static SimilarityEngineController similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
@@ -381,7 +382,14 @@ public class SimilarPatentServer {
 
     public static void loadSimilarityModels() {
         if(similarityModelMap.isEmpty()) {
-            if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
+            if(DEFAULT_SIMILARITY_MODEL==null) {
+                DEFAULT_SIMILARITY_MODEL = new RecursiveTask<AbstractSimilarityModel>() {
+                    @Override
+                    protected AbstractSimilarityModel compute() {
+                        return new SimilarPatentFinder(Collections.emptyList());
+                    }
+                };
+            }
             similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL, DEFAULT_SIMILARITY_MODEL);
         }
     }
@@ -454,7 +462,14 @@ public class SimilarPatentServer {
             // nested attribute names
             buildJavaToHumanAttrMap();
 
-            if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
+            if(DEFAULT_SIMILARITY_MODEL==null) {
+                DEFAULT_SIMILARITY_MODEL = new RecursiveTask<AbstractSimilarityModel>() {
+                    @Override
+                    protected AbstractSimilarityModel compute() {
+                        return new SimilarPatentFinder(Collections.emptyList());
+                    }
+                };
+            }
             // similarity engine
             similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new AssigneeSimilarityEngine(DEFAULT_SIMILARITY_MODEL)));
 

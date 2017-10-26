@@ -75,8 +75,9 @@ public class AbstractLessThanFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         String type = getFieldType().equals(FieldType.Date) ? "text" : "number";
+        String additionalClasses = getFieldType().equals(FieldType.Date) ? "datepicker" : "";
         return div().with(
-                input().withClass("form-control").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withType(type).withValue("0").withName(getName())
+                input().withClass("form-control "+additionalClasses).withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withType(type).withValue("0").withName(getName())
         );
     }
 }

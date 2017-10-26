@@ -320,6 +320,11 @@ $(document).ready(function() {
         }
         return true;
     });
+
+    $( ".datepicker" ).datepicker({
+       changeMonth: true,
+       changeYear: true
+    });
 });
 
 var resetSearchForm = function() {

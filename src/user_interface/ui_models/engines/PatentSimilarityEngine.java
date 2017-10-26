@@ -10,6 +10,8 @@ import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -21,7 +23,7 @@ import static user_interface.server.SimilarPatentServer.*;
  */
 public class PatentSimilarityEngine extends AbstractSimilarityEngine {
 
-    public PatentSimilarityEngine(AbstractSimilarityModel model) {
+    public PatentSimilarityEngine(RecursiveTask<AbstractSimilarityModel> model) {
         super(model);
     }
 

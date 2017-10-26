@@ -18,6 +18,8 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
 
 
@@ -26,13 +28,13 @@ import java.util.function.Function;
  */
 public abstract class AbstractSimilarityEngine extends AbstractAttribute implements DependentAttribute<AbstractSimilarityEngine> {
     @Setter
-    protected AbstractSimilarityModel similarityModel;
+    protected RecursiveTask<AbstractSimilarityModel> similarityModel;
     protected Collection<String> inputs;
     @Getter
     protected INDArray avg;
     protected static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
 
-    public AbstractSimilarityEngine(AbstractSimilarityModel similarityModel) {
+    public AbstractSimilarityEngine(RecursiveTask<AbstractSimilarityModel> similarityModel) {
         super(Collections.emptyList());
         this.similarityModel=similarityModel;
     }

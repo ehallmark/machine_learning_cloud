@@ -14,6 +14,7 @@ import user_interface.ui_models.engines.SimilarityEngineController;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
+import java.util.concurrent.RecursiveTask;
 import java.util.stream.Collectors;
 
 import static user_interface.server.SimilarPatentServer.*;
@@ -77,7 +78,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
     @Override
     public void extractRelevantInformationFromParams(Request req) {
         String similarityModelStr = Constants.PARAGRAPH_VECTOR_MODEL;
-        AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModelStr);
+        RecursiveTask<AbstractSimilarityModel> finderPrototype = similarityModelMap.get(similarityModelStr);
 
         List<String> similarityEngines = extractArray(req, PRE_FILTER_ARRAY_FIELD);
         List<AbstractSimilarityEngine> relevantEngines = SimilarityEngineController.getEngines().stream().filter(engine->similarityEngines.contains(engine.getName())).collect(Collectors.toList());
