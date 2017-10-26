@@ -114,15 +114,20 @@ $(document).ready(function() {
                 $downloadForm.appendTo('body').submit().remove();
              } else {
                $('#results').html(data.message);
-                   if($('#results #data-table table thead th').length > 0) {
+               if($('#results #data-table table thead th').length > 0) {
                    $('#results #data-table table').dynatable({
                      dataset: {
                        ajax: true,
                        ajaxUrl: 'dataTable.json',
                        ajaxOnLoad: true,
                        records: []
+                     },
+                     features: {
+                        pushStage: false
                      }
                    });
+               } else {
+                   alert("Please include some attributes in the Attributes section.");
                }
 
                setCollapsibleHeaders('#results .collapsible-header');
