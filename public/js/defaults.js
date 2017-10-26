@@ -123,7 +123,7 @@ $(document).ready(function() {
                        records: []
                      },
                      features: {
-                        pushStage: false
+                        pushState: false
                      }
                    });
                } else {
