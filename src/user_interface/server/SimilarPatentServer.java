@@ -361,7 +361,7 @@ public class SimilarPatentServer {
                         return allAttributes.getName();
                     }
                 };
-                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false, new ExistsInCompDBFilter(), new ExistsInGatherFilter());
+                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false, new DoesNotExistInCompDBFilter(), new DoesNotExistInGatherFilter(), new ExistsInCompDBFilter(), new ExistsInGatherFilter());
             } catch(Exception e) {
                 e.printStackTrace();
             }
