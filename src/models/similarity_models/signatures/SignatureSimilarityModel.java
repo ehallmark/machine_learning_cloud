@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -150,6 +151,9 @@ public class SignatureSimilarityModel {
         int nEpochs = 10;
         //Perform training
         int printIterations = 10000;
+        List<Double> movingAverage = new ArrayList<>();
+        final int averagePeriod = 10;
+        AtomicReference<Double> startingAverageError = new AtomicReference<>(null);
         AtomicInteger iterationCount = new AtomicInteger(0);
         for (int i = 0; i < nEpochs; i++) {
             Stream<DataSet> trainIter = getIterator(trainAssets);
@@ -157,22 +161,33 @@ public class SignatureSimilarityModel {
             trainIter.forEach(ds->{
                 net.fit(ds);
                 if(iterationCount.get() % 1000 == 999) {
-                    test(getIterator(smallTestSet),vae);
-                    System.out.println("Completed: "+iterationCount.get()+ " batches.");
+                    System.out.print("-");
                 }
-                //Every N=100 minibatches:
-                // (a) collect the test set latent space values for later plotting
-                // (b) collect the reconstructions at each point in the grid
                 if (iterationCount.getAndIncrement() % printIterations == printIterations-1) {
-
+                    double error = test(getIterator(smallTestSet),vae);
+                    movingAverage.add(error);
+                    while(movingAverage.size()>averagePeriod) {
+                        movingAverage.remove(0);
+                    }
+                    if(movingAverage.size()==averagePeriod) {
+                        double averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();
+                        if(startingAverageError.get()==null) {
+                            startingAverageError.set(averageError);
+                        }
+                        System.out.println("Sampling Test Error "+error);
+                        System.out.println("Original Average Error: " + startingAverageError.get());
+                        System.out.println("Current Average Error: " + averageError);
+                    }
                 }
             });
         }
         System.out.println("Testing overall model");
-        test(getIterator(testAssets),vae);
+        double finalTestError = test(getIterator(testAssets),vae);
+        System.out.println("Final Overall Model Error: "+finalTestError);
+        System.out.println("Original Model Error: "+startingAverageError.get());
     }
 
-    private void test(Stream<DataSet> dataStream, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae) {
+    private double test(Stream<DataSet> dataStream, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae) {
         System.out.println("Testing...");
         AtomicDouble testError = new AtomicDouble(0d);
         AtomicInteger cnt = new AtomicInteger(0);
@@ -187,7 +202,7 @@ public class SignatureSimilarityModel {
                 cnt.getAndIncrement();
             }
         });
-        System.out.println("Test Error for "+cnt.get()+" assets: "+testError.get()/cnt.get());
+       return testError.get()/cnt.get();
     }
 
     public void save() throws IOException {
