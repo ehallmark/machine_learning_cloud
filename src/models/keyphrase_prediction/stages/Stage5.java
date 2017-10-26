@@ -129,7 +129,8 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
         Map<String,Set<String>> patentCPCMap = assetToCPCMap.getPatentDataMap();
         Map<String,Set<String>> appCPCMap = assetToCPCMap.getApplicationDataMap();
         CPCHierarchy hierarchy = cpcStage.getHierarchy();
-
+        AtomicInteger missing = new AtomicInteger(0);
+        AtomicInteger missingCPCs = new AtomicInteger(0);
         data = Collections.synchronizedMap(new HashMap<>());
         Function<Map<String,Object>,Void> attributesFunction = map-> {
             String asset = map.get(ASSET_ID).toString();
@@ -153,15 +154,19 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
             Map<CPC,Double> cpcToScoreMap = CPCDensityStage.computeCPCToScoreMap(asset,patentCPCMap,appCPCMap,hierarchy, documentStems, multiStemCPCMap);
             RealVector cpcResult = cpcToScoreMap.entrySet().stream()
                     .filter(e->cpcToIdx.containsKey(e.getKey().getName()))
-                    .map(e->T.getColumnVector(cpcToIdx.get(e.getKey().getName())).mapMultiply(e.getValue()/e.getKey().numSubclasses())).reduce((v1,v2)->{
+                    .map(e->T.getColumnVector(cpcToIdx.get(e.getKey().getName())).mapMultiply(e.getValue())).reduce((v1,v2)->{
                         return v1.add(v2);
                     }).orElse(null);
             // unit length
             if(cpcResult!=null) {
                 cpcResult = cpcResult.mapDivide(cpcResult.getNorm());
+            } else {
+                System.out.println("Missing cpc result... "+missingCPCs.incrementAndGet());
             }
             if(result!=null) {
                 result = result.mapDivide(result.getNorm());
+            } else {
+                System.out.println("Missing main result... "+missing.incrementAndGet());
             }
 
             List<String> technologies = null;
@@ -175,6 +180,9 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
                 int maxIndex = result.getMaxIndex();
                 if(maxIndex >= 0) {
                     technologies = Arrays.asList(multiStemToSelfMap.get(indexToImportant.get(maxIndex)).getBestPhrase());
+                } else {
+                    System.out.println("Bad index: "+maxIndex);
+                    System.out.println("Data: "+Arrays.toString(result.toArray()));
                 }
                 if (debug)
                     System.out.println("Technologies for " + asset + ": " + technologies==null?null:String.join("; ", technologies));
