@@ -34,7 +34,7 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel {
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 3;
+    public static final int MAX_CPC_DEPTH = 2;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private CPCHierarchy hierarchy;
@@ -101,15 +101,15 @@ public class SignatureSimilarityModel {
             double[] vec = new double[numInputs];
             cpcs.stream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).filter(cpc->cpcToIdxMap.containsKey(cpc.getName())).forEach(cpc->{
                 int idx = cpcToIdxMap.get(cpc.getName());
-                vec[idx]+= 1d/cpc.numSubclasses();
+                vec[idx] = 1d;
             });
             INDArray a = Nd4j.create(vec);
-            Number norm2 = a.norm2Number();
-            if(norm2.doubleValue()>0) {
-                a.divi(norm2);
-            } else {
-                System.out.println("NO NORM!!!");
-            }
+            //Number norm2 = a.norm2Number();
+            //if(norm2.doubleValue()>0) {
+            //    a.divi(norm2);
+            //} else {
+            //    System.out.println("NO NORM!!!");
+            //}
             matrix.putRow(batch.get(),a);
             batch.getAndIncrement();
         });
@@ -123,18 +123,18 @@ public class SignatureSimilarityModel {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngSeed)
                 .learningRate(1e-2)
-                .updater(Updater.RMSPROP)
+                .updater(Updater.ADAGRAD)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.LEAKYRELU)
-                        .encoderLayerSizes(250, 250)
-                        .decoderLayerSizes(250, 250)
+                        .activation(Activation.RELU)
+                        .encoderLayerSizes(100, 100)
+                        .decoderLayerSizes(100, 100)
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
-                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
-                        .nIn(numInputs)                       //Input size: 28x28
-                        .nOut(VECTOR_SIZE)                            //Size of the latent variable space: p(z|x). 2 dimensions here for plotting, use more in general
+                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))
+                        .nIn(numInputs)
+                        .nOut(VECTOR_SIZE)
                         .build())
                 .pretrain(true).backprop(false).build();
 
