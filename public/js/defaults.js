@@ -397,7 +397,16 @@ var showTemplateFormHelper = function(formSelector,json) {
             if($elem.attr('type')==="checkbox") {
                 $elem.prop('checked',value==='on');
             }
-            $elem.val(value);
+            if($elem.hasClass('nested-filter-select')) {
+                if($elem.find('option[value="'+value+'"]').length) {
+                    $elem.val(value);
+                } else {
+                    var newVal = new Option(value,value,true,true);
+                    $elem.append(newVal);
+                }
+            } else {
+                $elem.val(value);
+            }
             $elem.trigger('change');
         }
     });
