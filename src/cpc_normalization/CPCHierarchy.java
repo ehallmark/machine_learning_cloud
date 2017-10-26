@@ -33,6 +33,10 @@ public class CPCHierarchy {
 
     public Collection<CPC> cpcWithAncestors(String label) {
         CPC cpc = labelToCPCMap.get(label);
+        return cpcWithAncestors(cpc);
+    }
+
+    public Collection<CPC> cpcWithAncestors(CPC cpc) {
         List<CPC> list = new ArrayList<>();
         while(cpc!=null) {
             list.add(cpc);

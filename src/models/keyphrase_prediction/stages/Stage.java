@@ -301,7 +301,7 @@ public abstract class Stage<V> {
                 if (claimObjects != null && claimObjects.size() > 0) {
                     Object firstClaim = claimObjects.get(0).get(Constants.CLAIM);
                     if (firstClaim != null) {
-                        firstClaimText = Helper.fixPunctuationSpaces(firstClaim.toString());
+                        firstClaimText = Helper.fixPunctuationSpaces(firstClaim.toString().toLowerCase());
                         //System.out.println("FOUND CLAIM: "+firstClaimText);
                     }
                 }
