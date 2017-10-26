@@ -148,7 +148,8 @@ public class SignatureSimilarityModel {
                 //Every N=100 minibatches:
                 // (a) collect the test set latent space values for later plotting
                 // (b) collect the reconstructions at each point in the grid
-                if (iterationCount++ % 1000 == 0) {
+                if (iterationCount++ % 1000 == 999) {
+                    System.out.println("Testing...");
                     Iterator<DataSet> testIter = getIterator(false);
                     AtomicDouble testError = new AtomicDouble(0d);
                     while(testIter.hasNext()) {
@@ -157,6 +158,7 @@ public class SignatureSimilarityModel {
                         INDArray testOutput = vae.generateAtMeanGivenZ(latentSpace);
                         double error = 1d - Transforms.cosineSim(testInput,testOutput);
                         testError.addAndGet(error);
+                        System.out.println("Error: "+error);
                     }
                     System.out.println("Overall test error: "+testError.get());
                 }
