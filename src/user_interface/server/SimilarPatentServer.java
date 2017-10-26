@@ -750,9 +750,12 @@ public class SimilarPatentServer {
     }
 
     private static Object handleAjaxRequest(Request req, Function<String,List<String>> resultsSearchFunction, Function<String,String> displayFunction) {
-        if(req.queryParams("get_label_for")!=null) {
+        List<String> neededLabels = extractArray(req,"get_label_for[]");
+        if(neededLabels.size()>0) {
             Map<String,Object> response = new HashMap<>();
-            response.put("label", displayFunction.apply(req.queryParams("get_label_for")));
+            List<String> labels = neededLabels.stream().map(label->displayFunction.apply(label)).collect(Collectors.toList());
+            response.put("labels", labels);
+            response.put("values", neededLabels);
             return new Gson().toJson(response);
         } else {
             int PER_PAGE = 30;

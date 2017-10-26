@@ -398,27 +398,44 @@ var showTemplateFormHelper = function(formSelector,json) {
                 $elem.prop('checked',value==='on');
             }
             if($elem.hasClass('multiselect-ajax')) {
-                if($elem.find('option[value="'+value+'"]').length) {
-                    $elem.val(value);
-                } else {
-                    // get label
-                    $.ajax({
-                      type: "GET",
-                      url: $elem.attr("data-url"),
-                      data: {
-                        get_label_for: value
-                      },
-                      success: function(data) {
-                          var newVal = new Option(data.label,value,true,true);
-                          $elem.append(newVal);
-                      },
-                      error: function(jqXHR, exception) {
-                          var newVal = new Option(value,value,true,true);
-                          $elem.append(newVal);
-                      },
-                      dataType: "json"
-                    });
+                var labeledValues = [];
+                var needToFindLabels = [];
+                for(var i = 0; i < value.length; i++) {
+                    var val = value[i];
+                    if($elem.find('option[value="'+val+'"]').length) {
+                        labeledValues.push(val); // good to go
+                    } else {
+                        needToFindLabels.push(val); // not good :(
+                    }
                 }
+                $elem.val(labeledValues).trigger('change');
+                if(needToFindLabels.length > 0) {
+                  // get label
+                  $.ajax({
+                    type: "GET",
+                    url: $elem.attr("data-url"),
+                    data: {
+                      get_label_for: needToFindLabels
+                    },
+                    success: function(data) {
+                      if(data.hasOwnProperty('labels')&&data.hasOwnProperty('values')) {
+                        for(var i = 0; i < data.labels.length; i++) {
+                          var newVal = new Option(data.labels[i],data.values[i],true,true);
+                          $elem.append(newVal);
+                        }
+                      }
+                    },
+                    error: function(jqXHR, exception) {
+                      for(var i = 0; i < needToFindLabels.length; i++) {
+                        var val = needToFindLabels[i];
+                        var newVal = new Option(val,val,true,true);
+                        $elem.append(newVal);
+                      }
+                    },
+                    dataType: "json"
+                  });
+                }
+
             } else {
                 $elem.val(value);
             }
