@@ -403,7 +403,7 @@ var showTemplateFormHelper = function(formSelector,json) {
                 } else {
                     // get label
                     $.ajax({
-                      type: "POST",
+                      type: "GET",
                       url: $elem.attr("data-url"),
                       data: {
                         get_label_for: value
