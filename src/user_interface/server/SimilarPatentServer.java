@@ -750,38 +750,43 @@ public class SimilarPatentServer {
     }
 
     private static Object handleAjaxRequest(Request req, Function<String,List<String>> resultsSearchFunction, Function<String,String> displayFunction) {
-        int PER_PAGE = 30;
-        String search = req.queryParams("search");
-        int page = Integer.valueOf(req.queryParamOrDefault("page","1"));
-
-        System.out.println("Search: "+search);
-        System.out.println("Page: "+page);
-
-        List<String> allResults = resultsSearchFunction.apply(search);
-
-        int start = (page-1) * PER_PAGE;
-        int end = start + PER_PAGE;
-
-        List<Map<String,Object>> results;
-        if(start >= allResults.size()) {
-            results = Collections.emptyList();
+        if(req.queryParams("get_label_for")!=null) {
+            Map<String,Object> response = new HashMap<>();
+            response.put("label", displayFunction.apply(req.queryParams("get_label_for")));
+            return new Gson().toJson(response);
         } else {
-            results = allResults.subList(start,Math.min(allResults.size(),end)).stream().map(result->{
-                Map<String,Object> map = new HashMap<>();
-                map.put("id", result);
-                map.put("text", displayFunction.apply(result));
-                return map;
-            }).collect(Collectors.toList());
+            int PER_PAGE = 30;
+            String search = req.queryParams("search");
+            int page = Integer.valueOf(req.queryParamOrDefault("page", "1"));
+
+            System.out.println("Search: " + search);
+            System.out.println("Page: " + page);
+
+            List<String> allResults = resultsSearchFunction.apply(search);
+
+            int start = (page - 1) * PER_PAGE;
+            int end = start + PER_PAGE;
+
+            List<Map<String, Object>> results;
+            if (start >= allResults.size()) {
+                results = Collections.emptyList();
+            } else {
+                results = allResults.subList(start, Math.min(allResults.size(), end)).stream().map(result -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", result);
+                    map.put("text", displayFunction.apply(result));
+                    return map;
+                }).collect(Collectors.toList());
+            }
+
+            Map<String, Boolean> pagination = new HashMap<>();
+            pagination.put("more", end < allResults.size());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("results", results);
+            response.put("pagination", pagination);
+            return new Gson().toJson(response);
         }
-
-        Map<String,Boolean> pagination = new HashMap<>();
-        pagination.put("more", end < allResults.size());
-
-        Map<String,Object> response = new HashMap<>();
-        response.put("results",results);
-        response.put("pagination", pagination);
-
-        return new Gson().toJson(response);
     }
 
 

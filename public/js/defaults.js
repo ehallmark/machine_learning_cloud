@@ -401,8 +401,23 @@ var showTemplateFormHelper = function(formSelector,json) {
                 if($elem.find('option[value="'+value+'"]').length) {
                     $elem.val(value);
                 } else {
-                    var newVal = new Option(value,value,true,true);
-                    $elem.append(newVal);
+                    // get label
+                    $.ajax({
+                      type: "POST",
+                      url: $elem.attr("data-url"),
+                      data: {
+                        get_label_for: value
+                      },
+                      success: function(data) {
+                          var newVal = new Option(data.label,value,true,true);
+                          $elem.append(newVal);
+                      },
+                      error: function(jqXHR, exception) {
+                          var newVal = new Option(value,value,true,true);
+                          $elem.append(newVal);
+                      },
+                      dataType: "json"
+                    });
                 }
             } else {
                 $elem.val(value);
