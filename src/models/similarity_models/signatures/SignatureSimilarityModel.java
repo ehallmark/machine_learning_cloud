@@ -122,8 +122,8 @@ public class SignatureSimilarityModel {
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .activation(Activation.LEAKYRELU)
-                        .encoderLayerSizes(500, 500, 500)
-                        .decoderLayerSizes(500, 500, 500)
+                        .encoderLayerSizes(250, 250)
+                        .decoderLayerSizes(250, 250)
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
                         .nIn(numInputs)                       //Input size: 28x28
