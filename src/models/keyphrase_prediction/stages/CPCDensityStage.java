@@ -88,7 +88,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         List<String> allCpcCodes = Database.getClassCodeToClassTitleMap().keySet().parallelStream().map(cpc-> ClassCodeHandler.convertToLabelFormat(cpc)).distinct()
                 .filter(label->{
                     CPC cpc = hierarchy.getLabelToCPCMap().get(label);
-                    return cpc!=null;//&&cpc.getNumParts()<5;
+                    return cpc!=null&&cpc.getNumParts()<5;
                 }).collect(Collectors.toList());
         System.out.println("Num cpc codes found: "+allCpcCodes.size());
         Map<String,Integer> cpcCodeIndexMap = Collections.synchronizedMap(new HashMap<>());

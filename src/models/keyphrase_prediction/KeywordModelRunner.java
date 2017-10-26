@@ -56,7 +56,7 @@ public class KeywordModelRunner {
 
     public static void runModel() {
         Model model = new TimeDensityModel();
-        boolean alwaysRerun = false;
+        boolean alwaysRerun = true;
 
         if(alwaysRerun) {
             File dir = new File(Stage.getBaseDir(),model.getModelName());
@@ -168,7 +168,7 @@ public class KeywordModelRunner {
                 .setExplain(false)
                 .setFrom(0)
                 .setSize(5000)
-                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
+                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE,Constants.CLAIMS},new String[]{})
                 .setQuery(query);
         if(sampling>0) {
             search = search.addSort(SortBuilders.scoreSort());

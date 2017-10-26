@@ -6,6 +6,7 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 import elasticsearch.DataIngester;
+import elasticsearch.DataSearcher;
 import lombok.Getter;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
@@ -17,6 +18,7 @@ import org.elasticsearch.search.SearchHits;
 import org.gephi.graph.api.Node;
 import seeding.Constants;
 import seeding.Database;
+import seeding.ai_db_updater.tools.Helper;
 import tools.Stemmer;
 import user_interface.ui_models.portfolios.items.Item;
 import visualization.Visualizer;
@@ -239,21 +241,21 @@ public abstract class Stage<V> {
                                 if (!adjectivesPOS.contains(pos) && !((!pos.startsWith("N"))&&(word.endsWith("ing")||word.endsWith("ed")))) {
                                     checkStem(new String[]{stem}, word, appeared);
                                     if (prevStem != null && !prevStem.equals(stem)) {
-                                        long numNouns = Stream.of(pos,prevPos).filter(p->p!=null&&p.startsWith("N")).count();
-                                        long numVerbs = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("V")).count();
-                                        long numAdjectives = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("J")).count();
-                                        if(numNouns<=1&&numVerbs<=1&&numAdjectives<=1) {
+                                        //long numNouns = Stream.of(pos,prevPos).filter(p->p!=null&&p.startsWith("N")).count();
+                                        //long numVerbs = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("V")).count();
+                                        //long numAdjectives = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("J")).count();
+                                        //if(numNouns<=1&&numVerbs<=1&&numAdjectives<=1) {
                                             checkStem(new String[]{prevStem, stem}, String.join(" ", prevWord, word), appeared);
                                             if (prevPrevStem != null && !prevStem.equals(prevPrevStem) && !prevPrevStem.equals(stem)) {
                                                 // maximum 1 noun
-                                                numNouns = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("N")).count();
-                                                numVerbs = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("V")).count();
-                                                numAdjectives = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("J")).count();
-                                                if(numNouns<=2&&numVerbs<=1&&numAdjectives<=1) {
+                                                //numNouns = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("N")).count();
+                                                //numVerbs = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("V")).count();
+                                                //numAdjectives = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("J")).count();
+                                                //if(numNouns<=2&&numVerbs<=1&&numAdjectives<=1) {
                                                     checkStem(new String[]{prevPrevStem, prevStem, stem}, String.join(" ", prevPrevWord, prevWord, word), appeared);
-                                                }
+                                                //}
                                             }
-                                        }
+                                        //}
                                     }
                                 }
                             } else {
@@ -292,10 +294,18 @@ public abstract class Stage<V> {
             String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
             String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
+            List<Map<String,Object>> claimObjects = (List<Map<String,Object>>) hit.getSourceAsMap().getOrDefault(Constants.CLAIMS, new ArrayList<>());
+            String firstClaimText = null;
+            if(claimObjects!=null&&claimObjects.size()>0) {
+                Object firstClaim = claimObjects.get(0).get(Constants.CLAIM);
+                if(firstClaim!=null) {
+                    firstClaimText = Helper.fixPunctuationSpaces(firstClaim.toString());
+                }
+            }
             SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
             Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
             LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
-            String text = String.join(". ", Stream.of(inventionTitle,abstractText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList())).replaceAll("[^a-z .,]"," ");
+            String text = String.join(". ", Stream.of(inventionTitle,abstractText,firstClaimText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList())).replaceAll("[^a-z .,]"," ");
 
             Item item = new Item(asset);
             item.addData(TEXT,text);

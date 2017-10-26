@@ -8,6 +8,6 @@ public abstract class Model {
     public double getDefaultUpperBound() { return 1d; }
     public double getDefaultLowerBound() { return 0.15; }
     public double getDefaultMinValue() { return 0.0; }
-    public int getMinDocFrequency() { return 2; };
+    public int getMinDocFrequency() { return 5; };
     public int getSampling() { return 200000; }
 }
