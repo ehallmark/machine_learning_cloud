@@ -141,11 +141,12 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         Collection<String> currentCpcs = patentCPCMap.getOrDefault(asset,appCPCMap.getOrDefault(asset,Collections.emptySet()));
         // add potential cpcs from keywords
         currentCpcs = currentCpcs.stream().map(cpc->ClassCodeHandler.convertToLabelFormat(cpc)).collect(Collectors.toList());
-        Map<CPC,Double> cpcToScoreMap = new HashMap<>(wordCounts.entrySet().stream().flatMap(e->{
-            Set<CPC> found = multiStemCPCMap.getOrDefault(e.getKey(),Collections.emptySet());
-            double count = e.getValue().get();
-            return found.stream().map(cpc->new Pair<>(cpc,(count/(found.size()*cpc.getKeywords().size()))));
-        }).sorted((p1,p2)->p2._2.compareTo(p1._2)).limit(10).flatMap(p->hierarchy.cpcWithAncestors(p._1.getName()).stream().map(a->new Pair<>(a,p._2/a.numSubclasses()))).collect(Collectors.groupingBy(pair->pair._1,Collectors.summingDouble(p->p._2))));
+        Map<CPC,Double> cpcToScoreMap = new HashMap<>();
+        //new HashMap<>(wordCounts.entrySet().stream().flatMap(e->{
+        //    Set<CPC> found = multiStemCPCMap.getOrDefault(e.getKey(),Collections.emptySet());
+        //    double count = e.getValue().get();
+        //    return found.stream().map(cpc->new Pair<>(cpc,(count/(found.size()*cpc.getKeywords().size()))));
+        //}).sorted((p1,p2)->p2._2.compareTo(p1._2)).limit(10).flatMap(p->hierarchy.cpcWithAncestors(p._1.getName()).stream().map(a->new Pair<>(a,p._2/a.numSubclasses()))).collect(Collectors.groupingBy(pair->pair._1,Collectors.summingDouble(p->p._2))));
         Collection<CPC> cpcs = currentCpcs.stream().map(cpc->hierarchy.getLabelToCPCMap().get(cpc)).filter(cpc->cpc!=null).flatMap(cpc->hierarchy.cpcWithAncestors(cpc.getName()).stream()).collect(Collectors.toList());
         for(CPC cpc : cpcs) {
             if(cpcToScoreMap.containsKey(cpc)) {

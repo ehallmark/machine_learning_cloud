@@ -97,11 +97,11 @@ public class KeywordModelRunner {
             multiStems = stage2.get();
 
 
-            System.out.println("Pre-grouping data for time density stage...");
-            TimeDensityStage timeDensityStage = new TimeDensityStage(multiStems, model, year);
-            timeDensityStage.run(alwaysRerun);
-            //if(alwaysRerun) timeDensityStage.createVisualization();
-            multiStems = timeDensityStage.get();
+            //System.out.println("Pre-grouping data for time density stage...");
+            //TimeDensityStage timeDensityStage = new TimeDensityStage(multiStems, model, year);
+            //timeDensityStage.run(alwaysRerun);
+            ////if(alwaysRerun) timeDensityStage.createVisualization();
+            //multiStems = timeDensityStage.get();
 
             // stage 3
             System.out.println("Pre-grouping data for stage 3...");
