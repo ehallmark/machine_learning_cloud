@@ -396,8 +396,7 @@ var showTemplateFormHelper = function(formSelector,json) {
             $elem.trigger('change');
         }
     });
-    //$('.nested-form-list').sortable('destroy');
-    $('.nested-form-list').each(function() {
+    $(formSelector+' .nested-form-list').each(function() {
         var list = $(this);
         var elems = list.children().filter('[sort-order]').detach();
         elems.sort(function(a,b) {
@@ -407,8 +406,8 @@ var showTemplateFormHelper = function(formSelector,json) {
         });
         list.append(elems);
     });
-    $('.nested-form-list').sortable('refreshPositions');
-    //$('.nested-form-list').disableSelection();
+    $(formSelector+' .nested-form-list').sortable('refreshPositions');
+    $(formSelector+' select.nested-filter-select').trigger('change');
 };
 
 var showTemplateFunction = function(e){
