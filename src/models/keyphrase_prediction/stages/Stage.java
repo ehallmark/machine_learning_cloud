@@ -294,13 +294,15 @@ public abstract class Stage<V> {
             String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
             String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
-            List<Map<String,Object>> claimObjects = (List<Map<String,Object>>) hit.getSourceAsMap().getOrDefault(Constants.CLAIMS, new ArrayList<>());
             String firstClaimText = null;
-            if(claimObjects!=null&&claimObjects.size()>0) {
-                Object firstClaim = claimObjects.get(0).get(Constants.CLAIM);
-                if(firstClaim!=null) {
-                    firstClaimText = Helper.fixPunctuationSpaces(firstClaim.toString());
-                    //System.out.println("FOUND CLAIM: "+firstClaimText);
+            if(sampling<=0) { // only run claim text when not sampling (last pass)
+                List<Map<String, Object>> claimObjects = (List<Map<String, Object>>) hit.getSourceAsMap().getOrDefault(Constants.CLAIMS, new ArrayList<>());
+                if (claimObjects != null && claimObjects.size() > 0) {
+                    Object firstClaim = claimObjects.get(0).get(Constants.CLAIM);
+                    if (firstClaim != null) {
+                        firstClaimText = Helper.fixPunctuationSpaces(firstClaim.toString());
+                        //System.out.println("FOUND CLAIM: "+firstClaimText);
+                    }
                 }
             }
             SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
