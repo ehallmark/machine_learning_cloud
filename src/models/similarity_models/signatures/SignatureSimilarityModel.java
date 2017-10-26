@@ -33,6 +33,7 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel {
     public static final int VECTOR_SIZE = 30;
+    public static final int MAX_CPC_DEPTH = 3;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private CPCHierarchy hierarchy;
@@ -66,7 +67,7 @@ public class SignatureSimilarityModel {
         });
         {
             AtomicInteger idx = new AtomicInteger(0);
-            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e -> e.getValue().getNumParts() < 5).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
+            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e -> e.getValue().getNumParts() <= MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
             numInputs = cpcToIdxMap.size();
             System.out.println("Input size: "+numInputs);
         }
@@ -82,7 +83,7 @@ public class SignatureSimilarityModel {
                 return cpcMap.get(asset);
             }));
             return new DataSet(features, features.dup());
-        });
+        }).sequential();
     }
 
     private INDArray createVector(Stream<Collection<CPC>> cpcStream) {
@@ -118,8 +119,8 @@ public class SignatureSimilarityModel {
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .activation(Activation.LEAKYRELU)
-                        .encoderLayerSizes(500, 500)
-                        .decoderLayerSizes(500, 500)
+                        .encoderLayerSizes(250, 250)
+                        .decoderLayerSizes(250, 250)
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
                         .nIn(numInputs)                       //Input size: 28x28
@@ -135,7 +136,7 @@ public class SignatureSimilarityModel {
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
 
         // train
-        int nEpochs = 2;
+        int nEpochs = 10;
         //Perform training
         AtomicInteger iterationCount = new AtomicInteger(0);
         for (int i = 0; i < nEpochs; i++) {
@@ -147,7 +148,7 @@ public class SignatureSimilarityModel {
                 //Every N=100 minibatches:
                 // (a) collect the test set latent space values for later plotting
                 // (b) collect the reconstructions at each point in the grid
-                if (iterationCount.getAndIncrement() % 1000 == 999) {
+                if (iterationCount.getAndIncrement() % 100 == 99) {
                     System.out.println("Testing...");
                     Stream<DataSet> testIter = getIterator(false);
                     AtomicDouble testError = new AtomicDouble(0d);
