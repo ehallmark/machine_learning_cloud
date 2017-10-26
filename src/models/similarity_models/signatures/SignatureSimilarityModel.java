@@ -18,6 +18,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
+import tools.ClassCodeHandler;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 
 import java.io.File;
@@ -99,6 +100,8 @@ public class SignatureSimilarityModel {
             Number norm2 = a.norm2Number();
             if(norm2.doubleValue()>0) {
                 a.divi(norm2);
+            } else {
+                System.out.println("NO NORM!!!");
             }
             matrix.putRow(batch.get(),a);
             batch.getAndIncrement();
@@ -181,7 +184,7 @@ public class SignatureSimilarityModel {
         CPCHierarchy hierarchy = new CPCHierarchy();
         hierarchy.loadGraph();
         Map<String,Set<CPC>> cpcMap = patentToCPCStringMap.entrySet().parallelStream()
-                .collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(label->hierarchy.getLabelToCPCMap().get(label)).filter(cpc->cpc!=null).collect(Collectors.toSet())));
+                .collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label))).filter(cpc->cpc!=null).collect(Collectors.toSet())));
 
         List<String> allAssets = new ArrayList<>(cpcMap.keySet());
         SignatureSimilarityModel model = new SignatureSimilarityModel(allAssets,cpcMap,hierarchy,batchSize);
