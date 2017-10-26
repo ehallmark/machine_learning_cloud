@@ -145,7 +145,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             Set<CPC> found = multiStemCPCMap.getOrDefault(e.getKey(),Collections.emptySet());
             double count = e.getValue().get();
             return found.stream().map(cpc->new Pair<>(cpc,(count/(found.size()*cpc.getKeywords().size()))));
-        }).flatMap(p->hierarchy.cpcWithAncestors(p._1.getName()).stream().map(a->new Pair<>(a,p._2/a.numSubclasses()))).collect(Collectors.groupingBy(pair->pair._1,Collectors.summingDouble(p->p._2))));
+        }).sorted((p1,p2)->p2._2.compareTo(p1._2)).limit(10).flatMap(p->hierarchy.cpcWithAncestors(p._1.getName()).stream().map(a->new Pair<>(a,p._2/a.numSubclasses()))).collect(Collectors.groupingBy(pair->pair._1,Collectors.summingDouble(p->p._2))));
         Collection<CPC> cpcs = currentCpcs.stream().map(cpc->hierarchy.getLabelToCPCMap().get(cpc)).filter(cpc->cpc!=null).flatMap(cpc->hierarchy.cpcWithAncestors(cpc.getName()).stream()).collect(Collectors.toList());
         for(CPC cpc : cpcs) {
             if(cpcToScoreMap.containsKey(cpc)) {
