@@ -41,7 +41,7 @@ public class CPC implements Serializable {
         if(numSubclasses!=null) return numSubclasses;
 
         if(children.isEmpty()) {
-            numSubclasses = 0;
+            numSubclasses = 1;
         } else {
             numSubclasses = children.stream().mapToInt(child->child.numSubclasses()).sum();
         }
