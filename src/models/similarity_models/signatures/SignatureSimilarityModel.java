@@ -34,7 +34,7 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel {
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 3;
+    public static final int MAX_CPC_DEPTH = 4;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private CPCHierarchy hierarchy;
@@ -122,8 +122,8 @@ public class SignatureSimilarityModel {
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .activation(Activation.LEAKYRELU)
-                        .encoderLayerSizes(250, 250)
-                        .decoderLayerSizes(250, 250)
+                        .encoderLayerSizes(500, 500, 500)
+                        .decoderLayerSizes(500, 500, 500)
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
                         .nIn(numInputs)                       //Input size: 28x28
@@ -141,6 +141,7 @@ public class SignatureSimilarityModel {
         // train
         int nEpochs = 10;
         //Perform training
+        int printIterations = 10000;
         AtomicInteger iterationCount = new AtomicInteger(0);
         for (int i = 0; i < nEpochs; i++) {
             Stream<DataSet> trainIter = getIterator(true);
@@ -151,19 +152,18 @@ public class SignatureSimilarityModel {
                 //Every N=100 minibatches:
                 // (a) collect the test set latent space values for later plotting
                 // (b) collect the reconstructions at each point in the grid
-                if (iterationCount.getAndIncrement() % 100 == 99) {
+                if (iterationCount.getAndIncrement() % printIterations == printIterations-1) {
                     System.out.println("Testing...");
                     Stream<DataSet> testIter = getIterator(false);
                     AtomicDouble testError = new AtomicDouble(0d);
-                    testIter.limit(10).forEach(test->{
+                    testIter.forEach(test->{
                         INDArray testInput = test.getFeatures();
                         INDArray latentSpace = vae.activate(testInput,false);
                         INDArray testOutput = vae.generateAtMeanGivenZ(latentSpace);
                         double error = 1d - Transforms.cosineSim(testInput,testOutput);
                         testError.addAndGet(error);
-                        System.out.println("Error: "+error);
                     });
-                    System.out.println("Overall test error: "+testError.get());
+                    System.out.println("Overall test error: "+testError.get()/testAssets.size());
                 }
             });
         }
