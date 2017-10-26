@@ -73,7 +73,7 @@ public class SignatureSimilarityModel {
         System.out.println("Finished splitting test and train.");
     }
 
-    private Iterator<DataSet> getIterator(boolean train) {
+    private Stream<DataSet> getIterator(boolean train) {
         List<String> assets = (train ? trainAssets : testAssets);
         Collections.shuffle(assets);
         return IntStream.range(0,assets.size()/batchSize).parallel().mapToObj(i->{
@@ -82,7 +82,7 @@ public class SignatureSimilarityModel {
                 return cpcMap.get(asset);
             }));
             return new DataSet(features, features.dup());
-        }).iterator();
+        });
     }
 
     private INDArray createVector(Stream<Collection<CPC>> cpcStream) {
@@ -137,32 +137,31 @@ public class SignatureSimilarityModel {
         // train
         int nEpochs = 2;
         //Perform training
-        int iterationCount = 0;
+        AtomicInteger iterationCount = new AtomicInteger(0);
         for (int i = 0; i < nEpochs; i++) {
-            Iterator<DataSet> trainIter = getIterator(true);
+            Stream<DataSet> trainIter = getIterator(true);
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
-            while (trainIter.hasNext()) {
-                DataSet ds = trainIter.next();
+            trainIter.forEach(ds->{
                 net.fit(ds);
                 System.out.print("-");
                 //Every N=100 minibatches:
                 // (a) collect the test set latent space values for later plotting
                 // (b) collect the reconstructions at each point in the grid
-                if (iterationCount++ % 1000 == 999) {
+                if (iterationCount.getAndIncrement() % 1000 == 999) {
                     System.out.println("Testing...");
-                    Iterator<DataSet> testIter = getIterator(false);
+                    Stream<DataSet> testIter = getIterator(false);
                     AtomicDouble testError = new AtomicDouble(0d);
-                    while(testIter.hasNext()) {
-                        INDArray testInput = testIter.next().getFeatures();
+                    testIter.limit(10).forEach(test->{
+                        INDArray testInput = test.getFeatures();
                         INDArray latentSpace = vae.activate(testInput,false);
                         INDArray testOutput = vae.generateAtMeanGivenZ(latentSpace);
                         double error = 1d - Transforms.cosineSim(testInput,testOutput);
                         testError.addAndGet(error);
                         System.out.println("Error: "+error);
-                    }
+                    });
                     System.out.println("Overall test error: "+testError.get());
                 }
-            }
+            });
         }
     }
 
