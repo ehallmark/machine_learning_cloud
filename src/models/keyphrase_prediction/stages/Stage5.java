@@ -128,6 +128,7 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
         AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
         Map<String,Set<String>> patentCPCMap = assetToCPCMap.getPatentDataMap();
         Map<String,Set<String>> appCPCMap = assetToCPCMap.getApplicationDataMap();
+        CPCHierarchy hierarchy = cpcStage.getHierarchy();
 
         data = Collections.synchronizedMap(new HashMap<>());
         Function<Map<String,Object>,Void> attributesFunction = map-> {
@@ -149,7 +150,6 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
                 return p1.add(p2);
             }).orElse(null);
 
-            CPCHierarchy hierarchy = cpcStage.getHierarchy();
             Map<CPC,Double> cpcToScoreMap = CPCDensityStage.computeCPCToScoreMap(asset,patentCPCMap,appCPCMap,hierarchy, documentStems, multiStemCPCMap);
 
             RealVector cpcResult = cpcToScoreMap.entrySet().stream()

@@ -88,7 +88,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         List<String> allCpcCodes = Database.getClassCodeToClassTitleMap().keySet().parallelStream().map(cpc-> ClassCodeHandler.convertToLabelFormat(cpc)).distinct()
                 .filter(label->{
                     CPC cpc = hierarchy.getLabelToCPCMap().get(label);
-                    return cpc!=null&&cpc.getNumParts()<5;
+                    return cpc!=null;//&&cpc.getNumParts()<5;
                 }).collect(Collectors.toList());
         System.out.println("Num cpc codes found: "+allCpcCodes.size());
         Map<String,Integer> cpcCodeIndexMap = Collections.synchronizedMap(new HashMap<>());
@@ -149,13 +149,13 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         Collection<CPC> cpcs = currentCpcs.stream().map(cpc->hierarchy.getLabelToCPCMap().get(cpc)).filter(cpc->cpc!=null).flatMap(cpc->hierarchy.cpcWithAncestors(cpc.getName()).stream()).collect(Collectors.toList());
         for(CPC cpc : cpcs) {
             if(cpcToScoreMap.containsKey(cpc)) {
-                cpcToScoreMap.put(cpc,cpcToScoreMap.get(cpc)+1d/cpc.numSubclasses());
+                cpcToScoreMap.put(cpc,cpcToScoreMap.get(cpc)+(1d/cpc.numSubclasses()));
             } else {
                 cpcToScoreMap.put(cpc,1d/cpc.numSubclasses());
             }
         }
 
-        Map<CPC,Double> toReturn = cpcToScoreMap;
+        Map<CPC,Double> toReturn = new HashMap<>(cpcToScoreMap);
         while (cpcToScoreMap.size() > 0) {
             cpcToScoreMap = cpcToScoreMap.entrySet().stream().filter(e -> e.getKey().getParent()!=null)
                     .collect(Collectors.groupingBy(e->e.getKey().getParent(),Collectors.summingDouble(e->e.getValue())));
