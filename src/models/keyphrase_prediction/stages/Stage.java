@@ -242,20 +242,20 @@ public abstract class Stage<V> {
                                     checkStem(new String[]{stem}, word, appeared);
                                     if (prevStem != null && !prevStem.equals(stem)) {
                                         //long numNouns = Stream.of(pos,prevPos).filter(p->p!=null&&p.startsWith("N")).count();
-                                        //long numVerbs = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("V")).count();
+                                        long numVerbs = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("V")).count();
                                         //long numAdjectives = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("J")).count();
-                                        //if(numNouns<=1&&numVerbs<=1&&numAdjectives<=1) {
+                                        if(numVerbs<=1) {
                                             checkStem(new String[]{prevStem, stem}, String.join(" ", prevWord, word), appeared);
                                             if (prevPrevStem != null && !prevStem.equals(prevPrevStem) && !prevPrevStem.equals(stem)) {
                                                 // maximum 1 noun
                                                 //numNouns = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("N")).count();
-                                                //numVerbs = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("V")).count();
+                                                numVerbs = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("V")).count();
                                                 //numAdjectives = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("J")).count();
-                                                //if(numNouns<=2&&numVerbs<=1&&numAdjectives<=1) {
+                                                if(numVerbs<=1) {
                                                     checkStem(new String[]{prevPrevStem, prevStem, stem}, String.join(" ", prevPrevWord, prevWord, word), appeared);
-                                                //}
+                                                }
                                             }
-                                        //}
+                                        }
                                     }
                                 }
                             } else {
