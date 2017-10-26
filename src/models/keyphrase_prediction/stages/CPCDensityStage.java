@@ -145,7 +145,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             Set<CPC> found = multiStemCPCMap.getOrDefault(e.getKey(),Collections.emptySet());
             double count = e.getValue().get();
             return found.stream().map(cpc->new Pair<>(cpc,(count/(found.size()*cpc.getKeywords().size()))));
-        }).collect(Collectors.groupingBy(pair->pair._1,Collectors.summingDouble(p->p._2))));
+        }).flatMap(p->hierarchy.cpcWithAncestors(p._1.getName()).stream().map(a->new Pair<>(a,p._2/a.numSubclasses()))).collect(Collectors.groupingBy(pair->pair._1,Collectors.summingDouble(p->p._2))));
         Collection<CPC> cpcs = currentCpcs.stream().map(cpc->hierarchy.getLabelToCPCMap().get(cpc)).filter(cpc->cpc!=null).flatMap(cpc->hierarchy.cpcWithAncestors(cpc.getName()).stream()).collect(Collectors.toList());
         for(CPC cpc : cpcs) {
             if(cpcToScoreMap.containsKey(cpc)) {
@@ -154,21 +154,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
                 cpcToScoreMap.put(cpc,1d/cpc.numSubclasses());
             }
         }
-
-        Map<CPC,Double> toReturn = new HashMap<>(cpcToScoreMap);
-        while (cpcToScoreMap.size() > 0) {
-            cpcToScoreMap = cpcToScoreMap.entrySet().stream().filter(e -> e.getKey().getParent()!=null)
-                    .collect(Collectors.groupingBy(e->e.getKey().getParent(),Collectors.summingDouble(e->e.getValue())));
-            cpcToScoreMap.entrySet().forEach(e->{
-                toReturn.merge(e.getKey(),e.getValue(),(d1,d2)->{
-                    if(d1==null)d1=0d;
-                    if(d2==null)d2=0d;
-                    return d1+d2;
-                });
-            });
-        }
-
-        return toReturn;
+        return cpcToScoreMap;
     }
 
 }

@@ -168,7 +168,7 @@ public class KeywordModelRunner {
                 .setExplain(false)
                 .setFrom(0)
                 .setSize(5000)
-                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE,Constants.CLAIMS},new String[]{})
+                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE,Constants.CLAIMS+"."+Constants.CLAIM},new String[]{})
                 .setQuery(query);
         if(sampling>0) {
             search = search.addSort(SortBuilders.scoreSort());
