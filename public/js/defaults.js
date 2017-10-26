@@ -397,7 +397,7 @@ var showTemplateFormHelper = function(formSelector,json) {
             if($elem.attr('type')==="checkbox") {
                 $elem.prop('checked',value==='on');
             }
-            if($elem.hasClass('nested-filter-select')) {
+            if($elem.hasClass('multiselect-ajax')) {
                 if($elem.find('option[value="'+value+'"]').length) {
                     $elem.val(value);
                 } else {
