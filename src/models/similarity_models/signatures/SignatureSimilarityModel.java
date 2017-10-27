@@ -70,7 +70,7 @@ public class SignatureSimilarityModel {
                 trainAssets.add(asset);
             }
         });
-        smallTestSet.addAll(testAssets.subList(0,1000));
+        smallTestSet.addAll(testAssets.subList(0,5000));
 
         {
             AtomicInteger idx = new AtomicInteger(0);
@@ -212,7 +212,7 @@ public class SignatureSimilarityModel {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 20;
+        int batchSize = 10;
 
         Map<String,Set<String>> patentToCPCStringMap = Collections.synchronizedMap(new HashMap<>());
         patentToCPCStringMap.putAll(new AssetToCPCMap().getApplicationDataMap());
