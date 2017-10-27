@@ -94,7 +94,7 @@ public class SignatureSimilarityModel {
                 return cpcMap.get(asset);
             }));
             return new DataSet(features, features);
-        });
+        }).sequential();
     }
 
     private INDArray createVector(Stream<Collection<CPC>> cpcStream) {
@@ -131,6 +131,7 @@ public class SignatureSimilarityModel {
                 .seed(rngSeed)
                 .learningRate(1e-2)
                 .updater(Updater.RMSPROP)
+                .rmsDecay(0.95)
                 //.momentum(0.8)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
