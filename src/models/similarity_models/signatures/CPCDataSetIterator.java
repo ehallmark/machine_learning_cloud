@@ -25,15 +25,13 @@ public class CPCDataSetIterator implements DataSetIterator {
     private Map<String,Integer> cpcToIdxMap;
     private Map<String,? extends Collection<CPC>> cpcMap;
     private int numInputs;
-    private CPCHierarchy hierarchy;
     private Random rand = new Random(83);
     @Getter
     private Stream<INDArray> stream;
     private Iterator<INDArray> iterator;
-    public CPCDataSetIterator(List<String> assets, boolean shuffle, int batchSize, Map<String,? extends Collection<CPC>> cpcMap, CPCHierarchy hierarchy, Map<String,Integer> cpcToIdxMap) {
+    public CPCDataSetIterator(List<String> assets, boolean shuffle, int batchSize, Map<String,? extends Collection<CPC>> cpcMap, Map<String,Integer> cpcToIdxMap) {
         this.shuffle=shuffle;
         this.cpcMap=cpcMap;
-        this.hierarchy=hierarchy;
         this.assets=assets;
         this.batchSize=batchSize;
         this.cpcToIdxMap = cpcToIdxMap;

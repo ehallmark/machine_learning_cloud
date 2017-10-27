@@ -91,7 +91,7 @@ public class SignatureSimilarityModel {
     private CPCDataSetIterator getIterator(List<String> assets, Map<String,Integer> cpcToIndexMap) {
         boolean shuffle = assets.equals(trainAssets);
         System.out.println("Shuffling? "+shuffle);
-        return new CPCDataSetIterator(assets,shuffle,batchSize,cpcMap,hierarchy,cpcToIndexMap);
+        return new CPCDataSetIterator(assets,shuffle,batchSize,cpcMap,cpcToIndexMap);
     }
 
 
