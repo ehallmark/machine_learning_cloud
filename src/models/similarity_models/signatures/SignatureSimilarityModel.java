@@ -172,11 +172,7 @@ public class SignatureSimilarityModel {
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
             //net.fit(trainIter);
-            trainIter.getStream().forEach(ds->{
-                synchronized (net) {
-                    net.fit(ds);
-                }
-            });
+            net.fit(trainIter);
             trainIter.reset();
             System.out.println("Testing overall model: EPOCH "+i);
             double finalTestError = test(getIterator(testAssets,cpcToIdxMap),vae);
