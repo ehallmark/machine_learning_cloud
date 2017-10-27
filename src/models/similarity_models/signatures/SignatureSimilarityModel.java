@@ -35,7 +35,7 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel {
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 3;
+    public static final int MAX_CPC_DEPTH = 2;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private CPCHierarchy hierarchy;
@@ -104,7 +104,7 @@ public class SignatureSimilarityModel {
             double[] vec = new double[numInputs];
             cpcs.stream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).filter(cpc->cpcToIdxMap.containsKey(cpc.getName())).distinct().forEach(cpc->{
                 int idx = cpcToIdxMap.get(cpc.getName());
-                vec[idx] = 1d;
+                vec[idx] = 1d/cpc.numSubclasses();
             });
             INDArray a = Nd4j.create(vec);
             //Number norm2 = a.norm2Number();
@@ -121,20 +121,24 @@ public class SignatureSimilarityModel {
 
     public void train() {
         //Neural net configuration
+        int hiddenLayerSize = (numInputs+VECTOR_SIZE)/2;
+        int numHiddenLayers = 3;
+        int[] hiddenLayerArray = new int[numHiddenLayers];
+        Arrays.fill(hiddenLayerArray, hiddenLayerSize);
         int rngSeed = 69;
         Nd4j.getRandom().setSeed(rngSeed);
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngSeed)
                 .learningRate(1e-2)
-                .updater(Updater.ADAGRAD)
+                .updater(Updater.RMSPROP)
                 //.momentum(0.8)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.LEAKYRELU)
-                        .encoderLayerSizes(200, 200, 200)
-                        .decoderLayerSizes(200, 200, 200)
+                        .activation(Activation.SIGMOID)
+                        .encoderLayerSizes(hiddenLayerArray)
+                        .decoderLayerSizes(hiddenLayerArray)
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))
                         .nIn(numInputs)
