@@ -130,7 +130,7 @@ public class SignatureSimilarityModel {
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.SIGMOID)
+                        .activation(Activation.RELU)
                         .encoderLayerSizes(100, 100)
                         .decoderLayerSizes(100, 100)
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
