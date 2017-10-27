@@ -36,7 +36,11 @@ public class CPCDataSetIterator implements DataSetIterator {
         this.batchSize=batchSize;
         this.cpcToIdxMap = cpcToIdxMap;
         this.numInputs=cpcToIdxMap.size();
-        vectorList = new ArrayList<>(getCPCStreams().map(cpcStream->createVector(cpcStream)).collect(Collectors.toList()));
+        AtomicInteger idx = new AtomicInteger(0);
+        vectorList = new ArrayList<>(getCPCStreams().map(cpcStream->{
+            if(idx.getAndIncrement()%10000==9999) System.out.println("Finished Vector: "+idx.get());
+            return createVector(cpcStream);
+        }).collect(Collectors.toList()));
         System.out.println("Finished splitting test and train.");
         reset();
     }
@@ -48,15 +52,15 @@ public class CPCDataSetIterator implements DataSetIterator {
             double[] vec = new double[numInputs];
             cpcs.stream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).filter(cpc->cpcToIdxMap.containsKey(cpc.getName())).distinct().forEach(cpc->{
                 int idx = cpcToIdxMap.get(cpc.getName());
-                vec[idx] = 1d; //cpc.numSubclasses();
+                vec[idx] = 1d / cpc.numSubclasses();
             });
             INDArray a = Nd4j.create(vec);
-            //Number norm2 = a.norm2Number();
-            //if(norm2.doubleValue()>0) {
-            //    a.divi(norm2);
-            //} else {
-            //    System.out.println("NO NORM!!!");
-            //}
+            Number norm2 = a.norm2Number();
+            if(norm2.doubleValue()>0) {
+                a.divi(norm2);
+            } else {
+                System.out.println("NO NORM!!!");
+            }
             matrix.putRow(batch.get(),a);
             batch.getAndIncrement();
         });
