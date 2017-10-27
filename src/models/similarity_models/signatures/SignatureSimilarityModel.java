@@ -133,8 +133,8 @@ public class SignatureSimilarityModel {
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .activation(Activation.SIGMOID)
-                        .encoderLayerSizes(250, 250, 250)
-                        .decoderLayerSizes(250, 250, 250)
+                        .encoderLayerSizes(200, 200)
+                        .decoderLayerSizes(200, 200)
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))
                         .nIn(numInputs)
