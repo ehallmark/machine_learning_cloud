@@ -35,7 +35,7 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel {
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 2;
+    public static final int MAX_CPC_DEPTH = 3;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private CPCHierarchy hierarchy;
@@ -48,11 +48,13 @@ public class SignatureSimilarityModel {
     private int numInputs;
     private Map<String,Integer> cpcToIdxMap;
     private int batchSize;
-    public SignatureSimilarityModel(List<String> allAssets, Map<String,? extends Collection<CPC>> cpcMap, CPCHierarchy hierarchy, int batchSize) {
+    private int nEpochs;
+    public SignatureSimilarityModel(List<String> allAssets, Map<String,? extends Collection<CPC>> cpcMap, CPCHierarchy hierarchy, int batchSize, int nEpochs) {
         this.hierarchy=hierarchy;
         this.batchSize=batchSize;
         this.allAssets=allAssets;
         this.cpcMap=cpcMap;
+        this.nEpochs=nEpochs;
     }
 
     public void init() {
@@ -130,9 +132,9 @@ public class SignatureSimilarityModel {
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.RELU)
-                        .encoderLayerSizes(100, 100)
-                        .decoderLayerSizes(100, 100)
+                        .activation(Activation.SIGMOID)
+                        .encoderLayerSizes(250, 250, 250)
+                        .decoderLayerSizes(250, 250, 250)
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))
                         .nIn(numInputs)
@@ -148,12 +150,12 @@ public class SignatureSimilarityModel {
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
 
         // train
-        int nEpochs = 10;
-        //Perform training
         int printIterations = 10000;
         List<Double> movingAverage = new ArrayList<>();
         final int averagePeriod = 10;
         AtomicReference<Double> startingAverageError = new AtomicReference<>(null);
+        AtomicReference<Double> smallestedAverage = new AtomicReference<>(null);
+        AtomicReference<Integer> smallestedAverageEpoch = new AtomicReference<>(null);
         AtomicInteger iterationCount = new AtomicInteger(0);
         for (int i = 0; i < nEpochs; i++) {
             Stream<DataSet> trainIter = getIterator(trainAssets);
@@ -166,17 +168,22 @@ public class SignatureSimilarityModel {
                 if (iterationCount.getAndIncrement() % printIterations == printIterations-1) {
                     double error = test(getIterator(smallTestSet),vae);
                     movingAverage.add(error);
-                    while(movingAverage.size()>averagePeriod) {
-                        movingAverage.remove(0);
-                    }
                     if(movingAverage.size()==averagePeriod) {
                         double averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();
                         if(startingAverageError.get()==null) {
                             startingAverageError.set(averageError);
+                            if(smallestedAverage.get()==null||smallestedAverage.get()>averageError) {
+                                smallestedAverage.set(averageError);
+                                smallestedAverageEpoch.set(iterationCount.get());
+                            }
                         }
                         System.out.println("Sampling Test Error "+error);
                         System.out.println("Original Average Error: " + startingAverageError.get());
+                        System.out.println("Smallest Average Error (Iteration "+smallestedAverageEpoch.get()+"): " + smallestedAverage.get());
                         System.out.println("Current Average Error: " + averageError);
+                        while(movingAverage.size()>averagePeriod/2) {
+                            movingAverage.remove(0);
+                        }
                     }
                 }
             });
@@ -213,6 +220,7 @@ public class SignatureSimilarityModel {
 
     public static void main(String[] args) throws Exception {
         int batchSize = 10;
+        int nEpochs = 5;
 
         Map<String,Set<String>> patentToCPCStringMap = Collections.synchronizedMap(new HashMap<>());
         patentToCPCStringMap.putAll(new AssetToCPCMap().getApplicationDataMap());
@@ -225,7 +233,7 @@ public class SignatureSimilarityModel {
         cpcMap = cpcMap.entrySet().parallelStream().filter(e->e.getValue().size()>0).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
 
         List<String> allAssets = new ArrayList<>(cpcMap.keySet());
-        SignatureSimilarityModel model = new SignatureSimilarityModel(allAssets,cpcMap,hierarchy,batchSize);
+        SignatureSimilarityModel model = new SignatureSimilarityModel(allAssets,cpcMap,hierarchy,batchSize,nEpochs);
         model.init();
         model.train();
         model.save();
