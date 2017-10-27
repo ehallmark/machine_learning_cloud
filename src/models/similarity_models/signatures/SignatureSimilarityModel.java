@@ -75,6 +75,7 @@ public class SignatureSimilarityModel {
             }
         });
         smallTestSet.addAll(testAssets.subList(0,5000));
+        System.out.println("Finished splitting test and train.");
     }
 
     private CPCDataSetIterator getIterator(List<String> assets, Map<String,Integer> cpcToIndexMap) {
@@ -104,7 +105,7 @@ public class SignatureSimilarityModel {
         Nd4j.getRandom().setSeed(rngSeed);
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngSeed)
-                .learningRate(1e-2)
+                .learningRate(0.0025)
                 .updater(Updater.ADAGRAD)
                 //.momentum(0.8)
                 .weightInit(WeightInit.XAVIER)

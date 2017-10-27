@@ -38,7 +38,6 @@ public class CPCDataSetIterator implements DataSetIterator {
         this.batchSize=batchSize;
         this.cpcToIdxMap = cpcToIdxMap;
         this.numInputs=cpcToIdxMap.size();
-        System.out.println("Finished splitting test and train.");
         reset();
     }
 
