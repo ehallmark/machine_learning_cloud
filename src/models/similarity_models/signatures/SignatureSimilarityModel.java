@@ -93,7 +93,7 @@ public class SignatureSimilarityModel {
         int numInputs = trainIter.inputColumns();
 
         //Neural net configuration
-        int hiddenLayerSize = (numInputs+(2*VECTOR_SIZE))/3;
+        int hiddenLayerSize = (numInputs+VECTOR_SIZE)/2;
         int numHiddenLayers = 2;
         int[] hiddenLayerArray = new int[numHiddenLayers];
         Arrays.fill(hiddenLayerArray, hiddenLayerSize);
