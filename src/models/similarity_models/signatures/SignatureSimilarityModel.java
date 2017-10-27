@@ -67,7 +67,7 @@ public class SignatureSimilarityModel {
     public void init() {
         {
             AtomicInteger idx = new AtomicInteger(0);
-            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
+            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e->e.getValue().getNumParts()<=MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
             System.out.println("Input size: " + cpcToIdxMap.size());
         }
         allAssets = new ArrayList<>(allAssets.parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
@@ -227,6 +227,7 @@ public class SignatureSimilarityModel {
                 .collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
                         .filter(cpc->cpc!=null)
                         .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
+                        .distinct()
                         .filter(cpc -> cpc.getNumParts() <= MAX_CPC_DEPTH)
                         .collect(Collectors.toSet())));
         cpcMap = cpcMap.entrySet().parallelStream().filter(e->e.getValue().size()>0).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
