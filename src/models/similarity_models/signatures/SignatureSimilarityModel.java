@@ -122,7 +122,7 @@ public class SignatureSimilarityModel {
     public void train() {
         //Neural net configuration
         int hiddenLayerSize = (numInputs+VECTOR_SIZE)/2;
-        int numHiddenLayers = 3;
+        int numHiddenLayers = 2;
         int[] hiddenLayerArray = new int[numHiddenLayers];
         Arrays.fill(hiddenLayerArray, hiddenLayerSize);
         int rngSeed = 69;
@@ -130,9 +130,8 @@ public class SignatureSimilarityModel {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngSeed)
                 .learningRate(1e-2)
-                .updater(Updater.RMSPROP)
-                .rmsDecay(0.95)
-                //.momentum(0.8)
+                .updater(Updater.NESTEROVS)
+                .momentum(0.8)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
                 .list()
