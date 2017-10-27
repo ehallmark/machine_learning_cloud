@@ -75,7 +75,8 @@ public class CPCDataSetIterator implements DataSetIterator {
 
     private synchronized  Stream<Stream<Collection<CPC>>> getCPCStreams() {
         return IntStream.range(0,assets.size()/batchSize).parallel().mapToObj(i->{
-            return assets.subList(i,i+batchSize).stream().map(asset->{
+            int idx = i*batchSize;
+            return assets.subList(idx,idx+batchSize).stream().map(asset->{
                 return cpcMap.get(asset);
             });
         });
