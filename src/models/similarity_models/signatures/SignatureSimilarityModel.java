@@ -5,9 +5,12 @@ import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import models.dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
 import org.deeplearning4j.nn.api.Model;
+import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -19,6 +22,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
@@ -39,7 +43,7 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel {
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 2;
+    public static final int MAX_CPC_DEPTH = 4;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private CPCHierarchy hierarchy;
@@ -97,30 +101,57 @@ public class SignatureSimilarityModel {
         int numInputs = trainIter.inputColumns();
 
         //Neural net configuration
-        int hiddenLayerSize = (numInputs+VECTOR_SIZE)/2;
-        int numHiddenLayers = 1;
-        int[] hiddenLayerArray = new int[numHiddenLayers];
-        Arrays.fill(hiddenLayerArray, hiddenLayerSize);
+        int[] hiddenLayerArray = new int[]{
+                numInputs,
+                (VECTOR_SIZE+numInputs)/2,
+                (VECTOR_SIZE+numInputs)/2,
+                VECTOR_SIZE
+        };
         int rngSeed = 69;
         Nd4j.getRandom().setSeed(rngSeed);
-        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+        NeuralNetConfiguration.ListBuilder listBuilder = new NeuralNetConfiguration.Builder()
                 .seed(rngSeed)
                 .learningRate(0.0025)
-                .updater(Updater.ADAGRAD)
-                //.momentum(0.8)
+                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                .updater(Updater.NESTEROVS)
+                .momentum(0.8)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
-                .list()
-                .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.LEAKYRELU)
-                        .encoderLayerSizes(hiddenLayerArray)
-                        .decoderLayerSizes(hiddenLayerArray)
-                        .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
-                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))
-                        .nIn(numInputs)
-                        .nOut(VECTOR_SIZE)
-                        .build())
-                .pretrain(true).backprop(false).build();
+                .list();
+        // intput layer
+        listBuilder = listBuilder.layer(0, new RBM.Builder(RBM.HiddenUnit.BINARY, RBM.VisibleUnit.BINARY)
+                .activation(Activation.SIGMOID)
+                .lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                .nIn(numInputs)
+                .nOut(hiddenLayerArray[0])
+                .build());
+        // encoder
+        for(int i = 0; i < hiddenLayerArray.length-1; i++) {
+            listBuilder = listBuilder.layer(1+i, new RBM.Builder(RBM.HiddenUnit.BINARY, RBM.VisibleUnit.BINARY)
+                    .activation(Activation.SIGMOID)
+                    .lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                    .nIn(hiddenLayerArray[i])
+                    .nOut(hiddenLayerArray[i + 1])
+                    .build());
+        }
+        // decoder
+        for(int i = hiddenLayerArray.length-1; i > 0; i--) {
+            listBuilder = listBuilder.layer(1+hiddenLayerArray.length+(hiddenLayerArray.length-i-1), new RBM.Builder(RBM.HiddenUnit.BINARY, RBM.VisibleUnit.BINARY)
+                    .activation(Activation.SIGMOID)
+                    .lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                    .nIn(hiddenLayerArray[i])
+                    .nOut(hiddenLayerArray[i - 1])
+                    .build());
+        }
+        // output layer
+        listBuilder = listBuilder.layer(1+2*hiddenLayerArray.length, new OutputLayer.Builder(LossFunctions.LossFunction.MSE)
+                .activation(Activation.SIGMOID)
+                .nIn(numInputs)
+                .nOut(numInputs)
+                .build());
+
+        MultiLayerConfiguration conf = listBuilder
+                .pretrain(true).backprop(true).build();
 
         net = new MultiLayerNetwork(conf);
         net.init();
@@ -207,7 +238,7 @@ public class SignatureSimilarityModel {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 10;
+        int batchSize = 5;
         int nEpochs = 5;
 
         Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
