@@ -144,7 +144,7 @@ public class SignatureSimilarityModel {
                     .build());
         }
         // output layer
-        listBuilder = listBuilder.layer(2*hiddenLayerArray.length, new OutputLayer.Builder(LossFunctions.LossFunction.MSE)
+        listBuilder = listBuilder.layer(2*hiddenLayerArray.length-1, new OutputLayer.Builder(LossFunctions.LossFunction.MSE)
                 .activation(Activation.SIGMOID)
                 .nIn(numInputs)
                 .nOut(numInputs)
