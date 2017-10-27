@@ -94,7 +94,7 @@ public class SignatureSimilarityModel {
                 return cpcMap.get(asset);
             }));
             return new DataSet(features, features);
-        }).sequential();
+        });
     }
 
     private INDArray createVector(Stream<Collection<CPC>> cpcStream) {
@@ -121,7 +121,7 @@ public class SignatureSimilarityModel {
 
     public void train() {
         //Neural net configuration
-        int hiddenLayerSize = (numInputs+VECTOR_SIZE)/2;
+        int hiddenLayerSize = (2*numInputs+VECTOR_SIZE)/3;
         int numHiddenLayers = 2;
         int[] hiddenLayerArray = new int[numHiddenLayers];
         Arrays.fill(hiddenLayerArray, hiddenLayerSize);
@@ -131,12 +131,12 @@ public class SignatureSimilarityModel {
                 .seed(rngSeed)
                 .learningRate(1e-2)
                 .updater(Updater.NESTEROVS)
-                .momentum(0.8)
+                .momentum(0.7)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.SIGMOID)
+                        .activation(Activation.LEAKYRELU)
                         .encoderLayerSizes(hiddenLayerArray)
                         .decoderLayerSizes(hiddenLayerArray)
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
@@ -181,7 +181,7 @@ public class SignatureSimilarityModel {
                             smallestedAverage.set(averageError);
                             smallestedAverageEpoch.set(iterationCount.get());
                         }
-                        System.out.println("Sampling Test Error "+error);
+                        System.out.println("Sampling Test Error (Iteration "+iterationCount.get()+"): "+error);
                         System.out.println("Original Average Error: " + startingAverageError.get());
                         System.out.println("Smallest Average Error (Iteration "+smallestedAverageEpoch.get()+"): " + smallestedAverage.get());
                         System.out.println("Current Average Error: " + averageError);
@@ -223,7 +223,7 @@ public class SignatureSimilarityModel {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 10;
+        int batchSize = 100;
         int nEpochs = 5;
 
         Map<String,Set<String>> patentToCPCStringMap = Collections.synchronizedMap(new HashMap<>());

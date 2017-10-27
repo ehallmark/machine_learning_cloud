@@ -106,8 +106,8 @@ public class SimilarityEngineController {
 
         boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
 
-        Item[] scope = DataSearcher.searchForAssets(topLevelAttributes, preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap(), useHighlighter);
-        System.out.println("Elasticsearch found: "+scope.length+ " assets");
+        List<Item> scope = DataSearcher.searchForAssets(topLevelAttributes, preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap(), useHighlighter);
+        System.out.println("Elasticsearch found: "+scope.size()+ " assets");
 
         portfolioList = new PortfolioList(scope);
     }

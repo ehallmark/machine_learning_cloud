@@ -858,9 +858,9 @@ public class Database {
 		// get Reelframes Map
 		Set<String> allCompDBReelFrames = getCompDBReelFrames();
 		// Collect patent numbers
-		Item[] items = DataSearcher.searchForAssets(Arrays.asList(new AssetNumberAttribute(), new ReelFrameAttribute()),Arrays.asList(new AbstractIncludeFilter(new ReelFrameAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, allCompDBReelFrames)),null, SortOrder.ASC, 100000, Collections.emptyMap(),false);
+		List<Item> items = DataSearcher.searchForAssets(Arrays.asList(new AssetNumberAttribute(), new ReelFrameAttribute()),Arrays.asList(new AbstractIncludeFilter(new ReelFrameAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, allCompDBReelFrames)),null, SortOrder.ASC, 100000, Collections.emptyMap(),false);
 		Map<String,Collection<String>> reelFrameToAssetsMap = Collections.synchronizedMap(new HashMap<>());
-		Stream.of(items).parallel().forEach(item->{
+		items.parallelStream().forEach(item->{
 			Object reelFrameStr = item.getData(Constants.REEL_FRAME);
 			if(reelFrameStr==null) return;
 			String[] reelFramesStr = reelFrameStr.toString().split("; ");

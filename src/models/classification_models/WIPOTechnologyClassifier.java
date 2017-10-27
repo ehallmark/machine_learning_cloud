@@ -51,8 +51,8 @@ public class WIPOTechnologyClassifier extends ClassificationAttr {
 
     private static List<Pair<String,Double>> wipoHelper(Collection<String> patents, int limit) {
         if(patents.isEmpty()) return Collections.emptyList();
-        Item[] items = DataSearcher.searchForAssets(Arrays.asList(new WIPOTechnologyAttribute()), Arrays.asList(new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, patents)), null, SortOrder.ASC, 10000, new HashMap<>(),false);
-        return Stream.of(items).map(item->item.getData(Constants.WIPO_TECHNOLOGY)).filter(tech->tech!=null).collect(Collectors.groupingBy(tech->tech.toString(),Collectors.counting()))
+        List<Item> items = DataSearcher.searchForAssets(Arrays.asList(new WIPOTechnologyAttribute()), Arrays.asList(new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, patents)), null, SortOrder.ASC, 10000, new HashMap<>(),false);
+        return items.stream().map(item->item.getData(Constants.WIPO_TECHNOLOGY)).filter(tech->tech!=null).collect(Collectors.groupingBy(tech->tech.toString(),Collectors.counting()))
                 .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(limit)
                 .map(e->new Pair<>(e.getKey(),e.getValue().doubleValue()/patents.size())).collect(Collectors.toList());
     }

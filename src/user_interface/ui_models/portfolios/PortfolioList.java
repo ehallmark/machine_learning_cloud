@@ -15,12 +15,12 @@ import java.util.stream.Stream;
  */
 public class PortfolioList implements Comparable<PortfolioList> {
     @Getter @Setter
-    private Item[] itemList;
+    private List<Item> itemList;
     private double avgSimilarity;
     public enum Type { patents, applications }
     private boolean init = false;
 
-    public PortfolioList(Item[] itemList) {
+    public PortfolioList(List<Item> itemList) {
         this.itemList=itemList;
     }
 
@@ -32,16 +32,16 @@ public class PortfolioList implements Comparable<PortfolioList> {
 
     public Stream<Pair<String,PortfolioList>> groupedBy(String field) {
         if(field==null) return Arrays.asList(new Pair<>("",this)).stream();
-        return Arrays.stream(itemList).collect(Collectors.groupingBy((item)->(item).getData(field))).entrySet()
-                .stream().map(e->new Pair<>(e.getKey().toString(),new PortfolioList(e.getValue().toArray(new Item[e.getValue().size()]))));
+        return itemList.stream().collect(Collectors.groupingBy((item)->(item).getData(field))).entrySet()
+                .stream().map(e->new Pair<>(e.getKey().toString(),new PortfolioList(e.getValue())));
     }
 
     public void init(String sortedBy, int limit) {
         if(!init) {
-            Arrays.parallelSort(itemList,(i1,i2)-> (Double.compare(((Number) (i2.getData(sortedBy))).doubleValue(), ((Number) (i1.getData(sortedBy))).doubleValue())));
-            if (itemList.length > 0) {
-                itemList = Arrays.copyOfRange(itemList, 0, Math.min(itemList.length, limit));
-                this.avgSimilarity = Arrays.stream(itemList).parallel().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
+            itemList = itemList.parallelStream().sorted((i1,i2)-> (Double.compare(((Number) (i2.getData(sortedBy))).doubleValue(), ((Number) (i1.getData(sortedBy))).doubleValue()))).collect(Collectors.toList());
+            if (itemList.size() > 0) {
+                itemList = itemList.subList(0,Math.min(itemList.size(), limit));
+                //this.avgSimilarity = itemList.parallelStream().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
             } else this.avgSimilarity = 0.0d;
         }
         init=true;

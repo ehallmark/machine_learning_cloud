@@ -74,11 +74,11 @@ public class DataSearcher {
     private static final String CLAIM_TEXT_ATTR_NAME = Constants.CLAIMS+"."+Constants.CLAIM;
     private static final boolean debug = false;
 
-    public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, boolean highlight) {
+    public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, boolean highlight) {
         return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true, highlight);
     }
 
-    public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight) {
+    public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight) {
         try {
             if(debug) {
                 attributes.forEach(attr->{
@@ -221,9 +221,9 @@ public class DataSearcher {
         }
     }
 
-    public static Item[] iterateOverSearchResults(SearchResponse response, Function<SearchHit,Item> hitTransformer, int maxLimit, boolean merge) {
+    public static List<Item> iterateOverSearchResults(SearchResponse response, Function<SearchHit,Item> hitTransformer, int maxLimit, boolean merge) {
         //Scroll until no hits are returned
-        List<Item[]> items = Collections.synchronizedList(new ArrayList<>());
+        List<Item> items = Collections.synchronizedList(new ArrayList<>());
         long count = 0;
         do {
             System.out.println("Starting new batch. Num items = " + count);
@@ -237,13 +237,13 @@ public class DataSearcher {
             });
             count+=searchHits.length;
             if(merge) {
-                items.add(newItems);
+                items.addAll(Arrays.asList(newItems));
             }
             response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(120000)).execute().actionGet();
         } while(response.getHits().getHits().length != 0 && (maxLimit < 0 || count < maxLimit)); // Zero hits mark the end of the scroll and the while loop.
         ClearScrollResponse clearScrollResponse = client.prepareClearScroll().addScrollId(response.getScrollId()).get();
         System.out.println("Sucessfully cleared scroll: "+clearScrollResponse.isSucceeded());
-        return items.stream().flatMap(itemArray->Stream.of(itemArray)).toArray(size->new Item[size]);
+        return items;
     }
 
     private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, @NonNull String comparator, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request, AtomicReference<InnerHitBuilder> innerHitBuilder) {

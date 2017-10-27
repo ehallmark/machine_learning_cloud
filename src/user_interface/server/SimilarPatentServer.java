@@ -1164,8 +1164,8 @@ public class SimilarPatentServer {
         }).collect(Collectors.toList());
     }
 
-    static List<Map<String,String>> getTableRowData(Item[] items, List<String> attributes, boolean useHighlighter) {
-        return Arrays.stream(items).map(item -> item.getDataAsMap(attributes,useHighlighter)).collect(Collectors.toList());
+    static List<Map<String,String>> getTableRowData(List<Item> items, List<String> attributes, boolean useHighlighter) {
+        return items.stream().map(item -> item.getDataAsMap(attributes,useHighlighter)).collect(Collectors.toList());
     }
 
     public static Tag addAttributesToRow(ContainerTag tag, List<String> data, List<String> headers) {

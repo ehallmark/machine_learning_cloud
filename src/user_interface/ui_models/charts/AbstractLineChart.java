@@ -77,7 +77,7 @@ public class AbstractLineChart extends ChartAttribute {
             String title = humanAttr + " Timeline";
             String xAxisSuffix = "";
             String yAxisSuffix = "";
-            return new LineChart(title, collectTimelineData(Arrays.asList(portfolioList.getItemList()), attribute),xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType,  0, min, max);
+            return new LineChart(title, collectTimelineData(portfolioList.getItemList(), attribute),xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType,  0, min, max);
         }).collect(Collectors.toList());
     }
 
