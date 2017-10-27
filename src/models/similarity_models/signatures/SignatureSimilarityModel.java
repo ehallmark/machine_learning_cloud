@@ -85,7 +85,7 @@ public class SignatureSimilarityModel {
     public void train() {
         CPCDataSetIterator trainIter = getIterator(trainAssets);
         int numInputs = trainIter.inputColumns();
-        
+
         //Neural net configuration
         int hiddenLayerSize = (2*numInputs+VECTOR_SIZE)/3;
         int numHiddenLayers = 2;
@@ -192,8 +192,8 @@ public class SignatureSimilarityModel {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 5;
-        int nEpochs = 10;
+        int batchSize = 50;
+        int nEpochs = 5;
 
         Map<String,Set<String>> patentToCPCStringMap = Collections.synchronizedMap(new HashMap<>());
         patentToCPCStringMap.putAll(new AssetToCPCMap().getApplicationDataMap());
