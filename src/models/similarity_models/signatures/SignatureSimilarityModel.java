@@ -78,7 +78,7 @@ public class SignatureSimilarityModel {
                 trainAssets.add(asset);
             }
         });
-        smallTestSet.addAll(testAssets.subList(0,5000));
+        smallTestSet.addAll(testAssets.subList(0,10000));
         System.out.println("Finished splitting test and train.");
     }
 
@@ -101,61 +101,42 @@ public class SignatureSimilarityModel {
         int numInputs = trainIter.inputColumns();
 
         //Neural net configuration
+        int hiddenLayerSize = (VECTOR_SIZE+numInputs)/2;
         int[] hiddenLayerArray = new int[]{
-                numInputs,
-                (VECTOR_SIZE+numInputs)/2,
-                (VECTOR_SIZE+numInputs)/2,
-                VECTOR_SIZE
+                hiddenLayerSize,
+                hiddenLayerSize,
+                hiddenLayerSize
         };
         int rngSeed = 69;
         Nd4j.getRandom().setSeed(rngSeed);
-        NeuralNetConfiguration.ListBuilder listBuilder = new NeuralNetConfiguration.Builder()
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngSeed)
-                .learningRate(0.0025)
+                .learningRate(0.01)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .updater(Updater.NESTEROVS)
-                .momentum(0.8)
+                .updater(Updater.ADADELTA)
+                //.momentum(0.8)
+                .miniBatch(true)
                 .weightInit(WeightInit.XAVIER)
-                .regularization(true).l2(1e-4)
-                .list();
-        // intput layer
-        listBuilder = listBuilder.layer(0, new RBM.Builder(RBM.HiddenUnit.BINARY, RBM.VisibleUnit.BINARY)
-                .activation(Activation.SIGMOID)
-                .lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
-                .nIn(numInputs)
-                .nOut(hiddenLayerArray[0])
-                .build());
-        // encoder
-        for(int i = 0; i < hiddenLayerArray.length-1; i++) {
-            listBuilder = listBuilder.layer(1+i, new RBM.Builder(RBM.HiddenUnit.BINARY, RBM.VisibleUnit.BINARY)
-                    .activation(Activation.SIGMOID)
-                    .lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
-                    .nIn(hiddenLayerArray[i])
-                    .nOut(hiddenLayerArray[i + 1])
-                    .build());
-        }
-        // decoder
-        for(int i = hiddenLayerArray.length-1; i > 0; i--) {
-            listBuilder = listBuilder.layer(hiddenLayerArray.length+(hiddenLayerArray.length-i-1), new RBM.Builder(RBM.HiddenUnit.BINARY, RBM.VisibleUnit.BINARY)
-                    .activation(Activation.SIGMOID)
-                    .lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
-                    .nIn(hiddenLayerArray[i])
-                    .nOut(hiddenLayerArray[i - 1])
-                    .build());
-        }
-        // output layer
-        listBuilder = listBuilder.layer(2*hiddenLayerArray.length-1, new OutputLayer.Builder(LossFunctions.LossFunction.MSE)
-                .activation(Activation.SIGMOID)
-                .nIn(numInputs)
-                .nOut(numInputs)
-                .build());
-
-        MultiLayerConfiguration conf = listBuilder
-                .pretrain(true).backprop(true).build();
+                //.regularization(true).l2(1e-4)
+                .list()
+                .layer(0, new VariationalAutoencoder.Builder()
+                        .encoderLayerSizes(hiddenLayerArray)
+                        .decoderLayerSizes(hiddenLayerArray)
+                        .lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                        .activation(Activation.RELU)
+                        .pzxActivationFunction(Activation.IDENTITY)
+                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
+                        .nIn(numInputs)
+                        .nOut(VECTOR_SIZE)
+                        .build()
+                )
+                .pretrain(true).backprop(false).build();
 
         net = new MultiLayerNetwork(conf);
         net.init();
 
+        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
+                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         // train
         int printIterations = 1000;
         List<Double> movingAverage = new ArrayList<>();
@@ -172,7 +153,7 @@ public class SignatureSimilarityModel {
                 }
                 if (iterationCount.getAndIncrement() % printIterations == printIterations-1) {
                     System.out.print("Testing...");
-                    double error = test(getIterator(smallTestSet,cpcToIdxMap),net);
+                    double error = test(getIterator(smallTestSet,cpcToIdxMap),vae);
                     System.out.println(" Error: "+error);
                     movingAverage.add(error);
                     if(movingAverage.size()==averagePeriod) {
@@ -203,19 +184,20 @@ public class SignatureSimilarityModel {
             net.fit(trainIter);
             trainIter.reset();
             System.out.println("Testing overall model: EPOCH "+i);
-            double finalTestError = test(getIterator(testAssets,cpcToIdxMap),net);
+            double finalTestError = test(getIterator(testAssets,cpcToIdxMap),vae);
             System.out.println("Final Overall Model Error: "+finalTestError);
             System.out.println("Original Model Error: "+startingAverageError.get());
         }
     }
 
-    private double test(DataSetIterator dataStream, MultiLayerNetwork model) {
+    private double test(DataSetIterator dataStream, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
         AtomicDouble testError = new AtomicDouble(0d);
         AtomicInteger cnt = new AtomicInteger(0);
         while(dataStream.hasNext()) {
             DataSet test = dataStream.next();
             INDArray testInput = test.getFeatures();
-            INDArray testOutput = model.activate(testInput,false);
+            INDArray latentValues = model.activate(testInput,false);
+            INDArray testOutput = model.generateAtMeanGivenZ(latentValues);
             for(int i = 0; i < batchSize; i++) {
                 double sim = Transforms.cosineSim(testInput.getRow(i), testOutput.getRow(i));
                 if(Double.isNaN(sim)) sim = -1d;
