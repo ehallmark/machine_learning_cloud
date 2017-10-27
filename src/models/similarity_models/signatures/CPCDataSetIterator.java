@@ -40,13 +40,13 @@ public class CPCDataSetIterator implements DataSetIterator {
     }
 
     private INDArray createVector(Stream<Collection<CPC>> cpcStream) {
-        INDArray matrix = Nd4j.create(batchSize,numInputs);
         AtomicInteger batch = new AtomicInteger(0);
+        double[][] vecs = new double[batchSize][numInputs];
         cpcStream.parallel().forEach(cpcs->{
             double[] vec = new double[numInputs];
             cpcs.forEach(cpc->{
                 int idx = cpcToIdxMap.get(cpc.getName());
-                vec[idx] = 1d / cpc.numSubclasses();
+                vec[idx] = 1d;
             });
             INDArray a = Nd4j.create(vec);
             Number norm2 = a.norm2Number();
@@ -55,10 +55,10 @@ public class CPCDataSetIterator implements DataSetIterator {
             } else {
                 System.out.println("NO NORM!!!");
             }
-            matrix.putRow(batch.get(),a);
+            vecs[batch.get()] = vec;
             batch.getAndIncrement();
         });
-        return matrix;
+        return Nd4j.create(vecs);
     }
 
     @Override

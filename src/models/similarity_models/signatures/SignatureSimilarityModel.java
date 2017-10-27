@@ -43,7 +43,7 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel {
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 2;
+    public static final int MAX_CPC_DEPTH = 3;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private CPCHierarchy hierarchy;
@@ -113,17 +113,17 @@ public class SignatureSimilarityModel {
                 .seed(rngSeed)
                 .learningRate(0.01)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .updater(Updater.ADAGRAD)
-                //.momentum(0.8)
+                .updater(Updater.NESTEROVS)
+                .momentum(0.8)
                 .miniBatch(true)
                 .weightInit(WeightInit.XAVIER)
-                //.regularization(true).l2(1e-4)
+                .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .encoderLayerSizes(hiddenLayerArray)
                         .decoderLayerSizes(hiddenLayerArray)
-                        .lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
-                        .activation(Activation.RELU)
+                        //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                        .activation(Activation.SIGMOID)
                         .pzxActivationFunction(Activation.IDENTITY)
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
                         .nIn(numInputs)
@@ -138,7 +138,7 @@ public class SignatureSimilarityModel {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         // train
-        int printIterations = 10;
+        int printIterations = 100;
         List<Double> movingAverage = new ArrayList<>();
         final int averagePeriod = 10;
         AtomicReference<Double> startingAverageError = new AtomicReference<>(null);
