@@ -11,6 +11,7 @@ import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDist
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -46,7 +47,6 @@ public class SignatureSimilarityModel {
     private List<String> testAssets;
     private List<String> smallTestSet;
     private List<String> trainAssets;
-    private Map<String,Integer> cpcToIdxMap;;
     private MultiLayerNetwork net;
     private int batchSize;
     private int nEpochs;
@@ -85,6 +85,7 @@ public class SignatureSimilarityModel {
 
 
     public void train() {
+        Map<String,Integer> cpcToIdxMap;;
         {   AtomicInteger idx = new AtomicInteger(0);
             cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e -> e.getValue().getNumParts() <= MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
             System.out.println("Input size: "+cpcToIdxMap.size());
@@ -120,6 +121,7 @@ public class SignatureSimilarityModel {
 
         net = new MultiLayerNetwork(conf);
         net.init();
+        net.setListeners(new ScoreIterationListener(100));
 
         //Get the variational autoencoder layer
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
@@ -135,7 +137,8 @@ public class SignatureSimilarityModel {
         AtomicInteger iterationCount = new AtomicInteger(0);
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
-            while(trainIter.hasNext()) {
+            net.fit(trainIter);
+            /*while(trainIter.hasNext()) {
                 DataSet ds = trainIter.next();
                 net.fit(ds);
                 if(iterationCount.get() % 1000 == 999) {
@@ -164,13 +167,13 @@ public class SignatureSimilarityModel {
                         }
                     }
                 }
-            }
+            }*/
             trainIter.reset();
+            System.out.println("Testing overall model: EPOCH "+i);
+            double finalTestError = test(getIterator(testAssets,cpcToIdxMap),vae);
+            System.out.println("Final Overall Model Error: "+finalTestError);
+            System.out.println("Original Model Error: "+startingAverageError.get());
         }
-        System.out.println("Testing overall model");
-        double finalTestError = test(getIterator(testAssets,cpcToIdxMap),vae);
-        System.out.println("Final Overall Model Error: "+finalTestError);
-        System.out.println("Original Model Error: "+startingAverageError.get());
     }
 
     private double test(DataSetIterator dataStream, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae) {
@@ -198,7 +201,7 @@ public class SignatureSimilarityModel {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 10;
+        int batchSize = 20;
         int nEpochs = 5;
 
         Map<String,Set<String>> patentToCPCStringMap = Collections.synchronizedMap(new HashMap<>());
