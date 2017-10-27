@@ -43,7 +43,7 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel {
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 4;
+    public static final int MAX_CPC_DEPTH = 2;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private CPCHierarchy hierarchy;
@@ -55,6 +55,7 @@ public class SignatureSimilarityModel {
     private MultiLayerNetwork net;
     private int batchSize;
     private int nEpochs;
+    private Map<String,Integer> cpcToIdxMap;
     public SignatureSimilarityModel(List<String> allAssets, Map<String,? extends Collection<CPC>> cpcMap, CPCHierarchy hierarchy, int batchSize, int nEpochs) {
         this.hierarchy=hierarchy;
         this.batchSize=batchSize;
@@ -64,6 +65,11 @@ public class SignatureSimilarityModel {
     }
 
     public void init() {
+        {
+            AtomicInteger idx = new AtomicInteger(0);
+            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
+            System.out.println("Input size: " + cpcToIdxMap.size());
+        }
         allAssets = new ArrayList<>(allAssets.parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
         Random rand = new Random(69);
         Collections.shuffle(allAssets,rand);
@@ -91,12 +97,6 @@ public class SignatureSimilarityModel {
 
 
     public void train() {
-        Map<String,Integer> cpcToIdxMap;;
-        {
-            AtomicInteger idx = new AtomicInteger(0);
-            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e -> e.getValue().getNumParts() <= MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
-            System.out.println("Input size: " + cpcToIdxMap.size());
-        }
         CPCDataSetIterator trainIter = getIterator(trainAssets,cpcToIdxMap);
         int numInputs = trainIter.inputColumns();
 
@@ -138,7 +138,7 @@ public class SignatureSimilarityModel {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         // train
-        int printIterations = 1000;
+        int printIterations = 10;
         List<Double> movingAverage = new ArrayList<>();
         final int averagePeriod = 10;
         AtomicReference<Double> startingAverageError = new AtomicReference<>(null);
@@ -215,7 +215,7 @@ public class SignatureSimilarityModel {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 5;
+        int batchSize = 100;
         int nEpochs = 5;
 
         Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
@@ -225,7 +225,10 @@ public class SignatureSimilarityModel {
         hierarchy.loadGraph();
         Map<String,Set<CPC>> cpcMap = patentToCPCStringMap.entrySet().parallelStream()
                 .collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
-                        .filter(cpc->cpc!=null).collect(Collectors.toSet())));
+                        .filter(cpc->cpc!=null)
+                        .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
+                        .filter(cpc -> cpc.getNumParts() <= MAX_CPC_DEPTH)
+                        .collect(Collectors.toSet())));
         cpcMap = cpcMap.entrySet().parallelStream().filter(e->e.getValue().size()>0).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
 
         List<String> allAssets = new ArrayList<>(cpcMap.keySet());

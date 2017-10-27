@@ -44,9 +44,9 @@ public class CPCDataSetIterator implements DataSetIterator {
     private INDArray createVector(Stream<Collection<CPC>> cpcStream) {
         INDArray matrix = Nd4j.create(batchSize,numInputs);
         AtomicInteger batch = new AtomicInteger(0);
-        cpcStream.forEach(cpcs->{
+        cpcStream.parallel().forEach(cpcs->{
             double[] vec = new double[numInputs];
-            cpcs.stream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).filter(cpc->cpcToIdxMap.containsKey(cpc.getName())).distinct().forEach(cpc->{
+            cpcs.forEach(cpc->{
                 int idx = cpcToIdxMap.get(cpc.getName());
                 vec[idx] = 1d / cpc.numSubclasses();
             });
