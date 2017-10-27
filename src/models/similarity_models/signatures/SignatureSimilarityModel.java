@@ -123,7 +123,7 @@ public class SignatureSimilarityModel {
                         .encoderLayerSizes(hiddenLayerArray)
                         .decoderLayerSizes(hiddenLayerArray)
                         //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
-                        .activation(Activation.SIGMOID)
+                        .activation(Activation.LEAKYRELU)
                         .pzxActivationFunction(Activation.IDENTITY)
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
                         .nIn(numInputs)
@@ -138,7 +138,7 @@ public class SignatureSimilarityModel {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         // train
-        int printIterations = 100;
+        int printIterations = 1000;
         List<Double> movingAverage = new ArrayList<>();
         final int averagePeriod = 10;
         AtomicReference<Double> startingAverageError = new AtomicReference<>(null);
@@ -215,7 +215,7 @@ public class SignatureSimilarityModel {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 100;
+        int batchSize = 10;
         int nEpochs = 5;
 
         Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
