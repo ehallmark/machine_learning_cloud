@@ -66,7 +66,7 @@ public class SignatureSimilarityModel {
         trainAssets = new ArrayList<>();
         smallTestSet = new ArrayList<>();
         System.out.println("Splitting test and train");
-        allAssets.stream().forEach(asset->{
+        allAssets.forEach(asset->{
             if(rand.nextBoolean()&&rand.nextBoolean()) {
                 testAssets.add(asset);
             } else {
@@ -87,7 +87,7 @@ public class SignatureSimilarityModel {
     public void train() {
         {   AtomicInteger idx = new AtomicInteger(0);
             cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e -> e.getValue().getNumParts() <= MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
-            System.out.println("Input size: "+cpcMap.size());
+            System.out.println("Input size: "+cpcToIdxMap.size());
         }
         AsyncDataSetIterator trainIter = new AsyncDataSetIterator(getIterator(trainAssets,cpcToIdxMap),8);
         int numInputs = trainIter.inputColumns();

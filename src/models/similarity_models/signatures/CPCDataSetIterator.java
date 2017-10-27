@@ -26,7 +26,6 @@ public class CPCDataSetIterator implements DataSetIterator {
     private int numInputs;
     private CPCHierarchy hierarchy;
     private Random rand = new Random(83);
-    private List<INDArray> vectorList;
     private Iterator<INDArray> iterator;
     public CPCDataSetIterator(List<String> assets, boolean shuffle, int batchSize, Map<String,? extends Collection<CPC>> cpcMap, CPCHierarchy hierarchy, Map<String,Integer> cpcToIdxMap) {
         this.shuffle=shuffle;
@@ -36,11 +35,6 @@ public class CPCDataSetIterator implements DataSetIterator {
         this.batchSize=batchSize;
         this.cpcToIdxMap = cpcToIdxMap;
         this.numInputs=cpcToIdxMap.size();
-        AtomicInteger idx = new AtomicInteger(0);
-        vectorList = new ArrayList<>(getCPCStreams().map(cpcStream->{
-            if(idx.getAndIncrement()%10000==9999) System.out.println("Finished Vector: "+idx.get());
-            return createVector(cpcStream);
-        }).collect(Collectors.toList()));
         System.out.println("Finished splitting test and train.");
         reset();
     }
@@ -73,13 +67,14 @@ public class CPCDataSetIterator implements DataSetIterator {
         return new DataSet(features,features);
     }
 
-    private synchronized  Stream<Stream<Collection<CPC>>> getCPCStreams() {
+    private synchronized Iterator<INDArray> getCPCStreams() {
         return IntStream.range(0,assets.size()/batchSize).parallel().mapToObj(i->{
             int idx = i*batchSize;
-            return assets.subList(idx,idx+batchSize).stream().map(asset->{
+            INDArray vector = createVector(assets.subList(idx,idx+batchSize).stream().map(asset->{
                 return cpcMap.get(asset);
-            });
-        });
+            }));
+            return vector;
+        }).iterator();
     }
 
     @Override
@@ -109,8 +104,8 @@ public class CPCDataSetIterator implements DataSetIterator {
 
     @Override
     public void reset() {
-        if(shuffle) Collections.shuffle(vectorList,rand);
-        iterator = vectorList.iterator();
+        if(shuffle) Collections.shuffle(assets,rand);
+        iterator = getCPCStreams();
     }
 
     @Override
@@ -119,7 +114,7 @@ public class CPCDataSetIterator implements DataSetIterator {
     }
 
     @Override
-    public synchronized int cursor() {
+    public int cursor() {
         throw new UnsupportedOperationException("cursor()");
     }
 
