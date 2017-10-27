@@ -44,7 +44,7 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel {
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 4;
+    public static final int MAX_CPC_DEPTH = 3;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private CPCHierarchy hierarchy;
@@ -114,8 +114,8 @@ public class SignatureSimilarityModel {
                 .seed(rngSeed)
                 .learningRate(0.01)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .updater(Updater.NESTEROVS)
-                .momentum(0.8)
+                .updater(Updater.ADAGRAD)
+                //.momentum(0.8)
                 .miniBatch(true)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
@@ -157,7 +157,7 @@ public class SignatureSimilarityModel {
             public void invoke() {
                 invoked = true;
             }
-
+            @Override
             public void iterationDone(Model model, int iteration) {
                 if(iterationCount.get() % (printIterations/10) == (printIterations/10)-1) {
                     System.out.print("-");
