@@ -210,7 +210,7 @@ public class SignatureSimilarityModel {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 25;
+        int batchSize = 10;
         int nEpochs = 5;
 
         Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
