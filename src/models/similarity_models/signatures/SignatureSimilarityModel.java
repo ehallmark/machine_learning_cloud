@@ -138,7 +138,7 @@ public class SignatureSimilarityModel {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         // train
-        int printIterations = 1000;
+        int printIterations = 100;
         List<Double> movingAverage = new ArrayList<>();
         final int averagePeriod = 10;
         AtomicReference<Double> startingAverageError = new AtomicReference<>(null);
@@ -215,7 +215,7 @@ public class SignatureSimilarityModel {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 10;
+        int batchSize = 100;
         int nEpochs = 5;
 
         Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
