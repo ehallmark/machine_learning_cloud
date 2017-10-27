@@ -67,7 +67,7 @@ public class CPCDataSetIterator implements DataSetIterator {
         return new DataSet(features,features);
     }
 
-    private synchronized Iterator<INDArray> getCPCStreams() {
+    private Iterator<INDArray> getCPCStreams() {
         return IntStream.range(0,assets.size()/batchSize).parallel().mapToObj(i->{
             int idx = i*batchSize;
             INDArray vector = createVector(assets.subList(idx,idx+batchSize).stream().map(asset->{

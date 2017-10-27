@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import models.dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
+import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
@@ -86,30 +87,31 @@ public class SignatureSimilarityModel {
 
     public void train() {
         Map<String,Integer> cpcToIdxMap;;
-        {   AtomicInteger idx = new AtomicInteger(0);
+        {
+            AtomicInteger idx = new AtomicInteger(0);
             cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e -> e.getValue().getNumParts() <= MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
-            System.out.println("Input size: "+cpcToIdxMap.size());
+            System.out.println("Input size: " + cpcToIdxMap.size());
         }
-        AsyncDataSetIterator trainIter = new AsyncDataSetIterator(getIterator(trainAssets,cpcToIdxMap),8);
+        DataSetIterator trainIter = getIterator(trainAssets,cpcToIdxMap);
         int numInputs = trainIter.inputColumns();
 
         //Neural net configuration
         int hiddenLayerSize = (numInputs+VECTOR_SIZE)/2;
-        int numHiddenLayers = 2;
+        int numHiddenLayers = 1;
         int[] hiddenLayerArray = new int[numHiddenLayers];
         Arrays.fill(hiddenLayerArray, hiddenLayerSize);
         int rngSeed = 69;
         Nd4j.getRandom().setSeed(rngSeed);
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngSeed)
-                .learningRate(1e-3)
-                .updater(Updater.NESTEROVS)
-                .momentum(0.8)
+                .learningRate(1e-2)
+                .updater(Updater.ADAGRAD)
+                //.momentum(0.8)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.SIGMOID)
+                        .activation(Activation.LEAKYRELU)
                         .encoderLayerSizes(hiddenLayerArray)
                         .decoderLayerSizes(hiddenLayerArray)
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
@@ -121,27 +123,23 @@ public class SignatureSimilarityModel {
 
         net = new MultiLayerNetwork(conf);
         net.init();
-        net.setListeners(new ScoreIterationListener(100));
 
         //Get the variational autoencoder layer
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
 
         // train
-        int printIterations = 10000;
+        int printIterations = 1000;
         List<Double> movingAverage = new ArrayList<>();
         final int averagePeriod = 10;
         AtomicReference<Double> startingAverageError = new AtomicReference<>(null);
         AtomicReference<Double> smallestedAverage = new AtomicReference<>(null);
         AtomicReference<Integer> smallestedAverageEpoch = new AtomicReference<>(null);
         AtomicInteger iterationCount = new AtomicInteger(0);
-        for (int i = 0; i < nEpochs; i++) {
-            System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
-            net.fit(trainIter);
-            /*while(trainIter.hasNext()) {
-                DataSet ds = trainIter.next();
-                net.fit(ds);
-                if(iterationCount.get() % 1000 == 999) {
+        net.setListeners(new ScoreIterationListener(printIterations) {
+            public void iterationDone(Model model, int iteration) {
+                super.iterationDone(model,iteration);
+                if(iterationCount.get() % (printIterations/10) == (printIterations/10)-1) {
                     System.out.print("-");
                 }
                 if (iterationCount.getAndIncrement() % printIterations == printIterations-1) {
@@ -167,6 +165,17 @@ public class SignatureSimilarityModel {
                         }
                     }
                 }
+            }
+        });
+
+
+        for (int i = 0; i < nEpochs; i++) {
+            System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
+            net.fit(trainIter);
+            /*while(trainIter.hasNext()) {
+                DataSet ds = trainIter.next();
+                net.fit(ds);
+
             }*/
             trainIter.reset();
             System.out.println("Testing overall model: EPOCH "+i);
@@ -201,10 +210,10 @@ public class SignatureSimilarityModel {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 20;
+        int batchSize = 25;
         int nEpochs = 5;
 
-        Map<String,Set<String>> patentToCPCStringMap = Collections.synchronizedMap(new HashMap<>());
+        Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
         patentToCPCStringMap.putAll(new AssetToCPCMap().getApplicationDataMap());
         patentToCPCStringMap.putAll(new AssetToCPCMap().getPatentDataMap());
         CPCHierarchy hierarchy = new CPCHierarchy();
