@@ -46,7 +46,6 @@ public class SignatureSimilarityModel {
     private List<String> smallTestSet;
     private List<String> trainAssets;
     private MultiLayerNetwork net;
-    private int numInputs;
     private int batchSize;
     private int nEpochs;
     public SignatureSimilarityModel(List<String> allAssets, Map<String,? extends Collection<CPC>> cpcMap, CPCHierarchy hierarchy, int batchSize, int nEpochs) {
@@ -75,7 +74,7 @@ public class SignatureSimilarityModel {
         smallTestSet.addAll(testAssets.subList(0,5000));
     }
 
-    private DataSetIterator getIterator(List<String> assets) {
+    private CPCDataSetIterator getIterator(List<String> assets) {
         boolean shuffle = assets.equals(trainAssets);
         System.out.println("Shuffling? "+shuffle);
         return new CPCDataSetIterator(assets,shuffle,batchSize,cpcMap,hierarchy,MAX_CPC_DEPTH);
@@ -84,6 +83,9 @@ public class SignatureSimilarityModel {
 
 
     public void train() {
+        CPCDataSetIterator trainIter = getIterator(trainAssets);
+        int numInputs = trainIter.inputColumns();
+        
         //Neural net configuration
         int hiddenLayerSize = (2*numInputs+VECTOR_SIZE)/3;
         int numHiddenLayers = 2;
@@ -125,7 +127,6 @@ public class SignatureSimilarityModel {
         AtomicReference<Double> smallestedAverage = new AtomicReference<>(null);
         AtomicReference<Integer> smallestedAverageEpoch = new AtomicReference<>(null);
         AtomicInteger iterationCount = new AtomicInteger(0);
-        DataSetIterator trainIter = getIterator(trainAssets);
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
             while(trainIter.hasNext()) {
