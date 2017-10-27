@@ -3,6 +3,7 @@ package models.similarity_models.signatures;
 import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
+import models.dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
@@ -36,7 +37,7 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel {
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 3;
+    public static final int MAX_CPC_DEPTH = 2;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private CPCHierarchy hierarchy;
@@ -60,9 +61,9 @@ public class SignatureSimilarityModel {
         allAssets = new ArrayList<>(allAssets.parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
         Random rand = new Random(69);
         Collections.shuffle(allAssets,rand);
-        testAssets = Collections.synchronizedList(new ArrayList<>());
-        trainAssets = Collections.synchronizedList(new ArrayList<>());
-        smallTestSet = Collections.synchronizedList(new ArrayList<>());
+        testAssets = new ArrayList<>();
+        trainAssets = new ArrayList<>();
+        smallTestSet = new ArrayList<>();
         System.out.println("Splitting test and train");
         allAssets.stream().forEach(asset->{
             if(rand.nextBoolean()&&rand.nextBoolean()) {
@@ -83,11 +84,11 @@ public class SignatureSimilarityModel {
 
 
     public void train() {
-        CPCDataSetIterator trainIter = getIterator(trainAssets);
+        AsyncDataSetIterator trainIter = new AsyncDataSetIterator(getIterator(trainAssets),8);
         int numInputs = trainIter.inputColumns();
 
         //Neural net configuration
-        int hiddenLayerSize = (2*numInputs+VECTOR_SIZE)/3;
+        int hiddenLayerSize = (numInputs+(2*VECTOR_SIZE))/3;
         int numHiddenLayers = 2;
         int[] hiddenLayerArray = new int[numHiddenLayers];
         Arrays.fill(hiddenLayerArray, hiddenLayerSize);
@@ -192,7 +193,7 @@ public class SignatureSimilarityModel {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 50;
+        int batchSize = 10;
         int nEpochs = 5;
 
         Map<String,Set<String>> patentToCPCStringMap = Collections.synchronizedMap(new HashMap<>());
