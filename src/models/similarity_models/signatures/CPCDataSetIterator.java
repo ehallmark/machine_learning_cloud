@@ -2,6 +2,7 @@ package models.similarity_models.signatures;
 
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
+import lombok.Getter;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
@@ -26,6 +27,8 @@ public class CPCDataSetIterator implements DataSetIterator {
     private int numInputs;
     private CPCHierarchy hierarchy;
     private Random rand = new Random(83);
+    @Getter
+    private Stream<INDArray> stream;
     private Iterator<INDArray> iterator;
     public CPCDataSetIterator(List<String> assets, boolean shuffle, int batchSize, Map<String,? extends Collection<CPC>> cpcMap, CPCHierarchy hierarchy, Map<String,Integer> cpcToIdxMap) {
         this.shuffle=shuffle;
@@ -67,14 +70,14 @@ public class CPCDataSetIterator implements DataSetIterator {
         return new DataSet(features,features);
     }
 
-    private Iterator<INDArray> getCPCStreams() {
+    private Stream<INDArray> getCPCStreams() {
         return IntStream.range(0,assets.size()/batchSize).parallel().mapToObj(i->{
             int idx = i*batchSize;
             INDArray vector = createVector(assets.subList(idx,idx+batchSize).stream().map(asset->{
                 return cpcMap.get(asset);
             }));
             return vector;
-        }).iterator();
+        });
     }
 
     @Override
@@ -105,7 +108,8 @@ public class CPCDataSetIterator implements DataSetIterator {
     @Override
     public void reset() {
         if(shuffle) Collections.shuffle(assets,rand);
-        iterator = getCPCStreams();
+        stream = getCPCStreams();
+        iterator = getCPCStreams().iterator();
     }
 
     @Override

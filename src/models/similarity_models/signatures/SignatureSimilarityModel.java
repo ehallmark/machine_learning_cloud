@@ -92,7 +92,7 @@ public class SignatureSimilarityModel {
             cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e -> e.getValue().getNumParts() <= MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
             System.out.println("Input size: " + cpcToIdxMap.size());
         }
-        DataSetIterator trainIter = getIterator(trainAssets,cpcToIdxMap);
+        CPCDataSetIterator trainIter = getIterator(trainAssets,cpcToIdxMap);
         int numInputs = trainIter.inputColumns();
 
         //Neural net configuration
@@ -171,12 +171,12 @@ public class SignatureSimilarityModel {
 
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
-            net.fit(trainIter);
-            /*while(trainIter.hasNext()) {
-                DataSet ds = trainIter.next();
-                net.fit(ds);
-
-            }*/
+            //net.fit(trainIter);
+            trainIter.getStream().forEach(ds->{
+                synchronized (net) {
+                    net.fit(ds);
+                }
+            });
             trainIter.reset();
             System.out.println("Testing overall model: EPOCH "+i);
             double finalTestError = test(getIterator(testAssets,cpcToIdxMap),vae);
