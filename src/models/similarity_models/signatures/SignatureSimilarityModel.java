@@ -14,6 +14,7 @@ import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
@@ -35,7 +36,7 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel {
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 2;
+    public static final int MAX_CPC_DEPTH = 3;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private CPCHierarchy hierarchy;
@@ -46,7 +47,6 @@ public class SignatureSimilarityModel {
     private List<String> trainAssets;
     private MultiLayerNetwork net;
     private int numInputs;
-    private Map<String,Integer> cpcToIdxMap;
     private int batchSize;
     private int nEpochs;
     public SignatureSimilarityModel(List<String> allAssets, Map<String,? extends Collection<CPC>> cpcMap, CPCHierarchy hierarchy, int batchSize, int nEpochs) {
@@ -58,14 +58,14 @@ public class SignatureSimilarityModel {
     }
 
     public void init() {
-        allAssets = new ArrayList<>(allAssets.parallelStream().filter(asset->cpcMap.containsKey(asset)).collect(Collectors.toList()));
-        Collections.shuffle(allAssets);
+        allAssets = new ArrayList<>(allAssets.parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
         Random rand = new Random(69);
+        Collections.shuffle(allAssets,rand);
         testAssets = Collections.synchronizedList(new ArrayList<>());
         trainAssets = Collections.synchronizedList(new ArrayList<>());
         smallTestSet = Collections.synchronizedList(new ArrayList<>());
         System.out.println("Splitting test and train");
-        allAssets.parallelStream().forEach(asset->{
+        allAssets.stream().forEach(asset->{
             if(rand.nextBoolean()&&rand.nextBoolean()) {
                 testAssets.add(asset);
             } else {
@@ -73,51 +73,15 @@ public class SignatureSimilarityModel {
             }
         });
         smallTestSet.addAll(testAssets.subList(0,5000));
-
-        {
-            AtomicInteger idx = new AtomicInteger(0);
-            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e -> e.getValue().getNumParts() <= MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
-            numInputs = cpcToIdxMap.size();
-            System.out.println("Input size: "+numInputs);
-        }
-        System.out.println("Finished splitting test and train.");
     }
 
-    private Stream<DataSet> getIterator(List<String> assets) {
-        if(assets.equals(trainAssets)) {
-            System.out.println("Shuffling training data...");
-            Collections.shuffle(assets);
-        }
-        return IntStream.range(0,assets.size()/batchSize).parallel().mapToObj(i->{
-            INDArray features = createVector(IntStream.range(i,i+batchSize).mapToObj(j->{
-                String asset = assets.get(j);
-                return cpcMap.get(asset);
-            }));
-            return new DataSet(features, features);
-        }).sequential();
+    private DataSetIterator getIterator(List<String> assets) {
+        boolean shuffle = assets.equals(trainAssets);
+        System.out.println("Shuffling? "+shuffle);
+        return new CPCDataSetIterator(assets,shuffle,batchSize,cpcMap,hierarchy,MAX_CPC_DEPTH);
     }
 
-    private INDArray createVector(Stream<Collection<CPC>> cpcStream) {
-        INDArray matrix = Nd4j.create(batchSize,numInputs);
-        AtomicInteger batch = new AtomicInteger(0);
-        cpcStream.forEach(cpcs->{
-            double[] vec = new double[numInputs];
-            cpcs.stream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).filter(cpc->cpcToIdxMap.containsKey(cpc.getName())).distinct().forEach(cpc->{
-                int idx = cpcToIdxMap.get(cpc.getName());
-                vec[idx] = 1d; //cpc.numSubclasses();
-            });
-            INDArray a = Nd4j.create(vec);
-            //Number norm2 = a.norm2Number();
-            //if(norm2.doubleValue()>0) {
-            //    a.divi(norm2);
-            //} else {
-            //    System.out.println("NO NORM!!!");
-            //}
-            matrix.putRow(batch.get(),a);
-            batch.getAndIncrement();
-        });
-        return matrix;
-    }
+
 
     public void train() {
         //Neural net configuration
@@ -129,14 +93,14 @@ public class SignatureSimilarityModel {
         Nd4j.getRandom().setSeed(rngSeed);
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngSeed)
-                .learningRate(1e-2)
+                .learningRate(1e-3)
                 .updater(Updater.NESTEROVS)
-                .momentum(0.7)
+                .momentum(0.8)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.LEAKYRELU)
+                        .activation(Activation.SIGMOID)
                         .encoderLayerSizes(hiddenLayerArray)
                         .decoderLayerSizes(hiddenLayerArray)
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
@@ -161,16 +125,19 @@ public class SignatureSimilarityModel {
         AtomicReference<Double> smallestedAverage = new AtomicReference<>(null);
         AtomicReference<Integer> smallestedAverageEpoch = new AtomicReference<>(null);
         AtomicInteger iterationCount = new AtomicInteger(0);
+        DataSetIterator trainIter = getIterator(trainAssets);
         for (int i = 0; i < nEpochs; i++) {
-            Stream<DataSet> trainIter = getIterator(trainAssets);
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
-            trainIter.forEach(ds->{
+            while(trainIter.hasNext()) {
+                DataSet ds = trainIter.next();
                 net.fit(ds);
                 if(iterationCount.get() % 1000 == 999) {
                     System.out.print("-");
                 }
                 if (iterationCount.getAndIncrement() % printIterations == printIterations-1) {
+                    System.out.print("Testing...");
                     double error = test(getIterator(smallTestSet),vae);
+                    System.out.println(" Error: "+error);
                     movingAverage.add(error);
                     if(movingAverage.size()==averagePeriod) {
                         double averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();
@@ -190,7 +157,8 @@ public class SignatureSimilarityModel {
                         }
                     }
                 }
-            });
+            }
+            trainIter.reset();
         }
         System.out.println("Testing overall model");
         double finalTestError = test(getIterator(testAssets),vae);
@@ -198,11 +166,11 @@ public class SignatureSimilarityModel {
         System.out.println("Original Model Error: "+startingAverageError.get());
     }
 
-    private double test(Stream<DataSet> dataStream, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae) {
-        System.out.println("Testing...");
+    private double test(DataSetIterator dataStream, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae) {
         AtomicDouble testError = new AtomicDouble(0d);
         AtomicInteger cnt = new AtomicInteger(0);
-        dataStream.forEach(test->{
+        while(dataStream.hasNext()) {
+            DataSet test = dataStream.next();
             INDArray testInput = test.getFeatures();
             INDArray latentSpace = vae.activate(testInput,false);
             INDArray testOutput = vae.generateAtMeanGivenZ(latentSpace);
@@ -212,7 +180,7 @@ public class SignatureSimilarityModel {
                 testError.addAndGet(1d-sim);
                 cnt.getAndIncrement();
             }
-        });
+        }
        return testError.get()/cnt.get();
     }
 
@@ -224,7 +192,7 @@ public class SignatureSimilarityModel {
 
     public static void main(String[] args) throws Exception {
         int batchSize = 5;
-        int nEpochs = 5;
+        int nEpochs = 10;
 
         Map<String,Set<String>> patentToCPCStringMap = Collections.synchronizedMap(new HashMap<>());
         patentToCPCStringMap.putAll(new AssetToCPCMap().getApplicationDataMap());
