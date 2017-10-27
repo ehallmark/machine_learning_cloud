@@ -15,6 +15,7 @@ import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDist
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
@@ -43,7 +44,7 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel {
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 3;
+    public static final int MAX_CPC_DEPTH = 4;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private CPCHierarchy hierarchy;
@@ -145,9 +146,19 @@ public class SignatureSimilarityModel {
         AtomicReference<Double> smallestedAverage = new AtomicReference<>(null);
         AtomicReference<Integer> smallestedAverageEpoch = new AtomicReference<>(null);
         AtomicInteger iterationCount = new AtomicInteger(0);
-        net.setListeners(new ScoreIterationListener(printIterations) {
+        net.setListeners(new IterationListener() {
+            boolean invoked = false;
+            @Override
+            public boolean invoked() {
+                return invoked;
+            }
+
+            @Override
+            public void invoke() {
+                invoked = true;
+            }
+
             public void iterationDone(Model model, int iteration) {
-                super.iterationDone(model,iteration);
                 if(iterationCount.get() % (printIterations/10) == (printIterations/10)-1) {
                     System.out.print("-");
                 }
