@@ -94,7 +94,7 @@ public class SignatureSimilarityModel {
                 return cpcMap.get(asset);
             }));
             return new DataSet(features, features);
-        });
+        }).sequential();
     }
 
     private INDArray createVector(Stream<Collection<CPC>> cpcStream) {
