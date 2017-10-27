@@ -102,7 +102,7 @@ public class SignatureSimilarityModel {
         AtomicInteger batch = new AtomicInteger(0);
         cpcStream.forEach(cpcs->{
             double[] vec = new double[numInputs];
-            cpcs.stream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).filter(cpc->cpcToIdxMap.containsKey(cpc.getName())).forEach(cpc->{
+            cpcs.stream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).filter(cpc->cpcToIdxMap.containsKey(cpc.getName())).distinct().forEach(cpc->{
                 int idx = cpcToIdxMap.get(cpc.getName());
                 vec[idx] = 1d;
             });
@@ -126,15 +126,15 @@ public class SignatureSimilarityModel {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngSeed)
                 .learningRate(1e-2)
-                .updater(Updater.NESTEROVS)
-                .momentum(0.8)
+                .updater(Updater.ADAGRAD)
+                //.momentum(0.8)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.SIGMOID)
-                        .encoderLayerSizes(200, 200)
-                        .decoderLayerSizes(200, 200)
+                        .activation(Activation.LEAKYRELU)
+                        .encoderLayerSizes(200, 200, 200)
+                        .decoderLayerSizes(200, 200, 200)
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))
                         .nIn(numInputs)
@@ -172,10 +172,10 @@ public class SignatureSimilarityModel {
                         double averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();
                         if(startingAverageError.get()==null) {
                             startingAverageError.set(averageError);
-                            if(smallestedAverage.get()==null||smallestedAverage.get()>averageError) {
-                                smallestedAverage.set(averageError);
-                                smallestedAverageEpoch.set(iterationCount.get());
-                            }
+                        }
+                        if(smallestedAverage.get()==null||smallestedAverage.get()>averageError) {
+                            smallestedAverage.set(averageError);
+                            smallestedAverageEpoch.set(iterationCount.get());
                         }
                         System.out.println("Sampling Test Error "+error);
                         System.out.println("Original Average Error: " + startingAverageError.get());
