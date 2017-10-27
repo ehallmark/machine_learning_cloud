@@ -136,7 +136,7 @@ public class SignatureSimilarityModel {
         }
         // decoder
         for(int i = hiddenLayerArray.length-1; i > 0; i--) {
-            listBuilder = listBuilder.layer(1+hiddenLayerArray.length+(hiddenLayerArray.length-i-1), new RBM.Builder(RBM.HiddenUnit.BINARY, RBM.VisibleUnit.BINARY)
+            listBuilder = listBuilder.layer(hiddenLayerArray.length+(hiddenLayerArray.length-i-1), new RBM.Builder(RBM.HiddenUnit.BINARY, RBM.VisibleUnit.BINARY)
                     .activation(Activation.SIGMOID)
                     .lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
                     .nIn(hiddenLayerArray[i])
@@ -144,7 +144,7 @@ public class SignatureSimilarityModel {
                     .build());
         }
         // output layer
-        listBuilder = listBuilder.layer(1+2*hiddenLayerArray.length, new OutputLayer.Builder(LossFunctions.LossFunction.MSE)
+        listBuilder = listBuilder.layer(2*hiddenLayerArray.length, new OutputLayer.Builder(LossFunctions.LossFunction.MSE)
                 .activation(Activation.SIGMOID)
                 .nIn(numInputs)
                 .nOut(numInputs)
