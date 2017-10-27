@@ -104,7 +104,7 @@ public class SignatureSimilarityModel {
             double[] vec = new double[numInputs];
             cpcs.stream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).filter(cpc->cpcToIdxMap.containsKey(cpc.getName())).distinct().forEach(cpc->{
                 int idx = cpcToIdxMap.get(cpc.getName());
-                vec[idx] = 1d/cpc.numSubclasses();
+                vec[idx] = 1d; //cpc.numSubclasses();
             });
             INDArray a = Nd4j.create(vec);
             //Number norm2 = a.norm2Number();
