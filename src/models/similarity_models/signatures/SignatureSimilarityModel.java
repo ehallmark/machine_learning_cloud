@@ -156,10 +156,6 @@ public class SignatureSimilarityModel {
         net = new MultiLayerNetwork(conf);
         net.init();
 
-        //Get the variational autoencoder layer
-        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
-                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
-
         // train
         int printIterations = 1000;
         List<Double> movingAverage = new ArrayList<>();
@@ -176,7 +172,7 @@ public class SignatureSimilarityModel {
                 }
                 if (iterationCount.getAndIncrement() % printIterations == printIterations-1) {
                     System.out.print("Testing...");
-                    double error = test(getIterator(smallTestSet,cpcToIdxMap),vae);
+                    double error = test(getIterator(smallTestSet,cpcToIdxMap),net);
                     System.out.println(" Error: "+error);
                     movingAverage.add(error);
                     if(movingAverage.size()==averagePeriod) {
@@ -207,20 +203,19 @@ public class SignatureSimilarityModel {
             net.fit(trainIter);
             trainIter.reset();
             System.out.println("Testing overall model: EPOCH "+i);
-            double finalTestError = test(getIterator(testAssets,cpcToIdxMap),vae);
+            double finalTestError = test(getIterator(testAssets,cpcToIdxMap),net);
             System.out.println("Final Overall Model Error: "+finalTestError);
             System.out.println("Original Model Error: "+startingAverageError.get());
         }
     }
 
-    private double test(DataSetIterator dataStream, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae) {
+    private double test(DataSetIterator dataStream, MultiLayerNetwork model) {
         AtomicDouble testError = new AtomicDouble(0d);
         AtomicInteger cnt = new AtomicInteger(0);
         while(dataStream.hasNext()) {
             DataSet test = dataStream.next();
             INDArray testInput = test.getFeatures();
-            INDArray latentSpace = vae.activate(testInput,false);
-            INDArray testOutput = vae.generateAtMeanGivenZ(latentSpace);
+            INDArray testOutput = model.activate(testInput,false);
             for(int i = 0; i < batchSize; i++) {
                 double sim = Transforms.cosineSim(testInput.getRow(i), testOutput.getRow(i));
                 if(Double.isNaN(sim)) sim = -1d;
