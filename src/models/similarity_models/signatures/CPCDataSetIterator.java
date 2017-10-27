@@ -26,20 +26,17 @@ public class CPCDataSetIterator implements DataSetIterator {
     private int numInputs;
     private CPCHierarchy hierarchy;
     private Random rand = new Random(83);
-    private AtomicInteger cursor;
-    public CPCDataSetIterator(List<String> assets, boolean shuffle, int batchSize, Map<String,? extends Collection<CPC>> cpcMap, CPCHierarchy hierarchy, int cpcDepth) {
+    private List<INDArray> vectorList;
+    private Iterator<INDArray> iterator;
+    public CPCDataSetIterator(List<String> assets, boolean shuffle, int batchSize, Map<String,? extends Collection<CPC>> cpcMap, CPCHierarchy hierarchy, Map<String,Integer> cpcToIdxMap) {
         this.shuffle=shuffle;
         this.cpcMap=cpcMap;
         this.hierarchy=hierarchy;
         this.assets=assets;
         this.batchSize=batchSize;
-        this.cursor = new AtomicInteger(0);
-        {
-            AtomicInteger idx = new AtomicInteger(0);
-            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e -> e.getValue().getNumParts() <= cpcDepth).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
-            numInputs = cpcToIdxMap.size();
-            System.out.println("Input size: "+numInputs);
-        }
+        this.cpcToIdxMap = cpcToIdxMap;
+        this.numInputs=cpcToIdxMap.size();
+        vectorList = new ArrayList<>(getCPCStreams().map(cpcStream->createVector(cpcStream)).collect(Collectors.toList()));
         System.out.println("Finished splitting test and train.");
         reset();
     }
@@ -68,14 +65,15 @@ public class CPCDataSetIterator implements DataSetIterator {
 
     @Override
     public DataSet next(int i) {
-        INDArray features = createVector(nextCPCStream(i));
+        INDArray features = iterator.next();
         return new DataSet(features,features);
     }
 
-    private synchronized  Stream<Collection<CPC>> nextCPCStream(int num) {
-        int c = cursor.getAndAdd(num);
-        return assets.subList(c,c+num).parallelStream().map(asset->{
-            return cpcMap.get(asset);
+    private synchronized  Stream<Stream<Collection<CPC>>> getCPCStreams() {
+        return IntStream.range(0,assets.size()/batchSize).parallel().mapToObj(i->{
+            return assets.subList(i,i+batchSize).stream().map(asset->{
+                return cpcMap.get(asset);
+            });
         });
     }
 
@@ -106,8 +104,8 @@ public class CPCDataSetIterator implements DataSetIterator {
 
     @Override
     public void reset() {
-        cursor.set(0);
-        if(shuffle) Collections.shuffle(assets,rand);
+        if(shuffle) Collections.shuffle(vectorList,rand);
+        iterator = vectorList.iterator();
     }
 
     @Override
@@ -117,7 +115,7 @@ public class CPCDataSetIterator implements DataSetIterator {
 
     @Override
     public synchronized int cursor() {
-        return cursor.get();
+        throw new UnsupportedOperationException("cursor()");
     }
 
     @Override
@@ -142,7 +140,7 @@ public class CPCDataSetIterator implements DataSetIterator {
 
     @Override
     public boolean hasNext() {
-        return cursor.get()+batchSize<assets.size();
+        return iterator.hasNext();
     }
 
     @Override

@@ -46,6 +46,7 @@ public class SignatureSimilarityModel {
     private List<String> testAssets;
     private List<String> smallTestSet;
     private List<String> trainAssets;
+    private Map<String,Integer> cpcToIdxMap;;
     private MultiLayerNetwork net;
     private int batchSize;
     private int nEpochs;
@@ -75,16 +76,20 @@ public class SignatureSimilarityModel {
         smallTestSet.addAll(testAssets.subList(0,5000));
     }
 
-    private CPCDataSetIterator getIterator(List<String> assets) {
+    private CPCDataSetIterator getIterator(List<String> assets, Map<String,Integer> cpcToIndexMap) {
         boolean shuffle = assets.equals(trainAssets);
         System.out.println("Shuffling? "+shuffle);
-        return new CPCDataSetIterator(assets,shuffle,batchSize,cpcMap,hierarchy,MAX_CPC_DEPTH);
+        return new CPCDataSetIterator(assets,shuffle,batchSize,cpcMap,hierarchy,cpcToIndexMap);
     }
 
 
 
     public void train() {
-        AsyncDataSetIterator trainIter = new AsyncDataSetIterator(getIterator(trainAssets),8);
+        {   AtomicInteger idx = new AtomicInteger(0);
+            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e -> e.getValue().getNumParts() <= MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
+            System.out.println("Input size: "+cpcMap.size());
+        }
+        AsyncDataSetIterator trainIter = new AsyncDataSetIterator(getIterator(trainAssets,cpcToIdxMap),8);
         int numInputs = trainIter.inputColumns();
 
         //Neural net configuration
@@ -138,7 +143,7 @@ public class SignatureSimilarityModel {
                 }
                 if (iterationCount.getAndIncrement() % printIterations == printIterations-1) {
                     System.out.print("Testing...");
-                    double error = test(getIterator(smallTestSet),vae);
+                    double error = test(getIterator(smallTestSet,cpcToIdxMap),vae);
                     System.out.println(" Error: "+error);
                     movingAverage.add(error);
                     if(movingAverage.size()==averagePeriod) {
@@ -163,7 +168,7 @@ public class SignatureSimilarityModel {
             trainIter.reset();
         }
         System.out.println("Testing overall model");
-        double finalTestError = test(getIterator(testAssets),vae);
+        double finalTestError = test(getIterator(testAssets,cpcToIdxMap),vae);
         System.out.println("Final Overall Model Error: "+finalTestError);
         System.out.println("Original Model Error: "+startingAverageError.get());
     }
