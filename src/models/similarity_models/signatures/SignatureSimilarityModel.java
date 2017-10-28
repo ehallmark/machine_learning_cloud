@@ -32,6 +32,7 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,35 +43,48 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 10/26/17.
  */
-public class SignatureSimilarityModel {
+public class SignatureSimilarityModel implements Serializable  {
+    private static final long serialVersionUID = 1L;
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 3;
+    public static final int MAX_CPC_DEPTH = 4;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
-    private CPCHierarchy hierarchy;
     private Map<String,? extends Collection<CPC>> cpcMap;
     private List<String> allAssets;
-    private List<String> testAssets;
-    private List<String> smallTestSet;
-    private List<String> trainAssets;
-    private MultiLayerNetwork net;
+    private transient List<String> testAssets;
+    private transient List<String> smallTestSet;
+    private transient List<String> trainAssets;
+    private transient MultiLayerNetwork net;
     private int batchSize;
     private int nEpochs;
     private Map<String,Integer> cpcToIdxMap;
-    public SignatureSimilarityModel(List<String> allAssets, Map<String,? extends Collection<CPC>> cpcMap, CPCHierarchy hierarchy, int batchSize, int nEpochs) {
-        this.hierarchy=hierarchy;
+    private boolean isSaved;
+    private SignatureSimilarityModel(List<String> allAssets, Map<String,? extends Collection<CPC>> cpcMap, Map<String,Integer> cpcToIdxMap, int batchSize, int nEpochs) {
         this.batchSize=batchSize;
+        this.cpcToIdxMap=cpcToIdxMap;
         this.allAssets=allAssets;
         this.cpcMap=cpcMap;
+        this.isSaved=false;
         this.nEpochs=nEpochs;
     }
 
-    public void init() {
-        {
-            AtomicInteger idx = new AtomicInteger(0);
-            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e->e.getValue().getNumParts()<=MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
-            System.out.println("Input size: " + cpcToIdxMap.size());
+    public Map<String,INDArray> encode(List<String> assets) {
+        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
+                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
+        CPCDataSetIterator iterator = new CPCDataSetIterator(assets,false,assets.size(),cpcMap,cpcToIdxMap);
+        AtomicInteger idx = new AtomicInteger(0);
+        Map<String,INDArray> assetToEncodingMap = Collections.synchronizedMap(new HashMap<>());
+        while(iterator.hasNext()) {
+            DataSet ds = iterator.next();
+            INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
+            for(int i = 0; i < encoding.rows(); i++) {
+                assetToEncodingMap.put(assets.get(i),encoding.getRow(i));
+            }
         }
+        return assetToEncodingMap;
+    };
+
+    public void init() {
         allAssets = new ArrayList<>(allAssets.parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
         Random rand = new Random(69);
         Collections.shuffle(allAssets,rand);
@@ -94,8 +108,6 @@ public class SignatureSimilarityModel {
         System.out.println("Shuffling? "+shuffle);
         return new CPCDataSetIterator(assets,shuffle,batchSize,cpcMap,cpcToIndexMap);
     }
-
-
 
     public void train() {
         CPCDataSetIterator trainIter = getIterator(trainAssets,cpcToIdxMap);
@@ -142,12 +154,14 @@ public class SignatureSimilarityModel {
         int printIterations = 100;
         List<Double> movingAverage = new ArrayList<>();
         final int averagePeriod = 10;
-        AtomicReference<Double> startingAverageError = new AtomicReference<>(null);
-        AtomicReference<Double> smallestedAverage = new AtomicReference<>(null);
-        AtomicReference<Integer> smallestedAverageEpoch = new AtomicReference<>(null);
-        AtomicInteger iterationCount = new AtomicInteger(0);
         net.setListeners(new IterationListener() {
             boolean invoked = false;
+            Double previousAverageError;
+            double averageError;
+            int iterationCount = 0;
+            Double smallestAverage;
+            Integer smallestAverageEpoch;
+            Double startingAverageError;
             @Override
             public boolean invoked() {
                 return invoked;
@@ -159,32 +173,46 @@ public class SignatureSimilarityModel {
             }
             @Override
             public void iterationDone(Model model, int iteration) {
-                if(iterationCount.get() % (printIterations/10) == (printIterations/10)-1) {
+                if(iterationCount % (printIterations/10) == (printIterations/10)-1) {
                     System.out.print("-");
                 }
-                if (iterationCount.getAndIncrement() % printIterations == printIterations-1) {
+                iterationCount++;
+                if (iterationCount % printIterations == printIterations-1) {
                     System.out.print("Testing...");
                     double error = test(getIterator(smallTestSet,cpcToIdxMap),vae);
                     System.out.println(" Error: "+error);
                     movingAverage.add(error);
                     if(movingAverage.size()==averagePeriod) {
-                        double averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();
-                        if(startingAverageError.get()==null) {
-                            startingAverageError.set(averageError);
+                        averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();
+                        if(startingAverageError==null) {
+                            startingAverageError = averageError;
                         }
-                        if(smallestedAverage.get()==null||smallestedAverage.get()>averageError) {
-                            smallestedAverage.set(averageError);
-                            smallestedAverageEpoch.set(iterationCount.get());
+                        if(smallestAverage==null||smallestAverage>averageError) {
+                            smallestAverage = averageError;
+                            smallestAverageEpoch=iterationCount;
                         }
-                        System.out.println("Sampling Test Error (Iteration "+iterationCount.get()+"): "+error);
-                        System.out.println("Original Average Error: " + startingAverageError.get());
-                        System.out.println("Smallest Average Error (Iteration "+smallestedAverageEpoch.get()+"): " + smallestedAverage.get());
+                        System.out.println("Sampling Test Error (Iteration "+iterationCount+"): "+error);
+                        System.out.println("Original Average Error: " + startingAverageError);
+                        System.out.println("Smallest Average Error (Iteration "+smallestAverageEpoch+"): " + smallestAverage);
                         System.out.println("Current Average Error: " + averageError);
                         while(movingAverage.size()>averagePeriod/2) {
                             movingAverage.remove(0);
                         }
                     }
                 }
+                if(previousAverageError!=null&&smallestAverage!=null) {
+                    // check conditions for saving model
+                    if(averageError>previousAverageError && previousAverageError==smallestAverage) {
+                        System.out.println("Stop condition detected. Saving model...");
+                        try {
+                            save();
+                        } catch(Exception e) {
+                            System.out.println("Error while saving: "+e.getMessage());
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                previousAverageError = averageError;
             }
         });
 
@@ -197,13 +225,13 @@ public class SignatureSimilarityModel {
             System.out.println("Testing overall model: EPOCH "+i);
             double finalTestError = test(getIterator(testAssets,cpcToIdxMap),vae);
             System.out.println("Final Overall Model Error: "+finalTestError);
-            System.out.println("Original Model Error: "+startingAverageError.get());
         }
     }
 
     private double test(DataSetIterator dataStream, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
         AtomicDouble testError = new AtomicDouble(0d);
         AtomicInteger cnt = new AtomicInteger(0);
+        AtomicInteger nanCnt = new AtomicInteger(0);
         while(dataStream.hasNext()) {
             DataSet test = dataStream.next();
             INDArray testInput = test.getFeatures();
@@ -211,18 +239,53 @@ public class SignatureSimilarityModel {
             INDArray testOutput = model.generateAtMeanGivenZ(latentValues);
             for(int i = 0; i < batchSize; i++) {
                 double sim = Transforms.cosineSim(testInput.getRow(i), testOutput.getRow(i));
-                if(Double.isNaN(sim)) sim = -1d;
+                if(Double.isNaN(sim)) {
+                    nanCnt.getAndIncrement();
+                    sim = -1d;
+                }
                 testError.addAndGet(1d-sim);
                 cnt.getAndIncrement();
             }
         }
-       return testError.get()/cnt.get();
+        if(nanCnt.get()>0) {
+            System.out.println("Num NaNs: "+nanCnt.get() + " / "+ cnt.get());
+        }
+        return testError.get()/cnt.get();
     }
 
     public void save() throws IOException {
         if(net!=null) {
-            ModelSerializer.writeModel(net,networkFile,true);
+            isSaved=true;
+            ModelSerializer.writeModel(net,getModelFile(networkFile,MAX_CPC_DEPTH),false);
+            Database.trySaveObject(this, getInstanceFile(networkFile,MAX_CPC_DEPTH));
         }
+    }
+
+    public boolean isSaved() {
+        return isSaved;
+    }
+
+    private static File getModelFile(File file, int cpcDepth) {
+        return new File(file.getAbsoluteFile()+"-net-cpcdepth"+cpcDepth);
+    }
+
+    private static File getInstanceFile(File file, int cpcDepth) {
+        return new File(file.getAbsoluteFile()+"-instance-cpcdepth"+cpcDepth);
+    }
+
+    public static SignatureSimilarityModel restoreAndInitModel(int cpcDepth) throws IOException{
+        File modelFile = getModelFile(networkFile,cpcDepth);
+        File instanceFile = getInstanceFile(networkFile,cpcDepth);
+        if(!modelFile.exists()) {
+            throw new RuntimeException("Model file not found: "+modelFile.getAbsolutePath());
+        }
+        if(!instanceFile.exists()) {
+            throw new RuntimeException("Instance file not found: "+instanceFile.getAbsolutePath());
+        }
+        SignatureSimilarityModel instance = (SignatureSimilarityModel)Database.tryLoadObject(instanceFile);
+        instance.net=ModelSerializer.restoreMultiLayerNetwork(modelFile,false);
+        instance.init();
+        return instance;
     }
 
     public static void main(String[] args) throws Exception {
@@ -242,11 +305,28 @@ public class SignatureSimilarityModel {
                         .filter(cpc -> cpc.getNumParts() <= MAX_CPC_DEPTH)
                         .collect(Collectors.toSet())));
         cpcMap = cpcMap.entrySet().parallelStream().filter(e->e.getValue().size()>0).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
-
+        Map<String,Integer> cpcToIdxMap;
+        {
+            AtomicInteger idx = new AtomicInteger(0);
+            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e->e.getValue().getNumParts()<=MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
+            System.out.println("Input size: " + cpcToIdxMap.size());
+        }
         List<String> allAssets = new ArrayList<>(cpcMap.keySet());
-        SignatureSimilarityModel model = new SignatureSimilarityModel(allAssets,cpcMap,hierarchy,batchSize,nEpochs);
+        SignatureSimilarityModel model = new SignatureSimilarityModel(allAssets,cpcMap,cpcToIdxMap,batchSize,nEpochs);
         model.init();
         model.train();
-        model.save();
+        if(!model.isSaved()) {
+            model.save();
+        }
+
+        // test restore model
+        System.out.println("Restoring model test");
+        SignatureSimilarityModel clone = restoreAndInitModel(MAX_CPC_DEPTH);
+        List<String> assetSample = clone.smallTestSet;
+        System.out.println("Testing encodings");
+        Map<String,INDArray> vectorMap = clone.encode(assetSample);
+        vectorMap.entrySet().forEach(e->{
+            System.out.println(e.getKey()+": "+Arrays.toString(e.getValue().data().asFloat()));
+        });
     }
 }
