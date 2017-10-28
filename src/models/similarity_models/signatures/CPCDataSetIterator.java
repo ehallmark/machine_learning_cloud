@@ -42,19 +42,18 @@ public class CPCDataSetIterator implements DataSetIterator {
     private INDArray createVector(Stream<Collection<CPC>> cpcStream) {
         AtomicInteger batch = new AtomicInteger(0);
         double[][] vecs = new double[batchSize][numInputs];
-        cpcStream.parallel().forEach(cpcs->{
+        cpcStream.forEach(cpcs->{
             double[] vec = new double[numInputs];
             cpcs.forEach(cpc->{
                 int idx = cpcToIdxMap.get(cpc.getName());
                 vec[idx] = 1d;
             });
-            INDArray a = Nd4j.create(vec);
-            Number norm2 = a.norm2Number();
-            if(norm2.doubleValue()>0) {
-                a.divi(norm2);
-            } else {
-                System.out.println("NO NORM!!!");
-            }
+            //Number norm2 = a.norm2Number();
+            //if(norm2.doubleValue()>0) {
+            //    a.divi(norm2);
+            //} else {
+            //    System.out.println("NO NORM!!!");
+            // }
             vecs[batch.get()] = vec;
             batch.getAndIncrement();
         });
@@ -68,7 +67,9 @@ public class CPCDataSetIterator implements DataSetIterator {
     }
 
     private Stream<INDArray> getCPCStreams() {
-        return IntStream.range(0,assets.size()/batchSize).parallel().mapToObj(i->{
+        IntStream intStream = IntStream.range(0,assets.size()/batchSize);
+        if(shuffle) intStream = intStream.parallel();
+        return intStream.mapToObj(i->{
             int idx = i*batchSize;
             INDArray vector = createVector(assets.subList(idx,idx+batchSize).stream().map(asset->{
                 return cpcMap.get(asset);

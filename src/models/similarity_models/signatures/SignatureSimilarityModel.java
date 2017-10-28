@@ -46,7 +46,7 @@ import java.util.stream.Stream;
 public class SignatureSimilarityModel implements Serializable  {
     private static final long serialVersionUID = 1L;
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 4;
+    public static final int MAX_CPC_DEPTH = 3;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private Map<String,? extends Collection<CPC>> cpcMap;
@@ -78,7 +78,7 @@ public class SignatureSimilarityModel implements Serializable  {
             DataSet ds = iterator.next();
             INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
             for(int i = 0; i < encoding.rows(); i++) {
-                assetToEncodingMap.put(assets.get(i),encoding.getRow(i));
+                assetToEncodingMap.put(assets.get(idx.getAndIncrement()),encoding.getRow(i));
             }
         }
         return assetToEncodingMap;
@@ -289,7 +289,7 @@ public class SignatureSimilarityModel implements Serializable  {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 100;
+        int batchSize = 250;
         int nEpochs = 5;
 
         Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
