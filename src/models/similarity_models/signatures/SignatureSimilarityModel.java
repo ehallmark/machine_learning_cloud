@@ -114,7 +114,7 @@ public class SignatureSimilarityModel {
                 .seed(rngSeed)
                 .learningRate(0.01)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .updater(Updater.ADAGRAD)
+                .updater(Updater.RMSPROP).rmsDecay(0.95)
                 //.momentum(0.8)
                 .miniBatch(true)
                 .weightInit(WeightInit.XAVIER)
