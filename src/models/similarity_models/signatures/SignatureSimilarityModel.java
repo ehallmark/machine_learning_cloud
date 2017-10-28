@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -110,6 +111,7 @@ public class SignatureSimilarityModel implements Serializable  {
     }
 
     public void train() {
+        AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         CPCDataSetIterator trainIter = getIterator(trainAssets,cpcToIdxMap);
         int numInputs = trainIter.inputColumns();
 
@@ -203,12 +205,17 @@ public class SignatureSimilarityModel implements Serializable  {
                 if(previousAverageError!=null&&smallestAverage!=null) {
                     // check conditions for saving model
                     if(averageError>previousAverageError && previousAverageError==smallestAverage) {
-                        System.out.println("Stop condition detected. Saving model...");
+                        System.out.println("Saving model...");
                         try {
                             save();
                         } catch(Exception e) {
                             System.out.println("Error while saving: "+e.getMessage());
                             e.printStackTrace();
+                        }
+                        // check stopping conditions
+                        if (averageError > (smallestAverage+0.01) * 1.2) {
+                            stoppingCondition.set(true);
+                            System.out.println("Stopping condition met!!!");
                         }
                     }
                 }
@@ -221,10 +228,13 @@ public class SignatureSimilarityModel implements Serializable  {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
             //net.fit(trainIter);
             net.fit(trainIter);
-            trainIter.reset();
             System.out.println("Testing overall model: EPOCH "+i);
             double finalTestError = test(getIterator(testAssets,cpcToIdxMap),vae);
             System.out.println("Final Overall Model Error: "+finalTestError);
+            if(stoppingCondition.get()) {
+                break;
+            }
+            trainIter.reset();
         }
     }
 
