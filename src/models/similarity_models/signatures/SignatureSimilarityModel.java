@@ -47,7 +47,7 @@ import java.util.stream.Stream;
 public class SignatureSimilarityModel implements Serializable  {
     private static final long serialVersionUID = 1L;
     public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 3;
+    public static final int MAX_CPC_DEPTH = 4;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private Map<String,? extends Collection<CPC>> cpcMap;
@@ -72,7 +72,7 @@ public class SignatureSimilarityModel implements Serializable  {
     public Map<String,INDArray> encode(List<String> assets) {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
-        CPCDataSetIterator iterator = new CPCDataSetIterator(assets,false,assets.size(),cpcMap,cpcToIdxMap);
+        CPCDataSetIterator iterator = new CPCDataSetIterator(assets,false,batchSize,cpcMap,cpcToIdxMap);
         AtomicInteger idx = new AtomicInteger(0);
         Map<String,INDArray> assetToEncodingMap = Collections.synchronizedMap(new HashMap<>());
         while(iterator.hasNext()) {
@@ -100,7 +100,7 @@ public class SignatureSimilarityModel implements Serializable  {
                 trainAssets.add(asset);
             }
         });
-        smallTestSet.addAll(testAssets.subList(0,10000));
+        smallTestSet.addAll(testAssets.subList(0,20000));
         System.out.println("Finished splitting test and train.");
     }
 
@@ -213,9 +213,10 @@ public class SignatureSimilarityModel implements Serializable  {
                             e.printStackTrace();
                         }
                         // check stopping conditions
-                        if (averageError > (smallestAverage+0.01) * 1.2) {
+                        if (iterationCount * batchSize > 100000 && averageError > smallestAverage * 1.2) {
                             stoppingCondition.set(true);
                             System.out.println("Stopping condition met!!!");
+                            throw new StoppingConditionMetException();
                         }
                     }
                 }
@@ -227,12 +228,25 @@ public class SignatureSimilarityModel implements Serializable  {
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
             //net.fit(trainIter);
-            net.fit(trainIter);
+            try {
+                net.fit(trainIter);
+            } catch(StoppingConditionMetException s) {
+                System.out.println("Stopping condition met");
+            }
             System.out.println("Testing overall model: EPOCH "+i);
             double finalTestError = test(getIterator(testAssets,cpcToIdxMap),vae);
             System.out.println("Final Overall Model Error: "+finalTestError);
             if(stoppingCondition.get()) {
                 break;
+            }
+            if(!isSaved()) {
+                try {
+                    save();
+                    // allow more saves after this
+                    isSaved=false;
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
             }
             trainIter.reset();
         }
@@ -263,7 +277,7 @@ public class SignatureSimilarityModel implements Serializable  {
         return testError.get()/cnt.get();
     }
 
-    public void save() throws IOException {
+    public synchronized void save() throws IOException {
         if(net!=null) {
             isSaved=true;
             ModelSerializer.writeModel(net,getModelFile(networkFile,MAX_CPC_DEPTH),false);
@@ -271,7 +285,7 @@ public class SignatureSimilarityModel implements Serializable  {
         }
     }
 
-    public boolean isSaved() {
+    public synchronized boolean isSaved() {
         return isSaved;
     }
 
@@ -299,7 +313,7 @@ public class SignatureSimilarityModel implements Serializable  {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 250;
+        int batchSize = 128;
         int nEpochs = 5;
 
         Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();

@@ -42,7 +42,7 @@ public class UpdateAll {
                 } else if (arg.equals("9")) {
                     NormalizeAssignees.main(args);
                     new AssetToAssigneeMap().save();
-                } else if (args.equals("10")) {
+                } else if (arg.equals("10")) {
                     UpdateAssetGraphs.main(args);
                 } else if (arg.equals("11")) {
                     UpdateExtraneousComputableAttributeData.main(args);
