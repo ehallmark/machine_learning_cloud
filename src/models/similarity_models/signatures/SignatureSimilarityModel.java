@@ -59,16 +59,15 @@ public class SignatureSimilarityModel implements Serializable  {
     private transient List<String> smallTestSet;
     private transient List<String> trainAssets;
     private transient MultiLayerNetwork net;
+    private transient CPCHierarchy hierarchy;
     @Setter
     private int batchSize;
     private int nEpochs;
     private Map<String,Integer> cpcToIdxMap;
     private boolean isSaved;
-    private SignatureSimilarityModel(List<String> allAssets, Map<String,? extends Collection<CPC>> cpcMap, Map<String,Integer> cpcToIdxMap, int batchSize, int nEpochs) {
+    private SignatureSimilarityModel(CPCHierarchy hierarchy, int batchSize, int nEpochs) {
         this.batchSize=batchSize;
-        this.cpcToIdxMap=cpcToIdxMap;
-        this.allAssets=allAssets;
-        this.cpcMap=cpcMap;
+        this.hierarchy=hierarchy;
         this.isSaved=false;
         this.nEpochs=nEpochs;
     }
@@ -92,7 +91,26 @@ public class SignatureSimilarityModel implements Serializable  {
     };
 
     public void init() {
-        allAssets = new ArrayList<>(allAssets.parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
+        Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
+        patentToCPCStringMap.putAll(new AssetToCPCMap().getApplicationDataMap());
+        patentToCPCStringMap.putAll(new AssetToCPCMap().getPatentDataMap());
+        cpcMap = patentToCPCStringMap.entrySet().parallelStream()
+                .collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
+                        .filter(cpc->cpc!=null)
+                        .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
+                        .distinct()
+                        .filter(cpc -> cpc.getNumParts() <= MAX_CPC_DEPTH)
+                        .collect(Collectors.toSet())))
+                .entrySet().parallelStream()
+                .filter(e->e.getValue().size()>0)
+                .collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+
+        {
+            AtomicInteger idx = new AtomicInteger(0);
+            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e->e.getValue().getNumParts()<=MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
+            System.out.println("Input size: " + cpcToIdxMap.size());
+        }
+        allAssets = new ArrayList<>(cpcMap.keySet().parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
         Random rand = new Random(69);
         Collections.shuffle(allAssets,rand);
         testAssets = new ArrayList<>();
@@ -314,6 +332,9 @@ public class SignatureSimilarityModel implements Serializable  {
         }
         SignatureSimilarityModel instance = (SignatureSimilarityModel)Database.tryLoadObject(instanceFile);
         instance.net=ModelSerializer.restoreMultiLayerNetwork(modelFile,false);
+        CPCHierarchy hierarchy = new CPCHierarchy();
+        hierarchy.loadGraph();
+        instance.hierarchy = hierarchy;
         instance.init();
         return instance;
     }
@@ -322,27 +343,9 @@ public class SignatureSimilarityModel implements Serializable  {
         int batchSize = 128;
         int nEpochs = 5;
 
-        Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
-        patentToCPCStringMap.putAll(new AssetToCPCMap().getApplicationDataMap());
-        patentToCPCStringMap.putAll(new AssetToCPCMap().getPatentDataMap());
-        CPCHierarchy hierarchy = new CPCHierarchy();
-        hierarchy.loadGraph();
-        Map<String,Set<CPC>> cpcMap = patentToCPCStringMap.entrySet().parallelStream()
-                .collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
-                        .filter(cpc->cpc!=null)
-                        .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
-                        .distinct()
-                        .filter(cpc -> cpc.getNumParts() <= MAX_CPC_DEPTH)
-                        .collect(Collectors.toSet())));
-        cpcMap = cpcMap.entrySet().parallelStream().filter(e->e.getValue().size()>0).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
-        Map<String,Integer> cpcToIdxMap;
-        {
-            AtomicInteger idx = new AtomicInteger(0);
-            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e->e.getValue().getNumParts()<=MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
-            System.out.println("Input size: " + cpcToIdxMap.size());
-        }
-        List<String> allAssets = new ArrayList<>(cpcMap.keySet());
-        SignatureSimilarityModel model = new SignatureSimilarityModel(allAssets,cpcMap,cpcToIdxMap,batchSize,nEpochs);
+        CPCHierarchy cpcHierarchy = new CPCHierarchy();
+        cpcHierarchy.loadGraph();
+        SignatureSimilarityModel model = new SignatureSimilarityModel(cpcHierarchy,batchSize,nEpochs);
         model.init();
         model.train();
         if(!model.isSaved()) {
