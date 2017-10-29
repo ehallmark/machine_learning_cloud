@@ -67,15 +67,16 @@ public class CPCDataSetIterator implements DataSetIterator {
     }
 
     private Stream<INDArray> getCPCStreams() {
-        IntStream intStream = IntStream.range(0,assets.size()/batchSize);
+        IntStream intStream = IntStream.range(0,(assets.size()/batchSize)+1);
         if(shuffle) intStream = intStream.parallel();
         return intStream.mapToObj(i->{
             int idx = i*batchSize;
-            INDArray vector = createVector(assets.subList(idx,idx+batchSize).stream().map(asset->{
+            if(idx>=assets.size()) return null;
+            INDArray vector = createVector(assets.subList(idx,Math.min(assets.size(),idx+batchSize)).stream().map(asset->{
                 return cpcMap.get(asset);
             }));
             return vector;
-        });
+        }).filter(v->v!=null);
     }
 
     @Override
