@@ -28,7 +28,7 @@ public class BuildSimilarityVectors {
     public static void main(String[] args) throws Exception {
         // test restore model
         System.out.println("Restoring model test");
-        SignatureSimilarityModel clone = SignatureSimilarityModel.restoreAndInitModel(SignatureSimilarityModel.MAX_CPC_DEPTH);
+        SignatureSimilarityModel clone = SignatureSimilarityModel.restoreAndInitModel(SignatureSimilarityModel.MAX_CPC_DEPTH,false);
         clone.setBatchSize(5000);
         List<String> allAssets = new ArrayList<>(Database.getAllPatentsAndApplications());
 

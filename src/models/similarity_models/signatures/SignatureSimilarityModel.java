@@ -138,43 +138,45 @@ public class SignatureSimilarityModel implements Serializable  {
 
     public void train() {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
-        CPCDataSetIterator trainIter = getIterator(trainAssets,cpcToIdxMap);
+        CPCDataSetIterator trainIter = getIterator(trainAssets, cpcToIdxMap);
         int numInputs = trainIter.inputColumns();
 
-        //Neural net configuration
-        int hiddenLayerSize = 1024;
-        int[] hiddenLayerArray = new int[]{
-                hiddenLayerSize,
-                hiddenLayerSize,
-                hiddenLayerSize
-        };
-        int rngSeed = 69;
-        Nd4j.getRandom().setSeed(rngSeed);
-        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .seed(rngSeed)
-                .learningRate(0.01)
-                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .updater(Updater.RMSPROP).rmsDecay(0.95)
-                //.momentum(0.8)
-                .miniBatch(true)
-                .weightInit(WeightInit.XAVIER)
-                .regularization(true).l2(1e-4)
-                .list()
-                .layer(0, new VariationalAutoencoder.Builder()
-                        .encoderLayerSizes(hiddenLayerArray)
-                        .decoderLayerSizes(hiddenLayerArray)
-                        //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
-                        .activation(Activation.LEAKYRELU)
-                        .pzxActivationFunction(Activation.IDENTITY)
-                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
-                        .nIn(numInputs)
-                        .nOut(VECTOR_SIZE)
-                        .build()
-                )
-                .pretrain(true).backprop(false).build();
+        if(net==null) {
+            //Neural net configuration
+            int hiddenLayerSize = 1024;
+            int[] hiddenLayerArray = new int[]{
+                    hiddenLayerSize,
+                    hiddenLayerSize,
+                    hiddenLayerSize
+            };
+            int rngSeed = 69;
+            Nd4j.getRandom().setSeed(rngSeed);
+            MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                    .seed(rngSeed)
+                    .learningRate(0.01)
+                    .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                    .updater(Updater.RMSPROP).rmsDecay(0.95)
+                    //.momentum(0.8)
+                    .miniBatch(true)
+                    .weightInit(WeightInit.XAVIER)
+                    .regularization(true).l2(1e-4)
+                    .list()
+                    .layer(0, new VariationalAutoencoder.Builder()
+                            .encoderLayerSizes(hiddenLayerArray)
+                            .decoderLayerSizes(hiddenLayerArray)
+                            //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                            .activation(Activation.LEAKYRELU)
+                            .pzxActivationFunction(Activation.IDENTITY)
+                            .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
+                            .nIn(numInputs)
+                            .nOut(VECTOR_SIZE)
+                            .build()
+                    )
+                    .pretrain(true).backprop(false).build();
 
-        net = new MultiLayerNetwork(conf);
-        net.init();
+            net = new MultiLayerNetwork(conf);
+            net.init();
+        }
 
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
@@ -205,6 +207,13 @@ public class SignatureSimilarityModel implements Serializable  {
                     System.out.print("-");
                 }
                 iterationCount++;
+                if(iterationCount%10000==9999&&!isSaved()) {
+                    try {
+                        saveNetwork(true);
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
                 if (iterationCount % printIterations == printIterations-1) {
                     System.out.print("Testing...");
                     double error = test(getIterator(smallTestSet,cpcToIdxMap),vae);
@@ -306,9 +315,13 @@ public class SignatureSimilarityModel implements Serializable  {
     public synchronized void save() throws IOException {
         if(net!=null) {
             isSaved=true;
-            ModelSerializer.writeModel(net,getModelFile(networkFile,MAX_CPC_DEPTH),false);
+            saveNetwork(true);
             Database.trySaveObject(this, getInstanceFile(networkFile,MAX_CPC_DEPTH));
         }
+    }
+
+    private void saveNetwork(boolean saveUpdater) throws IOException{
+        ModelSerializer.writeModel(net,getModelFile(networkFile,MAX_CPC_DEPTH),saveUpdater);
     }
 
     public synchronized boolean isSaved() {
@@ -323,7 +336,7 @@ public class SignatureSimilarityModel implements Serializable  {
         return new File(file.getAbsoluteFile()+"-instance-cpcdepth"+cpcDepth);
     }
 
-    public static SignatureSimilarityModel restoreAndInitModel(int cpcDepth) throws IOException{
+    public static SignatureSimilarityModel restoreAndInitModel(int cpcDepth,boolean loadUpdater) throws IOException{
         File modelFile = getModelFile(networkFile,cpcDepth);
         File instanceFile = getInstanceFile(networkFile,cpcDepth);
         if(!modelFile.exists()) {
@@ -333,7 +346,7 @@ public class SignatureSimilarityModel implements Serializable  {
             throw new RuntimeException("Instance file not found: "+instanceFile.getAbsolutePath());
         }
         SignatureSimilarityModel instance = (SignatureSimilarityModel)Database.tryLoadObject(instanceFile);
-        instance.net=ModelSerializer.restoreMultiLayerNetwork(modelFile,false);
+        instance.net=ModelSerializer.restoreMultiLayerNetwork(modelFile,loadUpdater);
         CPCHierarchy hierarchy = new CPCHierarchy();
         hierarchy.loadGraph();
         instance.hierarchy = hierarchy;
@@ -344,10 +357,13 @@ public class SignatureSimilarityModel implements Serializable  {
     public static void main(String[] args) throws Exception {
         int batchSize = 128;
         int nEpochs = 5;
+        boolean loadModel = false;
+
 
         CPCHierarchy cpcHierarchy = new CPCHierarchy();
         cpcHierarchy.loadGraph();
         SignatureSimilarityModel model = new SignatureSimilarityModel(cpcHierarchy,batchSize,nEpochs);
+        if(loadModel) model.net=ModelSerializer.restoreMultiLayerNetwork(getModelFile(networkFile,MAX_CPC_DEPTH));
         model.init();
         model.train();
         if(!model.isSaved()) {
@@ -356,7 +372,7 @@ public class SignatureSimilarityModel implements Serializable  {
 
         // test restore model
         System.out.println("Restoring model test");
-        SignatureSimilarityModel clone = restoreAndInitModel(MAX_CPC_DEPTH);
+        SignatureSimilarityModel clone = restoreAndInitModel(MAX_CPC_DEPTH,true);
         List<String> assetSample = clone.smallTestSet;
         System.out.println("Testing encodings");
         Map<String,INDArray> vectorMap = clone.encode(assetSample);
