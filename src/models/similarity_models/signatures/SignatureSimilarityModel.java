@@ -287,7 +287,7 @@ public class SignatureSimilarityModel implements Serializable  {
             INDArray testInput = test.getFeatures();
             INDArray latentValues = model.activate(testInput,false);
             INDArray testOutput = model.generateAtMeanGivenZ(latentValues);
-            for(int i = 0; i < batchSize; i++) {
+            for(int i = 0; i < testOutput.rows(); i++) {
                 double sim = Transforms.cosineSim(testInput.getRow(i), testOutput.getRow(i));
                 if(Double.isNaN(sim)) {
                     nanCnt.getAndIncrement();
