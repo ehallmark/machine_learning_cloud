@@ -52,7 +52,7 @@ public class SignatureSimilarityModel implements Serializable  {
     public static final int MAX_CPC_DEPTH = 3;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
-    private Map<String,? extends Collection<CPC>> cpcMap;
+    private transient Map<String,? extends Collection<CPC>> cpcMap;
     @Getter
     private List<String> allAssets;
     private transient List<String> testAssets;
@@ -100,12 +100,14 @@ public class SignatureSimilarityModel implements Serializable  {
                         .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
                         .distinct()
                         .filter(cpc -> cpc.getNumParts() <= MAX_CPC_DEPTH)
+                        .filter(cpc -> cpcToIdxMap==null||cpcToIdxMap.containsKey(cpc.getName()))
                         .collect(Collectors.toSet())))
                 .entrySet().parallelStream()
                 .filter(e->e.getValue().size()>0)
                 .collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
 
-        {
+        if(cpcToIdxMap==null){
+            System.out.println("WARNING: Reindexing CPC Codes...");
             AtomicInteger idx = new AtomicInteger(0);
             cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e->e.getValue().getNumParts()<=MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
             System.out.println("Input size: " + cpcToIdxMap.size());
