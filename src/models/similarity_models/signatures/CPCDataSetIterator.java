@@ -57,7 +57,12 @@ public class CPCDataSetIterator implements DataSetIterator {
             vecs[batch.get()] = vec;
             batch.getAndIncrement();
         });
-        return Nd4j.create(vecs);
+        if(batch.get()<batch()) {
+            System.out.println("Did not find a full batch");
+            return Nd4j.create(Arrays.copyOf(vecs,batch.get()));
+        } else {
+            return Nd4j.create(vecs);
+        }
     }
 
     @Override
