@@ -86,9 +86,9 @@ public class SignatureSimilarityModel implements Serializable  {
             INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
             for(int i = 0; i < encoding.rows(); i++) {
                 assetToEncodingMap.put(assets.get(idx.getAndIncrement()),encoding.getRow(i));
-            }
-            if(idx.get()%10000==9999) {
-                System.out.println("Finished vectorizing: "+idx.get());
+                if(idx.get()%10000==9999) {
+                    System.out.println("Finished vectorizing: "+idx.get());
+                }
             }
         }
         return assetToEncodingMap;
