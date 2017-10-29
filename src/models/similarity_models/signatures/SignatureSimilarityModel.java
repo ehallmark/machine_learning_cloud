@@ -48,8 +48,8 @@ import java.util.stream.Stream;
  */
 public class SignatureSimilarityModel implements Serializable  {
     private static final long serialVersionUID = 1L;
-    public static final int VECTOR_SIZE = 30;
-    public static final int MAX_CPC_DEPTH = 3;
+    public static final int VECTOR_SIZE = 32;
+    public static final int MAX_CPC_DEPTH = 4;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private transient Map<String,? extends Collection<CPC>> cpcMap;
@@ -120,7 +120,7 @@ public class SignatureSimilarityModel implements Serializable  {
         smallTestSet = new ArrayList<>();
         System.out.println("Splitting test and train");
         allAssets.forEach(asset->{
-            if(rand.nextBoolean()&&rand.nextBoolean()) {
+            if(rand.nextBoolean()&&rand.nextBoolean()&&rand.nextBoolean()) {
                 testAssets.add(asset);
             } else {
                 trainAssets.add(asset);
@@ -142,7 +142,7 @@ public class SignatureSimilarityModel implements Serializable  {
         int numInputs = trainIter.inputColumns();
 
         //Neural net configuration
-        int hiddenLayerSize = (VECTOR_SIZE+numInputs)/2;
+        int hiddenLayerSize = 512;
         int[] hiddenLayerArray = new int[]{
                 hiddenLayerSize,
                 hiddenLayerSize,
