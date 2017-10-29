@@ -128,6 +128,8 @@ public class SignatureSimilarityModel implements Serializable  {
         });
         smallTestSet.addAll(testAssets.subList(0,20000));
         System.out.println("Finished splitting test and train.");
+        System.out.println("Num training: "+trainAssets.size());
+        System.out.println("Num test: "+testAssets.size());
     }
 
     private CPCDataSetIterator getIterator(List<String> assets, Map<String,Integer> cpcToIndexMap) {
