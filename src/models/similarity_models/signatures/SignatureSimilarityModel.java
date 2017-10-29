@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import lombok.Getter;
+import lombok.Setter;
 import models.dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -58,6 +59,7 @@ public class SignatureSimilarityModel implements Serializable  {
     private transient List<String> smallTestSet;
     private transient List<String> trainAssets;
     private transient MultiLayerNetwork net;
+    @Setter
     private int batchSize;
     private int nEpochs;
     private Map<String,Integer> cpcToIdxMap;
@@ -83,6 +85,9 @@ public class SignatureSimilarityModel implements Serializable  {
             INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
             for(int i = 0; i < encoding.rows(); i++) {
                 assetToEncodingMap.put(assets.get(idx.getAndIncrement()),encoding.getRow(i));
+            }
+            if(idx.get()%10000==9999) {
+                System.out.println("Finished vectorizing: "+idx.get());
             }
         }
         return assetToEncodingMap;
