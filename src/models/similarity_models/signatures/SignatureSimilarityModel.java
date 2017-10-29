@@ -357,13 +357,13 @@ public class SignatureSimilarityModel implements Serializable  {
     public static void main(String[] args) throws Exception {
         int batchSize = 128;
         int nEpochs = 5;
-        boolean loadModel = false;
-
+        File modelFile = getModelFile(networkFile,MAX_CPC_DEPTH);
+        boolean loadModel = modelFile.exists();
 
         CPCHierarchy cpcHierarchy = new CPCHierarchy();
         cpcHierarchy.loadGraph();
         SignatureSimilarityModel model = new SignatureSimilarityModel(cpcHierarchy,batchSize,nEpochs);
-        if(loadModel) model.net=ModelSerializer.restoreMultiLayerNetwork(getModelFile(networkFile,MAX_CPC_DEPTH));
+        if(loadModel) model.net=ModelSerializer.restoreMultiLayerNetwork(modelFile);
         model.init();
         model.train();
         if(!model.isSaved()) {
