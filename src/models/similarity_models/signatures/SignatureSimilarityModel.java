@@ -143,7 +143,7 @@ public class SignatureSimilarityModel implements Serializable  {
 
         if(net==null) {
             //Neural net configuration
-            int hiddenLayerSize = 256;
+            int hiddenLayerSize = 1024;
             int[] hiddenLayerArray = new int[]{
                     hiddenLayerSize,
                     hiddenLayerSize,
@@ -181,7 +181,7 @@ public class SignatureSimilarityModel implements Serializable  {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         // train
-        int printIterations = 100;
+        int printIterations = 500;
         List<Double> movingAverage = new ArrayList<>();
         final int averagePeriod = 10;
         net.setListeners(new IterationListener() {
@@ -356,7 +356,7 @@ public class SignatureSimilarityModel implements Serializable  {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 64;
+        int batchSize = 32;
         int nEpochs = 5;
         File modelFile = getModelFile(networkFile,MAX_CPC_DEPTH);
         boolean loadModel = modelFile.exists();
