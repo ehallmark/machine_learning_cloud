@@ -24,7 +24,10 @@ public class TestVectors {
             MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(10);
             INDArray vec = lookupTable.get(asset);
             lookupTable.entrySet().parallelStream().forEach(e->{
-                heap.add(new WordFrequencyPair<>(e.getKey(), Transforms.cosineSim(e.getValue(),vec)));
+                double sim = Transforms.cosineSim(e.getValue(),vec);
+                synchronized (heap) {
+                    heap.add(new WordFrequencyPair<>(e.getKey(), sim));
+                }
             });
             List<WordFrequencyPair<String,Double>> similar = new ArrayList<>();
             while(!heap.isEmpty()) {
