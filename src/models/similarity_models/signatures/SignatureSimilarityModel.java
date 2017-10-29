@@ -83,7 +83,7 @@ public class SignatureSimilarityModel implements Serializable  {
             System.out.println(idx.get());
             DataSet ds = iterator.next();
             INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
-            for(int i = 0; i < encoding.rows(); i++) {
+            for(int i = 0; i < encoding.rows() && idx.get()<assets.size(); i++) {
                 assetToEncodingMap.put(assets.get(idx.getAndIncrement()),encoding.getRow(i));
             }
         }
