@@ -360,6 +360,7 @@ public class SignatureSimilarityModel implements Serializable  {
         List<String> assetSample = clone.smallTestSet;
         System.out.println("Testing encodings");
         Map<String,INDArray> vectorMap = clone.encode(assetSample);
+
         vectorMap.entrySet().forEach(e->{
             System.out.println(e.getKey()+": "+Arrays.toString(e.getValue().data().asFloat()));
         });
