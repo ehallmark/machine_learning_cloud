@@ -3,6 +3,7 @@ package models.similarity_models.signatures;
 import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
+import lombok.Getter;
 import models.dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -51,6 +52,7 @@ public class SignatureSimilarityModel implements Serializable  {
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_neural_network.jobj");
 
     private Map<String,? extends Collection<CPC>> cpcMap;
+    @Getter
     private List<String> allAssets;
     private transient List<String> testAssets;
     private transient List<String> smallTestSet;
@@ -72,6 +74,7 @@ public class SignatureSimilarityModel implements Serializable  {
     public Map<String,INDArray> encode(List<String> assets) {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
+        assets = assets.stream().filter(asset->cpcMap.containsKey(asset)).collect(Collectors.toList());
         CPCDataSetIterator iterator = new CPCDataSetIterator(assets,false,batchSize,cpcMap,cpcToIdxMap);
         AtomicInteger idx = new AtomicInteger(0);
         Map<String,INDArray> assetToEncodingMap = Collections.synchronizedMap(new HashMap<>());
@@ -204,7 +207,7 @@ public class SignatureSimilarityModel implements Serializable  {
                 }
                 if(previousAverageError!=null&&smallestAverage!=null) {
                     // check conditions for saving model
-                    if(averageError>previousAverageError && previousAverageError==smallestAverage) {
+                    if(averageError>previousAverageError && previousAverageError.equals(smallestAverage)) {
                         System.out.println("Saving model...");
                         try {
                             save();
