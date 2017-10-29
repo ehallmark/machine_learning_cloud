@@ -17,6 +17,14 @@ import java.util.stream.Stream;
  */
 public class BuildSimilarityVectors {
     private static final File vectorMapFile = new File(Constants.DATA_FOLDER+"signature_model_vector_map.jobj");
+    private static Map<String,INDArray> lookupTable;
+
+    public synchronized static Map<String,INDArray> getLookupTable() {
+        if(lookupTable==null) {
+            lookupTable=(Map<String,INDArray>)Database.tryLoadObject(vectorMapFile);
+        }
+        return lookupTable;
+    }
     public static void main(String[] args) throws Exception {
         // test restore model
         System.out.println("Restoring model test");
