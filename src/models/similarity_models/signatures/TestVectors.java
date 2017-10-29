@@ -9,26 +9,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Created by Evan on 10/28/2017.
  */
 public class TestVectors {
     public static void main(String[] args) {
-        Map<String,INDArray> lookupTable = BuildSimilarityVectors.getLookupTable();
+        CPCSimilarityVectorizer vectorizer = new CPCSimilarityVectorizer();
 
-        List<String> assets = lookupTable.entrySet().stream().map(e->e.getKey()).limit(20).collect(Collectors.toList());
+        List<String> assets = vectorizer.getAssetToIdxMap().entrySet().stream().map(e->e.getKey()).limit(20).collect(Collectors.toList());
 
-
+        INDArray matrix = vectorizer.getMatrix();
         assets.forEach(asset->{
             MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(10);
-            INDArray vec = lookupTable.get(asset);
-            lookupTable.entrySet().parallelStream().forEach(e->{
-                double sim = Transforms.cosineSim(e.getValue(),vec);
+            INDArray vec = vectorizer.vectorFor(asset);
+            IntStream.range(0,matrix.rows()).parallel().forEach(i->{
+                double sim = Transforms.cosineSim(matrix.getRow(i),vec);
                 synchronized (heap) {
-                    heap.add(new WordFrequencyPair<>(e.getKey(), sim));
+                    heap.add(new WordFrequencyPair<>(vectorizer.getIdxToAssetMap().get(i), sim));
                 }
             });
+
             List<WordFrequencyPair<String,Double>> similar = new ArrayList<>();
             while(!heap.isEmpty()) {
                 similar.add(0,heap.remove());
