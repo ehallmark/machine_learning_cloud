@@ -50,7 +50,8 @@ public class BuildSimilarityVectors {
                 System.out.println("Vectorized "+cnt.get()+" assignees.");
             }
         });
-        System.out.println("Saving assignees...");
+        System.out.println("Total vectors: "+vectorMap.size());
+        System.out.println("Saving results...");
         Database.trySaveObject(vectorMap,vectorMapFile);
         System.out.println("Finished saving.");
         Random rand = new Random();
