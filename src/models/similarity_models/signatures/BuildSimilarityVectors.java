@@ -53,9 +53,13 @@ public class BuildSimilarityVectors {
             }
 
             INDArray assigneeVec = Nd4j.vstack(vectors).mean(0);
-            vectorMap.put(assignee,assigneeVec);
-            if(cnt.getAndIncrement()%10000==9999) {
-                System.out.println("Vectorized "+cnt.get()+" assignees.");
+            double norm = assigneeVec.norm2Number().doubleValue();
+            if(norm>0) {
+                assigneeVec = assigneeVec.divi(norm);
+                vectorMap.put(assignee, assigneeVec);
+                if (cnt.getAndIncrement() % 10000 == 9999) {
+                    System.out.println("Vectorized " + cnt.get() + " assignees.");
+                }
             }
         });
         System.out.println("Total vectors: "+vectorMap.size());
