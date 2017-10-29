@@ -143,7 +143,7 @@ public class SignatureSimilarityModel implements Serializable  {
 
         if(net==null) {
             //Neural net configuration
-            int hiddenLayerSize = 1024;
+            int hiddenLayerSize = 256;
             int[] hiddenLayerArray = new int[]{
                     hiddenLayerSize,
                     hiddenLayerSize,
@@ -209,7 +209,8 @@ public class SignatureSimilarityModel implements Serializable  {
                 iterationCount++;
                 if(iterationCount%10000==9999&&!isSaved()) {
                     try {
-                        saveNetwork(true);
+                        save();
+                        isSaved=false;
                     } catch(Exception e) {
                         e.printStackTrace();
                     }
@@ -362,8 +363,12 @@ public class SignatureSimilarityModel implements Serializable  {
 
         CPCHierarchy cpcHierarchy = new CPCHierarchy();
         cpcHierarchy.loadGraph();
-        SignatureSimilarityModel model = new SignatureSimilarityModel(cpcHierarchy,batchSize,nEpochs);
-        if(loadModel) model.net=ModelSerializer.restoreMultiLayerNetwork(modelFile);
+        SignatureSimilarityModel model;
+        if(loadModel) {
+            model = restoreAndInitModel(MAX_CPC_DEPTH,true);
+        } else {
+            model = new SignatureSimilarityModel(cpcHierarchy,batchSize,nEpochs);
+        }
         model.init();
         model.train();
         if(!model.isSaved()) {
