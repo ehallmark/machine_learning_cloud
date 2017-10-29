@@ -355,7 +355,7 @@ public class SignatureSimilarityModel implements Serializable  {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 128;
+        int batchSize = 64;
         int nEpochs = 5;
         File modelFile = getModelFile(networkFile,MAX_CPC_DEPTH);
         boolean loadModel = modelFile.exists();
