@@ -143,7 +143,7 @@ public class SignatureSimilarityModel implements Serializable  {
 
         if(net==null) {
             //Neural net configuration
-            int hiddenLayerSize = 1024;
+            int hiddenLayerSize = 512;
             int[] hiddenLayerArray = new int[]{
                     hiddenLayerSize,
                     hiddenLayerSize,
@@ -356,7 +356,7 @@ public class SignatureSimilarityModel implements Serializable  {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 32;
+        int batchSize = 64;
         int nEpochs = 5;
         File modelFile = getModelFile(networkFile,MAX_CPC_DEPTH);
         boolean loadModel = modelFile.exists();
