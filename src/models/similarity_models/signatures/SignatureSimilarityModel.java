@@ -142,7 +142,7 @@ public class SignatureSimilarityModel implements Serializable  {
         int numInputs = trainIter.inputColumns();
 
         //Neural net configuration
-        int hiddenLayerSize = 512;
+        int hiddenLayerSize = 1024;
         int[] hiddenLayerArray = new int[]{
                 hiddenLayerSize,
                 hiddenLayerSize,
