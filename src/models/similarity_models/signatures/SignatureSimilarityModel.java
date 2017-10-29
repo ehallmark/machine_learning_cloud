@@ -81,14 +81,11 @@ public class SignatureSimilarityModel implements Serializable  {
         AtomicInteger idx = new AtomicInteger(0);
         Map<String,INDArray> assetToEncodingMap = Collections.synchronizedMap(new HashMap<>());
         while(iterator.hasNext()) {
-            System.out.print("-");
+            System.out.println(idx.get());
             DataSet ds = iterator.next();
             INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
             for(int i = 0; i < encoding.rows(); i++) {
                 assetToEncodingMap.put(assets.get(idx.getAndIncrement()),encoding.getRow(i));
-                if(idx.get()%10000==9999) {
-                    System.out.println("Finished vectorizing: "+idx.get());
-                }
             }
         }
         return assetToEncodingMap;
