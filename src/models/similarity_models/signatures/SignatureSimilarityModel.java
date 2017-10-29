@@ -54,7 +54,7 @@ public class SignatureSimilarityModel implements Serializable  {
 
     private transient Map<String,? extends Collection<CPC>> cpcMap;
     @Getter
-    private List<String> allAssets;
+    private transient List<String> allAssets;
     private transient List<String> testAssets;
     private transient List<String> smallTestSet;
     private transient List<String> trainAssets;
