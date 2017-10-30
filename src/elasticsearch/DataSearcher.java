@@ -226,7 +226,7 @@ public class DataSearcher {
         List<Item> items = Collections.synchronizedList(new ArrayList<>());
         long count = 0;
         do {
-            System.out.println("Starting new batch. Num items = " + count);
+            //System.out.println("Starting new batch. Num items = " + count);
             SearchHit[] searchHits = response.getHits().getHits();
             Item[] newItems = new Item[searchHits.length];
             IntStream.range(0,newItems.length).parallel().forEach(i->{

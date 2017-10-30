@@ -265,9 +265,9 @@ public class WordToCPCIterator implements DataSetIterator {
 
     private Collection<String> collectWordsFrom(SearchHit hit) {
         String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase().trim();
-        String abstractText = null;//hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase().trim();
+        String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase().trim();
         String text = String.join(". ",Stream.of(inventionTitle, abstractText).filter(s->s!=null&&s.length()>0).collect(Collectors.toList())).replaceAll("[^a-z ]","");
-        return Stream.of(text.split("\\s+")).filter(word->!Constants.STOP_WORD_SET.contains(word)).collect(Collectors.toList());
+        return Stream.of(text.split("\\s+")).filter(word->!Constants.STOP_WORD_SET.contains(word)).distinct().map(word->new Stemmer().stem(word)).collect(Collectors.toList());
         /*Annotation doc = new Annotation(text);
         pipeline.annotate(doc);
         List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
