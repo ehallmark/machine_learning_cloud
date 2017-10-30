@@ -153,12 +153,12 @@ public class SignatureSimilarityModel implements Serializable  {
 
         if(net==null) {
             //Neural net configuration
-            int hiddenLayerSize = 1024;
+            int hiddenLayerSize = 256;
             int[] hiddenLayerArray = new int[]{
                     hiddenLayerSize,
-                    hiddenLayerSize//,
-                    //hiddenLayerSize,
-                    //hiddenLayerSize
+                    hiddenLayerSize,
+                    hiddenLayerSize,
+                    hiddenLayerSize
             };
             int rngSeed = 69;
             Activation activation = Activation.LEAKYRELU;
