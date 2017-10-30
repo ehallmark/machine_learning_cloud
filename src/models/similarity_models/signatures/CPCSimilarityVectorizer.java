@@ -35,6 +35,7 @@ public class CPCSimilarityVectorizer {
     }
 
     public INDArray vectorFor(String item) {
+        if(item==null||item.isEmpty()) return null;
         Integer row = assetToIdxMap.get(item);
         if(row==null) return null;
         return matrix.getRow(row);
@@ -90,6 +91,9 @@ public class CPCSimilarityVectorizer {
         AtomicInteger idx = new AtomicInteger(0);
         vectorMap.entrySet().parallelStream().forEach(e->{
             int i = idx.getAndIncrement();
+            if(i%10000==9999) {
+                System.out.println("built lookup table for: "+i);
+            }
             assetToIdxMap.put(e.getKey(),i);
             matrix.putRow(i,e.getValue());
         });
