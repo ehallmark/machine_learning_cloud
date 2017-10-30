@@ -41,7 +41,7 @@ public class WordToCPCNetwork {
         return ModelSerializer.restoreMultiLayerNetwork(modelFile,true);
     }
     public static void main(String[] args) throws Exception {
-        final int batchSize = 64;
+        final int batchSize = 32;
         final int sampling = -1;
         final int vocabSampling = 1000000;
         final int seed = 69;
@@ -78,13 +78,11 @@ public class WordToCPCNetwork {
         Nd4j.getRandom().setSeed(seed);
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .activation(Activation.TANH)
-                .updater(Updater.ADAM)
-                .adamMeanDecay(0.9)
-                .adamVarDecay(0.999)
-                .epsilon(10-8)
+                .updater(Updater.RMSPROP)
+                .rmsDecay(0.95)
                 .seed(seed)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .learningRate(0.025)
+                .learningRate(0.1)
                 .miniBatch(true)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)

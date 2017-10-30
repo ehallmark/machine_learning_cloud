@@ -133,7 +133,7 @@ public class SignatureSimilarityModel implements Serializable  {
                 trainAssets.add(asset);
             }
         });
-        smallTestSet.addAll(testAssets.subList(0,20000));
+        smallTestSet.addAll(testAssets.subList(0,10000));
         System.out.println("Finished splitting test and train.");
         System.out.println("Num training: "+trainAssets.size());
         System.out.println("Num test: "+testAssets.size());

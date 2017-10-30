@@ -188,7 +188,7 @@ public class WordToCPCIterator implements DataSetIterator {
     }
 
     public Iterator<List<Pair<String,Collection<String>>>> getWordsIterator(boolean test) {
-        BoolQueryBuilder query = QueryBuilders.boolQuery();
+        BoolQueryBuilder query;
         if(limit>0) {
             query = QueryBuilders.boolQuery()
                     .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(seed)));
