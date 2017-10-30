@@ -212,10 +212,10 @@ public class WordToCPCIterator implements DataSetIterator {
             String asset = hit.getId();
             synchronized (dataBatch) {
                 int i = cnt.getAndIncrement();
-                System.out.println("batch: "+i);
+                //System.out.println("batch: "+i);
                 dataBatch.get().add(new Pair<>(asset, collectWordsFrom(hit)));
                 if(i>=batch()-1) {
-                    System.out.println("Completed batch!!!");
+                   // System.out.println("Completed batch!!!");
                     cnt.set(0);
                     queue.offer(dataBatch.get());
                     dataBatch.set(Collections.synchronizedList(new ArrayList<>()));
