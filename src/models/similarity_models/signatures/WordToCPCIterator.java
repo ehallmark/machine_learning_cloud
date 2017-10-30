@@ -250,30 +250,40 @@ public class WordToCPCIterator implements DataSetIterator {
             }
             return null;
         };
+        AtomicBoolean finishedIteratingElasticSearch = new AtomicBoolean(false);
         SearchResponse response = request.get();
         task = new RecursiveAction() {
             @Override
             protected void compute() {
                 DataSearcher.iterateOverSearchResults(response,transformer,limit,false);
+                finishedIteratingElasticSearch.set(true);
+                System.out.println("Finished iterating ES.");
             }
         };
         task.fork();
 
         return new Iterator<List<Pair<String,Collection<String>>>>() {
-            boolean started = false;
             private List<Pair<String,Collection<String>>> next;
             @Override
             public boolean hasNext() {
                 AtomicInteger i = new AtomicInteger(0);
-                while(!started) {
+                while(!finishedIteratingElasticSearch.get()) {
                     try {
                         int timeout = 30;
                         next = queue.poll(timeout, TimeUnit.SECONDS);
-                        started = true;
+                        if(next!=null) return true;
                     } catch (Exception e) {
                         next = null;
                         System.out.println("Elasticsearch timed out "+i.getAndIncrement()+" times...");
                     }
+                }
+                // finished iterating
+                try {
+                    int timeout = 30;
+                    next = queue.poll(timeout, TimeUnit.SECONDS);
+                } catch (Exception e) {
+                    next = null;
+                    System.out.println("Elasticsearch timed out "+i.getAndIncrement()+" times...");
                 }
                 return next != null;
             }
