@@ -41,16 +41,17 @@ public class WordToCPCNetwork {
         return ModelSerializer.restoreMultiLayerNetwork(modelFile,true);
     }
     public static void main(String[] args) throws Exception {
-        final int batchSize = 128;
+        final int batchSize = 25;
         final int sampling = 5000000;
         final int vocabSampling = 1000000;
         final int seed = 69;
         final int minWordCount = 25;
+        final boolean rerunVocab = true;
 
         WordToCPCIterator iterator = new WordToCPCIterator(batchSize, vocabSampling, seed, minWordCount);
 
         Map<String,Integer> idxMap;
-        if(wordIdxMapFile.exists()) {
+        if(!rerunVocab&&wordIdxMapFile.exists()) {
             System.out.println("Warning: Using existing vocab index file.");
             idxMap = (Map<String,Integer>)Database.tryLoadObject(wordIdxMapFile);
             iterator.setWordToIdxMap(idxMap);
@@ -96,7 +97,7 @@ public class WordToCPCNetwork {
                         .nIn(hiddenLayerSize)
                         .nOut(hiddenLayerSize)
                         .build()
-                ).layer(4, new OutputLayer.Builder()
+                ).layer(3, new OutputLayer.Builder()
                         .lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .activation(Activation.TANH)
                         .nIn(hiddenLayerSize)
