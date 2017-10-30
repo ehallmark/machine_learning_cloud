@@ -163,11 +163,12 @@ public class WordToCPCIterator implements DataSetIterator {
             DataSet ds;
             @Override
             public boolean hasNext() {
-                List<Pair<String, Collection<String>>> pairs = null;
+                List<Pair<String, Collection<String>>> pairs;
                 while(wordsIterator.hasNext()) {
                     pairs = wordsIterator.next();
                     ds = dataSetFromPair(pairs);
                     if(ds!=null) break;
+                    System.out.println("FOUND NULL VECTOR!!!");
                 }
                 return ds != null;
             }
@@ -275,6 +276,7 @@ public class WordToCPCIterator implements DataSetIterator {
                         int timeout = 30;
                         next = queue.poll(timeout, TimeUnit.SECONDS);
                         if(next!=null) return true;
+                        System.out.println("FOUND NULL!!!");
                     } catch (Exception e) {
                         next = null;
                         System.out.println("Elasticsearch timed out "+i.getAndIncrement()+" times...");
