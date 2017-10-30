@@ -53,7 +53,7 @@ import java.util.stream.Stream;
  */
 public class WordToCPCIterator implements DataSetIterator {
     private int batchSize;
-    @Getter @Setter
+    @Getter
     private Map<String,Integer> wordToIdxMap;
     private Map<String,AtomicInteger> wordToDocCountMap;
     private int numInputs;
@@ -122,6 +122,11 @@ public class WordToCPCIterator implements DataSetIterator {
         System.out.println("Vocab size after: "+wordToIdxMap.size());
         this.numInputs=wordToIdxMap.size();
         reset();
+    }
+
+    public void setWordToIdxMap(Map<String,Integer> map) {
+        this.wordToIdxMap=map;
+        this.numInputs=wordToIdxMap.size();
     }
 
     private INDArray createVector(Stream<Collection<String>> wordStream) {
