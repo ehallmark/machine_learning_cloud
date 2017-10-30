@@ -149,13 +149,15 @@ public class SignatureSimilarityModel implements Serializable  {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         CPCDataSetIterator trainIter = getIterator(trainAssets, cpcToIdxMap, false);
         final int numInputs = trainIter.inputColumns();
-        final int printIterations = 50;
+        final int printIterations = 100;
 
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
                     512,
                     256,
+                    256,
+                    128,
                     128
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
