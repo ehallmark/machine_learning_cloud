@@ -94,7 +94,7 @@ public class DefaultScoreListener implements IterationListener {
                     e.printStackTrace();
                 }
                 // check stopping conditions
-                if (iterationCount > 20000 && averageError > smallestAverage * 1.2) {
+                if (averageError > smallestAverage * 1.2) {
                     stoppingConditionFlag.set(true);
                     System.out.println("Stopping condition met!!!");
                     throw new StoppingConditionMetException();

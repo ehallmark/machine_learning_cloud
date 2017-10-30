@@ -226,7 +226,7 @@ public class DataSearcher {
         List<Item> items = Collections.synchronizedList(new ArrayList<>());
         long count = 0;
         do {
-            //System.out.println("Starting new batch. Num items = " + count);
+            System.out.print("-");
             SearchHit[] searchHits = response.getHits().getHits();
             Item[] newItems = new Item[searchHits.length];
             IntStream.range(0,newItems.length).parallel().forEach(i->{
@@ -242,6 +242,7 @@ public class DataSearcher {
             response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(120000)).execute().actionGet();
         } while(response.getHits().getHits().length != 0 && (maxLimit < 0 || count < maxLimit)); // Zero hits mark the end of the scroll and the while loop.
         ClearScrollResponse clearScrollResponse = client.prepareClearScroll().addScrollId(response.getScrollId()).get();
+        System.out.println();
         System.out.println("Sucessfully cleared scroll: "+clearScrollResponse.isSucceeded());
         return items;
     }

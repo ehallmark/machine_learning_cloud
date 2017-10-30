@@ -46,7 +46,9 @@ public class WordToCPCNetwork {
         final int vocabSampling = 1000000;
         final int seed = 69;
         final int minWordCount = 10;
-        final boolean rerunVocab = true;
+        final boolean rerunVocab = false;
+        final int printIterations = 50;
+        final int nEpochs = 5;
 
         WordToCPCIterator iterator = new WordToCPCIterator(batchSize, vocabSampling, seed, minWordCount);
 
@@ -113,7 +115,6 @@ public class WordToCPCNetwork {
         }
         System.out.println("Finished.");
 
-        final int printIterations = 50;
         Function<Void,Double> testFunction = (v) -> {
             AtomicDouble totalError = new AtomicDouble(0d);
             AtomicInteger cnt = new AtomicInteger(0);
@@ -146,7 +147,6 @@ public class WordToCPCNetwork {
         net.setListeners(listener);
 
         System.out.println("Starting to train data...");
-        final int nEpochs = 5;
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
             //net.fit(trainIter);

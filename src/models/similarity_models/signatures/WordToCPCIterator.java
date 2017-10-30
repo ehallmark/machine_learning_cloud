@@ -31,6 +31,7 @@ import seeding.Constants;
 import seeding.Database;
 import seeding.ai_db_updater.tools.Helper;
 import tools.Stemmer;
+import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
@@ -81,7 +82,7 @@ public class WordToCPCIterator implements DataSetIterator {
     public Iterator<DataSet> getTestIterator() {
         int numTests = 10000;
         if(testDataSets==null) {
-            List<String> assets = new ArrayList<>(Database.getAllPatentsAndApplications());
+            List<String> assets = new ArrayList<>(Database.getCopyOfAllPatents());
             Random rand = new Random(seed);
             for(int i = 0; i < numTests; i++) {
                 testAssets.add(assets.get(rand.nextInt(assets.size())));
@@ -173,25 +174,28 @@ public class WordToCPCIterator implements DataSetIterator {
     }
 
     public Iterator<List<Pair<String,Collection<String>>>> getWordsIterator(boolean test) {
-        BoolQueryBuilder query;
+        BoolQueryBuilder query = QueryBuilders.boolQuery();
         if(limit>0) {
             query = QueryBuilders.boolQuery()
                     .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(seed)));
         } else {
             query = QueryBuilders.boolQuery();
         }
+        BoolQueryBuilder innerFilter =  QueryBuilders.boolQuery().must(
+                QueryBuilders.boolQuery() // avoid dup text
+                        .should(QueryBuilders.termQuery(Constants.GRANTED,false))
+                        .should(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()))
+                        .minimumShouldMatch(1)
+        );
         if(testAssets!=null&&testAssets.size()>0) {
             QueryBuilder idQuery = QueryBuilders.idsQuery(DataIngester.TYPE_NAME).addIds(testAssets.toArray(new String[]{}));
             if (test) {
-                query = query.filter(idQuery);
+                innerFilter = innerFilter.must(idQuery);
             } else {
-                query = query.filter(
-                        QueryBuilders.boolQuery().mustNot(
-                                idQuery
-                        )
-                );
+                innerFilter = innerFilter.mustNot(idQuery);
             }
         }
+        query = query.filter(innerFilter);
 
         SearchRequestBuilder request = DataSearcher.getClient().prepareSearch(DataIngester.INDEX_NAME)
                 .setTypes(DataIngester.TYPE_NAME)
@@ -267,7 +271,7 @@ public class WordToCPCIterator implements DataSetIterator {
         String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase().trim();
         String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase().trim();
         String text = String.join(". ",Stream.of(inventionTitle, abstractText).filter(s->s!=null&&s.length()>0).collect(Collectors.toList())).replaceAll("[^a-z ]","");
-        return Stream.of(text.split("\\s+")).filter(word->!Constants.STOP_WORD_SET.contains(word)).distinct().map(word->new Stemmer().stem(word)).collect(Collectors.toList());
+        return Stream.of(text.split("\\s+")).parallel().filter(word->!Constants.STOP_WORD_SET.contains(word)).distinct().map(word->new Stemmer().stem(word)).collect(Collectors.toList());
         /*Annotation doc = new Annotation(text);
         pipeline.annotate(doc);
         List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
