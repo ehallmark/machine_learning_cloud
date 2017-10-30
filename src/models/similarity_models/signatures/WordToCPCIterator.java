@@ -96,7 +96,7 @@ public class WordToCPCIterator implements DataSetIterator {
                 idx++;
             }
 
-            //reset();
+            reset();
         }
         return testDataSets.iterator();
     };
