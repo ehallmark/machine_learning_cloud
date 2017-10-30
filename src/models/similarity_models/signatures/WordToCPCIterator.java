@@ -175,7 +175,9 @@ public class WordToCPCIterator implements DataSetIterator {
 
             @Override
             public DataSet next() {
-                return ds;
+                DataSet dataSet = ds;
+                ds = null; // clear for next one
+                return dataSet;
             }
         };
     }
@@ -380,8 +382,13 @@ public class WordToCPCIterator implements DataSetIterator {
     public void reset() {
         if(task!=null) {
             try {
-                if(!(task.isDone()||task.isCancelled())) {
-                    task.cancel(true);
+                while(!task.isDone()) {
+                    System.out.println("Previous task not yet complete...");
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    }catch(Exception e) {
+
+                    }
                 }
             } catch(Exception e) {
                 System.out.println("Error interrupting ES search during reset...");
