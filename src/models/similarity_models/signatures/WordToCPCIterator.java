@@ -269,6 +269,7 @@ public class WordToCPCIterator implements DataSetIterator {
                         next = queue.poll(timeout, TimeUnit.SECONDS);
                         started = true;
                     } catch (Exception e) {
+                        next = null;
                         System.out.println("Elasticsearch timed out "+i.getAndIncrement()+" times...");
                     }
                 }
