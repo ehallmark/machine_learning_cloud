@@ -46,7 +46,7 @@ public class WordToCPCNetwork {
         final int vocabSampling = 1000000;
         final int seed = 69;
         final int minWordCount = 10;
-        final boolean rerunVocab = true;
+        final boolean rerunVocab = false;
 
         WordToCPCIterator iterator = new WordToCPCIterator(batchSize, vocabSampling, seed, minWordCount);
 
