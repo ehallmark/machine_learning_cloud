@@ -162,9 +162,9 @@ public class SignatureSimilarityModel implements Serializable  {
             Nd4j.getRandom().setSeed(rngSeed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)
-                    .learningRate(0.01)
+                    .learningRate(0.025)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                    .updater(Updater.RMSPROP).rmsDecay(0.95)
+                    .updater(Updater.RMSPROP).rmsDecay(0.80)
                     //.momentum(0.8)
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)

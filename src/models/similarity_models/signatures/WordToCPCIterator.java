@@ -163,8 +163,11 @@ public class WordToCPCIterator implements DataSetIterator {
             DataSet ds;
             @Override
             public boolean hasNext() {
-                if(!wordsIterator.hasNext()) return false;
-                List<Pair<String,Collection<String>>> pairs = wordsIterator.next();
+                List<Pair<String, Collection<String>>> pairs;
+                synchronized (wordsIterator) {
+                    if (!wordsIterator.hasNext()) return false;
+                    pairs = wordsIterator.next();
+                }
                 ds = dataSetFromPair(pairs);
                 return ds != null;
             }
