@@ -274,6 +274,7 @@ public class WordToCPCIterator implements DataSetIterator {
             private List<Pair<String,Collection<String>>> next;
             @Override
             public boolean hasNext() {
+                next = null;
                 if(queue.size()>0 || !finishedIteratingElasticSearch.get()) {
                     try {
                         next = queue.poll(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
