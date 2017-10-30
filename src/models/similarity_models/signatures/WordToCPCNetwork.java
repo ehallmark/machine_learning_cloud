@@ -42,7 +42,7 @@ public class WordToCPCNetwork {
     }
     public static void main(String[] args) throws Exception {
         final int batchSize = 128;
-        final int sampling = 5000000;
+        final int sampling = -1;
         final int vocabSampling = 1000000;
         final int seed = 69;
         final int minWordCount = 10;
@@ -77,7 +77,7 @@ public class WordToCPCNetwork {
 
         Nd4j.getRandom().setSeed(seed);
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .activation(Activation.LEAKYRELU)
+                .activation(Activation.TANH)
                 .updater(Updater.RMSPROP)
                 .rmsDecay(0.95)
                 .seed(seed)
