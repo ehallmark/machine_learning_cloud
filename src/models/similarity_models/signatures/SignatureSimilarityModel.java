@@ -156,6 +156,7 @@ public class SignatureSimilarityModel implements Serializable  {
             int[] hiddenLayerArray = new int[]{
                     hiddenLayerSize,
                     hiddenLayerSize,
+                    hiddenLayerSize,
                     hiddenLayerSize
             };
             int rngSeed = 69;
@@ -302,7 +303,7 @@ public class SignatureSimilarityModel implements Serializable  {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 64;
+        int batchSize = 32;
         int nEpochs = 5;
         File modelFile = getModelFile(networkFile,MAX_CPC_DEPTH);
         boolean loadModel = modelFile.exists();
