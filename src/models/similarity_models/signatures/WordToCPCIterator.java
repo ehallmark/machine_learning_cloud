@@ -96,7 +96,7 @@ public class WordToCPCIterator implements DataSetIterator {
                 idx++;
             }
 
-            reset();
+            //reset();
         }
         return testDataSets.iterator();
     };
@@ -163,12 +163,12 @@ public class WordToCPCIterator implements DataSetIterator {
             DataSet ds;
             @Override
             public boolean hasNext() {
-                List<Pair<String, Collection<String>>> pairs;
-                synchronized (wordsIterator) {
-                    if (!wordsIterator.hasNext()) return false;
+                List<Pair<String, Collection<String>>> pairs = null;
+                while(wordsIterator.hasNext()) {
                     pairs = wordsIterator.next();
+                    ds = dataSetFromPair(pairs);
+                    if(ds!=null) break;
                 }
-                ds = dataSetFromPair(pairs);
                 return ds != null;
             }
 
