@@ -81,19 +81,20 @@ public class WordToCPCIterator implements DataSetIterator {
     public Iterator<DataSet> getTestIterator() {
         int numTests = 20000;
         if(testDataSets==null) {
-            testDataSets = Collections.synchronizedList(new ArrayList<>());
-            Iterator<DataSet> testIter = getWordVectorIterator(true);
-            int idx = 0;
-            while(testIter.hasNext()) {
-                testDataSets.add(testIter.next());
-                System.out.println("Finished test matrix: "+idx);
-                idx++;
-            }
             List<String> assets = new ArrayList<>(Database.getAllPatentsAndApplications());
             Random rand = new Random(seed);
             for(int i = 0; i < numTests; i++) {
                 testAssets.add(assets.get(rand.nextInt(assets.size())));
             }
+            testDataSets = Collections.synchronizedList(new ArrayList<>());
+            Iterator<DataSet> testIter = getWordVectorIterator(true);
+            int idx = 0;
+            while(testIter.hasNext()) {
+                testDataSets.add(testIter.next());
+                if(idx%10000==9999)System.out.println("Finished test matrix: "+idx);
+                idx++;
+            }
+
             reset();
         }
         return testDataSets.iterator();
@@ -137,7 +138,6 @@ public class WordToCPCIterator implements DataSetIterator {
             batch.getAndIncrement();
         });
         if(batch.get()<batch()) {
-            System.out.println("Did not find a full batch");
             return Nd4j.create(Arrays.copyOf(vecs,batch.get()));
         } else {
             return Nd4j.create(vecs);
@@ -233,11 +233,15 @@ public class WordToCPCIterator implements DataSetIterator {
         task.fork();
 
         return new Iterator<List<Pair<String,Collection<String>>>>() {
+            boolean started = false;
             private List<Pair<String,Collection<String>>> next;
             @Override
             public boolean hasNext() {
                 try {
-                    next = queue.poll(120, TimeUnit.SECONDS);
+                    int timeout = 30;
+                    if(!started) timeout+= 100;
+                    next = queue.poll(timeout, TimeUnit.SECONDS);
+                    started = true;
                     return next!=null;
                 } catch(Exception e) {
                     System.out.println("No more items found.");
@@ -254,7 +258,7 @@ public class WordToCPCIterator implements DataSetIterator {
 
     private Collection<String> collectWordsFrom(SearchHit hit) {
         String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase().trim();
-        String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase().trim();
+        String abstractText = null;//hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase().trim();
         String text = String.join(". ",Stream.of(inventionTitle, abstractText).filter(s->s!=null&&s.length()>0).collect(Collectors.toList())).replaceAll("[^a-z ]","");
         return Stream.of(text.split("\\s+")).filter(word->!Constants.STOP_WORD_SET.contains(word)).collect(Collectors.toList());
         /*Annotation doc = new Annotation(text);
