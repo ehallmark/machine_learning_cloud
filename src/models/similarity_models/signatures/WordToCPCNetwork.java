@@ -98,7 +98,7 @@ public class WordToCPCNetwork {
                         .nOut(hiddenLayerSize)
                         .build()
                 ).layer(3, new OutputLayer.Builder()
-                        .lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                        .lossFunction(LossFunctions.LossFunction.MSE)
                         .activation(Activation.TANH)
                         .nIn(hiddenLayerSize)
                         .nOut(outputSize)
@@ -113,7 +113,7 @@ public class WordToCPCNetwork {
         }
         System.out.println("Finished.");
 
-        final int printIterations = 500;
+        final int printIterations = 50;
         Function<Void,Double> testFunction = (v) -> {
             AtomicDouble totalError = new AtomicDouble(0d);
             AtomicInteger cnt = new AtomicInteger(0);

@@ -79,7 +79,7 @@ public class WordToCPCIterator implements DataSetIterator {
     }
 
     public Iterator<DataSet> getTestIterator() {
-        int numTests = 20000;
+        int numTests = 10000;
         if(testDataSets==null) {
             List<String> assets = new ArrayList<>(Database.getAllPatentsAndApplications());
             Random rand = new Random(seed);
@@ -91,7 +91,7 @@ public class WordToCPCIterator implements DataSetIterator {
             int idx = 0;
             while(testIter.hasNext()) {
                 testDataSets.add(testIter.next());
-                if(idx%10000==9999)System.out.println("Finished test matrix: "+idx);
+                if(idx%1000==999)System.out.println("Finished test matrix: "+idx);
                 idx++;
             }
 
