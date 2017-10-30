@@ -159,6 +159,7 @@ public class SignatureSimilarityModel implements Serializable  {
                     hiddenLayerSize
             };
             int rngSeed = 69;
+            Activation activation = Activation.TANH;
             Nd4j.getRandom().setSeed(rngSeed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)
@@ -174,7 +175,7 @@ public class SignatureSimilarityModel implements Serializable  {
                             .encoderLayerSizes(hiddenLayerArray)
                             .decoderLayerSizes(hiddenLayerArray)
                             //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
-                            .activation(Activation.LEAKYRELU)
+                            .activation(activation)
                             .pzxActivationFunction(Activation.IDENTITY)
                             .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
                             .nIn(numInputs)
