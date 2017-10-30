@@ -193,7 +193,11 @@ public abstract class Stage<V> {
         runSamplingIterator(transformer,transformerRunner,getDefaultAnnotator(),attributesFunction);
     }
 
-    protected Function<Map<String,Object>,Consumer<Annotation>> getDefaultAnnotator() {
+    public Function<Map<String,Object>,Consumer<Annotation>> getDefaultAnnotator() {
+        return getDefaultAnnotator(3);
+    }
+
+    public Function<Map<String,Object>,Consumer<Annotation>> getDefaultAnnotator(int maxPhraseLength) {
         return dataMap -> d -> {
             List<CoreMap> sentences = d.get(CoreAnnotations.SentencesAnnotation.class);
             Map<MultiStem,AtomicInteger> appeared = new HashMap<>();
@@ -240,19 +244,23 @@ public abstract class Stage<V> {
                                 // don't want to end in adjectives (nor past tense verb)
                                 if (!adjectivesPOS.contains(pos) && !((!pos.startsWith("N"))&&(word.endsWith("ing")||word.endsWith("ed")))) {
                                     checkStem(new String[]{stem}, word, appeared);
-                                    if (prevStem != null && !prevStem.equals(stem)) {
-                                        //long numNouns = Stream.of(pos,prevPos).filter(p->p!=null&&p.startsWith("N")).count();
-                                        long numVerbs = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("V")).count();
-                                        //long numAdjectives = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("J")).count();
-                                        if(numVerbs<=1) {
-                                            checkStem(new String[]{prevStem, stem}, String.join(" ", prevWord, word), appeared);
-                                            if (prevPrevStem != null && !prevStem.equals(prevPrevStem) && !prevPrevStem.equals(stem)) {
-                                                // maximum 1 noun
-                                                //numNouns = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("N")).count();
-                                                numVerbs = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("V")).count();
-                                                //numAdjectives = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("J")).count();
-                                                if(numVerbs<=1) {
-                                                    checkStem(new String[]{prevPrevStem, prevStem, stem}, String.join(" ", prevPrevWord, prevWord, word), appeared);
+                                    if(maxPhraseLength>1) {
+                                        if (prevStem != null && !prevStem.equals(stem)) {
+                                            //long numNouns = Stream.of(pos,prevPos).filter(p->p!=null&&p.startsWith("N")).count();
+                                            long numVerbs = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("V")).count();
+                                            //long numAdjectives = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("J")).count();
+                                            if (numVerbs <= 1) {
+                                                checkStem(new String[]{prevStem, stem}, String.join(" ", prevWord, word), appeared);
+                                                if(maxPhraseLength>2) {
+                                                    if (prevPrevStem != null && !prevStem.equals(prevPrevStem) && !prevPrevStem.equals(stem)) {
+                                                        // maximum 1 noun
+                                                        //numNouns = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("N")).count();
+                                                        numVerbs = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("V")).count();
+                                                        //numAdjectives = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("J")).count();
+                                                        if (numVerbs <= 1) {
+                                                            checkStem(new String[]{prevPrevStem, prevStem, stem}, String.join(" ", prevPrevWord, prevWord, word), appeared);
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
