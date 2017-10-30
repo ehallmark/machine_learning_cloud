@@ -202,6 +202,7 @@ public class WordToCPCIterator implements DataSetIterator {
                         .minimumShouldMatch(1)
         );
         if(testAssets!=null&&testAssets.size()>0) {
+            System.out.println("Num test assets: "+testAssets.size());
             QueryBuilder idQuery = QueryBuilders.idsQuery(DataIngester.TYPE_NAME).addIds(testAssets.toArray(new String[]{}));
             if (test) {
                 innerFilter = innerFilter.must(idQuery);
