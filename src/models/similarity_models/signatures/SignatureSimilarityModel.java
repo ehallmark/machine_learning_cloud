@@ -139,15 +139,15 @@ public class SignatureSimilarityModel implements Serializable  {
         System.out.println("Num test: "+testAssets.size());
     }
 
-    private CPCDataSetIterator getIterator(List<String> assets, Map<String,Integer> cpcToIndexMap) {
-        boolean shuffle = assets.equals(trainAssets);
+    private CPCDataSetIterator getIterator(List<String> assets, Map<String,Integer> cpcToIndexMap, boolean test) {
+        boolean shuffle = !test;
         System.out.println("Shuffling? "+shuffle);
-        return new CPCDataSetIterator(assets,shuffle,batchSize,cpcMap,cpcToIndexMap);
+        return new CPCDataSetIterator(assets,shuffle,test ? 1000 : batchSize,cpcMap,cpcToIndexMap);
     }
 
     public void train() {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
-        CPCDataSetIterator trainIter = getIterator(trainAssets, cpcToIdxMap);
+        CPCDataSetIterator trainIter = getIterator(trainAssets, cpcToIdxMap, false);
         final int numInputs = trainIter.inputColumns();
         final int printIterations = 250;
 
@@ -193,7 +193,7 @@ public class SignatureSimilarityModel implements Serializable  {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         Function<Void,Double> testFunction = (v) -> {
-            return test(getIterator(smallTestSet,cpcToIdxMap),vae);
+            return test(getIterator(smallTestSet,cpcToIdxMap, true), vae);
         };
         Function<Void,Void> saveFunction = (v) -> {
             try {
@@ -216,7 +216,7 @@ public class SignatureSimilarityModel implements Serializable  {
                 System.out.println("Stopping condition met");
             }
             System.out.println("Testing overall model: EPOCH "+i);
-            double finalTestError = test(getIterator(testAssets,cpcToIdxMap),vae);
+            double finalTestError = test(getIterator(testAssets,cpcToIdxMap, true),vae);
             System.out.println("Final Overall Model Error: "+finalTestError);
             if(stoppingCondition.get()) {
                 break;
@@ -235,28 +235,24 @@ public class SignatureSimilarityModel implements Serializable  {
     }
 
     private double test(DataSetIterator dataStream, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
-        AtomicDouble testError = new AtomicDouble(0d);
+        AtomicDouble testSimilarity = new AtomicDouble(0d);
         AtomicInteger cnt = new AtomicInteger(0);
-        AtomicInteger nanCnt = new AtomicInteger(0);
         while(dataStream.hasNext()) {
             DataSet test = dataStream.next();
             INDArray testInput = test.getFeatures();
             INDArray latentValues = model.activate(testInput,false);
             INDArray testOutput = model.generateAtMeanGivenZ(latentValues);
-            for(int i = 0; i < testOutput.rows(); i++) {
-                double sim = Transforms.cosineSim(testInput.getRow(i), testOutput.getRow(i));
-                if(Double.isNaN(sim)) {
-                    nanCnt.getAndIncrement();
-                    sim = -1d;
-                }
-                testError.addAndGet(1d-sim);
-                cnt.getAndIncrement();
-            }
+
+            INDArray inputNorms = testInput.norm2(1);
+            INDArray outputNorms = testOutput.norm2(1);
+            INDArray dot = testInput.mul(testOutput).sum(1);
+            INDArray norm = inputNorms.muli(outputNorms);
+            INDArray cosineSim = dot.divi(norm);
+            double similarity = cosineSim.sumNumber().doubleValue();
+            testSimilarity.addAndGet(similarity);
+            cnt.addAndGet(testInput.rows());
         }
-        if(nanCnt.get()>0) {
-            System.out.println("Num NaNs: "+nanCnt.get() + " / "+ cnt.get());
-        }
-        return testError.get()/cnt.get();
+        return 1d - (testSimilarity.get()/cnt.get());
     }
 
     public synchronized void save() throws IOException {
