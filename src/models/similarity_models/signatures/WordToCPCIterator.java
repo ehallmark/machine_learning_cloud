@@ -81,7 +81,7 @@ public class WordToCPCIterator implements DataSetIterator {
     }
 
     public Iterator<DataSet> getTestIterator() {
-        int numTests = 10000;
+        int numTests = 25000;
         if(testDataSets==null) {
             List<String> assets = new ArrayList<>(Database.getCopyOfAllPatents());
             Random rand = new Random(seed);
