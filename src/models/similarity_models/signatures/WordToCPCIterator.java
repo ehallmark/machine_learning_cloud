@@ -143,7 +143,9 @@ public class WordToCPCIterator implements DataSetIterator {
             vecs[batch.get()] = vec;
             batch.getAndIncrement();
         });
-        if(batch.get()<batch()) {
+        if(batch.get()==0) {
+            return null;
+        } else if(batch.get()<batch()) {
             return Nd4j.create(Arrays.copyOf(vecs,batch.get()));
         } else {
             return Nd4j.create(vecs);
@@ -158,15 +160,18 @@ public class WordToCPCIterator implements DataSetIterator {
     private Iterator<DataSet> getWordVectorIterator(boolean test) {
         Iterator<List<Pair<String,Collection<String>>>> wordsIterator = getWordsIterator(test);
         return new Iterator<DataSet>() {
+            DataSet ds;
             @Override
             public boolean hasNext() {
-                return wordsIterator.hasNext();
+                if(!wordsIterator.hasNext()) return false;
+                List<Pair<String,Collection<String>>> pairs = wordsIterator.next();
+                ds = dataSetFromPair(pairs);
+                return ds != null;
             }
 
             @Override
             public DataSet next() {
-                List<Pair<String,Collection<String>>> pairs = wordsIterator.next();
-                return dataSetFromPair(pairs);
+                return ds;
             }
         };
     }
@@ -174,6 +179,7 @@ public class WordToCPCIterator implements DataSetIterator {
     private DataSet dataSetFromPair(List<Pair<String,Collection<String>>> pairs) {
         pairs = pairs.stream().filter(p->cpcVectorizer.getAssetToIdxMap().containsKey(p.getFirst())).collect(Collectors.toList());
         INDArray input = createVector(pairs.stream().map(p->p.getSecond()));
+        if(input == null) return null;
         INDArray output = Nd4j.vstack(pairs.stream().map(p->cpcVectorizer.vectorFor(p.getFirst())).collect(Collectors.toList()));
         return new DataSet(input,output);
     }
