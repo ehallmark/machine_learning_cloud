@@ -149,17 +149,19 @@ public class SignatureSimilarityModel implements Serializable  {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         CPCDataSetIterator trainIter = getIterator(trainAssets, cpcToIdxMap, false);
         final int numInputs = trainIter.inputColumns();
-        final int printIterations = 250;
+        final int printIterations = 50;
 
         if(net==null) {
             //Neural net configuration
-            int hiddenLayerSize = 256;
-            int[] hiddenLayerArray = new int[]{
-                    hiddenLayerSize,
-                    hiddenLayerSize,
-                    hiddenLayerSize,
-                    hiddenLayerSize
+            int[] hiddenLayerEncoder = new int[]{
+                    512,
+                    256,
+                    128
             };
+            int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
+            for(int i = 0; i < hiddenLayerEncoder.length; i++) {
+                hiddenLayerDecoder[i] = hiddenLayerEncoder[hiddenLayerEncoder.length-1-i];
+            }
             int rngSeed = 69;
             Activation activation = Activation.LEAKYRELU;
             Nd4j.getRandom().setSeed(rngSeed);
@@ -174,8 +176,8 @@ public class SignatureSimilarityModel implements Serializable  {
                     .regularization(true).l2(1e-4)
                     .list()
                     .layer(0, new VariationalAutoencoder.Builder()
-                            .encoderLayerSizes(hiddenLayerArray)
-                            .decoderLayerSizes(hiddenLayerArray)
+                            .encoderLayerSizes(hiddenLayerEncoder)
+                            .decoderLayerSizes(hiddenLayerDecoder)
                             //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
                             .activation(activation)
                             .pzxActivationFunction(Activation.IDENTITY)
