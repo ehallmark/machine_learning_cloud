@@ -375,6 +375,7 @@ public class WordToCPCIterator implements DataSetIterator {
             }
         }
         iterator = getWordVectorIterator(false);
+        System.out.println("Resetting iterator...");
     }
 
     @Override
