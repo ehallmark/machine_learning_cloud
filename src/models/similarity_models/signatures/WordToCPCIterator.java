@@ -210,6 +210,13 @@ public class WordToCPCIterator implements DataSetIterator {
         AtomicReference<List<Pair<String,Collection<String>>>> dataBatch = new AtomicReference<>(Collections.synchronizedList(new ArrayList<>()));
         Function<SearchHit,Item> transformer = hit -> {
             String asset = hit.getId();
+            while(queue.size()>10000) {
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch(Exception e) {
+
+                }
+            }
             synchronized (dataBatch) {
                 int i = cnt.getAndIncrement();
                 //System.out.println("batch: "+i);

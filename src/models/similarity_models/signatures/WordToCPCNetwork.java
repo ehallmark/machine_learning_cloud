@@ -41,7 +41,7 @@ public class WordToCPCNetwork {
         return ModelSerializer.restoreMultiLayerNetwork(modelFile,true);
     }
     public static void main(String[] args) throws Exception {
-        final int batchSize = 25;
+        final int batchSize = 128;
         final int sampling = 5000000;
         final int vocabSampling = 1000000;
         final int seed = 69;
@@ -121,7 +121,7 @@ public class WordToCPCNetwork {
             while(dataStream.hasNext()) {
                 DataSet ds = dataStream.next();
                 INDArray actualOutput = ds.getLabels();
-                INDArray modelOutput = net.activateSelectedLayers(0,net.getnLayers(),ds.getFeatures());
+                INDArray modelOutput = net.activateSelectedLayers(0,net.getnLayers()-1,ds.getFeatures());
                 for(int i = 0; i < actualOutput.rows(); i++) {
                     double score = Transforms.cosineSim(modelOutput,actualOutput);
                     if(Double.isNaN(score)) score = -1d;
