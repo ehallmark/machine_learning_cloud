@@ -188,6 +188,7 @@ public class WordToCPCIterator implements DataSetIterator {
     }
 
     public Iterator<List<Pair<String,Collection<String>>>> getWordsIterator(boolean test) {
+        System.out.println("STARTING NEW ITERATOR: testing="+test);
         BoolQueryBuilder query;
         if(limit>0) {
             query = QueryBuilders.boolQuery()
@@ -203,7 +204,7 @@ public class WordToCPCIterator implements DataSetIterator {
         );
         if(testAssets!=null&&testAssets.size()>0) {
             System.out.println("Num test assets: "+testAssets.size());
-            QueryBuilder idQuery = QueryBuilders.idsQuery(DataIngester.TYPE_NAME).addIds(testAssets.toArray(new String[]{}));
+            QueryBuilder idQuery = QueryBuilders.termsQuery(Constants.NAME,testAssets);
             if (test) {
                 innerFilter = innerFilter.must(idQuery);
             } else {
