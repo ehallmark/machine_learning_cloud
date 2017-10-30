@@ -45,7 +45,7 @@ public class WordToCPCNetwork {
         final int sampling = 5000000;
         final int vocabSampling = 1000000;
         final int seed = 69;
-        final int minWordCount = 25;
+        final int minWordCount = 10;
         final boolean rerunVocab = true;
 
         WordToCPCIterator iterator = new WordToCPCIterator(batchSize, vocabSampling, seed, minWordCount);
@@ -113,7 +113,7 @@ public class WordToCPCNetwork {
         }
         System.out.println("Finished.");
 
-            final int printIterations = 500;
+        final int printIterations = 500;
         Function<Void,Double> testFunction = (v) -> {
             AtomicDouble totalError = new AtomicDouble(0d);
             AtomicInteger cnt = new AtomicInteger(0);
@@ -121,7 +121,7 @@ public class WordToCPCNetwork {
             while(dataStream.hasNext()) {
                 DataSet ds = dataStream.next();
                 INDArray actualOutput = ds.getLabels();
-                INDArray modelOutput = net.activate(ds.getFeatures(),false);
+                INDArray modelOutput = net.activateSelectedLayers(0,net.getnLayers(),ds.getFeatures());
                 for(int i = 0; i < actualOutput.rows(); i++) {
                     double score = Transforms.cosineSim(modelOutput,actualOutput);
                     if(Double.isNaN(score)) score = -1d;
