@@ -148,7 +148,8 @@ public class SignatureSimilarityModel implements Serializable  {
     public void train() {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         CPCDataSetIterator trainIter = getIterator(trainAssets, cpcToIdxMap);
-        int numInputs = trainIter.inputColumns();
+        final int numInputs = trainIter.inputColumns();
+        final int printIterations = 50;
 
         if(net==null) {
             //Neural net configuration
@@ -164,7 +165,7 @@ public class SignatureSimilarityModel implements Serializable  {
             Nd4j.getRandom().setSeed(rngSeed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)
-                    .learningRate(0.1)
+                    .learningRate(0.025)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                     .updater(Updater.RMSPROP).rmsDecay(0.95)
                     //.momentum(0.8)
@@ -191,7 +192,6 @@ public class SignatureSimilarityModel implements Serializable  {
 
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
-        int printIterations = 500;
         Function<Void,Double> testFunction = (v) -> {
             return test(getIterator(smallTestSet,cpcToIdxMap),vae);
         };
