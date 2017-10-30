@@ -67,6 +67,7 @@ public class WordToCPCIterator implements DataSetIterator {
     private int minWordCount;
     private CPCSimilarityVectorizer cpcVectorizer;
     private List<DataSet> testDataSets = null;
+    private int iter;
     private Set<String> testAssets = Collections.synchronizedSet(new HashSet<>());
     public WordToCPCIterator(int batchSize, int limit, int seed, int minWordCount, boolean binarize) {
         //Properties props = new Properties();
@@ -175,6 +176,7 @@ public class WordToCPCIterator implements DataSetIterator {
 
             @Override
             public DataSet next() {
+                iter++;
                 DataSet dataSet = ds;
                 ds = null; // clear for next one
                 return dataSet;
@@ -385,6 +387,8 @@ public class WordToCPCIterator implements DataSetIterator {
                 task = null;
             }
         }
+        System.out.println("Iterated thru: "+iter);
+        this.iter=0;
         iterator = getWordVectorIterator(false);
         System.out.println("Resetting iterator...");
     }
