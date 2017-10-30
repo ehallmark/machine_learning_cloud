@@ -310,11 +310,12 @@ public class SignatureSimilarityModel implements Serializable  {
         cpcHierarchy.loadGraph();
         SignatureSimilarityModel model;
         if(loadModel) {
+            System.out.println("Warning: Using previous model.");
             model = restoreAndInitModel(MAX_CPC_DEPTH,true);
         } else {
             model = new SignatureSimilarityModel(cpcHierarchy,batchSize,nEpochs);
+            model.init();
         }
-        model.init();
         model.train();
         if(!model.isSaved()) {
             model.save();
