@@ -41,13 +41,13 @@ public class WordToCPCNetwork {
         return ModelSerializer.restoreMultiLayerNetwork(modelFile,true);
     }
     public static void main(String[] args) throws Exception {
-        final int batchSize = 128;
+        final int batchSize = 64;
         final int sampling = -1;
         final int vocabSampling = 1000000;
         final int seed = 69;
         final int minWordCount = 10;
         final boolean rerunVocab = false;
-        final int printIterations = 50;
+        final int printIterations = 100;
         final int nEpochs = 5;
 
         WordToCPCIterator iterator = new WordToCPCIterator(batchSize, vocabSampling, seed, minWordCount);
@@ -72,7 +72,7 @@ public class WordToCPCNetwork {
 
         // get vocab
         final int vocabSize = iterator.getWordToIdxMap().size();
-        final int hiddenLayerSize = 256;
+        final int hiddenLayerSize = 1024;
         final int outputSize = SignatureSimilarityModel.VECTOR_SIZE;
 
         Nd4j.getRandom().setSeed(seed);
