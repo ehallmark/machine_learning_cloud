@@ -154,8 +154,9 @@ public class SignatureSimilarityModel implements Serializable  {
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
-                    850,
-                    850
+                    512,
+                    256,
+                    128
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
@@ -303,7 +304,7 @@ public class SignatureSimilarityModel implements Serializable  {
         int batchSize = 32;
         int nEpochs = 5;
         File modelFile = getModelFile(networkFile,MAX_CPC_DEPTH);
-        boolean loadModel = modelFile.exists();
+        boolean loadModel = false; //modelFile.exists();
 
         CPCHierarchy cpcHierarchy = new CPCHierarchy();
         cpcHierarchy.loadGraph();
