@@ -41,16 +41,17 @@ public class WordToCPCNetwork {
         return ModelSerializer.restoreMultiLayerNetwork(modelFile,true);
     }
     public static void main(String[] args) throws Exception {
-        final int batchSize = 32;
+        final int batchSize = 64;
         final int sampling = -1;
         final int vocabSampling = 1000000;
         final int seed = 69;
         final int minWordCount = 10;
         final boolean rerunVocab = false;
-        final int printIterations = 100;
+        final int printIterations = 50;
         final int nEpochs = 5;
+        final boolean binarize = true;
 
-        WordToCPCIterator iterator = new WordToCPCIterator(batchSize, vocabSampling, seed, minWordCount);
+        WordToCPCIterator iterator = new WordToCPCIterator(batchSize, vocabSampling, seed, minWordCount, binarize);
 
         Map<String,Integer> idxMap;
         if(!rerunVocab&&wordIdxMapFile.exists()) {
@@ -101,7 +102,7 @@ public class WordToCPCNetwork {
                         .build()
                 ).layer(3, new OutputLayer.Builder()
                         .lossFunction(LossFunctions.LossFunction.MSE)
-                        .activation(Activation.TANH)
+                        .activation(binarize ? Activation.SIGMOID : Activation.TANH)
                         .nIn(hiddenLayerSize)
                         .nOut(outputSize)
                         .build()

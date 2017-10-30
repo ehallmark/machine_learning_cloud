@@ -163,7 +163,7 @@ public class SignatureSimilarityModel implements Serializable  {
             Nd4j.getRandom().setSeed(rngSeed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)
-                    .learningRate(0.025)
+                    .learningRate(0.1)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                     .updater(Updater.RMSPROP).rmsDecay(0.95)
                     //.momentum(0.8)
@@ -205,7 +205,6 @@ public class SignatureSimilarityModel implements Serializable  {
 
         IterationListener listener = new DefaultScoreListener(printIterations, testFunction, saveFunction, isSaved, stoppingCondition);
         net.setListeners(listener);
-
 
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");

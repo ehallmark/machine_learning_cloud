@@ -60,7 +60,7 @@ public class WordToCPCIterator implements DataSetIterator {
     @Setter
     private int limit;
     private int seed;
-    private StanfordCoreNLP pipeline;
+    //private StanfordCoreNLP pipeline;
     @Getter
     private Iterator<DataSet> iterator;
     private RecursiveAction task;
@@ -68,15 +68,15 @@ public class WordToCPCIterator implements DataSetIterator {
     private CPCSimilarityVectorizer cpcVectorizer;
     private List<DataSet> testDataSets = null;
     private Set<String> testAssets = Collections.synchronizedSet(new HashSet<>());
-    public WordToCPCIterator(int batchSize, int limit, int seed, int minWordCount) {
-        Properties props = new Properties();
-        props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
-        pipeline = new StanfordCoreNLP(props);
+    public WordToCPCIterator(int batchSize, int limit, int seed, int minWordCount, boolean binarize) {
+        //Properties props = new Properties();
+        //props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
+        //pipeline = new StanfordCoreNLP(props);
         this.batchSize=batchSize;
         this.limit=limit;
         this.minWordCount=minWordCount;
         this.seed=seed;
-        cpcVectorizer = new CPCSimilarityVectorizer();
+        cpcVectorizer = new CPCSimilarityVectorizer(binarize);
     }
 
     public Iterator<DataSet> getTestIterator() {
@@ -262,16 +262,17 @@ public class WordToCPCIterator implements DataSetIterator {
             private List<Pair<String,Collection<String>>> next;
             @Override
             public boolean hasNext() {
-                try {
-                    int timeout = 30;
-                    if(!started) timeout+= 100;
-                    next = queue.poll(timeout, TimeUnit.SECONDS);
-                    started = true;
-                    return next!=null;
-                } catch(Exception e) {
-                    System.out.println("No more items found.");
-                    return false;
+                AtomicInteger i = new AtomicInteger(0);
+                while(!started) {
+                    try {
+                        int timeout = 30;
+                        next = queue.poll(timeout, TimeUnit.SECONDS);
+                        started = true;
+                    } catch (Exception e) {
+                        System.out.println("Elasticsearch timed out "+i.getAndIncrement()+" times...");
+                    }
                 }
+                return next != null;
             }
 
             @Override

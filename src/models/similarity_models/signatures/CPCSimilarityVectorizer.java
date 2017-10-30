@@ -27,10 +27,12 @@ public class CPCSimilarityVectorizer {
     private Map<Integer,String> idxToAssetMap;
     @Getter
     private INDArray matrix;
-    public CPCSimilarityVectorizer() {
+    private boolean binarize;
+    public CPCSimilarityVectorizer(boolean binarize) {
         if(data==null) getLookupTable();
         this.matrix=data.getSecond();
         this.assetToIdxMap=data.getFirst();
+        this.binarize=binarize;
         this.idxToAssetMap=Collections.synchronizedMap(assetToIdxMap.entrySet().parallelStream().collect(Collectors.toMap(e->e.getValue(),e->e.getKey())));
     }
 
@@ -38,7 +40,13 @@ public class CPCSimilarityVectorizer {
         if(item==null||item.isEmpty()) return null;
         Integer row = assetToIdxMap.get(item);
         if(row==null) return null;
-        return matrix.getRow(row);
+        INDArray vec = matrix.getRow(row);
+        if(binarize) vec = binarize(vec);
+        return vec;
+    }
+
+    private INDArray binarize(INDArray in) {
+        return Transforms.sign(in,true).addi(1).div(2);
     }
 
 
