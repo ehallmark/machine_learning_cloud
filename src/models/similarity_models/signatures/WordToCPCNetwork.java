@@ -102,7 +102,7 @@ public class WordToCPCNetwork {
                         .build()
                 ).layer(3, new OutputLayer.Builder()
                         .lossFunction(LossFunctions.LossFunction.MSE)
-                        .activation(binarize ? Activation.SIGMOID : Activation.IDENTITY)
+                        .activation(binarize ? Activation.SIGMOID : Activation.TANH)
                         .nIn(hiddenLayerSize)
                         .nOut(outputSize)
                         .build()
