@@ -107,7 +107,12 @@ public class WordToCPCNetwork {
         MultiLayerNetwork net = new MultiLayerNetwork(conf);
         net.init();
 
-        final int printIterations = 500;
+        System.out.println("Getting test iterator..."); {
+            iterator.getTestIterator();
+        }
+        System.out.println("Finished.");
+
+            final int printIterations = 500;
         Function<Void,Double> testFunction = (v) -> {
             AtomicDouble totalError = new AtomicDouble(0d);
             AtomicInteger cnt = new AtomicInteger(0);

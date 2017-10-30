@@ -16,6 +16,7 @@ import org.deeplearning4j.berkeley.Pair;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
@@ -27,6 +28,7 @@ import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
+import seeding.Database;
 import seeding.ai_db_updater.tools.Helper;
 import tools.Stemmer;
 import user_interface.ui_models.portfolios.items.Item;
@@ -63,7 +65,7 @@ public class WordToCPCIterator implements DataSetIterator {
     private RecursiveAction task;
     private int minWordCount;
     private CPCSimilarityVectorizer cpcVectorizer;
-    private List<DataSet> testDataSets = Collections.synchronizedList(new ArrayList<>());
+    private List<DataSet> testDataSets = null;
     private Set<String> testAssets = Collections.synchronizedSet(new HashSet<>());
     public WordToCPCIterator(int batchSize, int limit, int seed, int minWordCount) {
         Properties props = new Properties();
@@ -74,16 +76,32 @@ public class WordToCPCIterator implements DataSetIterator {
         this.minWordCount=minWordCount;
         this.seed=seed;
         cpcVectorizer = new CPCSimilarityVectorizer();
-        reset();
     }
 
     public Iterator<DataSet> getTestIterator() {
+        int numTests = 20000;
+        if(testDataSets==null) {
+            testDataSets = Collections.synchronizedList(new ArrayList<>());
+            Iterator<DataSet> testIter = getWordVectorIterator(true);
+            int idx = 0;
+            while(testIter.hasNext()) {
+                testDataSets.add(testIter.next());
+                System.out.println("Finished test matrix: "+idx);
+                idx++;
+            }
+            List<String> assets = new ArrayList<>(Database.getAllPatentsAndApplications());
+            Random rand = new Random(seed);
+            for(int i = 0; i < numTests; i++) {
+                testAssets.add(assets.get(rand.nextInt(assets.size())));
+            }
+            reset();
+        }
         return testDataSets.iterator();
     };
 
     public void buildVocabMap() {
         wordToDocCountMap = Collections.synchronizedMap(new HashMap<>());
-        Iterator<List<Pair<String,Collection<String>>>> iterator = getWordsIterator();
+        Iterator<List<Pair<String,Collection<String>>>> iterator = getWordsIterator(false);
         while(iterator.hasNext()) {
             iterator.next().parallelStream().forEach(pair->{
                 pair.getSecond().forEach(word->{
@@ -131,8 +149,8 @@ public class WordToCPCIterator implements DataSetIterator {
         return iterator.next();
     }
 
-    private Iterator<DataSet> getWordVectorIterator() {
-        Iterator<List<Pair<String,Collection<String>>>> wordsIterator = getWordsIterator();
+    private Iterator<DataSet> getWordVectorIterator(boolean test) {
+        Iterator<List<Pair<String,Collection<String>>>> wordsIterator = getWordsIterator(test);
         return new Iterator<DataSet>() {
             @Override
             public boolean hasNext() {
@@ -154,13 +172,25 @@ public class WordToCPCIterator implements DataSetIterator {
         return new DataSet(input,output);
     }
 
-    public Iterator<List<Pair<String,Collection<String>>>> getWordsIterator() {
-        QueryBuilder query;
+    public Iterator<List<Pair<String,Collection<String>>>> getWordsIterator(boolean test) {
+        BoolQueryBuilder query;
         if(limit>0) {
             query = QueryBuilders.boolQuery()
                     .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(seed)));
         } else {
-            query = QueryBuilders.matchAllQuery();
+            query = QueryBuilders.boolQuery();
+        }
+        if(testAssets!=null&&testAssets.size()>0) {
+            QueryBuilder idQuery = QueryBuilders.idsQuery(DataIngester.TYPE_NAME).addIds(testAssets.toArray(new String[]{}));
+            if (test) {
+                query = query.filter(idQuery);
+            } else {
+                query = query.filter(
+                        QueryBuilders.boolQuery().mustNot(
+                                QueryBuilders.boolQuery().filter(idQuery)
+                        )
+                );
+            }
         }
 
         SearchRequestBuilder request = DataSearcher.getClient().prepareSearch(DataIngester.INDEX_NAME)
@@ -189,13 +219,7 @@ public class WordToCPCIterator implements DataSetIterator {
                 dataBatch.get().add(new Pair<>(asset, collectWordsFrom(hit)));
                 if(i>=batch()-1) {
                     cnt.set(0);
-                    if(testDataSets.size()<testBatches) {
-                        Collection<String> assets = dataBatch.get().stream().map(e->e.getFirst()).collect(Collectors.toList());
-                        testAssets.addAll(assets);
-                        testDataSets.add(dataSetFromPair(dataBatch.get()));
-                    } else {
-                        queue.offer(dataBatch.get());
-                    }
+                    queue.offer(dataBatch.get());
                     dataBatch.set(Collections.synchronizedList(new ArrayList<>()));
                 }
             }
@@ -209,18 +233,6 @@ public class WordToCPCIterator implements DataSetIterator {
             }
         };
         task.fork();
-
-        System.out.println("Collecting test assets...");
-        while(testDataSets.size()<testBatches) {
-            try {
-                TimeUnit.SECONDS.sleep(2);
-            } catch(Exception e) {
-
-            }
-            System.out.print("-");
-        }
-        System.out.println();
-        System.out.print("Finished collecting test assets.");
 
         return new Iterator<List<Pair<String,Collection<String>>>>() {
             private List<Pair<String,Collection<String>>> next;
@@ -331,7 +343,7 @@ public class WordToCPCIterator implements DataSetIterator {
                 task = null;
             }
         }
-        iterator = getWordVectorIterator();
+        iterator = getWordVectorIterator(false);
     }
 
     @Override
