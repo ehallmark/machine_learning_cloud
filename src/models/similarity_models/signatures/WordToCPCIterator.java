@@ -187,7 +187,7 @@ public class WordToCPCIterator implements DataSetIterator {
             } else {
                 query = query.filter(
                         QueryBuilders.boolQuery().mustNot(
-                                QueryBuilders.boolQuery().filter(idQuery)
+                                idQuery
                         )
                 );
             }
@@ -206,18 +206,16 @@ public class WordToCPCIterator implements DataSetIterator {
         }
 
         ArrayBlockingQueue<List<Pair<String,Collection<String>>>> queue = new ArrayBlockingQueue<>(batch()*20);
-        int testBatches = 20;
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicReference<List<Pair<String,Collection<String>>>> dataBatch = new AtomicReference<>(Collections.synchronizedList(new ArrayList<>()));
         Function<SearchHit,Item> transformer = hit -> {
             String asset = hit.getId();
             synchronized (dataBatch) {
                 int i = cnt.getAndIncrement();
-                if(testDataSets.size()>=testBatches&&testAssets.contains(asset)) {
-                    return null; // THIS IS A TEST ASSET!
-                }
+                System.out.println("batch: "+i);
                 dataBatch.get().add(new Pair<>(asset, collectWordsFrom(hit)));
                 if(i>=batch()-1) {
+                    System.out.println("Completed batch!!!");
                     cnt.set(0);
                     queue.offer(dataBatch.get());
                     dataBatch.set(Collections.synchronizedList(new ArrayList<>()));
@@ -239,7 +237,7 @@ public class WordToCPCIterator implements DataSetIterator {
             @Override
             public boolean hasNext() {
                 try {
-                    next = queue.poll(60, TimeUnit.SECONDS);
+                    next = queue.poll(120, TimeUnit.SECONDS);
                     return next!=null;
                 } catch(Exception e) {
                     System.out.println("No more items found.");
