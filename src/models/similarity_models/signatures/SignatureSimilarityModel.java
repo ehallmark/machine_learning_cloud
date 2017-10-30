@@ -149,7 +149,7 @@ public class SignatureSimilarityModel implements Serializable  {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         CPCDataSetIterator trainIter = getIterator(trainAssets, cpcToIdxMap);
         final int numInputs = trainIter.inputColumns();
-        final int printIterations = 50;
+        final int printIterations = 250;
 
         if(net==null) {
             //Neural net configuration
@@ -161,7 +161,7 @@ public class SignatureSimilarityModel implements Serializable  {
                     hiddenLayerSize
             };
             int rngSeed = 69;
-            Activation activation = Activation.TANH;
+            Activation activation = Activation.LEAKYRELU;
             Nd4j.getRandom().setSeed(rngSeed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)

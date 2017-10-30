@@ -78,7 +78,7 @@ public class WordToCPCNetwork {
 
         Nd4j.getRandom().setSeed(seed);
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .activation(Activation.TANH)
+                .activation(Activation.LEAKYRELU)
                 .updater(Updater.RMSPROP)
                 .rmsDecay(0.95)
                 .seed(seed)
