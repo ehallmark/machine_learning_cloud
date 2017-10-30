@@ -73,7 +73,7 @@ public class WordToCPCNetwork {
 
         // get vocab
         final int vocabSize = iterator.getWordToIdxMap().size();
-        final int hiddenLayerSize = 1024;
+        final int hiddenLayerSize = 512;
         final int outputSize = SignatureSimilarityModel.VECTOR_SIZE;
 
         Nd4j.getRandom().setSeed(seed);
@@ -83,7 +83,7 @@ public class WordToCPCNetwork {
                 .rmsDecay(0.95)
                 .seed(seed)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .learningRate(0.025)
+                .learningRate(0.01)
                 .miniBatch(true)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
@@ -102,7 +102,7 @@ public class WordToCPCNetwork {
                         .build()
                 ).layer(3, new OutputLayer.Builder()
                         .lossFunction(LossFunctions.LossFunction.MSE)
-                        .activation(binarize ? Activation.SIGMOID : Activation.TANH)
+                        .activation(binarize ? Activation.SIGMOID : Activation.IDENTITY)
                         .nIn(hiddenLayerSize)
                         .nOut(outputSize)
                         .build()
