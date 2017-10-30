@@ -133,7 +133,7 @@ public class SignatureSimilarityModel implements Serializable  {
                 trainAssets.add(asset);
             }
         });
-        smallTestSet.addAll(testAssets.subList(0,10000));
+        smallTestSet.addAll(testAssets.subList(0,20000));
         System.out.println("Finished splitting test and train.");
         System.out.println("Num training: "+trainAssets.size());
         System.out.println("Num test: "+testAssets.size());
@@ -154,9 +154,8 @@ public class SignatureSimilarityModel implements Serializable  {
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
-                    512,
-                    256,
-                    128
+                    850,
+                    850
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
