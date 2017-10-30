@@ -49,7 +49,7 @@ public class WordToCPCNetwork {
         final boolean rerunVocab = false;
         final int printIterations = 50;
         final int nEpochs = 5;
-        final boolean binarize = true;
+        final boolean binarize = false;
 
         WordToCPCIterator iterator = new WordToCPCIterator(batchSize, vocabSampling, seed, minWordCount, binarize);
 
