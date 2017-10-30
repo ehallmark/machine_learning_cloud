@@ -6,6 +6,7 @@ import cpc_normalization.CPCHierarchy;
 import lombok.Getter;
 import lombok.Setter;
 import models.dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
+import models.similarity_models.signatures.scorers.DefaultScoreListener;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
@@ -39,6 +40,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -64,11 +66,11 @@ public class SignatureSimilarityModel implements Serializable  {
     private int batchSize;
     private int nEpochs;
     private Map<String,Integer> cpcToIdxMap;
-    private boolean isSaved;
+    private transient AtomicBoolean isSaved;
     private SignatureSimilarityModel(CPCHierarchy hierarchy, int batchSize, int nEpochs) {
         this.batchSize=batchSize;
         this.hierarchy=hierarchy;
-        this.isSaved=false;
+        this.isSaved=new AtomicBoolean(false);
         this.nEpochs=nEpochs;
     }
 
@@ -187,85 +189,21 @@ public class SignatureSimilarityModel implements Serializable  {
 
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
-        // train
         int printIterations = 500;
-        List<Double> movingAverage = new ArrayList<>();
-        final int averagePeriod = 10;
-        net.setListeners(new IterationListener() {
-            boolean invoked = false;
-            Double previousAverageError;
-            double averageError;
-            int iterationCount = 0;
-            Double smallestAverage;
-            Integer smallestAverageEpoch;
-            Double startingAverageError;
-            @Override
-            public boolean invoked() {
-                return invoked;
+        Function<Void,Double> testFunction = (v) -> {
+            return test(getIterator(smallTestSet,cpcToIdxMap),vae);
+        };
+        Function<Void,Void> saveFunction = (v) -> {
+            try {
+                save();
+            } catch(Exception e) {
+                e.printStackTrace();
             }
+            return null;
+        };
 
-            @Override
-            public void invoke() {
-                invoked = true;
-            }
-            @Override
-            public void iterationDone(Model model, int iteration) {
-                if(iterationCount % (printIterations/10) == (printIterations/10)-1) {
-                    System.out.print("-");
-                }
-                iterationCount++;
-                if(iterationCount%10000==9999&&!isSaved()) {
-                    try {
-                        save();
-                        isSaved=false;
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (iterationCount % printIterations == printIterations-1) {
-                    System.out.print("Testing...");
-                    double error = test(getIterator(smallTestSet,cpcToIdxMap),vae);
-                    System.out.println(" Error: "+error);
-                    movingAverage.add(error);
-                    if(movingAverage.size()==averagePeriod) {
-                        averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();
-                        if(startingAverageError==null) {
-                            startingAverageError = averageError;
-                        }
-                        if(smallestAverage==null||smallestAverage>averageError) {
-                            smallestAverage = averageError;
-                            smallestAverageEpoch=iterationCount;
-                        }
-                        System.out.println("Sampling Test Error (Iteration "+iterationCount+"): "+error);
-                        System.out.println("Original Average Error: " + startingAverageError);
-                        System.out.println("Smallest Average Error (Iteration "+smallestAverageEpoch+"): " + smallestAverage);
-                        System.out.println("Current Average Error: " + averageError);
-                        while(movingAverage.size()>averagePeriod/2) {
-                            movingAverage.remove(0);
-                        }
-                    }
-                }
-                if(previousAverageError!=null&&smallestAverage!=null) {
-                    // check conditions for saving model
-                    if(averageError>previousAverageError && previousAverageError.equals(smallestAverage)) {
-                        System.out.println("Saving model...");
-                        try {
-                            save();
-                        } catch(Exception e) {
-                            System.out.println("Error while saving: "+e.getMessage());
-                            e.printStackTrace();
-                        }
-                        // check stopping conditions
-                        if (iterationCount * batchSize > 100000 && averageError > smallestAverage * 1.2) {
-                            stoppingCondition.set(true);
-                            System.out.println("Stopping condition met!!!");
-                            throw new StoppingConditionMetException();
-                        }
-                    }
-                }
-                previousAverageError = averageError;
-            }
-        });
+        IterationListener listener = new DefaultScoreListener(printIterations, testFunction, saveFunction, isSaved, stoppingCondition);
+        net.setListeners(listener);
 
 
         for (int i = 0; i < nEpochs; i++) {
@@ -286,7 +224,7 @@ public class SignatureSimilarityModel implements Serializable  {
                 try {
                     save();
                     // allow more saves after this
-                    isSaved=false;
+                    isSaved.set(false);
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
@@ -322,7 +260,7 @@ public class SignatureSimilarityModel implements Serializable  {
 
     public synchronized void save() throws IOException {
         if(net!=null) {
-            isSaved=true;
+            isSaved.set(true);
             saveNetwork(true);
             Database.trySaveObject(this, getInstanceFile(networkFile,MAX_CPC_DEPTH));
         }
@@ -333,7 +271,7 @@ public class SignatureSimilarityModel implements Serializable  {
     }
 
     public synchronized boolean isSaved() {
-        return isSaved;
+        return isSaved.get();
     }
 
     private static File getModelFile(File file, int cpcDepth) {
@@ -355,6 +293,7 @@ public class SignatureSimilarityModel implements Serializable  {
         }
         SignatureSimilarityModel instance = (SignatureSimilarityModel)Database.tryLoadObject(instanceFile);
         instance.net=ModelSerializer.restoreMultiLayerNetwork(modelFile,loadUpdater);
+        instance.isSaved= new AtomicBoolean(true);
         CPCHierarchy hierarchy = new CPCHierarchy();
         hierarchy.loadGraph();
         instance.hierarchy = hierarchy;

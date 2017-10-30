@@ -9,8 +9,10 @@ import edu.stanford.nlp.util.CoreMap;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import lombok.Getter;
+import lombok.Setter;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.stages.Stage;
+import org.deeplearning4j.berkeley.Pair;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
@@ -31,6 +33,8 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,22 +50,57 @@ import java.util.stream.Stream;
  */
 public class WordToCPCIterator implements DataSetIterator {
     private int batchSize;
+    @Getter @Setter
     private Map<String,Integer> wordToIdxMap;
+    private Map<String,AtomicInteger> wordToDocCountMap;
     private int numInputs;
+    @Setter
     private int limit;
     private int seed;
     private StanfordCoreNLP pipeline;
     @Getter
     private Iterator<DataSet> iterator;
-    public WordToCPCIterator(int batchSize, Map<String,Integer> wordToIdxMap, int limit, int seed) {
+    private RecursiveAction task;
+    private int minWordCount;
+    private CPCSimilarityVectorizer cpcVectorizer;
+    private List<DataSet> testDataSets = Collections.synchronizedList(new ArrayList<>());
+    private Set<String> testAssets = Collections.synchronizedSet(new HashSet<>());
+    public WordToCPCIterator(int batchSize, int limit, int seed, int minWordCount) {
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         pipeline = new StanfordCoreNLP(props);
         this.batchSize=batchSize;
         this.limit=limit;
+        this.minWordCount=minWordCount;
         this.seed=seed;
+        cpcVectorizer = new CPCSimilarityVectorizer();
+        reset();
+    }
+
+    public Iterator<DataSet> getTestIterator() {
+        return testDataSets.iterator();
+    };
+
+    public void buildVocabMap() {
+        wordToDocCountMap = Collections.synchronizedMap(new HashMap<>());
+        Iterator<List<Pair<String,Collection<String>>>> iterator = getWordsIterator();
+        while(iterator.hasNext()) {
+            iterator.next().parallelStream().forEach(pair->{
+                pair.getSecond().forEach(word->{
+                    synchronized (wordToDocCountMap) {
+                        wordToDocCountMap.putIfAbsent(word, new AtomicInteger(0));
+                    }
+                    wordToDocCountMap.get(word).getAndIncrement();
+                });
+            });
+        }
+        System.out.println("Vocab size before: "+wordToDocCountMap.size());
+        AtomicInteger idx = new AtomicInteger(0);
+        wordToIdxMap = Collections.synchronizedMap(wordToDocCountMap.entrySet().parallelStream().filter(e->{
+            return e.getValue().get()>=minWordCount;
+        }).collect(Collectors.toMap(e->e.getKey(),e->idx.getAndIncrement())));
+        System.out.println("Vocab size after: "+wordToIdxMap.size());
         this.numInputs=wordToIdxMap.size();
-        this.wordToIdxMap=wordToIdxMap;
         reset();
     }
 
@@ -92,7 +131,30 @@ public class WordToCPCIterator implements DataSetIterator {
         return iterator.next();
     }
 
-    private Iterator<DataSet> getWordVectorStream() {
+    private Iterator<DataSet> getWordVectorIterator() {
+        Iterator<List<Pair<String,Collection<String>>>> wordsIterator = getWordsIterator();
+        return new Iterator<DataSet>() {
+            @Override
+            public boolean hasNext() {
+                return wordsIterator.hasNext();
+            }
+
+            @Override
+            public DataSet next() {
+                List<Pair<String,Collection<String>>> pairs = wordsIterator.next();
+                return dataSetFromPair(pairs);
+            }
+        };
+    }
+
+    private DataSet dataSetFromPair(List<Pair<String,Collection<String>>> pairs) {
+        pairs = pairs.stream().filter(p->cpcVectorizer.getAssetToIdxMap().containsKey(p.getFirst())).collect(Collectors.toList());
+        INDArray input = createVector(pairs.stream().map(p->p.getSecond()));
+        INDArray output = Nd4j.vstack(pairs.stream().map(p->cpcVectorizer.vectorFor(p.getFirst())).collect(Collectors.toList()));
+        return new DataSet(input,output);
+    }
+
+    public Iterator<List<Pair<String,Collection<String>>>> getWordsIterator() {
         QueryBuilder query;
         if(limit>0) {
             query = QueryBuilders.boolQuery()
@@ -113,41 +175,55 @@ public class WordToCPCIterator implements DataSetIterator {
             request = request.addSort(SortBuilders.scoreSort());
         }
 
-        ArrayBlockingQueue<DataSet> queue = new ArrayBlockingQueue<>(batch()*20);
+        ArrayBlockingQueue<List<Pair<String,Collection<String>>>> queue = new ArrayBlockingQueue<>(batch()*20);
+        int testBatches = 20;
         AtomicInteger cnt = new AtomicInteger(0);
-        AtomicReference<INDArray> inputBatch = new AtomicReference<>(Nd4j.create(batch(),inputColumns()));
-        AtomicReference<INDArray> outputBatch = new AtomicReference<>(Nd4j.create(batch(),totalOutcomes()));
-        CPCSimilarityVectorizer cpcVectorizer = new CPCSimilarityVectorizer();
+        AtomicReference<List<Pair<String,Collection<String>>>> dataBatch = new AtomicReference<>(Collections.synchronizedList(new ArrayList<>()));
         Function<SearchHit,Item> transformer = hit -> {
             String asset = hit.getId();
-            INDArray cpcEncoding = cpcVectorizer.vectorFor(asset);
-            if(cpcEncoding!=null) {
-                INDArray vec = createVector(Stream.of(collectWordsFrom(hit)));
+            synchronized (dataBatch) {
                 int i = cnt.getAndIncrement();
-                synchronized (inputBatch) {
-                    inputBatch.get().putRow(i, vec);
-                    outputBatch.get().putRow(i, cpcEncoding);
-                    if (i >= batch()-1) {
-                        // finished
-                        if(!queue.offer(new DataSet(inputBatch.get(),outputBatch.get()))); {
-                            System.out.println("Queue is full...");
-                            try {
-                                TimeUnit.MILLISECONDS.sleep(500);
-                            } catch(Exception e) {
-                                
-                            }
-                        }
-                        inputBatch.set(Nd4j.create(batch(),inputColumns()));
-                        outputBatch.set(Nd4j.create(batch(),totalOutcomes()));
+                if(testDataSets.size()>=testBatches&&testAssets.contains(asset)) {
+                    return null; // THIS IS A TEST ASSET!
+                }
+                dataBatch.get().add(new Pair<>(asset, collectWordsFrom(hit)));
+                if(i>=batch()-1) {
+                    cnt.set(0);
+                    if(testDataSets.size()<testBatches) {
+                        Collection<String> assets = dataBatch.get().stream().map(e->e.getFirst()).collect(Collectors.toList());
+                        testAssets.addAll(assets);
+                        testDataSets.add(dataSetFromPair(dataBatch.get()));
+                    } else {
+                        queue.offer(dataBatch.get());
                     }
+                    dataBatch.set(Collections.synchronizedList(new ArrayList<>()));
                 }
             }
             return null;
         };
-        DataSearcher.iterateOverSearchResults(request.get(),transformer,limit,false);
+        SearchResponse response = request.get();
+        task = new RecursiveAction() {
+            @Override
+            protected void compute() {
+                DataSearcher.iterateOverSearchResults(response,transformer,limit,false);
+            }
+        };
+        task.fork();
 
-        return new Iterator<DataSet>() {
-            private DataSet next;
+        System.out.println("Collecting test assets...");
+        while(testDataSets.size()<testBatches) {
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch(Exception e) {
+
+            }
+            System.out.print("-");
+        }
+        System.out.println();
+        System.out.print("Finished collecting test assets.");
+
+        return new Iterator<List<Pair<String,Collection<String>>>>() {
+            private List<Pair<String,Collection<String>>> next;
             @Override
             public boolean hasNext() {
                 try {
@@ -160,7 +236,7 @@ public class WordToCPCIterator implements DataSetIterator {
             }
 
             @Override
-            public DataSet next() {
+            public List<Pair<String,Collection<String>>> next() {
                 return next;
             }
         };
@@ -196,7 +272,7 @@ public class WordToCPCIterator implements DataSetIterator {
 
                 try {
                     String stem = new Stemmer().stem(lemma);
-                    String pos = null;
+                    String pos;
                     if (stem.length() > 3 && !Constants.STOP_WORD_SET.contains(stem)) {
                         // this is the POS tag of the token
                         pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
@@ -243,7 +319,19 @@ public class WordToCPCIterator implements DataSetIterator {
 
     @Override
     public void reset() {
-        iterator = getWordVectorStream();
+        if(task!=null) {
+            try {
+                if(!(task.isDone()||task.isCancelled())) {
+                    task.cancel(true);
+                }
+            } catch(Exception e) {
+                System.out.println("Error interrupting ES search during reset...");
+                e.printStackTrace();
+            } finally {
+                task = null;
+            }
+        }
+        iterator = getWordVectorIterator();
     }
 
     @Override
