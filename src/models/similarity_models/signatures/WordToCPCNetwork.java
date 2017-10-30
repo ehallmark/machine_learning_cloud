@@ -83,7 +83,7 @@ public class WordToCPCNetwork {
                 .rmsDecay(0.95)
                 .seed(seed)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .learningRate(0.1)
+                .learningRate(0.025)
                 .miniBatch(true)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
