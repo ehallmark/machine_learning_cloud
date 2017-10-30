@@ -255,8 +255,11 @@ public class WordToCPCIterator implements DataSetIterator {
         task = new RecursiveAction() {
             @Override
             protected void compute() {
-                DataSearcher.iterateOverSearchResults(response,transformer,limit,false);
-                finishedIteratingElasticSearch.set(true);
+                try {
+                    DataSearcher.iterateOverSearchResults(response, transformer, limit, false);
+                } finally {
+                    finishedIteratingElasticSearch.set(true);
+                }
                 System.out.println("Finished iterating ES.");
             }
         };
