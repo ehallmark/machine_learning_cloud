@@ -352,9 +352,9 @@ public class WordToCPCIterator implements DataSetIterator {
         return true;
     }
 
-    @Override
+    @Override //TODO change back to true
     public boolean asyncSupported() {
-        return true;
+        return false;
     }
 
     @Override
