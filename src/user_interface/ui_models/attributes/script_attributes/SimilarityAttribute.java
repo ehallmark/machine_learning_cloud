@@ -23,7 +23,7 @@ import static user_interface.server.SimilarPatentServer.*;
  * Created by ehallmark on 6/15/17.
  */
 public class SimilarityAttribute extends AbstractScriptAttribute implements DependentAttribute<AbstractScriptAttribute> {
-    public static final int vectorSize = 30; // test
+    public static final int vectorSize = 32; // test
     public static final String DEFAULT_SIMILARITY_SCRIPT = "" +
             "if(doc['vector_obj.0'].value == null || params.avg_vector == null) { return 0f; }" +
             "float ab = 0f;" +
@@ -31,11 +31,11 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
             "for(int i = 0; i < length; i++) {" +
             "    ab+=params.avg_vector[i] * (float) doc['vector_obj.'+i].value;" +
             "}" +
-            "return ((ab * 50.0)+50.0);";
+            "return (ab);";
 
     public static String EXPRESSION_SIMILARITY_SCRIPT;
     static {
-        StringJoiner sj = new StringJoiner("+","doc['vector_obj.0'].empty ? _score : ((((",") * 50.0) + 50.0) * _score)");
+        StringJoiner sj = new StringJoiner("+","doc['vector_obj.0'].empty ? _score : ((",") * _score)");
         for(int i = 0; i < vectorSize; i++) {
             sj.add("(doc['vector_obj."+i+"'].value*avg_vector"+i+")");
         }
