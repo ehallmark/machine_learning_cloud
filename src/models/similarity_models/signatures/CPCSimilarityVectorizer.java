@@ -60,7 +60,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
     public static void main(String[] args) throws Exception {
         // test restore model
         System.out.println("Restoring model test");
-        CPCAutoEncoderSimilarityModel clone = CPCAutoEncoderSimilarityModel.restoreAndInitModel(CPCAutoEncoderSimilarityModel.MAX_CPC_DEPTH,false);
+        SignatureSimilarityModel clone = SignatureSimilarityModel.restoreAndInitModel(SignatureSimilarityModel.MAX_CPC_DEPTH,false);
         clone.setBatchSize(5000);
         List<String> allAssets = new ArrayList<>(Database.getAllPatentsAndApplications());
 
@@ -96,7 +96,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         });
         System.out.println("Total vectors: "+vectorMap.size());
         Map<String,Integer> assetToIdxMap = Collections.synchronizedMap(new HashMap<>(vectorMap.size()));
-        INDArray matrix = Nd4j.create(vectorMap.size(), CPCAutoEncoderSimilarityModel.VECTOR_SIZE);
+        INDArray matrix = Nd4j.create(vectorMap.size(), SignatureSimilarityModel.VECTOR_SIZE);
         AtomicInteger idx = new AtomicInteger(0);
         vectorMap.entrySet().parallelStream().forEach(e->{
             int i = idx.getAndIncrement();

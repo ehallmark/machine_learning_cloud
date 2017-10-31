@@ -21,7 +21,6 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
 import tools.ClassCodeHandler;
@@ -39,7 +38,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 10/26/17.
  */
-public class CPCAutoEncoderSimilarityModel implements Serializable  {
+public class SignatureSimilarityModel implements Serializable  {
     private static final long serialVersionUID = 1L;
     public static final int VECTOR_SIZE = 32;
     public static final int MAX_CPC_DEPTH = 4;
@@ -58,7 +57,7 @@ public class CPCAutoEncoderSimilarityModel implements Serializable  {
     private int nEpochs;
     private Map<String,Integer> cpcToIdxMap;
     private transient AtomicBoolean isSaved;
-    private CPCAutoEncoderSimilarityModel(CPCHierarchy hierarchy, int batchSize, int nEpochs) {
+    private SignatureSimilarityModel(CPCHierarchy hierarchy, int batchSize, int nEpochs) {
         this.batchSize=batchSize;
         this.hierarchy=hierarchy;
         this.isSaved=new AtomicBoolean(false);
@@ -273,7 +272,7 @@ public class CPCAutoEncoderSimilarityModel implements Serializable  {
         return new File(file.getAbsoluteFile()+"-instance-cpcdepth"+cpcDepth);
     }
 
-    public static CPCAutoEncoderSimilarityModel restoreAndInitModel(int cpcDepth, boolean loadUpdater) throws IOException{
+    public static SignatureSimilarityModel restoreAndInitModel(int cpcDepth, boolean loadUpdater) throws IOException{
         File modelFile = getModelFile(networkFile,cpcDepth);
         File instanceFile = getInstanceFile(networkFile,cpcDepth);
         if(!modelFile.exists()) {
@@ -282,7 +281,7 @@ public class CPCAutoEncoderSimilarityModel implements Serializable  {
         if(!instanceFile.exists()) {
             throw new RuntimeException("Instance file not found: "+instanceFile.getAbsolutePath());
         }
-        CPCAutoEncoderSimilarityModel instance = (CPCAutoEncoderSimilarityModel)Database.tryLoadObject(instanceFile);
+        SignatureSimilarityModel instance = (SignatureSimilarityModel)Database.tryLoadObject(instanceFile);
         instance.net=ModelSerializer.restoreMultiLayerNetwork(modelFile,loadUpdater);
         instance.isSaved= new AtomicBoolean(true);
         CPCHierarchy hierarchy = new CPCHierarchy();
@@ -300,12 +299,12 @@ public class CPCAutoEncoderSimilarityModel implements Serializable  {
 
         CPCHierarchy cpcHierarchy = new CPCHierarchy();
         cpcHierarchy.loadGraph();
-        CPCAutoEncoderSimilarityModel model;
+        SignatureSimilarityModel model;
         if(loadModel) {
             System.out.println("Warning: Using previous model.");
             model = restoreAndInitModel(MAX_CPC_DEPTH,true);
         } else {
-            model = new CPCAutoEncoderSimilarityModel(cpcHierarchy,batchSize,nEpochs);
+            model = new SignatureSimilarityModel(cpcHierarchy,batchSize,nEpochs);
             model.init();
         }
         model.train();
@@ -315,7 +314,7 @@ public class CPCAutoEncoderSimilarityModel implements Serializable  {
 
         // test restore model
         System.out.println("Restoring model test");
-        CPCAutoEncoderSimilarityModel clone = restoreAndInitModel(MAX_CPC_DEPTH,true);
+        SignatureSimilarityModel clone = restoreAndInitModel(MAX_CPC_DEPTH,true);
         List<String> assetSample = clone.smallTestSet;
         System.out.println("Testing encodings");
         Map<String,INDArray> vectorMap = clone.encode(assetSample);

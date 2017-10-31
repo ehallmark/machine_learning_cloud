@@ -1,32 +1,25 @@
 package models.similarity_models.signatures;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import models.similarity_models.signatures.scorers.DefaultScoreListener;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
-import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
-import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -73,7 +66,7 @@ public class WordToCPCNetwork {
         // get vocab
         final int vocabSize = iterator.getWordToIdxMap().size();
         final int hiddenLayerSize = 800;
-        final int outputSize = CPCAutoEncoderSimilarityModel.VECTOR_SIZE;
+        final int outputSize = SignatureSimilarityModel.VECTOR_SIZE;
 
         Nd4j.getRandom().setSeed(seed);
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
