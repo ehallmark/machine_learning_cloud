@@ -6,8 +6,10 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.layers.Convolution1DLayer;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
@@ -83,7 +85,7 @@ public class WordToCPCNetwork {
                 .rmsDecay(0.95)
                 .seed(seed)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .learningRate(0.025)
+                .learningRate(0.01)
                 .miniBatch(true)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
@@ -92,13 +94,13 @@ public class WordToCPCNetwork {
                         .nIn(vocabSize)
                         .nOut(hiddenLayerSize)
                         .build()
-                ).layer(1, new DenseLayer.Builder()
+                ).layer(1, new Convolution1DLayer.Builder()
                         .nIn(hiddenLayerSize)
                         .nOut(hiddenLayerSize)
                         .build()
-                ).layer(2, new DenseLayer.Builder()
-                        .nIn(hiddenLayerSize)
-                        .nOut(hiddenLayerSize)
+                ).layer(2, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
+                       // .nIn(hiddenLayerSize)
+                     //   .nOut(hiddenLayerSize)
                         .build()
                 ).layer(3, new OutputLayer.Builder()
                         .lossFunction(LossFunctions.LossFunction.MSE)

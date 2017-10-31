@@ -154,18 +154,15 @@ public class SignatureSimilarityModel implements Serializable  {
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
-                    512,
-                    256,
-                    256,
-                    128,
-                    128
+                    800,
+                    800
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
                 hiddenLayerDecoder[i] = hiddenLayerEncoder[hiddenLayerEncoder.length-1-i];
             }
             int rngSeed = 69;
-            Activation activation = Activation.LEAKYRELU;
+            Activation activation = Activation.TANH;
             Nd4j.getRandom().setSeed(rngSeed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)
