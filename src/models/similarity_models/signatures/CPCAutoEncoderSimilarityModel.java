@@ -77,6 +77,12 @@ public class CPCAutoEncoderSimilarityModel implements Serializable  {
             DataSet ds = iterator.next();
             INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
             INDArray probabilityVectors = NDArrayHelper.createProbabilityVectorFromGaussian(encoding);
+            if(probabilityVectors.max(1).gt(1).sumNumber().doubleValue() > 0d) {
+                throw new RuntimeException("ERROR WITH PROBABILITY VECTOR (> 1): "+probabilityVectors.toString());
+            }
+            if(probabilityVectors.min(1).lt(0).sumNumber().doubleValue() > 0d) {
+                throw new RuntimeException("ERROR WITH PROBABILITY VECTOR (< 0): "+probabilityVectors.toString());
+            }
             for(int i = 0; i < probabilityVectors.rows() && idx.get()<assets.size(); i++) {
                 INDArray vector = probabilityVectors.getRow(i);
                 assetToEncodingMap.put(assets.get(idx.getAndIncrement()), vector);
