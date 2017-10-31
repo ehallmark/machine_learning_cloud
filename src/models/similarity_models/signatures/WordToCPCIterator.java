@@ -197,22 +197,25 @@ public class WordToCPCIterator implements DataSetIterator {
         BoolQueryBuilder query = QueryBuilders.boolQuery()
                     .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(seed)));
 
-        BoolQueryBuilder innerFilter =  QueryBuilders.boolQuery().must(
-                QueryBuilders.boolQuery() // avoid dup text
-                        .should(QueryBuilders.termQuery(Constants.GRANTED,false))
-                        .should(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()))
-                        .minimumShouldMatch(1)
-        );
-        if(testAssets!=null&&testAssets.size()>0) {
-            System.out.println("Num test assets: "+testAssets.size());
-            QueryBuilder idQuery = QueryBuilders.termsQuery(Constants.NAME,testAssets);
-            if (test) {
-                innerFilter = innerFilter.must(idQuery);
-            } else {
-                innerFilter = innerFilter.mustNot(idQuery);
+
+        if(limit>0) {
+            BoolQueryBuilder innerFilter =  QueryBuilders.boolQuery().must(
+                    QueryBuilders.boolQuery() // avoid dup text
+                            .should(QueryBuilders.termQuery(Constants.GRANTED,false))
+                            .should(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()))
+                            .minimumShouldMatch(1)
+            );
+            if (testAssets != null && testAssets.size() > 0) {
+                System.out.println("Num test assets: " + testAssets.size());
+                QueryBuilder idQuery = QueryBuilders.termsQuery(Constants.NAME, testAssets);
+                if (test) {
+                    innerFilter = innerFilter.must(idQuery);
+                } else {
+                    innerFilter = innerFilter.mustNot(idQuery);
+                }
             }
+            query = query.filter(innerFilter);
         }
-        query = query.filter(innerFilter);
 
         SearchRequestBuilder request = DataSearcher.getClient().prepareSearch(DataIngester.INDEX_NAME)
                 .setTypes(DataIngester.TYPE_NAME)

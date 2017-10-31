@@ -41,7 +41,7 @@ public class WordToCPCNetwork {
     }
     public static void main(String[] args) throws Exception {
         final int batchSize = 32;
-        final int sampling = -1;
+        final int sampling = 5000000;
         final int vocabSampling = 1000000;
         final int seed = 69;
         final int minWordCount = 10;
