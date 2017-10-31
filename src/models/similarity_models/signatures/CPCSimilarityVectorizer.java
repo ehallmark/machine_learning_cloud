@@ -47,7 +47,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
     }
 
     private INDArray binarize(INDArray in) {
-        return in.gte(0.5)
+        return in.gte(0.5);
     }
 
     public synchronized static Pair<Map<String,Integer>,INDArray> getLookupTable() {
