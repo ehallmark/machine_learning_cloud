@@ -1,20 +1,6 @@
 #!/usr/bin/env bash
-#ufw allow 22
-cd /home/ehallmark1122/machine_learning_cloud
-sudo -u ehallmark1122 bash -c '    sudo systemctl start mongodb'
-sudo -u ehallmark1122 bash -c '    echo "Changed Dirs"'
-sudo -u ehallmark1122 bash -c '    git pull origin master'
-sudo -u ehallmark1122 bash -c '    echo "Pulled from git"'
-sudo -u ehallmark1122 bash -c '    sudo mvn clean install'
-sudo -u ehallmark1122 bash -c '    echo "Mvn clean installed"'
-sudo -u ehallmark1122 bash -c '    gcsfuse machine_learning_cloud_data data'
-sudo -u ehallmark1122 bash -c '    echo "Finished gcsfuse"'
-cd /home/ehallmark1122/machine_learning_cloud/scripts/production
-sudo -u ehallmark1122 bash -c '    echo "in elasticsearch"'
-sudo -u ehallmark1122 bash -c '    sudo docker-compose up -d'
-sudo -u ehallmark1122 bash -c '    echo "Docker compose up"'
-cd /home/ehallmark1122/machine_learning_cloud
-sleep 90s
+source /home/ehallmark1122/machine_learning_cloud/scripts/production/helper/init.sh
+source /home/ehallmark1122/machine_learning_cloud/scripts/production/helper/setup-elasticsearch.sh
 curl -XPUT 'localhost:9200/ai_db/_settings?pretty' -H 'Content-Type: application/json' -d'
 {
     "index" : {

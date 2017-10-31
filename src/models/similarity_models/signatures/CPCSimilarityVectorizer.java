@@ -107,5 +107,5 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         Database.trySaveObject(data,vectorMapFile);
         System.out.println("Finished saving.");
     }
-    
+
 }

@@ -12,7 +12,8 @@ public class UpdateClassificationModels {
         updateLatest(false);
     }
 
+    // TODO
     public static void updateLatest(boolean newAssetsOnly) {
-        KeywordModelRunner.runModel(newAssetsOnly);
+       // KeywordModelRunner.runModel(newAssetsOnly);
     }
 }
