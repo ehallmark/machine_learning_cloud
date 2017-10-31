@@ -194,13 +194,9 @@ public class WordToCPCIterator implements DataSetIterator {
 
     public Iterator<List<Pair<String,Collection<String>>>> getWordsIterator(boolean test) {
         System.out.println("STARTING NEW ITERATOR: testing="+test);
-        BoolQueryBuilder query;
-        if(limit>0) {
-            query = QueryBuilders.boolQuery()
+        BoolQueryBuilder query = QueryBuilders.boolQuery()
                     .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(seed)));
-        } else {
-            query = QueryBuilders.boolQuery();
-        }
+
         BoolQueryBuilder innerFilter =  QueryBuilders.boolQuery().must(
                 QueryBuilders.boolQuery() // avoid dup text
                         .should(QueryBuilders.termQuery(Constants.GRANTED,false))
@@ -275,7 +271,7 @@ public class WordToCPCIterator implements DataSetIterator {
             @Override
             public boolean hasNext() {
                 next = null;
-                if(queue.size()>0 || !finishedIteratingElasticSearch.get()) {
+                while(queue.size()>0 || !finishedIteratingElasticSearch.get()) {
                     try {
                         next = queue.poll(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
                     } catch (Exception e) {

@@ -6,10 +6,8 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
-import org.deeplearning4j.nn.conf.layers.Convolution1DLayer;
-import org.deeplearning4j.nn.conf.layers.DenseLayer;
-import org.deeplearning4j.nn.conf.layers.OutputLayer;
-import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
+import org.deeplearning4j.nn.conf.inputs.InputType;
+import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
@@ -30,7 +28,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * Created by Evan on 10/29/2017.
@@ -75,12 +72,12 @@ public class WordToCPCNetwork {
 
         // get vocab
         final int vocabSize = iterator.getWordToIdxMap().size();
-        final int hiddenLayerSize = 512;
-        final int outputSize = SignatureSimilarityModel.VECTOR_SIZE;
+        final int hiddenLayerSize = 800;
+        final int outputSize = CPCAutoEncoderSimilarityModel.VECTOR_SIZE;
 
         Nd4j.getRandom().setSeed(seed);
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .activation(Activation.LEAKYRELU)
+                .activation(Activation.TANH)
                 .updater(Updater.RMSPROP)
                 .rmsDecay(0.95)
                 .seed(seed)
@@ -89,22 +86,19 @@ public class WordToCPCNetwork {
                 .miniBatch(true)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
+                .dropOut(0.5)
                 .list()
                 .layer(0, new DenseLayer.Builder()
                         .nIn(vocabSize)
                         .nOut(hiddenLayerSize)
                         .build()
-                ).layer(1, new Convolution1DLayer.Builder()
+                ).layer(1, new DenseLayer.Builder()
                         .nIn(hiddenLayerSize)
                         .nOut(hiddenLayerSize)
                         .build()
-                ).layer(2, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
-                       // .nIn(hiddenLayerSize)
-                     //   .nOut(hiddenLayerSize)
-                        .build()
-                ).layer(3, new OutputLayer.Builder()
+                ).layer(2, new OutputLayer.Builder()
                         .lossFunction(LossFunctions.LossFunction.MSE)
-                        .activation(binarize ? Activation.SIGMOID : Activation.TANH)
+                        .activation(binarize ? Activation.SIGMOID : Activation.HARDTANH)
                         .nIn(hiddenLayerSize)
                         .nOut(outputSize)
                         .build()
