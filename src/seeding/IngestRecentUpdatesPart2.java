@@ -3,6 +3,7 @@ package seeding;
 import elasticsearch.DataIngester;
 import elasticsearch.IngestMongoIntoElasticSearch;
 
+import models.UpdateModels;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import models.value_models.UpdateValueModels;
@@ -44,27 +45,9 @@ public class IngestRecentUpdatesPart2 {
 
         // run value models
         try {
-            UpdateValueModels.runModels(newAssets);
+            UpdateModels.runModels(newAssets);
         } catch(Exception e) {
             System.out.println("Error during value models...");
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        // run tech tag (incrementally on new assets)
-        try {
-            KeywordModelRunner.updateLatest();
-        } catch(Exception e) {
-            System.out.println("Error during tech tag models...");
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        // run similarity (inference on new assets)
-        try {
-            SimilarPatentFinder.updateLatest(newAssets);
-        } catch(Exception e) {
-            System.out.println("Error during similarity models...");
             e.printStackTrace();
             System.exit(1);
         }

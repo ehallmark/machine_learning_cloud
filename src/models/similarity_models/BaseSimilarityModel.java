@@ -19,16 +19,16 @@ import java.util.stream.Stream;
  */
 public class BaseSimilarityModel implements AbstractSimilarityModel {
     protected INDArray avgVector;
-    protected Map<String,INDArray> lookupTable;
     protected Map<String,VectorizedItemWrapper> itemMap;
     protected Item[] itemList;
+    protected Vectorizer vectorizer;
 
-    public BaseSimilarityModel(Collection<Item> candidateSet, Map<String,INDArray> lookupTable) {
-        this.lookupTable=lookupTable;
+    public BaseSimilarityModel(Collection<Item> candidateSet, Vectorizer vectorizer) {
+        this.vectorizer=vectorizer;
         // construct lists
         if(candidateSet==null) throw new NullPointerException("candidateSet");
         try {
-            itemMap = candidateSet.parallelStream().map(item->new VectorizedItemWrapper(item,lookupTable.get(item.getName())))
+            itemMap = candidateSet.parallelStream().map(item->new VectorizedItemWrapper(item,vectorizer.vectorFor(item.getName())))
                     .filter(vec->vec.getVec()!=null).collect(Collectors.toMap(e->e.getItem().getName(),e->e));
             itemMap = Collections.synchronizedMap(itemMap);
 

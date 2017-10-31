@@ -28,10 +28,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class UpdateValueModels {
     public static void main(String[] args) throws Exception{
-       runModels(null);
+        updateLatest(null);
     }
 
-    public static void runModels(Collection<String> onlyUpdateAssets) throws Exception {
+    public static void updateLatest(Collection<String> onlyUpdateAssets) throws Exception {
         final boolean debug = false;
         boolean rerunPageRank = true;
         if(rerunPageRank)UpdateGraphicalModels.main(null); // page rank

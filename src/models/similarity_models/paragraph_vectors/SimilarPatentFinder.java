@@ -61,7 +61,7 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
     }
 
     public SimilarPatentFinder(Collection<String> candidateSet) {
-        super(candidateSet.stream().map(str->new Item(str)).collect(Collectors.toList()), getLookupTable());
+        super(candidateSet.stream().map(str->new Item(str)).collect(Collectors.toList()), item->getLookupTable().get(item));
     }
 
     public synchronized static Map<String,INDArray> getLookupTable() {

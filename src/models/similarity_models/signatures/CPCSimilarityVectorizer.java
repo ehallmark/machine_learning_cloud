@@ -1,6 +1,7 @@
 package models.similarity_models.signatures;
 
 import lombok.Getter;
+import models.similarity_models.Vectorizer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
@@ -17,7 +18,7 @@ import java.util.stream.Stream;
 /**
  * Created by Evan on 10/28/2017.
  */
-public class CPCSimilarityVectorizer {
+public class CPCSimilarityVectorizer implements Vectorizer {
     private static final File vectorMapFile = new File(Constants.DATA_FOLDER+"signature_model_vector_map-depth4.jobj");
     private static Pair<Map<String,Integer>,INDArray> data;
 
@@ -111,4 +112,5 @@ public class CPCSimilarityVectorizer {
         Database.trySaveObject(data,vectorMapFile);
         System.out.println("Finished saving.");
     }
+
 }

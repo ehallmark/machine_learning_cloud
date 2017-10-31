@@ -72,7 +72,6 @@ public class Database {
 	public static Map<String,LocalDate> appToPriorityDateMap;
 	public static final File patentToPubDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_pubdate_map_file.jobj");
 	public static File allClassCodesFile = new File(Constants.DATA_FOLDER+"all_class_codes.jobj");
-	public static File technologyMapFile = new File(Constants.DATA_FOLDER+"item_to_technology_map.jobj");
 	public static final File classCodeToClassTitleMapFile = new File(Constants.DATA_FOLDER+"class_code_to_class_title_map.jobj");
 	private static final String patentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=password&tcpKeepAlive=true";
 	private static final String compDBUrl = "jdbc:postgresql://localhost/compdb_production?user=postgres&password=password&tcpKeepAlive=true";
@@ -282,15 +281,6 @@ public class Database {
 		}
 		return patentToPubDateMap;
 	}
-
-
-	public synchronized static Map<String,String> getItemToTechnologyMap() {
-		if(technologyMap==null) {
-			technologyMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(technologyMapFile));
-		}
-		return technologyMap;
-	}
-
 
 	public synchronized static Map<String,LocalDate> getAppToPriorityDateMap() {
 		if(appToPriorityDateMap==null) {

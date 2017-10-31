@@ -20,7 +20,7 @@ public class WIPOSimilarityFinder extends BaseSimilarityModel {
     private static Map<String,INDArray> LOOKUP_TABLE;
     private static Map<String,INDArray> RAW_LOOKUP_TABLE;
     public WIPOSimilarityFinder(Collection<Item> candidateSet) {
-        super(candidateSet,getLookupTable());
+        super(candidateSet,item->getLookupTable().get(item));
     }
 
     public static Map<String,INDArray> getRawLookupTable() {
@@ -30,7 +30,7 @@ public class WIPOSimilarityFinder extends BaseSimilarityModel {
         return RAW_LOOKUP_TABLE;
     }
 
-    public static Map<String,INDArray> getLookupTable() {
+    public synchronized static Map<String,INDArray> getLookupTable() {
         if(LOOKUP_TABLE==null) {
             LOOKUP_TABLE=(Map<String,INDArray>) Database.tryLoadObject(file);
             if(LOOKUP_TABLE==null) LOOKUP_TABLE = getRawLookupTable();

@@ -7,6 +7,8 @@ import elasticsearch.DataIngester;
 import lombok.Getter;
 
 import models.keyphrase_prediction.models.NewestModel;
+import models.similarity_models.DefaultSimilarityModel;
+import models.similarity_models.Vectorizer;
 import org.jetbrains.annotations.NotNull;
 import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -27,7 +29,6 @@ import user_interface.ui_models.engines.*;
 import user_interface.ui_models.excel.ExcelHandler;
 import user_interface.ui_models.templates.*;
 import models.similarity_models.AbstractSimilarityModel;
-import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
 import j2html.tags.Tag;
 
@@ -35,8 +36,6 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
 import seeding.Database;
-import models.classification_models.ClassificationAttr;
-import models.classification_models.TechTaggerNormalizer;
 import user_interface.ui_models.filters.*;
 import user_interface.ui_models.portfolios.items.Item;
 import spark.QueryParamsMap;
@@ -390,7 +389,7 @@ public class SimilarPatentServer {
                 DEFAULT_SIMILARITY_MODEL = new RecursiveTask<AbstractSimilarityModel>() {
                     @Override
                     protected AbstractSimilarityModel compute() {
-                        return new SimilarPatentFinder(Collections.emptyList());
+                        return new DefaultSimilarityModel(Collections.emptyList());
                     }
                 };
             }
@@ -470,7 +469,7 @@ public class SimilarPatentServer {
                 DEFAULT_SIMILARITY_MODEL = new RecursiveTask<AbstractSimilarityModel>() {
                     @Override
                     protected AbstractSimilarityModel compute() {
-                        return new SimilarPatentFinder(Collections.emptyList());
+                        return new DefaultSimilarityModel(Collections.emptyList());
                     }
                 };
             }
@@ -490,14 +489,14 @@ public class SimilarPatentServer {
     }
 
 
-    public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, Map<String,INDArray> lookupTable) {
+    public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, Vectorizer vectorizer) {
         List<String> applications = new AssetToFilingMap().getApplicationDataMap().keySet().stream().collect(Collectors.toList());
         System.out.println("Num applications found: "+applications.size());
-        handleItemsList(applications, attributes, PortfolioList.Type.applications,lookupTable);
+        handleItemsList(applications, attributes, PortfolioList.Type.applications,vectorizer);
         DataIngester.finishCurrentMongoBatch();
         List<String> patents = new AssetToFilingMap().getPatentDataMap().keySet().stream().collect(Collectors.toList());
         System.out.println("Num patents found: "+patents.size());
-        handleItemsList(patents, attributes, PortfolioList.Type.patents,lookupTable);
+        handleItemsList(patents, attributes, PortfolioList.Type.patents,vectorizer);
     }
 
     public static Map<String,Float> vectorToElasticSearchObject(INDArray vector) {
@@ -509,7 +508,7 @@ public class SimilarPatentServer {
         return obj;
     }
 
-    public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, PortfolioList.Type type, Map<String,INDArray> lookupTable) {
+    public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, PortfolioList.Type type, Vectorizer vectorizer) {
         Map<String,String> assetToFiling = type.equals(PortfolioList.Type.patents) ? new AssetToFilingMap().getPatentDataMap() : new AssetToFilingMap().getApplicationDataMap();
         AtomicInteger cnt = new AtomicInteger(0);
         inputs.parallelStream().forEach(label->{
@@ -523,9 +522,12 @@ public class SimilarPatentServer {
                         item.addData(model.getMongoDBName(),obj);
                     }
                 });
-                INDArray vec = lookupTable.get(filing);
+                INDArray vec = vectorizer.vectorFor(filing);
                 if(vec!=null) {
-                    item.addData("vector_obj", vectorToElasticSearchObject(vec));
+                    vec = vectorizer.vectorFor(label); // default to regular asset name
+                    if(vec!=null) {
+                        item.addData("vector_obj", vectorToElasticSearchObject(vec));
+                    }
                 }
                 DataIngester.ingestItem(item,filing);
                 if(debug) System.out.println("Item: "+item.getName());

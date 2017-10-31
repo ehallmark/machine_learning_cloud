@@ -21,6 +21,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
 import tools.ClassCodeHandler;
@@ -75,13 +76,10 @@ public class CPCAutoEncoderSimilarityModel implements Serializable  {
             System.out.println(idx.get());
             DataSet ds = iterator.next();
             INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
-            for(int i = 0; i < encoding.rows() && idx.get()<assets.size(); i++) {
-                INDArray vector = encoding.getRow(i);
-                double norm = vector.norm2Number().doubleValue();
-                if(norm>0) {
-                    vector.divi(norm);
-                    assetToEncodingMap.put(assets.get(idx.getAndIncrement()), vector);
-                }
+            INDArray probabilityVectors = NDArrayHelper.createProbabilityVectorFromGaussian(encoding);
+            for(int i = 0; i < probabilityVectors.rows() && idx.get()<assets.size(); i++) {
+                INDArray vector = probabilityVectors.getRow(i);
+                assetToEncodingMap.put(assets.get(idx.getAndIncrement()), vector);
             }
         }
         return assetToEncodingMap;

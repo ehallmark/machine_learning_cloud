@@ -18,7 +18,7 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
     private static Map<String,INDArray> LOOKUP_TABLE;
     private static Map<String,INDArray> RAW_LOOKUP_TABLE;
     public CPCSimilarityFinder(Collection<Item> candidateSet) {
-        super(candidateSet,getLookupTable());
+        super(candidateSet,item->getLookupTable().get(item));
     }
 
     public static Map<String,INDArray> getRawLookupTable() {

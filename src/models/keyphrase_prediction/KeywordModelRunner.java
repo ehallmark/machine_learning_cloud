@@ -51,12 +51,12 @@ public class KeywordModelRunner {
     public static final boolean debug = false;
 
     public static void main(String[] args) {
-        runModel();
+        runModel(false);
     }
 
-    public static void runModel() {
+    public static void runModel(boolean lastYearOnly) {
         Model model = new TimeDensityModel();
-        boolean alwaysRerun = true;
+        boolean alwaysRerun = ! lastYearOnly;
 
         if(alwaysRerun) {
             File dir = new File(Stage.getBaseDir(),model.getModelName());
@@ -81,7 +81,7 @@ public class KeywordModelRunner {
             System.out.println("Starting year: "+year);
 
             Stage1 stage1 = new Stage1(model,year);
-            stage1.run(alwaysRerun);
+            stage1.run(alwaysRerun||year==maxYear);
             //if(alwaysRerun)stage1.createVisualization();
 
             // time density stage
@@ -92,7 +92,7 @@ public class KeywordModelRunner {
             // stage 2
             System.out.println("Pre-grouping data for stage 2...");
             Stage2 stage2 = new Stage2(stage1.get(), model, year);
-            stage2.run(alwaysRerun);
+            stage2.run(alwaysRerun||year==maxYear);
             //if(alwaysRerun)stage2.createVisualization();
             multiStems = stage2.get();
 
@@ -106,7 +106,7 @@ public class KeywordModelRunner {
             // stage 3
             System.out.println("Pre-grouping data for stage 3...");
             Stage3 stage3 = new Stage3(multiStems, model, year);
-            stage3.run(alwaysRerun);
+            stage3.run(alwaysRerun||year==maxYear);
             //if(alwaysRerun) stage3.createVisualization();
             multiStems = stage3.get();
 
@@ -114,7 +114,7 @@ public class KeywordModelRunner {
             System.out.println("Pre-grouping data for cpc density stage...");
             System.out.println("Num multistems before CPC Density: "+multiStems.size());
             CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model, year, multiStemCPCMap, hierarchy);
-            CPCDensityStage.run(alwaysRerun);
+            CPCDensityStage.run(alwaysRerun||year==maxYear);
             // CPCDensityStage.createVisualization();
             multiStems = CPCDensityStage.get();
             System.out.println("Num multistems after CPC Density: "+multiStems.size());
@@ -122,7 +122,7 @@ public class KeywordModelRunner {
             // stage 5
             System.out.println("Starting stage 5...");
             Stage5 stage5 = new Stage5(stage1, multiStems, model, year, multiStemCPCMap, hierarchy);
-            stage5.run(alwaysRerun||year==maxYear);
+            stage5.run(alwaysRerun||(year==maxYear||year==maxYear-1)); // always run on last 2 years
             try {
                 //stage5.createVisualization();
             } catch (Exception e) {
@@ -136,11 +136,6 @@ public class KeywordModelRunner {
 
         saveModelMap(model,technologyMap);
 
-    }
-
-
-    public static void updateLatest() {
-        runModel();
     }
 
 

@@ -1,6 +1,8 @@
 package seeding.ai_db_updater;
 
+import models.similarity_models.Vectorizer;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
+import models.similarity_models.signatures.CPCSimilarityVectorizer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.*;
@@ -16,8 +18,8 @@ import java.util.stream.Collectors;
 public class UpdateExtraneousComputableAttributeData {
     public static void main(String[] args) {
         SimilarPatentServer.initialize(true,false);
-        Map<String,INDArray> lookupTable = SimilarPatentFinder.getLookupTable();
-        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(SimilarPatentServer.getAllComputableAttributes().stream().filter(a->!(a instanceof HiddenAttribute)).collect(Collectors.toList()),lookupTable);
+        Vectorizer vectorizer = new CPCSimilarityVectorizer(false);
+        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(SimilarPatentServer.getAllComputableAttributes().stream().filter(a->!(a instanceof HiddenAttribute)).collect(Collectors.toList()),vectorizer);
     }
 
 }

@@ -4,6 +4,7 @@ import j2html.tags.Tag;
 import lombok.Getter;
 import lombok.Setter;
 import models.dl4j_neural_nets.vectorization.ParagraphVectorModel;
+import models.similarity_models.DefaultSimilarityModel;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 
 import org.elasticsearch.index.query.QueryBuilder;
@@ -45,7 +46,7 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
         List<String> resultTypes = SimilarPatentServer.extractArray(req,  Constants.DOC_TYPE_INCLUDE_FILTER_STR);
         inputs = getInputsToSearchFor(req,resultTypes);
         if(inputs!=null&&inputs.size()>0) {
-            SimilarPatentFinder finder = new SimilarPatentFinder(inputs);
+            DefaultSimilarityModel finder = new DefaultSimilarityModel(inputs);
             if (finder.getItemList().length > 0) {
                 avg = finder.computeAvg();
             }
