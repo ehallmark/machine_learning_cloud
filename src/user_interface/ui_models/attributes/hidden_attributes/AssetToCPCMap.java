@@ -9,7 +9,10 @@ import java.util.stream.Collectors;
  * Created by Evan on 8/11/2017.
  */
 public class AssetToCPCMap extends HiddenAttribute<Set<String>> {
-
+    @Override
+    public boolean shouldCleanseBeforeReseed() {
+        return true;
+    }
     @Override
     public String getName() {
         return Constants.NAME+"_to_"+Constants.CPC_CODES;

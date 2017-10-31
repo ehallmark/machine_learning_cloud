@@ -17,6 +17,11 @@ public class AssigneeToAssetsMap extends HiddenAttribute<Collection<String>> {
     }
 
     @Override
+    public boolean shouldCleanseBeforeReseed() {
+        return true;
+    }
+
+    @Override
     public String getName() {
         return Constants.LATEST_ASSIGNEE+"_to_"+Constants.NAME;
     }

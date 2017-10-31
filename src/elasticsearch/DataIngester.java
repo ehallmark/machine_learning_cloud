@@ -57,6 +57,17 @@ public class DataIngester {
         synchronized (bulkProcessor) { bulkProcessor.add(request); }
     }
 
+    public synchronized static void clearMongoDB() {
+        mongoDB.drop((v,t)->{
+            if(t==null) {
+                System.out.println("Successfully cleared mongo.");
+                mongoDB = MongoDBClient.get().getDatabase(INDEX_NAME);
+            } else {
+                System.out.println("Error clearing mongo: "+t.getMessage());
+            }
+        });
+    }
+
     static Map<String,List<Document>> insertBatchMap = Collections.synchronizedMap(new HashMap<>());
     static Map<String,List<WriteModel<Document>>> updateBatchMap = Collections.synchronizedMap(new HashMap<>());
 

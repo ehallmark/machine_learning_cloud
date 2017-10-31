@@ -14,6 +14,7 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -22,24 +23,21 @@ import java.util.stream.Stream;
  * Created by Evan on 8/13/2017.
  */
 public abstract class FileStreamDataDownloader implements DataDownloader, Serializable {
-    private static final long serialVersionUID = 1l;
+    private static final long serialVersionUID = 1L;
     @Getter
     protected String zipFilePrefix;
     protected String name;
     protected Set<String> finishedFiles;
     protected Set<LocalDate> failedDates;
-    protected LocalDate lastUpdatedDate;
     protected transient DateIterator zipDownloader;
     public FileStreamDataDownloader(String name, Class<? extends DateIterator> zipDownloader, LocalDate lastUpdatedDate) {
         // check for previous one
         FileStreamDataDownloader pastLife = load(name);
         if(pastLife==null) {
-            this.lastUpdatedDate = lastUpdatedDate;
             this.name = name;
-            this.finishedFiles = new HashSet<>();
-            this.failedDates = new HashSet<>();
+            this.finishedFiles = Collections.synchronizedSet(new HashSet<>());
+            this.failedDates = Collections.synchronizedSet(new HashSet<>());
         } else {
-            this.lastUpdatedDate = pastLife.lastUpdatedDate;
             this.name = name;
             this.finishedFiles = pastLife.finishedFiles;
             this.failedDates = pastLife.failedDates;
@@ -84,8 +82,16 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     }
 
     public synchronized void save() {
-        this.lastUpdatedDate = LocalDate.now().minusDays(1);
         safeSaveFile(this,new File(Constants.DATA_FOLDER,Constants.DATA_DOWNLOADERS_FOLDER+name));
+    }
+
+    public synchronized void clearCache() {
+        boolean deleted = new File(Constants.DATA_FOLDER, Constants.DATA_DOWNLOADERS_FOLDER+name).delete();
+        if(!deleted) System.out.println("Error deleted cache for: "+name);
+        finishedFiles.clear();
+        failedDates.clear();
+        save();
+        System.out.println("Cleared cache for: "+name);
     }
 
     protected static void safeSaveFile(Object obj, File file) {

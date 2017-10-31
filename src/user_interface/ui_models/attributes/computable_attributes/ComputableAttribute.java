@@ -38,6 +38,16 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
         this.applicationDataMap=applicationDataMap;
     }
 
+    public boolean shouldCleanseBeforeReseed() {
+        return false;
+    }
+
+    public void cleanse() {
+        initMaps();
+        System.out.println("Cleansing: "+getFullName());
+        applicationDataMap.clear();
+        patentDataMap.clear();
+    }
 
     public T attributesFor(Collection<String> portfolio, int limit) {
         if(applicationDataMap==null||patentDataMap==null) initMaps();
