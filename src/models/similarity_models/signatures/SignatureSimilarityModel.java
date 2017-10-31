@@ -112,7 +112,7 @@ public class SignatureSimilarityModel implements Serializable  {
                 .entrySet().parallelStream()
                 .filter(e->e.getValue().size()>0)
                 .collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
-
+        boolean reshuffleTrainingAssets = cpcToIdxMap!=null;
         if(cpcToIdxMap==null){
             System.out.println("WARNING: Reindexing CPC Codes...");
             AtomicInteger idx = new AtomicInteger(0);
@@ -134,6 +134,9 @@ public class SignatureSimilarityModel implements Serializable  {
             }
         });
         smallTestSet.addAll(testAssets.subList(0,20000));
+        if(reshuffleTrainingAssets) {
+            Collections.shuffle(trainAssets, rand);
+        }
         System.out.println("Finished splitting test and train.");
         System.out.println("Num training: "+trainAssets.size());
         System.out.println("Num test: "+testAssets.size());
@@ -303,7 +306,7 @@ public class SignatureSimilarityModel implements Serializable  {
         int batchSize = 32;
         int nEpochs = 5;
         File modelFile = getModelFile(networkFile,MAX_CPC_DEPTH);
-        boolean loadModel = false; //modelFile.exists();
+        boolean loadModel = modelFile.exists();
 
         CPCHierarchy cpcHierarchy = new CPCHierarchy();
         cpcHierarchy.loadGraph();
