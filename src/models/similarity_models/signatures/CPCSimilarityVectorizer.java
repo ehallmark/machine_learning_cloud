@@ -60,7 +60,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         // test restore model
         System.out.println("Restoring model test");
         SignatureSimilarityModel clone = SignatureSimilarityModel.restoreAndInitModel(SignatureSimilarityModel.MAX_CPC_DEPTH,false);
-        clone.setBatchSize(5000);
+        clone.setBatchSize(10000);
         List<String> allAssets = new ArrayList<>(Database.getAllPatentsAndApplications());
 
         System.out.println("Testing encodings");
@@ -84,13 +84,9 @@ public class CPCSimilarityVectorizer implements Vectorizer {
             }
 
             INDArray assigneeVec = Nd4j.vstack(vectors).mean(0);
-            double norm = assigneeVec.norm2Number().doubleValue();
-            if(norm>0) {
-                assigneeVec = assigneeVec.divi(norm);
-                vectorMap.put(assignee, assigneeVec);
-                if (cnt.getAndIncrement() % 10000 == 9999) {
-                    System.out.println("Vectorized " + cnt.get() + " assignees.");
-                }
+            vectorMap.put(assignee, assigneeVec);
+            if (cnt.getAndIncrement() % 10000 == 9999) {
+                System.out.println("Vectorized " + cnt.get() + " assignees.");
             }
         });
         System.out.println("Total vectors: "+vectorMap.size());
@@ -111,5 +107,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         Database.trySaveObject(data,vectorMapFile);
         System.out.println("Finished saving.");
     }
+
+    public static void handleAssignees()
 
 }
