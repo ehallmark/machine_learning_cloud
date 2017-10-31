@@ -50,7 +50,7 @@ public class WordToCPCNetwork {
         final int nEpochs = 5;
         final boolean binarize = false;
 
-        WordToCPCIterator iterator = new WordToCPCIterator(batchSize, vocabSampling, seed, minWordCount, binarize);
+        WordToCPCIterator iterator = new WordToCPCIterator(null, batchSize, vocabSampling, seed, minWordCount, binarize);
 
         Map<String,Integer> idxMap;
         if(!rerunVocab&&wordIdxMapFile.exists()) {
@@ -107,31 +107,16 @@ public class WordToCPCNetwork {
         MultiLayerNetwork net = new MultiLayerNetwork(conf);
         net.init();
 
+        iterator.setNetwork(net); // IMPORTANT!!!
+
         System.out.println("Getting test iterator..."); {
-            iterator.getTestIterator();
+            double test = iterator.test();
+            System.out.println("Initial error: "+test);
         }
         System.out.println("Finished.");
 
         Function<Void,Double> testFunction = (v) -> {
-            AtomicDouble totalError = new AtomicDouble(0d);
-            AtomicInteger cnt = new AtomicInteger(0);
-            Iterator<DataSet> dataStream = iterator.getTestIterator();
-            while(dataStream.hasNext()) {
-                DataSet ds = dataStream.next();
-                INDArray actualOutput = ds.getLabels();
-                INDArray modelOutput = net.activateSelectedLayers(0,net.getnLayers()-1,ds.getFeatures());
-                for(int i = 0; i < actualOutput.rows(); i++) {
-                    double score = Transforms.cosineSim(modelOutput,actualOutput);
-                    if(Double.isNaN(score)) score = -1d;
-                    totalError.getAndAdd(1d-score);
-                    cnt.getAndIncrement();
-                }
-
-            }
-            if(cnt.get()>0) {
-                totalError.set(totalError.get()/cnt.get());
-            }
-            return totalError.get();
+            return iterator.test();
         };
 
         Function<Void,Void> saveFunction = v -> {
@@ -148,7 +133,7 @@ public class WordToCPCNetwork {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
             //net.fit(trainIter);
             try {
-                net.fit(iterator);
+                iterator.trainNetwork();
             } catch(StoppingConditionMetException s) {
                 System.out.println("Stopping condition met");
             }
@@ -164,7 +149,6 @@ public class WordToCPCNetwork {
                     e.printStackTrace();
                 }
             }
-            iterator.reset();
         }
 
         System.out.println("Saving results...");

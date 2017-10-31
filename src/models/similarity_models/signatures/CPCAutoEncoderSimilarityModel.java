@@ -236,18 +236,14 @@ public class CPCAutoEncoderSimilarityModel implements Serializable  {
             INDArray testInput = test.getFeatures();
             INDArray latentValues = model.activate(testInput,false);
             INDArray testOutput = model.generateAtMeanGivenZ(latentValues);
-
-            INDArray inputNorms = testInput.norm2(1);
-            INDArray outputNorms = testOutput.norm2(1);
-            INDArray dot = testInput.mul(testOutput).sum(1);
-            INDArray norm = inputNorms.muli(outputNorms);
-            INDArray cosineSim = dot.divi(norm);
-            double similarity = cosineSim.sumNumber().doubleValue();
+            double similarity = NDArrayHelper.sumOfCosineSimByRow(testInput,testOutput);
             testSimilarity.addAndGet(similarity);
             cnt.addAndGet(testInput.rows());
         }
         return 1d - (testSimilarity.get()/cnt.get());
     }
+
+
 
     public synchronized void save() throws IOException {
         if(net!=null) {
