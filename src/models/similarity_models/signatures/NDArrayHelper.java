@@ -1,6 +1,7 @@
 package models.similarity_models.signatures;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 
 /**
@@ -19,5 +20,20 @@ public class NDArrayHelper {
 
     public static INDArray createProbabilityVectorFromGaussian(INDArray in) {
         return Transforms.exp(Transforms.pow(in,2,true).negi().divi(2),false).divi(ROOT_2_PI);
+    }
+
+    public static void main(String[] args) {
+        // test
+        INDArray vec = Nd4j.create(new double[][]{
+                new double[]{
+                        0, -1, 2, 5, 0.1, -0.0001, 0.5
+                }, new double[] {
+                        0, -1, 2, 5, 0.1, -0.0001, 0.5
+                }
+        });
+
+        INDArray prob = createProbabilityVectorFromGaussian(vec);
+
+        System.out.println(prob);
     }
 }
