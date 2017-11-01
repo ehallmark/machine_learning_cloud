@@ -5,7 +5,7 @@ source /home/ehallmark1122/machine_learning_cloud/scripts/production/ingest.sh
 source /home/ehallmark1122/machine_learning_cloud/scripts/production/helper/setup-elasticsearch.sh
 
 # build elasticsearch
-source /home/ehallmark1122/machine_learning_cloud/scripts/production/recreate-elasticsearch.sh
+source /home/ehallmark1122/machine_learning_cloud/scripts/production/helper/recreate-elasticsearch.sh
 
 # run models
 sudo -u ehallmark1122 bash -c '    java -cp target/classes:"target/dependency/*" -Xms35000m -Xmx35000m -Dcom.sun.management.jmxremote.port=4567 -Dcom.sun.management.jmxremote.rmi.port=4567 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=127.0.0.1 models.UpdateModels'
