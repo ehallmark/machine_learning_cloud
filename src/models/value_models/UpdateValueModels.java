@@ -36,7 +36,7 @@ public class UpdateValueModels {
 
     public static void updateLatest(Collection<String> onlyUpdateAssets) throws Exception {
         final boolean debug = false;
-        
+
         // train wipo
         SimilarPatentServer.initialize(true,false);
         WIPOValueModel.main(null);
@@ -55,10 +55,16 @@ public class UpdateValueModels {
 
                 // don't compute if already seen
                 if(isPatent) {
+                    if(patentCnt.getAndIncrement()%10000==0) {
+                        System.out.println("Seen patents: "+patentCnt.get());
+                    }
                     if(patentModel.containsKey(item.getName())) {
                         return null;
                     }
                 } else {
+                    if(appCnt.getAndIncrement()%10000==0) {
+                        System.out.println("Seen applications: "+appCnt.get());
+                    }
                     if(applicationModel.containsKey(item.getName())) {
                         return null;
                     }
@@ -68,16 +74,8 @@ public class UpdateValueModels {
                 if(debug) System.out.println("Value: "+aiValue);
                 if(isPatent) {
                     patentModel.put(item.getName(),aiValue);
-                    if(patentCnt.getAndIncrement()%10000==0) {
-                        System.out.println("Seen patents: "+patentCnt.get());
-                        System.out.println("Sample Patent "+item.getName()+": "+aiValue);
-                    }
                 } else {
                     applicationModel.put(item.getName(),aiValue);
-                    if(appCnt.getAndIncrement()%10000==0) {
-                        System.out.println("Seen applications: "+appCnt.get());
-                        System.out.println("Sample App "+item.getName()+": "+aiValue);
-                    }
                 }
                 return null;
             }
