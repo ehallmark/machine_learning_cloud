@@ -75,7 +75,6 @@ public class SignatureSimilarityModel implements Serializable  {
             System.out.println(idx.get());
             DataSet ds = iterator.next();
             INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
-            INDArray probabilityVectors = NDArrayHelper.createProbabilityVectorFromGaussian(encoding);
             /*
             if(probabilityVectors.max(1).gt(1).sumNumber().doubleValue() > 0d) {
                 throw new RuntimeException("ERROR WITH PROBABILITY VECTOR (> 1): "+probabilityVectors.toString());
@@ -83,8 +82,8 @@ public class SignatureSimilarityModel implements Serializable  {
             if(probabilityVectors.min(1).lt(0).sumNumber().doubleValue() > 0d) {
                 throw new RuntimeException("ERROR WITH PROBABILITY VECTOR (< 0): "+probabilityVectors.toString());
             }*/
-            for(int i = 0; i < probabilityVectors.rows() && idx.get()<assets.size(); i++) {
-                INDArray vector = probabilityVectors.getRow(i);
+            for(int i = 0; i < encoding.rows() && idx.get()<assets.size(); i++) {
+                INDArray vector = encoding.getRow(i).dup();
                 assetToEncodingMap.put(assets.get(idx.getAndIncrement()), vector);
             }
         }

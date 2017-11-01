@@ -68,8 +68,8 @@ public class DataIngester {
         });
     }
 
-    static Map<String,List<Document>> insertBatchMap = Collections.synchronizedMap(new HashMap<>());
-    static Map<String,List<WriteModel<Document>>> updateBatchMap = Collections.synchronizedMap(new HashMap<>());
+    static final Map<String,List<Document>> insertBatchMap = Collections.synchronizedMap(new HashMap<>());
+    static final Map<String,List<WriteModel<Document>>> updateBatchMap = Collections.synchronizedMap(new HashMap<>());
 
     private static final int batchSize = 10000;
 
@@ -88,8 +88,10 @@ public class DataIngester {
     } */
 
     private static void addToUpdateMap(String collection, WriteModel<Document> model) {
-        if(!updateBatchMap.containsKey(collection)) {
-            updateBatchMap.put(collection, Collections.synchronizedList(new ArrayList<>()));
+        synchronized (updateBatchMap) {
+            if (!updateBatchMap.containsKey(collection)) {
+                updateBatchMap.put(collection, Collections.synchronizedList(new ArrayList<>()));
+            }
         }
         updateBatchMap.get(collection).add(model);
         if(updateCounter.getAndIncrement() > batchSize) {

@@ -28,7 +28,7 @@ public class UpdateModels {
         Database.main(null);
 
         // MODELS
-        UpdateSimilarityModels.updateLatest();
+        //UpdateSimilarityModels.updateLatest();
         UpdateClassificationModels.updateLatest(onlyUpdateAssets!=null);
         UpdateValueModels.updateLatest(onlyUpdateAssets);
     }
