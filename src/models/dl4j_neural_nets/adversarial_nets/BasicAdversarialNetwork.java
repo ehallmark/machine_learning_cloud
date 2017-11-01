@@ -14,8 +14,12 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.activations.IActivation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.rng.DefaultRandom;
+import org.nd4j.linalg.api.rng.distribution.Distribution;
+import org.nd4j.linalg.api.rng.distribution.impl.NormalDistribution;
+import org.nd4j.linalg.dataset.MultiDataSet;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.ILossFunction;
+import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 /**
  * Created by Evan on 10/16/2017.
@@ -24,86 +28,50 @@ public class BasicAdversarialNetwork {
     private static int batchSize = 10;
     private static int numInputs = 30;
     private static int numOutputs = 10;
+    private static int hiddenLayerSize = 20;
     public static void main(String[] args) {
-        MultiLayerConfiguration generatorConf = new NeuralNetConfiguration.Builder()
-                .list()
-                .layer(0, new DenseLayer.Builder()
-                        .nIn(numInputs)
-                        .nOut(numInputs/2)
-                        .activation(Activation.RELU)
-                        .build()
-                )
-                .layer(1, new OutputLayer.Builder()
-                        .nIn(numInputs/2)
-                        .nOut(numInputs)
-                        .build()
-
-                )
-                .layer(2, new OutputLayer.Builder()
-                        .nIn(numInputs)
-                        .nOut(2)
-                        .build()
-                )
-                .build();
         ComputationGraphConfiguration conf = new NeuralNetConfiguration.Builder()
-
+                .learningRate(0.01)
                 .graphBuilder()
+                .addInputs("input")
+                .addLayer("L1", new DenseLayer.Builder().nIn(numInputs).nOut(hiddenLayerSize).build(), "input")
+                .addLayer("L2", new DenseLayer.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(), "L1")
+                .addLayer("Generator", new OutputLayer.Builder()
+                        .nIn(hiddenLayerSize)
+                        .nOut(numOutputs)
+                        .activation(Activation.SIGMOID)
+                        .lossFunction(LossFunctions.LossFunction.MSE).build(), "L2")
+                .addLayer("Adversary", new OutputLayer.Builder()
+                        .nIn(numOutputs)
+                        .nOut(2)
+                        .activation(Activation.SOFTMAX)
+                        .lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).build(), "Generator")
+                .setOutputs("Adversary")
                 .build();
-        
+
         ComputationGraph graph = new ComputationGraph(conf);
         graph.init();
 
-        MultiLayerConfiguration adversaryConf = new NeuralNetConfiguration.Builder()
-                .list()
-                .layer(0, new DenseLayer.Builder()
-                        .activation(Activation.RELU)
-                        .nIn(numInputs)
-                        .nOut(numInputs/2)
-                        .build()
-                )
-                .layer(1, new OutputLayer.Builder()
-                        .nIn(numInputs/2)
-                        .nOut(2)
-                        .build()
-                )
-                .build();
-
-
-        MultiLayerNetwork generator = new MultiLayerNetwork(generatorConf);
-        MultiLayerNetwork adversary = new MultiLayerNetwork(adversaryConf);
-
-        // init
-        generator.init();
-        adversary.init();
-
-        INDArray actual = Nd4j.rand(batchSize,numInputs);
+        int numExamples = 100;
+        Distribution noiseDist = new NormalDistribution(0,1);
+        Distribution actualDist = new NormalDistribution(2,0.1);
+        INDArray generatorFeatures = Nd4j.create(numExamples,numInputs);
+        INDArray adversaryLabels = Nd4j.create(numExamples,2);
+        for(int i = 0; i < numExamples; i++) {
+            if(i%2==0) {
+                // random noise
+                generatorFeatures.putRow(i, Nd4j.rand(new int[]{numInputs}, noiseDist));
+                adversaryLabels.putRow(i, Nd4j.create(new double[]{1,0}));
+            } else {
+                generatorFeatures.putRow(i, Nd4j.rand(new int[]{numInputs}, actualDist));
+                adversaryLabels.putRow(i, Nd4j.create(new double[]{0,1}));
+            }
+        }
+        MultiDataSet dataSet = new MultiDataSet(generatorFeatures,adversaryLabels);
 
         for(int i = 0; i < 1000; i++) {
-            INDArray toFeed = generator.activateSelectedLayers(0,1,fakeData());
-
-            adversary.fit(actual, Nd4j.hstack(Nd4j.zeros(batchSize,1),Nd4j.ones(batchSize,1)));
-            adversary.fit(toFeed, Nd4j.hstack(Nd4j.ones(batchSize,1),Nd4j.zeros(batchSize,1)));
-
-            generator.fit(toFeed, createLabels(adversary.activateSelectedLayers(0,1,toFeed)));
-            generator.fit(actual, createLabels(adversary.activateSelectedLayers(0,1,actual)));
-
-            System.out.println("Finished epoch: "+i);
-            System.out.println("Score Adversary: "+adversary.score());
-            System.out.println("Score Generator: "+generator.score());
+            System.out.println("Starting iteration: "+i);
+            graph.fit(dataSet);
         }
     }
-
-    private static INDArray createLabels(INDArray array) {
-        INDArray newArray = array.dup();
-        INDArray min = array.min(1);
-        INDArray max = array.max(1).sub(min);
-        newArray.getColumn(0).subi(min).divi(max);
-        newArray.getColumn(1).subi(min).divi(max);
-        return newArray;
-    }
-
-    private static INDArray fakeData() {
-        return Nd4j.randn(batchSize,numInputs);
-    }
-
 }

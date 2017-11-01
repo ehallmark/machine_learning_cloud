@@ -36,9 +36,7 @@ public class UpdateValueModels {
 
     public static void updateLatest(Collection<String> onlyUpdateAssets) throws Exception {
         final boolean debug = false;
-        boolean rerunPageRank = true;
-        if(rerunPageRank)UpdateGraphicalModels.main(null); // page rank
-
+        
         // train wipo
         SimilarPatentServer.initialize(true,false);
         WIPOValueModel.main(null);
