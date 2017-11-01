@@ -71,7 +71,7 @@ public class DataIngester {
     static Map<String,List<Document>> insertBatchMap = Collections.synchronizedMap(new HashMap<>());
     static Map<String,List<WriteModel<Document>>> updateBatchMap = Collections.synchronizedMap(new HashMap<>());
 
-    private static final int batchSize = 400;
+    private static final int batchSize = 10000;
 
     private static final AtomicInteger insertCounter = new AtomicInteger(0);
     private static final AtomicInteger updateCounter = new AtomicInteger(0);
