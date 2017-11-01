@@ -15,6 +15,8 @@ public class RestoreGatherAndCompDB {
             String compDBRestore = "pg_restore -Fc --dbname=postgresql://postgres:password@127.0.0.1:5432/compdb_production "+compdbFile.getAbsolutePath();
             String dropCompDB = "dropdb compdb_production";
             PGDumpLatest.startProcess(dropCompDB);
+            String createCompDB = "createdb compdb_production";
+            PGDumpLatest.startProcess(createCompDB);
             System.out.println("Dropped compdb successfully...");
             PGDumpLatest.startProcess(compDBRestore);
         } catch(Exception e) {
@@ -30,6 +32,8 @@ public class RestoreGatherAndCompDB {
             String dropGather = "dropdb gather_production";
             PGDumpLatest.startProcess(dropGather);
             System.out.println("Dropped gather successfully...");
+            String createGather = "createdb gather_production";
+            PGDumpLatest.startProcess(createGather);
             PGDumpLatest.startProcess(gatherDBRestore);
         } catch(Exception e) {
             System.out.println("Error restoring gather...");
