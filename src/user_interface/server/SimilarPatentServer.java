@@ -523,12 +523,13 @@ public class SimilarPatentServer {
                     }
                 });
                 INDArray vec = vectorizer.vectorFor(filing);
-                if(vec!=null) {
+                if(vec==null) {
                     vec = vectorizer.vectorFor(label); // default to regular asset name
-                    if(vec!=null) {
-                        item.addData("vector_obj", vectorToElasticSearchObject(vec));
-                    }
                 }
+                if(vec!=null) {
+                    item.addData("vector_obj", vectorToElasticSearchObject(vec));
+                }
+                
                 DataIngester.ingestItem(item,filing);
                 if(debug) System.out.println("Item: "+item.getName());
             }
