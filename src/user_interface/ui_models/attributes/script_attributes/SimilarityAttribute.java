@@ -23,24 +23,25 @@ import static user_interface.server.SimilarPatentServer.*;
  * Created by ehallmark on 6/15/17.
  */
 public class SimilarityAttribute extends AbstractScriptAttribute implements DependentAttribute<AbstractScriptAttribute> {
-    public static final int vectorSize = 32; // test
-    public static final String DEFAULT_SIMILARITY_SCRIPT = "" +
-            "if(doc['vector_obj.0'].value == null || params.avg_vector == null) { return 0f; }" +
-            "float ab = 0f;" +
-            "int length = params.avg_vector.length;" +
-            "for(int i = 0; i < length; i++) {" +
-            "    ab+=params.avg_vector[i] * (float) doc['vector_obj.'+i].value;" +
-            "}" +
-            "return (ab);";
+    public static final int vectorSize = 32;
 
-    public static String EXPRESSION_SIMILARITY_SCRIPT;
+    public static final String EXPRESSION_SIMILARITY_SCRIPT;
+    public static final String COSINE_SIM;
+    public static final String DISTANCE_SIM;
     static {
-        StringJoiner sj = new StringJoiner("+","doc['vector_obj.0'].empty ? _score : ((",") * _score)");
+        StringJoiner cos = new StringJoiner("+","doc['vector_obj.0'].empty ? _score : ((",") * _score)");
         for(int i = 0; i < vectorSize; i++) {
-            sj.add("(doc['vector_obj."+i+"'].value*avg_vector"+i+")");
+            cos.add("(doc['vector_obj."+i+"'].value*avg_vector"+i+")");
         }
-        EXPRESSION_SIMILARITY_SCRIPT=sj.toString();
-        System.out.println("New similarity script: "+EXPRESSION_SIMILARITY_SCRIPT);
+        COSINE_SIM=cos.toString();
+        StringJoiner dist = new StringJoiner("+","doc['vector_obj.0'].empty ? _score : ((",") * _score / "+vectorSize+")");
+        for(int i = 0; i < vectorSize; i++) {
+            dist.add("((doc['vector_obj."+i+"'].value-avg_vector"+i+")*(doc['vector_obj."+i+"'].value-avg_vector"+i+"))");
+        }
+        DISTANCE_SIM=dist.toString();
+        System.out.println("Inverse distance script: "+DISTANCE_SIM);
+        System.out.println("Cosine distance script: "+COSINE_SIM);
+        EXPRESSION_SIMILARITY_SCRIPT = DISTANCE_SIM;
     }
     protected List<INDArray> simVectors;
 
