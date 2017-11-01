@@ -166,36 +166,40 @@ public class DataIngester {
         }
     }
 
-    private static synchronized void updateBatch() {
+    private static void updateBatch() {
         waitForMongo();
-        updateBatchMap.forEach((collection,updateBatch)->{
-            if (updateBatch.size() > 0) {
-                mongoCount.getAndIncrement();
-                mongoDB.getCollection(collection).bulkWrite(new ArrayList<>(updateBatch), new BulkWriteOptions().ordered(false), (v, t) -> {
-                    mongoCount.getAndDecrement();
-                    if (t != null) {
-                        System.out.println("Failed in update: " + t.getMessage());
-                    }
-                });
-            }
-            updateBatch.clear();
-        });
+        synchronized (DataIngester.class) {
+            updateBatchMap.forEach((collection, updateBatch) -> {
+                if (updateBatch.size() > 0) {
+                    mongoCount.getAndIncrement();
+                    mongoDB.getCollection(collection).bulkWrite(new ArrayList<>(updateBatch), new BulkWriteOptions().ordered(false), (v, t) -> {
+                        mongoCount.getAndDecrement();
+                        if (t != null) {
+                            System.out.println("Failed in update: " + t.getMessage());
+                        }
+                    });
+                }
+                updateBatch.clear();
+            });
+        }
     }
 
-    private static synchronized void insertBatch() {
+    private static void insertBatch() {
         waitForMongo();
-        insertBatchMap.forEach((collection,insertBatch)->{
-            if (insertBatch.size() > 0) {
-                mongoCount.getAndIncrement();
-                mongoDB.getCollection(collection).insertMany(new ArrayList<>(insertBatch), new InsertManyOptions().ordered(false), (v, t) -> {
-                    mongoCount.getAndDecrement();
-                    if (t != null) {
-                        System.out.println("Failed in insert: " + t.getMessage());
-                    }
-                });
-                insertBatch.clear();
-            }
-        });
+        synchronized (DataIngester.class) {
+            insertBatchMap.forEach((collection, insertBatch) -> {
+                if (insertBatch.size() > 0) {
+                    mongoCount.getAndIncrement();
+                    mongoDB.getCollection(collection).insertMany(new ArrayList<>(insertBatch), new InsertManyOptions().ordered(false), (v, t) -> {
+                        mongoCount.getAndDecrement();
+                        if (t != null) {
+                            System.out.println("Failed in insert: " + t.getMessage());
+                        }
+                    });
+                    insertBatch.clear();
+                }
+            });
+        }
     }
 
     public static void finishCurrentMongoBatch() {
