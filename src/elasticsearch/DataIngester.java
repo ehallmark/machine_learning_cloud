@@ -100,7 +100,7 @@ public class DataIngester {
         }
     }
 
-    public static void ingestMongo(String id, String parent, Document query, Map<String,Object> doc, boolean create) {
+    public static synchronized void ingestMongo(String id, String parent, Document query, Map<String,Object> doc, boolean create) {
         Collection<String> filingAttributes = Constants.FILING_ATTRIBUTES_SET;
         Map<String,Object> assetDoc = new HashMap<>();
         Map<String,Object> filingDoc = new HashMap<>();
@@ -157,7 +157,7 @@ public class DataIngester {
         addToUpdateMap(collection,model);
     }
 
-    private static void waitForMongo() {
+    private static synchronized void waitForMongo() {
         while(mongoCount.get() >= 400) {
             System.out.println("Waiting for mongo to ingest batch...");
             try {
