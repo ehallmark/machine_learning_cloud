@@ -60,7 +60,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         // test restore model
         System.out.println("Restoring model test");
         SignatureSimilarityModel clone = SignatureSimilarityModel.restoreAndInitModel(SignatureSimilarityModel.MAX_CPC_DEPTH,false);
-        clone.setBatchSize(10000);
+        clone.setBatchSize(1000);
         List<String> allAssets = new ArrayList<>(Database.getAllPatentsAndApplications());
 
         System.out.println("Testing encodings");
