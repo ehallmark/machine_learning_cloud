@@ -71,7 +71,6 @@ public class DataSearcher {
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
     private static final int PAGE_LIMIT = 10000;
-    private static final String CLAIM_TEXT_ATTR_NAME = Constants.CLAIMS+"."+Constants.CLAIM;
     private static final boolean debug = false;
 
     public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, boolean highlight) {
@@ -361,7 +360,7 @@ public class DataSearcher {
                     for(Text fragment : fragments) {
                         sj.add(fragment.toString());
                     }
-                    item.addData(e.getKey()+Constants.HIGHLIGHTED, Helper.fixPunctuationSpaces(sj.toString()));
+                    item.addData(e.getKey()+Constants.HIGHLIGHTED, sj.toString());
                 }
             });
         }
@@ -429,9 +428,6 @@ public class DataSearcher {
                 }
             }
         } else {
-            if(attrName.equals(CLAIM_TEXT_ATTR_NAME)) {
-                v = Helper.fixPunctuationSpaces(v.toString());
-            }
             itemDataMap.put(attrName, v);
         }
     }
