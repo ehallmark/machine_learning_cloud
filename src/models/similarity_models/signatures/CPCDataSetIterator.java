@@ -8,6 +8,7 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,7 +42,7 @@ public class CPCDataSetIterator implements DataSetIterator {
 
     private INDArray createVector(Stream<Collection<CPC>> cpcStream) {
         AtomicInteger batch = new AtomicInteger(0);
-        double[][] vecs = new double[batchSize][numInputs];
+        INDArray vecs = Nd4j.create(batchSize,numInputs);
         cpcStream.forEach(cpcs->{
             double[] vec = new double[numInputs];
             cpcs.forEach(cpc->{
@@ -54,14 +55,14 @@ public class CPCDataSetIterator implements DataSetIterator {
             //} else {
             //    System.out.println("NO NORM!!!");
             // }
-            vecs[batch.get()] = vec;
+            vecs.putRow(batch.get(),Nd4j.create(vec));
             batch.getAndIncrement();
         });
         if(batch.get()<batch()) {
             System.out.println("Did not find a full batch");
-            return Nd4j.create(Arrays.copyOf(vecs,batch.get()));
+            return vecs.get(NDArrayIndex.interval(0,batch.get(),false),NDArrayIndex.all());
         } else {
-            return Nd4j.create(vecs);
+            return vecs;
         }
     }
 
