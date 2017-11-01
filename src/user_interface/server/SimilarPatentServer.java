@@ -529,9 +529,11 @@ public class SimilarPatentServer {
                 if(vec!=null) {
                     item.addData("vector_obj", vectorToElasticSearchObject(vec));
                 }
-                
-                DataIngester.ingestItem(item,filing);
-                if(debug) System.out.println("Item: "+item.getName());
+
+                if(item.getDataMap().size()>0) {
+                    DataIngester.ingestItem(item, filing);
+                    if (debug) System.out.println("Item: " + item.getName());
+                }
             }
 
             if(cnt.getAndIncrement()%100000==99999) {
