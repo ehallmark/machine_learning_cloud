@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class DataIngester {
     private static TransportClient client = MyClient.get();
-    private static BulkProcessor bulkProcessor = MyClient.getBulkProcessor();
+    private static final BulkProcessor bulkProcessor = MyClient.getBulkProcessor();
     public static final String INDEX_NAME = "ai_db";
     public static final String TYPE_NAME = "patents_and_applications";
     public static final String PARENT_TYPE_NAME = "filings";
