@@ -511,7 +511,7 @@ public class SimilarPatentServer {
     public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, PortfolioList.Type type, Vectorizer vectorizer) {
         Map<String,String> assetToFiling = type.equals(PortfolioList.Type.patents) ? new AssetToFilingMap().getPatentDataMap() : new AssetToFilingMap().getApplicationDataMap();
         AtomicInteger cnt = new AtomicInteger(0);
-        inputs.stream().forEach(label->{
+        inputs.parallelStream().forEach(label->{
             String filing = assetToFiling.get(label);
             // vec
             if(filing!=null) {
