@@ -71,7 +71,7 @@ public class DataIngester {
     static Map<String,List<Document>> insertBatchMap = Collections.synchronizedMap(new HashMap<>());
     static Map<String,List<WriteModel<Document>>> updateBatchMap = Collections.synchronizedMap(new HashMap<>());
 
-    static final int batchSize = 10000;
+    private static final int batchSize = 400;
 
     private static final AtomicInteger insertCounter = new AtomicInteger(0);
     private static final AtomicInteger updateCounter = new AtomicInteger(0);
@@ -156,7 +156,7 @@ public class DataIngester {
     }
 
     private static void waitForMongo() {
-        while(mongoCount.get() > 500) {
+        while(mongoCount.get() >= 400) {
             System.out.println("Waiting for mongo to ingest batch...");
             try {
                 TimeUnit.SECONDS.sleep(5);
@@ -166,38 +166,34 @@ public class DataIngester {
         }
     }
 
-    private static void updateBatch() {
+    private static synchronized void updateBatch() {
         waitForMongo();
         updateBatchMap.forEach((collection,updateBatch)->{
-            synchronized (updateBatch) {
-                if (updateBatch.size() > 0) {
-                    mongoCount.getAndIncrement();
-                    mongoDB.getCollection(collection).bulkWrite(new ArrayList<>(updateBatch), new BulkWriteOptions().ordered(false), (v, t) -> {
-                        mongoCount.getAndDecrement();
-                        if (t != null) {
-                            System.out.println("Failed in update: " + t.getMessage());
-                        }
-                    });
-                }
+            if (updateBatch.size() > 0) {
+                mongoCount.getAndIncrement();
+                mongoDB.getCollection(collection).bulkWrite(new ArrayList<>(updateBatch), new BulkWriteOptions().ordered(false), (v, t) -> {
+                    mongoCount.getAndDecrement();
+                    if (t != null) {
+                        System.out.println("Failed in update: " + t.getMessage());
+                    }
+                });
             }
             updateBatch.clear();
         });
     }
 
-    private static void insertBatch() {
+    private static synchronized void insertBatch() {
         waitForMongo();
         insertBatchMap.forEach((collection,insertBatch)->{
-            synchronized (insertBatch) {
-                if (insertBatch.size() > 0) {
-                    mongoCount.getAndIncrement();
-                    mongoDB.getCollection(collection).insertMany(new ArrayList<>(insertBatch), new InsertManyOptions().ordered(false), (v, t) -> {
-                        mongoCount.getAndDecrement();
-                        if (t != null) {
-                            System.out.println("Failed in insert: " + t.getMessage());
-                        }
-                    });
-                    insertBatch.clear();
-                }
+            if (insertBatch.size() > 0) {
+                mongoCount.getAndIncrement();
+                mongoDB.getCollection(collection).insertMany(new ArrayList<>(insertBatch), new InsertManyOptions().ordered(false), (v, t) -> {
+                    mongoCount.getAndDecrement();
+                    if (t != null) {
+                        System.out.println("Failed in insert: " + t.getMessage());
+                    }
+                });
+                insertBatch.clear();
             }
         });
     }
