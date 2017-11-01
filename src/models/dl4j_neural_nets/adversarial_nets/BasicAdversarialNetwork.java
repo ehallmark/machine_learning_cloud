@@ -2,10 +2,12 @@ package models.dl4j_neural_nets.adversarial_nets;
 
 import org.apache.commons.math3.util.Pair;
 import org.deeplearning4j.nn.api.Model;
+import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.GravesLSTM;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.nd4j.linalg.activations.Activation;
@@ -43,6 +45,13 @@ public class BasicAdversarialNetwork {
                         .build()
                 )
                 .build();
+        ComputationGraphConfiguration conf = new NeuralNetConfiguration.Builder()
+
+                .graphBuilder()
+                .build();
+        
+        ComputationGraph graph = new ComputationGraph(conf);
+        graph.init();
 
         MultiLayerConfiguration adversaryConf = new NeuralNetConfiguration.Builder()
                 .list()

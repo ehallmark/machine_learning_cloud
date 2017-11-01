@@ -39,12 +39,16 @@ public class PageRank extends RankGraph<String> {
     protected void initGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, Collection<String> labels) {
         rankTable=new HashMap<>(labelToCitationLabelsMap.size());
         System.out.println("Adding initial nodes...");
+        AtomicInteger cnt = new AtomicInteger(0);
         labelToCitationLabelsMap.forEach((label,citations)->{
             Node labelNode = graph.addBinaryNode(label);
             citations.forEach(citation->{
                 Node citationNode = graph.addBinaryNode(citation);
                 graph.connectNodes(labelNode,citationNode);
             });
+            if(cnt.getAndIncrement()%100000==99999) {
+                System.out.println("Added: "+cnt.get()+" nodes");
+            }
         });
         nodes=graph.getAllNodesList();
         this.nodes.forEach(node->rankTable.put(node.getLabel(),1f/nodes.size()));
