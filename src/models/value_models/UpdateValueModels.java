@@ -21,6 +21,9 @@ import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
 
 import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -50,10 +53,21 @@ public class UpdateValueModels {
         ItemTransformer transformer = new ItemTransformer() {
             @Override
             public Item transform(Item item) {
+                boolean isPatent = item.getDataMap().getOrDefault(Constants.DOC_TYPE, "patents").toString().equals(PortfolioList.Type.patents.toString());
+
+                // don't compute if already seen
+                if(isPatent) {
+                    if(patentModel.containsKey(item.getName())) {
+                        return null;
+                    }
+                } else {
+                    if(applicationModel.containsKey(item.getName())) {
+                        return null;
+                    }
+                }
 
                 double aiValue = aiValueModel.evaluate(item);
                 if(debug) System.out.println("Value: "+aiValue);
-                boolean isPatent = item.getDataMap().getOrDefault(Constants.DOC_TYPE, "patents").toString().equals(PortfolioList.Type.patents.toString());
                 if(isPatent) {
                     patentModel.put(item.getName(),aiValue);
                     if(patentCnt.getAndIncrement()%10000==0) {
@@ -67,7 +81,7 @@ public class UpdateValueModels {
                         System.out.println("Sample App "+item.getName()+": "+aiValue);
                     }
                 }
-                return item;
+                return null;
             }
         };
         Collection<AbstractAttribute> toSearchFor = new ArrayList<>();
