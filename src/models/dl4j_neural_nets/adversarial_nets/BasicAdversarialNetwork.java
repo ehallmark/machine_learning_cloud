@@ -29,9 +29,7 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
  * Created by Evan on 10/16/2017.
  */
 public class BasicAdversarialNetwork {
-    private static int batchSize = 10;
     private static int numInputs = 30;
-    private static int hiddenLayerSize = 20;
     public static void main(String[] args) {
         ComputationGraphConfiguration adversaryConf = new NeuralNetConfiguration.Builder()
                 .learningRate(0.01)
