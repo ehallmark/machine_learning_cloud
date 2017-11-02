@@ -33,6 +33,15 @@ public abstract class ChartAttribute extends AbstractAttribute implements Depend
         this.attributes=attributes;
     }
 
+    protected static String combineTypesToString(Collection<String> types) {
+        if(types.isEmpty()) return "";
+        if(types.size()==1) {
+            return SimilarPatentServer.humanAttributeFor(types.stream().findAny().get());
+        } else {
+            return "Assets";
+        }
+    }
+
     public abstract List<? extends AbstractChart> create(PortfolioList portfolioList, int i);
 
     @Override

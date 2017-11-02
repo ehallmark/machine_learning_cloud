@@ -62,12 +62,6 @@ public class AbstractDistributionChart extends ChartAttribute {
         }).collect(Collectors.toList());
     }
 
-    protected static String combineTypesToString(Collection<String> types) {
-        if(types.isEmpty()) return "";
-        types = types.stream().map(type-> SimilarPatentServer.humanAttributeFor(type)).collect(Collectors.toList());
-        return String.join(" and ", types);
-    }
-
     private List<Series<?>> collectDistributionData(PortfolioList portfolio, String attribute, String title) {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();

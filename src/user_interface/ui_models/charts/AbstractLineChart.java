@@ -77,18 +77,13 @@ public class AbstractLineChart extends ChartAttribute {
             String title = humanAttr + " Timeline";
             String xAxisSuffix = "";
             String yAxisSuffix = "";
-            return new LineChart(title, collectTimelineData(portfolioList.getItemList(), attribute),xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType,  0, min, max);
+            return new LineChart(title, collectTimelineData(portfolioList.getItemList(), attribute, humanSearchType),xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType,  0, min, max);
         }).collect(Collectors.toList());
     }
 
-    protected static String combineTypesToString(Collection<String> types) {
-        if(types.isEmpty()) return "";
-        types = types.stream().map(type-> SimilarPatentServer.humanAttributeFor(type)).collect(Collectors.toList());
-        return String.join(" and ", types);
-    }
-
-    private List<Series<?>> collectTimelineData(Collection<Item> data, String attribute) {
+    private List<Series<?>> collectTimelineData(Collection<Item> data, String attribute, String humanSearchType) {
         PointSeries series = new PointSeries();
+        series.setName(singularize(humanSearchType)+ " Count");
         Map<Integer,Long> dataMap = data.stream().filter(item->{Object r = item.getData(attribute); return r!=null && r.toString().length()>4;}).collect(Collectors.groupingBy(item->Integer.valueOf(item.getData(attribute).toString().substring(0,4)),Collectors.counting()));
         dataMap.entrySet().stream().sorted(Comparator.comparing(e->e.getKey())).forEach(e ->{
             series.addPoint(new Point(e.getKey(),e.getValue()));
@@ -96,5 +91,9 @@ public class AbstractLineChart extends ChartAttribute {
         return Arrays.asList(
             series
         );
+    }
+
+    private static String singularize(String in) {
+        return in.endsWith("s") && in.length()>1 ? in.substring(0,in.length()-1) : in;
     }
 }

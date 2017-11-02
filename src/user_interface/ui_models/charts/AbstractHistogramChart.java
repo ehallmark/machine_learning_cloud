@@ -105,12 +105,6 @@ public class AbstractHistogramChart extends ChartAttribute {
         }).collect(Collectors.toList());
     }
 
-    protected static String combineTypesToString(Collection<String> types) {
-        if(types.isEmpty()) return "";
-        types = types.stream().map(type-> SimilarPatentServer.humanAttributeFor(type)).collect(Collectors.toList());
-        return String.join(" and ", types);
-    }
-
     private List<Series<?>> collectDistributionData(Collection<Item> data, double min, double max, int nBins, String attribute, String title, List<String> categories) {
         List<Pair<Item,Number>> scores = data.stream().map(item->{
             Object d = item.getData(attribute);
