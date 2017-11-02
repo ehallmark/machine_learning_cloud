@@ -41,7 +41,13 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
         DISTANCE_SIM=dist.toString();
         System.out.println("Inverse distance script: "+DISTANCE_SIM);
         System.out.println("Cosine distance script: "+COSINE_SIM);
-        EXPRESSION_SIMILARITY_SCRIPT = COSINE_SIM;
+
+        boolean useCosineSim = false;
+        if(useCosineSim) {
+            EXPRESSION_SIMILARITY_SCRIPT = COSINE_SIM;
+        } else {
+            EXPRESSION_SIMILARITY_SCRIPT = DISTANCE_SIM;
+        }
     }
     protected List<INDArray> simVectors;
 
