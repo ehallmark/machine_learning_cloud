@@ -18,6 +18,7 @@ import java.util.stream.Stream;
  * Created by Evan on 11/2/2017.
  */
 public class CharacterNGramIterator implements DataSetIterator {
+    private static final Random rand = new Random(569);
     private static final char[] VALID_CHARS = new char[]{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',' '};
     private static final Map<Character,INDArray> CHAR_TO_VEC_MAP = Collections.synchronizedMap(new HashMap<>());
     static {
@@ -32,6 +33,7 @@ public class CharacterNGramIterator implements DataSetIterator {
     private int k;
     private int batchSize;
     private Iterator<Pair<String,INDArray>> textAndLabelIterator;
+    private DataSet next;
     public CharacterNGramIterator(int k, Iterator<Pair<String,INDArray>> textAndLabelIterator, int batchSize) {
         this.k=k;
         this.batchSize=batchSize;
@@ -47,31 +49,16 @@ public class CharacterNGramIterator implements DataSetIterator {
 
     @Override
     public DataSet next(int b) {
-        Pair<String,INDArray> textAndLabelPair = textAndLabelIterator.next();
-        String text = textAndLabelPair.getFirst().toLowerCase().replaceAll("[^a-z ]"," ");
-        List<INDArray> vectors = Collections.synchronizedList(new ArrayList<>());
-        for(int i = 0; i < text.length()-k; i+=(k/2)) {
-            String sample = text.substring(i,i+k);
-            INDArray vec = textToCharVector(sample);
-            if(vec!=null) {
-                vectors.add(vec);
-            }
-        }
-        if(vectors.isEmpty()) return null;
-        INDArray features = Nd4j.create(new int[]{vectors.size(),k,VALID_CHARS.length});
-        for(int i = 0; i < vectors.size(); i++) {
-            features.put(new INDArrayIndex[]{NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.all()}, vectors.get(i));
-        }
-        return new DataSet(features,textAndLabelPair.getSecond());
+        return next;
     }
 
 
 
     public static INDArray textToCharVector(String text) {
         char[] chars = text.toCharArray();
-        List<INDArray> vectors = IntStream.range(0,chars.length).mapToObj(i->chars[i]).map(ch->CHAR_TO_VEC_MAP.get(ch)).filter(v->v!=null).map(v->v.dup()).collect(Collectors.toList());
+        List<INDArray> vectors = IntStream.range(0,chars.length).mapToObj(i->chars[i]).map(ch->CHAR_TO_VEC_MAP.get(ch)).map(v->v.dup()).collect(Collectors.toList());
         if(vectors.isEmpty()) return null;
-        return Nd4j.vstack(vectors);
+        return Nd4j.vstack(vectors).mean(0);
     };
 
     @Override
@@ -96,7 +83,7 @@ public class CharacterNGramIterator implements DataSetIterator {
 
     @Override
     public boolean asyncSupported() {
-        return true;
+        return false;
     }
 
     @Override
@@ -136,7 +123,26 @@ public class CharacterNGramIterator implements DataSetIterator {
 
     @Override
     public boolean hasNext() {
-        return textAndLabelIterator.hasNext();
+        next=null;
+        while(textAndLabelIterator.hasNext()&&next==null) {
+            Pair<String, INDArray> textAndLabelPair = textAndLabelIterator.next();
+            String text = textAndLabelPair.getFirst().toLowerCase().replaceAll("[^a-z ]", " ");
+            List<INDArray> vectors = Collections.synchronizedList(new ArrayList<>());
+            if (text.length() > k) {
+                for (int i = 0; i < batch(); i++) {
+                    int r = rand.nextInt(text.length() - k);
+                    String sample = text.substring(r, r + k);
+                    INDArray vec = textToCharVector(sample);
+                    vectors.add(vec);
+                }
+                if (vectors.size()>0) {
+                    INDArray features = Nd4j.hstack(vectors);
+                    INDArray label = textAndLabelPair.getSecond();
+                    next = new DataSet(features, label);
+                }
+            }
+        }
+        return next!=null;
     }
 
     @Override

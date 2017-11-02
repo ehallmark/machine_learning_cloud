@@ -109,22 +109,32 @@ public class Flag {
     };
 
     public static final Function<Flag,Function<String,?>> unknownDocumentHandler = (flag) -> (str) -> {
+        boolean hadSlash = str.contains("/");
         str = str.replace(" ","").replace("/","");
         String kind = flag.getDataForField(Constants.DOC_KIND);
-        if(kind.startsWith("S")) {
-            // design
-            if(str.startsWith("D0")) str = "D"+str.substring(2);
-        } else if (kind.trim().equals("A")||kind.equals("00")||kind.equals("X0")) {
+        if((hadSlash&&(str.length()==7||str.length()==8))||kind.trim().equals("A")||kind.equals("00")||kind.equals("X0")) {
             // filing?
             return filingDocumentHandler.apply(flag).apply(str);
-        } else if(kind.startsWith("B")) {
-            if(str.startsWith("0")) str = str.substring(1);
-        } else if(kind.startsWith("E")) {
-            //reissue
-            if(str.startsWith("RE0")) str = "RE" + str.substring(3);
         }
+        while(str.startsWith("0")&&str.length()>0) str = str.substring(1);
+        if(str.startsWith("RE")) str = normalizeSpecialPatents(str,"RE",6);
+        else if(str.startsWith("D")) str = normalizeSpecialPatents(str,"D",7);
+        else if(str.startsWith("PP")) str = normalizeSpecialPatents(str, "PP", 6);
+        else if(str.startsWith("H")) str = normalizeSpecialPatents(str, "H", 7);
+        else if(str.startsWith("X")) str = normalizeSpecialPatents(str, "X", 7);
+        else if(str.startsWith("T")) str = normalizeSpecialPatents(str, "T", 7);
         return str;
     };
+
+    public static String normalizeSpecialPatents(String patent, String prefix, int digitLength) {
+        if(patent.startsWith(prefix)&&patent.length()>prefix.length()) {
+            String digits = patent.substring(prefix.length());
+            while(digits.startsWith("0")&&digits.length()>0) digits=digits.substring(1);
+            while(digits.length()<digitLength) digits="0"+digits;
+            patent = prefix + digits;
+        }
+        return patent;
+    }
 
     public final String localName;
     public String currentTag;

@@ -81,6 +81,7 @@ public class DatabaseIterator {
 
         Map<String,Function<Flag,Function<String,?>>> transformationFunctionMap = Collections.synchronizedMap(new HashMap<>());
         transformationFunctionMap.put(Constants.FILING_NAME, Flag.filingDocumentHandler);
+        transformationFunctionMap.put(Constants.NAME,Flag.unknownDocumentHandler);
         transformationFunctionMap.put(Constants.PUBLICATION_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.FILING_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.ASSIGNEE,Flag.assigneeTransformationFunction);
