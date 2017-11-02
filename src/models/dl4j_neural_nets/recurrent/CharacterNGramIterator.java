@@ -150,7 +150,7 @@ public class CharacterNGramIterator implements DataSetIterator {
                 new Pair<>("here is some text",Nd4j.ones(10)),
                 new Pair<>("and more tesxt 029385lkzdjg zzjx weriwht other bad nuaad''a3 chars", Nd4j.zeros(20))
         ).iterator();
-        CharacterNGramIterator iter = new CharacterNGramIterator(3,test,10);
+        CharacterNGramIterator iter = new CharacterNGramIterator(8,test,10);
         while(iter.hasNext()) {
             DataSet ds = iter.next();
             System.out.println("Features: "+ds.getFeatures().toString());
