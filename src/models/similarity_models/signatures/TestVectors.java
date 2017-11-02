@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
  */
 public class TestVectors {
     public static void main(String[] args) {
-        CPCSimilarityVectorizer vectorizer = new CPCSimilarityVectorizer(true);
+        CPCSimilarityVectorizer vectorizer = new CPCSimilarityVectorizer(false);
 
         List<String> assets = vectorizer.getAssetToIdxMap().entrySet().stream().map(e->e.getKey()).limit(20).collect(Collectors.toList());
 
