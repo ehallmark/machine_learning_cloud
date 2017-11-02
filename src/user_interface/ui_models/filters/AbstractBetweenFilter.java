@@ -11,8 +11,11 @@ import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.StringJoiner;
 import java.util.function.Function;
 
@@ -62,11 +65,17 @@ public class AbstractBetweenFilter extends AbstractFilter {
     @Override
     protected String transformAttributeScript(String script) {
         StringJoiner query = new StringJoiner(" && ");
-        if(min!=null) {
-            query.add("(("+script+") >= "+min+")");
+        Object minTmp = min;
+        Object maxTmp = max;
+        if(getFieldType().equals(FieldType.Date)) {
+            if(minTmp!=null) minTmp = Date.from(Instant.from(LocalDate.parse(minTmp.toString()))).getTime();
+            if(maxTmp!=null) maxTmp = Date.from(Instant.from(LocalDate.parse(maxTmp.toString()))).getTime();
         }
-        if(max!=null) {
-            query.add("(("+script+") < "+max+")");
+        if(minTmp!=null) {
+            query.add("(("+script+") >= "+minTmp+")");
+        }
+        if(maxTmp!=null) {
+            query.add("(("+script+") < "+maxTmp+")");
         }
         return query.toString();
     }
