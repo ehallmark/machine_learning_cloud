@@ -392,6 +392,7 @@ public class SimilarPatentServer {
                         return new DefaultSimilarityModel(Collections.emptyList());
                     }
                 };
+                DEFAULT_SIMILARITY_MODEL.fork();
             }
             similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL, DEFAULT_SIMILARITY_MODEL);
         }

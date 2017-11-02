@@ -13,6 +13,7 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -68,8 +69,8 @@ public class AbstractBetweenFilter extends AbstractFilter {
         Object minTmp = min;
         Object maxTmp = max;
         if(getFieldType().equals(FieldType.Date)) {
-            if(minTmp!=null) minTmp = Date.from(Instant.from(LocalDate.parse(minTmp.toString()))).getTime();
-            if(maxTmp!=null) maxTmp = Date.from(Instant.from(LocalDate.parse(maxTmp.toString()))).getTime();
+            if(minTmp!=null) minTmp = LocalDate.parse(minTmp.toString(),DateTimeFormatter.ISO_DATE).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
+            if(maxTmp!=null) maxTmp = LocalDate.parse(maxTmp.toString(),DateTimeFormatter.ISO_DATE).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
         }
         if(minTmp!=null) {
             query.add("(("+script+") >= "+minTmp+")");
