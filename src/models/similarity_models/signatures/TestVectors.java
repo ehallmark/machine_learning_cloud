@@ -24,12 +24,14 @@ public class TestVectors {
         assets.forEach(asset->{
             MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(10);
             INDArray vec = vectorizer.vectorFor(asset);
-            IntStream.range(0,matrix.rows()).parallel().forEach(i->{
-                double sim = Transforms.cosineSim(matrix.getRow(i),vec);
-                synchronized (heap) {
-                    heap.add(new WordFrequencyPair<>(vectorizer.getIdxToAssetMap().get(i), sim));
-                }
-            });
+            if(vec!=null) {
+                IntStream.range(0, matrix.rows()).parallel().forEach(i -> {
+                    double sim = Transforms.cosineSim(matrix.getRow(i), vec);
+                    synchronized (heap) {
+                        heap.add(new WordFrequencyPair<>(vectorizer.getIdxToAssetMap().get(i), sim));
+                    }
+                });
+            }
 
             List<WordFrequencyPair<String,Double>> similar = new ArrayList<>();
             while(!heap.isEmpty()) {
