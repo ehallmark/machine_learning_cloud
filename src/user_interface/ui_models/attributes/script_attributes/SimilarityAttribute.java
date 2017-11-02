@@ -42,7 +42,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
         System.out.println("Inverse distance script: "+DISTANCE_SIM);
         System.out.println("Cosine distance script: "+COSINE_SIM);
 
-        boolean useCosineSim = false;
+        boolean useCosineSim = true;
         if(useCosineSim) {
             EXPRESSION_SIMILARITY_SCRIPT = COSINE_SIM;
         } else {
