@@ -4,26 +4,17 @@ import org.apache.commons.math3.util.Pair;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.activations.IActivation;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.indexing.BooleanIndexing;
-import org.nd4j.linalg.indexing.conditions.Conditions;
 import org.nd4j.linalg.lossfunctions.ILossFunction;
-import org.nd4j.linalg.lossfunctions.LossUtil;
 import org.nd4j.linalg.ops.transforms.Transforms;
 
 /**
  * Created by ehallmark on 11/1/17.
  */
-public class GeneratorLossFunction implements ILossFunction {
-    private ComputationGraph adversary;
-
-    public GeneratorLossFunction(ComputationGraph adversary) {
-        this.adversary=adversary;
-    }
+public class AdversaryLossFunction implements ILossFunction {
 
     public INDArray scoreArray(INDArray labels, INDArray preOutput, IActivation activationFn, INDArray mask) {
         INDArray output = activationFn.getActivation(preOutput.dup(), true);
-        INDArray predictions = adversary.output(false, output)[0];
-        INDArray score = Transforms.log(predictions,true).negi();
+        INDArray score = Transforms.log(output,true).muli(labels.rsub(1)).addi(Transforms.log(output.rsub(1)).muli(labels)).negi();
         return score;
     }
 
