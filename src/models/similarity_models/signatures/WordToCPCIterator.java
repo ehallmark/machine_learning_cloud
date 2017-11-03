@@ -182,10 +182,10 @@ public class WordToCPCIterator {
     }
 
     private DataSet dataSetFromPair(List<Pair<String,Collection<String>>> pairs) {
-        pairs = pairs.stream().filter(p->cpcVectorizer.getAssetToIdxMap().containsKey(p.getFirst())).collect(Collectors.toList());
-        INDArray input = createVector(pairs.stream().map(p->p.getSecond()));
+        List<Pair<INDArray,Collection<String>>> vecPairs = pairs.stream().map(p->new Pair<>(cpcVectorizer.vectorFor(p.getFirst()),p.getSecond())).filter(p->p.getFirst()!=null).collect(Collectors.toList());
+        INDArray input = createVector(vecPairs.stream().map(p->p.getSecond()));
         if(input == null) return null;
-        INDArray output = Nd4j.vstack(pairs.stream().map(p->cpcVectorizer.vectorFor(p.getFirst())).collect(Collectors.toList()));
+        INDArray output = Nd4j.vstack(vecPairs.stream().map(p->p.getFirst()).collect(Collectors.toList()));
         return new DataSet(input,output);
     }
 

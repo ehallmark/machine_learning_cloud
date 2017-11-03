@@ -14,11 +14,11 @@ import java.util.Collection;
  */
 public class UpdateSimilarityModels {
     public static void main(String[] args) throws Exception {
-        updateLatest();
+        updateLatest(null);
     }
 
-    public static void updateLatest() throws Exception {
+    public static void updateLatest(Collection<String> assets) throws Exception {
         // Update CPC encodings
-        CPCSimilarityVectorizer.main(null);
+        CPCSimilarityVectorizer.updateLatest(assets);
     }
 }

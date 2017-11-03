@@ -2,6 +2,7 @@ package seeding;
 
 import elasticsearch.DataIngester;
 import elasticsearch.IngestMongoIntoElasticSearch;
+import models.similarity_models.UpdateSimilarityModels;
 import models.value_models.UpdateValueModels;
 import org.bson.Document;
 import seeding.ai_db_updater.UpdateAll;
@@ -35,6 +36,13 @@ public class IngestRecentUpdatesPart1 {
             System.out.println("Num new assets: " + newAssets.size());
             Database.trySaveObject(newAssets, newAssetsFile);
 
+            try {
+                // add encodings
+                UpdateSimilarityModels.updateLatest(newAssets);
+            } catch(Exception e) {
+                System.out.println("Error updating encodings...");
+                e.printStackTrace();
+            }
         } catch(Exception e) {
             System.out.println("Error during seeding...");
             e.printStackTrace();
