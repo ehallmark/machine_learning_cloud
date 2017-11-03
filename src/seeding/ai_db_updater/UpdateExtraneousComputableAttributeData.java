@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class UpdateExtraneousComputableAttributeData {
     public static void main(String[] args) {
         SimilarPatentServer.initialize(true,false);
-        Vectorizer vectorizer = new CPCSimilarityVectorizer(false);
+        Vectorizer vectorizer = new CPCSimilarityVectorizer(false, true, false);
         SimilarPatentServer.loadAndIngestAllItemsWithAttributes(SimilarPatentServer.getAllComputableAttributes().stream().filter(a->!(a instanceof HiddenAttribute)).collect(Collectors.toList()),vectorizer);
     }
 

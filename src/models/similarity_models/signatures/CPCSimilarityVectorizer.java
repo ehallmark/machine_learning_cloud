@@ -26,9 +26,13 @@ public class CPCSimilarityVectorizer implements Vectorizer {
     private static Map<String,INDArray> data;
 
     private boolean binarize;
-    public CPCSimilarityVectorizer(boolean binarize) {
+    private boolean normalize;
+    private boolean probability;
+    public CPCSimilarityVectorizer(boolean binarize, boolean normalize, boolean probability) {
         if(data==null) getLookupTable();
         this.binarize=binarize;
+        this.probability=probability;
+        this.normalize=normalize;
     }
 
     public INDArray vectorFor(String item) {
@@ -36,6 +40,8 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         INDArray vec = data.get(item);
         if(vec==null) return null;
         if(binarize) vec = binarize(vec);
+        if(probability) vec = probability(vec);
+        if(normalize) vec = normalize(vec);
         return vec;
     }
 
@@ -60,7 +66,15 @@ public class CPCSimilarityVectorizer implements Vectorizer {
     }
 
     private INDArray binarize(INDArray in) {
-        return NDArrayHelper.createProbabilityVectorFromGaussian(in).gtei(0.5);
+        return in.gte(0.0);
+    }
+
+    private INDArray normalize(INDArray in) {
+        return in.div(in.norm2Number());
+    }
+
+    private INDArray probability(INDArray in) {
+        return Transforms.sigmoid(in,true);
     }
 
     public synchronized static Map<String,INDArray> getLookupTable() {

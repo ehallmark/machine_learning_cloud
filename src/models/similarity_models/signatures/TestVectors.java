@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  */
 public class TestVectors {
     public static void main(String[] args) {
-        CPCSimilarityVectorizer vectorizer = new CPCSimilarityVectorizer(false);
+        CPCSimilarityVectorizer vectorizer = new CPCSimilarityVectorizer(false, true, false);
 
         List<String> assets = Database.getCopyOfAllPatents().stream().limit(20).collect(Collectors.toList());
 

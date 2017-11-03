@@ -71,7 +71,7 @@ public class WordToCPCIterator {
     private Set<String> testAssets = Collections.synchronizedSet(new HashSet<>());
     @Setter
     private MultiLayerNetwork network;
-    public WordToCPCIterator(MultiLayerNetwork network, int batchSize, int limit, int seed, int minWordCount, boolean binarize) {
+    public WordToCPCIterator(MultiLayerNetwork network, int batchSize, int limit, int seed, int minWordCount, boolean binarize, boolean normalize, boolean probability) {
         //Properties props = new Properties();
         //props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         //pipeline = new StanfordCoreNLP(props);
@@ -80,7 +80,7 @@ public class WordToCPCIterator {
         this.limit=limit;
         this.minWordCount=minWordCount;
         this.seed=seed;
-        cpcVectorizer = new CPCSimilarityVectorizer(binarize);
+        cpcVectorizer = new CPCSimilarityVectorizer(binarize, normalize, probability);
     }
 
     public double test() {

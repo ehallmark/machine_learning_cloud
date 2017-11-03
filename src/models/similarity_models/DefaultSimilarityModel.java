@@ -13,6 +13,6 @@ public class DefaultSimilarityModel extends BaseSimilarityModel {
 
     public DefaultSimilarityModel(Collection<String> candidateSet) {
         super(candidateSet.stream().map(str->new Item(str)).collect(Collectors.toList()),
-                new CPCSimilarityVectorizer(false));
+                new CPCSimilarityVectorizer(false, true, false));
     }
 }

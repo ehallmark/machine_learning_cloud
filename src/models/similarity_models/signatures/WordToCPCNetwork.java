@@ -42,8 +42,9 @@ public class WordToCPCNetwork {
         final int printIterations = 50;
         final int nEpochs = 5;
         final boolean binarize = false;
-
-        WordToCPCIterator iterator = new WordToCPCIterator(null, batchSize, vocabSampling, seed, minWordCount, binarize);
+        final boolean normalize = true;
+        final boolean probability = true;
+        WordToCPCIterator iterator = new WordToCPCIterator(null, batchSize, vocabSampling, seed, minWordCount, binarize, normalize, probability);
 
         Map<String,Integer> idxMap;
         if(!rerunVocab&&wordIdxMapFile.exists()) {
