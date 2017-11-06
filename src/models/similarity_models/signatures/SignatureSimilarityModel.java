@@ -42,7 +42,7 @@ public class SignatureSimilarityModel implements Serializable  {
     private static final long serialVersionUID = 1L;
     public static final int VECTOR_SIZE = 32;
     public static final int MAX_CPC_DEPTH = 4;
-    public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_tanh_neural_network.jobj");
+    public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_tanh_neural_network_11-6-2017.jobj");
 
     private transient Map<String,? extends Collection<CPC>> cpcMap;
     @Getter
@@ -164,7 +164,7 @@ public class SignatureSimilarityModel implements Serializable  {
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)
                     .learningRate(0.025)
-                    .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                    .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                     .updater(Updater.RMSPROP).rmsDecay(0.95)
                     //.momentum(0.8)
                     .miniBatch(true)
@@ -293,7 +293,7 @@ public class SignatureSimilarityModel implements Serializable  {
     }
 
     public static void main(String[] args) throws Exception {
-        int batchSize = 32;
+        int batchSize = 64;
         int nEpochs = 5;
         File modelFile = getModelFile(networkFile,MAX_CPC_DEPTH);
         boolean loadModel = modelFile.exists();
