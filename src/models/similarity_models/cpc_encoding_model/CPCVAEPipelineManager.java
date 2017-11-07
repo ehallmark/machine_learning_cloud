@@ -145,7 +145,7 @@ public class CPCVAEPipelineManager implements PipelineManager {
 
     public static void main(String[] args) throws Exception {
         // start with data pipeline
-        boolean recreateDatasets = true;
+        boolean recreateDatasets = false;
         boolean recreateNeuralNetworks = true;
 
         CPCVAEPipelineManager pipelineManager = new CPCVAEPipelineManager();

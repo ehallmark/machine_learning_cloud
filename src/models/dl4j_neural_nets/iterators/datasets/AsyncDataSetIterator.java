@@ -28,7 +28,7 @@ public class AsyncDataSetIterator implements DataSetIterator {
 
     @Override
     public DataSet next() {
-        return next(iterator.batch());
+        return next(-1);
     }
 
     private void startThreads() {
