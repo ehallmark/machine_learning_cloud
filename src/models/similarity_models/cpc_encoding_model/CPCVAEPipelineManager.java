@@ -55,11 +55,13 @@ public class CPCVAEPipelineManager implements PipelineManager {
 
     public synchronized Map<String,? extends Collection<CPC>> getCPCMap() {
         if(cpcMap==null) {
+            Set<String> allAssets = new HashSet<>(Database.getAllPatentsAndApplications());
             getHierarchy();
             Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
             patentToCPCStringMap.putAll(new AssetToCPCMap().getApplicationDataMap());
             patentToCPCStringMap.putAll(new AssetToCPCMap().getPatentDataMap());
             cpcMap = patentToCPCStringMap.entrySet().parallelStream()
+                    .filter(e->allAssets.contains(e.getKey()))
                     .collect(Collectors.toMap(e->e.getKey(), e->e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
                             .filter(cpc->cpc!=null)
                             .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
@@ -91,6 +93,7 @@ public class CPCVAEPipelineManager implements PipelineManager {
     @Override
     public void loadRawDatasets() {
         System.out.println("Starting to recreate datasets...");
+        int limit = 5000000;
         List<String> allAssets;
         List<String> testAssets;
         List<String> validationAssets;
@@ -106,16 +109,18 @@ public class CPCVAEPipelineManager implements PipelineManager {
         getCPCMap();
         System.out.println("Loaded cpcMap");
         allAssets = new ArrayList<>(cpcMap.keySet().parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
+
+        System.out.println("Splitting test and train");
         Random rand = new Random(69);
         Collections.shuffle(allAssets,rand);
         testAssets = new ArrayList<>();
-        trainAssets = new ArrayList<>();
+        testAssets.addAll(allAssets.subList(0,25000));
         validationAssets = new ArrayList<>();
-        System.out.println("Splitting test and train");
-        for(int i = 0; i < 25000; i++) {
-            testAssets.add(allAssets.remove(allAssets.size()-1));
-            validationAssets.add(allAssets.remove(allAssets.size()-1));
-        }
+        validationAssets.addAll(allAssets.subList(25000,50000));
+        trainAssets = new ArrayList<>();
+        trainAssets.addAll(allAssets.subList(50000,Math.min(allAssets.size(),limit+50000)));
+        allAssets.clear();
+
         System.out.println("Finished splitting test and train.");
         System.out.println("Num training: "+trainAssets.size());
         System.out.println("Num test: "+testAssets.size());
