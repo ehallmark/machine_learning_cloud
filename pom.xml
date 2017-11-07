@@ -269,21 +269,6 @@
             <artifactId>zip4j</artifactId>
             <version>1.3.2</version>
         </dependency>
-        <dependency>
-            <groupId>H5</groupId>
-            <artifactId>H5</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/HDFJava/3.3.2/lib/jarhdf5-3.3.2.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>H5.dll</groupId>
-            <artifactId>H5.dll</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <type>dll</type>
-            <systemPath>${basedir}/lib/HDFJava/3.3.2/lib/libjhdf5.dylib</systemPath>
-        </dependency>
     </dependencies>
 
 
