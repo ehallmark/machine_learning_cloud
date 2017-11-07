@@ -38,10 +38,12 @@ public class DatasetManager {
 
     public void removeDataFromDisk() {
         try {
+            System.out.println("Removing previous datasets...");
             FileUtils.deleteDirectory(baseDir);
         } catch(Exception e) {
-            baseDir.mkdir();
+            System.out.println("Error removing previous datasets: "+e.getMessage());
         }
+        baseDir.mkdir();
     }
 
     public DataSetIterator getTrainingIterator() {
