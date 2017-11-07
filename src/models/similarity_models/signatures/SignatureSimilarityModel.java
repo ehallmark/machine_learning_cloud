@@ -44,20 +44,25 @@ public class SignatureSimilarityModel implements Serializable  {
     public static final int MAX_CPC_DEPTH = 4;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_tanh_neural_network_11-6-2017.jobj");
 
+    @Getter
     private transient Map<String,? extends Collection<CPC>> cpcMap;
     @Getter
     private transient List<String> allAssets;
+    @Getter
     private transient List<String> testAssets;
-    private transient List<String> smallTestSet;
+    @Getter
+    private transient List<String> validationAssets;
+    @Getter
     private transient List<String> trainAssets;
     private transient MultiLayerNetwork net;
     private transient CPCHierarchy hierarchy;
     @Setter
     private int batchSize;
     private int nEpochs;
+    @Getter
     private Map<String,Integer> cpcToIdxMap;
     private transient AtomicBoolean isSaved;
-    private SignatureSimilarityModel(CPCHierarchy hierarchy, int batchSize, int nEpochs) {
+    public SignatureSimilarityModel(CPCHierarchy hierarchy, int batchSize, int nEpochs) {
         this.batchSize=batchSize;
         this.hierarchy=hierarchy;
         this.isSaved=new AtomicBoolean(false);
@@ -118,16 +123,12 @@ public class SignatureSimilarityModel implements Serializable  {
         Collections.shuffle(allAssets,rand);
         testAssets = new ArrayList<>();
         trainAssets = new ArrayList<>();
-        smallTestSet = new ArrayList<>();
+        validationAssets = new ArrayList<>();
         System.out.println("Splitting test and train");
-        allAssets.forEach(asset->{
-            if(rand.nextBoolean()&&rand.nextBoolean()&&rand.nextBoolean()) {
-                testAssets.add(asset);
-            } else {
-                trainAssets.add(asset);
-            }
-        });
-        smallTestSet.addAll(testAssets.subList(0,20000));
+        for(int i = 0; i < 25000; i++) {
+            testAssets.add(allAssets.remove(rand.nextInt(allAssets.size())));
+            validationAssets.add(allAssets.remove(rand.nextInt(allAssets.size())));
+        }
         if(reshuffleTrainingAssets) {
             Collections.shuffle(trainAssets, rand);
         }
@@ -191,7 +192,7 @@ public class SignatureSimilarityModel implements Serializable  {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         Function<Void,Double> testFunction = (v) -> {
-            return test(getIterator(smallTestSet,cpcToIdxMap, true), vae);
+            return test(getIterator(validationAssets,cpcToIdxMap, true), vae);
         };
         Function<Void,Void> saveFunction = (v) -> {
             try {
@@ -316,7 +317,7 @@ public class SignatureSimilarityModel implements Serializable  {
         // test restore model
         System.out.println("Restoring model test");
         SignatureSimilarityModel clone = restoreAndInitModel(MAX_CPC_DEPTH,true);
-        List<String> assetSample = clone.smallTestSet;
+        List<String> assetSample = clone.validationAssets;
         System.out.println("Testing encodings");
         Map<String,INDArray> vectorMap = clone.encode(assetSample);
 
