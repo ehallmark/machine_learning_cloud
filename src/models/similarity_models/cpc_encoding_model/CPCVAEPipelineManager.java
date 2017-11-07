@@ -124,7 +124,9 @@ public class CPCVAEPipelineManager implements PipelineManager {
         System.out.println("Finished splitting test and train.");
         System.out.println("Num training: "+trainAssets.size());
         System.out.println("Num test: "+testAssets.size());
+        System.out.println("Num validation: "+validationAssets.size());
 
+        if(!dataFolder.exists()) dataFolder.mkdir();
         datasetManager = new DatasetManager(dataFolder,
                 getRawIterator(trainAssets, false),
                 getRawIterator(testAssets,true),

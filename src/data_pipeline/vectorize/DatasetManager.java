@@ -22,6 +22,7 @@ public class DatasetManager {
     private DataSetIterator rawVal;
     private File baseDir;
     public DatasetManager(File baseDir, DataSetIterator rawTrain, DataSetIterator rawTest, DataSetIterator rawVal) {
+        if(!baseDir.exists()) baseDir.mkdir();
         if(!baseDir.isDirectory()) throw new RuntimeException("Must be a directory...");
         this.rawTrain=rawTrain;
         this.rawTest=rawTest;
