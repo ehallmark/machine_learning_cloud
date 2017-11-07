@@ -1,4 +1,4 @@
-package models.similarity_models.signatures;
+package models.similarity_models.cpc_encoding_model;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
@@ -7,6 +7,9 @@ import data_pipeline.PipelineManager;
 import data_pipeline.vectorize.DatasetManager;
 import lombok.Getter;
 import lombok.Setter;
+import models.similarity_models.signatures.CPCDataSetIterator;
+import models.similarity_models.signatures.NDArrayHelper;
+import models.similarity_models.signatures.StoppingConditionMetException;
 import models.similarity_models.signatures.scorers.DefaultScoreListener;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
@@ -23,6 +26,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.learning.Adam;
 import seeding.Constants;
 import seeding.Database;
 import tools.ClassCodeHandler;
@@ -40,38 +44,27 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 10/26/17.
  */
-public class SignatureSimilarityModel implements Serializable  {
-    private static final long serialVersionUID = 1L;
+public class CPCVariationalAutoEncoderNN  {
     public static final int VECTOR_SIZE = 32;
-    public static final int MAX_CPC_DEPTH = 4;
-    public static final File networkFile = new File(Constants.DATA_FOLDER+"signature_tanh_neural_network_11-6-2017.jobj");
+    public static final File networkFile = new File(Constants.DATA_FOLDER+"cpc_deep_vae_nn.jobj");
 
     @Getter
-    private transient Map<String,? extends Collection<CPC>> cpcMap;
-    @Getter
-    private transient List<String> allAssets;
-    @Getter
-    private transient List<String> testAssets;
-    @Getter
-    private transient List<String> validationAssets;
-    @Getter
-    private transient List<String> trainAssets;
     private transient MultiLayerNetwork net;
-    private transient CPCHierarchy hierarchy;
-    @Setter
-    private int batchSize;
-    private int nEpochs;
     @Getter
-    private Map<String,Integer> cpcToIdxMap;
+    private transient Map<String,Integer> cpcToIdxMap;
     private transient AtomicBoolean isSaved;
-    public SignatureSimilarityModel(CPCHierarchy hierarchy, int batchSize, int nEpochs) {
-        this.batchSize=batchSize;
-        this.hierarchy=hierarchy;
+    private transient CPCVAEPipelineManager pipelineManager;
+    public CPCVariationalAutoEncoderNN() {
+        this.pipelineManager= new CPCVAEPipelineManager();
+        this.cpcToIdxMap = pipelineManager.getOrLoadIdxMap();
         this.isSaved=new AtomicBoolean(false);
-        this.nEpochs=nEpochs;
     }
 
     public Map<String,INDArray> encode(List<String> assets) {
+        return encode(assets,pipelineManager.getCPCMap(),pipelineManager.getBatchSize());
+    }
+
+    public Map<String,INDArray> encode(List<String> assets, Map<String, ? extends Collection<CPC>> cpcMap, int batchSize) {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         assets = assets.stream().filter(asset->cpcMap.containsKey(asset)).collect(Collectors.toList());
@@ -82,14 +75,6 @@ public class SignatureSimilarityModel implements Serializable  {
             System.out.println(idx.get());
             DataSet ds = iterator.next();
             INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
-            //double[] norms = encoding.norm2(1).data().asDouble();
-            /*
-            if(probabilityVectors.max(1).gt(1).sumNumber().doubleValue() > 0d) {
-                throw new RuntimeException("ERROR WITH PROBABILITY VECTOR (> 1): "+probabilityVectors.toString());
-            }
-            if(probabilityVectors.min(1).lt(0).sumNumber().doubleValue() > 0d) {
-                throw new RuntimeException("ERROR WITH PROBABILITY VECTOR (< 0): "+probabilityVectors.toString());
-            }*/
             for(int i = 0; i < encoding.rows() && idx.get()<assets.size(); i++) {
                 INDArray vector = encoding.getRow(i);
                 assetToEncodingMap.put(assets.get(idx.getAndIncrement()), vector);
@@ -98,57 +83,11 @@ public class SignatureSimilarityModel implements Serializable  {
         return assetToEncodingMap;
     };
 
-    public void init() {
-        Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
-        patentToCPCStringMap.putAll(new AssetToCPCMap().getApplicationDataMap());
-        patentToCPCStringMap.putAll(new AssetToCPCMap().getPatentDataMap());
-        cpcMap = patentToCPCStringMap.entrySet().parallelStream()
-                .collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
-                        .filter(cpc->cpc!=null)
-                        .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
-                        .distinct()
-                        .filter(cpc -> cpc.getNumParts() <= MAX_CPC_DEPTH)
-                        .filter(cpc -> cpcToIdxMap==null||cpcToIdxMap.containsKey(cpc.getName()))
-                        .collect(Collectors.toSet())))
-                .entrySet().parallelStream()
-                .filter(e->e.getValue().size()>0)
-                .collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
-        boolean reshuffleTrainingAssets = cpcToIdxMap!=null;
-        if(cpcToIdxMap==null){
-            System.out.println("WARNING: Reindexing CPC Codes...");
-            AtomicInteger idx = new AtomicInteger(0);
-            cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e->e.getValue().getNumParts()<=MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
-            System.out.println("Input size: " + cpcToIdxMap.size());
-        }
-        allAssets = new ArrayList<>(cpcMap.keySet().parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
-        Random rand = new Random(69);
-        Collections.shuffle(allAssets,rand);
-        testAssets = new ArrayList<>();
-        trainAssets = new ArrayList<>();
-        validationAssets = new ArrayList<>();
-        System.out.println("Splitting test and train");
-        for(int i = 0; i < 25000; i++) {
-            testAssets.add(allAssets.remove(rand.nextInt(allAssets.size())));
-            validationAssets.add(allAssets.remove(rand.nextInt(allAssets.size())));
-        }
-        if(reshuffleTrainingAssets) {
-            Collections.shuffle(trainAssets, rand);
-        }
-        System.out.println("Finished splitting test and train.");
-        System.out.println("Num training: "+trainAssets.size());
-        System.out.println("Num test: "+testAssets.size());
-    }
 
-    private CPCDataSetIterator getIterator(List<String> assets, Map<String,Integer> cpcToIndexMap, boolean test) {
-        boolean shuffle = !test;
-        System.out.println("Shuffling? "+shuffle);
-        return new CPCDataSetIterator(assets,shuffle,test ? 1000 : batchSize,cpcMap,cpcToIndexMap);
-    }
-
-    public void train() {
+    public void train(int nEpochs) {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
-        CPCDataSetIterator trainIter = getIterator(trainAssets, cpcToIdxMap, false);
-        final int numInputs = trainIter.inputColumns();
+        DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
+        final int numInputs = cpcToIdxMap.size();
         final int printIterations = 100;
 
         if(net==null) {
@@ -168,8 +107,7 @@ public class SignatureSimilarityModel implements Serializable  {
                     .seed(rngSeed)
                     .learningRate(0.025)
                     .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
-                    .updater(Updater.RMSPROP).rmsDecay(0.95)
-                    //.momentum(0.8)
+                    .updater(Updater.ADAM)
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)
                     .regularization(true).l2(1e-4)
@@ -194,7 +132,7 @@ public class SignatureSimilarityModel implements Serializable  {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         Function<Void,Double> testFunction = (v) -> {
-            return test(getIterator(validationAssets,cpcToIdxMap, true), vae);
+            return test(pipelineManager.getDatasetManager().getValidationIterator(), vae);
         };
         Function<Void,Void> saveFunction = (v) -> {
             try {
@@ -210,14 +148,13 @@ public class SignatureSimilarityModel implements Serializable  {
 
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
-            //net.fit(trainIter);
             try {
                 net.fit(trainIter);
             } catch(StoppingConditionMetException s) {
                 System.out.println("Stopping condition met");
             }
             System.out.println("Testing overall model: EPOCH "+i);
-            double finalTestError = test(getIterator(testAssets,cpcToIdxMap, true),vae);
+            double finalTestError = test(pipelineManager.getDatasetManager().getValidationIterator(),vae);
             System.out.println("Final Overall Model Error: "+finalTestError);
             if(stoppingCondition.get()) {
                 break;
@@ -256,12 +193,11 @@ public class SignatureSimilarityModel implements Serializable  {
         if(net!=null) {
             isSaved.set(true);
             saveNetwork(true);
-            Database.trySaveObject(this, getInstanceFile(networkFile,MAX_CPC_DEPTH));
         }
     }
 
     private void saveNetwork(boolean saveUpdater) throws IOException{
-        ModelSerializer.writeModel(net,getModelFile(networkFile,MAX_CPC_DEPTH),saveUpdater);
+        ModelSerializer.writeModel(net,getModelFile(networkFile,pipelineManager.getMaxCpcDepth()),saveUpdater);
     }
 
     public synchronized boolean isSaved() {
@@ -272,59 +208,16 @@ public class SignatureSimilarityModel implements Serializable  {
         return new File(file.getAbsoluteFile()+"-net-cpcdepth"+cpcDepth);
     }
 
-    private static File getInstanceFile(File file, int cpcDepth) {
-        return new File(file.getAbsoluteFile()+"-instance-cpcdepth"+cpcDepth);
-    }
-
-    public static SignatureSimilarityModel restoreAndInitModel(int cpcDepth, boolean loadUpdater) throws IOException{
+    public static CPCVariationalAutoEncoderNN restoreAndInitModel(int cpcDepth, boolean loadUpdater) throws IOException{
         File modelFile = getModelFile(networkFile,cpcDepth);
-        File instanceFile = getInstanceFile(networkFile,cpcDepth);
         if(!modelFile.exists()) {
             throw new RuntimeException("Model file not found: "+modelFile.getAbsolutePath());
         }
-        if(!instanceFile.exists()) {
-            throw new RuntimeException("Instance file not found: "+instanceFile.getAbsolutePath());
-        }
-        SignatureSimilarityModel instance = (SignatureSimilarityModel)Database.tryLoadObject(instanceFile);
-        instance.net=ModelSerializer.restoreMultiLayerNetwork(modelFile,loadUpdater);
-        instance.isSaved= new AtomicBoolean(true);
-        CPCHierarchy hierarchy = new CPCHierarchy();
-        hierarchy.loadGraph();
-        instance.hierarchy = hierarchy;
-        instance.init();
+
+        CPCVariationalAutoEncoderNN instance = new CPCVariationalAutoEncoderNN();
+        instance.net = ModelSerializer.restoreMultiLayerNetwork(modelFile,loadUpdater);
+        instance.isSaved = new AtomicBoolean(true);
+
         return instance;
-    }
-
-    public static void main(String[] args) throws Exception {
-        int batchSize = 64;
-        int nEpochs = 5;
-        File modelFile = getModelFile(networkFile,MAX_CPC_DEPTH);
-        boolean loadModel = modelFile.exists();
-
-        CPCHierarchy cpcHierarchy = new CPCHierarchy();
-        cpcHierarchy.loadGraph();
-        SignatureSimilarityModel model;
-        if(loadModel) {
-            System.out.println("Warning: Using previous model.");
-            model = restoreAndInitModel(MAX_CPC_DEPTH,true);
-        } else {
-            model = new SignatureSimilarityModel(cpcHierarchy,batchSize,nEpochs);
-            model.init();
-        }
-        model.train();
-        if(!model.isSaved()) {
-            model.save();
-        }
-
-        // test restore model
-        System.out.println("Restoring model test");
-        SignatureSimilarityModel clone = restoreAndInitModel(MAX_CPC_DEPTH,true);
-        List<String> assetSample = clone.validationAssets;
-        System.out.println("Testing encodings");
-        Map<String,INDArray> vectorMap = clone.encode(assetSample);
-
-        vectorMap.entrySet().forEach(e->{
-            System.out.println(e.getKey()+": "+Arrays.toString(e.getValue().data().asFloat()));
-        });
     }
 }
