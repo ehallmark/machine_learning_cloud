@@ -55,13 +55,14 @@ public class CPCVAEPipelineManager implements PipelineManager {
 
     public synchronized Map<String,? extends Collection<CPC>> getCPCMap() {
         if(cpcMap==null) {
+            getHierarchy();
             Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
             patentToCPCStringMap.putAll(new AssetToCPCMap().getApplicationDataMap());
             patentToCPCStringMap.putAll(new AssetToCPCMap().getPatentDataMap());
             cpcMap = patentToCPCStringMap.entrySet().parallelStream()
-                    .collect(Collectors.toMap(e->e.getKey(), e->e.getValue().stream().map(label-> getHierarchy().getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
+                    .collect(Collectors.toMap(e->e.getKey(), e->e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
                             .filter(cpc->cpc!=null)
-                            .flatMap(cpc->getHierarchy().cpcWithAncestors(cpc).stream())
+                            .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
                             .distinct()
                             .filter(cpc -> cpc.getNumParts() <= MAX_CPC_DEPTH)
                             .filter(cpc -> cpcToIdxMap==null||cpcToIdxMap.containsKey(cpc.getName()))
@@ -94,14 +95,17 @@ public class CPCVAEPipelineManager implements PipelineManager {
         List<String> testAssets;
         List<String> validationAssets;
         List<String> trainAssets;
+        getHierarchy();
 
         System.out.println("WARNING: Reindexing CPC Codes...");
         AtomicInteger idx = new AtomicInteger(0);
-        cpcToIdxMap = getHierarchy().getLabelToCPCMap().entrySet().parallelStream().filter(e->e.getValue().getNumParts()<=MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
+        cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e->e.getValue().getNumParts()<=MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
         System.out.println("Input size: " + cpcToIdxMap.size());
         saveIdxMap();
 
-        allAssets = new ArrayList<>(getCPCMap().keySet().parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
+        getCPCMap();
+        System.out.println("Loaded cpcMap");
+        allAssets = new ArrayList<>(cpcMap.keySet().parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
         Random rand = new Random(69);
         Collections.shuffle(allAssets,rand);
         testAssets = new ArrayList<>();
