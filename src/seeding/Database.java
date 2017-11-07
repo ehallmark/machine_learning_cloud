@@ -36,7 +36,6 @@ public class Database {
 	private static Map<String,Set<String>> patentToClassificationMap;
 	private static Map<String,Set<String>> appToClassificationMap;
 	private static Map<String,String> classCodeToClassTitleMap;
-	private static Map<String,String> technologyMap;
 	private static Map<String,Collection<String>>  assigneeToPatentsMap;
 	private static Map<String,Collection<String>>  normalizedAssigneeToPatentsMap;
 	private static Map<String,Collection<String>> assigneeToAppsMap;
@@ -52,8 +51,6 @@ public class Database {
 	public static Set<String> compdbReelFrames;
 	public static final File compdbReelFramesFile = new File(Constants.DATA_FOLDER+"compdb_assets_set.jobj");
 	public static Set<String> allClassCodes;
-	public static Map<String,LocalDate> expirationDateMap;
-	public static final File expirationDateMapFile = new File(Constants.DATA_FOLDER+"expiration_date_map.jobj");
 	private static Map<String,Integer> assigneeToAssetsSoldCountMap;
 	private static Map<String,Integer> assigneeToAssetsPurchasedCountMap;
 	private static Map<String,Integer> compDBAssigneeToAssetsSoldCountMap;
@@ -68,9 +65,6 @@ public class Database {
 	private static Map<String,Boolean> gatherBoolValueMap;
 	private static final File gatherBoolValueFile = new File(Constants.DATA_FOLDER+"gather_patent_to_value_bool_map.jobj");
 	private static File gatherPatentToStagesCompleteFile = new File(Constants.DATA_FOLDER+"gather_patent_to_stages_complete_map.jobj");
-	public static Map<String,LocalDate> patentToPubDateMap;
-	public static Map<String,LocalDate> appToPriorityDateMap;
-	public static final File patentToPubDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_pubdate_map_file.jobj");
 	public static File allClassCodesFile = new File(Constants.DATA_FOLDER+"all_class_codes.jobj");
 	public static final File classCodeToClassTitleMapFile = new File(Constants.DATA_FOLDER+"class_code_to_class_title_map.jobj");
 	private static final String patentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=password&tcpKeepAlive=true";
@@ -93,8 +87,6 @@ public class Database {
 
 
 	private static Connection conn;
-
-	public static File appToPriorityDateMapFile = new File(Constants.DATA_FOLDER+"app_to_priority_date_map.jobj");
 
 	static {
 		resetConn();
@@ -126,14 +118,6 @@ public class Database {
 		Collection<String> all = getCopyOfAllPatents();
 		all.addAll(getCopyOfAllApplications());
 		return all;
-	}
-
-
-	public synchronized static Map<String,LocalDate> getExpirationDateMap() {
-		if(expirationDateMap==null) {
-			expirationDateMap = (Map<String,LocalDate>) loadObject(expirationDateMapFile);
-		}
-		return expirationDateMap;
 	}
 
 
@@ -190,9 +174,6 @@ public class Database {
 		getAssigneePrefixTrie();
 		getAssigneeToPatentsMap();
 		getAssigneeToAppsMap();
-		getPatentToPubDateMap();
-		getAppToPriorityDateMap();
-		getExpirationDateMap();
 	}
 
 	public synchronized static void initializeDatabase() {
@@ -275,21 +256,6 @@ public class Database {
 		return appToClassificationMap;
 	}
 
-	public synchronized static Map<String,LocalDate> getPatentToPubDateMap() {
-		if(patentToPubDateMap==null) {
-			patentToPubDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(patentToPubDateMapFile));
-		}
-		return patentToPubDateMap;
-	}
-
-	public synchronized static Map<String,LocalDate> getAppToPriorityDateMap() {
-		if(appToPriorityDateMap==null) {
-			appToPriorityDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(appToPriorityDateMapFile));
-		}
-		return appToPriorityDateMap;
-	}
-
-
 	public synchronized static void setupSeedConn() throws SQLException {
 		if(seedConn==null) {
 			seedConn = DriverManager.getConnection(patentDBUrl);
@@ -313,15 +279,6 @@ public class Database {
 			classCodeToClassTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(classCodeToClassTitleMapFile));
 		}
 		return classCodeToClassTitleMap;
-	}
-
-	public synchronized static Map<String,Collection<String>> getPatentToRelatedPatentsMap() {
-		return new AssetToRelatedAssetsMap().getPatentDataMap();
-
-	}
-
-	public synchronized static Map<String,Collection<String>> getAppToRelatedPatentsMap() {
-		return new AssetToRelatedAssetsMap().getApplicationDataMap();
 	}
 
 	public static Map<String,Collection<String>> getPatentToCitedPatentsMap() {
@@ -494,7 +451,7 @@ public class Database {
 		final String cleanBase = AssigneeTrimmer.standardizedAssignee(base);
 		if(cleanBase.isEmpty()) return Collections.emptyList();
 		SortedSet<String> possible = new TreeSet<>();
-		if(getAssignees().contains(cleanBase)) possible.add(cleanBase);
+		if(getNormalizedAssignees().contains(cleanBase)) possible.add(cleanBase);
 		getNormalizedAssigneePrefixTrie().getValuesForKeysStartingWith(cleanBase).forEach(a->possible.add(a));
 		return new ArrayList<>(possible);
 	}

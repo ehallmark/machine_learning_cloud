@@ -155,7 +155,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Gather Technology", Constants.GATHER_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Patent Rating", Constants.GATHER_VALUE);
             humanAttrToJavaAttrMap.put("Relation Type", Constants.RELATION_TYPE);
-            humanAttrToJavaAttrMap.put("Filing Name", Constants.FILING_NAME);
+            humanAttrToJavaAttrMap.put("Filing Number", Constants.FILING_NAME);
             humanAttrToJavaAttrMap.put("CompDB", Constants.COMPDB);
             humanAttrToJavaAttrMap.put("Granted", Constants.GRANTED);
             humanAttrToJavaAttrMap.put("Filing Date", Constants.FILING_DATE);
@@ -205,10 +205,12 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Lapsed", Constants.LAPSED);
             humanAttrToJavaAttrMap.put("Priority Date (estimated)", Constants.ESTIMATED_PRIORITY_DATE);
             humanAttrToJavaAttrMap.put("Expiration Date (estimated)", Constants.ESTIMATED_EXPIRATION_DATE);
-            humanAttrToJavaAttrMap.put("Exists in CompDB", Constants.EXISTS_IN_COMPDB_FILTER);
-            humanAttrToJavaAttrMap.put("Exists in Gather", Constants.EXISTS_IN_GATHER_FILTER);
-            humanAttrToJavaAttrMap.put("Does not exist in CompDB", Constants.DOES_NOT_EXIST_IN_COMPDB_FILTER);
-            humanAttrToJavaAttrMap.put("Does not exist in Gather", Constants.DOES_NOT_EXIST_IN_GATHER_FILTER);
+            humanAttrToJavaAttrMap.put("Exists in CompDB Filter", Constants.EXISTS_IN_COMPDB_FILTER);
+            humanAttrToJavaAttrMap.put("Exists in Gather Filter", Constants.EXISTS_IN_GATHER_FILTER);
+            humanAttrToJavaAttrMap.put("Does not exist in CompDB Filter", Constants.DOES_NOT_EXIST_IN_COMPDB_FILTER);
+            humanAttrToJavaAttrMap.put("Does not exist in Gather Filter", Constants.DOES_NOT_EXIST_IN_GATHER_FILTER);
+            // custom filter name for excluding granted apps
+            humanAttrToJavaAttrMap.put("Exclude Granted Applications Filter", Constants.GRANTED+ AbstractFilter.FilterType.BoolFalse+ Constants.FILTER_SUFFIX);
             humanAttrToJavaAttrMap.put("Related Docs", Constants.ALL_RELATED_ASSETS);
             // nested attrs
             humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
@@ -368,13 +370,16 @@ public class SimilarPatentServer {
     }
 
     private static void filterNameHelper(AbstractFilter filter) {
-        String filterHumanName = AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getPrerequisite()) + " Filter" : humanAttributeFor(filter.getPrerequisite())+ " " + humanAttributeFor(filter.getFilterType().toString());
-        System.out.println("Name for "+filter.getName()+": "+filterHumanName);
-        while(humanAttrToJavaAttrMap.containsKey(filterHumanName)) {
-            // already exists
-            filterHumanName = filterHumanName+RANDOM_TOKEN;
+        String filterHumanName;
+        if(!javaAttrToHumanAttrMap.containsKey(filter.getName())) {
+            // build name
+            filterHumanName = AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getPrerequisite()) + " Filter" : humanAttributeFor(filter.getPrerequisite()) + " " + humanAttributeFor(filter.getFilterType().toString());
+            while (humanAttrToJavaAttrMap.containsKey(filterHumanName)) {
+                // already exists
+                filterHumanName = filterHumanName + RANDOM_TOKEN;
+            }
+            humanAttrToJavaAttrMap.put(filterHumanName, filter.getName());
         }
-        humanAttrToJavaAttrMap.put(filterHumanName, filter.getName());
         if(filter instanceof AbstractNestedFilter) {
             ((AbstractNestedFilter)filter).getFilters().forEach(_nestedFilter->{
                 AbstractFilter nestedFilter = (AbstractFilter)_nestedFilter;
