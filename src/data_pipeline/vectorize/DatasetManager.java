@@ -72,11 +72,12 @@ public class DatasetManager {
 
     private void iterate(DataSetIterator iterator, File folder) {
         int idx = 0;
+        final int total = iterator.numExamples()/iterator.batch();
         while(iterator.hasNext()) {
             String filename = EXAMPLE+idx+BINARY_SUFFIX;
             iterator.next().save(new File(folder, filename));
             idx++;
-            System.out.println("Saved "+idx+" to "+filename);
+            System.out.println("Saved ["+idx+" / "+total+"] to "+filename);
         }
     }
 }
