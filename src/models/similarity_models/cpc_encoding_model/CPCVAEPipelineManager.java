@@ -133,6 +133,7 @@ public class CPCVAEPipelineManager implements PipelineManager {
                 getRawIterator(testAssets,true),
                 getRawIterator(validationAssets, true)
         );
+        datasetManager.removeDataFromDisk();
         System.out.println("Saving datasets...");
         datasetManager.saveDataSets();
     }

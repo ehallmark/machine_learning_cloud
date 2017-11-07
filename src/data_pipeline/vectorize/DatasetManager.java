@@ -1,6 +1,7 @@
 package data_pipeline.vectorize;
 
 import models.dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
+import org.apache.commons.io.FileUtils;
 import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
 import org.nd4j.linalg.dataset.MiniBatchFileDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -33,6 +34,14 @@ public class DatasetManager {
     public DatasetManager(File baseDir) {
         this.baseDir=baseDir;
         if(!this.baseDir.exists()) throw new RuntimeException("Please use other constructor and call saveDatasets()");
+    }
+
+    public void removeDataFromDisk() {
+        try {
+            FileUtils.deleteDirectory(baseDir);
+        } catch(Exception e) {
+            baseDir.mkdir();
+        }
     }
 
     public DataSetIterator getTrainingIterator() {
