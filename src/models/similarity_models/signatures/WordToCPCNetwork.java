@@ -113,13 +113,17 @@ public class WordToCPCNetwork {
             return iterator.test();
         };
 
+        Function<Void,Double> trainFunction = (v) -> {
+            return 0d;
+        };
+
         Function<Void,Void> saveFunction = v -> {
             save(net);
             return null;
         };
         AtomicBoolean isSaved = new AtomicBoolean(false);
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
-        IterationListener listener = new DefaultScoreListener(printIterations, testFunction, saveFunction, isSaved, stoppingCondition);
+        IterationListener listener = new DefaultScoreListener(printIterations, testFunction, trainFunction, saveFunction, isSaved, stoppingCondition);
         net.setListeners(listener);
 
         System.out.println("Starting to train data...");

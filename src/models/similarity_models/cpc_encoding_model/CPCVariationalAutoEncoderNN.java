@@ -133,9 +133,15 @@ public class CPCVariationalAutoEncoderNN  {
 
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
-        Function<Void,Double> testFunction = (v) -> {
+
+        Function<Void,Double> testErrorFunction = (v) -> {
             return test(pipelineManager.getDatasetManager().getValidationIterator(), vae);
         };
+
+        Function<Void,Double> trainErrorFunction = (v) -> {
+            return test(pipelineManager.getDatasetManager().getTrainingIterator(25000), vae);
+        };
+
         Function<Void,Void> saveFunction = (v) -> {
             try {
                 save();
@@ -145,7 +151,7 @@ public class CPCVariationalAutoEncoderNN  {
             return null;
         };
 
-        IterationListener listener = new DefaultScoreListener(printIterations, testFunction, saveFunction, isSaved, stoppingCondition);
+        IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, isSaved, stoppingCondition);
         net.setListeners(listener);
 
         for (int i = 0; i < nEpochs; i++) {

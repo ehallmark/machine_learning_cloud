@@ -28,12 +28,14 @@ public class DefaultScoreListener implements IterationListener {
     private final int averagePeriod = 10;
     private Function<Void,Void> saveFunction;
     private AtomicBoolean stoppingConditionFlag;
-    private  Function<Void,Double> testFunction;
+    private  Function<Void,Double> testErrorFunction;
+    private Function<Void,Double> trainErrorFunction;
     private Long lastTime;
-    public DefaultScoreListener(int printIterations, Function<Void,Double> testFunction, Function<Void,Void> saveFunction, AtomicBoolean isSavedFlag, AtomicBoolean stoppingConditionFlag) {
+    public DefaultScoreListener(int printIterations, Function<Void,Double> testErrorFunction, Function<Void,Double> trainErrorFunction, Function<Void,Void> saveFunction, AtomicBoolean isSavedFlag, AtomicBoolean stoppingConditionFlag) {
         this.printIterations = printIterations;
         this.isSavedFlag=isSavedFlag;
-        this.testFunction=testFunction;
+        this.trainErrorFunction=trainErrorFunction;
+        this.testErrorFunction=testErrorFunction;
         this.saveFunction=saveFunction;
         this.stoppingConditionFlag=stoppingConditionFlag;
     }
@@ -69,8 +71,11 @@ public class DefaultScoreListener implements IterationListener {
             System.out.println("Time to complete: "+((newTime-lastTime)/1000)+" seconds");
             lastTime = newTime;
             System.out.print("Testing...");
-            double error = testFunction.apply(null);
-            System.out.println(" Error: "+error);
+            System.out.print(" Model Score: "+model.score());
+            double error = testErrorFunction.apply(null);
+            System.out.print(", Test Error: "+error);
+            double trainError = trainErrorFunction.apply(null);
+            System.out.println(", (Sample) Train Error: "+trainError);
             movingAverage.add(error);
             if(movingAverage.size()==averagePeriod) {
                 averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();

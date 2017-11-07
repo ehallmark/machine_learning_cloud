@@ -51,6 +51,10 @@ public class DatasetManager {
         return getIterator(TRAIN);
     }
 
+    public DataSetIterator getTrainingIterator(int limit) {
+        return getIterator(TRAIN,limit);
+    }
+
     public DataSetIterator getTestIterator() {
         return getIterator(TEST);
     }
@@ -59,8 +63,12 @@ public class DatasetManager {
         return getIterator(VALIDATION);
     }
 
+    protected DataSetIterator getIterator(String kind, int limit) {
+        return new AsyncDataSetIterator(new FileMinibatchIterator(new File(baseDir,kind),limit), Runtime.getRuntime().availableProcessors()/2);
+    }
+
     protected DataSetIterator getIterator(String kind) {
-        return new AsyncDataSetIterator(new ExistingMiniBatchDataSetIterator(new File(baseDir,kind)), Runtime.getRuntime().availableProcessors()/2);
+        return getIterator(kind,-1);
     }
 
     public void saveDataSets() {
