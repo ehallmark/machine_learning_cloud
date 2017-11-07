@@ -113,8 +113,8 @@ public class CPCVAEPipelineManager implements PipelineManager {
         validationAssets = new ArrayList<>();
         System.out.println("Splitting test and train");
         for(int i = 0; i < 25000; i++) {
-            testAssets.add(allAssets.remove(rand.nextInt(allAssets.size())));
-            validationAssets.add(allAssets.remove(rand.nextInt(allAssets.size())));
+            testAssets.add(allAssets.remove(allAssets.size()-1));
+            validationAssets.add(allAssets.remove(allAssets.size()-1));
         }
         System.out.println("Finished splitting test and train.");
         System.out.println("Num training: "+trainAssets.size());
