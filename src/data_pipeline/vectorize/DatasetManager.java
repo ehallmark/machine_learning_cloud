@@ -40,6 +40,7 @@ public class DatasetManager {
         try {
             System.out.println("Removing previous datasets...");
             FileUtils.deleteDirectory(baseDir);
+            System.out.println("Finished removing previous datasets.");
         } catch(Exception e) {
             System.out.println("Error removing previous datasets: "+e.getMessage());
         }
