@@ -93,8 +93,10 @@ public class CPCVariationalAutoEncoderNN  {
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
-                    800,
-                    800
+                    256,
+                    256,
+                    256,
+                    256
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
@@ -107,7 +109,7 @@ public class CPCVariationalAutoEncoderNN  {
                     .seed(rngSeed)
                     .learningRate(0.025)
                     .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
-                    .updater(Updater.ADAM)
+                    .updater(Updater.RMSPROP).rmsDecay(0.95)
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)
                     .regularization(true).l2(1e-4)

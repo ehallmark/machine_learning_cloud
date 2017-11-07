@@ -16,9 +16,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class AsyncDataSetIterator implements DataSetIterator {
     private DataSetIterator iterator;
     private LinkedList<DataSet> queue = new LinkedList<>();
-    private List<RecursiveAction> threads = new ArrayList<>();
+    private List<Thread> threads = new ArrayList<>();
     private int numThreads;
-    private final int seekDistance = 2;
+    private final int seekDistance = 4;
     private AtomicBoolean noMoreSequences = new AtomicBoolean(false);
     public AsyncDataSetIterator(DataSetIterator iterator, int numThreads) {
         this.iterator=iterator;
@@ -33,29 +33,27 @@ public class AsyncDataSetIterator implements DataSetIterator {
 
     private void startThreads() {
         for(int n = threads.size(); n < numThreads; n++) {
-            RecursiveAction thread = new RecursiveAction() {
-                @Override
-                protected void compute() {
-                    int counter = 0;
-                    while (counter < seekDistance) {
-                        DataSet dataSet;
-                        synchronized (iterator) {
-                            boolean hasMoreSequences = iterator.hasNext();
-                            if(!hasMoreSequences) {
-                                noMoreSequences.set(true);
-                                break;
-                            }
-                            dataSet=iterator.next();
+            Runnable thread = () -> {
+                int counter = 0;
+                while (counter < seekDistance) {
+                    DataSet dataSet;
+                    synchronized (iterator) {
+                        boolean hasMoreSequences = iterator.hasNext();
+                        if(!hasMoreSequences) {
+                            noMoreSequences.set(true);
+                            break;
                         }
-                        synchronized (queue) {
-                            queue.add(dataSet);
-                        }
-                        counter++;
+                        dataSet=iterator.next();
                     }
+                    synchronized (queue) {
+                        queue.add(dataSet);
+                    }
+                    counter++;
                 }
             };
-            thread.fork();
-            threads.add(thread);
+            Thread t = new Thread(thread);
+            t.start();
+            threads.add(t);
         }
     }
 
@@ -138,11 +136,21 @@ public class AsyncDataSetIterator implements DataSetIterator {
         }
 
         if(noMoreSequences.get()) {
-            threads.forEach(thread->thread.join());
+            threads.forEach(thread->{
+                try {
+                    thread.join();
+                }catch(Exception e) {
+                    e.printStackTrace();
+                }
+            });
             threads.clear();
         } else {
             while(!threads.isEmpty()) {
-                threads.remove(0).join();
+                try {
+                    threads.remove(0).join();
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
                 if(!queue.isEmpty()) {
                     break;
                 }

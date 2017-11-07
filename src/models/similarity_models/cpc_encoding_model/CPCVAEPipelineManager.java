@@ -140,12 +140,12 @@ public class CPCVAEPipelineManager implements PipelineManager {
 
     private DataSetIterator getRawIterator(List<String> assets, boolean test) {
         boolean shuffle = !test;
-        return new AsyncDataSetIterator(new CPCDataSetIterator(assets,shuffle,test ? 1024 : BATCH_SIZE,cpcMap,cpcToIdxMap), Runtime.getRuntime().availableProcessors()/2);
+        return new AsyncDataSetIterator(new CPCDataSetIterator(assets,shuffle,test ? 1024 : BATCH_SIZE,cpcMap,cpcToIdxMap), Runtime.getRuntime().availableProcessors()/4);
     }
 
     public static void main(String[] args) throws Exception {
         // start with data pipeline
-        boolean recreateDatasets = false;
+        boolean recreateDatasets = ! dataFolder.exists();
         boolean recreateNeuralNetworks = true;
 
         CPCVAEPipelineManager pipelineManager = new CPCVAEPipelineManager();
@@ -160,11 +160,11 @@ public class CPCVAEPipelineManager implements PipelineManager {
         int maxCPCDepth = pipelineManager.getMaxCpcDepth();
 
         CPCVariationalAutoEncoderNN model;
-        if(!recreateNeuralNetworks) {
+        if(recreateNeuralNetworks) {
+            model = new CPCVariationalAutoEncoderNN();
+        } else {
             System.out.println("Warning: Using previous model.");
             model = CPCVariationalAutoEncoderNN.restoreAndInitModel(maxCPCDepth,true);
-        } else {
-            model = new CPCVariationalAutoEncoderNN();
         }
         model.train(nEpochs);
         if(!model.isSaved()) {

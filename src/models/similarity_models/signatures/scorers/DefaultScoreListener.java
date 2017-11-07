@@ -29,6 +29,7 @@ public class DefaultScoreListener implements IterationListener {
     private Function<Void,Void> saveFunction;
     private AtomicBoolean stoppingConditionFlag;
     private  Function<Void,Double> testFunction;
+    private Long lastTime;
     public DefaultScoreListener(int printIterations, Function<Void,Double> testFunction, Function<Void,Void> saveFunction, AtomicBoolean isSavedFlag, AtomicBoolean stoppingConditionFlag) {
         this.printIterations = printIterations;
         this.isSavedFlag=isSavedFlag;
@@ -48,6 +49,9 @@ public class DefaultScoreListener implements IterationListener {
     }
     @Override
     public void iterationDone(Model model, int iteration) {
+        if(lastTime==null) {
+            lastTime = System.currentTimeMillis();
+        }
         if(iterationCount % (printIterations/10) == (printIterations/10)-1) {
             System.out.print("-");
         }
@@ -61,6 +65,9 @@ public class DefaultScoreListener implements IterationListener {
             }
         }
         if (iterationCount % printIterations == printIterations-1) {
+            long newTime = System.currentTimeMillis();
+            System.out.println("Time to complete: "+((newTime-lastTime)/1000)+" seconds");
+            lastTime = newTime;
             System.out.print("Testing...");
             double error = testFunction.apply(null);
             System.out.println(" Error: "+error);
