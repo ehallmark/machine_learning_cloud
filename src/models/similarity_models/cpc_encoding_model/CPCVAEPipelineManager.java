@@ -4,6 +4,7 @@ import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.PipelineManager;
 import data_pipeline.vectorize.DatasetManager;
+import models.dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
 import models.similarity_models.signatures.CPCDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import seeding.Constants;
@@ -136,9 +137,9 @@ public class CPCVAEPipelineManager implements PipelineManager {
         datasetManager.saveDataSets();
     }
 
-    private CPCDataSetIterator getRawIterator(List<String> assets, boolean test) {
+    private DataSetIterator getRawIterator(List<String> assets, boolean test) {
         boolean shuffle = !test;
-        return new CPCDataSetIterator(assets,shuffle,test ? 1024 : BATCH_SIZE,cpcMap,cpcToIdxMap);
+        return new AsyncDataSetIterator(new CPCDataSetIterator(assets,shuffle,test ? 1024 : BATCH_SIZE,cpcMap,cpcToIdxMap), Runtime.getRuntime().availableProcessors()/2);
     }
 
     public static void main(String[] args) throws Exception {
