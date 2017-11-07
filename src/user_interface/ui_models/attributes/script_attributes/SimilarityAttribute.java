@@ -27,27 +27,15 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
 
     public static final String EXPRESSION_SIMILARITY_SCRIPT;
     public static final String COSINE_SIM;
-    public static final String DISTANCE_SIM;
     static {
         StringJoiner cos = new StringJoiner("+","doc['vector_obj.0'].empty ? _score : ((100.0 * (",")) + _score)");
         for(int i = 0; i < vectorSize; i++) {
             cos.add("(doc['vector_obj."+i+"'].value*avg_vector"+i+")");
         }
         COSINE_SIM=cos.toString();
-        StringJoiner dist = new StringJoiner("+","doc['vector_obj.0'].empty ? _score : 100.0*(1.0-(((",") * _score / "+vectorSize+")))");
-        for(int i = 0; i < vectorSize; i++) {
-            dist.add("((doc['vector_obj."+i+"'].value-avg_vector"+i+")*(doc['vector_obj."+i+"'].value-avg_vector"+i+"))");
-        }
-        DISTANCE_SIM=dist.toString();
-        System.out.println("Inverse distance script: "+DISTANCE_SIM);
         System.out.println("Cosine distance script: "+COSINE_SIM);
 
-        boolean useCosineSim = true;
-        if(useCosineSim) {
-            EXPRESSION_SIMILARITY_SCRIPT = COSINE_SIM;
-        } else {
-            EXPRESSION_SIMILARITY_SCRIPT = DISTANCE_SIM;
-        }
+        EXPRESSION_SIMILARITY_SCRIPT = COSINE_SIM;
     }
     protected List<INDArray> simVectors;
 
