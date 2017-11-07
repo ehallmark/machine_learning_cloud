@@ -29,7 +29,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
     public static final String COSINE_SIM;
     public static final String DISTANCE_SIM;
     static {
-        StringJoiner cos = new StringJoiner("+","doc['vector_obj.0'].empty ? _score : (50.0+(50.0 * (",") * _score))");
+        StringJoiner cos = new StringJoiner("+","doc['vector_obj.0'].empty ? _score : ((100.0 * (",")) + _score)");
         for(int i = 0; i < vectorSize; i++) {
             cos.add("(doc['vector_obj."+i+"'].value*avg_vector"+i+")");
         }
