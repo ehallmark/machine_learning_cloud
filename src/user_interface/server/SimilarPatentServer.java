@@ -478,6 +478,7 @@ public class SimilarPatentServer {
                         return new DefaultSimilarityModel(Collections.emptyList());
                     }
                 };
+                DEFAULT_SIMILARITY_MODEL.fork();
             }
             // similarity engine
             similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new AssigneeSimilarityEngine(DEFAULT_SIMILARITY_MODEL)));
@@ -1545,8 +1546,8 @@ public class SimilarPatentServer {
         System.out.println("Starting user_interface.server...");
         server();
         System.out.println("Finished starting user_interface.server.");
-        if(preLoad)Database.preLoad();
         GatherClassificationServer.StartServer();
+        if(preLoad)Database.preLoad();
         long t2 = System.currentTimeMillis();
         System.out.println("Time to start user_interface.server: "+ ((t2-t1)/(1000*60)) + " minutes");
     }

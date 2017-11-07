@@ -171,9 +171,14 @@ public class Database {
 
 
 	public synchronized static void preLoad() {
+		getAssignees();
 		getAssigneePrefixTrie();
 		getAssigneeToPatentsMap();
 		getAssigneeToAppsMap();
+		getNormalizedAssignees();
+		getNormalizedAssigneePrefixTrie();
+		getNormalizedAssigneeToAppsMap();
+		getNormalizedAssigneeToPatentsMap();
 	}
 
 	public synchronized static void initializeDatabase() {
