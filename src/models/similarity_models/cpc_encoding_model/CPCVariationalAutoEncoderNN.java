@@ -93,9 +93,7 @@ public class CPCVariationalAutoEncoderNN  {
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
-                    1024,
-                    1024,
-                    1024
+                    512
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
@@ -138,7 +136,7 @@ public class CPCVariationalAutoEncoderNN  {
         };
 
         Function<Void,Double> trainErrorFunction = (v) -> {
-            return test(pipelineManager.getDatasetManager().getTrainingIterator(25000), vae);
+            return test(pipelineManager.getDatasetManager().getTrainingIterator(10000/128), vae);
         };
 
         Function<Void,Void> saveFunction = (v) -> {
