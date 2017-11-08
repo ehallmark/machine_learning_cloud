@@ -2,17 +2,14 @@ package models.similarity_models.cpc_encoding_model;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
-import cpc_normalization.CPCHierarchy;
-import data_pipeline.PipelineManager;
-import data_pipeline.vectorize.DatasetManager;
+import data_pipeline.models.TrainablePredictionModel;
+import data_pipeline.pipeline_manager.PipelineManager;
 import lombok.Getter;
-import lombok.Setter;
 import models.similarity_models.signatures.CPCDataSetIterator;
 import models.similarity_models.signatures.NDArrayHelper;
 import models.similarity_models.signatures.StoppingConditionMetException;
 import models.similarity_models.signatures.scorers.DefaultScoreListener;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.conf.GradientNormalization;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
@@ -27,15 +24,10 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.learning.Adam;
 import seeding.Constants;
-import seeding.Database;
-import tools.ClassCodeHandler;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,23 +37,24 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 10/26/17.
  */
-public class CPCVariationalAutoEncoderNN  {
+public class CPCVariationalAutoEncoderNN implements TrainablePredictionModel<INDArray> {
     public static final int VECTOR_SIZE = 32;
     public static final File networkFile = new File(Constants.DATA_FOLDER+"cpc_deep_vae_nn.jobj");
 
     @Getter
-    private transient MultiLayerNetwork net;
+    private MultiLayerNetwork net;
     @Getter
-    private transient Map<String,Integer> cpcToIdxMap;
-    private transient AtomicBoolean isSaved;
-    private transient CPCVAEPipelineManager pipelineManager;
-    public CPCVariationalAutoEncoderNN() {
-        this.pipelineManager= new CPCVAEPipelineManager();
+    private Map<String,Integer> cpcToIdxMap;
+    private AtomicBoolean isSaved;
+    private CPCVAEPipelineManager pipelineManager;
+    public CPCVariationalAutoEncoderNN(CPCVAEPipelineManager pipelineManager) {
+        this.pipelineManager= pipelineManager;
         this.cpcToIdxMap = pipelineManager.getOrLoadIdxMap();
         this.isSaved=new AtomicBoolean(false);
     }
 
-    public Map<String,INDArray> encode(List<String> assets) {
+    @Override
+    public Map<String,INDArray> predict(List<String> assets) {
         return encode(assets,pipelineManager.getCPCMap(),pipelineManager.getBatchSize());
     }
 
@@ -217,16 +210,16 @@ public class CPCVariationalAutoEncoderNN  {
         return new File(file.getAbsoluteFile()+"-net-cpcdepth"+cpcDepth);
     }
 
-    public static CPCVariationalAutoEncoderNN restoreAndInitModel(int cpcDepth, boolean loadUpdater) throws IOException{
+    public static CPCVariationalAutoEncoderNN restoreAndInitModel(int cpcDepth, boolean loadUpdater, CPCVAEPipelineManager manager) throws IOException{
         File modelFile = getModelFile(networkFile,cpcDepth);
         if(!modelFile.exists()) {
-            throw new RuntimeException("Model file not found: "+modelFile.getAbsolutePath());
+            System.out.println("Model file does not exist: "+modelFile.getAbsolutePath());
+            return null;
         }
 
-        CPCVariationalAutoEncoderNN instance = new CPCVariationalAutoEncoderNN();
+        CPCVariationalAutoEncoderNN instance = new CPCVariationalAutoEncoderNN(manager);
         instance.net = ModelSerializer.restoreMultiLayerNetwork(modelFile,loadUpdater);
         instance.isSaved = new AtomicBoolean(true);
-
         return instance;
     }
 }

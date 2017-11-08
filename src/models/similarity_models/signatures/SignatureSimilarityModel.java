@@ -3,8 +3,6 @@ package models.similarity_models.signatures;
 import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
-import data_pipeline.PipelineManager;
-import data_pipeline.vectorize.DatasetManager;
 import lombok.Getter;
 import lombok.Setter;
 import models.similarity_models.signatures.scorers.DefaultScoreListener;
