@@ -12,6 +12,7 @@ import models.similarity_models.signatures.NDArrayHelper;
 import models.similarity_models.signatures.StoppingConditionMetException;
 import models.similarity_models.signatures.scorers.DefaultScoreListener;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
+import org.deeplearning4j.nn.conf.GradientNormalization;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
@@ -93,23 +94,26 @@ public class CPCVariationalAutoEncoderNN  {
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
-                    512
+                    1024,
+                    1024
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
                 hiddenLayerDecoder[i] = hiddenLayerEncoder[hiddenLayerEncoder.length-1-i];
             }
             int rngSeed = 69;
-            Activation activation = Activation.TANH;
+            Activation activation = Activation.LEAKYRELU;
             Nd4j.getRandom().setSeed(rngSeed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)
-                    .learningRate(0.025)
+                    .learningRate(0.01)
                     .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                     .updater(Updater.RMSPROP).rmsDecay(0.95)
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)
-                    .regularization(true).l2(1e-4)
+                    .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
+                    .gradientNormalizationThreshold(1d)
+                    //.regularization(true).l2(1e-4)
                     .list()
                     .layer(0, new VariationalAutoencoder.Builder()
                             .encoderLayerSizes(hiddenLayerEncoder)
