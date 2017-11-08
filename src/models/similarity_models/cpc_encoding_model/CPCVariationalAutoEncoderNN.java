@@ -102,7 +102,7 @@ public class CPCVariationalAutoEncoderNN  {
                 hiddenLayerDecoder[i] = hiddenLayerEncoder[hiddenLayerEncoder.length-1-i];
             }
             int rngSeed = 69;
-            Activation activation = Activation.LEAKYRELU;
+            Activation activation = Activation.TANH;
             Nd4j.getRandom().setSeed(rngSeed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)
@@ -113,7 +113,7 @@ public class CPCVariationalAutoEncoderNN  {
                     .weightInit(WeightInit.XAVIER)
                     //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
                     //.gradientNormalizationThreshold(1d)
-                    //.regularization(true).l2(1e-4)
+                    .regularization(true).l2(1e-4)
                     .list()
                     .layer(0, new VariationalAutoencoder.Builder()
                             .encoderLayerSizes(hiddenLayerEncoder)
