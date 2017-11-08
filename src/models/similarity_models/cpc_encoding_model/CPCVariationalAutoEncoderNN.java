@@ -88,6 +88,7 @@ public class CPCVariationalAutoEncoderNN implements TrainablePredictionModel<IND
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
                     1024,
+                    1024,
                     1024
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
@@ -106,7 +107,7 @@ public class CPCVariationalAutoEncoderNN implements TrainablePredictionModel<IND
                     .weightInit(WeightInit.XAVIER)
                     //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
                     //.gradientNormalizationThreshold(1d)
-                    .regularization(true).l2(1e-4)
+                    //.regularization(true).l2(1e-4)
                     .list()
                     .layer(0, new VariationalAutoencoder.Builder()
                             .encoderLayerSizes(hiddenLayerEncoder)
