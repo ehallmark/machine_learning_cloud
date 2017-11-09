@@ -58,7 +58,7 @@ public class FileMinibatchIterator implements DataSetIterator {
     }
 
     public boolean asyncSupported() {
-        return false;
+        return true;
     }
 
     public void reset() {
