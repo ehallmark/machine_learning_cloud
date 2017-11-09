@@ -175,7 +175,11 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     }
 
     public static void setLoggingLevel(Level level) {
-        ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-        root.setLevel(level);
+        try {
+            ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+            root.setLevel(level);
+        } catch (Exception e) {
+            System.out.println("Error setting log level: "+e.getMessage());
+        }
     }
 }

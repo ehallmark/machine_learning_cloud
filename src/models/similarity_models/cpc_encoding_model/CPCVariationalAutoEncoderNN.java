@@ -99,7 +99,6 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
                     1024,
-                    1024,
                     1024
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
@@ -113,7 +112,8 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
                     .seed(rngSeed)
                     .learningRate(0.025)
                     .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
-                    .updater(Updater.RMSPROP).rmsDecay(0.95)
+                    //.updater(Updater.RMSPROP).rmsDecay(0.95)
+                    .updater(Updater.ADAM)
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)
                     //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
