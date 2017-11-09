@@ -58,6 +58,16 @@
     </repositories>
     <dependencies>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+        <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>transport</artifactId>
             <version>5.5.0</version>
@@ -107,13 +117,11 @@
             <artifactId>deeplearning4j-core</artifactId>
             <version>${dl4j.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.gephi/gephi-toolkit -->
         <dependency>
             <groupId>org.gephi</groupId>
             <artifactId>gephi-toolkit</artifactId>
             <version>0.9.2</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.github.lucarosellini.rJava/JRI -->
         <dependency>
             <groupId>com.github.lucarosellini.rJava</groupId>
             <artifactId>JRI</artifactId>
