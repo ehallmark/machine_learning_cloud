@@ -8,8 +8,11 @@ import data_pipeline.vectorize.DatasetManager;
 import lombok.Setter;
 import models.dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
 import models.similarity_models.signatures.CPCDataSetIterator;
+import org.deeplearning4j.optimize.solvers.BackTrackLineSearch;
+import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
 import tools.ClassCodeHandler;
@@ -159,6 +162,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     }
 
     public static void main(String[] args) throws Exception {
+        Nd4j.setDataType(DataBuffer.Type.FLOAT);
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;
@@ -167,10 +171,15 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
         int nEpochs = 1;
         String modelName = "cpc_autoencoder";
 
-        LogManager.getLogManager().reset();
+        setLoggerLevel(null, Level.INFO);
+        setLoggerLevel("org.deeplearning4j.optimize.solvers.BackTrackLineSearch", Level.INFO);
         CPCVAEPipelineManager pipelineManager = new CPCVAEPipelineManager(modelName);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
-    
+
+    private static void setLoggerLevel(String name, Level level) {
+        Logger logger = name == null ? Logger.getGlobal() : Logger.getLogger(name);
+        logger.setLevel(level);
+    }
 
 }
