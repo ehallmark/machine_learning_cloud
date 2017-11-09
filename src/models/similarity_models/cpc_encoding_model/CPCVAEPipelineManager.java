@@ -1,5 +1,6 @@
 package models.similarity_models.cpc_encoding_model;
 
+import ch.qos.logback.classic.Level;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
@@ -21,9 +22,6 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -171,15 +169,13 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
         int nEpochs = 1;
         String modelName = "cpc_autoencoder";
 
-        setLoggerLevel(null, Level.INFO);
-        setLoggerLevel("org.deeplearning4j.optimize.solvers.BackTrackLineSearch", Level.INFO);
+        setLoggingLevel(Level.INFO);
         CPCVAEPipelineManager pipelineManager = new CPCVAEPipelineManager(modelName);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
-    private static void setLoggerLevel(String name, Level level) {
-        Logger logger = name == null ? Logger.getGlobal() : Logger.getLogger(name);
-        logger.setLevel(level);
+    public static void setLoggingLevel(Level level) {
+        ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        root.setLevel(level);
     }
-
 }
