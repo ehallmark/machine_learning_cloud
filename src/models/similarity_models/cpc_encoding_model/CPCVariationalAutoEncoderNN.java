@@ -39,15 +39,24 @@ import java.util.stream.Collectors;
 public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArray> {
     public static final int VECTOR_SIZE = 32;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"cpc_deep_vae_nn_model_data");
-    @Getter
     private Map<String,Integer> cpcToIdxMap;
     private AtomicBoolean isSaved;
     private CPCVAEPipelineManager pipelineManager;
     public CPCVariationalAutoEncoderNN(CPCVAEPipelineManager pipelineManager, String modelName) {
         super(modelName);
         this.pipelineManager= pipelineManager;
-        this.cpcToIdxMap = pipelineManager.getOrLoadIdxMap(getModelBaseDirectory());
         this.isSaved=new AtomicBoolean(false);
+    }
+
+    public Map<String,Integer> getCpcToIdxMap() {
+        if(cpcToIdxMap==null) {
+            synchronized (this) {
+                if(cpcToIdxMap==null) {
+                    cpcToIdxMap = pipelineManager.getOrLoadIdxMap(getModelBaseDirectory());
+                }
+            }
+        }
+        return cpcToIdxMap;
     }
 
     @Override
@@ -64,7 +73,7 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         assets = assets.stream().filter(asset->cpcMap.containsKey(asset)).collect(Collectors.toList());
-        CPCDataSetIterator iterator = new CPCDataSetIterator(assets,false,batchSize,cpcMap,cpcToIdxMap);
+        CPCDataSetIterator iterator = new CPCDataSetIterator(assets,false,batchSize,cpcMap,getCpcToIdxMap());
         AtomicInteger idx = new AtomicInteger(0);
         Map<String,INDArray> assetToEncodingMap = Collections.synchronizedMap(new HashMap<>());
         while(iterator.hasNext()) {
@@ -83,7 +92,7 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
     public void train(int nEpochs) {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
-        final int numInputs = cpcToIdxMap.size();
+        final int numInputs = getCpcToIdxMap().size();
         final int printIterations = 100;
 
         if(net==null) {
