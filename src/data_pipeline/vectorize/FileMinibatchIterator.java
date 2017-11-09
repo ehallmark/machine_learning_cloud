@@ -13,28 +13,39 @@ import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
 public class FileMinibatchIterator implements DataSetIterator {
-    private static final int FETCH_LIMIT = 2;
+    private static final boolean DEFAULT_ASYNC = false;
     public static final String DEFAULT_PATTERN = "dataset-%d.bin";
     private AtomicInteger currIdx;
     private File rootDir;
     private int totalBatches;
     private DataSetPreProcessor dataSetPreProcessor;
     private final String pattern;
+    private boolean async;
+
     public FileMinibatchIterator(File rootDir) {
-        this(rootDir,-1);
+        this(rootDir,DEFAULT_ASYNC);
+    }
+
+    public FileMinibatchIterator(File rootDir, boolean async) {
+        this(rootDir,-1,async);
     }
 
     public FileMinibatchIterator(File rootDir, int limit) {
-        this(rootDir, DEFAULT_PATTERN, limit);
+        this(rootDir,limit,DEFAULT_ASYNC);
     }
 
-    public FileMinibatchIterator(File rootDir, String pattern, int limit) {
+    public FileMinibatchIterator(File rootDir, int limit, boolean async) {
+        this(rootDir, DEFAULT_PATTERN, limit,async);
+    }
+
+    public FileMinibatchIterator(File rootDir, String pattern, int limit, boolean async) {
         this.totalBatches = -1;
         this.rootDir = rootDir;
         int numFiles = rootDir.list().length;
         this.totalBatches = limit > 0 ? Math.min(limit,numFiles) : numFiles;
         this.pattern = pattern;
         this.currIdx = new AtomicInteger(0);
+        this.async=async;
     }
 
     public DataSet next(int num) {
@@ -58,7 +69,7 @@ public class FileMinibatchIterator implements DataSetIterator {
     }
 
     public boolean asyncSupported() {
-        return false;
+        return async;
     }
 
     public void reset() {
