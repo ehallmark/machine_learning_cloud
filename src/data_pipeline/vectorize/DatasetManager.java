@@ -1,6 +1,6 @@
 package data_pipeline.vectorize;
 
-import models.dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
+import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.apache.commons.io.FileUtils;
 import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
 import org.nd4j.linalg.dataset.MiniBatchFileDataSetIterator;
@@ -64,7 +64,7 @@ public class DatasetManager {
     }
 
     protected DataSetIterator getIterator(String kind, int limit) {
-        return new AsyncDataSetIterator(new FileMinibatchIterator(new File(baseDir,kind),limit), 10);
+        return new AsyncDataSetIterator(new FileMinibatchIterator(new File(baseDir,kind),limit));
     }
 
     protected DataSetIterator getIterator(String kind) {

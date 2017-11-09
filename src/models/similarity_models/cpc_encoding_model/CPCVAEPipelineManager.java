@@ -7,7 +7,7 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.pipeline_manager.PipelineManager;
 import data_pipeline.vectorize.DatasetManager;
 import lombok.Setter;
-import models.dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
+import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import models.similarity_models.signatures.CPCDataSetIterator;
 import org.deeplearning4j.optimize.solvers.BackTrackLineSearch;
 import org.nd4j.linalg.api.buffer.DataBuffer;
@@ -156,7 +156,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     @Override
     protected DataSetIterator getRawIterator(List<String> assets, boolean test) {
         boolean shuffle = !test;
-        return new AsyncDataSetIterator(new CPCDataSetIterator(assets,shuffle,test ? 1024 : BATCH_SIZE,cpcMap,cpcToIdxMap), Runtime.getRuntime().availableProcessors()/4);
+        return new AsyncDataSetIterator(new CPCDataSetIterator(assets,shuffle,test ? 1024 : BATCH_SIZE,cpcMap,cpcToIdxMap));
     }
 
     public static void main(String[] args) throws Exception {
