@@ -164,7 +164,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = false;
+        boolean forceRecreateModels = true; // TODO change this once the hyperparameters are good
         boolean runPredictions = true;
         int nEpochs = 2;
         String modelName = "cpc_autoencoder";
