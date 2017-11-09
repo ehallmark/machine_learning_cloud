@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     public static final int MAX_CPC_DEPTH = 4;
     private static final int BATCH_SIZE = 128;
-    private static final File DATA_FOLDER = new File("cpc_vae_data");
-    private static final File PREDICTION_DATA_FOLDER = new File(Constants.DATA_FOLDER+DATA_FOLDER.getName()+"_predictions_map.jobj");
+    private static final File INPUT_DATA_FOLDER = new File("cpc_vae_data");
+    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+INPUT_DATA_FOLDER.getName()+"_predictions_map.jobj");
     private static final String CPC_TO_INDEX_FILENAME = "cpc_vae_cpc_to_idx_map.jobj";
     private Map<String,? extends Collection<CPC>> cpcMap;
     @Setter
@@ -35,7 +35,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     private Map<String,Integer> cpcToIdxMap;
     private String modelName;
     public CPCVAEPipelineManager(String modelName) {
-        super(DATA_FOLDER,PREDICTION_DATA_FOLDER);
+        super(INPUT_DATA_FOLDER,PREDICTION_DATA_FILE);
         this.modelName=modelName;
     }
 

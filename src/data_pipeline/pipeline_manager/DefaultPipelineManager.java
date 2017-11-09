@@ -80,6 +80,8 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
     @Override
     public void savePredictions(Map<String,T> predictions) {
         System.out.println("Saving predictions...");
+        File predictionsDir = predictionsFile.getParentFile();
+        if(!predictionsDir.exists()) predictionsDir.mkdirs();
         Database.trySaveObject(predictions,predictionsFile);
         System.out.println("Saved.");
     }
