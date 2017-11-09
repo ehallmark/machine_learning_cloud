@@ -141,7 +141,7 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
 
         Function<Void,Double> testErrorFunction = (v) -> {
-            return test(pipelineManager.getDatasetManager().getValidationIterator(), vae);
+            return 0d;//test(pipelineManager.getDatasetManager().getValidationIterator(), vae);
         };
 
         Function<Void,Double> trainErrorFunction = (v) -> {
@@ -197,6 +197,7 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
             double similarity = NDArrayHelper.sumOfCosineSimByRow(testInput,testOutput);
             testSimilarity.addAndGet(similarity);
             cnt.addAndGet(testInput.rows());
+            System.gc();
         }
         return 1d - (testSimilarity.get()/cnt.get());
     }

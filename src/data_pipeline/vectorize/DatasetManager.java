@@ -1,5 +1,6 @@
 package data_pipeline.vectorize;
 
+import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.apache.commons.io.FileUtils;
 import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
