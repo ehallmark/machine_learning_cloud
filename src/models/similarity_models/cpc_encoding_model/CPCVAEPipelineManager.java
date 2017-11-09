@@ -28,7 +28,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     private static final int BATCH_SIZE = 128;
     private static final File DATA_FOLDER = new File("cpc_vae_data");
     private static final File PREDICTION_DATA_FOLDER = new File(Constants.DATA_FOLDER+DATA_FOLDER.getName()+"_predictions_map.jobj");
-    private static final File CPC_TO_INDEX_FILE = new File(Constants.DATA_FOLDER+"cpc_vae_cpc_to_idx_map.jobj");
+    private static final String CPC_TO_INDEX_FILENAME = "cpc_vae_cpc_to_idx_map.jobj";
     private Map<String,? extends Collection<CPC>> cpcMap;
     @Setter
     private CPCHierarchy hierarchy;
@@ -101,7 +101,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
 
     public synchronized Map<String,Integer> getOrLoadIdxMap() {
         if(cpcToIdxMap == null) {
-            cpcToIdxMap = (Map<String,Integer>)Database.tryLoadObject(CPC_TO_INDEX_FILE);
+            cpcToIdxMap = (Map<String,Integer>)Database.tryLoadObject(getCPCIdxFile(model.getModelBaseDirectory()));
         }
         if(cpcToIdxMap == null) {
             System.out.println("WARNING: NO CPC to Index Map Found.");
@@ -110,7 +110,12 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     }
 
     private synchronized void saveIdxMap() {
-        Database.trySaveObject(cpcToIdxMap,CPC_TO_INDEX_FILE);
+        if(!model.getModelBaseDirectory().exists()) model.getModelBaseDirectory().mkdirs();
+        Database.trySaveObject(cpcToIdxMap, getCPCIdxFile(model.getModelBaseDirectory()));
+    }
+
+    private static File getCPCIdxFile(File baseDir) {
+        return new File(baseDir,CPC_TO_INDEX_FILENAME);
     }
 
     @Override
@@ -122,7 +127,8 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
 
         System.out.println("WARNING: Reindexing CPC Codes...");
         AtomicInteger idx = new AtomicInteger(0);
-        cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().parallelStream().filter(e->e.getValue().getNumParts()<=MAX_CPC_DEPTH).collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
+        cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().stream().filter(e->e.getValue().getNumParts()<=MAX_CPC_DEPTH)
+                .sorted(Comparator.comparing(e->e.getKey())).sequential().collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
         System.out.println("Input size: " + cpcToIdxMap.size());
         saveIdxMap();
 

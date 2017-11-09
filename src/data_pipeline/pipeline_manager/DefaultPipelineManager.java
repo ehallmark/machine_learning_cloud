@@ -97,6 +97,7 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
 
         // STAGE 1 of pipeline: LOAD DATA
         if(rebuildDatasets) {
+            if(model==null) initModel(forceRecreateModel);
             System.out.println("Building datasets...");
             saveRawDatasets();
         }
