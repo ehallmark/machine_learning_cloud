@@ -99,9 +99,9 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
         return cpcMap;
     }
 
-    public synchronized Map<String,Integer> getOrLoadIdxMap() {
+    public synchronized Map<String,Integer> getOrLoadIdxMap(File baseDir) {
         if(cpcToIdxMap == null) {
-            cpcToIdxMap = (Map<String,Integer>)Database.tryLoadObject(getCPCIdxFile(model.getModelBaseDirectory()));
+            cpcToIdxMap = (Map<String,Integer>)Database.tryLoadObject(getCPCIdxFile(baseDir));
         }
         if(cpcToIdxMap == null) {
             System.out.println("WARNING: NO CPC to Index Map Found.");

@@ -46,7 +46,7 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
     public CPCVariationalAutoEncoderNN(CPCVAEPipelineManager pipelineManager, String modelName) {
         super(modelName);
         this.pipelineManager= pipelineManager;
-        this.cpcToIdxMap = pipelineManager.getOrLoadIdxMap();
+        this.cpcToIdxMap = pipelineManager.getOrLoadIdxMap(getModelBaseDirectory());
         this.isSaved=new AtomicBoolean(false);
     }
 
