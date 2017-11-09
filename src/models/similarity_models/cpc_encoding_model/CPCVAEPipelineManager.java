@@ -167,13 +167,14 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
         int nEpochs = 1;
         String modelName = "cpc_autoencoder";
 
-        setLoggerLevel(Level.INFO);
+        setLoggerLevel(null, Level.INFO);
+        setLoggerLevel("o.d.o.solvers.BackTrackLineSearch", Level.INFO);
         CPCVAEPipelineManager pipelineManager = new CPCVAEPipelineManager(modelName);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
-    private static void setLoggerLevel(Level level) {
-        Logger logger = Logger.getGlobal();
+    private static void setLoggerLevel(String name, Level level) {
+        Logger logger = name == null ? Logger.getGlobal() : Logger.getLogger(name);
         logger.setLevel(level);
     }
 
