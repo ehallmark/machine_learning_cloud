@@ -9,6 +9,7 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import seeding.Database;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -64,7 +65,7 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
         model.train(nEpochs);
         if(!model.isSaved()) {
             try {
-                model.save();
+                model.save(LocalDateTime.now());
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -84,8 +85,14 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
     }
 
     @Override
-    public void runPipeline(boolean rebuildDatasets, boolean runModels, boolean forceRecreateModel, int nTrainingEpochs, boolean predictAssets) {
+    public void runPipeline(boolean rebuildPrerequisites, boolean rebuildDatasets, boolean runModels, boolean forceRecreateModel, int nTrainingEpochs, boolean predictAssets) {
         // start with data pipeline
+
+        // STAGE 0 of pipeline: PREREQUISITES
+        if(rebuildPrerequisites) {
+            rebuildPrerequisiteData();
+        }
+
         rebuildDatasets = rebuildDatasets || ! dataFolder.exists();
 
         // STAGE 1 of pipeline: LOAD DATA
@@ -101,6 +108,7 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
             trainModels(nTrainingEpochs);
         }
 
+        // STAGE 3 of pipeline: PREDICTIONS
         if(predictAssets) {
             if(model==null) initModel(forceRecreateModel);
             System.out.println("Predicting results...");

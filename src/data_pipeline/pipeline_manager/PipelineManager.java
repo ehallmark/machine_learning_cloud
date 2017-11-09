@@ -12,9 +12,10 @@ import java.util.Map;
  */
 public interface PipelineManager<T> {
     DatasetManager getDatasetManager();
+    void rebuildPrerequisiteData();
     void saveRawDatasets();
     void trainModels(int nEpochs);
     Map<String,T> predict(List<String> items);
     void savePredictions(Map<String,T> predictions);
-    void runPipeline(boolean rebuildDatasets, boolean runModels, boolean forceRecreateModel, int nTrainingEpochs, boolean predictAssets);
+    void runPipeline(boolean rebuildPrerequisites, boolean rebuildDatasets, boolean runModels, boolean forceRecreateModel, int nTrainingEpochs, boolean predictAssets);
 }

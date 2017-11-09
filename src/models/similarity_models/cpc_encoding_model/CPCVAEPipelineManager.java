@@ -5,6 +5,7 @@ import cpc_normalization.CPCHierarchy;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.pipeline_manager.PipelineManager;
 import data_pipeline.vectorize.DatasetManager;
+import lombok.Setter;
 import models.dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
 import models.similarity_models.signatures.CPCDataSetIterator;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -29,27 +30,30 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     private static final File PREDICTION_DATA_FOLDER = new File(Constants.DATA_FOLDER+DATA_FOLDER.getName()+"_predictions_map.jobj");
     private static final File CPC_TO_INDEX_FILE = new File(Constants.DATA_FOLDER+"cpc_vae_cpc_to_idx_map.jobj");
     private Map<String,? extends Collection<CPC>> cpcMap;
+    @Setter
     private CPCHierarchy hierarchy;
     private Map<String,Integer> cpcToIdxMap;
-
-    public CPCVAEPipelineManager() {
+    private String modelName;
+    public CPCVAEPipelineManager(String modelName) {
         super(DATA_FOLDER,PREDICTION_DATA_FOLDER);
+        this.modelName=modelName;
     }
 
     protected void initModel(boolean forceRecreateModels) {
-        int maxCPCDepth = getMaxCpcDepth();
+        model = new CPCVariationalAutoEncoderNN(this, modelName);
         if(!forceRecreateModels) {
-            System.out.println("Warning: Using previous model.");
+            System.out.println("Warning: Loading previous model.");
             try {
-                model = CPCVariationalAutoEncoderNN.restoreAndInitModel(maxCPCDepth, true, this);
+                model.loadMostRecentModel();
             } catch(Exception e) {
                 System.out.println("Error loading previous model: "+e.getMessage());
-                model = null;
             }
         }
-        if(model == null) {
-            model = new CPCVariationalAutoEncoderNN(this);
-        }
+    }
+
+    @Override
+    public void rebuildPrerequisiteData() {
+        hierarchy = CPCHierarchy.updateAndGetLatest();
     }
 
     @Override
@@ -70,10 +74,6 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
             hierarchy.loadGraph();
         }
         return hierarchy;
-    }
-
-    public int getMaxCpcDepth() {
-        return MAX_CPC_DEPTH;
     }
 
     public synchronized Map<String,? extends Collection<CPC>> getCPCMap() {
@@ -150,14 +150,16 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     }
 
     public static void main(String[] args) throws Exception {
-        CPCVAEPipelineManager pipelineManager = new CPCVAEPipelineManager();
+        boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
-        boolean runModels = false;
+        boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
         int nEpochs = 1;
+        String modelName = "cpc_autoencoder";
 
-        pipelineManager.runPipeline(rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
+        CPCVAEPipelineManager pipelineManager = new CPCVAEPipelineManager(modelName);
+        pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
 }

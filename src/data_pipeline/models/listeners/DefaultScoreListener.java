@@ -1,13 +1,14 @@
-package models.similarity_models.signatures.scorers;
+package data_pipeline.models.listeners;
 
-import models.similarity_models.signatures.StoppingConditionMetException;
+import data_pipeline.models.exceptions.StoppingConditionMetException;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.optimize.api.IterationListener;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -22,18 +23,16 @@ public class DefaultScoreListener implements IterationListener {
     private Integer smallestAverageEpoch;
     private Double startingAverageError;
     private int printIterations;
-    private AtomicBoolean isSavedFlag;
     // train
     private List<Double> movingAverage = new ArrayList<>();
     private final int averagePeriod = 10;
-    private Function<Void,Void> saveFunction;
+    private Function<LocalDateTime,Void> saveFunction;
     private AtomicBoolean stoppingConditionFlag;
     private  Function<Void,Double> testErrorFunction;
     private Function<Void,Double> trainErrorFunction;
     private Long lastTime;
-    public DefaultScoreListener(int printIterations, Function<Void,Double> testErrorFunction, Function<Void,Double> trainErrorFunction, Function<Void,Void> saveFunction, AtomicBoolean isSavedFlag, AtomicBoolean stoppingConditionFlag) {
+    public DefaultScoreListener(int printIterations, Function<Void,Double> testErrorFunction, Function<Void,Double> trainErrorFunction, Function<LocalDateTime,Void> saveFunction, AtomicBoolean stoppingConditionFlag) {
         this.printIterations = printIterations;
-        this.isSavedFlag=isSavedFlag;
         this.trainErrorFunction=trainErrorFunction;
         this.testErrorFunction=testErrorFunction;
         this.saveFunction=saveFunction;
@@ -58,14 +57,6 @@ public class DefaultScoreListener implements IterationListener {
             System.out.print("-");
         }
         iterationCount++;
-        if(iterationCount%10000==9999&&!isSavedFlag.get()) {
-            try {
-                saveFunction.apply(null);
-                isSavedFlag.set(false);
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
         if (iterationCount % printIterations == printIterations-1) {
             long newTime = System.currentTimeMillis();
             System.out.println("Time to complete: "+((newTime-lastTime)/1000)+" seconds");
@@ -95,16 +86,17 @@ public class DefaultScoreListener implements IterationListener {
                 }
             }
         }
-        if(previousAverageError!=null&&smallestAverage!=null) {
+        if(previousAverageError!=null&&smallestAverage!=null&&smallestAverageEpoch!=null) {
             // check conditions for saving model
-            if(averageError>previousAverageError && previousAverageError.equals(smallestAverage)) {
+            if(smallestAverageEpoch.equals(iterationCount)) {
                 System.out.println("Saving model...");
                 try {
-                    saveFunction.apply(null);
+                    saveFunction.apply(LocalDateTime.now());
                 } catch(Exception e) {
-                    System.out.println("Error while saving: "+e.getMessage());
                     e.printStackTrace();
                 }
+            }
+            if(averageError>previousAverageError) {
                 // check stopping conditions
                 if (averageError > smallestAverage * 1.2) {
                     stoppingConditionFlag.set(true);

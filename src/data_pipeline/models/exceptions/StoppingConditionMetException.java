@@ -1,4 +1,4 @@
-package models.similarity_models.signatures;
+package data_pipeline.models.exceptions;
 
 /**
  * Created by Evan on 10/28/2017.

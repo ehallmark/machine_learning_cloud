@@ -1,6 +1,7 @@
 package models.similarity_models.signatures;
 
-import models.similarity_models.signatures.scorers.DefaultScoreListener;
+import data_pipeline.models.exceptions.StoppingConditionMetException;
+import data_pipeline.models.listeners.DefaultScoreListener;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -18,6 +19,7 @@ import seeding.Database;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -117,13 +119,13 @@ public class WordToCPCNetwork {
             return 0d;
         };
 
-        Function<Void,Void> saveFunction = v -> {
+        Function<LocalDateTime,Void> saveFunction = v -> {
             save(net);
             return null;
         };
         AtomicBoolean isSaved = new AtomicBoolean(false);
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
-        IterationListener listener = new DefaultScoreListener(printIterations, testFunction, trainFunction, saveFunction, isSaved, stoppingCondition);
+        IterationListener listener = new DefaultScoreListener(printIterations, testFunction, trainFunction, saveFunction, stoppingCondition);
         net.setListeners(listener);
 
         System.out.println("Starting to train data...");

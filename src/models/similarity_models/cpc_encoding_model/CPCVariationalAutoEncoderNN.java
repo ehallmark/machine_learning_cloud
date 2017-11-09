@@ -2,13 +2,13 @@ package models.similarity_models.cpc_encoding_model;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
+import cpc_normalization.CPCHierarchy;
 import data_pipeline.models.TrainablePredictionModel;
-import data_pipeline.pipeline_manager.PipelineManager;
 import lombok.Getter;
 import models.similarity_models.signatures.CPCDataSetIterator;
 import models.similarity_models.signatures.NDArrayHelper;
-import models.similarity_models.signatures.StoppingConditionMetException;
-import models.similarity_models.signatures.scorers.DefaultScoreListener;
+import data_pipeline.models.exceptions.StoppingConditionMetException;
+import data_pipeline.models.listeners.DefaultScoreListener;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -18,7 +18,6 @@ import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
-import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
@@ -27,7 +26,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 
 import java.io.File;
-import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,20 +36,23 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 10/26/17.
  */
-public class CPCVariationalAutoEncoderNN implements TrainablePredictionModel<INDArray> {
+public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArray> {
     public static final int VECTOR_SIZE = 32;
-    public static final File networkFile = new File(Constants.DATA_FOLDER+"cpc_deep_vae_nn.jobj");
-
-    @Getter
-    private MultiLayerNetwork net;
+    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"cpc_deep_vae_nn_model_data");
     @Getter
     private Map<String,Integer> cpcToIdxMap;
     private AtomicBoolean isSaved;
     private CPCVAEPipelineManager pipelineManager;
-    public CPCVariationalAutoEncoderNN(CPCVAEPipelineManager pipelineManager) {
+    public CPCVariationalAutoEncoderNN(CPCVAEPipelineManager pipelineManager, String modelName) {
+        super(modelName);
         this.pipelineManager= pipelineManager;
         this.cpcToIdxMap = pipelineManager.getOrLoadIdxMap();
         this.isSaved=new AtomicBoolean(false);
+    }
+
+    @Override
+    public File getModelBaseDirectory() {
+        return BASE_DIR;
     }
 
     @Override
@@ -137,16 +139,16 @@ public class CPCVariationalAutoEncoderNN implements TrainablePredictionModel<IND
             return test(pipelineManager.getDatasetManager().getTrainingIterator(10000/128), vae);
         };
 
-        Function<Void,Void> saveFunction = (v) -> {
+        Function<LocalDateTime,Void> saveFunction = (datetime) -> {
             try {
-                save();
+                save(datetime);
             } catch(Exception e) {
                 e.printStackTrace();
             }
             return null;
         };
 
-        IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, isSaved, stoppingCondition);
+        IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
         net.setListeners(listener);
 
         for (int i = 0; i < nEpochs; i++) {
@@ -164,7 +166,7 @@ public class CPCVariationalAutoEncoderNN implements TrainablePredictionModel<IND
             }
             if(!isSaved()) {
                 try {
-                    save();
+                    save(LocalDateTime.now());
                     // allow more saves after this
                     isSaved.set(false);
                 } catch(Exception e) {
@@ -190,37 +192,4 @@ public class CPCVariationalAutoEncoderNN implements TrainablePredictionModel<IND
         return 1d - (testSimilarity.get()/cnt.get());
     }
 
-
-
-    public synchronized void save() throws IOException {
-        if(net!=null) {
-            isSaved.set(true);
-            saveNetwork(true);
-        }
-    }
-
-    private void saveNetwork(boolean saveUpdater) throws IOException{
-        ModelSerializer.writeModel(net,getModelFile(networkFile,pipelineManager.getMaxCpcDepth()),saveUpdater);
-    }
-
-    public synchronized boolean isSaved() {
-        return isSaved.get();
-    }
-
-    private static File getModelFile(File file, int cpcDepth) {
-        return new File(file.getAbsoluteFile()+"-net-cpcdepth"+cpcDepth);
-    }
-
-    public static CPCVariationalAutoEncoderNN restoreAndInitModel(int cpcDepth, boolean loadUpdater, CPCVAEPipelineManager manager) throws IOException{
-        File modelFile = getModelFile(networkFile,cpcDepth);
-        if(!modelFile.exists()) {
-            System.out.println("Model file does not exist: "+modelFile.getAbsolutePath());
-            return null;
-        }
-
-        CPCVariationalAutoEncoderNN instance = new CPCVariationalAutoEncoderNN(manager);
-        instance.net = ModelSerializer.restoreMultiLayerNetwork(modelFile,loadUpdater);
-        instance.isSaved = new AtomicBoolean(true);
-        return instance;
-    }
 }

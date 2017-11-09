@@ -3,9 +3,10 @@ package models.similarity_models.signatures;
 import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
+import data_pipeline.models.exceptions.StoppingConditionMetException;
 import lombok.Getter;
 import lombok.Setter;
-import models.similarity_models.signatures.scorers.DefaultScoreListener;
+import data_pipeline.models.listeners.DefaultScoreListener;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -29,6 +30,8 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -194,7 +197,7 @@ public class SignatureSimilarityModel implements Serializable  {
         Function<Void,Double> testFunction = (v) -> {
             return test(getIterator(validationAssets,cpcToIdxMap, true), vae);
         };
-        Function<Void,Void> saveFunction = (v) -> {
+        Function<LocalDateTime,Void> saveFunction = (v) -> {
             try {
                 save();
             } catch(Exception e) {
@@ -203,7 +206,7 @@ public class SignatureSimilarityModel implements Serializable  {
             return null;
         };
 
-        IterationListener listener = new DefaultScoreListener(printIterations, testFunction, null, saveFunction, isSaved, stoppingCondition);
+        IterationListener listener = new DefaultScoreListener(printIterations, testFunction, null, saveFunction, stoppingCondition);
         net.setListeners(listener);
 
         for (int i = 0; i < nEpochs; i++) {

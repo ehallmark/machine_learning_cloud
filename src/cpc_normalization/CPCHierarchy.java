@@ -141,8 +141,13 @@ public class CPCHierarchy {
 
 
     public static void main(String[] args) {
+        updateAndGetLatest();
+    }
+
+    public static CPCHierarchy updateAndGetLatest() {
         CPCHierarchy hierarchy = new CPCHierarchy();
         hierarchy.run(new ArrayList<>(Database.getClassCodeToClassTitleMap().keySet()));
         hierarchy.save();
+        return hierarchy;
     }
 }
