@@ -64,7 +64,7 @@ public class DatasetManager {
     }
 
     protected DataSetIterator getIterator(String kind, int limit) {
-        return new AsyncDataSetIterator(new FileMinibatchIterator(new File(baseDir,kind),limit));
+        return new FileMinibatchIterator(new File(baseDir,kind),limit);
     }
 
     protected DataSetIterator getIterator(String kind) {

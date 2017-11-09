@@ -156,7 +156,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     @Override
     protected DataSetIterator getRawIterator(List<String> assets, boolean test) {
         boolean shuffle = !test;
-        return new AsyncDataSetIterator(new CPCDataSetIterator(assets,shuffle,test ? 1024 : BATCH_SIZE,cpcMap,cpcToIdxMap));
+        return new CPCDataSetIterator(assets,shuffle,test ? 1024 : BATCH_SIZE,cpcMap,cpcToIdxMap);
     }
 
     public static void main(String[] args) throws Exception {
