@@ -18,6 +18,9 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -164,8 +167,14 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
         int nEpochs = 1;
         String modelName = "cpc_autoencoder";
 
+        setLoggerLevel(Level.INFO);
         CPCVAEPipelineManager pipelineManager = new CPCVAEPipelineManager(modelName);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
+    }
+
+    private static void setLoggerLevel(Level level) {
+        Logger logger = Logger.getGlobal();
+        logger.setLevel(level);
     }
 
 }
