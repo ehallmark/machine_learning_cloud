@@ -166,7 +166,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
-        int nEpochs = 1;
+        int nEpochs = 2;
         String modelName = "cpc_autoencoder";
 
         setLoggingLevel(Level.INFO);

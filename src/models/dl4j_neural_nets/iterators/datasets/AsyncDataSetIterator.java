@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class AsyncDataSetIterator implements DataSetIterator {
     private DataSetIterator iterator;
     private LinkedList<DataSet> queue = new LinkedList<>();
-    private List<Thread> threads = new ArrayList<>();
+    private List<RecursiveAction> threads = new ArrayList<>();
     private int numThreads;
     private final int seekDistance = 4;
     private AtomicBoolean noMoreSequences = new AtomicBoolean(false);
@@ -33,27 +33,29 @@ public class AsyncDataSetIterator implements DataSetIterator {
 
     private void startThreads() {
         for(int n = threads.size(); n < numThreads; n++) {
-            Runnable thread = () -> {
-                int counter = 0;
-                while (counter < seekDistance) {
-                    DataSet dataSet;
-                    synchronized (iterator) {
-                        boolean hasMoreSequences = iterator.hasNext();
-                        if(!hasMoreSequences) {
-                            noMoreSequences.set(true);
-                            break;
+            RecursiveAction thread = new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    int counter = 0;
+                    while (counter < seekDistance) {
+                        DataSet dataSet;
+                        synchronized (iterator) {
+                            boolean hasMoreSequences = iterator.hasNext();
+                            if (!hasMoreSequences) {
+                                noMoreSequences.set(true);
+                                break;
+                            }
+                            dataSet = iterator.next();
                         }
-                        dataSet=iterator.next();
+                        synchronized (queue) {
+                            queue.add(dataSet);
+                        }
+                        counter++;
                     }
-                    synchronized (queue) {
-                        queue.add(dataSet);
-                    }
-                    counter++;
                 }
             };
-            Thread t = new Thread(thread);
-            t.start();
-            threads.add(t);
+            thread.fork();
+            threads.add(thread);
         }
     }
 
