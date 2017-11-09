@@ -20,7 +20,6 @@ public class FileMinibatchIterator implements DataSetIterator {
     private int totalBatches;
     private DataSetPreProcessor dataSetPreProcessor;
     private final String pattern;
-    private ArrayBlockingQueue<RecursiveTask<DataSet>> queue;
     public FileMinibatchIterator(File rootDir) {
         this(rootDir,-1);
     }
@@ -36,7 +35,6 @@ public class FileMinibatchIterator implements DataSetIterator {
         this.totalBatches = limit > 0 ? Math.min(limit,numFiles) : numFiles;
         this.pattern = pattern;
         this.currIdx = new AtomicInteger(0);
-        this.queue=new ArrayBlockingQueue<>(FETCH_LIMIT);
     }
 
     public DataSet next(int num) {
@@ -60,7 +58,7 @@ public class FileMinibatchIterator implements DataSetIterator {
     }
 
     public boolean asyncSupported() {
-        return false;
+        return true;
     }
 
     public void reset() {
@@ -96,34 +94,20 @@ public class FileMinibatchIterator implements DataSetIterator {
     }
 
     public DataSet next() {
-        while(hasNext() && queue.size()<FETCH_LIMIT) {
-            try {
-                RecursiveTask<DataSet> fetchTask = nextFetchTask();
-                queue.put(fetchTask);
-                fetchTask.fork();
-            } catch(Exception e) {
-                throw new IllegalStateException("Getting next fetch task.");
-            }
-        }
-        return queue.poll().join();
+        return nextDataSet();
     }
 
-    private RecursiveTask<DataSet> nextFetchTask() {
+    private DataSet nextDataSet() {
         final int readIdx = this.currIdx.getAndIncrement();
-        return new RecursiveTask<DataSet>() {
-            @Override
-            protected DataSet compute() {
-                try {
-                    DataSet e = FileMinibatchIterator.this.read(readIdx);
-                    if (FileMinibatchIterator.this.dataSetPreProcessor != null) {
-                        FileMinibatchIterator.this.dataSetPreProcessor.preProcess(e);
-                    }
-                    return e;
-                } catch (Exception var2) {
-                    throw new IllegalStateException("Unable to read dataset");
-                }
+        try {
+            DataSet e = this.read(readIdx);
+            if (this.dataSetPreProcessor != null) {
+                this.dataSetPreProcessor.preProcess(e);
             }
-        };
+            return e;
+        } catch (Exception var2) {
+            throw new IllegalStateException("Unable to read dataset");
+        }
     }
 
     private DataSet read(int idx) throws IOException {
