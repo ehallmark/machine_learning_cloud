@@ -13,7 +13,7 @@ import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
 public class FileMinibatchIterator implements DataSetIterator {
-    private static final int FETCH_LIMIT = 3;
+    private static final int FETCH_LIMIT = 2;
     public static final String DEFAULT_PATTERN = "dataset-%d.bin";
     private AtomicInteger currIdx;
     private File rootDir;
@@ -92,22 +92,19 @@ public class FileMinibatchIterator implements DataSetIterator {
     }
 
     public boolean hasNext() {
-        boolean hasNext = this.currIdx.get() < this.totalBatches;
-        boolean originalHasNext = hasNext;
-        while(hasNext && queue.size()<FETCH_LIMIT) {
-            try {
-                RecursiveTask<DataSet> fetchTask = nextFetchTask();
-                fetchTask.fork();
-                queue.put(fetchTask);
-            } catch(Exception e) {
-                throw new IllegalStateException("Getting next fetch task.");
-            }
-            hasNext = this.currIdx.get() < this.totalBatches;
-        }
-        return originalHasNext;
+        return this.currIdx.get() < this.totalBatches;
     }
 
     public DataSet next() {
+        while(hasNext() && queue.size()<FETCH_LIMIT) {
+            try {
+                RecursiveTask<DataSet> fetchTask = nextFetchTask();
+                queue.put(fetchTask);
+                fetchTask.fork();
+            } catch(Exception e) {
+                throw new IllegalStateException("Getting next fetch task.");
+            }
+        }
         return queue.poll().join();
     }
 
