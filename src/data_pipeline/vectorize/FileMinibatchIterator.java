@@ -13,7 +13,7 @@ import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
 public class FileMinibatchIterator implements DataSetIterator {
-    private static final int FETCH_LIMIT = 10;
+    private static final int FETCH_LIMIT = 3;
     public static final String DEFAULT_PATTERN = "dataset-%d.bin";
     private AtomicInteger currIdx;
     private File rootDir;
