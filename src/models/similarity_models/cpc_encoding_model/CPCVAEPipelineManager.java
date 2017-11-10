@@ -135,7 +135,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         boolean rebuildPrerequisites = false;
-        boolean rebuildDatasets = true;
+        boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = true; // TODO change this once the hyperparameters are good
         boolean runPredictions = true;
