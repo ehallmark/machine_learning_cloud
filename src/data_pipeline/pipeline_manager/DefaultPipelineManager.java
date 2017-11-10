@@ -65,7 +65,7 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
         model.train(nEpochs);
         if(!model.isSaved()) {
             try {
-                model.save(LocalDateTime.now());
+                model.save(LocalDateTime.now(),Double.MAX_VALUE);
             } catch(Exception e) {
                 e.printStackTrace();
             }

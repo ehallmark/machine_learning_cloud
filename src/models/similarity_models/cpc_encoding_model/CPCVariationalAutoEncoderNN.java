@@ -24,6 +24,7 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.RmsProp;
+import scala.Function2;
 import seeding.Constants;
 
 import java.io.File;
@@ -118,7 +119,7 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
                     .seed(rngSeed)
                     .learningRate(0.05)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                    .updater(Updater.RMSPROP)
+                    .updater(Updater.RMSPROP).rmsDecay(0.95)
                     //.updater(Updater.ADAM)
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)
@@ -164,9 +165,9 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
             return 0d;//test(pipelineManager.getDatasetManager().getTrainingIterator(10000/pipelineManager.getBatchSize()), vae);
         };
 
-        Function<LocalDateTime,Void> saveFunction = (datetime) -> {
+        Function2<LocalDateTime,Double,Void> saveFunction = (datetime,score) -> {
             try {
-                save(datetime);
+                save(datetime,score);
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -185,15 +186,6 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
             }
             if(stoppingCondition.get()) {
                 break;
-            }
-            if(!isSaved()) {
-                try {
-                    save(LocalDateTime.now());
-                    // allow more saves after this
-                    isSaved.set(false);
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
             }
             trainIter.reset();
         }

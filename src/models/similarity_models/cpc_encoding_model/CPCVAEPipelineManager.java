@@ -48,7 +48,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
-                model.loadMostRecentModel();
+                model.loadBestModel();
             } catch(Exception e) {
                 System.out.println("Error loading previous model: "+e.getMessage());
             }
@@ -145,7 +145,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = true; // TODO change this once the hyperparameters are good
+        boolean forceRecreateModels = false;
         boolean runPredictions = true;
         int nEpochs = 2;
         String modelName = "cpc_autoencoder";

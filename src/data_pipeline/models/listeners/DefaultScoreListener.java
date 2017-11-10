@@ -3,6 +3,8 @@ package data_pipeline.models.listeners;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.optimize.api.IterationListener;
+import scala.Function2;
+import scala.Function3;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -26,12 +28,12 @@ public class DefaultScoreListener implements IterationListener {
     // train
     private List<Double> movingAverage = new ArrayList<>();
     private final int averagePeriod = 10;
-    private Function<LocalDateTime,Void> saveFunction;
+    private Function2<LocalDateTime,Double,Void> saveFunction;
     private AtomicBoolean stoppingConditionFlag;
     private  Function<Void,Double> testErrorFunction;
     private Function<Void,Double> trainErrorFunction;
     private Long lastTime;
-    public DefaultScoreListener(int printIterations, Function<Void,Double> testErrorFunction, Function<Void,Double> trainErrorFunction, Function<LocalDateTime,Void> saveFunction, AtomicBoolean stoppingConditionFlag) {
+    public DefaultScoreListener(int printIterations, Function<Void,Double> testErrorFunction, Function<Void,Double> trainErrorFunction, Function2<LocalDateTime,Double,Void> saveFunction, AtomicBoolean stoppingConditionFlag) {
         this.printIterations = printIterations;
         this.trainErrorFunction=trainErrorFunction;
         this.testErrorFunction=testErrorFunction;
@@ -91,7 +93,7 @@ public class DefaultScoreListener implements IterationListener {
             if(smallestAverageEpoch.equals(iterationCount)) {
                 System.out.println("Saving model...");
                 try {
-                    saveFunction.apply(LocalDateTime.now());
+                    saveFunction.apply(LocalDateTime.now(),averageError);
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
