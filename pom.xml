@@ -9,13 +9,14 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <nd4j.backend>nd4j-native-platform</nd4j.backend>
+        <nd4j.backend>nd4j-base64</nd4j.backend>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <shadedClassifier>bin</shadedClassifier>
         <java.version>1.8</java.version>
         <nd4j.version>0.9.1</nd4j.version>
         <dl4j.version>0.9.1</dl4j.version>
         <guava.version>19.0</guava.version>
+        <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
         <scala.binary.version>2.11</scala.binary.version>
         <jfreechart.version>1.0.13</jfreechart.version>
         <maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
@@ -28,7 +29,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.6.1</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
