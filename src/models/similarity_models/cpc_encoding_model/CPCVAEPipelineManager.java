@@ -133,7 +133,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     }
 
     public static void main(String[] args) throws Exception {
-        //Nd4j.setDataType(DataBuffer.Type.FLOAT);
+        Nd4j.setDataType(DataBuffer.Type.FLOAT);
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;

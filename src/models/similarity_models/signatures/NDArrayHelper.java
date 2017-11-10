@@ -19,7 +19,7 @@ public class NDArrayHelper {
     public static double sumOfCosineSimByRow(INDArray m1, INDArray m2) {
         INDArray norms1 = m1.norm2(1);
         INDArray norms2 = m2.norm2(1);
-        INDArray dot = m2.muli(m1).sum(1);
+        INDArray dot = m2.mul(m1).sum(1);
         INDArray norm = norms1.muli(norms2);
         INDArray cosineSim = dot.divi(norm);
         return cosineSim.sumNumber().doubleValue();
