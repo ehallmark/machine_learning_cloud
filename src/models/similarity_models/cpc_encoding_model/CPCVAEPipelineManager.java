@@ -21,6 +21,7 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -107,7 +108,14 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
         System.out.println("Starting to recreate datasets...");
         int limit = 5000000;
 
-        cpcToIdxMap = CPCIndexMap.loadOrCreateMapForDepth(getHierarchy(),MAX_CPC_DEPTH);
+        RecursiveTask<CPCHierarchy> hierarchyTask = new RecursiveTask<CPCHierarchy>() {
+            @Override
+            protected CPCHierarchy compute() {
+                return getHierarchy();
+            }
+        };
+
+        cpcToIdxMap = CPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,MAX_CPC_DEPTH);
 
         getCPCMap();
         System.out.println("Loaded cpcMap");

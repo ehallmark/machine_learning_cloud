@@ -28,6 +28,7 @@ import seeding.Constants;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -52,7 +53,13 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
 
     public Map<String,Integer> getCpcToIdxMap() {
         if(cpcToIdxMap==null) {
-            cpcToIdxMap = CPCIndexMap.loadOrCreateMapForDepth(pipelineManager.getHierarchy(),maxCPCDepth);
+            RecursiveTask<CPCHierarchy> hierarchyTask = new RecursiveTask<CPCHierarchy>() {
+                @Override
+                protected CPCHierarchy compute() {
+                    return pipelineManager.getHierarchy();
+                }
+            };
+            cpcToIdxMap = CPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,maxCPCDepth);
         }
         return cpcToIdxMap;
     }
