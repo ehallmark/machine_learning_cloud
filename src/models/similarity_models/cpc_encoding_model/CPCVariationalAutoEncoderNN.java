@@ -108,10 +108,10 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
             Nd4j.getRandom().setSeed(rngSeed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)
-                    .learningRate(0.025)
+                    .learningRate(0.05)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                    .updater(Updater.RMSPROP).rmsDecay(0.95)
-                    //.updater(Updater.ADAM)
+                    //.updater(new RmsProp(0.95))
+                    .updater(Updater.ADAM)
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)
                     //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)

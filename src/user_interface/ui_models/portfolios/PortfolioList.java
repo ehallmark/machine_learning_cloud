@@ -29,7 +29,6 @@ public class PortfolioList implements Comparable<PortfolioList> {
         return Double.compare(o.avgSimilarity,avgSimilarity);
     }
 
-
     public Stream<Pair<String,PortfolioList>> groupedBy(String field) {
         if(field==null) return Arrays.asList(new Pair<>("",this)).stream();
         return itemList.stream().filter(item->item.getData(field)!=null).collect(Collectors.groupingBy((item)->(item).getData(field))).entrySet()
