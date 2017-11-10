@@ -1,6 +1,7 @@
 package models.similarity_models.paragraph_vectors;
 
-import org.deeplearning4j.berkeley.Pair;
+
+import org.nd4j.linalg.primitives.Pair;
 
 /**
  * Created by ehallmark on 9/5/16.

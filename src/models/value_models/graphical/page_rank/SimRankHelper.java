@@ -1,6 +1,6 @@
 package models.value_models.graphical.page_rank;
 
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Database;
 import java.io.File;
 import java.util.*;

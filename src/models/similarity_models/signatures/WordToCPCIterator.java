@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.stages.Stage;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;

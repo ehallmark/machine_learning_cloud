@@ -4,7 +4,7 @@ package tools;
 
 
 import org.apache.xpath.operations.Bool;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

@@ -2,7 +2,7 @@ package user_interface.ui_models.portfolios;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 

@@ -4,7 +4,7 @@ import models.genetics.GeneticAlgorithm;
 import models.genetics.Listener;
 import models.genetics.SolutionCreator;
 import models.model_testing.SplitModelData;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import models.classification_models.svm.SVMHelper;
 import models.classification_models.GatherSVMClassifier;
 

@@ -1,7 +1,7 @@
 package test;
 
 import com.googlecode.concurrenttrees.radix.RadixTree;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCitedAssetsMap;

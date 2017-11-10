@@ -2,7 +2,7 @@ package models.model_testing;
 
 import j2html.tags.Tag;
 import models.classification_models.ClassificationAttr;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;

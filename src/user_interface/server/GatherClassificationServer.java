@@ -6,7 +6,7 @@ import elasticsearch.DataSearcher;
 import elasticsearch.MyClient;
 import models.classification_models.TechnologyClassifier;
 import models.keyphrase_prediction.models.NewestModel;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.join.query.HasParentQueryBuilder;

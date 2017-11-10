@@ -1,7 +1,7 @@
 package user_interface.ui_models.portfolios.items;
 
 import lombok.Getter;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import models.value_models.ValueModelCombination;
 

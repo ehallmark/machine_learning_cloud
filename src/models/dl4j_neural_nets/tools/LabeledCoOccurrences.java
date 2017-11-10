@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import models.dl4j_neural_nets.iterators.sequences.FilteredVocabSequenceIterator;
 import lombok.NonNull;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import org.deeplearning4j.models.glove.count.ASCIICoOccurrenceWriter;
 import org.deeplearning4j.models.glove.count.BinaryCoOccurrenceReader;
 import org.deeplearning4j.models.glove.count.BinaryCoOccurrenceWriter;

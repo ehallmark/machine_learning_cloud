@@ -7,7 +7,7 @@ import lombok.Getter;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.highcharts.PieChart;
 import j2html.tags.Tag;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import spark.Request;

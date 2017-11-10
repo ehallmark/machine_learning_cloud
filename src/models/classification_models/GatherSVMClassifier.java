@@ -6,7 +6,7 @@ import models.genetics.SolutionCreator;
 import j2html.tags.Tag;
 import lombok.Getter;
 import models.model_testing.SplitModelData;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import models.similarity_models.class_vectors.CPCSimilarityFinder;

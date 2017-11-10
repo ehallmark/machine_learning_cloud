@@ -8,7 +8,7 @@ import model.nodes.FactorNode;
 import model.nodes.Node;
 import models.model_testing.GatherTechnologyScorer;
 import models.model_testing.SplitModelData;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 

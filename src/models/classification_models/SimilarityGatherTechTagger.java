@@ -7,7 +7,7 @@ import models.similarity_models.class_vectors.CPCSimilarityFinder;
 import models.similarity_models.class_vectors.WIPOSimilarityFinder;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;

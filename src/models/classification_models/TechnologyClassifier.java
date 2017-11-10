@@ -1,7 +1,7 @@
 package models.classification_models;
 
 import elasticsearch.DataSearcher;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import user_interface.ui_models.attributes.AssetNumberAttribute;

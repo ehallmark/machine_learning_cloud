@@ -2,7 +2,7 @@ package models.classification_models.svm;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import models.classification_models.NaiveGatherClassifier;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import models.classification_models.svm.libsvm.*;
 
 import java.util.*;

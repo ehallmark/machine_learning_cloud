@@ -7,7 +7,7 @@ import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import tools.MinHeap;
 import models.classification_models.genetics.TechTaggerSolution;
 import models.classification_models.genetics.TechTaggerSolutionCreator;

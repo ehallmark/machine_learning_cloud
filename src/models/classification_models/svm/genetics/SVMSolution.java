@@ -3,7 +3,7 @@ package models.classification_models.svm.genetics;
 import models.genetics.Solution;
 import lombok.Getter;
 import models.model_testing.GatherTechnologyScorer;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import models.classification_models.GatherSVMClassifier;
 import models.classification_models.svm.SVMHelper;

@@ -1,6 +1,6 @@
 package models.keyphrase_prediction;
 
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 
 import java.io.Serializable;
 import java.util.*;

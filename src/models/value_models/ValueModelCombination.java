@@ -2,7 +2,6 @@ package models.value_models;
 
 
 import lombok.Getter;
-import org.deeplearning4j.berkeley.Pair;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 import user_interface.ui_models.portfolios.items.Item;
 

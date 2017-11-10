@@ -2,7 +2,7 @@ package models.classification_models.svm.genetics;
 
 import models.genetics.Solution;
 import models.genetics.SolutionCreator;
-import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.primitives.Pair;
 
 import java.util.*;
 

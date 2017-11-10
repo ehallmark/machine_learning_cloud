@@ -1,9 +1,8 @@
 package models.genetics;
 
 import models.genetics.keyword_analysis.ProbabilityHelper;
-import org.deeplearning4j.berkeley.Pair;
 import tools.SimpleTimer;
-
+import org.nd4j.linalg.primitives.Pair;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
