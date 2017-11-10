@@ -23,6 +23,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.learning.RmsProp;
 import seeding.Constants;
 
 import java.io.File;
@@ -117,7 +118,7 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
                     .seed(rngSeed)
                     .learningRate(0.05)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                    //.updater(new RmsProp(0.95))
+                    .updater(Updater.RMSPROP)
                     .updater(Updater.ADAM)
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)
@@ -145,12 +146,20 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
 
+        System.out.println("Building validation matrix...");
+        DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
+        int cnt = 0;
+        List<INDArray> partialValidationMatrices = new ArrayList<>();
+        while(cnt<10000&&validationIterator.hasNext()) {
+            partialValidationMatrices.add(validationIterator.next().getFeatures());
+        }
+        INDArray validationMatrix = Nd4j.vstack(partialValidationMatrices);
         Function<Void,Double> testErrorFunction = (v) -> {
-            return test(pipelineManager.getDatasetManager().getValidationIterator(), vae);
+            return test(validationMatrix, vae);
         };
 
         Function<Void,Double> trainErrorFunction = (v) -> {
-            return test(pipelineManager.getDatasetManager().getTrainingIterator(10000/pipelineManager.getBatchSize()), vae);
+            return 0d;//test(pipelineManager.getDatasetManager().getTrainingIterator(10000/pipelineManager.getBatchSize()), vae);
         };
 
         Function<LocalDateTime,Void> saveFunction = (datetime) -> {
@@ -172,9 +181,6 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
             } catch(StoppingConditionMetException s) {
                 System.out.println("Stopping condition met");
             }
-            System.out.println("Testing overall model: EPOCH "+i);
-            double finalTestError = test(pipelineManager.getDatasetManager().getValidationIterator(),vae);
-            System.out.println("Final Overall Model Error: "+finalTestError);
             if(stoppingCondition.get()) {
                 break;
             }
@@ -191,25 +197,11 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
         }
     }
 
-    private double test(DataSetIterator dataStream, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
-        AtomicDouble testSimilarity = new AtomicDouble(0d);
-        AtomicInteger cnt = new AtomicInteger(0);
-        List<INDArray> ins = new ArrayList<>();
-        List<INDArray> outs = new ArrayList<>();
-        while(dataStream.hasNext()) {
-            DataSet test = dataStream.next();
-            INDArray testInput = test.getFeatures();
-            INDArray latentValues = model.activate(testInput,false);
-            INDArray testOutput = model.generateAtMeanGivenZ(latentValues);
-            ins.add(testInput);
-            outs.add(testOutput);
-            //System.gc();
-        }
-        INDArray fullIns = Nd4j.vstack(ins);
-        INDArray fullOuts = Nd4j.vstack(outs);
-        double similarity = NDArrayHelper.sumOfCosineSimByRow(fullIns,fullOuts);
-
-        return 1d - (similarity/fullIns.rows());
+    private double test(INDArray inputs, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
+        INDArray latentValues = model.activate(inputs,false);
+        INDArray outputs = model.generateAtMeanGivenZ(latentValues);
+        double similarity = NDArrayHelper.sumOfCosineSimByRow(inputs,outputs);
+        return 1d - (similarity/inputs.rows());
     }
 
 }
