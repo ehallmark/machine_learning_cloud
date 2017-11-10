@@ -194,17 +194,22 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
     private double test(DataSetIterator dataStream, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
         AtomicDouble testSimilarity = new AtomicDouble(0d);
         AtomicInteger cnt = new AtomicInteger(0);
+        List<INDArray> ins = new ArrayList<>();
+        List<INDArray> outs = new ArrayList<>();
         while(dataStream.hasNext()) {
             DataSet test = dataStream.next();
             INDArray testInput = test.getFeatures();
             INDArray latentValues = model.activate(testInput,false);
             INDArray testOutput = model.generateAtMeanGivenZ(latentValues);
-            double similarity = NDArrayHelper.sumOfCosineSimByRow(testInput,testOutput);
-            testSimilarity.addAndGet(similarity);
-            cnt.addAndGet(testInput.rows());
-            System.gc();
+            ins.add(testInput);
+            outs.add(testOutput);
+            //System.gc();
         }
-        return 1d - (testSimilarity.get()/cnt.get());
+        INDArray fullIns = Nd4j.vstack(ins);
+        INDArray fullOuts = Nd4j.vstack(outs);
+        double similarity = NDArrayHelper.sumOfCosineSimByRow(fullIns,fullOuts);
+
+        return 1d - (similarity/fullIns.rows());
     }
 
 }
