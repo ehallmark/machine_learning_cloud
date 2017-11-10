@@ -206,7 +206,7 @@ public class SignatureSimilarityModel implements Serializable  {
             return null;
         };
 
-        IterationListener listener = new DefaultScoreListener(printIterations, testFunction, null, saveFunction, stoppingCondition);
+        IterationListener listener = new DefaultScoreListener(printIterations, testFunction, null, null, stoppingCondition);
         net.setListeners(listener);
 
         for (int i = 0; i < nEpochs; i++) {
