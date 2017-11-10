@@ -24,7 +24,7 @@ public abstract class TrainablePredictionModel<T> {
     protected static File modelToScoreMapFile = new File(Constants.DATA_FOLDER+"prediction_models_to_score_map.jobj");
     static {
         try {
-            modelToScoreMap = (Map<String,Map<LocalDateTime,Double>>)Database.tryLoadObject(modelToScoreMapFile);
+            modelToScoreMap = loadModelScoreMap();
         } catch(Exception e) {
 
         }
@@ -67,6 +67,7 @@ public abstract class TrainablePredictionModel<T> {
     }
 
     protected File getBestModelFile() {
+        mergeModelScoreMaps();
         File baseDir = getModelBaseDirectory();
         if(baseDir==null||!baseDir.exists()||!baseDir.isDirectory()) return null;
         File[] matchingFiles = baseDir.listFiles(file->file!=null&&file.getName().startsWith(modelName+"_"));
@@ -89,6 +90,8 @@ public abstract class TrainablePredictionModel<T> {
     public synchronized void save(LocalDateTime time, double score) throws IOException {
         if(net!=null) {
             isSaved.set(true);
+            // merge models core map (in case it was updated by another process)
+            mergeModelScoreMaps();
             modelToScoreMap.putIfAbsent(modelName, Collections.synchronizedMap(new HashMap<>()));
             modelToScoreMap.get(modelName).put(time,score);
             if(!getModelBaseDirectory().exists()) getModelBaseDirectory().mkdirs();
@@ -126,7 +129,21 @@ public abstract class TrainablePredictionModel<T> {
         }
     }
 
+    private static Map<String,Map<LocalDateTime,Double>> loadModelScoreMap() {
+        return (Map<String,Map<LocalDateTime,Double>>)Database.tryLoadObject(modelToScoreMapFile);
+    }
+
     private static void saveModelToScoreMap() {
         Database.trySaveObject(modelToScoreMap, modelToScoreMapFile);
+    }
+
+    private static void mergeModelScoreMaps() {
+        try {
+            Map<String,Map<LocalDateTime,Double>> tmp = loadModelScoreMap();
+            if(tmp!=null) {
+                modelToScoreMap.putAll(tmp);
+            }
+        } catch(Exception e) {
+        }
     }
 }
