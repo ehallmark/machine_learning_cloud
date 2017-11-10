@@ -42,19 +42,17 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
     private Map<String,Integer> cpcToIdxMap;
     private AtomicBoolean isSaved;
     private CPCVAEPipelineManager pipelineManager;
-    public CPCVariationalAutoEncoderNN(CPCVAEPipelineManager pipelineManager, String modelName) {
+    private int maxCPCDepth;
+    public CPCVariationalAutoEncoderNN(CPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {
         super(modelName);
         this.pipelineManager= pipelineManager;
+        this.maxCPCDepth=maxCpcDepth;
         this.isSaved=new AtomicBoolean(false);
     }
 
     public Map<String,Integer> getCpcToIdxMap() {
         if(cpcToIdxMap==null) {
-            synchronized (this) {
-                if(cpcToIdxMap==null) {
-                    cpcToIdxMap = pipelineManager.getOrLoadIdxMap(getModelBaseDirectory());
-                }
-            }
+            cpcToIdxMap = CPCIndexMap.loadOrCreateMapForDepth(pipelineManager.getHierarchy(),maxCPCDepth);
         }
         return cpcToIdxMap;
     }
@@ -141,11 +139,11 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
 
         Function<Void,Double> testErrorFunction = (v) -> {
-            return 0d;//test(pipelineManager.getDatasetManager().getValidationIterator(), vae);
+            return test(pipelineManager.getDatasetManager().getValidationIterator(), vae);
         };
 
         Function<Void,Double> trainErrorFunction = (v) -> {
-            return test(pipelineManager.getDatasetManager().getTrainingIterator(10000/128), vae);
+            return test(pipelineManager.getDatasetManager().getTrainingIterator(10000/pipelineManager.getBatchSize()), vae);
         };
 
         Function<LocalDateTime,Void> saveFunction = (datetime) -> {

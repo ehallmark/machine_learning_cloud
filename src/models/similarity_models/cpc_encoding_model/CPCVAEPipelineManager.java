@@ -32,7 +32,6 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     private static final int BATCH_SIZE = 128;
     private static final File INPUT_DATA_FOLDER = new File("cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+INPUT_DATA_FOLDER.getName()+"_predictions_map.jobj");
-    private static final String CPC_TO_INDEX_FILENAME = "cpc_vae_cpc_to_idx_map.jobj";
     private Map<String,? extends Collection<CPC>> cpcMap;
     @Setter
     private CPCHierarchy hierarchy;
@@ -44,7 +43,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     }
 
     protected void initModel(boolean forceRecreateModels) {
-        model = new CPCVariationalAutoEncoderNN(this, modelName);
+        model = new CPCVariationalAutoEncoderNN(this, modelName, MAX_CPC_DEPTH);
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
@@ -103,42 +102,16 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
         return cpcMap;
     }
 
-    public synchronized Map<String,Integer> getOrLoadIdxMap(File baseDir) {
-        if(cpcToIdxMap == null) {
-            cpcToIdxMap = (Map<String,Integer>)Database.tryLoadObject(getCPCIdxFile(baseDir));
-        }
-        if(cpcToIdxMap == null) {
-            System.out.println("WARNING: NO CPC to Index Map Found.");
-        }
-        return cpcToIdxMap;
-    }
-
-    private synchronized void saveIdxMap() {
-        if(!model.getModelBaseDirectory().exists()) model.getModelBaseDirectory().mkdirs();
-        Database.trySaveObject(cpcToIdxMap, getCPCIdxFile(model.getModelBaseDirectory()));
-    }
-
-    private static File getCPCIdxFile(File baseDir) {
-        return new File(baseDir,CPC_TO_INDEX_FILENAME);
-    }
-
     @Override
     protected void splitData() {
         System.out.println("Starting to recreate datasets...");
         int limit = 5000000;
-        List<String> allAssets;
-        getHierarchy();
 
-        System.out.println("WARNING: Reindexing CPC Codes...");
-        AtomicInteger idx = new AtomicInteger(0);
-        cpcToIdxMap = hierarchy.getLabelToCPCMap().entrySet().stream().filter(e->e.getValue().getNumParts()<=MAX_CPC_DEPTH)
-                .sorted(Comparator.comparing(e->e.getKey())).sequential().collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
-        System.out.println("Input size: " + cpcToIdxMap.size());
-        saveIdxMap();
+        cpcToIdxMap = CPCIndexMap.loadOrCreateMapForDepth(getHierarchy(),MAX_CPC_DEPTH);
 
         getCPCMap();
         System.out.println("Loaded cpcMap");
-        allAssets = new ArrayList<>(cpcMap.keySet().parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
+        List<String> allAssets = new ArrayList<>(cpcMap.keySet().parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
 
         System.out.println("Splitting test and train");
         Random rand = new Random(69);
@@ -162,7 +135,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         boolean rebuildPrerequisites = false;
-        boolean rebuildDatasets = false;
+        boolean rebuildDatasets = true;
         boolean runModels = true;
         boolean forceRecreateModels = true; // TODO change this once the hyperparameters are good
         boolean runPredictions = true;
