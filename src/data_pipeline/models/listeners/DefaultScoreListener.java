@@ -3,8 +3,7 @@ package data_pipeline.models.listeners;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.optimize.api.IterationListener;
-import scala.Function2;
-import scala.Function3;
+import data_pipeline.helpers.Function2;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
