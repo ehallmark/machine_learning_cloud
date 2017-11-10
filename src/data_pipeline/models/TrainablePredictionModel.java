@@ -74,7 +74,7 @@ public abstract class TrainablePredictionModel<T> {
         if(matchingFiles==null||matchingFiles.length==0) return null;
         Map<LocalDateTime,Double> scoreMap = modelToScoreMap.get(modelName);
         if(scoreMap==null) return null;
-        return Stream.of(matchingFiles).filter(f->{
+        File bestFile = Stream.of(matchingFiles).filter(f->{
             String s = f.getName().substring(modelName.length()+1);
             LocalDateTime d = LocalDateTime.parse(s, DATE_TIME_FORMAT);
             return scoreMap.containsKey(d);
@@ -85,6 +85,13 @@ public abstract class TrainablePredictionModel<T> {
             LocalDateTime d2 = LocalDateTime.parse(s2, DATE_TIME_FORMAT);
             return scoreMap.get(d1).compareTo(scoreMap.get(d2));
         }).findFirst().orElse(null);
+        if(bestFile!=null) {
+            String s = bestFile.getName().substring(modelName.length() + 1);
+            LocalDateTime d = LocalDateTime.parse(s, DATE_TIME_FORMAT);
+            double score = scoreMap.get(d);
+            System.out.println("Loading model with best score of "+score);
+        }
+        return bestFile;
     }
 
     public synchronized void save(LocalDateTime time, double score) throws IOException {

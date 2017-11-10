@@ -8,6 +8,7 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import data_pipeline.helpers.ShuffleArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -21,7 +22,7 @@ public class FileMinibatchIterator implements DataSetIterator {
     private DataSetPreProcessor dataSetPreProcessor;
     private final String pattern;
     private boolean async;
-
+    private int[] shuffledIndices;
     public FileMinibatchIterator(File rootDir) {
         this(rootDir,DEFAULT_ASYNC);
     }
@@ -46,6 +47,11 @@ public class FileMinibatchIterator implements DataSetIterator {
         this.pattern = pattern;
         this.currIdx = new AtomicInteger(0);
         this.async=async;
+        this.shuffledIndices=new int[totalBatches];
+        for(int i = 0; i < totalBatches; i++) {
+            shuffledIndices[i]=i;
+        }
+        ShuffleArray.shuffleArray(shuffledIndices); // randomizes mini batch order
     }
 
     public DataSet next(int num) {
@@ -74,6 +80,7 @@ public class FileMinibatchIterator implements DataSetIterator {
 
     public void reset() {
         this.currIdx.set(0);
+        ShuffleArray.shuffleArray(shuffledIndices); // randomizes mini batch order
     }
 
     public int batch() {
@@ -109,7 +116,7 @@ public class FileMinibatchIterator implements DataSetIterator {
     }
 
     private DataSet nextDataSet() {
-        final int readIdx = this.currIdx.getAndIncrement();
+        final int readIdx = shuffledIndices[this.currIdx.getAndIncrement()];
         try {
             DataSet e = this.read(readIdx);
             if (this.dataSetPreProcessor != null) {
