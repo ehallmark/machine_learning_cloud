@@ -119,7 +119,7 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
                     .learningRate(0.05)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                     .updater(Updater.RMSPROP)
-                    .updater(Updater.ADAM)
+                    //.updater(Updater.ADAM)
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)
                     //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
@@ -151,7 +151,9 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
         int cnt = 0;
         List<INDArray> partialValidationMatrices = new ArrayList<>();
         while(cnt<10000&&validationIterator.hasNext()) {
-            partialValidationMatrices.add(validationIterator.next().getFeatures());
+            INDArray features = validationIterator.next().getFeatures();
+            partialValidationMatrices.add(features);
+            cnt+=features.rows();
         }
         INDArray validationMatrix = Nd4j.vstack(partialValidationMatrices);
         Function<Void,Double> testErrorFunction = (v) -> {
