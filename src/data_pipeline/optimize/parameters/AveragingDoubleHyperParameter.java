@@ -5,7 +5,7 @@ import data_pipeline.optimize.distributions.ParameterDistribution;
 /**
  * Created by ehallmark on 11/9/17.
  */
-public class AveragingDoubleHyperParameter extends HyperParameter<Double> {
+public abstract class AveragingDoubleHyperParameter extends HyperParameter<Double> {
     protected AveragingDoubleHyperParameter(Double initialVal, ParameterDistribution<Double> distribution) {
         super(initialVal,distribution);
     }
@@ -15,13 +15,13 @@ public class AveragingDoubleHyperParameter extends HyperParameter<Double> {
 
     @Override
     public HyperParameter<Double> mutate() {
-        return new AveragingDoubleHyperParameter(distribution.nextSample(),distribution);
+        return createNew(distribution.nextSample());
     }
 
     @Override
     public HyperParameter<Double> crossover(HyperParameter<Double> partner) {
         double r = rand.nextDouble();
         double val = (r * get()) + ((1d - r) * partner.get());
-        return new AveragingDoubleHyperParameter(val,distribution);
+        return createNew(val);
     }
 }

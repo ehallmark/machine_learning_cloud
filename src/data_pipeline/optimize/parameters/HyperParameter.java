@@ -1,6 +1,9 @@
 package data_pipeline.optimize.parameters;
 
 import data_pipeline.optimize.distributions.ParameterDistribution;
+import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
@@ -8,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Created by ehallmark on 11/9/17.
  */
-public class HyperParameter<T> {
+public abstract class HyperParameter<T> {
     protected static final Random rand = new Random(569);
     protected AtomicReference<T> value;
     protected ParameterDistribution<T> distribution;
@@ -27,11 +30,16 @@ public class HyperParameter<T> {
     }
 
     public HyperParameter<T> mutate() {
-        return new HyperParameter<>(distribution.nextSample(),distribution);
+        return createNew(distribution.nextSample());
     }
 
     public HyperParameter<T> crossover(HyperParameter<T> partner) {
         T val = rand.nextBoolean() ? get() : partner.get();
-        return new HyperParameter<>(val,distribution);
+        return createNew(val);
     }
+
+    protected abstract HyperParameter<T> createNew(T val);
+
+    public abstract NeuralNetConfiguration.Builder applyToNetwork(NeuralNetConfiguration.Builder networkBuilder);
+
 }
