@@ -38,9 +38,6 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
     // split data into test/train/dev
     protected abstract void splitData();
 
-    // return iterator
-    protected abstract DataSetIterator getRawIterator(List<String> assets, boolean test);
-
     @Override
     public void saveRawDatasets() {
         splitData();
@@ -50,15 +47,15 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
         System.out.println("Num validation: "+validationAssets.size());
 
         if(!dataFolder.exists()) dataFolder.mkdir();
-        datasetManager = new DatasetManager(dataFolder,
-                getRawIterator(trainAssets, false),
-                getRawIterator(testAssets,true),
-                getRawIterator(validationAssets, true)
-        );
+
+        setDatasetManager();
+
         datasetManager.removeDataFromDisk();
         System.out.println("Saving datasets...");
         datasetManager.saveDataSets();
     }
+
+    protected abstract void setDatasetManager();
 
     @Override
     public void trainModels(int nEpochs) {

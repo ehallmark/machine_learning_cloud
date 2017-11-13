@@ -94,27 +94,24 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
     @Override
     protected void splitData() {
         System.out.println("Starting to recreate datasets...");
+        // handled by Elasticsearch
+    }
+
+    @Override
+    protected void setDatasetManager() {
         int limit = 5000000;
-
-        System.out.println("Loaded cpcMap");
-        List<String> allAssets = new ArrayList<>(Database.getCopyOfAllPatents());
-
-        System.out.println("Splitting test and train");
-        Random rand = new Random(69);
-        Collections.shuffle(allAssets,rand);
-        testAssets = new ArrayList<>();
-        testAssets.addAll(allAssets.subList(0,25000));
-        validationAssets = new ArrayList<>();
-        validationAssets.addAll(allAssets.subList(25000,50000));
-        trainAssets = new ArrayList<>();
-        trainAssets.addAll(allAssets.subList(50000,Math.min(allAssets.size(),limit+50000)));
-        allAssets.clear();
+        int numTests = 25000;
+        double testRatio = new Double(numTests)/limit;
+        datasetManager = new DatasetManager(dataFolder,
+                getRawIterator(limit),
+                testRatio,
+                testRatio
+        );
     }
 
 
-    @Override
-    protected DataSetIterator getRawIterator(List<String> assets, boolean test) {
-        return new WordToCPCIterator(assets,assets.size(),assetToEncodingMap,getWordToIdxMap(),BATCH_SIZE,false,false,false);
+    protected DataSetIterator getRawIterator(int limit) {
+        return new WordToCPCIterator(limit,assetToEncodingMap,getWordToIdxMap(),BATCH_SIZE,false,false,false);
     }
 
     public static void main(String[] args) throws Exception {

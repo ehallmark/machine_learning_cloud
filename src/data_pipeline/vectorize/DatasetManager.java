@@ -10,6 +10,7 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Random;
 
 /**
  * Created by ehallmark on 11/7/17.
@@ -23,6 +24,9 @@ public class DatasetManager {
     private DataSetIterator rawTrain;
     private DataSetIterator rawTest;
     private DataSetIterator rawVal;
+    private DataSetIterator fullIter;
+    private double testRatio;
+    private double valRatio;
     private File baseDir;
     public DatasetManager(File baseDir, DataSetIterator rawTrain, DataSetIterator rawTest, DataSetIterator rawVal) {
         if(!baseDir.exists()) baseDir.mkdir();
@@ -31,6 +35,15 @@ public class DatasetManager {
         this.rawTest=rawTest;
         this.baseDir=baseDir;
         this.rawVal=rawVal;
+    }
+
+    public DatasetManager(File baseDir, DataSetIterator fullIter, double testRatio, double valRatio) {
+        if(!baseDir.exists()) baseDir.mkdir();
+        if(!baseDir.isDirectory()) throw new RuntimeException("Must be a directory...");
+        this.testRatio=testRatio;
+        this.valRatio=valRatio;
+        this.baseDir=baseDir;
+        this.fullIter=fullIter;
     }
 
     public DatasetManager(File baseDir) {
@@ -76,19 +89,23 @@ public class DatasetManager {
     public void saveDataSets() {
         System.out.println("Starting to save datasets...");
 
-        // training data
-        File trainFolder = new File(baseDir,TRAIN);
-        if(!trainFolder.exists()) trainFolder.mkdir();
-        iterate(rawTrain,trainFolder);
+        File trainFolder = new File(baseDir, TRAIN);
+        if (!trainFolder.exists()) trainFolder.mkdir();
 
-        File testFolder = new File(baseDir,TEST);
-        if(!testFolder.exists()) testFolder.mkdir();
-        iterate(rawTest,testFolder);
+        File testFolder = new File(baseDir, TEST);
+        if (!testFolder.exists()) testFolder.mkdir();
 
-        File valFolder = new File(baseDir,VALIDATION);
-        if(!valFolder.exists()) valFolder.mkdir();
-        iterate(rawVal,valFolder);
+        File valFolder = new File(baseDir, VALIDATION);
+        if (!valFolder.exists()) valFolder.mkdir();
 
+        if(fullIter== null) {
+            // training data
+            iterate(rawTrain, trainFolder);
+            iterate(rawTest, testFolder);
+            iterate(rawVal, valFolder);
+        } else {
+            iterateFull(trainFolder,testFolder,valFolder);
+        }
         System.out.println("Finished saving datasets.");
     }
 
@@ -99,6 +116,33 @@ public class DatasetManager {
             String filename = EXAMPLE+idx+BINARY_SUFFIX;
             DataSet ds = iterator.next();
             if(ds!=null) {
+                ds.save(new File(folder, filename));
+                idx++;
+                System.out.println("Saved [" + idx + " / " + total + "] to " + filename);
+            }
+        }
+    }
+
+    private void iterateFull(File trainFolder, File testFolder, File valFolder) {
+        int idx = 0;
+        final int total = fullIter.numExamples()/fullIter.batch();
+        Random rand = new Random(62359);
+        while(fullIter.hasNext()) {
+            String filename = EXAMPLE+idx+BINARY_SUFFIX;
+            DataSet ds = fullIter.next();
+            if(ds!=null) {
+                double r = rand.nextDouble();
+                File folder;
+                if(r < testRatio) {
+                    // test
+                    folder = testFolder;
+                } else if(r < testRatio + valRatio) {
+                    // validation
+                    folder = valFolder;
+                } else {
+                    // train
+                    folder = trainFolder;
+                }
                 ds.save(new File(folder, filename));
                 idx++;
                 System.out.println("Saved [" + idx + " / " + total + "] to " + filename);

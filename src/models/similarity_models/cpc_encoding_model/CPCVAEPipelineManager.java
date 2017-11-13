@@ -57,6 +57,15 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     }
 
     @Override
+    protected void setDatasetManager() {
+        datasetManager = new DatasetManager(dataFolder,
+                getRawIterator(trainAssets, false),
+                getRawIterator(testAssets,true),
+                getRawIterator(validationAssets, true)
+        );
+    }
+
+    @Override
     public void rebuildPrerequisiteData() {
         hierarchy = CPCHierarchy.updateAndGetLatest();
     }
@@ -135,7 +144,6 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     }
 
 
-    @Override
     protected DataSetIterator getRawIterator(List<String> assets, boolean test) {
         boolean shuffle = !test;
         return new CPCDataSetIterator(assets,shuffle,BATCH_SIZE,cpcMap,cpcToIdxMap);
