@@ -272,14 +272,11 @@ public class WordToCPCIterator implements DataSetIterator {
         if(!started.get()) {
             start();
         }
-        while(queue.isEmpty()&&!finished.get()) {
-            try {
-                TimeUnit.MILLISECONDS.sleep(2000);
-            }catch(Exception e) {
-                break;
-            }
+        try {
+            return queue.take();
+        } catch(Exception e) {
+            return null;
         }
-        return queue.poll();
     }
 
     @Override
