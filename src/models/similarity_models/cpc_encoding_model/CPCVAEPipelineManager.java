@@ -32,7 +32,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     public static final int MAX_CPC_DEPTH = 4;
     private static final int BATCH_SIZE = 128;
     private static final File INPUT_DATA_FOLDER = new File("cpc_vae_data");
-    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+INPUT_DATA_FOLDER.getName()+"_predictions_map.jobj");
+    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"cpc_vae_predictions/predictions_map.jobj");
     private Map<String,? extends Collection<CPC>> cpcMap;
     @Setter
     private CPCHierarchy hierarchy;
@@ -144,7 +144,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
-        boolean runModels = true;
+        boolean runModels = false;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
         int nEpochs = 2;

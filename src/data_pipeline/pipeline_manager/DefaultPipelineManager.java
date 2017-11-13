@@ -115,7 +115,8 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
         if(predictAssets) {
             if(model==null) initModel(forceRecreateModel);
             System.out.println("Predicting results...");
-            Map<String,T> allPredictions = predict(new ArrayList<>(Database.getAllPatentsAndApplications()));
+            List<String> allAssets = new ArrayList<>(Database.getAllPatentsAndApplications());
+            Map<String,T> allPredictions = predict(allAssets);
             savePredictions(allPredictions);
         }
     }
