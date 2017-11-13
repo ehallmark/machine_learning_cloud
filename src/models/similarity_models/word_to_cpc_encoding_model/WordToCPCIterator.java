@@ -108,8 +108,8 @@ public class WordToCPCIterator implements DataSetIterator {
         wordToDocCountMap = Collections.synchronizedMap(new HashMap<>());
         AtomicInteger cnt = new AtomicInteger(0);
         Consumer<List<Pair<String,Collection<String>>>> consumer = list -> {
-            if(cnt.getAndIncrement()%10000==9999) System.out.println("Seen vocab for: "+cnt.get());
             list.forEach(pair-> {
+                if(cnt.getAndIncrement()%10000==9999) System.out.println("Seen vocab for: "+cnt.get());
                 pair.getSecond().forEach(word -> {
                     synchronized (wordToDocCountMap) {
                         wordToDocCountMap.putIfAbsent(word, new AtomicInteger(0));
