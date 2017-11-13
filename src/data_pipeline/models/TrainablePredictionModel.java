@@ -89,7 +89,7 @@ public abstract class TrainablePredictionModel<T> {
             String s = bestFile.getName().substring(modelName.length() + 1);
             LocalDateTime d = LocalDateTime.parse(s, DATE_TIME_FORMAT);
             double score = scoreMap.get(d);
-            System.out.println("Loading model with best score of "+score);
+            System.out.println("Loading model from file "+bestFile.getAbsolutePath()+" with best score of "+score);
         }
         return bestFile;
     }
