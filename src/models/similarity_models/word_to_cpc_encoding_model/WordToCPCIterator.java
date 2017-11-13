@@ -13,6 +13,8 @@ import lombok.Getter;
 import lombok.Setter;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.stages.Stage;
+import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
+import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.signatures.CPCSimilarityVectorizer;
 import models.similarity_models.signatures.NDArrayHelper;
 import org.nd4j.linalg.primitives.Pair;
@@ -83,7 +85,7 @@ public class WordToCPCIterator implements DataSetIterator {
         this.limit=limit;
         this.started = new AtomicBoolean(false);
         this.finished = new AtomicBoolean(false);
-        int queueCapacity = 20000;
+        int queueCapacity = 1000;
         this.queue = new ArrayBlockingQueue<>(queueCapacity);
         cpcVectorizer = new CPCSimilarityVectorizer(cpcEncodings, binarize, normalize, probability);
     }
@@ -96,6 +98,7 @@ public class WordToCPCIterator implements DataSetIterator {
                 DataSet ds = dataSetFromPair(list);
                 if(ds!=null) {
                     try {
+                        System.out.print("-");
                         queue.put(ds);
                     } catch(Exception e) {
                         System.out.println("Error adding to queue.");
@@ -291,7 +294,7 @@ public class WordToCPCIterator implements DataSetIterator {
 
     @Override
     public int totalOutcomes() {
-        return 32;
+        return CPCVariationalAutoEncoderNN.VECTOR_SIZE;
     }
 
     @Override
