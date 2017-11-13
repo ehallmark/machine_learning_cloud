@@ -94,7 +94,7 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
     @Override
     protected void splitData() {
         System.out.println("Starting to recreate datasets...");
-        int limit = 1000000;
+        int limit = 5000000;
 
         System.out.println("Loaded cpcMap");
         List<String> allAssets = new ArrayList<>(Database.getCopyOfAllPatents());
