@@ -42,9 +42,6 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
     public void saveRawDatasets() {
         splitData();
         System.out.println("Finished splitting test and train.");
-        System.out.println("Num training: "+trainAssets.size());
-        System.out.println("Num test: "+testAssets.size());
-        System.out.println("Num validation: "+validationAssets.size());
 
         if(!dataFolder.exists()) dataFolder.mkdir();
 

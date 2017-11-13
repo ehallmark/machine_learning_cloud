@@ -141,6 +141,9 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
         trainAssets = new ArrayList<>();
         trainAssets.addAll(allAssets.subList(50000,Math.min(allAssets.size(),limit+50000)));
         allAssets.clear();
+        System.out.println("Num training: "+trainAssets.size());
+        System.out.println("Num test: "+testAssets.size());
+        System.out.println("Num validation: "+validationAssets.size());
     }
 
 
