@@ -88,10 +88,13 @@ public class WordToCPCIterator implements DataSetIterator {
                 DataSet ds = dataSetFromPair(list);
                 if(ds!=null) {
                     try {
+                        System.out.println("Consumed");
                         queue.put(ds);
                     } catch(Exception e) {
                         System.out.println("Error adding to queue.");
                     }
+                } else {
+                    System.out.println("DS IS NULL");
                 }
             }
         };
