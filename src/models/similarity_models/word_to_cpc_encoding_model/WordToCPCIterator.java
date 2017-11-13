@@ -96,6 +96,8 @@ public class WordToCPCIterator implements DataSetIterator {
                 } else {
                     System.out.println("DS IS NULL");
                 }
+            } else {
+                System.out.println("List is null or empty: "+list);
             }
         };
         new RecursiveAction() {
@@ -268,8 +270,8 @@ public class WordToCPCIterator implements DataSetIterator {
         }
         while(queue.isEmpty()&&!finished.get()) {
             try {
-                TimeUnit.MILLISECONDS.sleep(500);
-                System.out.println("Waiting for queue...");
+                TimeUnit.MILLISECONDS.sleep(2000);
+                //System.out.println("Waiting for queue...");
             }catch(Exception e) {
                 break;
             }
