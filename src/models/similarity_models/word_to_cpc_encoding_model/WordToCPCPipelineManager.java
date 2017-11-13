@@ -63,8 +63,8 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
         final int vocabSampling = 2000000;
         final int minDocCount = 10;
         final int maxDocCount = Math.round(0.2f*vocabSampling);
-        WordToCPCIterator vocabIter = new WordToCPCIterator(null,assetToEncodingMap,BATCH_SIZE,false,false,false);
-        vocabIter.buildVocabMap(minDocCount,maxDocCount,vocabSampling);
+        WordToCPCIterator vocabIter = new WordToCPCIterator(vocabSampling,assetToEncodingMap,BATCH_SIZE,false,false,false);
+        vocabIter.buildVocabMap(minDocCount,maxDocCount);
         wordToIdxMap = vocabIter.getWordToIdxMap();
         System.out.println("Vocab size: "+wordToIdxMap.size());
         saveVocabMap();
@@ -114,7 +114,7 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
 
     @Override
     protected DataSetIterator getRawIterator(List<String> assets, boolean test) {
-        return new WordToCPCIterator(assets,assetToEncodingMap,BATCH_SIZE,false,false,false);
+        return new WordToCPCIterator(assets.size(),assetToEncodingMap,BATCH_SIZE,false,false,false);
     }
 
     public static void main(String[] args) throws Exception {

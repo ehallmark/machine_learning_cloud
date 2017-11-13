@@ -66,13 +66,13 @@ public class WordToCPCIterator implements DataSetIterator {
     private ArrayBlockingQueue<DataSet> queue;
     private AtomicBoolean started;
     private AtomicBoolean finished;
-    private Collection<String> assets;
-    public WordToCPCIterator(Collection<String> assets, Map<String,INDArray> cpcEncodings, int batchSize, boolean binarize, boolean normalize, boolean probability) {
+    private int limit;
+    public WordToCPCIterator(int limit, Map<String,INDArray> cpcEncodings, int batchSize, boolean binarize, boolean normalize, boolean probability) {
         //Properties props = new Properties();
         //props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         //pipeline = new StanfordCoreNLP(props);
         this.batchSize=batchSize;
-        this.assets=assets;
+        this.limit=limit;
         this.started = new AtomicBoolean(false);
         this.finished = new AtomicBoolean(false);
         int queueCapacity = 20000;
@@ -98,13 +98,13 @@ public class WordToCPCIterator implements DataSetIterator {
         new RecursiveAction() {
             @Override
             protected void compute() {
-                iterateOverDocuments(assets, assets==null?-1:assets.size(), consumer, (fin)->{finished.set(true); return null;});
+                iterateOverDocuments(System.currentTimeMillis(),limit, consumer, (fin)->{finished.set(true); return null;});
             }
         }.fork();
     }
 
 
-    public void buildVocabMap(int minDocCount, int maxDocCount, int sampling) {
+    public void buildVocabMap(int minDocCount, int maxDocCount) {
         wordToDocCountMap = Collections.synchronizedMap(new HashMap<>());
         AtomicInteger cnt = new AtomicInteger(0);
         Consumer<List<Pair<String,Collection<String>>>> consumer = list -> {
@@ -118,7 +118,7 @@ public class WordToCPCIterator implements DataSetIterator {
                 });
             });
         };
-        iterateOverDocuments(null, sampling, consumer, null);
+        iterateOverDocuments(0, limit, consumer, null);
         System.out.println("Vocab size before: "+wordToDocCountMap.size());
         AtomicInteger idx = new AtomicInteger(0);
         wordToIdxMap = Collections.synchronizedMap(wordToDocCountMap.entrySet().parallelStream().filter(e->{
@@ -159,17 +159,10 @@ public class WordToCPCIterator implements DataSetIterator {
         return new DataSet(input,output);
     }
 
-    public void iterateOverDocuments(Collection<String> assets, int limit, Consumer<List<Pair<String,Collection<String>>>> consumer, Function<Void,Void> finallyDo) {
+    public void iterateOverDocuments(long seed, int limit, Consumer<List<Pair<String,Collection<String>>>> consumer, Function<Void,Void> finallyDo) {
         BoolQueryBuilder query = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(0)));
-
-
-        if(assets!=null) {
-            BoolQueryBuilder innerFilter =  QueryBuilders.boolQuery().
-                    must(QueryBuilders.idsQuery().addIds(assets.toArray(new String[assets.size()])));
-            query = query.filter(innerFilter);
-
-        } else if(limit>0) {
+                    .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(seed)));
+        if(limit>0) {
             BoolQueryBuilder innerFilter =  QueryBuilders.boolQuery().must(
                     QueryBuilders.boolQuery() // avoid dup text
                             .should(QueryBuilders.termQuery(Constants.GRANTED,false))
@@ -322,7 +315,7 @@ public class WordToCPCIterator implements DataSetIterator {
 
     @Override
     public int numExamples() {
-        return assets==null?0:assets.size();
+        return Math.max(limit,0);
     }
 
     @Override
