@@ -114,7 +114,7 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
 
     @Override
     protected DataSetIterator getRawIterator(List<String> assets, boolean test) {
-        return new WordToCPCIterator(assets.size(),assetToEncodingMap,getWordToIdxMap(),BATCH_SIZE,false,false,false);
+        return new WordToCPCIterator(assets,assets.size(),assetToEncodingMap,getWordToIdxMap(),BATCH_SIZE,false,false,false);
     }
 
     public static void main(String[] args) throws Exception {

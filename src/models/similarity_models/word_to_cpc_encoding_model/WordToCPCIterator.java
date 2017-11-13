@@ -67,6 +67,7 @@ public class WordToCPCIterator implements DataSetIterator {
     private AtomicBoolean started;
     private AtomicBoolean finished;
     private int limit;
+    private Collection<String> assets;
     public WordToCPCIterator(int limit, int batchSize) {
         //Properties props = new Properties();
         //props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
@@ -76,11 +77,12 @@ public class WordToCPCIterator implements DataSetIterator {
         this.limit=limit;
     }
 
-    public WordToCPCIterator(int limit, Map<String, INDArray> cpcEncodings, Map<String,Integer> wordToIdxMap, int batchSize, boolean binarize, boolean normalize, boolean probability) {
+    public WordToCPCIterator(Collection<String> assets, int limit, Map<String, INDArray> cpcEncodings, Map<String,Integer> wordToIdxMap, int batchSize, boolean binarize, boolean normalize, boolean probability) {
         // constructor for main iterator
         this.wordToIdxMap=wordToIdxMap;
         this.batchSize=batchSize;
         this.limit=limit;
+        this.assets=assets;
         this.started = new AtomicBoolean(false);
         this.finished = new AtomicBoolean(false);
         int queueCapacity = 20000;
@@ -96,16 +98,11 @@ public class WordToCPCIterator implements DataSetIterator {
                 DataSet ds = dataSetFromPair(list);
                 if(ds!=null) {
                     try {
-                        System.out.println("Consumed");
                         queue.put(ds);
                     } catch(Exception e) {
                         System.out.println("Error adding to queue.");
                     }
-                } else {
-                    System.out.println("DS IS NULL");
                 }
-            } else {
-                System.out.println("List is null or empty: "+list);
             }
         };
         new RecursiveAction() {
@@ -175,7 +172,12 @@ public class WordToCPCIterator implements DataSetIterator {
     public void iterateOverDocuments(long seed, int limit, Consumer<List<Pair<String,Collection<String>>>> consumer, Function<Void,Void> finallyDo) {
         BoolQueryBuilder query = QueryBuilders.boolQuery()
                     .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(seed)));
-        if(limit>0) {
+        if(assets!=null) {
+            BoolQueryBuilder innerFilter =  QueryBuilders.boolQuery().must(
+                   QueryBuilders.idsQuery().types(DataIngester.TYPE_NAME).addIds(assets.toArray(new String[assets.size()]))
+            );
+            query = query.filter(innerFilter);
+        } else if(limit>0) {
             BoolQueryBuilder innerFilter =  QueryBuilders.boolQuery().must(
                     QueryBuilders.boolQuery() // avoid dup text
                             .should(QueryBuilders.termQuery(Constants.GRANTED,false))

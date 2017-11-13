@@ -72,7 +72,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
                     .learningRate(0.01)
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)
-                    .regularization(true).l2(1e-4)
+                    //.regularization(true).l2(1e-4)
                     .dropOut(0.5)
                     .list()
                     .layer(0, new DenseLayer.Builder()
