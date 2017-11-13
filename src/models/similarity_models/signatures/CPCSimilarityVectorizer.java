@@ -23,16 +23,20 @@ import java.util.stream.Stream;
  */
 public class CPCSimilarityVectorizer implements Vectorizer {
     private static final File vectorMapFile = new File(Constants.DATA_FOLDER+"signature_model_vector_map-depth4.jobj");
-    private static Map<String,INDArray> data;
-
+    private static Map<String,INDArray> DATA;
+    private Map<String,INDArray> data;
     private boolean binarize;
     private boolean normalize;
     private boolean probability;
     public CPCSimilarityVectorizer(boolean binarize, boolean normalize, boolean probability) {
-        if(data==null) getLookupTable();
+        this(getLookupTable(),binarize, normalize, probability);
+    }
+
+    public CPCSimilarityVectorizer(Map<String,INDArray> data, boolean binarize, boolean normalize, boolean probability) {
         this.binarize=binarize;
         this.probability=probability;
         this.normalize=normalize;
+        this.data=data;
     }
 
     public INDArray vectorFor(String item) {
@@ -78,10 +82,10 @@ public class CPCSimilarityVectorizer implements Vectorizer {
     }
 
     public synchronized static Map<String,INDArray> getLookupTable() {
-        if(data==null) {
-            data=(Map<String,INDArray>)Database.tryLoadObject(vectorMapFile);
+        if(DATA==null) {
+            DATA=(Map<String,INDArray>)Database.tryLoadObject(vectorMapFile);
         }
-        return data;
+        return DATA;
     }
 
     public static void main(String[] args) throws Exception {
@@ -98,13 +102,13 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         System.out.println("Testing encodings");
         if(latestAssets==null) {
             // not updating
-            data = clone.encode(allAssets);
+            DATA = clone.encode(allAssets);
         } else {
             // updating
-            data = getLookupTable();
-            data.putAll(clone.encode(allAssets));
+            DATA = getLookupTable();
+            DATA.putAll(clone.encode(allAssets));
         }
-        System.out.println("Num patent vectors found: "+data.size());
+        System.out.println("Num patent vectors found: "+DATA.size());
         System.out.println("Starting assignees...");
         AtomicInteger cnt = new AtomicInteger(0);
         Database.getAssignees().parallelStream().forEach(assignee->{
@@ -112,7 +116,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
                     Database.selectPatentNumbersFromExactAssignee(assignee),
                     Database.selectApplicationNumbersFromExactAssignee(assignee)
             ).flatMap(assets->assets.stream()).map(asset->{
-                return data.get(asset);
+                return DATA.get(asset);
             }).filter(vec->vec!=null).collect(Collectors.toList()));
 
             if(vectors.isEmpty()) return;
@@ -123,14 +127,14 @@ public class CPCSimilarityVectorizer implements Vectorizer {
             }
 
             INDArray assigneeVec = Nd4j.vstack(vectors).mean(0);
-            data.put(assignee, assigneeVec);
+            DATA.put(assignee, assigneeVec);
             if (cnt.getAndIncrement() % 10000 == 9999) {
                 System.out.println("Vectorized " + cnt.get() + " assignees.");
             }
         });
-        System.out.println("Total vectors: "+data.size());
+        System.out.println("Total vectors: "+DATA.size());
         System.out.println("Saving results...");
-        Database.trySaveObject(data,vectorMapFile);
+        Database.trySaveObject(DATA,vectorMapFile);
         System.out.println("Finished saving.");
     }
 

@@ -1,4 +1,4 @@
-package models.similarity_models.signatures;
+package models.similarity_models.word_to_cpc_encoding_model;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
@@ -13,6 +13,8 @@ import lombok.Getter;
 import lombok.Setter;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.stages.Stage;
+import models.similarity_models.signatures.CPCSimilarityVectorizer;
+import models.similarity_models.signatures.NDArrayHelper;
 import org.nd4j.linalg.primitives.Pair;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -54,68 +56,56 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 10/27/17.
  */
-public class WordToCPCIterator {
+public class WordToCPCIterator implements DataSetIterator {
     private int batchSize;
     @Getter
     private Map<String,Integer> wordToIdxMap;
     private Map<String,AtomicInteger> wordToDocCountMap;
     private int numInputs;
-    @Setter
-    private int limit;
-    private int seed;
     //private StanfordCoreNLP pipeline;
-    private int minWordCount;
     private CPCSimilarityVectorizer cpcVectorizer;
-    private List<DataSet> testDataSets = null;
-    private int iter;
-    private Set<String> testAssets = Collections.synchronizedSet(new HashSet<>());
-    @Setter
-    private MultiLayerNetwork network;
-    public WordToCPCIterator(MultiLayerNetwork network, int batchSize, int limit, int seed, int minWordCount, boolean binarize, boolean normalize, boolean probability) {
+    private ArrayBlockingQueue<DataSet> queue;
+    private AtomicBoolean started;
+    private AtomicBoolean finished;
+    private Collection<String> assets;
+    public WordToCPCIterator(Collection<String> assets, Map<String,INDArray> cpcEncodings, int batchSize, boolean binarize, boolean normalize, boolean probability) {
         //Properties props = new Properties();
         //props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         //pipeline = new StanfordCoreNLP(props);
-        this.network=network;
         this.batchSize=batchSize;
-        this.limit=limit;
-        this.minWordCount=minWordCount;
-        this.seed=seed;
-        cpcVectorizer = new CPCSimilarityVectorizer(binarize, normalize, probability);
+        this.assets=assets;
+        this.started = new AtomicBoolean(false);
+        this.finished = new AtomicBoolean(false);
+        cpcVectorizer = new CPCSimilarityVectorizer(cpcEncodings, binarize, normalize, probability);
     }
 
-    public double test() {
-        int numTests = 25000;
-        if(testDataSets==null) {
-            int prevBatchSize = this.batchSize;
-            this.batchSize = 5000;
-            List<String> assets = new ArrayList<>(Database.getCopyOfAllPatents());
-            Random rand = new Random(seed);
-            for(int i = 0; i < numTests; i++) {
-                testAssets.add(assets.get(rand.nextInt(assets.size())));
-            }
-            testDataSets = Collections.synchronizedList(new ArrayList<>());
-            iterateOverDocuments(true, list->{
-                if(list==null) return;
+    private void start() {
+        if(started.get()) throw new RuntimeException("Iterator has already started...");
+        this.started.set(true);
+        int queueCapacity = 20000;
+        this.queue = new ArrayBlockingQueue<>(queueCapacity);
+        Consumer<List<Pair<String,Collection<String>>>> consumer = list -> {
+            if(list!=null&&list.size()>0) {
                 DataSet ds = dataSetFromPair(list);
                 if(ds!=null) {
-                    testDataSets.add(ds);
+                    try {
+                        queue.put(ds);
+                    } catch(Exception e) {
+                        System.out.println("Error adding to queue.");
+                    }
                 }
-            });
-            this.batchSize=prevBatchSize;
-        }
-        AtomicDouble totalError = new AtomicDouble(0d);
-        AtomicInteger cnt = new AtomicInteger(0);
-        testDataSets.forEach(ds->{
-            INDArray actualOutput = ds.getLabels();
-            INDArray modelOutput = network.activateSelectedLayers(0,network.getnLayers()-1,ds.getFeatures());
-            double similarity = NDArrayHelper.sumOfCosineSimByRow(actualOutput,modelOutput);
-            totalError.getAndAdd(similarity);
-            cnt.getAndAdd(actualOutput.rows());
-        });
-        return 1d - (totalError.get()/cnt.get());
+            }
+        };
+        new RecursiveAction() {
+            @Override
+            protected void compute() {
+                iterateOverDocuments(assets, assets==null?-1:assets.size(), consumer, (fin)->{finished.set(true); return null;});
+            }
+        }.fork();
     }
 
-    public void buildVocabMap() {
+
+    public void buildVocabMap(int minWordCount, int sampling) {
         wordToDocCountMap = Collections.synchronizedMap(new HashMap<>());
         Consumer<List<Pair<String,Collection<String>>>> consumer = list -> {
             list.forEach(pair-> {
@@ -127,7 +117,7 @@ public class WordToCPCIterator {
                 });
             });
         };
-        iterateOverDocuments(false, consumer);
+        iterateOverDocuments(null, sampling, consumer, null);
         System.out.println("Vocab size before: "+wordToDocCountMap.size());
         AtomicInteger idx = new AtomicInteger(0);
         wordToIdxMap = Collections.synchronizedMap(wordToDocCountMap.entrySet().parallelStream().filter(e->{
@@ -165,22 +155,6 @@ public class WordToCPCIterator {
         }
     }
 
-    public void trainNetwork() {
-        Consumer<List<Pair<String,Collection<String>>>> consumer = list -> {
-            if(list!=null&&list.size()>0) {
-                DataSet ds = dataSetFromPair(list);
-                if(ds!=null) {
-                    synchronized (network) {
-                        iter++;
-                        network.fit(ds);
-                    }
-                }
-            }
-        };
-        iterateOverDocuments(false, consumer);
-        System.out.println("Trained on "+iter+" mini-batches.");
-    }
-
     private DataSet dataSetFromPair(List<Pair<String,Collection<String>>> pairs) {
         List<Pair<INDArray,Collection<String>>> vecPairs = pairs.stream().map(p->new Pair<>(cpcVectorizer.vectorFor(p.getFirst()),p.getSecond())).filter(p->p.getFirst()!=null).collect(Collectors.toList());
         INDArray input = createVector(vecPairs.stream().map(p->p.getSecond()));
@@ -189,28 +163,23 @@ public class WordToCPCIterator {
         return new DataSet(input,output);
     }
 
-    public void iterateOverDocuments(boolean test, Consumer<List<Pair<String,Collection<String>>>> consumer) {
-        System.out.println("STARTING NEW ITERATOR: testing="+test);
+    public void iterateOverDocuments(Collection<String> assets, int limit, Consumer<List<Pair<String,Collection<String>>>> consumer, Function<Void,Void> finallyDo) {
         BoolQueryBuilder query = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(seed)));
+                    .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(0)));
 
 
-        if(limit>0) {
+        if(assets!=null) {
+            BoolQueryBuilder innerFilter =  QueryBuilders.boolQuery().
+                    must(QueryBuilders.idsQuery().addIds(assets.toArray(new String[assets.size()])));
+            query = query.filter(innerFilter);
+
+        } else if(limit>0) {
             BoolQueryBuilder innerFilter =  QueryBuilders.boolQuery().must(
                     QueryBuilders.boolQuery() // avoid dup text
                             .should(QueryBuilders.termQuery(Constants.GRANTED,false))
                             .should(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()))
-                            .minimumShouldMatch(1)
+
             );
-            if (testAssets != null && testAssets.size() > 0) {
-                System.out.println("Num test assets: " + testAssets.size());
-                QueryBuilder idQuery = QueryBuilders.termsQuery(Constants.NAME, testAssets);
-                if (test) {
-                    innerFilter = innerFilter.must(idQuery);
-                } else {
-                    innerFilter = innerFilter.mustNot(idQuery);
-                }
-            }
             query = query.filter(innerFilter);
         }
 
@@ -246,7 +215,7 @@ public class WordToCPCIterator {
         SearchResponse response = request.get();
         DataSearcher.iterateOverSearchResults(response, transformer, limit, false);
         System.out.println("Finished iterating ES.");
-
+        if(finallyDo!=null)finallyDo.apply(null);
     }
 
     private Collection<String> collectWordsFrom(SearchHit hit) {
@@ -300,4 +269,80 @@ public class WordToCPCIterator {
         return appeared;*/
     }
 
+    @Override
+    public DataSet next(int i) {
+        if(!started.get()) start();
+        return queue.poll();
+    }
+
+    @Override
+    public int totalExamples() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int inputColumns() {
+        return wordToIdxMap.size();
+    }
+
+    @Override
+    public int totalOutcomes() {
+        return 32;
+    }
+
+    @Override
+    public boolean resetSupported() {
+        return false;
+    }
+
+    @Override
+    public boolean asyncSupported() {
+        return false;
+    }
+
+    @Override
+    public void reset() {
+        // do nothing
+    }
+
+    @Override
+    public int batch() {
+        return batchSize;
+    }
+
+    @Override
+    public int cursor() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int numExamples() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setPreProcessor(DataSetPreProcessor dataSetPreProcessor) {
+
+    }
+
+    @Override
+    public DataSetPreProcessor getPreProcessor() {
+        return null;
+    }
+
+    @Override
+    public List<String> getLabels() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean hasNext() {
+        if(queue.isEmpty() && finished.get()) return false;
+        return true;
+    }
+
+    @Override
+    public DataSet next() {
+        return next(batch());
+    }
 }

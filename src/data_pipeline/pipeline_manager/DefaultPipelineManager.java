@@ -87,6 +87,11 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
     }
 
     @Override
+    public Map<String,T> loadPredictions() {
+        return (Map<String,T>)Database.tryLoadObject(predictionsFile);
+    }
+
+    @Override
     public void runPipeline(boolean rebuildPrerequisites, boolean rebuildDatasets, boolean runModels, boolean forceRecreateModel, int nTrainingEpochs, boolean predictAssets) {
         // start with data pipeline
 

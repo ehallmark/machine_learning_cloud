@@ -17,5 +17,6 @@ public interface PipelineManager<T> {
     void trainModels(int nEpochs);
     Map<String,T> predict(List<String> items);
     void savePredictions(Map<String,T> predictions);
+    Map<String,T> loadPredictions();
     void runPipeline(boolean rebuildPrerequisites, boolean rebuildDatasets, boolean runModels, boolean forceRecreateModel, int nTrainingEpochs, boolean predictAssets);
 }
