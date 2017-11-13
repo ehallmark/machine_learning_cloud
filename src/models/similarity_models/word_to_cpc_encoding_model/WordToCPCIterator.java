@@ -61,7 +61,6 @@ public class WordToCPCIterator implements DataSetIterator {
     @Getter
     private Map<String,Integer> wordToIdxMap;
     private Map<String,AtomicInteger> wordToDocCountMap;
-    private int numInputs;
     //private StanfordCoreNLP pipeline;
     private CPCSimilarityVectorizer cpcVectorizer;
     private ArrayBlockingQueue<DataSet> queue;
@@ -105,9 +104,11 @@ public class WordToCPCIterator implements DataSetIterator {
     }
 
 
-    public void buildVocabMap(int minWordCount, int sampling) {
+    public void buildVocabMap(int minDocCount, int maxDocCount, int sampling) {
         wordToDocCountMap = Collections.synchronizedMap(new HashMap<>());
+        AtomicInteger cnt = new AtomicInteger(0);
         Consumer<List<Pair<String,Collection<String>>>> consumer = list -> {
+            if(cnt.getAndIncrement()%10000==9999) System.out.println("Seen vocab for: "+cnt.get());
             list.forEach(pair-> {
                 pair.getSecond().forEach(word -> {
                     synchronized (wordToDocCountMap) {
@@ -121,19 +122,14 @@ public class WordToCPCIterator implements DataSetIterator {
         System.out.println("Vocab size before: "+wordToDocCountMap.size());
         AtomicInteger idx = new AtomicInteger(0);
         wordToIdxMap = Collections.synchronizedMap(wordToDocCountMap.entrySet().parallelStream().filter(e->{
-            return e.getValue().get()>=minWordCount;
+            return e.getValue().get()>=minDocCount&&e.getValue().get()<maxDocCount;
         }).collect(Collectors.toMap(e->e.getKey(),e->idx.getAndIncrement())));
         System.out.println("Vocab size after: "+wordToIdxMap.size());
-        this.numInputs=wordToIdxMap.size();
-    }
-
-    public void setWordToIdxMap(Map<String,Integer> map) {
-        this.wordToIdxMap=map;
-        this.numInputs=wordToIdxMap.size();
     }
 
     private INDArray createVector(Stream<Collection<String>> wordStream) {
         AtomicInteger batch = new AtomicInteger(0);
+        int numInputs = wordToIdxMap.size();
         double[][] vecs = new double[batchSize][numInputs];
         wordStream.forEach(words->{
             double[] vec = new double[numInputs];
@@ -317,7 +313,7 @@ public class WordToCPCIterator implements DataSetIterator {
 
     @Override
     public int numExamples() {
-        throw new UnsupportedOperationException();
+        return assets==null?0:assets.size();
     }
 
     @Override

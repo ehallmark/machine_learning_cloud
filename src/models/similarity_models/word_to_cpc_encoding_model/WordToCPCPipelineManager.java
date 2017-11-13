@@ -60,10 +60,11 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
     public void rebuildPrerequisiteData() {
         // update vocabulary
         System.out.println("Rebuilding vocabulary map...");
-        final int vocabSampling = 1000000;
-        final int minDocCount = 30;
+        final int vocabSampling = 2000000;
+        final int minDocCount = 10;
+        final int maxDocCount = Math.round(0.2f*vocabSampling);
         WordToCPCIterator vocabIter = new WordToCPCIterator(null,assetToEncodingMap,BATCH_SIZE,false,false,false);
-        vocabIter.buildVocabMap(minDocCount,vocabSampling);
+        vocabIter.buildVocabMap(minDocCount,maxDocCount,vocabSampling);
         wordToIdxMap = vocabIter.getWordToIdxMap();
         System.out.println("Vocab size: "+wordToIdxMap.size());
         saveVocabMap();
@@ -122,6 +123,8 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
+        boolean rebuildPrerequisites = true;
+
         int nEpochs = 5;
         String modelName = MODEL_NAME;
         String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
@@ -129,7 +132,7 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
         setLoggingLevel(Level.INFO);
         WordToCPCPipelineManager pipelineManager = new WordToCPCPipelineManager(modelName, new CPCVAEPipelineManager(cpcEncodingModel));
 
-        boolean rebuildPrerequisites = pipelineManager.loadVocabMap()==null; // Check if vocab map exists
+        rebuildPrerequisites = rebuildPrerequisites || pipelineManager.loadVocabMap()==null; // Check if vocab map exists
 
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
