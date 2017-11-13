@@ -124,27 +124,35 @@ public class DatasetManager {
     }
 
     private void iterateFull(File trainFolder, File testFolder, File valFolder) {
-        int idx = 0;
+        int trainIdx = 0;
+        int testIdx = 0;
+        int valIdx = 0;
         final int total = fullIter.numExamples()/fullIter.batch();
         Random rand = new Random(62359);
         while(fullIter.hasNext()) {
-            String filename = EXAMPLE+idx+BINARY_SUFFIX;
             DataSet ds = fullIter.next();
             if(ds!=null) {
+                int idx;
                 double r = rand.nextDouble();
                 File folder;
-                if(r < testRatio) {
+                if(r <= testRatio) {
                     // test
+                    idx = testIdx;
+                    testIdx++;
                     folder = testFolder;
-                } else if(r < testRatio + valRatio) {
+                } else if(r <= testRatio + valRatio) {
                     // validation
+                    idx = valIdx;
+                    valIdx++;
                     folder = valFolder;
                 } else {
                     // train
+                    idx = trainIdx;
+                    trainIdx++;
                     folder = trainFolder;
                 }
+                String filename = EXAMPLE+idx+BINARY_SUFFIX;
                 ds.save(new File(folder, filename));
-                idx++;
                 System.out.println("Saved [" + idx + " / " + total + "] to " + filename);
             }
         }

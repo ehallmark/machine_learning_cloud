@@ -100,7 +100,7 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
     @Override
     protected void setDatasetManager() {
         int limit = 5000000;
-        int numTests = 25000;
+        int numTests = 50000;
         double testRatio = new Double(numTests)/limit;
         datasetManager = new DatasetManager(dataFolder,
                 getRawIterator(limit),
