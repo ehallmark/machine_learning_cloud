@@ -5,10 +5,8 @@ import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
+import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.signatures.NDArrayHelper;
-import models.similarity_models.signatures.SignatureSimilarityModel;
-import models.similarity_models.word_to_cpc_encoding_model.WordToCPCIterator;
-import models.similarity_models.word_to_cpc_encoding_model.WordToCPCPipelineManager;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -62,7 +60,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
         if(net==null) {
             int seed = 10;
             final int hiddenLayerSize = 800;
-            final int outputSize = SignatureSimilarityModel.VECTOR_SIZE;
+            final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
             final int vocabSize = pipelineManager.getWordToIdxMap().size();
             Nd4j.getRandom().setSeed(seed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()

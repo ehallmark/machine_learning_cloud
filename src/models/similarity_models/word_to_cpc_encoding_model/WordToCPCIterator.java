@@ -75,14 +75,14 @@ public class WordToCPCIterator implements DataSetIterator {
         this.assets=assets;
         this.started = new AtomicBoolean(false);
         this.finished = new AtomicBoolean(false);
+        int queueCapacity = 20000;
+        this.queue = new ArrayBlockingQueue<>(queueCapacity);
         cpcVectorizer = new CPCSimilarityVectorizer(cpcEncodings, binarize, normalize, probability);
     }
 
     private void start() {
         if(started.get()) throw new RuntimeException("Iterator has already started...");
         this.started.set(true);
-        int queueCapacity = 20000;
-        this.queue = new ArrayBlockingQueue<>(queueCapacity);
         Consumer<List<Pair<String,Collection<String>>>> consumer = list -> {
             if(list!=null&&list.size()>0) {
                 DataSet ds = dataSetFromPair(list);
