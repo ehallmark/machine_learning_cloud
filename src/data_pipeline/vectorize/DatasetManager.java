@@ -3,6 +3,7 @@ package data_pipeline.vectorize;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.apache.commons.io.FileUtils;
+import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
 import org.nd4j.linalg.dataset.MiniBatchFileDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -96,9 +97,12 @@ public class DatasetManager {
         final int total = iterator.numExamples()/iterator.batch();
         while(iterator.hasNext()) {
             String filename = EXAMPLE+idx+BINARY_SUFFIX;
-            iterator.next().save(new File(folder, filename));
-            idx++;
-            System.out.println("Saved ["+idx+" / "+total+"] to "+filename);
+            DataSet ds = iterator.next();
+            if(ds!=null) {
+                ds.save(new File(folder, filename));
+                idx++;
+                System.out.println("Saved [" + idx + " / " + total + "] to " + filename);
+            }
         }
     }
 }
