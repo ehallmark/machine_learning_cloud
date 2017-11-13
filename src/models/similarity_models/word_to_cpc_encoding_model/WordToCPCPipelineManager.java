@@ -116,7 +116,7 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
 
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
-        boolean rebuildDatasets = true;
+        boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
