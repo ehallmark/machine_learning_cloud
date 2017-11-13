@@ -269,6 +269,7 @@ public class WordToCPCIterator implements DataSetIterator {
         while(queue.isEmpty()&&!finished.get()) {
             try {
                 TimeUnit.MILLISECONDS.sleep(500);
+                System.out.println("Waiting for queue...");
             }catch(Exception e) {
                 break;
             }
