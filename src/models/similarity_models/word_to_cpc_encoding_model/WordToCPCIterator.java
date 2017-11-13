@@ -67,10 +67,18 @@ public class WordToCPCIterator implements DataSetIterator {
     private AtomicBoolean started;
     private AtomicBoolean finished;
     private int limit;
-    public WordToCPCIterator(int limit, Map<String,INDArray> cpcEncodings, int batchSize, boolean binarize, boolean normalize, boolean probability) {
+    public WordToCPCIterator(int limit, int batchSize) {
         //Properties props = new Properties();
         //props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         //pipeline = new StanfordCoreNLP(props);
+        // constructor for VOCAB iterator
+        this.batchSize=batchSize;
+        this.limit=limit;
+    }
+
+    public WordToCPCIterator(int limit, Map<String, INDArray> cpcEncodings, Map<String,Integer> wordToIdxMap, int batchSize, boolean binarize, boolean normalize, boolean probability) {
+        // constructor for main iterator
+        this.wordToIdxMap=wordToIdxMap;
         this.batchSize=batchSize;
         this.limit=limit;
         this.started = new AtomicBoolean(false);
