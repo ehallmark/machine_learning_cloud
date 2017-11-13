@@ -4,7 +4,6 @@ import data_pipeline.helpers.Function2;
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
-import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.signatures.NDArrayHelper;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -15,7 +14,6 @@ import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
-import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
@@ -23,10 +21,8 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Constants;
-import seeding.Database;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +55,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
 
         if(net==null) {
             int seed = 10;
-            final int hiddenLayerSize = 800;
+            final int hiddenLayerSize = 512;
             final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
             final int vocabSize = pipelineManager.getWordToIdxMap().size();
             Nd4j.getRandom().setSeed(seed);
@@ -73,17 +69,27 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)
                     //.regularization(true).l2(1e-4)
-                    .dropOut(0.5)
+                    //.dropOut(0.5)
                     .list()
                     .layer(0, new DenseLayer.Builder()
                             .nIn(vocabSize)
                             .nOut(hiddenLayerSize)
                             .build()
-                    ).layer(1, new DenseLayer.Builder()
+                    ).layer(1, new BatchNormalization.Builder()
+                            .nIn(hiddenLayerSize)
+                            .nOut(hiddenLayerSize)
+                            .minibatch(true)
+                            .build()
+                    ).layer(2, new DenseLayer.Builder()
                             .nIn(hiddenLayerSize)
                             .nOut(hiddenLayerSize)
                             .build()
-                    ).layer(2, new OutputLayer.Builder()
+                    ).layer(3, new BatchNormalization.Builder()
+                            .nIn(hiddenLayerSize)
+                            .nOut(hiddenLayerSize)
+                            .minibatch(true)
+                            .build()
+                    ).layer(4, new OutputLayer.Builder()
                             .lossFunction(LossFunctions.LossFunction.MSE)
                             .activation(Activation.SIGMOID)
                             .nIn(hiddenLayerSize)
