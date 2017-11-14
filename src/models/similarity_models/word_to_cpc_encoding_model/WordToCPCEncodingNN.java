@@ -62,9 +62,9 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
             Nd4j.getRandom().setSeed(seed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .activation(Activation.TANH)
-                    .updater(Updater.ADAM)
-                    //.updater(Updater.RMSPROP)
-                    //.rmsDecay(0.95)
+                    //.updater(Updater.ADAM)
+                    .updater(Updater.RMSPROP)
+                    .rmsDecay(0.95)
                     .seed(seed)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                     .learningRate(0.05)
