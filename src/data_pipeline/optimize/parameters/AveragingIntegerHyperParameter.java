@@ -7,11 +7,9 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
  * Created by ehallmark on 11/9/17.
  */
 public abstract class AveragingIntegerHyperParameter extends HyperParameter<Integer> {
-    protected AveragingIntegerHyperParameter(Integer initialVal, ParameterDistribution<Integer> distribution) {
-        super(initialVal,distribution);
-    }
+
     protected AveragingIntegerHyperParameter(ParameterDistribution<Integer> distribution) {
-        this(distribution.nextSample(),distribution);
+        super(distribution);
     }
 
     @Override

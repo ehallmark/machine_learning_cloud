@@ -37,7 +37,7 @@ public class ExponentialDoubleDistribution implements ParameterDistribution<Doub
         // testing
         AtomicDouble total = new AtomicDouble(0d);
         AtomicInteger cnt = new AtomicInteger(0);
-        ExponentialDoubleDistribution distribution = new ExponentialDoubleDistribution(0.000001,1,true);
+        ExponentialDoubleDistribution distribution = new ExponentialDoubleDistribution(0.01,0.05,false);
         for( int i = 0; i < 1000; i ++) {
             double sample = distribution.nextSample();
             total.getAndAdd(sample);

@@ -2,6 +2,7 @@ package data_pipeline.optimize.parameters;
 
 import data_pipeline.optimize.distributions.ParameterDistribution;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.layers.Layer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -16,14 +17,12 @@ public abstract class HyperParameter<T> {
     protected AtomicReference<T> value;
     protected ParameterDistribution<T> distribution;
 
-    protected HyperParameter(T initialVal, ParameterDistribution<T> distribution) {
-        this.value = new AtomicReference<T>(initialVal);
+    protected HyperParameter(ParameterDistribution<T> distribution) {
+        this.value = new AtomicReference<T>(distribution.nextSample());
         this.distribution=distribution;
     }
 
-    protected HyperParameter(ParameterDistribution<T> distribution) {
-        this(distribution.nextSample(),distribution);
-    }
+    public void set(T val) { value.set(val); }
 
     public T get() {
         return value.get();

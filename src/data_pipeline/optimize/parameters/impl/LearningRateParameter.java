@@ -14,15 +14,15 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 public class LearningRateParameter extends AveragingDoubleHyperParameter {
     private double min;
     private double max;
-    public LearningRateParameter(Double val, double min, double max) {
-        super(val, new ExponentialDoubleDistribution(min,max,false));
+    public LearningRateParameter(double min, double max) {
+        super(new ExponentialDoubleDistribution(min,max,false));
         this.min=min;
         this.max=max;
     }
 
     @Override
     protected HyperParameter<Double> createNew(Double val) {
-        return new LearningRateParameter(val,min,max);
+        return new LearningRateParameter(min,max);
     }
 
     @Override
