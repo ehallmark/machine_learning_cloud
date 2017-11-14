@@ -92,7 +92,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
                             .minibatch(true)
                             .build()
                     ).layer(4, new OutputLayer.Builder()
-                            .lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY)
+                            .lossFunction(LossFunctions.LossFunction.MSE)
                             .activation(Activation.IDENTITY)
                             .nIn(hiddenLayerSize)
                             .nOut(outputSize)
