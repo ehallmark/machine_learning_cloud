@@ -55,8 +55,8 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
 
         if(net==null) {
             int seed = 10;
-            final int hiddenLayerSize1 = 1024;
-            final int hiddenLayerSize2 = 512;
+            //final int hiddenLayerSize1 = 1024;
+            final int hiddenLayerSize = 512;
             final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
             final int vocabSize = pipelineManager.getWordToIdxMap().size();
             Nd4j.getRandom().setSeed(seed);
@@ -75,44 +75,26 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
                     .list()
                     .layer(0, new DenseLayer.Builder()
                             .nIn(vocabSize)
-                            .nOut(hiddenLayerSize1)
+                            .nOut(hiddenLayerSize)
                             .build()
                     ).layer(1, new BatchNormalization.Builder()
-                            .nIn(hiddenLayerSize1)
-                            .nOut(hiddenLayerSize1)
+                            .nIn(hiddenLayerSize)
+                            .nOut(hiddenLayerSize)
                             .minibatch(true)
                             .build()
                     ).layer(2, new DenseLayer.Builder()
-                            .nIn(hiddenLayerSize1)
-                            .nOut(hiddenLayerSize1)
+                            .nIn(hiddenLayerSize)
+                            .nOut(hiddenLayerSize)
                             .build()
                     ).layer(3, new BatchNormalization.Builder()
-                            .nIn(hiddenLayerSize1)
-                            .nOut(hiddenLayerSize1)
+                            .nIn(hiddenLayerSize)
+                            .nOut(hiddenLayerSize)
                             .minibatch(true)
                             .build()
-                    ).layer(4, new DenseLayer.Builder()
-                            .nIn(hiddenLayerSize1)
-                            .nOut(hiddenLayerSize2)
-                            .build()
-                    ).layer(5, new BatchNormalization.Builder()
-                            .nIn(hiddenLayerSize2)
-                            .nOut(hiddenLayerSize2)
-                            .minibatch(true)
-                            .build()
-                    ).layer(6, new DenseLayer.Builder()
-                            .nIn(hiddenLayerSize2)
-                            .nOut(hiddenLayerSize2)
-                            .build()
-                    ).layer(7, new BatchNormalization.Builder()
-                            .nIn(hiddenLayerSize2)
-                            .nOut(hiddenLayerSize2)
-                            .minibatch(true)
-                            .build()
-                    ).layer(8, new OutputLayer.Builder()
-                            .lossFunction(LossFunctions.LossFunction.MSE)
+                    ).layer(4, new OutputLayer.Builder()
+                            .lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY)
                             .activation(Activation.IDENTITY)
-                            .nIn(hiddenLayerSize2)
+                            .nIn(hiddenLayerSize)
                             .nOut(outputSize)
                             .build()
                     ).build();
