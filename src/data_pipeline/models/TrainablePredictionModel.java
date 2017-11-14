@@ -20,7 +20,7 @@ import java.util.stream.Stream;
  */
 public abstract class TrainablePredictionModel<T> {
     protected static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ISO_DATE_TIME;
-    protected static Map<String,Map<LocalDateTime,Double>> modelToScoreMap;
+    protected static Map<String,Map<LocalDateTime,Double>> modelToScoreMap; // Stores results for ALL models. Bad idea?
     protected static File modelToScoreMapFile = new File(Constants.DATA_FOLDER+"prediction_models_to_score_map.jobj");
     static {
         try {

@@ -43,14 +43,12 @@ public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArr
     public static final int VECTOR_SIZE = 32;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"cpc_deep_vae_nn_model_data");
     private Map<String,Integer> cpcToIdxMap;
-    private AtomicBoolean isSaved;
     private CPCVAEPipelineManager pipelineManager;
     private int maxCPCDepth;
     public CPCVariationalAutoEncoderNN(CPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {
         super(modelName);
         this.pipelineManager= pipelineManager;
         this.maxCPCDepth=maxCpcDepth;
-        this.isSaved=new AtomicBoolean(false);
     }
 
     public Map<String,Integer> getCpcToIdxMap() {
