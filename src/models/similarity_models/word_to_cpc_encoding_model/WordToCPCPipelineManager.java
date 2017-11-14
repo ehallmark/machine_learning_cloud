@@ -38,10 +38,11 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
     private Map<String,Integer> wordToIdxMap;
     private String modelName;
     private Map<String,INDArray> assetToEncodingMap;
+    private CPCVAEPipelineManager previousManager;
     public WordToCPCPipelineManager(String modelName, CPCVAEPipelineManager previousManager) {
         super(INPUT_DATA_FOLDER,PREDICTION_DATA_FILE);
         this.modelName=modelName;
-        assetToEncodingMap = previousManager.loadPredictions();
+        this.previousManager=previousManager;
     }
 
     protected void initModel(boolean forceRecreateModels) {
@@ -109,9 +110,16 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
         );
     }
 
+    protected Map<String,INDArray> getAssetToEncodingMap() {
+        if(assetToEncodingMap==null) {
+            assetToEncodingMap = previousManager.loadPredictions();
+        }
+        return assetToEncodingMap;
+    }
+
 
     protected DataSetIterator getRawIterator(int limit) {
-        return new WordToCPCIterator(limit,assetToEncodingMap,getWordToIdxMap(),BATCH_SIZE,false,false,false);
+        return new WordToCPCIterator(limit,getAssetToEncodingMap(),getWordToIdxMap(),BATCH_SIZE,false,false,false);
     }
 
     public static void main(String[] args) throws Exception {
