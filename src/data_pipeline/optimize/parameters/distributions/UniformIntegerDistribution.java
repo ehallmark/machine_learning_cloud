@@ -1,6 +1,4 @@
-package data_pipeline.optimize.distributions;
-
-import org.nd4j.linalg.api.rng.distribution.Distribution;
+package data_pipeline.optimize.parameters.distributions;
 
 import java.util.Random;
 

@@ -61,7 +61,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
             final int vocabSize = pipelineManager.getWordToIdxMap().size();
             Nd4j.getRandom().setSeed(seed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                    .activation(Activation.LEAKYRELU)
+                    .activation(Activation.TANH)
                     .updater(Updater.ADAM)
                     //.updater(Updater.RMSPROP)
                     //.rmsDecay(0.95)

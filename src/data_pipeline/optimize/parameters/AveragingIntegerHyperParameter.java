@@ -1,7 +1,6 @@
 package data_pipeline.optimize.parameters;
 
-import data_pipeline.optimize.distributions.ParameterDistribution;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import data_pipeline.optimize.parameters.distributions.ParameterDistribution;
 
 /**
  * Created by ehallmark on 11/9/17.
@@ -10,11 +9,6 @@ public abstract class AveragingIntegerHyperParameter extends HyperParameter<Inte
 
     protected AveragingIntegerHyperParameter(ParameterDistribution<Integer> distribution) {
         super(distribution);
-    }
-
-    @Override
-    public HyperParameter<Integer> mutate() {
-        return createNew(distribution.nextSample());
     }
 
     @Override

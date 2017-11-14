@@ -1,8 +1,7 @@
-package data_pipeline.optimize.distributions;
+package data_pipeline.optimize.parameters.distributions;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
-import org.nd4j.linalg.api.rng.distribution.Distribution;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;

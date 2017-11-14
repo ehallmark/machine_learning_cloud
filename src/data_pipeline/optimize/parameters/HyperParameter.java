@@ -1,10 +1,8 @@
 package data_pipeline.optimize.parameters;
 
-import data_pipeline.optimize.distributions.ParameterDistribution;
+import data_pipeline.optimize.parameters.distributions.ParameterDistribution;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.Layer;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
@@ -40,5 +38,6 @@ public abstract class HyperParameter<T> {
     protected abstract HyperParameter<T> createNew(T val);
 
     public abstract NeuralNetConfiguration.Builder applyToNetwork(NeuralNetConfiguration.Builder networkBuilder);
+    public abstract Layer.Builder applyToLayer(Layer.Builder layerBuilder);
 
 }

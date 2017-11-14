@@ -1,6 +1,6 @@
 package data_pipeline.optimize.parameters;
 
-import data_pipeline.optimize.distributions.ParameterDistribution;
+import data_pipeline.optimize.parameters.distributions.ParameterDistribution;
 
 /**
  * Created by ehallmark on 11/9/17.
@@ -9,11 +9,6 @@ public abstract class AveragingDoubleHyperParameter extends HyperParameter<Doubl
 
     protected AveragingDoubleHyperParameter(ParameterDistribution<Double> distribution) {
         super(distribution);
-    }
-
-    @Override
-    public HyperParameter<Double> mutate() {
-        return createNew(distribution.nextSample());
     }
 
     @Override

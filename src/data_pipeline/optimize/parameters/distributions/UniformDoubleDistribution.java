@@ -1,4 +1,4 @@
-package data_pipeline.optimize.distributions;
+package data_pipeline.optimize.parameters.distributions;
 
 import java.util.Random;
 
