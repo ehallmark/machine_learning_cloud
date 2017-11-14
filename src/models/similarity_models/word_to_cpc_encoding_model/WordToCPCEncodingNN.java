@@ -61,10 +61,10 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
             final int vocabSize = pipelineManager.getWordToIdxMap().size();
             Nd4j.getRandom().setSeed(seed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                    .activation(Activation.LEAKYRELU)
-                    //.updater(Updater.ADAM)
-                    .updater(Updater.RMSPROP)
-                    .rmsDecay(0.95)
+                    .activation(Activation.TANH)
+                    .updater(Updater.ADAM)
+                    //.updater(Updater.RMSPROP)
+                    //.rmsDecay(0.95)
                     .seed(seed)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                     .learningRate(0.05)
@@ -92,7 +92,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
                             .minibatch(true)
                             .build()
                     ).layer(4, new OutputLayer.Builder()
-                            .lossFunction(LossFunctions.LossFunction.MSE)
+                            .lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY)
                             .activation(Activation.IDENTITY)
                             .nIn(hiddenLayerSize)
                             .nOut(outputSize)
