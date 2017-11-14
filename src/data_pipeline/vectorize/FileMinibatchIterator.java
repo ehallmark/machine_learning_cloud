@@ -116,6 +116,7 @@ public class FileMinibatchIterator implements DataSetIterator {
     }
 
     private DataSet nextDataSet() {
+        System.gc();
         final int readIdx = shuffledIndices[this.currIdx.getAndIncrement()];
         try {
             DataSet e = this.read(readIdx);
