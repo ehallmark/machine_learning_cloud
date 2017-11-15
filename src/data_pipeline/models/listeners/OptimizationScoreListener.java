@@ -61,31 +61,30 @@ public class OptimizationScoreListener implements IterationListener {
         iterationCount++;
         if (iterationCount % printIterations == printIterations-1) {
             long newTime = System.currentTimeMillis();
-            System.out.println("Time to complete: "+((newTime-lastTime)/1000)+" seconds");
+           // System.out.println("Time to complete: "+((newTime-lastTime)/1000)+" seconds");
             lastTime = newTime;
 
             double error = testErrorFunction.apply(net.getNet());
             synchronized (OptimizationScoreListener.class) {
                 System.out.println("Results for: " + net.describeHyperParameters());
-                System.out.println(" Model Score: " + model.score() + ", Test Error: " + error);
-            }
-
-            movingAverage.add(error);
-            if(movingAverage.size()==averagePeriod) {
-                averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();
-                if(startingAverageError==null) {
-                    startingAverageError = averageError;
-                }
-                if(smallestAverage==null||smallestAverage>averageError) {
-                    smallestAverage = averageError;
-                    smallestAverageEpoch=iterationCount;
-                }
-                System.out.println("Sampling Test Error (Iteration "+iterationCount+"): "+error);
-                System.out.println("Original Average Error: " + startingAverageError);
-                System.out.println("Smallest Average Error (Iteration "+smallestAverageEpoch+"): " + smallestAverage);
-                System.out.println("Current Average Error: " + averageError);
-                while(movingAverage.size()>averagePeriod/2) {
-                    movingAverage.remove(0);
+                System.out.println("  Model Score: " + model.score() + ", Test Error: " + error);
+                movingAverage.add(error);
+                if(movingAverage.size()==averagePeriod) {
+                    averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();
+                    if(startingAverageError==null) {
+                        startingAverageError = averageError;
+                    }
+                    if(smallestAverage==null||smallestAverage>averageError) {
+                        smallestAverage = averageError;
+                        smallestAverageEpoch=iterationCount;
+                    }
+                    System.out.println("  Sampling Test Error (Iteration "+iterationCount+"): "+error);
+                    System.out.println("  Original Average Error: " + startingAverageError);
+                    System.out.println("  Smallest Average Error (Iteration "+smallestAverageEpoch+"): " + smallestAverage);
+                    System.out.println("  Current Average Error: " + averageError);
+                    while(movingAverage.size()>averagePeriod/2) {
+                        movingAverage.remove(0);
+                    }
                 }
             }
         }
