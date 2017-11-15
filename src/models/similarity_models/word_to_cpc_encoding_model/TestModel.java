@@ -32,7 +32,7 @@ public class TestModel {
         WordToCPCEncodingNN model = new WordToCPCEncodingNN(pipelineManager,modelName);
         model.loadBestModel();
 
-        Map<String,Integer> wordIdxMap = pipelineManager.getWordToIdxMap();
+        Map<String,Integer> wordIdxMap = pipelineManager.loadVocabMap();
         MultiLayerNetwork net = model.getNet();
 
         CPCSimilarityVectorizer vectorizer = new CPCSimilarityVectorizer(cpcEncodingPipelineManager.loadPredictions(),false,false,false);
