@@ -55,7 +55,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
 
     @Override
     public void train(int nEpochs) {
-        final int printIterations = 100;
+        final int printIterations = 20;
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
 
