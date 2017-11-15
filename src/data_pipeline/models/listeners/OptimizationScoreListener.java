@@ -33,7 +33,7 @@ public class OptimizationScoreListener implements IterationListener {
     private  Function<MultiLayerNetwork,Double> testErrorFunction;
     private Long lastTime;
     private MultiLayerNetworkWrapper net;
-    private MultiScoreReporter reporter;
+    private final MultiScoreReporter reporter;
     public OptimizationScoreListener(MultiScoreReporter reporter, MultiLayerNetworkWrapper net, int printIterations, Function<MultiLayerNetwork,Double> testErrorFunction, Function3<MultiLayerNetwork,LocalDateTime,Double,Void> saveFunction) {
         this.printIterations = printIterations;
         this.testErrorFunction=testErrorFunction;
@@ -67,28 +67,28 @@ public class OptimizationScoreListener implements IterationListener {
             lastTime = newTime;
 
             double error = testErrorFunction.apply(net.getNet());
-            synchronized (OptimizationScoreListener.class) {
-                StringJoiner message = new StringJoiner("\n");
-                message.add("Results for: " + net.describeHyperParameters());
-                message.add("  Model Score: " + model.score() + ", Test Error: " + error);
-                movingAverage.add(error);
-                if(movingAverage.size()==averagePeriod) {
-                    averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();
-                    if(startingAverageError==null) {
-                        startingAverageError = averageError;
-                    }
-                    if(smallestAverage==null||smallestAverage>averageError) {
-                        smallestAverage = averageError;
-                        smallestAverageEpoch=iterationCount;
-                    }
-                    message.add("  Sampling Test Error (Iteration "+iterationCount+"): "+error);
-                    message.add("  Original Average Error: " + startingAverageError);
-                    message.add("  Smallest Average Error (Iteration "+smallestAverageEpoch+"): " + smallestAverage);
-                    message.add("  Current Average Error: " + averageError);
-                    while(movingAverage.size()>averagePeriod/2) {
-                        movingAverage.remove(0);
-                    }
+            StringJoiner message = new StringJoiner("\n");
+            message.add("Results for: " + net.describeHyperParameters());
+            message.add("  Model Score: " + model.score() + ", Test Error: " + error);
+            movingAverage.add(error);
+            if(movingAverage.size()==averagePeriod) {
+                averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();
+                if(startingAverageError==null) {
+                    startingAverageError = averageError;
                 }
+                if(smallestAverage==null||smallestAverage>averageError) {
+                    smallestAverage = averageError;
+                    smallestAverageEpoch=iterationCount;
+                }
+                message.add("  Sampling Test Error (Iteration "+iterationCount+"): "+error);
+                message.add("  Original Average Error: " + startingAverageError);
+                message.add("  Smallest Average Error (Iteration "+smallestAverageEpoch+"): " + smallestAverage);
+                message.add("  Current Average Error: " + averageError);
+                while(movingAverage.size()>averagePeriod/2) {
+                    movingAverage.remove(0);
+                }
+            }
+            synchronized (reporter) {
                 reporter.addToCurrentReport(message.toString(),smallestAverage==null?error:smallestAverage);
             }
         }

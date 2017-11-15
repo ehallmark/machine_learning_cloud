@@ -150,7 +150,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
 
         // Optimizer
         int numNetworks = 1;
-        final int hiddenLayerSize = 1024;
+        final int hiddenLayerSize = 768;
         final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
         final int inputSize = pipelineManager.getWordToIdxMap().size();
         final MultiScoreReporter reporter = new MultiScoreReporter(numNetworks, 1);

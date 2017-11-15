@@ -72,7 +72,7 @@ public class NNOptimizer {
 
     public void train(DataSet ds) {
         if(!init) throw new RuntimeException("Must initialize optimizer with call to 'initNetworkSamples();'");
-        networkSamples.parallelStream()
+        (networkSamples.size()>1 ? networkSamples.parallelStream() : networkSamples.stream())
                 .filter(net->net.isKeepTraining())
                 .forEach(net->{
                     try {
