@@ -35,9 +35,9 @@ public class NNOptimizer {
     private List<List<HyperParameter>> layerParameters;
     private int nSamples;
     private List<MultiLayerNetworkWrapper> networkSamples;
-    private Function<MultiLayerNetwork,Void> addListenerFunction;
+    private Function<MultiLayerNetworkWrapper,Void> addListenerFunction;
     public NNOptimizer(NeuralNetConfiguration preModel, List<Layer.Builder> layerModels,
-                       List<HyperParameter> modelParameters, List<List<HyperParameter>> layerParameters, int nSamples, Function<MultiLayerNetwork,Void> addListenerFunction) {
+                       List<HyperParameter> modelParameters, List<List<HyperParameter>> layerParameters, int nSamples, Function<MultiLayerNetworkWrapper,Void> addListenerFunction) {
         this.preModel=preModel;
         this.layerModels=layerModels;
         this.modelParameters=modelParameters;
@@ -60,8 +60,9 @@ public class NNOptimizer {
                     newModelParams,
                     newLayerParams
             );
-            addListenerFunction.apply(net);
-            networkSamples.add(new MultiLayerNetworkWrapper(net,flattenParams(newModelParams,newLayerParams)));
+            MultiLayerNetworkWrapper netWrap = new MultiLayerNetworkWrapper(net,flattenParams(newModelParams,newLayerParams));
+            addListenerFunction.apply(netWrap);
+            networkSamples.add(netWrap);
         }
     }
 
@@ -172,9 +173,9 @@ public class NNOptimizer {
                 newOutputLayer(hiddenLayerSize,outputSize)
         );
 
-        Function<MultiLayerNetwork,Void> addListenerFunction = net -> {
+        Function<MultiLayerNetworkWrapper,Void> addListenerFunction = net -> {
             DefaultScoreListener listener = null; //new OptimizationScoreListener(printIterations, )
-            net.setListeners(listener);
+            net.getNet().setListeners(listener);
             return null;
         };
 

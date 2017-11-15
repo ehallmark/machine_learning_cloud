@@ -1,9 +1,11 @@
 package models.similarity_models.word_to_cpc_encoding_model;
 
 import data_pipeline.helpers.Function2;
+import data_pipeline.helpers.Function3;
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
+import data_pipeline.models.listeners.OptimizationScoreListener;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
 import data_pipeline.optimize.parameters.HyperParameter;
@@ -122,17 +124,13 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
         }
         INDArray validationInputs = Nd4j.vstack(partialValidationInputs);
         INDArray validationOutputs = Nd4j.vstack(partialValidationLabels);
-        Function<Void,Double> testErrorFunction = (v) -> {
-            return test(validationInputs,validationOutputs);
+        Function<MultiLayerNetwork,Double> testErrorFunction = (net) -> {
+            return test(validationInputs,validationOutputs,net);
         };
 
-        Function<Void,Double> trainErrorFunction = (v) -> {
-            return 0d;//test(pipelineManager.getDatasetManager().getTrainingIterator(10000/pipelineManager.getBatchSize()), vae);
-        };
-
-        Function2<LocalDateTime,Double,Void> saveFunction = (datetime, score) -> {
+        Function3<MultiLayerNetwork,LocalDateTime,Double,Void> saveFunction = (net,datetime, score) -> {
             try {
-                save(datetime,score);
+                save(datetime,score,net);
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -151,8 +149,8 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
                 getLayerParameters(),
                 numNetworks,
                 net -> {
-                    IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
-                    net.setListeners(listener);
+                    IterationListener listener = new OptimizationScoreListener(net, printIterations, testErrorFunction, saveFunction);
+                    net.getNet().setListeners(listener);
                     return null;
                 }
         );
@@ -198,7 +196,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
         return BASE_DIR;
     }
 
-    private double test(INDArray input, INDArray output) {
+    private double test(INDArray input, INDArray output, MultiLayerNetwork net) {
         INDArray predictions = net.activateSelectedLayers(0,net.getnLayers()-1,input);
         double similarity = NDArrayHelper.sumOfCosineSimByRow(predictions,output);
         return 1d - (similarity/input.rows());

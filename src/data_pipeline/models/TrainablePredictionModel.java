@@ -95,6 +95,10 @@ public abstract class TrainablePredictionModel<T> {
     }
 
     public synchronized void save(LocalDateTime time, double score) throws IOException {
+        this.save(time,score,net);
+    }
+
+    public synchronized void save(LocalDateTime time, double score, MultiLayerNetwork net) throws IOException {
         if(net!=null) {
             isSaved.set(true);
             // merge models core map (in case it was updated by another process)
