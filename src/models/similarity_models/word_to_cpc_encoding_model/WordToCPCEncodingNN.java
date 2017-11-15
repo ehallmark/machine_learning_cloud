@@ -5,6 +5,7 @@ import data_pipeline.helpers.Function3;
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
+import data_pipeline.models.listeners.MultiScoreReporter;
 import data_pipeline.models.listeners.OptimizationScoreListener;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
@@ -55,7 +56,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
 
     @Override
     public void train(int nEpochs) {
-        final int printIterations = 20;
+        final int printIterations = 100;
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
 
@@ -138,10 +139,11 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
         };
 
         // Optimizer
-        int numNetworks = 16;
-        final int hiddenLayerSize = 512;
+        int numNetworks = 6;
+        final int hiddenLayerSize = 1024;
         final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
         final int inputSize = pipelineManager.getWordToIdxMap().size();
+        final MultiScoreReporter reporter = new MultiScoreReporter(numNetworks, 3);
         NNOptimizer optimizer = new NNOptimizer(
                 getPreModel(),
                 getLayerModels(inputSize,hiddenLayerSize,outputSize),
@@ -149,7 +151,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
                 getLayerParameters(),
                 numNetworks,
                 net -> {
-                    IterationListener listener = new OptimizationScoreListener(net, printIterations, testErrorFunction, saveFunction);
+                    IterationListener listener = new OptimizationScoreListener(reporter, net, printIterations, testErrorFunction, saveFunction);
                     net.getNet().setListeners(listener);
                     return null;
                 }
@@ -206,10 +208,9 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
 
     private List<HyperParameter> getModelParameters() {
         return Arrays.asList(
-                new LearningRateParameter(0.0001,0.5),
+                new LearningRateParameter(0.001,0.1),
                 new ActivationFunctionParameter(Arrays.asList(
                         Activation.LEAKYRELU,
-                        Activation.RRELU,
                         Activation.HARDTANH,
                         Activation.TANH
                 ))
@@ -225,13 +226,11 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
                 // output layer
                 Arrays.asList(
                         new ActivationFunctionParameter(Arrays.asList(
-                                Activation.IDENTITY,
-                                Activation.TANH,
-                                Activation.HARDTANH
+                                Activation.IDENTITY
                         )),
                         new LossFunctionParameter(Arrays.asList(
-                                LossFunctions.LossFunction.COSINE_PROXIMITY,
-                                LossFunctions.LossFunction.MSE
+                                LossFunctions.LossFunction.COSINE_PROXIMITY//,
+                                //LossFunctions.LossFunction.MSE
                         ))
                 )
         );
