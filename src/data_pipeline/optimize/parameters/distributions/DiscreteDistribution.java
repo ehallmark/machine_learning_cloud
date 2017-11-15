@@ -14,6 +14,7 @@ public class DiscreteDistribution<T> implements ParameterDistribution<T> {
     private Random rand;
     private final List<T> orderedItems;
     private final List<Double> probabilities;
+    private List<T> orderedItemCopies;
     public DiscreteDistribution(Map<T,? extends Number> probabilityMap) {
         this.rand = new Random(System.currentTimeMillis());
         if(probabilityMap.isEmpty()) throw new RuntimeException("Discrete distribution cannot be empty.");
@@ -34,6 +35,7 @@ public class DiscreteDistribution<T> implements ParameterDistribution<T> {
         this.orderedItems=orderedItems;
         this.probabilities=null;
         this.rand = new Random(System.currentTimeMillis());
+        this.orderedItemCopies= new ArrayList<>(orderedItems);
     }
 
     @Override
@@ -52,7 +54,12 @@ public class DiscreteDistribution<T> implements ParameterDistribution<T> {
         }
         // fall back to uniform
         if(item==null) {
-            item = orderedItems.get(rand.nextInt(orderedItems.size()));
+            if(orderedItemCopies==null) {
+                item = orderedItems.get(rand.nextInt(orderedItems.size()));
+            } else { // better for small samples
+                if(orderedItemCopies.isEmpty()) orderedItemCopies = new ArrayList<>(orderedItems);
+                item = orderedItemCopies.remove(rand.nextInt(orderedItemCopies.size()));
+            }
         }
         return item;
     }

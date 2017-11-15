@@ -30,4 +30,9 @@ public class WordFrequencyPair<T,V extends Comparable<V>> implements Comparable<
     public Pair<T,V> toPair() {
         return new Pair<>(first,second);
     }
+
+    @Override
+    public String toString() {
+        return "["+first+","+second+"]";
+    }
 }

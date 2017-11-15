@@ -208,10 +208,9 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
 
     private List<HyperParameter> getModelParameters() {
         return Arrays.asList(
-                new LearningRateParameter(0.001,0.1),
+                new LearningRateParameter(0.1,0.2),
                 new ActivationFunctionParameter(Arrays.asList(
                         Activation.LEAKYRELU,
-                        Activation.HARDTANH,
                         Activation.TANH
                 ))
         );
@@ -219,6 +218,8 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
 
     private List<List<HyperParameter>> getLayerParameters() {
         return Arrays.asList(
+                Collections.emptyList(),
+                Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),
@@ -243,6 +244,8 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
     private List<Layer.Builder> getLayerModels(int inputSize, int hiddenLayerSize, int outputSize) {
         return Arrays.asList(
                 newDenseLayer(inputSize,hiddenLayerSize),
+                newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),
+                newDenseLayer(hiddenLayerSize,hiddenLayerSize),
                 newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),
                 newDenseLayer(hiddenLayerSize,hiddenLayerSize),
                 newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),

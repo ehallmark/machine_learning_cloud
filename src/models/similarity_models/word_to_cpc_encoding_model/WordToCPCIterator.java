@@ -139,6 +139,10 @@ public class WordToCPCIterator implements DataSetIterator {
     }
 
     private INDArray createVector(Stream<Collection<String>> wordStream) {
+        return createBagOfWordsVector(wordStream,wordToIdxMap,batchSize);
+    }
+
+    public static INDArray createBagOfWordsVector(Stream<Collection<String>> wordStream, Map<String,Integer> wordToIdxMap, int batchSize) {
         AtomicInteger batch = new AtomicInteger(0);
         int numInputs = wordToIdxMap.size();
         double[][] vecs = new double[batchSize][numInputs];
