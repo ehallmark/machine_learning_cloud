@@ -1,22 +1,27 @@
 package data_pipeline.optimize.nn_optimization;
 
+import data_pipeline.models.exceptions.StoppingConditionMetException;
+import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.parameters.HyperParameter;
 import data_pipeline.optimize.parameters.impl.ActivationFunctionParameter;
 import data_pipeline.optimize.parameters.impl.LearningRateParameter;
 import data_pipeline.optimize.parameters.impl.LossFunctionParameter;
+import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.layers.BatchNormalization;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.Layer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,38 +31,62 @@ import java.util.stream.Stream;
 public class NNOptimizer {
     private NeuralNetConfiguration preModel;
     private List<Layer.Builder> layerModels;
-    private List<HyperParameter<?>> modelParameters;
-    private List<List<HyperParameter<?>>> layerParameters;
-    private List<HyperParameter<?>> allHyperParameters;
+    private List<HyperParameter> modelParameters;
+    private List<List<HyperParameter>> layerParameters;
     private int nSamples;
-    private List<MultiLayerNetwork> networkSamples;
+    private List<MultiLayerNetworkWrapper> networkSamples;
+    private Function<MultiLayerNetwork,Void> addListenerFunction;
     public NNOptimizer(NeuralNetConfiguration preModel, List<Layer.Builder> layerModels,
-                       List<HyperParameter<?>> modelParameters, List<List<HyperParameter<?>>> layerParameters, int nSamples) {
+                       List<HyperParameter> modelParameters, List<List<HyperParameter>> layerParameters, int nSamples, Function<MultiLayerNetwork,Void> addListenerFunction) {
         this.preModel=preModel;
         this.layerModels=layerModels;
         this.modelParameters=modelParameters;
         this.layerParameters=layerParameters;
         this.nSamples=nSamples;
         this.networkSamples = Collections.synchronizedList(new ArrayList<>(nSamples));
-
-        this.allHyperParameters = Stream.of(modelParameters,layerParameters.stream().flatMap(list->list.stream()).collect(Collectors.toList()))
-                .flatMap(list->list.stream()).collect(Collectors.toList());
+        this.addListenerFunction=addListenerFunction;
     }
+
 
     public void initNetworkSamples() {
         for(int i = 0; i < nSamples; i++) {
-            networkSamples.add(buildNetworkWithHyperParameters(
+            List<HyperParameter> newModelParams = modelParameters.stream().map(param->param.mutate()).collect(Collectors.toList());
+            List<List<HyperParameter>> newLayerParams = layerParameters.stream()
+                    .map(paramList->paramList.stream().map(param->param.mutate()).collect(Collectors.toList()))
+                    .collect(Collectors.toList());
+            MultiLayerNetwork net = buildNetworkWithHyperParameters(
                     preModel,
                     layerModels,
-                    modelParameters,
-                    layerParameters
-            ));
+                    newModelParams,
+                    newLayerParams
+            );
+            addListenerFunction.apply(net);
+            networkSamples.add(new MultiLayerNetworkWrapper(net,flattenParams(newModelParams,newLayerParams)));
         }
     }
 
-    protected static MultiLayerNetwork buildNetworkWithHyperParameters(
+    public void train(DataSet ds) {
+        networkSamples.parallelStream()
+                .filter(net->net.isKeepTraining())
+                .forEach(net->{
+                    try {
+                        net.getNet().fit(ds);
+                    } catch(StoppingConditionMetException e) {
+                        // stop training particular model
+                        System.out.println("hit stopping condition for: "+net.describeHyperParameters());
+                        net.setKeepTraining(false);
+                    }
+                });
+    }
+
+    private static List<HyperParameter> flattenParams(List<HyperParameter> modelParameters, List<List<HyperParameter>> layerParameters) {
+        return Stream.of(modelParameters,layerParameters.stream().flatMap(list->list.stream()).collect(Collectors.toList()))
+                .flatMap(list->list.stream()).collect(Collectors.toList());
+    }
+
+    private static MultiLayerNetwork buildNetworkWithHyperParameters(
             NeuralNetConfiguration preModel, List<Layer.Builder> layerModels,
-            List<HyperParameter<?>> modelParameters, List<List<HyperParameter<?>>> layerParameters)
+            List<HyperParameter> modelParameters, List<List<HyperParameter>> layerParameters)
     {
         if(layerModels.size()!=layerParameters.size()) throw new RuntimeException("layer models and layer parameters must have the same size.");
         NeuralNetConfiguration.Builder newModelConf = new NeuralNetConfiguration.Builder(preModel.clone());
@@ -71,7 +100,7 @@ public class NNOptimizer {
             for (HyperParameter<?> hyperParameter : layerParameters.get(i)) {
                 layer = hyperParameter.applyToLayer(layer);
             }
-            networkLayerBuilder = networkLayerBuilder.layer(i, layer.build());
+            networkLayerBuilder = networkLayerBuilder.layer(i, layer.build().clone());
         }
         // swap out configs
         MultiLayerNetwork net = new MultiLayerNetwork(networkLayerBuilder.build().clone());
@@ -79,44 +108,48 @@ public class NNOptimizer {
         return net;
     }
 
-    static Layer.Builder newDenseLayer(int nIn, int nOut) {
+    public static DenseLayer.Builder newDenseLayer(int nIn, int nOut) {
         return new DenseLayer.Builder().nIn(nIn).nOut(nOut);
     }
 
-    static Layer.Builder newOutputLayer(int nIn, int nOut) {
+    public static BatchNormalization.Builder newBatchNormLayer(int nIn, int nOut) {
+        return new BatchNormalization.Builder().nIn(nIn).nOut(nOut).minibatch(true);
+    }
+
+    public static OutputLayer.Builder newOutputLayer(int nIn, int nOut) {
         return new OutputLayer.Builder().nIn(nIn).nOut(nOut);
     }
 
-    static NeuralNetConfiguration newNeuralNetworkConfig() {
+    public static NeuralNetConfiguration defaultNetworkConfig() {
         return new NeuralNetConfiguration.Builder()
                 .miniBatch(true)
+                .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .build();
     }
 
     public static void main(String[] args) {
-        List<HyperParameter<?>> modelHyperParameters = Arrays.asList(
-                new LearningRateParameter(0.0001,0.25),
+        List<HyperParameter> modelHyperParameters = Arrays.asList(
+                new LearningRateParameter(0.0001,0.1),
                 new ActivationFunctionParameter(Arrays.asList(
                         Activation.LEAKYRELU,
+                        Activation.RRELU,
+                        Activation.HARDTANH,
                         Activation.TANH
                 ))
         );
 
-        List<List<HyperParameter<?>>> layerParameters = Arrays.asList(
+        List<List<HyperParameter>> layerParameters = Arrays.asList(
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                // output layer
                 Arrays.asList(
                         new ActivationFunctionParameter(Arrays.asList(
+                                Activation.IDENTITY,
+                                Activation.TANH,
                                 Activation.HARDTANH
-                        ))
-                ),
-                Arrays.asList(
-                        new ActivationFunctionParameter(Arrays.asList(
-                                Activation.HARDTANH
-                        ))
-                ),
-                Arrays.asList(
-                        new ActivationFunctionParameter(Arrays.asList(
-                                Activation.HARDSIGMOID
                         )),
                         new LossFunctionParameter(Arrays.asList(
                                 LossFunctions.LossFunction.COSINE_PROXIMITY,
@@ -127,26 +160,39 @@ public class NNOptimizer {
                 )
         );
 
+        final int hiddenLayerSize = 512;
+        final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
+        final int inputSize = 30000;
+
         List<Layer.Builder> layerBuilders = Arrays.asList(
-                newDenseLayer(10,20),
-                newDenseLayer(20,30),
-                newOutputLayer(30,2)
+                newDenseLayer(inputSize,hiddenLayerSize),
+                newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),
+                newDenseLayer(hiddenLayerSize,hiddenLayerSize),
+                newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),
+                newOutputLayer(hiddenLayerSize,outputSize)
         );
+
+        Function<MultiLayerNetwork,Void> addListenerFunction = net -> {
+            DefaultScoreListener listener = null; //new OptimizationScoreListener(printIterations, )
+            net.setListeners(listener);
+            return null;
+        };
 
 
         // Here is the actual optimizer instance
         NNOptimizer optimizer = new NNOptimizer(
-                newNeuralNetworkConfig(),
+                defaultNetworkConfig(),
                 layerBuilders,
                 modelHyperParameters,
                 layerParameters,
-                5
+                5,
+                addListenerFunction
         );
 
         optimizer.initNetworkSamples();
 
         optimizer.networkSamples.forEach(net->{
-            System.out.println("Net: "+net.getLayerWiseConfigurations().toYaml());
+            System.out.println("Net: "+net.describeHyperParameters());
         });
     }
 }

@@ -4,6 +4,12 @@ import data_pipeline.helpers.Function2;
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
+import data_pipeline.optimize.nn_optimization.NNOptimizer;
+import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
+import data_pipeline.optimize.parameters.HyperParameter;
+import data_pipeline.optimize.parameters.impl.ActivationFunctionParameter;
+import data_pipeline.optimize.parameters.impl.LearningRateParameter;
+import data_pipeline.optimize.parameters.impl.LossFunctionParameter;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.signatures.NDArrayHelper;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -24,9 +30,7 @@ import seeding.Constants;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
@@ -54,7 +58,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
 
         if(net==null) {
-            int seed = 10;
+            /*int seed = 10;
             //final int hiddenLayerSize1 = 1024;
             final int hiddenLayerSize = 512;
             final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
@@ -100,7 +104,9 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
                     ).build();
 
             net = new MultiLayerNetwork(conf);
-            net.init();
+            net.init(); */
+
+            // try nn optimizer
         }
 
         System.out.println("Building validation matrix...");
@@ -133,6 +139,42 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
             return null;
         };
 
+        // Optimizer
+        int numNetworks = 10;
+        final int hiddenLayerSize = 512;
+        final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
+        final int inputSize = pipelineManager.getWordToIdxMap().size();
+        NNOptimizer optimizer = new NNOptimizer(
+                getPreModel(),
+                getLayerModels(inputSize,hiddenLayerSize,outputSize),
+                getModelParameters(),
+                getLayerParameters(),
+                numNetworks,
+                net -> {
+                    IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
+                    net.setListeners(listener);
+                    return null;
+                }
+        );
+
+
+        for (int i = 0; i < nEpochs; i++) {
+            System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
+            while(trainIter.hasNext()) {
+                try {
+                    optimizer.train(trainIter.next());
+                } catch (StoppingConditionMetException s) {
+                    System.out.println("Stopping condition met");
+                }
+                if (stoppingCondition.get()) {
+                    break;
+                }
+            }
+            if(stoppingCondition.get()) break;
+            trainIter.reset();
+        }
+
+        /*
         IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
         net.setListeners(listener);
 
@@ -148,6 +190,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
             }
             trainIter.reset();
         }
+        */
     }
 
     @Override
@@ -160,4 +203,54 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
         double similarity = NDArrayHelper.sumOfCosineSimByRow(predictions,output);
         return 1d - (similarity/input.rows());
     }
+
+    private List<HyperParameter> getModelParameters() {
+        return Arrays.asList(
+                new LearningRateParameter(0.0001,0.1),
+                new ActivationFunctionParameter(Arrays.asList(
+                        Activation.LEAKYRELU,
+                        Activation.RRELU,
+                        Activation.HARDTANH,
+                        Activation.TANH
+                ))
+        );
+    }
+
+    private List<List<HyperParameter>> getLayerParameters() {
+        return Arrays.asList(
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                // output layer
+                Arrays.asList(
+                        new ActivationFunctionParameter(Arrays.asList(
+                                Activation.IDENTITY,
+                                Activation.TANH,
+                                Activation.HARDTANH
+                        )),
+                        new LossFunctionParameter(Arrays.asList(
+                                LossFunctions.LossFunction.COSINE_PROXIMITY,
+                                LossFunctions.LossFunction.MCXENT,
+                                LossFunctions.LossFunction.MSE,
+                                LossFunctions.LossFunction.KL_DIVERGENCE
+                        ))
+                )
+        );
+    }
+
+    private NeuralNetConfiguration getPreModel() {
+        return NNOptimizer.defaultNetworkConfig();
+    }
+
+    private List<Layer.Builder> getLayerModels(int inputSize, int hiddenLayerSize, int outputSize) {
+        return Arrays.asList(
+                newDenseLayer(inputSize,hiddenLayerSize),
+                newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),
+                newDenseLayer(hiddenLayerSize,hiddenLayerSize),
+                newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),
+                newOutputLayer(hiddenLayerSize,outputSize)
+        );
+    }
+
 }
