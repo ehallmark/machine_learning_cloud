@@ -155,6 +155,8 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
                 }
         );
 
+        // initialize optimizer
+        optimizer.initNetworkSamples();
 
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");

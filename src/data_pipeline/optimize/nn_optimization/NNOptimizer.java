@@ -36,6 +36,7 @@ public class NNOptimizer {
     private int nSamples;
     private List<MultiLayerNetworkWrapper> networkSamples;
     private Function<MultiLayerNetworkWrapper,Void> addListenerFunction;
+    private boolean init = false;
     public NNOptimizer(NeuralNetConfiguration preModel, List<Layer.Builder> layerModels,
                        List<HyperParameter> modelParameters, List<List<HyperParameter>> layerParameters, int nSamples, Function<MultiLayerNetworkWrapper,Void> addListenerFunction) {
         this.preModel=preModel;
@@ -49,6 +50,8 @@ public class NNOptimizer {
 
 
     public void initNetworkSamples() {
+        if(init) throw new RuntimeException("Samples have already been initialized.");
+        init = true;
         for(int i = 0; i < nSamples; i++) {
             List<HyperParameter> newModelParams = modelParameters.stream().map(param->param.mutate()).collect(Collectors.toList());
             List<List<HyperParameter>> newLayerParams = layerParameters.stream()
@@ -63,10 +66,12 @@ public class NNOptimizer {
             MultiLayerNetworkWrapper netWrap = new MultiLayerNetworkWrapper(net,flattenParams(newModelParams,newLayerParams));
             addListenerFunction.apply(netWrap);
             networkSamples.add(netWrap);
+            System.out.println("Initialized model-"+i+": "+netWrap.describeHyperParameters());
         }
     }
 
     public void train(DataSet ds) {
+        if(!init) throw new RuntimeException("Must initialize optimizer with call to 'initNetworkSamples();'");
         networkSamples.parallelStream()
                 .filter(net->net.isKeepTraining())
                 .forEach(net->{
