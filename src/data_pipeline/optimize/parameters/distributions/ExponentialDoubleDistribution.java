@@ -23,6 +23,7 @@ public class ExponentialDoubleDistribution implements ParameterDistribution<Doub
     }
     @Override
     public Double nextSample() {
+        if(start==end) return start;
         double sample = (1d-distribution.cumulativeProbability(rand.nextDouble()*5d)) * (end-start);
         if(reverse) {
             return end-sample;

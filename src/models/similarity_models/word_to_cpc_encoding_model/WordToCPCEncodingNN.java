@@ -13,6 +13,7 @@ import data_pipeline.optimize.parameters.HyperParameter;
 import data_pipeline.optimize.parameters.impl.ActivationFunctionParameter;
 import data_pipeline.optimize.parameters.impl.LearningRateParameter;
 import data_pipeline.optimize.parameters.impl.LossFunctionParameter;
+import data_pipeline.optimize.parameters.impl.UpdaterParameter;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.signatures.NDArrayHelper;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -60,57 +61,66 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
 
-        if(net==null) {
-            /*int seed = 10;
-            //final int hiddenLayerSize1 = 1024;
-            final int hiddenLayerSize = 512;
-            final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
-            final int vocabSize = pipelineManager.getWordToIdxMap().size();
-            Nd4j.getRandom().setSeed(seed);
-            MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                    .activation(Activation.TANH)
-                    .updater(Updater.ADAM)
-                    //.updater(Updater.RMSPROP)
-                    //.rmsDecay(0.95)
-                    .seed(seed)
-                    .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                    .learningRate(0.05)
-                    .miniBatch(true)
-                    .weightInit(WeightInit.XAVIER)
-                    //.regularization(true).l2(1e-4)
-                    //.dropOut(0.5)
-                    .list()
-                    .layer(0, new DenseLayer.Builder()
-                            .nIn(vocabSize)
-                            .nOut(hiddenLayerSize)
-                            .build()
-                    ).layer(1, new BatchNormalization.Builder()
-                            .nIn(hiddenLayerSize)
-                            .nOut(hiddenLayerSize)
-                            .minibatch(true)
-                            .build()
-                    ).layer(2, new DenseLayer.Builder()
-                            .nIn(hiddenLayerSize)
-                            .nOut(hiddenLayerSize)
-                            .build()
-                    ).layer(3, new BatchNormalization.Builder()
-                            .nIn(hiddenLayerSize)
-                            .nOut(hiddenLayerSize)
-                            .minibatch(true)
-                            .build()
-                    ).layer(4, new OutputLayer.Builder()
-                            .lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY)
-                            .activation(Activation.IDENTITY)
-                            .nIn(hiddenLayerSize)
-                            .nOut(outputSize)
-                            .build()
-                    ).build();
+        /*if(!optimize) {
+            if (net == null) {
+                //int seed = 10;
+                final int hiddenLayerSize = 512;
+                final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
+                final int vocabSize = pipelineManager.getWordToIdxMap().size();
+                Nd4j.getRandom().setSeed(seed);
+                MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                        .activation(Activation.TANH)
+                        .updater(Updater.ADAM)
+                        //.updater(Updater.RMSPROP)
+                        //.rmsDecay(0.95)
+                        .seed(seed)
+                        .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                        .learningRate(0.15)
+                        .miniBatch(true)
+                        .weightInit(WeightInit.XAVIER)
+                        //.regularization(true).l2(1e-4)
+                        //.dropOut(0.5)
+                        .list()
+                        .layer(0, new DenseLayer.Builder()
+                                .nIn(vocabSize)
+                                .nOut(hiddenLayerSize)
+                                .build()
+                        ).layer(1, new BatchNormalization.Builder()
+                                .nIn(hiddenLayerSize)
+                                .nOut(hiddenLayerSize)
+                                .minibatch(true)
+                                .build()
+                        ).layer(2, new DenseLayer.Builder()
+                                .nIn(hiddenLayerSize)
+                                .nOut(hiddenLayerSize)
+                                .build()
+                        ).layer(3, new BatchNormalization.Builder()
+                                .nIn(hiddenLayerSize)
+                                .nOut(hiddenLayerSize)
+                                .minibatch(true)
+                                .build()
+                        ).layer(2, new DenseLayer.Builder()
+                                .nIn(hiddenLayerSize)
+                                .nOut(hiddenLayerSize)
+                                .build()
+                        ).layer(3, new BatchNormalization.Builder()
+                                .nIn(hiddenLayerSize)
+                                .nOut(hiddenLayerSize)
+                                .minibatch(true)
+                                .build()
+                        ).layer(4, new OutputLayer.Builder()
+                                .lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY)
+                                .activation(Activation.IDENTITY)
+                                .nIn(hiddenLayerSize)
+                                .nOut(outputSize)
+                                .build()
+                        ).build();
 
-            net = new MultiLayerNetwork(conf);
-            net.init(); */
+                net = new MultiLayerNetwork(conf);
+                net.init();
 
-            // try nn optimizer
-        }
+            }
+        }*/
 
         System.out.println("Building validation matrix...");
         DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
@@ -139,11 +149,11 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
         };
 
         // Optimizer
-        int numNetworks = 6;
-        final int hiddenLayerSize = 1024;
+        int numNetworks = 2;
+        final int hiddenLayerSize = 512;
         final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
         final int inputSize = pipelineManager.getWordToIdxMap().size();
-        final MultiScoreReporter reporter = new MultiScoreReporter(numNetworks, 3);
+        final MultiScoreReporter reporter = new MultiScoreReporter(numNetworks, 2);
         NNOptimizer optimizer = new NNOptimizer(
                 getPreModel(),
                 getLayerModels(inputSize,hiddenLayerSize,outputSize),
@@ -208,7 +218,10 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
 
     private List<HyperParameter> getModelParameters() {
         return Arrays.asList(
-                new LearningRateParameter(0.1,0.2),
+                new LearningRateParameter(0.15,0.15),
+                new UpdaterParameter(Arrays.asList(
+                        Updater.RMSPROP
+                )),
                 new ActivationFunctionParameter(Arrays.asList(
                         Activation.LEAKYRELU,
                         Activation.TANH
@@ -218,6 +231,8 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
 
     private List<List<HyperParameter>> getLayerParameters() {
         return Arrays.asList(
+                Collections.emptyList(),
+                Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),
@@ -244,6 +259,8 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
     private List<Layer.Builder> getLayerModels(int inputSize, int hiddenLayerSize, int outputSize) {
         return Arrays.asList(
                 newDenseLayer(inputSize,hiddenLayerSize),
+                newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),
+                newDenseLayer(hiddenLayerSize,hiddenLayerSize),
                 newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),
                 newDenseLayer(hiddenLayerSize,hiddenLayerSize),
                 newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),
