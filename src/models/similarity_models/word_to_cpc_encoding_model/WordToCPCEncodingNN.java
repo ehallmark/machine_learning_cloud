@@ -206,10 +206,9 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
 
     private List<HyperParameter> getModelParameters() {
         return Arrays.asList(
-                new LearningRateParameter(0.0001,0.5),
+                new LearningRateParameter(0.001,0.1),
                 new ActivationFunctionParameter(Arrays.asList(
                         Activation.LEAKYRELU,
-                        Activation.RRELU,
                         Activation.HARDTANH,
                         Activation.TANH
                 ))
@@ -225,9 +224,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
                 // output layer
                 Arrays.asList(
                         new ActivationFunctionParameter(Arrays.asList(
-                                Activation.IDENTITY,
-                                Activation.TANH,
-                                Activation.HARDTANH
+                                Activation.IDENTITY
                         )),
                         new LossFunctionParameter(Arrays.asList(
                                 LossFunctions.LossFunction.COSINE_PROXIMITY,
