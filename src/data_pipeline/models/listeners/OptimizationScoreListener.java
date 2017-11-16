@@ -33,11 +33,13 @@ public class OptimizationScoreListener implements IterationListener {
     private  Function<MultiLayerNetwork,Double> testErrorFunction;
     private Long lastTime;
     private MultiLayerNetworkWrapper net;
-    public OptimizationScoreListener(MultiLayerNetworkWrapper net, int printIterations, Function<MultiLayerNetwork,Double> testErrorFunction, Function3<MultiLayerNetwork,LocalDateTime,Double,Void> saveFunction) {
+    private final MultiScoreReporter reporter;
+    public OptimizationScoreListener(MultiScoreReporter reporter, MultiLayerNetworkWrapper net, int printIterations, Function<MultiLayerNetwork,Double> testErrorFunction, Function3<MultiLayerNetwork,LocalDateTime,Double,Void> saveFunction) {
         this.printIterations = printIterations;
         this.testErrorFunction=testErrorFunction;
         this.saveFunction=saveFunction;
         this.net=net;
+        this.reporter=reporter;
         modelToBestScoreMap.put(net.getNet(),Double.MAX_VALUE);
     }
 
@@ -65,27 +67,29 @@ public class OptimizationScoreListener implements IterationListener {
             lastTime = newTime;
 
             double error = testErrorFunction.apply(net.getNet());
-            synchronized (OptimizationScoreListener.class) {
-                System.out.println("Results for: " + net.describeHyperParameters());
-                System.out.println("  Model Score: " + model.score() + ", Test Error: " + error);
-                movingAverage.add(error);
-                if(movingAverage.size()==averagePeriod) {
-                    averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();
-                    if(startingAverageError==null) {
-                        startingAverageError = averageError;
-                    }
-                    if(smallestAverage==null||smallestAverage>averageError) {
-                        smallestAverage = averageError;
-                        smallestAverageEpoch=iterationCount;
-                    }
-                    System.out.println("  Sampling Test Error (Iteration "+iterationCount+"): "+error);
-                    System.out.println("  Original Average Error: " + startingAverageError);
-                    System.out.println("  Smallest Average Error (Iteration "+smallestAverageEpoch+"): " + smallestAverage);
-                    System.out.println("  Current Average Error: " + averageError);
-                    while(movingAverage.size()>averagePeriod/2) {
-                        movingAverage.remove(0);
-                    }
+            StringJoiner message = new StringJoiner("\n");
+            message.add("Results for: " + net.describeHyperParameters());
+            message.add("  Model Score: " + model.score() + ", Test Error: " + error);
+            movingAverage.add(error);
+            if(movingAverage.size()==averagePeriod) {
+                averageError = movingAverage.stream().mapToDouble((d -> d)).average().getAsDouble();
+                if(startingAverageError==null) {
+                    startingAverageError = averageError;
                 }
+                if(smallestAverage==null||smallestAverage>averageError) {
+                    smallestAverage = averageError;
+                    smallestAverageEpoch=iterationCount;
+                }
+                message.add("  Sampling Test Error (Iteration "+iterationCount+"): "+error);
+                message.add("  Original Average Error: " + startingAverageError);
+                message.add("  Smallest Average Error (Iteration "+smallestAverageEpoch+"): " + smallestAverage);
+                message.add("  Current Average Error: " + averageError);
+                while(movingAverage.size()>averagePeriod/2) {
+                    movingAverage.remove(0);
+                }
+            }
+            synchronized (reporter) {
+                reporter.addToCurrentReport(message.toString(),smallestAverage==null?error:smallestAverage);
             }
         }
         if(previousAverageError!=null&&smallestAverage!=null&&smallestAverageEpoch!=null) {
@@ -96,7 +100,7 @@ public class OptimizationScoreListener implements IterationListener {
                 modelToBestScoreMap.put(net.getNet(),averageError);
 
                 if(currentBestModelError > averageError) {
-                    System.out.println("Saving model...");
+                    System.out.println("Saving model: "+net.describeHyperParameters());
                     try {
                         saveFunction.apply(net.getNet(), LocalDateTime.now(), averageError);
                     } catch (Exception e) {

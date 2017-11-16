@@ -75,7 +75,7 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
         Database.trySaveObject(wordToIdxMap,currentVocabMapFile);
     }
 
-    private Map<String,Integer> loadVocabMap() {
+    public Map<String,Integer> loadVocabMap() {
         wordToIdxMap = (Map<String,Integer>)Database.tryLoadObject(currentVocabMapFile);
         return wordToIdxMap;
     }

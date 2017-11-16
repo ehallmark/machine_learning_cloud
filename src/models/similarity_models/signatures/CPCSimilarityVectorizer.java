@@ -50,11 +50,18 @@ public class CPCSimilarityVectorizer implements Vectorizer {
     }
 
     public List<WordFrequencyPair<String,Double>> similarTo(String item, int limit) {
+        return this.similarTo(vectorFor(item),item,limit);
+    }
+
+    public List<WordFrequencyPair<String,Double>> similarTo(INDArray vec, int limit) {
+        return this.similarTo(vec,null,limit);
+    }
+
+    public List<WordFrequencyPair<String,Double>> similarTo(INDArray vec, String item, int limit) {
         MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(limit);
-        INDArray vec = vectorFor(item);
         if(vec!=null) {
             data.entrySet().parallelStream().forEach(e -> {
-                if(e.getKey().equals(item)) return;
+                if(item!=null&&e.getKey().equals(item)) return;
                 double sim = Transforms.cosineSim(e.getValue(), vec);
                 synchronized (heap) {
                     heap.add(new WordFrequencyPair<>(e.getKey(), sim));

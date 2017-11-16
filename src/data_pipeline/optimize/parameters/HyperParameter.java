@@ -16,13 +16,14 @@ public abstract class HyperParameter<T> {
     protected ParameterDistribution<T> distribution;
 
     protected HyperParameter(ParameterDistribution<T> distribution) {
-        this.value = new AtomicReference<T>(distribution.nextSample());
+        this.value = new AtomicReference<T>(null);
         this.distribution=distribution;
     }
 
     public void set(T val) { value.set(val); }
 
     public T get() {
+        if(value.get()==null) value.set(distribution.nextSample());
         return value.get();
     }
 
