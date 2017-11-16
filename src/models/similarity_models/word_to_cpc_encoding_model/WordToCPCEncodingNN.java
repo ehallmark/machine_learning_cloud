@@ -10,6 +10,8 @@ import data_pipeline.models.listeners.OptimizationScoreListener;
 import data_pipeline.optimize.nn_optimization.MultiLayerNetworkWrapper;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
+
+import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import data_pipeline.optimize.parameters.HyperParameter;
 import data_pipeline.optimize.parameters.impl.ActivationFunctionParameter;
 import data_pipeline.optimize.parameters.impl.LearningRateParameter;
@@ -194,41 +196,14 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
             Updater newUpdater = Updater.ADAM;
             double newRegularization = 1e-4;
             boolean newUseRegularization = true;
-            INDArray params = net.params();
-            NeuralNetConfiguration.ListBuilder conf = new NeuralNetConfiguration.Builder(net.getDefaultConfiguration().clone())
-                    .learningRate(newLearningRate)
-                    .biasLearningRate(newLearningRate)
-                    .regularization(newUseRegularization).l2(newRegularization)
-                    .updater(newUpdater)
-                    .list();
-            List<NeuralNetConfiguration> confs = new ArrayList<>(net.getnLayers());
-            for(int i = 0; i < net.getnLayers(); i++) {
-                NeuralNetConfiguration layerConf = net.getLayerWiseConfigurations().getConf(i).clone();
-                Layer layer = layerConf.getLayer();
-                layer.setBiasLearningRate(newLearningRate);
-                layer.setLearningRate(newLearningRate);
-                layer.setUpdater(newUpdater);
-                layer.setL2(newRegularization);
+            System.out.println("Updating network with learning rate: "+newLearningRate);
+            net = NNRefactorer.updateNetworkLearningRate(net,newLearningRate,false);
+            System.out.println("Updating network with new updater: "+newUpdater.toString());
+            net = NNRefactorer.updateNetworkUpdater(net,newUpdater,false);
+            System.out.println("Updating network with new regularization: "+newRegularization);
+            net = NNRefactorer.updateNetworkRegularization(net,newUseRegularization,newRegularization,false);
 
-                conf = conf.layer(i, layer);
-                NeuralNetConfiguration layerConfBuilder = new NeuralNetConfiguration.Builder(layerConf)
-                        .regularization(newUseRegularization).l2(newRegularization)
-                        .biasLearningRate(newLearningRate)
-                        .learningRate(newLearningRate)
-                        .updater(newUpdater)
-                        .build();
-
-                layerConfBuilder.setLayer(layer);
-
-                confs.add(layerConfBuilder);
-            }
-            conf.setConfs(confs);
-
-            net = new MultiLayerNetwork(conf.build());
-            net.init(params,false);
-
-            System.out.println("Default Conf: "+net.getDefaultConfiguration().toYaml());
-            System.out.println("Network Layers Conf: "+net.getLayerWiseConfigurations().toYaml());
+            System.out.println("Conf: "+net.getLayerWiseConfigurations().toYaml());
 
             MultiLayerNetworkWrapper netWrapper = new MultiLayerNetworkWrapper(net,Collections.emptyList());
             IterationListener listener = new OptimizationScoreListener(reporter, netWrapper, printIterations, testErrorFunction, saveFunction);
