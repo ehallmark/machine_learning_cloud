@@ -201,6 +201,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
                     .regularization(newUseRegularization).l2(newRegularization)
                     .updater(newUpdater)
                     .list();
+            List<NeuralNetConfiguration> confs = new ArrayList<>(net.getnLayers());
             for(int i = 0; i < net.getnLayers(); i++) {
                 NeuralNetConfiguration layerConfBuilder = new NeuralNetConfiguration.Builder(net.getLayerWiseConfigurations().getConf(i).clone())
                         .biasLearningRate(newLearningRate)
@@ -210,8 +211,9 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
                         .build();
 
                 conf = conf.layer(i, layerConfBuilder.getLayer());
+                confs.add(layerConfBuilder);
             }
-            conf.setConfs(net.getLayerWiseConfigurations().getConfs());
+            conf.setConfs(confs);
 
             net = new MultiLayerNetwork(conf.build());
             net.init(params,false);
