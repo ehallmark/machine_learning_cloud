@@ -194,9 +194,13 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
             INDArray params = net.params();
             NeuralNetConfiguration.ListBuilder conf = new NeuralNetConfiguration.Builder(net.getDefaultConfiguration().clone())
                     .learningRate(newLearningRate)
+                    .biasLearningRate(newLearningRate)
                     .list();
             for(int i = 0; i < net.getnLayers(); i++) {
-                conf = conf.layer(i, net.getLayerWiseConfigurations().getConf(i).getLayer());
+                Layer layer = net.getLayerWiseConfigurations().getConf(i).getLayer().clone();
+                layer.setBiasLearningRate(newLearningRate);
+                layer.setLearningRate(newLearningRate);
+                conf = conf.layer(i, layer);
             }
             conf.setConfs(net.getLayerWiseConfigurations().getConfs());
 
