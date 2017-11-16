@@ -12,8 +12,9 @@ import java.util.*;
  */
 public class AssetToAssigneeMap extends HiddenAttribute<String> {
     private LatestExecutionDateAttribute latestExecutionDateAttribute;
-    public AssetToAssigneeMap(LatestExecutionDateAttribute latestExecutionDateAttribute) {
-        this.latestExecutionDateAttribute=latestExecutionDateAttribute;
+    public AssetToAssigneeMap() {
+        this.latestExecutionDateAttribute=new LatestExecutionDateAttribute();
+        this.latestExecutionDateAttribute.initMaps();
     }
 
     @Override
