@@ -51,9 +51,6 @@ public abstract class ComputableAssigneeAttribute<T> extends ComputableAttribute
 
     protected abstract T attributesForAssigneeHelper(@NonNull String assignee);
 
-    public T attributesForAssignee(String assignee) {
-        return attributesForAssigneeHelper(assignee);
-    }
 
 }
 

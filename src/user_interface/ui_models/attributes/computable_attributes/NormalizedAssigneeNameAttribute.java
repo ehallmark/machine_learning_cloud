@@ -15,7 +15,7 @@ import java.util.Map;
  * Created by ehallmark on 6/15/17.
  */
 public class NormalizedAssigneeNameAttribute extends ComputableAttribute<String> implements AjaxMultiselect {
-    AssetToNormalizedAssigneeMap assetToNormalizedAssigneeMap;
+    private AssetToNormalizedAssigneeMap assetToNormalizedAssigneeMap;
     public NormalizedAssigneeNameAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword,AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude));
         assetToNormalizedAssigneeMap = new AssetToNormalizedAssigneeMap();

@@ -1,29 +1,66 @@
 package user_interface.ui_models.attributes.hidden_attributes;
 
 import seeding.Constants;
+import user_interface.ui_models.attributes.computable_attributes.LatestExecutionDateAttribute;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
  * Created by Evan on 8/11/2017.
  */
 public class AssetToAssigneeMap extends HiddenAttribute<String> {
+    private LatestExecutionDateAttribute latestExecutionDateAttribute;
+    public AssetToAssigneeMap(LatestExecutionDateAttribute latestExecutionDateAttribute) {
+        this.latestExecutionDateAttribute=latestExecutionDateAttribute;
+    }
+
     @Override
     public String handleIncomingData(String name, Map<String,Object> allData, Map<String, String> myData, boolean isApp) {
         Object assignee = allData.get(Constants.LATEST_ASSIGNEE);
+        Object ret = null;
         if(assignee!=null&&(assignee instanceof Map || assignee instanceof List)) {
             if(assignee instanceof List) {
                 if(((List) assignee).size() == 0) return null;
                 assignee = ((List)assignee).get(0);
             }
-            assignee = ((Map<String,Object>)assignee).get(Constants.ASSIGNEE);
+            ret = ((Map<String,Object>)assignee).get(Constants.ASSIGNEE);
             //System.out.println("FOUND ASSIGNEE: "+assignee);
             // check execution date
             // TODO check execution date
+            Object executionDate = ((Map<String,Object>)assignee).get(Constants.EXECUTION_DATE);
+            if(executionDate!=null) {
+                // check
+                if(!(executionDate instanceof LocalDate)) {
+                    try {
+                        executionDate = LocalDate.parse(executionDate.toString(), DateTimeFormatter.BASIC_ISO_DATE);
+                    } catch(Exception e) {
+                        System.out.println("Error parsing execution date: "+executionDate);
+                        executionDate=null;
+                    }
+                }
+            }
+            if(executionDate != null) {
+                // is a localdate
+                Map<String,LocalDate> latestExecutionDateMap = isApp ? latestExecutionDateAttribute.getApplicationDataMap() : latestExecutionDateAttribute.getPatentDataMap();
+                // check previous
+                LocalDate priorExecutionDate = latestExecutionDateMap.get(name);
+                if(priorExecutionDate != null) {
+                    // check date order
+                    if(priorExecutionDate.isAfter((LocalDate)executionDate)) {
+                        return null; // don't update!
+                    }
+                }
+                // update latest execution date map
+                latestExecutionDateMap.put(name, (LocalDate)executionDate);
 
+                // TODO remove this debug line below
+                System.out.println("Updating execution date for "+name+": "+executionDate.toString());
+            }
         }
-        if(assignee==null) return null;
-        return assignee.toString();
+        if(ret==null) return null;
+        return ret.toString();
     }
 
     @Override

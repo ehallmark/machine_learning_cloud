@@ -12,10 +12,10 @@ import java.util.Collections;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class NormalizedPortfolioSizeAttribute extends ComputableAssigneeAttribute<Integer> {
+public class NormalizedPortfolioSizeAttribute extends ComputableNormalizedAssigneeAttribute<Integer> {
     private static NormalizedAssigneeToAssetsMap assigneeToAssetsMap;
 
-    public static AssigneeToAssetsMap getAssigneeToAssetsMap() {
+    public static AssigneeToAssetsMap getNormalizedAssigneeToAssetsMap() {
         if(assigneeToAssetsMap==null) {
             assigneeToAssetsMap = new NormalizedAssigneeToAssetsMap();
         }
@@ -28,7 +28,7 @@ public class NormalizedPortfolioSizeAttribute extends ComputableAssigneeAttribut
 
     @Override
     protected Integer attributesForAssigneeHelper(@NonNull String assignee) {
-        Integer portfolioSize = Math.max(getAssigneeToAssetsMap().getPatentDataMap().getOrDefault(assignee,Collections.emptyList()).size(),getAssigneeToAssetsMap().getApplicationDataMap().getOrDefault(assignee,Collections.emptyList()).size());
+        Integer portfolioSize = Math.max(getNormalizedAssigneeToAssetsMap().getPatentDataMap().getOrDefault(assignee,Collections.emptyList()).size(),getNormalizedAssigneeToAssetsMap().getApplicationDataMap().getOrDefault(assignee,Collections.emptyList()).size());
         return portfolioSize;
     }
 

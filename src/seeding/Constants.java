@@ -87,7 +87,6 @@ public class Constants {
 	public static final String PAGE_RANK_VALUE = "pageRankValue";
 	public static final String ASSIGNEE = "assignee";
 	public static final String MEANS_PRESENT = "meansPresent";
-	public static final String CITATION_VALUE = "citationValue";
 	public static final String CLAIM_VALUE = "claimValue";
 	public static final String CLAIMS = "claims";
 	public static final String ASSIGNEES = "assignees";
