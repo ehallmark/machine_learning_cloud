@@ -193,15 +193,17 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
             MultiLayerNetworkWrapper netWrapper = new MultiLayerNetworkWrapper(net,Collections.emptyList());
             IterationListener listener = new OptimizationScoreListener(reporter, netWrapper, printIterations, testErrorFunction, saveFunction);
             net.setListeners(listener);
-            double newLearningRateDecay = 0.1;
+            double newLearningRateDecay = 0.001;
             org.deeplearning4j.nn.api.Layer[] layers = net.getLayers();
+            net.getDefaultConfiguration().getLayer().setLearningRate(newLearningRateDecay);
             for(int i = 0; i < layers.length; i++) {
                 org.deeplearning4j.nn.api.Layer layer = layers[i];
                 Iterator<Map.Entry<String,Double>> params = layer.conf().getLearningRateByParam().entrySet().iterator();
                 while(params.hasNext()) {
                     Map.Entry<String,Double> lrPair = params.next();
-                    layer.conf().setLearningRateByParam(lrPair.getKey(), lrPair.getValue() * (newLearningRateDecay + Nd4j.EPS_THRESHOLD));
+                    layer.conf().setLearningRateByParam(lrPair.getKey(), newLearningRateDecay);
                 }
+                layer.conf().getLayer().setLearningRate(newLearningRateDecay);
             }
             for (int i = 0; i < nEpochs; i++) {
                 System.out.println("Starting epoch {" + (i + 1) + "} of {" + nEpochs + "}");
