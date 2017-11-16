@@ -7,6 +7,7 @@ import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.models.listeners.MultiScoreReporter;
 import data_pipeline.models.listeners.OptimizationScoreListener;
+import data_pipeline.optimize.nn_optimization.MultiLayerNetworkWrapper;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
 import data_pipeline.optimize.parameters.HyperParameter;
@@ -16,16 +17,18 @@ import data_pipeline.optimize.parameters.impl.LossFunctionParameter;
 import data_pipeline.optimize.parameters.impl.UpdaterParameter;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.signatures.NDArrayHelper;
-import org.deeplearning4j.nn.api.OptimizationAlgorithm;
+import org.deeplearning4j.nn.api.*;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.*;
+import org.deeplearning4j.nn.conf.layers.Layer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.impl.transforms.LeakyReLU;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
@@ -152,54 +155,67 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
         final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
         final int inputSize = pipelineManager.getWordToIdxMap().size();
         final MultiScoreReporter reporter = new MultiScoreReporter(numNetworks, 1);
-        NNOptimizer optimizer = new NNOptimizer(
-                getPreModel(),
-                getLayerModels(inputSize,hiddenLayerSize,outputSize),
-                getModelParameters(),
-                getLayerParameters(),
-                numNetworks,
-                net -> {
-                    IterationListener listener = new OptimizationScoreListener(reporter, net, printIterations, testErrorFunction, saveFunction);
-                    net.getNet().setListeners(listener);
-                    return null;
+
+        if(net==null) {
+            NNOptimizer optimizer;
+            optimizer = new NNOptimizer(
+                    getPreModel(),
+                    getLayerModels(inputSize, hiddenLayerSize, outputSize),
+                    getModelParameters(),
+                    getLayerParameters(),
+                    numNetworks,
+                    net -> {
+                        IterationListener listener = new OptimizationScoreListener(reporter, net, printIterations, testErrorFunction, saveFunction);
+                        net.getNet().setListeners(listener);
+                        return null;
+                    }
+            );
+            // initialize optimizer
+            optimizer.initNetworkSamples();
+
+
+            for (int i = 0; i < nEpochs; i++) {
+                System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
+                while(trainIter.hasNext()) {
+                    try {
+                        optimizer.train(trainIter.next());
+                    } catch (StoppingConditionMetException s) {
+                        System.out.println("Stopping condition met");
+                    }
+                    if (stoppingCondition.get()) {
+                        break;
+                    }
                 }
-        );
-
-        // initialize optimizer
-        optimizer.initNetworkSamples();
-
-        for (int i = 0; i < nEpochs; i++) {
-            System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
-            while(trainIter.hasNext()) {
+                if(stoppingCondition.get()) break;
+                trainIter.reset();
+            }
+        } else {
+            MultiLayerNetworkWrapper netWrapper = new MultiLayerNetworkWrapper(net,Collections.emptyList());
+            IterationListener listener = new OptimizationScoreListener(reporter, netWrapper, printIterations, testErrorFunction, saveFunction);
+            net.setListeners(listener);
+            double newLearningRateDecay = 0.1;
+            org.deeplearning4j.nn.api.Layer[] layers = net.getLayers();
+            for(int i = 0; i < layers.length; i++) {
+                org.deeplearning4j.nn.api.Layer layer = layers[i];
+                Iterator<Map.Entry<String,Double>> params = layer.conf().getLearningRateByParam().entrySet().iterator();
+                while(params.hasNext()) {
+                    Map.Entry<String,Double> lrPair = params.next();
+                    layer.conf().setLearningRateByParam(lrPair.getKey(), lrPair.getValue() * (newLearningRateDecay + Nd4j.EPS_THRESHOLD));
+                }
+            }
+            for (int i = 0; i < nEpochs; i++) {
+                System.out.println("Starting epoch {" + (i + 1) + "} of {" + nEpochs + "}");
                 try {
-                    optimizer.train(trainIter.next());
+                    net.fit(trainIter);
                 } catch (StoppingConditionMetException s) {
                     System.out.println("Stopping condition met");
                 }
                 if (stoppingCondition.get()) {
                     break;
                 }
+                trainIter.reset();
             }
-            if(stoppingCondition.get()) break;
-            trainIter.reset();
         }
-
-        /*
-        IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
-        net.setListeners(listener);
-        for (int i = 0; i < nEpochs; i++) {
-            System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
-            try {
-                net.fit(trainIter);
-            } catch(StoppingConditionMetException s) {
-                System.out.println("Stopping condition met");
-            }
-            if(stoppingCondition.get()) {
-                break;
-            }
-            trainIter.reset();
-        }
-        */
     }
 
     @Override

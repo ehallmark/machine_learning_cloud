@@ -126,7 +126,7 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = true;
+        boolean forceRecreateModels = false;
         boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
         boolean rebuildPrerequisites = false;
 

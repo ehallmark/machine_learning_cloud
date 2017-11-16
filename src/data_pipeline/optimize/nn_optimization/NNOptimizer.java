@@ -198,7 +198,7 @@ public class NNOptimizer {
         optimizer.initNetworkSamples();
 
         optimizer.networkSamples.forEach(net->{
-            System.out.println("Net: "+net.describeHyperParameters());
+            System.out.println("Net: "+net.getNet().getDefaultConfiguration().toYaml());
         });
     }
 }
