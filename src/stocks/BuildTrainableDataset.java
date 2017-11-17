@@ -69,6 +69,10 @@ public class BuildTrainableDataset {
                     }
                 }).sum();
 
+                if(validCount.get()>0) {
+                    stockIncreaseTplusK /= validCount.get();
+                }
+
                 INDArray features = Nd4j.create(new double[]{numFilings});
                 INDArray labels = Nd4j.create(new double[]{stockIncreaseTplusK});
                 dataSets.add(new DataSet(features,labels));
