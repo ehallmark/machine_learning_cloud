@@ -62,7 +62,10 @@ public class BuildTrainableDataset {
                 }).collect(Collectors.toList());
 
                 List<INDArray> vectors = patents.stream().map(p->vectorizer.vectorFor(p)).filter(v->v!=null).collect(Collectors.toList());
-                double[] avgCPCEncoding = vectors.isEmpty() ? Nd4j.zeros(32).data().asDouble() : Nd4j.vstack(vectors).mean(0).data().asDouble();
+
+                if(vectors.isEmpty()) continue;
+                
+                double[] avgCPCEncoding = Nd4j.vstack(vectors).mean(0).data().asDouble();
                 double[] inputs = new double[avgCPCEncoding.length+1];
                 for(int i = 0; i < avgCPCEncoding.length; i++) {
                     inputs[i] = avgCPCEncoding[i];
