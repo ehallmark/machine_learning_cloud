@@ -10,6 +10,7 @@ import org.deeplearning4j.nn.conf.layers.BatchNormalization;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
@@ -29,8 +30,9 @@ public class TrainModel {
     private static final File modelFile = new File(Constants.DATA_FOLDER+"stock_model_nn.jobj");
     public static void main(String[] args) throws Exception {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .learningRate(0.001)
+                .learningRate(0.00001)
                 .regularization(true).l2(1e-4)
+                .weightInit(WeightInit.XAVIER)
                 .updater(Updater.ADAM)
                 .activation(Activation.TANH)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
