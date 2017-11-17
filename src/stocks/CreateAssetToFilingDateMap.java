@@ -55,6 +55,13 @@ public class CreateAssetToFilingDateMap {
     }
 
     public static Map<String,LocalDate> getAssetToFilingDateMap() {
+        if(!assetToFilingDateMapFile.exists()) {
+            try {
+                main(null);
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
         return (Map<String,LocalDate>) Database.tryLoadObject(assetToFilingDateMapFile);
     }
 
