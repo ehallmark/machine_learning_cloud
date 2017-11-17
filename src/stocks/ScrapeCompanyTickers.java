@@ -8,11 +8,15 @@ import info.debatty.java.stringsimilarity.interfaces.StringDistance;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
+import stocks.model.StockResponse;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -23,6 +27,7 @@ import java.util.stream.Stream;
  */
 public class ScrapeCompanyTickers {
     private static final File csvFile = new File(Constants.DATA_FOLDER+"yahoo_companies_and_symbols.csv");
+    private static final File assigneeToStockPriceOverTimeMapFile = new File(Constants.DATA_FOLDER+"assignee_to_stock_prices_over_time_map.jobj");
 
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(csvFile));
@@ -65,5 +70,39 @@ public class ScrapeCompanyTickers {
         }).filter(p->p!=null).collect(Collectors.groupingBy(p->p.getFirst(),Collectors.mapping(p->p.getSecond(),Collectors.toSet())));
 
         System.out.println("Companies found: "+companyToTickersMap.size());
+
+        // no pull stock info
+        final long to = System.currentTimeMillis()/1000;
+        final long from = LocalDateTime.of(2005,1,1,0,0).atZone(ZoneId.of("America/Los_Angeles")).toInstant().toEpochMilli()/1000;
+
+        Map<String,List<Pair<LocalDate,Double>>> assigneeToStockPriceOverTimeMap = Collections.synchronizedMap(new HashMap<>());
+
+        AtomicInteger cnt = new AtomicInteger(0);
+        companyToTickersMap.entrySet().parallelStream().forEach(e->{
+            System.out.println(""+cnt.getAndIncrement()+" / "+companyToTickersMap.size());
+            try {
+                List<Pair<LocalDate, Double>> data = stockDataFor(e.getValue(), from, to);
+                if (data != null) {
+                    assigneeToStockPriceOverTimeMap.put(e.getKey(), data);
+                }
+            } catch(Exception e2) {
+
+            }
+        });
+
+        System.out.println("Num assignees with stock prices: "+assigneeToStockPriceOverTimeMap.size());
+        // Save
+        Database.trySaveObject(assigneeToStockPriceOverTimeMap,assigneeToStockPriceOverTimeMapFile);
+    }
+
+    private static List<Pair<LocalDate,Double>> stockDataFor(Set<String> symbols, long from, long to) throws Exception {
+        // find best symbol
+        List<Pair<LocalDate,Double>> data = null;
+        for(String symbol : symbols) {
+            List<Pair<LocalDate,Double>> tmp = ScrapeYahooStockPrices.getStocksFromSymbols(symbol, from, to);
+            if(tmp==null) continue;
+            if(data==null || tmp.size()>data.size()) data = tmp;
+        }
+        return data;
     }
 }
