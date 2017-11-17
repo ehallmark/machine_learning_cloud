@@ -2,7 +2,6 @@ package stocks.model;
 
 import com.google.gson.Gson;
 import lombok.Getter;
-import stocks.ScrapeYahooStockPrices;
 
 import java.util.List;
 import java.util.Map;

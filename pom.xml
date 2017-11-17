@@ -92,12 +92,6 @@
             <artifactId>dl4j-spark_${scala.binary.version}</artifactId>
             <version>${dl4j.version}_spark_2</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.yahoofinance-api/YahooFinanceAPI -->
-        <dependency>
-            <groupId>com.yahoofinance-api</groupId>
-            <artifactId>YahooFinanceAPI</artifactId>
-            <version>3.5.0</version>
-        </dependency>
         <dependency>
             <groupId>org.deeplearning4j</groupId>
             <artifactId>deeplearning4j-nlp</artifactId>
