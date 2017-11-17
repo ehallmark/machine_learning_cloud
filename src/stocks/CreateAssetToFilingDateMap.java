@@ -27,6 +27,8 @@ public class CreateAssetToFilingDateMap {
         Map<String,Set<String>> assigneeToAssetsMap = getAssigneeToAssetsMap(assigneeToStockPriceOverTimeMap);
 
         List<String> allAssets = assigneeToAssetsMap.values().parallelStream().flatMap(list->list.stream()).distinct().collect(Collectors.toList());
+        System.out.println("Num assets found: "+allAssets);
+        
         // pull filing dates from elasticsearch
         Map<String,LocalDate> assetToFilingDateMap = Collections.synchronizedMap(new HashMap<>());
         DataSearcher.searchForAssets(
