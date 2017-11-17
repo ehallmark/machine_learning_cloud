@@ -26,9 +26,7 @@ public class BuildTrainableDataset {
     private static final File valFolder = new File(Constants.DATA_FOLDER+"stock_data/dev.jobj");
     private static final File testFolder = new File(Constants.DATA_FOLDER+"stock_data/test.jobj");
     static {
-        if(!trainFolder.getParentFile().exists())trainFolder.mkdirs();
-        if(!valFolder.getParentFile().exists())valFolder.mkdirs();
-        if(!testFolder.getParentFile().exists())testFolder.mkdirs();
+        if(!trainFolder.getParentFile().exists())trainFolder.getParentFile().mkdirs();
     }
 
     public static void main(String[] args) throws Exception {
@@ -83,9 +81,9 @@ public class BuildTrainableDataset {
         Collections.shuffle(dataSets);
         float testRatio = 0.1f;
         int testIdx = Math.round(testRatio*dataSets.size());
-        List<DataSet> testData = dataSets.subList(0,testIdx);
-        List<DataSet> devData = dataSets.subList(testIdx,2*testIdx);
-        List<DataSet> trainData = dataSets.subList(2*testIdx,dataSets.size());
+        List<DataSet> testData = new ArrayList<>(dataSets.subList(0,testIdx));
+        List<DataSet> devData = new ArrayList<>(dataSets.subList(testIdx,2*testIdx));
+        List<DataSet> trainData = new ArrayList<>(dataSets.subList(2*testIdx,dataSets.size()));
 
         Database.trySaveObject(testData,testFolder);
         Database.trySaveObject(devData,valFolder);
