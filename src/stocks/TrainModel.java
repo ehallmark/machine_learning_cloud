@@ -35,13 +35,16 @@ public class TrainModel {
                 .weightInit(WeightInit.XAVIER)
                 .updater(Updater.ADAM)
                 .activation(Activation.TANH)
+                .dropOut(0.5)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .list()
-                .layer(0, new DenseLayer.Builder().nIn(33).nOut(30).build())
-                .layer(1, new BatchNormalization.Builder().nIn(30).nOut(30).minibatch(true).build())
-                .layer(2, new DenseLayer.Builder().nIn(30).nOut(30).build())
-                .layer(3, new BatchNormalization.Builder().nIn(30).nOut(30).minibatch(true).build())
-                .layer(4, new OutputLayer.Builder(LossFunctions.LossFunction.MSE).nIn(30).nOut(1).activation(Activation.TANH).build())
+                .layer(0, new DenseLayer.Builder().nIn(33).nOut(100).build())
+                .layer(1, new BatchNormalization.Builder().nIn(100).nOut(100).minibatch(true).build())
+                .layer(2, new DenseLayer.Builder().nIn(100).nOut(50).build())
+                .layer(3, new BatchNormalization.Builder().nIn(50).nOut(50).minibatch(true).build())
+                .layer(4, new DenseLayer.Builder().nIn(50).nOut(25).build())
+                .layer(5, new BatchNormalization.Builder().nIn(25).nOut(25).minibatch(true).build())
+                .layer(6, new OutputLayer.Builder(LossFunctions.LossFunction.MSE).nIn(25).dropOut(1d).nOut(1).activation(Activation.TANH).build())
                 .build();
 
         MultiLayerNetwork net = new MultiLayerNetwork(conf);
