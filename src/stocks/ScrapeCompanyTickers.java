@@ -13,10 +13,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -51,13 +48,19 @@ public class ScrapeCompanyTickers {
             if(symbol.isEmpty()||company.isEmpty()||!trie.getValuesForClosestKeys(company).iterator().hasNext()) {
                 return null;
             }
-            company = normalizer.normalizedAssignee(company);
-            if(company == null || company.isEmpty()) return null;
-            String normalizedCompany = trie.getValuesForClosestKeys(company).iterator().next();
-            double score = distance.similarity(company,normalizedCompany);
-            if(score>=0.9 && Math.abs(company.length()-normalizedCompany.length()) < (Math.min(normalizedCompany.length(),company.length())/2)) {
-                System.out.println("Changing " + company + " to " + normalizedCompany + " with score: " + score);
-                return new Pair<>(normalizedCompany, symbol);
+            final String normalizedCompany = normalizer.normalizedAssignee(company);
+            if(normalizedCompany == null || company.isEmpty()) return null;
+            List<String> possible = new ArrayList<>();
+            trie.getValuesForClosestKeys(company).forEach(a->possible.add(a));
+            Pair<String,Double> companyScorePair = possible.stream()
+                    .map(p->new Pair<>(p,distance.similarity(p,normalizedCompany)))
+                    .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).findFirst().get();
+
+            double score = companyScorePair.getSecond();
+            String assignee = companyScorePair.getFirst();
+            if(score>=0.9 && Math.min(normalizedCompany.length(),assignee.length()) > 3) {
+                System.out.println("Changing " + normalizedCompany + " to " + assignee + " with score: " + score);
+                return new Pair<>(assignee, symbol);
             } else return null;
         }).filter(p->p!=null).collect(Collectors.groupingBy(p->p.getFirst(),Collectors.mapping(p->p.getSecond(),Collectors.toSet())));
 
