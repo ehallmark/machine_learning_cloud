@@ -64,7 +64,6 @@ public class ScrapeCompanyTickers {
             double score = companyScorePair.getSecond();
             String assignee = companyScorePair.getFirst();
             if(score>=0.9 && Math.min(normalizedCompany.length(),assignee.length()) > 3) {
-                System.out.println("Changing " + normalizedCompany + " to " + assignee + " with score: " + score);
                 return new Pair<>(assignee, symbol);
             } else return null;
         }).filter(p->p!=null).collect(Collectors.groupingBy(p->p.getFirst(),Collectors.mapping(p->p.getSecond(),Collectors.toSet())));
