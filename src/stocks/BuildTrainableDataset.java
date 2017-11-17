@@ -64,7 +64,7 @@ public class BuildTrainableDataset {
                 List<INDArray> vectors = patents.stream().map(p->vectorizer.vectorFor(p)).filter(v->v!=null).collect(Collectors.toList());
 
                 if(vectors.isEmpty()) continue;
-                
+
                 double[] avgCPCEncoding = Nd4j.vstack(vectors).mean(0).data().asDouble();
                 double[] inputs = new double[avgCPCEncoding.length+1];
                 for(int i = 0; i < avgCPCEncoding.length; i++) {
