@@ -22,9 +22,9 @@ import java.util.stream.IntStream;
  * Created by ehallmark on 11/17/17.
  */
 public class BuildTrainableDataset {
-    private static final File trainFolder = new File(Constants.DATA_FOLDER+"stock_data/train.jobj");
-    private static final File valFolder = new File(Constants.DATA_FOLDER+"stock_data/dev.jobj");
-    private static final File testFolder = new File(Constants.DATA_FOLDER+"stock_data/test.jobj");
+    public static final File trainFolder = new File(Constants.DATA_FOLDER+"stock_data/train.jobj");
+    public static final File valFolder = new File(Constants.DATA_FOLDER+"stock_data/dev.jobj");
+    public static final File testFolder = new File(Constants.DATA_FOLDER+"stock_data/test.jobj");
     static {
         if(!trainFolder.getParentFile().exists())trainFolder.getParentFile().mkdirs();
     }
