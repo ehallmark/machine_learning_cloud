@@ -15,6 +15,7 @@ import user_interface.ui_models.attributes.computable_attributes.ComputableAttri
 import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
+import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -32,6 +33,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
     private static final AtomicLong cnt = new AtomicLong(0);
     private static final AtomicLong errors = new AtomicLong(0);
     private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
+    private static final FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
     @Setter
     protected static Collection<ComputableAttribute> computableAttributes = Arrays.asList(new AssetToAssigneeMap());
     static {
@@ -102,8 +104,21 @@ public class USPTOAssignmentHandler extends NestedHandler {
                     if(computableAttributes!=null && assets.get() != null) {
                         computableAttributes.forEach(attr -> {
                             // for each patent or application
-                            assets.get().forEach(name->{
-                                if(name.contains("/")) return;
+                            assets.get().stream().flatMap(asset->{
+                                Set<String> set = new HashSet<>();
+                                if(asset.contains("/")) {
+                                    set.addAll(filingToAssetMap.getPatentDataMap().getOrDefault(asset,Collections.emptyList()));
+                                    set.addAll(filingToAssetMap.getApplicationDataMap().getOrDefault(asset,Collections.emptyList()));
+                                } else {
+                                    String filing = assetToFilingMap.getPatentDataMap().getOrDefault(asset,assetToFilingMap.getApplicationDataMap().get(asset));
+                                    if(filing!=null) {
+                                        set.addAll(filingToAssetMap.getPatentDataMap().getOrDefault(filing,Collections.emptyList()));
+                                        set.addAll(filingToAssetMap.getApplicationDataMap().getOrDefault(filing,Collections.emptyList()));
+                                    }
+                                    set.add(asset);
+                                }
+                                return set.stream();
+                            }).distinct().forEach(name->{
                                 if (Database.isApplication(name)) {
                                     attr.handleApplicationData(name, assignmentMap);
                                 } else {
@@ -119,7 +134,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                         }
                         // for each patent or application
                         if(assets.get()!=null&&assets.get().size()>0) {
-                            List<String> assetsClean = assets.get().stream().map(o->o==null?null:o.toString()).filter(o->o!=null).flatMap(asset->{
+                            List<String> assetsClean = assets.get().stream().map(o->o==null?null:o).filter(o->o!=null).flatMap(asset->{
                                 return Stream.of(asset,assetToFilingMap.getPatentDataMap().getOrDefault(asset,assetToFilingMap.getApplicationDataMap().get(asset)))
                                         .filter(a->a!=null);
                             }).collect(Collectors.toList());
@@ -243,12 +258,14 @@ public class USPTOAssignmentHandler extends NestedHandler {
                 DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.REEL_FRAME, reelFrame);
 
                 // update complex data
-                // try add latest assignee
                 Map<String,Object> mergedDataMap = new HashMap<>();
+                /* No need to add latest assignee data since that is
+                    already updated during the computable attributes
                 List<Map<String, Object>> latestAssigneeData = (List<Map<String, Object>>) assignmentMap.get(Constants.LATEST_ASSIGNEE);
                 if (latestAssigneeData != null && latestAssigneeData.size() > 0) {
                     mergeDataMapHelper(mergedDataMap, latestAssigneeData.stream().findFirst().get(), Constants.LATEST_ASSIGNEE);
-                }
+                } */
+
                 // add assignor data
                 List<Map<String, Object>> latestAssignorData = (List<Map<String, Object>>) assignmentMap.get(Constants.ASSIGNORS);
                 if (latestAssignorData != null && latestAssignorData.size() > 0) {

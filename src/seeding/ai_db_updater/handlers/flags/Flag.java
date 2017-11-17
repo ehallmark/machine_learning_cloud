@@ -111,11 +111,6 @@ public class Flag {
     public static final Function<Flag,Function<String,?>> unknownDocumentHandler = (flag) -> (str) -> {
         boolean hadSlash = str.contains("/");
         str = str.replace(" ","").replace("/","");
-        String kind = flag.getDataForField(Constants.DOC_KIND);
-        if((hadSlash&&(str.length()==7||str.length()==8))||kind.trim().equals("A")||kind.equals("00")||kind.equals("X0")) {
-            // filing?
-            return filingDocumentHandler.apply(flag).apply(str);
-        }
         while(str.startsWith("0")&&str.length()>0) str = str.substring(1);
         if(str.startsWith("RE")) str = normalizeSpecialPatents(str,"RE",6);
         else if(str.startsWith("D")) str = normalizeSpecialPatents(str,"D",7);
@@ -123,6 +118,11 @@ public class Flag {
         else if(str.startsWith("H")) str = normalizeSpecialPatents(str, "H", 7);
         else if(str.startsWith("X")) str = normalizeSpecialPatents(str, "X", 7);
         else if(str.startsWith("T")) str = normalizeSpecialPatents(str, "T", 7);
+        String kind = flag.getDataForField(Constants.DOC_KIND);
+        if((hadSlash&&(str.length()==7||str.length()==8))||kind.trim().equals("A")||kind.equals("00")||kind.equals("X0")) {
+            // filing?
+            return filingDocumentHandler.apply(flag).apply(str);
+        }
         return str;
     };
 

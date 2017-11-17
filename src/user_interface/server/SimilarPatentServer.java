@@ -195,6 +195,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("City", Constants.CITY);
             humanAttrToJavaAttrMap.put("State", Constants.STATE);
             humanAttrToJavaAttrMap.put("Zip Code", Constants.POSTAL_CODE);
+            humanAttrToJavaAttrMap.put("GTT Reservoir", Constants.GTT_RESERVOIR);
             humanAttrToJavaAttrMap.put("Claim Number", Constants.CLAIM_NUM);
             humanAttrToJavaAttrMap.put("Parent Claim Number", Constants.PARENT_CLAIM_NUM);
             humanAttrToJavaAttrMap.put("Document Kind", Constants.DOC_KIND);
@@ -437,6 +438,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.NUM_RELATED_ASSETS, new NumRelatedAssetsAttribute());
             attributesMap.put(Constants.NUM_BACKWARD_CITATIONS, new NumBackwardCitationsAttribute());
             attributesMap.put(Constants.GRANTED,new IsGrantedApplicationAttribute());
+            attributesMap.put(Constants.GTT_RESERVOIR, new IsGTTReservoirAttribute());
 
             // nested attrs
             attributesMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());
