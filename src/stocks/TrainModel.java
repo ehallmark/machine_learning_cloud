@@ -1,6 +1,7 @@
 package stocks;
 
 import org.deeplearning4j.datasets.iterator.impl.ListDataSetIterator;
+import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -12,6 +13,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Constants;
@@ -40,9 +42,26 @@ public class TrainModel {
 
         MultiLayerNetwork net = new MultiLayerNetwork(conf);
         net.init();
-        net.setListeners(new ScoreIterationListener(100));
 
+        List<DataSet> devData = (List<DataSet>) Database.tryLoadObject(BuildTrainableDataset.valFolder);
+
+        net.setListeners(new ScoreIterationListener(10000) {
+            @Override
+            public void invoke() {
+                super.invoke();
+                // test
+                System.out.println("Testing...");
+                double error = devData.stream().mapToDouble(ds->{
+                    INDArray prediction = net.activateSelectedLayers(0,net.getnLayers()-1,ds.getFeatures());
+                    return prediction.distance2(ds.getLabels());
+                }).average().orElse(Double.MAX_VALUE);
+                System.out.println("Average error: "+error);
+            }
+        });
+
+        System.out.println("Loading data...");
         List<DataSet> trainData = (List<DataSet>) Database.tryLoadObject(BuildTrainableDataset.trainFolder);
+        System.out.println("Loaded.");
         trainData.forEach(ds->{
             net.fit(ds);
         });
