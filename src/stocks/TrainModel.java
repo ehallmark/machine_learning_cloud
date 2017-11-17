@@ -39,7 +39,7 @@ public class TrainModel {
                 .layer(1, new BatchNormalization.Builder().nIn(30).nOut(30).minibatch(true).build())
                 .layer(2, new DenseLayer.Builder().nIn(30).nOut(30).build())
                 .layer(3, new BatchNormalization.Builder().nIn(30).nOut(30).minibatch(true).build())
-                .layer(4, new OutputLayer.Builder(LossFunctions.LossFunction.MSE).nIn(10).nOut(1).activation(Activation.TANH).build())
+                .layer(4, new OutputLayer.Builder(LossFunctions.LossFunction.MSE).nIn(30).nOut(1).activation(Activation.TANH).build())
                 .build();
 
         MultiLayerNetwork net = new MultiLayerNetwork(conf);
