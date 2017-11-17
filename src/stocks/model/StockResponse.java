@@ -1,0 +1,68 @@
+package stocks.model;
+
+import com.google.gson.Gson;
+import lombok.Getter;
+import stocks.ScrapeYahooStockPrices;
+
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+/**
+ * Created by Evan on 11/16/2017.
+ */
+public class StockResponse {
+    private Map<String,Object> data;
+    private String json;
+    @Getter
+    private List<Long> dates;
+    @Getter
+    private List<Double> prices;
+    public StockResponse(String json) {
+        this.json=json;
+    }
+
+    public void parse() {
+        // convert JSON string to Map
+        this.data = new Gson().fromJson(json, HashMap.class);
+
+        Map<String,Object> chart = (Map<String,Object>)data.get("chart");
+        if(chart!=null) {
+            List<Map<String,Object>> resultList = (List<Map<String,Object>>)chart.get("result");
+            if(resultList!=null&&resultList.size()>0) {
+                Map<String,Object> result = resultList.get(0);
+                if(result!=null) {
+                    List<Long> timestamp = (List<Long>) result.get("timestamp");
+                    if(timestamp!=null) {
+                        this.dates = timestamp;
+                        System.out.println("Num timestamps found: "+dates.size());
+                    }
+                    Map<String,Object> indicators = (Map<String,Object>) result.get("indicators");
+                    if(indicators!=null) {
+                        List<Map<String, Object>> adjCloseList = (List<Map<String, Object>>) indicators.get("adjclose");
+                        if (adjCloseList != null && adjCloseList.size() > 0) {
+                            Map<String, Object> adjCloseMap = adjCloseList.get(0);
+                            if (adjCloseMap != null) {
+                                List<Double> adjClose = (List<Double>) adjCloseMap.get("adjclose");
+                                if (adjClose != null) {
+                                    this.prices = adjClose;
+                                    System.out.println("Num prices found: " + prices.size());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+
+    // quick test
+    public static void main(String[] args) throws Exception {
+        //test
+        StockResponse response = new StockResponse(ScrapeYahooStockPrices.getStocksFromSymbols("GOOG"));
+        response.parse();
+
+    }
+}
