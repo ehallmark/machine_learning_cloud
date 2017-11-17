@@ -2,6 +2,7 @@ package stocks;
 
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
+import models.similarity_models.signatures.CPCSimilarityVectorizer;
 import models.value_models.regression.AIValueModel;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
@@ -16,7 +17,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 11/17/17.
@@ -31,6 +34,7 @@ public class BuildTrainableDataset {
 
     public static void main(String[] args) throws Exception {
         File csvFile = BuildCSVDataset.csvOutputFile;
+        CPCSimilarityVectorizer vectorizer = new CPCSimilarityVectorizer(false,false,false);
 
         // define constants
         final int nMonths = 3;
@@ -53,6 +57,18 @@ public class BuildTrainableDataset {
                 // compute inputs
                 double numFilings = IntStream.range(0,nMonths).map(i->Integer.valueOf(cells[inputStart+1+(3*i)])).sum();
 
+                List<String> patents = IntStream.range(0,nMonths).mapToObj(i->cells[inputStart+2+(3*i)]).flatMap(text->{
+                    return text==null||text.isEmpty() ? Stream.empty() : Stream.of(text.split("; "));
+                }).collect(Collectors.toList());
+
+                List<INDArray> vectors = patents.stream().map(p->vectorizer.vectorFor(p)).collect(Collectors.toList());
+                double[] avgCPCEncoding = vectors.isEmpty() ? Nd4j.zeros(32).data().asDouble() : Nd4j.vstack(vectors).mean(0).data().asDouble();
+                double[] inputs = new double[avgCPCEncoding.length+1];
+                for(int i = 0; i < avgCPCEncoding.length; i++) {
+                    inputs[i] = avgCPCEncoding[i];
+                }
+                inputs[inputs.length-1] = numFilings;
+
                 // compute outputs
                 AtomicInteger validCount = new AtomicInteger(0);
                 double stockIncreaseTplusK = IntStream.range(1,yMonths).mapToDouble(i->{
@@ -73,7 +89,7 @@ public class BuildTrainableDataset {
                     stockIncreaseTplusK /= validCount.get();
                 }
 
-                INDArray features = Nd4j.create(new double[]{numFilings});
+                INDArray features = Nd4j.create(inputs);
                 INDArray labels = Nd4j.create(new double[]{stockIncreaseTplusK});
                 dataSets.add(new DataSet(features,labels));
             }
