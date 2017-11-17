@@ -29,6 +29,7 @@ import java.util.List;
 public class TrainModel {
     private static final File modelFile = new File(Constants.DATA_FOLDER+"stock_model_nn.jobj");
     public static void main(String[] args) throws Exception {
+        final int nEpochs = 10;
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .learningRate(0.00001)
                 .regularization(true).l2(1e-4)
@@ -51,7 +52,7 @@ public class TrainModel {
 
         List<DataSet> devData = (List<DataSet>) Database.tryLoadObject(BuildTrainableDataset.valFolder);
 
-        net.setListeners(new ScoreIterationListener(10000) {
+        net.setListeners(new ScoreIterationListener(5000) {
             @Override
             public void invoke() {
                 super.invoke();
@@ -68,9 +69,11 @@ public class TrainModel {
         System.out.println("Loading data...");
         List<DataSet> trainData = (List<DataSet>) Database.tryLoadObject(BuildTrainableDataset.trainFolder);
         System.out.println("Loaded.");
-        trainData.forEach(ds->{
-            net.fit(ds);
-        });
+        for(int i = 0; i < nEpochs; i++) {
+            trainData.forEach(ds -> {
+                net.fit(ds);
+            });
+        }
 
         System.out.println("Writing model to disk...");
         ModelSerializer.writeModel(net,modelFile,true);
