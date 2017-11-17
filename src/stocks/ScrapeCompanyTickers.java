@@ -4,11 +4,9 @@ import assignee_normalization.AssigneeTrimmer;
 import assignee_normalization.NormalizeAssignees;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import info.debatty.java.stringsimilarity.JaroWinkler;
-import info.debatty.java.stringsimilarity.interfaces.StringDistance;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
-import stocks.model.StockResponse;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,7 +18,6 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 11/16/17.

@@ -1,7 +1,7 @@
 package stocks;
 
 import org.nd4j.linalg.primitives.Pair;
-import stocks.model.StockResponse;
+import stocks.util.StockResponse;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Evan on 11/16/2017.

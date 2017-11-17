@@ -1,4 +1,4 @@
-package stocks.model;
+package stocks.util;
 
 import com.google.gson.Gson;
 import lombok.Getter;

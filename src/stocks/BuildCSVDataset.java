@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 11/17/17.
  */
-public class BuildDataset {
-    private static final File csvOutputFile = new File(Constants.DATA_FOLDER+"stock_model.csv");
+public class BuildCSVDataset {
+    public static final File csvOutputFile = new File(Constants.DATA_FOLDER+"stock_model.csv");
     public static void main(String[] args) throws Exception {
         Map<String,List<Pair<LocalDate,Double>>> assigneeToStockPriceOverTimeMap = ScrapeCompanyTickers.getAssigneeToStockPriceOverTimeMap();
         Map<String,Set<String>> assigneeToPatentMap = CreateAssetToFilingDateMap.getAssigneeToAssetsMap(assigneeToStockPriceOverTimeMap);
