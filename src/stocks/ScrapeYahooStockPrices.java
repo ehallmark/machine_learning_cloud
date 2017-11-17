@@ -41,10 +41,10 @@ public class ScrapeYahooStockPrices {
 
             List<Pair<LocalDate,Double>> data = new ArrayList<>();
             for(int i = 0; i < Math.min(response.getDates().size(),response.getPrices().size()); i++) {
-                if(response.getPrices().get(i)==null) continue;
+                if(response.getPrices().get(i)==null||response.getDates().get(i)==null) continue;
 
                 LocalDate date =
-                        Instant.ofEpochMilli(response.getDates().get(i)*1000).atZone(ZoneId.of("America/Los_Angeles")).toLocalDate();
+                        Instant.ofEpochMilli(response.getDates().get(i).longValue()*1000).atZone(ZoneId.of("America/Los_Angeles")).toLocalDate();
                 date = date.withDayOfMonth(1);
 
                 Pair<LocalDate,Double> record = new Pair<>(date,response.getPrices().get(i));
@@ -54,6 +54,7 @@ public class ScrapeYahooStockPrices {
             return data;
 
         } catch(Exception e) {
+            e.printStackTrace();
             System.out.println("Error on: "+symbol);
             return null;
         }

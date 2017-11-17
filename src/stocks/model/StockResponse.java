@@ -13,7 +13,7 @@ import java.util.HashMap;
 public class StockResponse {
     private String json;
     @Getter
-    private List<Long> dates;
+    private List<Number> dates;
     @Getter
     private List<Double> prices;
     public StockResponse(String json) {
@@ -30,7 +30,7 @@ public class StockResponse {
             if(resultList!=null&&resultList.size()>0) {
                 Map<String,Object> result = resultList.get(0);
                 if(result!=null) {
-                    List<Long> timestamp = (List<Long>) result.get("timestamp");
+                    List<Number> timestamp = (List<Number>) result.get("timestamp");
                     if(timestamp!=null) {
                         this.dates = timestamp;
                     }

@@ -98,7 +98,9 @@ public class ScrapeCompanyTickers {
     private static List<Pair<LocalDate,Double>> stockDataFor(Set<String> symbols, long from, long to) throws Exception {
         // find best symbol
         List<Pair<LocalDate,Double>> data = null;
-        for(String symbol : symbols) {
+        List<String> sortedSymbols = new ArrayList<>(symbols);
+        Collections.sort(sortedSymbols,(s1,s2)->Integer.compare(s1.length(),s2.length()));
+        for(String symbol : sortedSymbols) {
             List<Pair<LocalDate,Double>> tmp = ScrapeYahooStockPrices.getStocksFromSymbols(symbol, from, to);
             if(tmp==null) continue;
             if(data==null || tmp.size()>data.size()) data = tmp;
