@@ -96,7 +96,7 @@ public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<INDArray> 
             getHierarchy();
             getCpcToIdxMap();
 
-            Set<String> allAssets = new HashSet<>(Database.getCopyOfAllApplications());
+            Set<String> allAssets = new HashSet<>(Database.getAllPatentsAndApplications());
             Map<String,Set<String>> assetToCPCStringMap = Collections.synchronizedMap(new HashMap<>(new AssetToCPCMap().getApplicationDataMap()));
             assetToCPCStringMap.putAll(new AssetToCPCMap().getPatentDataMap());
 
