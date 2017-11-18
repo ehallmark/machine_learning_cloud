@@ -19,15 +19,6 @@ public class DeepCPCIndexMap {
     private static Map<Integer,Map<String,Integer>> depthCPCIndexCache = Collections.synchronizedMap(new HashMap<>());
     public static Map<String,Integer> loadOrCreateMapForDepth(RecursiveTask<CPCHierarchy> hierarchyTask, int depth, int minOccurrences) {
         if(!depthCPCIndexCache.containsKey(depth)) {
-            Map<String,Set<String>> appToCPCStringMap = Collections.synchronizedMap(new HashMap<>(new AssetToCPCMap().getApplicationDataMap()));
-            // limit cpcs based on frequency
-            Set<String> prevalentCPCs = appToCPCStringMap.entrySet().parallelStream()
-                    .flatMap(e->e.getValue().stream())
-                    .collect(Collectors.groupingBy(cpc->cpc,Collectors.counting()))
-                    .entrySet().parallelStream()
-                    .filter(e->e.getValue()>=minOccurrences)
-                    .map(e->e.getKey()).collect(Collectors.toSet());
-            System.out.println("Num prevalent cpcs: "+prevalentCPCs.size());
             // try loading from file
             Map<String,Integer> cpcIdxMap;
             try {
@@ -36,6 +27,16 @@ public class DeepCPCIndexMap {
                 cpcIdxMap = null;
             }
             if(cpcIdxMap==null) {
+                Map<String,Set<String>> appToCPCStringMap = Collections.synchronizedMap(new HashMap<>(new AssetToCPCMap().getApplicationDataMap()));
+                // limit cpcs based on frequency
+                Set<String> prevalentCPCs = appToCPCStringMap.entrySet().parallelStream()
+                        .flatMap(e->e.getValue().stream())
+                        .collect(Collectors.groupingBy(cpc->cpc,Collectors.counting()))
+                        .entrySet().parallelStream()
+                        .filter(e->e.getValue()>=minOccurrences)
+                        .map(e->e.getKey()).collect(Collectors.toSet());
+                System.out.println("Num prevalent cpcs: "+prevalentCPCs.size());
+
                 AtomicInteger idx = new AtomicInteger(0);
                 System.out.println("Could not find cpc idx map... creating new one now.");
                 cpcIdxMap = hierarchyTask.invoke().getLabelToCPCMap().entrySet().stream().filter(e->e.getValue().getNumParts()<=depth)

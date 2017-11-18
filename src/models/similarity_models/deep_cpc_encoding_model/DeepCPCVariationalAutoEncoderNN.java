@@ -100,8 +100,10 @@ public class DeepCPCVariationalAutoEncoderNN extends TrainablePredictionModel<IN
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
-                    1024,
-                    1024
+                    512,
+                    512,
+                    512
+
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {

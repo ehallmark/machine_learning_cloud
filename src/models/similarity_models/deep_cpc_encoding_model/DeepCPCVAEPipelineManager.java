@@ -29,7 +29,7 @@ public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<INDArray> 
     public static final String MODEL_NAME = "deep_cpc_autoencoder";
     public static final int MAX_CPC_DEPTH = 5;
     private static final int BATCH_SIZE = 64;
-    private static final int MIN_CPC_APPEARANCES = 10;
+    private static final int MIN_CPC_APPEARANCES = 2;
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_vae_predictions/predictions_map.jobj");
     private Map<String,? extends Collection<CPC>> cpcMap;
@@ -93,26 +93,22 @@ public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<INDArray> 
 
     public synchronized Map<String,? extends Collection<CPC>> getCPCMap() {
         if(cpcMap==null) {
-            Set<String> allAssets = new HashSet<>(Database.getCopyOfAllApplications());
             getHierarchy();
-            Map<String,Set<String>> appToCPCStringMap = Collections.synchronizedMap(new HashMap<>(new AssetToCPCMap().getApplicationDataMap()));
-            // limit cpcs based on frequency
-            Set<String> prevalentCPCs = appToCPCStringMap.entrySet().parallelStream()
-                    .flatMap(e->e.getValue().stream())
-                    .collect(Collectors.groupingBy(cpc->cpc,Collectors.counting()))
-                    .entrySet().parallelStream()
-                    .filter(e->e.getValue()>=MIN_CPC_APPEARANCES)
-                    .map(e->e.getKey()).collect(Collectors.toSet());
-            System.out.println("Num prevalent cpcs: "+prevalentCPCs.size());
-            cpcMap = appToCPCStringMap.entrySet().parallelStream()
+            getCpcToIdxMap();
+
+            Set<String> allAssets = new HashSet<>(Database.getCopyOfAllApplications());
+            Map<String,Set<String>> assetToCPCStringMap = Collections.synchronizedMap(new HashMap<>(new AssetToCPCMap().getApplicationDataMap()));
+            assetToCPCStringMap.putAll(new AssetToCPCMap().getPatentDataMap());
+
+            cpcMap = assetToCPCStringMap.entrySet().parallelStream()
                     .filter(e->allAssets.contains(e.getKey()))
                     .collect(Collectors.toMap(e->e.getKey(), e ->
-                                    e.getValue().stream().filter(cpc->prevalentCPCs.contains(cpc)).map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
+                                    e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
                                     .filter(cpc->cpc!=null)
                                     .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
                                     .distinct()
                                     .filter(cpc -> cpc.getNumParts() <= MAX_CPC_DEPTH)
-                                    .filter(cpc -> cpcToIdxMap==null||cpcToIdxMap.containsKey(cpc.getName()))
+                                    .filter(cpc -> cpcToIdxMap.containsKey(cpc.getName()))
                                     .collect(Collectors.toSet())
                             )
                     )
@@ -127,15 +123,6 @@ public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<INDArray> 
     protected void splitData() {
         System.out.println("Starting to recreate datasets...");
         int limit = 5000000;
-
-        RecursiveTask<CPCHierarchy> hierarchyTask = new RecursiveTask<CPCHierarchy>() {
-            @Override
-            protected CPCHierarchy compute() {
-                return getHierarchy();
-            }
-        };
-
-        cpcToIdxMap = DeepCPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,MAX_CPC_DEPTH,MIN_CPC_APPEARANCES);
 
         getCPCMap();
         System.out.println("Loaded cpcMap");
@@ -159,17 +146,30 @@ public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<INDArray> 
 
     protected DataSetIterator getRawIterator(List<String> assets, boolean test) {
         boolean shuffle = !test;
-        return new CPCDataSetIterator(assets,shuffle,BATCH_SIZE,cpcMap,cpcToIdxMap);
+        return new CPCDataSetIterator(assets,shuffle,BATCH_SIZE,cpcMap,getCpcToIdxMap());
+    }
+
+    public Map<String,Integer> getCpcToIdxMap() {
+        if(cpcToIdxMap==null) {
+            RecursiveTask<CPCHierarchy> hierarchyTask = new RecursiveTask<CPCHierarchy>() {
+                @Override
+                protected CPCHierarchy compute() {
+                    return getHierarchy();
+                }
+            };
+            cpcToIdxMap = DeepCPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,MAX_CPC_DEPTH,getMinCPCOccurrences());
+        }
+        return cpcToIdxMap;
     }
 
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         boolean rebuildPrerequisites = false;
-        boolean rebuildDatasets = false;
-        boolean runModels = false;
+        boolean rebuildDatasets = true;
+        boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
-        int nEpochs = 2;
+        int nEpochs = 5;
         String modelName = MODEL_NAME;
 
         setLoggingLevel(Level.INFO);
