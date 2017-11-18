@@ -1,8 +1,10 @@
 package models.similarity_models.deep_cpc_encoding_model;
 
 import cpc_normalization.CPCHierarchy;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
+import tools.ClassCodeHandler;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 
 import java.io.File;
@@ -30,7 +32,7 @@ public class DeepCPCIndexMap {
                 Map<String,Set<String>> appToCPCStringMap = Collections.synchronizedMap(new HashMap<>(new AssetToCPCMap().getApplicationDataMap()));
                 // limit cpcs based on frequency
                 Set<String> prevalentCPCs = appToCPCStringMap.entrySet().parallelStream()
-                        .flatMap(e->e.getValue().stream())
+                        .flatMap(e->e.getValue().stream().map(cpc-> ClassCodeHandler.convertToLabelFormat(cpc)))
                         .collect(Collectors.groupingBy(cpc->cpc,Collectors.counting()))
                         .entrySet().parallelStream()
                         .filter(e->e.getValue()>=minOccurrences)
