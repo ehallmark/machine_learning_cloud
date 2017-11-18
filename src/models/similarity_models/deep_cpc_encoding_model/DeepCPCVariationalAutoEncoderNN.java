@@ -146,12 +146,10 @@ public class DeepCPCVariationalAutoEncoderNN extends TrainablePredictionModel<IN
 
         System.out.println("Building validation matrix...");
         DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
-        int cnt = 0;
         List<INDArray> partialValidationMatrices = new ArrayList<>();
-        while(cnt<10000&&validationIterator.hasNext()) {
+        while(validationIterator.hasNext()) {
             INDArray features = validationIterator.next().getFeatures();
             partialValidationMatrices.add(features);
-            cnt+=features.rows();
         }
         INDArray validationMatrix = Nd4j.vstack(partialValidationMatrices);
         Function<Void,Double> testErrorFunction = (v) -> {

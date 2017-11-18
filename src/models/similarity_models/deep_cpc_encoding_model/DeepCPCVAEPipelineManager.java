@@ -28,8 +28,8 @@ import java.util.stream.Collectors;
 public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     public static final String MODEL_NAME = "deep_cpc_autoencoder";
     public static final int MAX_CPC_DEPTH = 5;
-    private static final int BATCH_SIZE = 64;
-    private static final int MIN_CPC_APPEARANCES = 50;
+    private static final int BATCH_SIZE = 124;
+    private static final int MIN_CPC_APPEARANCES = 100;
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_vae_predictions/predictions_map.jobj");
     private Map<String,? extends Collection<CPC>> cpcMap;
@@ -122,8 +122,8 @@ public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<INDArray> 
     @Override
     protected void splitData() {
         System.out.println("Starting to recreate datasets...");
-        int limit = 5000000;
-
+        int limit = 1000000;
+        int numTest = 30000;
         getCPCMap();
         System.out.println("Loaded cpcMap");
         List<String> allAssets = new ArrayList<>(cpcMap.keySet().parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
@@ -132,11 +132,11 @@ public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<INDArray> 
         Random rand = new Random(69);
         Collections.shuffle(allAssets,rand);
         testAssets = new ArrayList<>();
-        testAssets.addAll(allAssets.subList(0,20000));
+        testAssets.addAll(allAssets.subList(0,numTest));
         validationAssets = new ArrayList<>();
-        validationAssets.addAll(allAssets.subList(20000,40000));
+        validationAssets.addAll(allAssets.subList(numTest,numTest*2));
         trainAssets = new ArrayList<>();
-        trainAssets.addAll(allAssets.subList(40000,Math.min(allAssets.size(),limit+40000)));
+        trainAssets.addAll(allAssets.subList(numTest*2,Math.min(allAssets.size(),limit+numTest*2)));
         allAssets.clear();
         System.out.println("Num training: "+trainAssets.size());
         System.out.println("Num test: "+testAssets.size());
