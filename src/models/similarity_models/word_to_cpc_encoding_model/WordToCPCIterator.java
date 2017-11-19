@@ -11,6 +11,7 @@ import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import lombok.Getter;
 import lombok.Setter;
+import models.asset_text_dataset.DownloadDatasetFromES;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.stages.Stage;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
@@ -204,7 +205,7 @@ public class WordToCPCIterator implements DataSetIterator {
             synchronized (dataBatch) {
                 int i = cnt.getAndIncrement();
                 //System.out.println("batch: "+i);
-                dataBatch.get().add(new Pair<>(asset, collectWordsFrom(hit)));
+                dataBatch.get().add(new Pair<>(asset, DownloadDatasetFromES.collectWordsFrom(hit)));
                 if(i>=batchSize-1) {
                    // System.out.println("Completed batch!!!");
                     cnt.set(0);
@@ -220,56 +221,7 @@ public class WordToCPCIterator implements DataSetIterator {
         if(finallyDo!=null)finallyDo.apply(null);
     }
 
-    private Collection<String> collectWordsFrom(SearchHit hit) {
-        String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase().trim();
-        String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase().trim();
-        String text = String.join(". ",Stream.of(inventionTitle, abstractText).filter(s->s!=null&&s.length()>0).collect(Collectors.toList())).replaceAll("[^a-z ]","");
-        return Stream.of(text.split("\\s+")).parallel().filter(word->!Constants.STOP_WORD_SET.contains(word)).distinct().map(word->new Stemmer().stem(word)).collect(Collectors.toList());
-        /*Annotation doc = new Annotation(text);
-        pipeline.annotate(doc);
-        List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
-        Set<String> appeared = Collections.synchronizedSet(new HashSet<String>());
-        for(CoreMap sentence: sentences) {
-            // traversing the words in the current sentence
-            for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-                // this is the text of the token
-                String word = token.get(CoreAnnotations.TextAnnotation.class);
-                boolean valid = true;
-                for(int i = 0; i < word.length(); i++) {
-                    if(!Character.isAlphabetic(word.charAt(i))) {
-                        valid = false;
-                    }
-                }
-                if(!valid) continue;
 
-                // could be the stem
-                String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
-
-                if(Constants.STOP_WORD_SET.contains(lemma)||Constants.STOP_WORD_SET.contains(word)) {
-                    continue;
-                }
-
-                try {
-                    String stem = new Stemmer().stem(lemma);
-                    String pos;
-                    if (stem.length() > 3 && !Constants.STOP_WORD_SET.contains(stem)) {
-                        // this is the POS tag of the token
-                        pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
-                        if (Stage.validPOS.contains(pos)) {
-                            // don't want to end in adjectives (nor past tense verb)
-                            if (!Stage.adjectivesPOS.contains(pos) && !((!pos.startsWith("N"))&&(word.endsWith("ing")||word.endsWith("ed")))) {
-                                appeared.add(word);
-                            }
-                        }
-                    }
-
-                } catch(Exception e) {
-                    System.out.println("Error while stemming: "+lemma);
-                }
-            }
-        }
-        return appeared;*/
-    }
 
     @Override
     public DataSet next(int i) {
