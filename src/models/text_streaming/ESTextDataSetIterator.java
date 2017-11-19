@@ -61,29 +61,29 @@ public class ESTextDataSetIterator {
                 BufferedWriter writer;
                 boolean flush = false;
                 // pick reader
-                if(textIdx.get()<nonTrainingTypes.length) {
-                    FileTextDataSetIterator.Type type = nonTrainingTypes[textIdx.get()];
-                    AtomicInteger cntOfType = typeToCountMap.get(type);
-                    if(cntOfType.getAndIncrement()>=numTest-1) {
-                        System.out.println("Finished dataset: "+type.toString());
-                        textIdx.getAndIncrement();
-                        flush=true;
+                synchronized (ESTextDataSetIterator.class) {
+                    if (textIdx.get() < nonTrainingTypes.length) {
+                        FileTextDataSetIterator.Type type = nonTrainingTypes[textIdx.get()];
+                        AtomicInteger cntOfType = typeToCountMap.get(type);
+                        if (cntOfType.getAndIncrement() >= numTest - 1) {
+                            System.out.println("Finished dataset: " + type.toString());
+                            textIdx.getAndIncrement();
+                            flush = true;
+                        }
+                        writer = typeToWriterMap.get(type);
+                    } else {
+                        // train
+                        writer = typeToWriterMap.get(FileTextDataSetIterator.Type.TRAIN);
+                        if (cnt.getAndIncrement() % 10000 == 9999) {
+                            System.out.println("FInished train: " + cnt.get());
+                        }
                     }
-                    writer = typeToWriterMap.get(type);
-                } else {
-                    // train
-                    writer = typeToWriterMap.get(FileTextDataSetIterator.Type.TRAIN);
-                    if(cnt.getAndIncrement()%10000==9999) {
-                        System.out.println("FInished train: "+cnt.get());
-                    }
-                }
-                try {
-                    synchronized (ESTextDataSetIterator.class) {
+                    try {
                         writer.write(line);
-                        if(flush) writer.flush();
+                        if (flush) writer.flush();
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                } catch(Exception e) {
-                    e.printStackTrace();
                 }
             }
         };
