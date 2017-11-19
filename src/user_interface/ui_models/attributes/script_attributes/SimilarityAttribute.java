@@ -67,19 +67,15 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
 
     @Override
     public String getType() {
-        return "float";
+        return "double";
     }
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        String similarityModelStr = Constants.PARAGRAPH_VECTOR_MODEL;
-        RecursiveTask<AbstractSimilarityModel> finderPrototype = similarityModelMap.get(similarityModelStr);
-
         List<String> similarityEngines = extractArray(req, PRE_FILTER_ARRAY_FIELD);
         List<AbstractSimilarityEngine> relevantEngines = SimilarityEngineController.getEngines().stream().filter(engine->similarityEngines.contains(engine.getName())).collect(Collectors.toList());
         simVectors = relevantEngines.stream().map(engine->{
             engine = engine.dup();
-            engine.setSimilarityModel(finderPrototype);
             engine.extractRelevantInformationFromParams(req);
             return engine.getAvg();
         }).filter(avg->avg!=null).collect(Collectors.toList());
