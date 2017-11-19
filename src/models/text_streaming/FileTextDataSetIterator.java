@@ -1,24 +1,20 @@
-package models.asset_text_dataset;
+package models.text_streaming;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
-import org.deeplearning4j.text.documentiterator.DocumentIterator;
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.deeplearning4j.text.documentiterator.LabelsSource;
-import org.nd4j.linalg.primitives.Pair;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
  * Created by Evan on 11/19/2017.
  */
-public class TextDataSetIterator implements LabelAwareIterator {
+public class FileTextDataSetIterator implements LabelAwareIterator {
     private static File BASE_DIR = new File("asset_text_data/");
     static File trainFile = new File(BASE_DIR, "train_data.csv");
     static File devFile1 = new File(BASE_DIR, "dev1_data.csv");
@@ -51,7 +47,7 @@ public class TextDataSetIterator implements LabelAwareIterator {
 
     private File dataFile;
     private LineIterator lineIterator;
-    public TextDataSetIterator(Type type) {
+    public FileTextDataSetIterator(Type type) {
         dataFile = typeToFileMap.get(type);
         reset();
     }

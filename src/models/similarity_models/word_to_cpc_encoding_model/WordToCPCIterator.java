@@ -1,30 +1,16 @@
 package models.similarity_models.word_to_cpc_encoding_model;
 
-import com.google.common.util.concurrent.AtomicDouble;
-import cpc_normalization.CPC;
-import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.util.CoreMap;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import lombok.Getter;
-import lombok.Setter;
-import models.asset_text_dataset.DownloadDatasetFromES;
-import models.keyphrase_prediction.MultiStem;
-import models.keyphrase_prediction.stages.Stage;
-import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
+import models.text_streaming.ESTextDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.signatures.CPCSimilarityVectorizer;
-import models.similarity_models.signatures.NDArrayHelper;
 import org.nd4j.linalg.primitives.Pair;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -34,26 +20,19 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
-import seeding.Database;
-import seeding.ai_db_updater.tools.Helper;
-import tools.Stemmer;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.RecursiveTask;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -205,7 +184,7 @@ public class WordToCPCIterator implements DataSetIterator {
             synchronized (dataBatch) {
                 int i = cnt.getAndIncrement();
                 //System.out.println("batch: "+i);
-                dataBatch.get().add(new Pair<>(asset, DownloadDatasetFromES.collectWordsFrom(hit)));
+                dataBatch.get().add(new Pair<>(asset, ESTextDataSetIterator.collectWordsFrom(hit)));
                 if(i>=batchSize-1) {
                    // System.out.println("Completed batch!!!");
                     cnt.set(0);

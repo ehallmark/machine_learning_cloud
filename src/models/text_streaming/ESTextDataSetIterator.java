@@ -1,13 +1,7 @@
-package models.asset_text_dataset;
+package models.text_streaming;
 
-import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.util.CoreMap;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
-import models.keyphrase_prediction.stages.Stage;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
@@ -18,7 +12,6 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
-import tools.Stemmer;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -26,7 +19,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,14 +27,14 @@ import java.util.stream.Stream;
 /**
  * Created by Evan on 11/19/2017.
  */
-public class DownloadDatasetFromES {
+public class ESTextDataSetIterator {
     public static void main(String[] args) throws Exception {
         final int limit = 5000000;
         final int numTest = 30000;
         final int minWords = 10;
 
-        Map<TextDataSetIterator.Type,BufferedWriter> typeToWriterMap = Collections.synchronizedMap(new HashMap<>());
-        TextDataSetIterator.getTypeMap().forEach((type,file)->{
+        Map<FileTextDataSetIterator.Type,BufferedWriter> typeToWriterMap = Collections.synchronizedMap(new HashMap<>());
+        FileTextDataSetIterator.getTypeMap().forEach((type, file)->{
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(file));
                 typeToWriterMap.put(type,writer);
@@ -50,15 +42,15 @@ public class DownloadDatasetFromES {
                 e.printStackTrace();
             }
         });
-        Map<TextDataSetIterator.Type,AtomicInteger> typeToCountMap = Collections.synchronizedMap(new HashMap<>());
+        Map<FileTextDataSetIterator.Type,AtomicInteger> typeToCountMap = Collections.synchronizedMap(new HashMap<>());
         typeToWriterMap.keySet().forEach(type->typeToCountMap.put(type,new AtomicInteger(0)));
 
-        TextDataSetIterator.Type[] nonTrainingTypes = new TextDataSetIterator.Type[]{
-                TextDataSetIterator.Type.DEV1,
-                TextDataSetIterator.Type.DEV2,
-                TextDataSetIterator.Type.DEV3,
-                TextDataSetIterator.Type.DEV4,
-                TextDataSetIterator.Type.TEST
+        FileTextDataSetIterator.Type[] nonTrainingTypes = new FileTextDataSetIterator.Type[]{
+                FileTextDataSetIterator.Type.DEV1,
+                FileTextDataSetIterator.Type.DEV2,
+                FileTextDataSetIterator.Type.DEV3,
+                FileTextDataSetIterator.Type.DEV4,
+                FileTextDataSetIterator.Type.TEST
         };
 
         AtomicInteger textIdx = new AtomicInteger(0);
@@ -70,7 +62,7 @@ public class DownloadDatasetFromES {
                 boolean flush = false;
                 // pick reader
                 if(textIdx.get()<nonTrainingTypes.length) {
-                    TextDataSetIterator.Type type = nonTrainingTypes[textIdx.get()];
+                    FileTextDataSetIterator.Type type = nonTrainingTypes[textIdx.get()];
                     AtomicInteger cntOfType = typeToCountMap.get(type);
                     if(cntOfType.getAndIncrement()>=numTest-1) {
                         System.out.println("Finished dataset: "+type.toString());
@@ -80,13 +72,13 @@ public class DownloadDatasetFromES {
                     writer = typeToWriterMap.get(type);
                 } else {
                     // train
-                    writer = typeToWriterMap.get(TextDataSetIterator.Type.TRAIN);
+                    writer = typeToWriterMap.get(FileTextDataSetIterator.Type.TRAIN);
                     if(cnt.getAndIncrement()%10000==9999) {
                         System.out.println("FInished train: "+cnt.get());
                     }
                 }
                 try {
-                    synchronized (DownloadDatasetFromES.class) {
+                    synchronized (ESTextDataSetIterator.class) {
                         writer.write(line);
                         if(flush) writer.flush();
                     }
@@ -121,6 +113,10 @@ public class DownloadDatasetFromES {
 
     public static List<String> preProcessToList(String text) {
         return Stream.of(text.split("\\s+")).collect(Collectors.toList());
+    }
+
+    public static void iterateOverAllDocuments(Consumer<Pair<String,Collection<String>>> consumer) {
+        iterateOverDocuments(-1,consumer,null);
     }
 
     public static void iterateOverDocuments(int limit, Consumer<Pair<String,Collection<String>>> consumer, Function<Void,Void> finallyDo) {
