@@ -33,7 +33,7 @@ public class BOWToCPCVectorIterator implements DataSetIterator{
         this.numOutputs=numOutputs;
         this.documentIterator=documentIterator;
         this.transformer = new BOWVectorFromTextTransformer(wordToIdxMap);
-        this.numInputs=wordToIdxMap.size();
+        this.numInputs=wordToIdxMap==null?0:wordToIdxMap.size();
         this.tokenizer=tokenizer;
     }
     @Override
