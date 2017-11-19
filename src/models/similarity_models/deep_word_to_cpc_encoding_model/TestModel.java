@@ -3,6 +3,7 @@ package models.similarity_models.deep_word_to_cpc_encoding_model;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
 import models.similarity_models.signatures.CPCSimilarityVectorizer;
+import models.similarity_models.word_to_cpc_encoding_model.WordToCPCIterator;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
@@ -46,7 +47,7 @@ public class TestModel {
     static List<WordFrequencyPair<String,Double>> predictPatentsFromText(String text, Map<String,Integer> wordIdxMap, MultiLayerNetwork net, CPCSimilarityVectorizer vectorizer) {
         Stream<Collection<String>> wordStream = Stream.of(Arrays.asList(text.toLowerCase().split("\\s+")));
         // get the input to the word to cpc network
-        INDArray bowVector = DeepWordToCPCIterator.createBagOfWordsVector(wordStream,wordIdxMap,1);
+        INDArray bowVector = WordToCPCIterator.createBagOfWordsVector(wordStream,wordIdxMap,1);
         // encode using word to cpc network
         INDArray encoding = net.activateSelectedLayers(0,net.getnLayers()-1,bowVector);
         // compare to asset encodings

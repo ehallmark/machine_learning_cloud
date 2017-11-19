@@ -4,7 +4,9 @@ import ch.qos.logback.classic.Level;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
-import data_pipeline.vectorize.DatasetManager;
+import data_pipeline.vectorize.DataSetManager;
+import data_pipeline.vectorize.NoSaveDataSetManager;
+import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Setter;
 import models.similarity_models.signatures.CPCDataSetIterator;
 import org.nd4j.linalg.api.buffer.DataBuffer;
@@ -19,7 +21,6 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -56,7 +57,7 @@ public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<INDArray> 
 
     @Override
     protected void setDatasetManager() {
-        datasetManager = new DatasetManager(dataFolder,
+        datasetManager = new PreSaveDataSetManager(dataFolder,
                 getRawIterator(trainAssets, false),
                 getRawIterator(testAssets,true),
                 getRawIterator(validationAssets, true)
@@ -72,9 +73,9 @@ public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<INDArray> 
     }
 
     @Override
-    public synchronized DatasetManager getDatasetManager() {
+    public synchronized DataSetManager getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new DatasetManager(dataFolder);
+            datasetManager = new PreSaveDataSetManager(dataFolder);
         }
         return datasetManager;
     }

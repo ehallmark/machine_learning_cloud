@@ -1,17 +1,13 @@
 package data_pipeline.pipeline_manager;
 
 import data_pipeline.models.TrainablePredictionModel;
-import data_pipeline.vectorize.DatasetManager;
-import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
-import org.deeplearning4j.nn.api.Model;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import data_pipeline.vectorize.DataSetManager;
+import data_pipeline.vectorize.NoSaveDataSetManager;
 import seeding.Database;
 
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +18,7 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
     protected List<String> testAssets;
     protected List<String> trainAssets;
     protected List<String> validationAssets;
-    protected DatasetManager datasetManager;
+    protected DataSetManager datasetManager;
     protected File dataFolder;
     protected File predictionsFile;
     protected TrainablePredictionModel<T> model;

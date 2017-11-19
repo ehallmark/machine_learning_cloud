@@ -2,9 +2,14 @@ package models.similarity_models.deep_word_to_cpc_encoding_model;
 
 import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
-import data_pipeline.vectorize.DatasetManager;
+import data_pipeline.vectorize.DataSetManager;
+import data_pipeline.vectorize.NoSaveDataSetManager;
+import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
+import models.similarity_models.word_to_cpc_encoding_model.WordToCPCIterator;
+import models.text_streaming.FileTextDataSetIterator;
+import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -51,10 +56,11 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArra
     public void rebuildPrerequisiteData() {
         // update vocabulary
         System.out.println("Rebuilding vocabulary map...");
-        final int vocabSampling = 5000000;
-        final int minDocCount = 5;
-        final int maxDocCount = Math.round(0.3f*vocabSampling);
-        DeepWordToCPCIterator vocabIter = new DeepWordToCPCIterator(vocabSampling,BATCH_SIZE);
+        final int totalDocCount = 5000000;
+        LabelAwareIterator iterator = new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN);
+        final int minDocCount = 3;
+        final int maxDocCount = Math.round(0.3f*totalDocCount);
+        WordToCPCIterator vocabIter = new WordToCPCIterator(iterator,BATCH_SIZE);
         vocabIter.buildVocabMap(minDocCount,maxDocCount);
         wordToIdxMap = vocabIter.getWordToIdxMap();
         System.out.println("Vocab size: "+wordToIdxMap.size());
@@ -71,9 +77,9 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArra
     }
 
     @Override
-    public synchronized DatasetManager getDatasetManager() {
+    public synchronized DataSetManager getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new DatasetManager(dataFolder);
+            setDatasetManager();
         }
         return datasetManager;
     }
@@ -90,13 +96,10 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArra
 
     @Override
     protected void setDatasetManager() {
-        int limit = 5000000;
-        int numTests = 50000;
-        double testRatio = new Double(numTests)/limit;
-        datasetManager = new DatasetManager(dataFolder,
-                getRawIterator(limit),
-                testRatio,
-                testRatio
+        datasetManager = new NoSaveDataSetManager(
+                getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN)),
+                getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.DEV1)),
+                getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TEST))
         );
     }
 
@@ -108,8 +111,8 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArra
     }
 
 
-    protected DataSetIterator getRawIterator(int limit) {
-        return new DeepWordToCPCIterator(limit,getAssetToEncodingMap(),getWordToIdxMap(),BATCH_SIZE,false,false,false);
+    protected DataSetIterator getRawIterator(LabelAwareIterator iterator) {
+        return new WordToCPCIterator(iterator,getAssetToEncodingMap(),getWordToIdxMap(),BATCH_SIZE,false,false,false);
     }
 
     public static void main(String[] args) throws Exception {

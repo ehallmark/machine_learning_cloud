@@ -1,9 +1,8 @@
 package data_pipeline.pipeline_manager;
 
-import data_pipeline.vectorize.DatasetManager;
+import data_pipeline.vectorize.DataSetManager;
+import data_pipeline.vectorize.NoSaveDataSetManager;
 
-import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +10,7 @@ import java.util.Map;
  * Created by ehallmark on 11/7/17.
  */
 public interface PipelineManager<T> {
-    DatasetManager getDatasetManager();
+    DataSetManager getDatasetManager();
     void rebuildPrerequisiteData();
     void saveRawDatasets();
     void trainModels(int nEpochs);

@@ -185,15 +185,6 @@ public class DeepWordToCPCEncodingNN extends TrainablePredictionModel<INDArray> 
                 trainIter.reset();
             }
         } else {
-            double newLearningRate = 0.001;
-            Updater newUpdater = Updater.ADAM;
-            System.out.println("Updating network with learning rate: "+newLearningRate);
-            net = NNRefactorer.updateNetworkLearningRate(net,newLearningRate,false);
-            System.out.println("Updating network with new updater: "+newUpdater.toString());
-            net = NNRefactorer.updateNetworkUpdater(net,newUpdater,false);
-
-            System.out.println("Conf: "+net.getLayerWiseConfigurations().toYaml());
-
             MultiLayerNetworkWrapper netWrapper = new MultiLayerNetworkWrapper(net,Collections.emptyList());
             IterationListener listener = new OptimizationScoreListener(reporter, netWrapper, printIterations, testErrorFunction, saveFunction);
             net.setListeners(listener);

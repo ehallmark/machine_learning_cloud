@@ -24,7 +24,7 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
     static File testFile = new File(BASE_DIR, "test_data.csv");
     private static Map<Type,File> typeToFileMap = Collections.synchronizedMap(new HashMap<>());
 
-    enum Type {
+    public enum Type {
         TRAIN, DEV1, DEV2, DEV3, DEV4, TEST
     }
 

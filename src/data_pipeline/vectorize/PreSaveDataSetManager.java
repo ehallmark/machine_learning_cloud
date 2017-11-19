@@ -1,26 +1,16 @@
 package data_pipeline.vectorize;
 
-import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
-import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.apache.commons.io.FileUtils;
 import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
-import org.nd4j.linalg.dataset.MiniBatchFileDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.Random;
 
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class DatasetManager {
-    private static final String TRAIN = "training";
-    private static final String TEST = "testing";
-    private static final String VALIDATION = "validation";
-    private static final String EXAMPLE = "dataset-";
-    private static final String BINARY_SUFFIX = ".bin";
+public class PreSaveDataSetManager implements DataSetManager {
     private DataSetIterator rawTrain;
     private DataSetIterator rawTest;
     private DataSetIterator rawVal;
@@ -28,7 +18,7 @@ public class DatasetManager {
     private double testRatio;
     private double valRatio;
     private File baseDir;
-    public DatasetManager(File baseDir, DataSetIterator rawTrain, DataSetIterator rawTest, DataSetIterator rawVal) {
+    public PreSaveDataSetManager(File baseDir, DataSetIterator rawTrain, DataSetIterator rawTest, DataSetIterator rawVal) {
         if(!baseDir.exists()) baseDir.mkdir();
         if(!baseDir.isDirectory()) throw new RuntimeException("Must be a directory...");
         this.rawTrain=rawTrain;
@@ -37,7 +27,7 @@ public class DatasetManager {
         this.rawVal=rawVal;
     }
 
-    public DatasetManager(File baseDir, DataSetIterator fullIter, double testRatio, double valRatio) {
+    public PreSaveDataSetManager(File baseDir, DataSetIterator fullIter, double testRatio, double valRatio) {
         if(!baseDir.exists()) baseDir.mkdir();
         if(!baseDir.isDirectory()) throw new RuntimeException("Must be a directory...");
         this.testRatio=testRatio;
@@ -46,7 +36,7 @@ public class DatasetManager {
         this.fullIter=fullIter;
     }
 
-    public DatasetManager(File baseDir) {
+    public PreSaveDataSetManager(File baseDir) {
         this.baseDir=baseDir;
         if(!this.baseDir.exists()) throw new RuntimeException("Please use other constructor and call saveDatasets()");
     }
