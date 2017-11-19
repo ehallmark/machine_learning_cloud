@@ -53,8 +53,10 @@ public class BOWToCPCVectorIterator implements DataSetIterator{
             if(documentIterator.hasNext()) {
                 vec = transformer.apply(tokenizer.apply(doc.getContent()));
                 y = vectorizer.vectorFor(doc.getLabels().get(0));
-                mat.putRow(i,vec);
-                lab.putRow(i,y);
+                if(y!=null) {
+                    mat.putRow(i, vec);
+                    lab.putRow(i, y);
+                }
             } else {
                 break;
             }

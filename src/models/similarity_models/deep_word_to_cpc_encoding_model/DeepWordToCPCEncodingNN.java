@@ -1,5 +1,6 @@
 package models.similarity_models.deep_word_to_cpc_encoding_model;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import data_pipeline.helpers.Function3;
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
@@ -32,6 +33,7 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
@@ -120,19 +122,8 @@ public class DeepWordToCPCEncodingNN extends TrainablePredictionModel<INDArray> 
 
         System.out.println("Building validation matrix...");
         DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
-        int cnt = 0;
-        List<INDArray> partialValidationInputs = new ArrayList<>();
-        List<INDArray> partialValidationLabels = new ArrayList<>();
-        while(cnt<20000&&validationIterator.hasNext()) {
-            DataSet ds = validationIterator.next();
-            partialValidationInputs.add(ds.getFeatureMatrix());
-            partialValidationLabels.add(ds.getLabels());
-            cnt+=ds.getFeatureMatrix().rows();
-        }
-        INDArray validationInputs = Nd4j.vstack(partialValidationInputs);
-        INDArray validationOutputs = Nd4j.vstack(partialValidationLabels);
         Function<MultiLayerNetwork,Double> testErrorFunction = (net) -> {
-            return test(validationInputs,validationOutputs,net);
+            return test(validationIterator,net);
         };
 
         Function3<MultiLayerNetwork,LocalDateTime,Double,Void> saveFunction = (net,datetime, score) -> {
@@ -208,10 +199,22 @@ public class DeepWordToCPCEncodingNN extends TrainablePredictionModel<INDArray> 
         return BASE_DIR;
     }
 
-    private double test(INDArray input, INDArray output, MultiLayerNetwork net) {
-        INDArray predictions = net.activateSelectedLayers(0,net.getnLayers()-1,input);
-        double similarity = NDArrayHelper.sumOfCosineSimByRow(predictions,output);
-        return 1d - (similarity/input.rows());
+    private double test(DataSetIterator iterator, MultiLayerNetwork net) {
+        AtomicDouble sum = new AtomicDouble(0d);
+        AtomicInteger cnt = new AtomicInteger(0);
+        while(iterator.hasNext()) {
+            DataSet ds = iterator.next();
+            INDArray input = ds.getFeatureMatrix();
+            INDArray output = ds.getLabels();
+            INDArray predictions = net.activateSelectedLayers(0, net.getnLayers() - 1, input);
+            double similarity = NDArrayHelper.sumOfCosineSimByRow(predictions, output);
+            sum.addAndGet(similarity);
+            cnt.addAndGet(input.rows());
+        }
+        iterator.reset();
+        if(cnt.get()>0) {
+            return 1d-sum.get()/cnt.get();
+        } else return 1d;
     }
 
     private List<HyperParameter> getModelParameters() {
