@@ -71,6 +71,7 @@ public class SimilarPatentServer {
     public static final String EXCEL_SESSION = "excel_data";
     public static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
     public static final String LINE_CHART_MAX = "lineChartMax";
+    public static final String TEXT_TO_SEARCH_FOR = "textToSearchFor";
     public static final String LINE_CHART_MIN = "lineChartMin";
     public static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
     public static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
@@ -95,6 +96,7 @@ public class SimilarPatentServer {
     public static final String INTERNAL_USER = "internal";
     public static final List<String> USER_ROLES = Arrays.asList(ANALYST_USER,INTERNAL_USER);
     private static RecursiveTask<AbstractSimilarityModel> DEFAULT_SIMILARITY_MODEL;
+    private static RecursiveTask<AbstractSimilarityModel> TEXT_SIMILARITY_MODEL;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     public static Map<String,RecursiveTask<AbstractSimilarityModel>> similarityModelMap = new HashMap<>();
     public static SimilarityEngineController similarityEngine;
@@ -127,6 +129,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Similarity", Constants.SIMILARITY);
             humanAttrToJavaAttrMap.put("Technology Similarity", Constants.TECHNOLOGY_SIMILARITY);
             humanAttrToJavaAttrMap.put("Assignee Similarity", Constants.ASSIGNEE_SIMILARITY);
+            humanAttrToJavaAttrMap.put("Text Similarity", Constants.TEXT_SIMILARITY);
             humanAttrToJavaAttrMap.put("Asset Similarity", Constants.PATENT_SIMILARITY);
             humanAttrToJavaAttrMap.put("Total Asset Count", Constants.TOTAL_ASSET_COUNT);
             humanAttrToJavaAttrMap.put("Assignee Name", Constants.ASSIGNEE);
@@ -401,6 +404,15 @@ public class SimilarPatentServer {
                 DEFAULT_SIMILARITY_MODEL.fork();
             }
             similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL, DEFAULT_SIMILARITY_MODEL);
+            if(TEXT_SIMILARITY_MODEL==null) {
+                TEXT_SIMILARITY_MODEL = new RecursiveTask<AbstractSimilarityModel>() {
+                    @Override
+                    protected AbstractSimilarityModel compute() {
+                        return new DefaultSimilarityModel(Collections.emptyList());
+                    }
+                };
+                TEXT_SIMILARITY_MODEL.fork();
+            }
         }
     }
 
@@ -483,7 +495,7 @@ public class SimilarPatentServer {
                 DEFAULT_SIMILARITY_MODEL.fork();
             }
             // similarity engine
-            similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new AssigneeSimilarityEngine(DEFAULT_SIMILARITY_MODEL)));
+            similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine()));
 
             allTopLevelAttributes = new ArrayList<>(attributesMap.values());
 

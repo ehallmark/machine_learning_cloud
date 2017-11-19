@@ -23,10 +23,6 @@ import static user_interface.server.SimilarPatentServer.*;
  */
 public class PatentSimilarityEngine extends AbstractSimilarityEngine {
 
-    public PatentSimilarityEngine(RecursiveTask<AbstractSimilarityModel> model) {
-        super(model);
-    }
-
     @Override
     protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
         System.out.println("Collecting inputs to search for...");
@@ -57,6 +53,6 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public AbstractSimilarityEngine dup() {
-        return new PatentSimilarityEngine(similarityModel);
+        return new PatentSimilarityEngine();
     }
 }

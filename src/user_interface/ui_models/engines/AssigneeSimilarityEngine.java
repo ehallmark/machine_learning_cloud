@@ -28,10 +28,6 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
         return Constants.ASSIGNEE_SIMILARITY;
     }
 
-    public AssigneeSimilarityEngine(RecursiveTask<AbstractSimilarityModel> model) {
-        super(model);
-    }
-
     @Override
     protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
         System.out.println("Collecting inputs to search for...");
@@ -60,6 +56,6 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public AbstractSimilarityEngine dup() {
-        return new AssigneeSimilarityEngine(similarityModel);
+        return new AssigneeSimilarityEngine();
     }
 }

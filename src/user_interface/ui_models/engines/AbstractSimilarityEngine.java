@@ -28,16 +28,13 @@ import java.util.function.Function;
  * Created by ehallmark on 2/28/17.
  */
 public abstract class AbstractSimilarityEngine extends AbstractAttribute implements DependentAttribute<AbstractSimilarityEngine> {
-    @Setter
-    protected RecursiveTask<AbstractSimilarityModel> similarityModel;
     protected Collection<String> inputs;
     @Getter
     protected INDArray avg;
     protected static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
 
-    public AbstractSimilarityEngine(RecursiveTask<AbstractSimilarityModel> similarityModel) {
+    public AbstractSimilarityEngine() {
         super(Collections.emptyList());
-        this.similarityModel=similarityModel;
     }
 
     protected abstract Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes);
@@ -46,6 +43,7 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
         List<String> resultTypes = SimilarPatentServer.extractArray(req,  Constants.DOC_TYPE_INCLUDE_FILTER_STR);
         inputs = getInputsToSearchFor(req,resultTypes);
         if(inputs!=null&&inputs.size()>0) {
+
             DefaultSimilarityModel finder = new DefaultSimilarityModel(inputs);
             if (finder.getItemList().length > 0) {
                 avg = finder.computeAvg();
