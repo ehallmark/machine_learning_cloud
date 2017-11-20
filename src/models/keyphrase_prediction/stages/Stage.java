@@ -306,7 +306,7 @@ public abstract class Stage<V> {
             data.put(ASSET_ID,asset);
             pipeline.annotate(annotation, annotator.apply(data));
             attributesFunction.apply(data);
-            Map<String,AtomicInteger> docCounts = (Map<String,AtomicInteger>)data.get(APPEARED_WITH_COUNTS);
+            Map<MultiStem,AtomicInteger> docCounts = (Map<MultiStem,AtomicInteger>)data.get(APPEARED_WITH_COUNTS);
             if(docCounts==null) return null;
             String ret= asset+","+String.join(",",docCounts.entrySet().stream().map(e->e.getKey().toString()+":"+e.getValue().get()).collect(Collectors.toList()));
             if(ret==null||ret.isEmpty()) return null;
