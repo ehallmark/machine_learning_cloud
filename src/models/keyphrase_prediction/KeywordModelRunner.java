@@ -52,7 +52,7 @@ public class KeywordModelRunner {
     public static final boolean debug = false;
 
     public static void main(String[] args) {
-        runModel(false);
+        runModel(true);
     }
 
     public static void runModel(boolean loadPrevious) {
@@ -68,27 +68,22 @@ public class KeywordModelRunner {
             }
         }
 
-
         // stage 1;
         Stage1 stage1 = new Stage1(model);
-        stage1.run(false);
+        stage1.run(alwaysRerun);
         //if(alwaysRerun)stage1.createVisualization();
-
-        Set<MultiStem> multiStems;
 
         // stage 2
         System.out.println("Pre-grouping data for stage 2...");
         Stage2 stage2 = new Stage2(stage1.get(), model);
         stage2.run(alwaysRerun);
         //if(alwaysRerun)stage2.createVisualization();
-        multiStems = stage2.get();
 
         // stage 3
         System.out.println("Pre-grouping data for stage 3...");
-        Stage3 stage3 = new Stage3(multiStems, model);
+        Stage3 stage3 = new Stage3(stage2.get(), model);
         stage3.run(alwaysRerun);
         //if(alwaysRerun) stage3.createVisualization();
-        multiStems = stage3.get();
 
 
         // TODO technology predictions

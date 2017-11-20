@@ -347,8 +347,7 @@ public abstract class Stage<V> {
     }
 
     private static void samplingIteratorHelper(Function<String,Void> lineTransformer) {
-        int sampling = 1000000;
-        int taskLimit = 32;
+        int taskLimit = Runtime.getRuntime().availableProcessors();
         File file = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.trainFile.getName());
         LineIterator iterator;
         try {
@@ -358,7 +357,7 @@ public abstract class Stage<V> {
         }
         AtomicInteger cnt = new AtomicInteger(0);
         List<RecursiveAction> tasks = new ArrayList<>();
-        while(iterator.hasNext()&&cnt.get()<sampling) {
+        while(iterator.hasNext()) {
             if(cnt.getAndIncrement()%10000==9999) System.out.println("Iterated through: "+cnt.get());
             if(tasks.size()>=taskLimit) {
                 tasks.remove(0).join();
