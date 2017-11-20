@@ -116,12 +116,15 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
             FileTextDataSetIterator iterator = new FileTextDataSetIterator(type);
             File newFile = new File(newBaseDir,file.getName());
 
-            int taskLimit = Runtime.getRuntime().availableProcessors();
+            int taskLimit = Math.max(Runtime.getRuntime().availableProcessors(),1);
             AtomicInteger cnt = new AtomicInteger(0);
             List<RecursiveTask<String>> tasks = new ArrayList<>();
             try(BufferedWriter writer = new BufferedWriter(new FileWriter(newFile))) {
                 while (iterator.hasNext()) {
-                    if (cnt.getAndIncrement() % 10000 == 9999) System.out.println("Iterated through: " + cnt.get());
+                    if (cnt.getAndIncrement() % 10000 == 9999) {
+                        taskLimit = Math.max(Runtime.getRuntime().availableProcessors(),1);
+                        System.out.println("Iterated through: " + cnt.get());
+                    }
                     if (tasks.size() >= taskLimit) {
                         String result = tasks.remove(0).join();
                         if(result!=null) {

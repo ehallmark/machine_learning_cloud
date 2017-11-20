@@ -6,6 +6,7 @@ import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import spark.Request;
+import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
@@ -21,7 +22,7 @@ import static user_interface.server.SimilarPatentServer.*;
 /**
  * Created by ehallmark on 2/28/17.
  */
-public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
+public class AssigneeSimilarityEngine extends AbstractSimilarityEngine implements AjaxMultiselect {
 
     @Override
     public String getName() {
@@ -32,12 +33,9 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
     protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
         System.out.println("Collecting inputs to search for...");
         // get input data
-        Collection<String> inputsToSearchFor = new HashSet<>();
-        Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
-        assignees.forEach(assignee -> {
-            inputsToSearchFor.addAll(Database.possibleNamesForAssignee(assignee));
-        });
-        System.out.println("Found "+assignees.size()+" assignees to search for.");
+        Collection<String> inputsToSearchFor = extractArray(req, ASSIGNEES_TO_SEARCH_FOR_FIELD);
+
+        System.out.println("Found "+inputsToSearchFor.size()+" assignees to search for.");
         return inputsToSearchFor;
     }
 
@@ -58,4 +56,10 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
     public AbstractSimilarityEngine dup() {
         return new AssigneeSimilarityEngine();
     }
+
+    @Override
+    public String ajaxUrl() {
+        return Constants.ASSIGNEE_NAME_AJAX_URL;
+    }
+
 }
