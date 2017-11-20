@@ -318,8 +318,10 @@ public abstract class Stage<V> {
     }
 
     public static void runSamplingIterator(Function<Map<MultiStem,Integer>,Void> attributesFunction) {
-        Function<String,Map<String,Integer>> lineTransformer = line -> {
-            Map<MultiStem,Integer> data = Stream.of(line.split(",")).map(str->{
+        Function<String,Void> lineTransformer = line -> {
+            String[] cells = line.split(",",2);
+            String text = cells[1];
+            Map<MultiStem,Integer> data = Stream.of(text.split(",")).map(str->{
                 String[] pair = str.split(":");
                 return new Pair<>(new MultiStem(pair[0].split("_"),-1),Integer.valueOf(pair[1]));
             }).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
@@ -330,7 +332,7 @@ public abstract class Stage<V> {
     }
 
     protected static void runSamplingIteratorWithLabels(Function<Pair<String,Map<MultiStem,Integer>>,Void> attributesFunction) {
-        Function<String,Map<String,Integer>> lineTransformer = line -> {
+        Function<String,Void> lineTransformer = line -> {
             String[] cells = line.split(",",2);
             String asset = cells[0];
             String text = cells[1];
@@ -344,10 +346,10 @@ public abstract class Stage<V> {
         samplingIteratorHelper(lineTransformer);
     }
 
-    private static void samplingIteratorHelper(Function<String,Map<String,Integer>> lineTransformer) {
+    private static void samplingIteratorHelper(Function<String,Void> lineTransformer) {
         int sampling = 1000000;
         int taskLimit = 32;
-        File file = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.Type.TRAIN.toString());
+        File file = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.trainFile.getName());
         LineIterator iterator;
         try {
             iterator = FileUtils.lineIterator(file);
