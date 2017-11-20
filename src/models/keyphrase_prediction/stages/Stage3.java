@@ -81,6 +81,8 @@ public class Stage3 extends Stage<Set<MultiStem>> {
         KeywordModelRunner.reindex(data);
 
         Function<Map<MultiStem,Integer>,Void> attributesFunction = appeared -> {
+            if(appeared==null) return null;
+            
             Collection<MultiStem> cooccurringStems = appeared.keySet().stream().filter(docStem->data.contains(docStem)).map(docStem->multiStemToSelfMap.get(docStem)).collect(Collectors.toList());
 
             if(debug)
