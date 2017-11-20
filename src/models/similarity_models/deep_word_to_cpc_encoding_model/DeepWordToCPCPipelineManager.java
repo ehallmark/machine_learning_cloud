@@ -26,7 +26,7 @@ import java.util.Map;
 public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
     public static final String MODEL_NAME = "deep_word_to_cpc_encoder";
     public static final File currentVocabMapFile = new File(Constants.DATA_FOLDER+"deep_word_to_cpc_encoding_word_idx_map.jobj");
-    private static final int BATCH_SIZE = 32;
+    private static final int BATCH_SIZE = 128;
     private static final File INPUT_DATA_FOLDER = new File("deep_word_to_cpc_encoding_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deep_word_to_cpc_encoding_predictions/predictions_map.jobj");
     @Getter
@@ -79,8 +79,8 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArra
     @Override
     public synchronized DataSetManager getDatasetManager() {
         if(datasetManager==null) {
-            //datasetManager = new PreSaveDataSetManager(dataFolder);
-            setDatasetManager();
+            datasetManager = new PreSaveDataSetManager(dataFolder);
+            //setDatasetManager();
         }
         return datasetManager;
     }
@@ -97,7 +97,7 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArra
 
     @Override
     protected void setDatasetManager() {
-        datasetManager = new NoSaveDataSetManager(//dataFolder,
+        datasetManager = new PreSaveDataSetManager(dataFolder,
                 getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN)),
                 getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.DEV1)),
                 getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TEST))
