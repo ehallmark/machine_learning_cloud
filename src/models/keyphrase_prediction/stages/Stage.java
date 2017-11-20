@@ -304,10 +304,11 @@ public abstract class Stage<V> {
             if(tasks.size()>=taskLimit) {
                 tasks.remove(0).join();
             }
+            LabelledDocument doc = iterator.next();
             RecursiveAction task = new RecursiveAction() {
                 @Override
                 protected void compute() {
-                    documentTransformer.apply(iterator.next());
+                    documentTransformer.apply(doc);
                 }
             };
             task.fork();
