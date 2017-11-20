@@ -52,43 +52,35 @@ public class KeywordModelRunner {
     public static final boolean debug = false;
 
     public static void main(String[] args) {
-        runModel(true);
+        runModel(false,true,true);
     }
 
-    public static void runModel(boolean loadPrevious) {
+    public static void runModel(boolean rerunVocab, boolean rerunFilters, boolean rerunPredictions) {
         Model model = new TimeDensityModel();
-        boolean alwaysRerun = ! loadPrevious;
-
-        if(alwaysRerun) {
-            File dir = new File(Stage.getBaseDir(),model.getModelName());
-            try {
-                FileUtils.deleteDirectory(dir);
-            } catch(Exception e) {
-                System.out.println("UNABLE TO DELETE DIRECTORY");
-            }
-        }
 
         // stage 1;
         Stage1 stage1 = new Stage1(model);
-        stage1.run(alwaysRerun);
+        stage1.run(rerunVocab);
         //if(alwaysRerun)stage1.createVisualization();
 
         // stage 2
         System.out.println("Pre-grouping data for stage 2...");
         Stage2 stage2 = new Stage2(stage1.get(), model);
-        stage2.run(alwaysRerun);
+        stage2.run(rerunFilters);
         //if(alwaysRerun)stage2.createVisualization();
 
         // stage 3
         System.out.println("Pre-grouping data for stage 3...");
         Stage3 stage3 = new Stage3(stage2.get(), model);
-        stage3.run(alwaysRerun);
+        stage3.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
 
-        // TODO technology predictions
-        //Map<String,List<String>> technologyMap = Collections.synchronizedMap(new HashMap<>());
-        //saveModelMap(model,technologyMap);
+        if(rerunPredictions) {
+            // TODO technology predictions
+            //Map<String,List<String>> technologyMap = Collections.synchronizedMap(new HashMap<>());
+            //saveModelMap(model,technologyMap);
+        }
 
     }
 
