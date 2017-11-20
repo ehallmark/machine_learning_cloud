@@ -86,14 +86,14 @@ public class KeywordModelRunner {
         System.out.println("Pre-grouping data for stage 2...");
         Stage2 stage2 = new Stage2(stage1.get(), model);
         stage2.run(alwaysRerun);
-        if(alwaysRerun)stage2.createVisualization();
+        //if(alwaysRerun)stage2.createVisualization();
         multiStems = stage2.get();
 
         // stage 3
         System.out.println("Pre-grouping data for stage 3...");
         Stage3 stage3 = new Stage3(multiStems, model);
         stage3.run(alwaysRerun);
-        if(alwaysRerun) stage3.createVisualization();
+        //if(alwaysRerun) stage3.createVisualization();
         multiStems = stage3.get();
 
         // stage 4
@@ -101,7 +101,7 @@ public class KeywordModelRunner {
         System.out.println("Num multistems before CPC Density: "+multiStems.size());
         CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model, hierarchy);
         CPCDensityStage.run(alwaysRerun);
-        CPCDensityStage.createVisualization();
+        //CPCDensityStage.createVisualization();
         multiStems = CPCDensityStage.get();
         System.out.println("Num multistems after CPC Density: "+multiStems.size());
 
