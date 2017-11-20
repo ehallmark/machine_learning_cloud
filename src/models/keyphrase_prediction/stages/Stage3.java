@@ -38,8 +38,8 @@ public class Stage3 extends Stage<Set<MultiStem>> {
     private static final boolean debug = false;
     private Map<MultiStem,MultiStem> multiStemToSelfMap;
     private double minValue;
-    public Stage3(Collection<MultiStem> multiStems, Model model, int year) {
-        super(model, year);
+    public Stage3(Collection<MultiStem> multiStems, Model model) {
+        super(model);
         this.data = new HashSet<>(multiStems);
         this.multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
         this.minValue = model.getDefaultMinValue();

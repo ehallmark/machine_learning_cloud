@@ -1,4 +1,4 @@
-package models.similarity_models.signatures;
+package models;
 
 import org.nd4j.linalg.api.buffer.DoubleBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;

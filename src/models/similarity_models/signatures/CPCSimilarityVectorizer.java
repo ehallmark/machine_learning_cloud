@@ -1,7 +1,12 @@
 package models.similarity_models.signatures;
 
+import ch.qos.logback.classic.Level;
+import data_pipeline.models.TrainablePredictionModel;
+import data_pipeline.pipeline_manager.PipelineManager;
 import lombok.Getter;
 import models.similarity_models.Vectorizer;
+import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
+import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -23,6 +28,7 @@ import java.util.stream.Stream;
  */
 public class CPCSimilarityVectorizer implements Vectorizer {
     private static final File vectorMapFile = new File(Constants.DATA_FOLDER+"signature_model_vector_map-depth4.jobj");
+    private static final PipelineManager pipelineManager = new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME);
     private static Map<String,INDArray> DATA;
     private Map<String,INDArray> data;
     private boolean binarize;
@@ -89,8 +95,13 @@ public class CPCSimilarityVectorizer implements Vectorizer {
     }
 
     public synchronized static Map<String,INDArray> getLookupTable() {
-        if(DATA==null) {
-            DATA=(Map<String,INDArray>)Database.tryLoadObject(vectorMapFile);
+        boolean notUpdatedYet = true;
+        if (DATA == null) {
+            if(notUpdatedYet) { // TODO remove this (after update)
+                DATA = (Map<String, INDArray>) Database.tryLoadObject(vectorMapFile);
+            } else {
+                DATA = (Map<String, INDArray>) Database.tryLoadObject(pipelineManager.getPredictionsFile());
+            }
         }
         return DATA;
     }
@@ -101,47 +112,28 @@ public class CPCSimilarityVectorizer implements Vectorizer {
 
     public static void updateLatest(Collection<String> latestAssets) throws Exception {
         // test restore model
-        System.out.println("Restoring model test");
-        SignatureSimilarityModel clone = SignatureSimilarityModel.restoreAndInitModel(SignatureSimilarityModel.MAX_CPC_DEPTH,false);
-        clone.setBatchSize(1000);
+        String modelName = CPCVAEPipelineManager.MODEL_NAME;
+        int cpcDepth = CPCVAEPipelineManager.MAX_CPC_DEPTH;
+
+        System.out.println("Restoring model: "+modelName);
+        TrainablePredictionModel<INDArray> clone = new CPCVariationalAutoEncoderNN((CPCVAEPipelineManager)pipelineManager,modelName,cpcDepth);
+
+
         List<String> allAssets = new ArrayList<>(latestAssets==null?(Database.getAllPatentsAndApplications()):latestAssets);
+        List<String> allAssignees = new ArrayList<>(latestAssets==null?Database.getAssignees():latestAssets.stream().map(asset->Database.assigneeFor(asset)).filter(assignee->assignee!=null).collect(Collectors.toList()));
 
         System.out.println("Testing encodings");
         if(latestAssets==null) {
             // not updating
-            DATA = clone.encode(allAssets);
+            DATA = clone.predict(allAssets,allAssignees);
         } else {
             // updating
             DATA = getLookupTable();
-            DATA.putAll(clone.encode(allAssets));
+            DATA.putAll(clone.predict(allAssets,allAssignees));
         }
         System.out.println("Num patent vectors found: "+DATA.size());
-        System.out.println("Starting assignees...");
-        AtomicInteger cnt = new AtomicInteger(0);
-        Database.getAssignees().parallelStream().forEach(assignee->{
-            List<INDArray> vectors = new ArrayList<>(Stream.of(
-                    Database.selectPatentNumbersFromExactAssignee(assignee),
-                    Database.selectApplicationNumbersFromExactAssignee(assignee)
-            ).flatMap(assets->assets.stream()).map(asset->{
-                return DATA.get(asset);
-            }).filter(vec->vec!=null).collect(Collectors.toList()));
-
-            if(vectors.isEmpty()) return;
-
-            if(vectors.size()>1000) {
-                Collections.shuffle(vectors);
-                vectors = vectors.subList(0,1000);
-            }
-
-            INDArray assigneeVec = Nd4j.vstack(vectors).mean(0);
-            DATA.put(assignee, assigneeVec);
-            if (cnt.getAndIncrement() % 10000 == 9999) {
-                System.out.println("Vectorized " + cnt.get() + " assignees.");
-            }
-        });
-        System.out.println("Total vectors: "+DATA.size());
         System.out.println("Saving results...");
-        Database.trySaveObject(DATA,vectorMapFile);
+        Database.trySaveObject(DATA,pipelineManager.getPredictionsFile());
         System.out.println("Finished saving.");
     }
 

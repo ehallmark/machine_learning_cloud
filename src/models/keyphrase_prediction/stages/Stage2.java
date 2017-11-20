@@ -19,8 +19,8 @@ import java.util.stream.Stream;
  */
 public class Stage2 extends Stage<Set<MultiStem>> {
     private Map<MultiStem,AtomicLong> documentsAppearedInCounter;
-    public Stage2(Map<MultiStem,AtomicLong> documentsAppearedInCounter, Model model, int year) {
-        super(model, year);
+    public Stage2(Map<MultiStem,AtomicLong> documentsAppearedInCounter, Model model) {
+        super(model);
         this.documentsAppearedInCounter=documentsAppearedInCounter;
     }
 

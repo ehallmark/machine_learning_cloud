@@ -7,7 +7,7 @@ import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
 import models.similarity_models.signatures.CPCDataSetIterator;
-import models.similarity_models.signatures.NDArrayHelper;
+import models.NDArrayHelper;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -23,6 +23,7 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
+import seeding.Database;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -32,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 10/26/17.
@@ -67,11 +69,11 @@ public class DeepCPCVariationalAutoEncoderNN extends TrainablePredictionModel<IN
     }
 
     @Override
-    public Map<String,INDArray> predict(List<String> assets) {
-        return encode(assets,pipelineManager.getCPCMap(),pipelineManager.getBatchSize());
+    public Map<String,INDArray> predict(List<String> assets, List<String> assignees) {
+        return encode(assets,assignees,pipelineManager.getCPCMap(),pipelineManager.getBatchSize());
     }
 
-    public Map<String,INDArray> encode(List<String> assets, Map<String, ? extends Collection<CPC>> cpcMap, int batchSize) {
+    public Map<String,INDArray> encode(List<String> assets, List<String> assignees, Map<String, ? extends Collection<CPC>> cpcMap, int batchSize) {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         assets = assets.stream().filter(asset->cpcMap.containsKey(asset)).collect(Collectors.toList());
@@ -87,6 +89,29 @@ public class DeepCPCVariationalAutoEncoderNN extends TrainablePredictionModel<IN
                 assetToEncodingMap.put(assets.get(idx.getAndIncrement()), vector);
             }
         }
+        // assignees
+        AtomicInteger cnt = new AtomicInteger(0);
+        assignees.parallelStream().forEach(assignee->{
+            List<INDArray> vectors = new ArrayList<>(Stream.of(
+                    Database.selectPatentNumbersFromExactAssignee(assignee),
+                    Database.selectApplicationNumbersFromExactAssignee(assignee)
+            ).flatMap(portfolio->portfolio.stream()).map(asset->{
+                return assetToEncodingMap.get(asset);
+            }).filter(vec->vec!=null).collect(Collectors.toList()));
+
+            if(vectors.isEmpty()) return;
+
+            if(vectors.size()>1000) {
+                Collections.shuffle(vectors);
+                vectors = vectors.subList(0,1000);
+            }
+
+            INDArray assigneeVec = Nd4j.vstack(vectors).mean(0);
+            assetToEncodingMap.put(assignee, assigneeVec);
+            if (cnt.getAndIncrement() % 10000 == 9999) {
+                System.out.println("Vectorized " + cnt.get() + " assignees.");
+            }
+        });
         return assetToEncodingMap;
     };
 

@@ -3,6 +3,7 @@ package data_pipeline.pipeline_manager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +15,8 @@ public interface PipelineManager<T> {
     void rebuildPrerequisiteData();
     void saveRawDatasets();
     void trainModels(int nEpochs);
-    Map<String,T> predict(List<String> items);
+    Map<String,T> predict(List<String> items, List<String> assignees);
+    File getPredictionsFile();
     void savePredictions(Map<String,T> predictions);
     Map<String,T> loadPredictions();
     void runPipeline(boolean rebuildPrerequisites, boolean rebuildDatasets, boolean runModels, boolean forceRecreateModel, int nTrainingEpochs, boolean predictAssets);

@@ -42,7 +42,7 @@ public abstract class TrainablePredictionModel<T> {
         this.isSaved = new AtomicBoolean(false);
     }
 
-    public abstract Map<String,T> predict(List<String> assets);
+    public abstract Map<String,T> predict(List<String> assets, List<String> assignees);
 
     public abstract void train(int nEpochs);
 

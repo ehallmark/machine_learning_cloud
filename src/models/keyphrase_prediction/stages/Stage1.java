@@ -20,14 +20,14 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
     private static final boolean debug = false;
     private int minDocFrequency;
     private  Map<String,Map<String,AtomicInteger>> phraseCountMap;
-    public Stage1(Model model,int year) {
-        super(model,year);
+    public Stage1(Model model) {
+        super(model);
         phraseCountMap = Collections.synchronizedMap(new HashMap<>());
         this.minDocFrequency=model.getMinDocFrequency();
     }
 
-    public Stage1(Model model, int minDocFrequency, int year) {
-        this(model,year);
+    public Stage1(Model model, int minDocFrequency) {
+        this(model);
         this.minDocFrequency=minDocFrequency;
     }
 

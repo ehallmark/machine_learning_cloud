@@ -101,17 +101,21 @@ public class ESTextDataSetIterator {
     }
 
     public static Collection<String> collectWordsFrom(SearchHit hit) {
+        return toList(collectTextFrom(hit));
+    }
+
+    public static String collectTextFrom(SearchHit hit) {
         String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString();
         String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString();
         String text = preProcess(String.join(" ", Stream.of(inventionTitle, abstractText).filter(s->s!=null&&s.length()>0).collect(Collectors.toList())));
-        return preProcessToList(text);
+        return text;
     }
 
     public static String preProcess(String text) {
         return text.toLowerCase().replace("-"," ").replace(","," ").replace("."," ").replaceAll("[^a-z ]","").trim();
     }
 
-    public static List<String> preProcessToList(String text) {
+    public static List<String> toList(String text) {
         return Stream.of(text.split("\\s+")).collect(Collectors.toList());
     }
 

@@ -41,11 +41,9 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
     double cpcRatio = 0d;
     @Getter
     private CPCHierarchy hierarchy = new CPCHierarchy();
-    private Map<MultiStem,Set<CPC>> multiStemCPCMap;
-    public CPCDensityStage(Set<MultiStem> keywords, Model model, int year, Map<MultiStem,Set<CPC>> multiStemCPCMap, CPCHierarchy hierarchy) {
-        super(model,year);
+    public CPCDensityStage(Set<MultiStem> keywords, Model model, CPCHierarchy hierarchy) {
+        super(model);
         this.hierarchy=hierarchy;
-        this.multiStemCPCMap=multiStemCPCMap;
         this.data = keywords;
         this.minValue = Double.MIN_VALUE;
     }
@@ -109,7 +107,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             total.getAndIncrement();
 
             Map<CPC,Double> cpcToScoreMap = computeCPCToScoreMap(asset,assetToCPCMap.getPatentDataMap(),assetToCPCMap.getApplicationDataMap(),
-                    hierarchy, wordCounts, multiStemCPCMap);
+                    hierarchy);
             if(cpcToScoreMap.isEmpty()) {
                 return null;
             }
@@ -137,16 +135,12 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         return new Pair<>(cpcCodeIndexMap,matrix);
     }
 
-    public static Map<CPC,Double> computeCPCToScoreMap(String asset, Map<String,Set<String>> patentCPCMap, Map<String,Set<String>> appCPCMap, CPCHierarchy hierarchy, Map<MultiStem,AtomicInteger> wordCounts, Map<MultiStem,Set<CPC>> multiStemCPCMap) {
+    public static Map<CPC,Double> computeCPCToScoreMap(String asset, Map<String,Set<String>> patentCPCMap, Map<String,Set<String>> appCPCMap, CPCHierarchy hierarchy) {
         Collection<String> currentCpcs = patentCPCMap.getOrDefault(asset,appCPCMap.getOrDefault(asset,Collections.emptySet()));
         // add potential cpcs from keywords
         currentCpcs = currentCpcs.stream().map(cpc->ClassCodeHandler.convertToLabelFormat(cpc)).collect(Collectors.toList());
         Map<CPC,Double> cpcToScoreMap = new HashMap<>();
-        //new HashMap<>(wordCounts.entrySet().stream().flatMap(e->{
-        //    Set<CPC> found = multiStemCPCMap.getOrDefault(e.getKey(),Collections.emptySet());
-        //    double count = e.getValue().get();
-        //    return found.stream().map(cpc->new Pair<>(cpc,(count/(found.size()*cpc.getKeywords().size()))));
-        //}).sorted((p1,p2)->p2._2.compareTo(p1._2)).limit(10).flatMap(p->hierarchy.cpcWithAncestors(p._1.getName()).stream().map(a->new Pair<>(a,p._2/a.numSubclasses()))).collect(Collectors.groupingBy(pair->pair._1,Collectors.summingDouble(p->p._2))));
+
         Collection<CPC> cpcs = currentCpcs.stream().map(cpc->hierarchy.getLabelToCPCMap().get(cpc)).filter(cpc->cpc!=null).flatMap(cpc->hierarchy.cpcWithAncestors(cpc.getName()).stream()).collect(Collectors.toList());
         for(CPC cpc : cpcs) {
             if(cpcToScoreMap.containsKey(cpc)) {

@@ -3,19 +3,30 @@ package models.keyphrase_prediction.stages;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import elasticsearch.DataIngester;
+import elasticsearch.DataSearcher;
 import models.classification_models.WIPOHelper;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
 import org.apache.commons.math3.linear.*;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.InnerHitBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.join.query.HasParentQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import seeding.Constants;
 import seeding.Database;
 import tools.ClassCodeHandler;
 import tools.OpenMapBigRealMatrix;
 import tools.Stemmer;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
+import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 import util.Pair;
 
@@ -44,13 +55,11 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
     private AtomicInteger notFoundCounter = new AtomicInteger(0);
     private AtomicInteger cnt = new AtomicInteger(0);
     private Set<MultiStem> multiStems;
-    private Map<MultiStem,Set<CPC>> multiStemCPCMap;
     private CPCHierarchy hierarchy;
-    public Stage5(Stage1 stage1, Set<MultiStem> multiStems, Model model, int year, Map<MultiStem,Set<CPC>> multiStemCPCMap, CPCHierarchy hierarchy) {
-        super(model,year);
+    public Stage5(Stage1 stage1, Set<MultiStem> multiStems, Model model, CPCHierarchy hierarchy) {
+        super(model);
         this.hierarchy=hierarchy;
         this.multiStems=multiStems;
-        this.multiStemCPCMap=multiStemCPCMap;
         multiStemToDocumentCountMap = stage1.get();
         multiStemToSelfMap=multiStemToDocumentCountMap.keySet().parallelStream().collect(Collectors.toMap(e->e,e->e));
     }
@@ -116,14 +125,12 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
 
         // load T matrix
         importantToIndex.entrySet().parallelStream().forEach(e->e.getKey().setIndex(e.getValue())); // ensure proper indices
-        CPCDensityStage cpcStage = new CPCDensityStage(multiStems,model,year,multiStemCPCMap,hierarchy);
+        CPCDensityStage cpcStage = new CPCDensityStage(multiStems,model,hierarchy);
         Pair<Map<String,Integer>,RealMatrix> pair = cpcStage.buildTMatrix(false);
 
         Map<String,Integer> cpcToIdx = pair._1;
         RealMatrix T = pair._2;
 
-        // turn of sampling
-        this.sampling=-1;
 
         AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
         Map<String,Set<String>> patentCPCMap = assetToCPCMap.getPatentDataMap();
@@ -151,7 +158,7 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
                 return p1.add(p2);
             }).orElse(null);
 
-            Map<CPC,Double> cpcToScoreMap = CPCDensityStage.computeCPCToScoreMap(asset,patentCPCMap,appCPCMap,hierarchy, documentStems, multiStemCPCMap);
+            Map<CPC,Double> cpcToScoreMap = CPCDensityStage.computeCPCToScoreMap(asset,patentCPCMap,appCPCMap,hierarchy);
             RealVector cpcResult = cpcToScoreMap.entrySet().stream()
                     .filter(e->cpcToIdx.containsKey(e.getKey().getName()))
                     .map(e->T.getColumnVector(cpcToIdx.get(e.getKey().getName())).mapMultiply(e.getValue())).reduce((v1,v2)->{
@@ -206,6 +213,8 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
             return null;
         };
 
-        runSamplingIterator(attributesFunction);
+        runFullElasticSearchIterator(attributesFunction);
     }
+
+
 }

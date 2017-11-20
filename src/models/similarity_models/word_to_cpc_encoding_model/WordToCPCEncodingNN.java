@@ -1,10 +1,8 @@
 package models.similarity_models.word_to_cpc_encoding_model;
 
-import data_pipeline.helpers.Function2;
 import data_pipeline.helpers.Function3;
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
-import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.models.listeners.MultiScoreReporter;
 import data_pipeline.models.listeners.OptimizationScoreListener;
 import data_pipeline.optimize.nn_optimization.MultiLayerNetworkWrapper;
@@ -18,19 +16,14 @@ import data_pipeline.optimize.parameters.impl.LearningRateParameter;
 import data_pipeline.optimize.parameters.impl.LossFunctionParameter;
 import data_pipeline.optimize.parameters.impl.UpdaterParameter;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
-import models.similarity_models.signatures.NDArrayHelper;
-import org.deeplearning4j.nn.api.*;
-import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
+import models.NDArrayHelper;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
-import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.conf.layers.Layer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.api.ops.impl.transforms.LeakyReLU;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
@@ -56,7 +49,7 @@ public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
     }
 
     @Override
-    public Map<String, INDArray> predict(List<String> assets) {
+    public Map<String, INDArray> predict(List<String> assets,List<String> assignees) {
         throw new UnsupportedOperationException("This model does not make asset predictions.");
     }
 

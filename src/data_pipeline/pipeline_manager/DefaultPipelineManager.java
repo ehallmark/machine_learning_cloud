@@ -3,6 +3,7 @@ package data_pipeline.pipeline_manager;
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
+import lombok.Getter;
 import seeding.Database;
 
 import java.io.File;
@@ -20,6 +21,7 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
     protected List<String> validationAssets;
     protected DataSetManager datasetManager;
     protected File dataFolder;
+    @Getter
     protected File predictionsFile;
     protected TrainablePredictionModel<T> model;
 
@@ -63,8 +65,8 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
     }
 
     @Override
-    public Map<String,T> predict(List<String> items) {
-        return model.predict(items);
+    public Map<String,T> predict(List<String> items, List<String> assignees) {
+        return model.predict(items,assignees);
     }
 
     @Override
@@ -111,7 +113,8 @@ public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
             if(model==null) initModel(forceRecreateModel);
             System.out.println("Predicting results...");
             List<String> allAssets = new ArrayList<>(Database.getAllPatentsAndApplications());
-            Map<String,T> allPredictions = predict(allAssets);
+            List<String> allAssignees = new ArrayList<>(Database.getAssignees());
+            Map<String,T> allPredictions = predict(allAssets, allAssignees);
             savePredictions(allPredictions);
         }
     }

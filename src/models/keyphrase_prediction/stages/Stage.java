@@ -12,14 +12,27 @@ import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.scorers.KeywordScorer;
+import models.text_streaming.ESTextDataSetIterator;
+import models.text_streaming.FileTextDataSetIterator;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.deeplearning4j.text.documentiterator.LabelledDocument;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.InnerHitBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.join.query.HasParentQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.gephi.graph.api.Node;
 import seeding.Constants;
 import seeding.Database;
 import seeding.ai_db_updater.tools.Helper;
 import tools.Stemmer;
+import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 import visualization.Visualizer;
 
@@ -56,17 +69,13 @@ public abstract class Stage<V> {
     private static final File baseDir = new File(Constants.DATA_FOLDER+"technologyPredictionStages/");
     protected File mainDir;
     protected V data;
-    protected int sampling;
     protected Model model;
-    protected int year;
     protected double defaultUpper;
     protected double defaultLower;
-    protected Stage(Model model, int year) {
+    protected Stage(Model model) {
         this.model=model;
-        this.year=year;
         this.defaultUpper = model.getDefaultUpperBound();
         this.defaultLower = model.getDefaultLowerBound();
-        this.sampling = model.getSampling();
         if(!baseDir.exists()) baseDir.mkdir();
         if(!baseDir.isDirectory()) throw new RuntimeException(baseDir.getAbsolutePath()+" must be a directory.");
         this.mainDir = new File(baseDir, model.getModelName());
@@ -83,7 +92,7 @@ public abstract class Stage<V> {
         this.data=data;
     }
     public File getFile() {
-        return new File(mainDir,this.getClass().getSimpleName()+"-"+year);
+        return new File(mainDir,this.getClass().getSimpleName());
     }
 
     public abstract V run(boolean run);
@@ -113,7 +122,7 @@ public abstract class Stage<V> {
         // now we have keywords
         KeywordModelRunner.reindex(multiStems);
         Map<MultiStem,MultiStem> multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
-        double[][] matrix = new Stage3(multiStems,model,year).buildMMatrix(multiStems,multiStemToSelfMap).getData();
+        double[][] matrix = new Stage3(multiStems,model).buildMMatrix(multiStems,multiStemToSelfMap).getData();
         double[] sums = Stream.of(matrix).mapToDouble(row-> DoubleStream.of(row).sum()).toArray();
 
         multiStems.forEach(stem->{
@@ -166,31 +175,6 @@ public abstract class Stage<V> {
         }
 
         return node;
-    }
-
-
-    protected void runSamplingIterator(Function<?,Item> transformer, Function<Function,Void> transformerRunner, Function<Map<String,Object>,Consumer<Annotation>> annotatorFunction, Function<Map<String,Object>,Void> attributesFunction) {
-        Properties props = new Properties();
-        props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-
-        Function<Map<String,Object>,Void> preDataFunction = data -> {
-            String text = data.get(TEXT).toString();
-            Annotation doc = new Annotation(text);
-            pipeline.annotate(doc, annotatorFunction.apply(data));
-            attributesFunction.apply(data);
-            return null;
-        };
-
-        transformer = transformer.andThen(item->{
-            preDataFunction.apply(item.getDataMap());
-            return null;
-        });
-        transformerRunner.apply(transformer);
-    }
-
-    public void runSamplingIterator(Function<?,Item> transformer, Function<Function,Void> transformerRunner, Function<Map<String,Object>,Void> attributesFunction) {
-        runSamplingIterator(transformer,transformerRunner,getDefaultAnnotator(),attributesFunction);
     }
 
     public Function<Map<String,Object>,Consumer<Annotation>> getDefaultAnnotator() {
@@ -246,17 +230,12 @@ public abstract class Stage<V> {
                                     checkStem(new String[]{stem}, word, appeared);
                                     if(maxPhraseLength>1) {
                                         if (prevStem != null && !prevStem.equals(stem)) {
-                                            //long numNouns = Stream.of(pos,prevPos).filter(p->p!=null&&p.startsWith("N")).count();
                                             long numVerbs = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("V")).count();
-                                            //long numAdjectives = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("J")).count();
                                             if (numVerbs <= 1) {
                                                 checkStem(new String[]{prevStem, stem}, String.join(" ", prevWord, word), appeared);
                                                 if(maxPhraseLength>2) {
                                                     if (prevPrevStem != null && !prevStem.equals(prevPrevStem) && !prevPrevStem.equals(stem)) {
-                                                        // maximum 1 noun
-                                                        //numNouns = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("N")).count();
                                                         numVerbs = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("V")).count();
-                                                        //numAdjectives = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("J")).count();
                                                         if (numVerbs <= 1) {
                                                             checkStem(new String[]{prevPrevStem, prevStem, stem}, String.join(" ", prevPrevWord, prevWord, word), appeared);
                                                         }
@@ -298,39 +277,77 @@ public abstract class Stage<V> {
     }
 
     protected void runSamplingIterator(Function<Map<String,Object>,Void> attributesFunction) {
-        Function<SearchHit,Item> transformer = hit -> {
-            String asset = hit.getId();
-            String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
-            String abstractText = null;
-            String firstClaimText = null;
-            if(sampling<=0) { // only run claim text when not sampling (last pass)
-                abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
-                List<Map<String, Object>> claimObjects = (List<Map<String, Object>>) hit.getSourceAsMap().getOrDefault(Constants.CLAIMS, new ArrayList<>());
-                if (claimObjects != null && claimObjects.size() > 0) {
-                    Object firstClaim = claimObjects.get(0).get(Constants.CLAIM);
-                    if (firstClaim != null) {
-                        firstClaimText = Helper.fixPunctuationSpaces(firstClaim.toString().toLowerCase());
-                        //System.out.println("FOUND CLAIM: "+firstClaimText);
-                    }
-                }
-            }
-            SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
-            Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
-            LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
-            String text = String.join(". ", Stream.of(inventionTitle,abstractText,firstClaimText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList())).replaceAll("[^a-z .,]"," ");
+        Properties props = new Properties();
+        props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
-            Item item = new Item(asset);
-            item.addData(TEXT,text);
-            item.addData(DATE,date);
-            item.addData(ASSET_ID,asset);
-            return item;
-        };
-
-        Function<Function,Void> transformerRunner = v -> {
-            KeywordModelRunner.streamElasticSearchData(v,year,sampling);
+        Function<LabelledDocument,Void> documentTransformer = doc -> {
+            String asset = doc.getLabels().get(0);
+            String text = doc.getContent();
+            Annotation annotation = new Annotation(text);
+            Map<String,Object> data = new HashMap<>();
+            data.put(TEXT,text);
+            data.put(ASSET_ID,asset);
+            pipeline.annotate(annotation, getDefaultAnnotator().apply(data));
+            attributesFunction.apply(data);
             return null;
         };
 
-        runSamplingIterator(transformer,transformerRunner,attributesFunction);
+        FileTextDataSetIterator iterator = new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN);
+        while(iterator.hasNext()) {
+            documentTransformer.apply(iterator.next());
+        }
+    }
+
+    protected void runFullElasticSearchIterator(Function<Map<String,Object>,Void> attributesFunction) {
+        BoolQueryBuilder query = QueryBuilders.boolQuery();
+
+        BoolQueryBuilder innerQuery = QueryBuilders.boolQuery()
+                .must(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, query,false)
+                        .innerHit(new InnerHitBuilder()
+                                .setSize(1)
+                                .setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE,Constants.WIPO_TECHNOLOGY}, new String[]{}))
+                        )
+                ).must(QueryBuilders.boolQuery()
+                        .should(QueryBuilders.termQuery(Constants.GRANTED,false))
+                        .should(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()))
+                        .minimumShouldMatch(1)
+                );
+
+        query = QueryBuilders.boolQuery()
+                .filter(innerQuery);
+
+        TransportClient client = DataSearcher.getClient();
+        SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
+                .setTypes(DataIngester.TYPE_NAME)
+                .setScroll(new TimeValue(120000))
+                .setExplain(false)
+                .setFrom(0)
+                .setSize(10000)
+                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
+                .setQuery(query);
+
+        if(debug) {
+            System.out.println(search.request().toString());
+        }
+
+        Properties props = new Properties();
+        props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+
+        Function<SearchHit,Item> documentTransformer = hit -> {
+            String asset = hit.getId();
+            String text = ESTextDataSetIterator.collectTextFrom(hit);
+            Annotation annotation = new Annotation(text);
+            Map<String,Object> data = new HashMap<>();
+            data.put(TEXT,text);
+            data.put(ASSET_ID,asset);
+            pipeline.annotate(annotation, getDefaultAnnotator().apply(data));
+            attributesFunction.apply(data);
+            return null;
+        };
+
+        SearchResponse response = search.get();
+        DataSearcher.iterateOverSearchResults(response, documentTransformer, -1, false);
     }
 }

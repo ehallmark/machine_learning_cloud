@@ -54,9 +54,9 @@ public class KeywordModelRunner {
         runModel(false);
     }
 
-    public static void runModel(boolean lastYearOnly) {
+    public static void runModel(boolean loadPrevious) {
         Model model = new TimeDensityModel();
-        boolean alwaysRerun = ! lastYearOnly;
+        boolean alwaysRerun = ! loadPrevious;
 
         if(alwaysRerun) {
             File dir = new File(Stage.getBaseDir(),model.getModelName());
@@ -67,72 +67,58 @@ public class KeywordModelRunner {
             }
         }
 
-        CPCKeywordModel cpcKeywordModel = new CPCKeywordModel();
-        Map<MultiStem, Set<CPC>> multiStemCPCMap = cpcKeywordModel.run(true);
-        CPCHierarchy hierarchy = cpcKeywordModel.getCpcHierarchy();
+        CPCHierarchy hierarchy = new CPCHierarchy();
+        hierarchy.loadGraph();
 
-        LocalDate now = LocalDate.now();
-        int year;
-        int maxYear = now.getYear();
         Map<String,List<String>> technologyMap = Collections.synchronizedMap(new HashMap<>());
-        for(year=maxYear;year>=maxYear-25;year--) {
 
-            // stage 1
-            System.out.println("Starting year: "+year);
+        // stage 1;
+        Stage1 stage1 = new Stage1(model);
+        stage1.run(alwaysRerun);
+        //if(alwaysRerun)stage1.createVisualization();
 
-            Stage1 stage1 = new Stage1(model,year);
-            stage1.run(alwaysRerun||year==maxYear);
-            //if(alwaysRerun)stage1.createVisualization();
+        // time density stage
+        System.out.println("Computing time densities...");
 
-            // time density stage
-            System.out.println("Computing time densities...");
+        Set<MultiStem> multiStems;
 
-            Set<MultiStem> multiStems;
+        // stage 2
+        System.out.println("Pre-grouping data for stage 2...");
+        Stage2 stage2 = new Stage2(stage1.get(), model);
+        stage2.run(alwaysRerun);
+        //if(alwaysRerun)stage2.createVisualization();
+        multiStems = stage2.get();
 
-            // stage 2
-            System.out.println("Pre-grouping data for stage 2...");
-            Stage2 stage2 = new Stage2(stage1.get(), model, year);
-            stage2.run(alwaysRerun||year==maxYear);
-            //if(alwaysRerun)stage2.createVisualization();
-            multiStems = stage2.get();
+        // stage 3
+        System.out.println("Pre-grouping data for stage 3...");
+        Stage3 stage3 = new Stage3(multiStems, model);
+        stage3.run(alwaysRerun);
+        //if(alwaysRerun) stage3.createVisualization();
+        multiStems = stage3.get();
 
+        // stage 4
+        System.out.println("Pre-grouping data for cpc density stage...");
+        System.out.println("Num multistems before CPC Density: "+multiStems.size());
+        CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model, hierarchy);
+        CPCDensityStage.run(alwaysRerun);
+        // CPCDensityStage.createVisualization();
+        multiStems = CPCDensityStage.get();
+        System.out.println("Num multistems after CPC Density: "+multiStems.size());
 
-            //System.out.println("Pre-grouping data for time density stage...");
-            //TimeDensityStage timeDensityStage = new TimeDensityStage(multiStems, model, year);
-            //timeDensityStage.run(alwaysRerun);
-            ////if(alwaysRerun) timeDensityStage.createVisualization();
-            //multiStems = timeDensityStage.get();
-
-            // stage 3
-            System.out.println("Pre-grouping data for stage 3...");
-            Stage3 stage3 = new Stage3(multiStems, model, year);
-            stage3.run(alwaysRerun||year==maxYear);
-            //if(alwaysRerun) stage3.createVisualization();
-            multiStems = stage3.get();
-
-            // stage 4
-            System.out.println("Pre-grouping data for cpc density stage...");
-            System.out.println("Num multistems before CPC Density: "+multiStems.size());
-            CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model, year, multiStemCPCMap, hierarchy);
-            CPCDensityStage.run(alwaysRerun||year==maxYear);
-            // CPCDensityStage.createVisualization();
-            multiStems = CPCDensityStage.get();
-            System.out.println("Num multistems after CPC Density: "+multiStems.size());
-
-            // stage 5
-            System.out.println("Starting stage 5...");
-            Stage5 stage5 = new Stage5(stage1, multiStems, model, year, multiStemCPCMap, hierarchy);
-            stage5.run(alwaysRerun||(year==maxYear||year==maxYear-1)); // always run on last 2 years
-            try {
-                //stage5.createVisualization();
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("Error on visualization...");
-            }
-            technologyMap.putAll(stage5.get());
-            System.out.println("Num assets classified: " + stage5.get().size());
-            System.out.println("Total num assets so far: " + technologyMap.size());
+        // stage 5
+        System.out.println("Starting stage 5...");
+        Stage5 stage5 = new Stage5(stage1, multiStems, model, hierarchy);
+        stage5.run(alwaysRerun); // always run on last 2 years
+        try {
+            //stage5.createVisualization();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error on visualization...");
         }
+        technologyMap.putAll(stage5.get());
+        System.out.println("Num assets classified: " + stage5.get().size());
+        System.out.println("Total num assets so far: " + technologyMap.size());
+
 
         saveModelMap(model,technologyMap);
 
@@ -155,67 +141,6 @@ public class KeywordModelRunner {
         });
     }
 
-    public static void streamElasticSearchData(QueryBuilder query, Function<SearchHit,Item> transformer, int sampling) {
-        TransportClient client = DataSearcher.getClient();
-        SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
-                .setTypes(DataIngester.TYPE_NAME)
-                .setScroll(new TimeValue(120000))
-                .setExplain(false)
-                .setFrom(0)
-                .setSize(10000)
-                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE,Constants.CLAIMS+"."+Constants.CLAIM},new String[]{})
-                .setQuery(query);
-        if(sampling>0) {
-            search = search.addSort(SortBuilders.scoreSort());
-        }
-        if(debug) {
-            System.out.println(search.request().toString());
-        }
-
-        SearchResponse response = search.get();
-        DataSearcher.iterateOverSearchResults(response, transformer, sampling, false);
-    }
-
-    public static void streamElasticSearchData(Function<SearchHit,Item> transformer, int year, int sampling) {
-        BoolQueryBuilder query;
-        if(sampling>0) {
-            query = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(),ScoreFunctionBuilders.randomFunction(23)))
-                    .filter(QueryBuilders.rangeQuery(Constants.FILING_DATE)
-                            .gte(""+(year-2)+"-01-01")
-                            .lt(""+(year+3)+"-01-01")
-                    );
-        } else {
-            query = QueryBuilders.boolQuery()
-                    .filter(QueryBuilders.rangeQuery(Constants.FILING_DATE)
-                            .gte(""+year+"-01-01")
-                            .lt(""+(year+1)+"-01-01")
-                    );
-        }
-        BoolQueryBuilder innerQuery = QueryBuilders.boolQuery()
-                .must(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, query,false)
-                        .innerHit(new InnerHitBuilder()
-                                        .setSize(1)
-                                        .setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE,Constants.WIPO_TECHNOLOGY}, new String[]{}))
-                        )
-                ).must(QueryBuilders.boolQuery()
-                        .should(QueryBuilders.termQuery(Constants.GRANTED,false))
-                        .should(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()))
-                        .minimumShouldMatch(1)
-                );
-
-        if(sampling > 0) {
-            // remove plant and design patents
-            innerQuery = innerQuery
-                    .mustNot(QueryBuilders.prefixQuery(Constants.NAME, "PP"))
-                    .mustNot(QueryBuilders.prefixQuery(Constants.NAME, "D"));
-        }
-
-        query = QueryBuilders.boolQuery()
-                .filter(innerQuery);
-
-        streamElasticSearchData(query,transformer,sampling);
-    }
 
     public static void writeToCSV(Collection<MultiStem> multiStems, File file) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {

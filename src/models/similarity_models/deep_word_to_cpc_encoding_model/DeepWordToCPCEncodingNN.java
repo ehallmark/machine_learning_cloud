@@ -8,14 +8,13 @@ import data_pipeline.models.listeners.MultiScoreReporter;
 import data_pipeline.models.listeners.OptimizationScoreListener;
 import data_pipeline.optimize.nn_optimization.MultiLayerNetworkWrapper;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
-import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import data_pipeline.optimize.parameters.HyperParameter;
 import data_pipeline.optimize.parameters.impl.ActivationFunctionParameter;
 import data_pipeline.optimize.parameters.impl.LearningRateParameter;
 import data_pipeline.optimize.parameters.impl.LossFunctionParameter;
 import data_pipeline.optimize.parameters.impl.UpdaterParameter;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
-import models.similarity_models.signatures.NDArrayHelper;
+import models.NDArrayHelper;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.Layer;
@@ -25,7 +24,6 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
-import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Constants;
 
@@ -51,7 +49,7 @@ public class DeepWordToCPCEncodingNN extends TrainablePredictionModel<INDArray> 
     }
 
     @Override
-    public Map<String, INDArray> predict(List<String> assets) {
+    public Map<String, INDArray> predict(List<String> assets, List<String> assignees) {
         throw new UnsupportedOperationException("This model does not make asset predictions.");
     }
 
