@@ -3,8 +3,6 @@ package models.keyphrase_prediction.stages;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
-import models.keyphrase_prediction.scorers.UnithoodScorer;
-import org.apache.commons.math3.linear.MatrixUtils;
 
 import seeding.Database;
 

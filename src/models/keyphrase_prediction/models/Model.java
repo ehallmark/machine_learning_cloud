@@ -6,8 +6,8 @@ package models.keyphrase_prediction.models;
 public abstract class Model {
     public abstract String getModelName();
     public double getDefaultUpperBound() { return 1d; }
-    public double getDefaultLowerBound() { return 0.15; }
-    public double getDefaultMinValue() { return 0.0; }
+    public double getDefaultLowerBound() { return 0.5d; }
+    public double getDefaultMinValue() { return Double.MIN_VALUE; }
     public int getMinDocFrequency() { return 3; };
     public int getSampling() { return 400000; }
 }
