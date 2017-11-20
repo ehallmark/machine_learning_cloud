@@ -323,6 +323,7 @@ public abstract class Stage<V> {
             if(cells.length==1) return null;
             String text = cells[1];
             Map<MultiStem,Integer> data = Stream.of(text.split(",")).map(str->{
+                System.out.println(str);
                 String[] pair = str.split(":");
                 return new Pair<>(new MultiStem(pair[0].split("_"),-1),Integer.valueOf(pair[1]));
             }).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
