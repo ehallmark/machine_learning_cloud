@@ -76,13 +76,12 @@ public class Stage3 extends Stage<Set<MultiStem>> {
         });
     }
 
-    public SparseRealMatrix buildMMatrix(Collection<MultiStem> data, Map<MultiStem,MultiStem> multiStemToSelfMap, Function<Function<Map<String,Object>,Void>,Void> function) {
+    public SparseRealMatrix buildMMatrix(Collection<MultiStem> data, Map<MultiStem,MultiStem> multiStemToSelfMap, Function<Function<Map<MultiStem,Integer>,Void>,Void> function) {
         SparseRealMatrix matrix = new OpenMapBigRealMatrix(data.size(),data.size());
         KeywordModelRunner.reindex(data);
 
-        Function<Map<String,Object>,Void> attributesFunction = attributes -> {
-            Collection<MultiStem> appeared = (Collection<MultiStem>)attributes.get(APPEARED);
-            Collection<MultiStem> cooccurringStems = appeared.stream().filter(docStem->data.contains(docStem)).map(docStem->multiStemToSelfMap.get(docStem)).collect(Collectors.toList());
+        Function<Map<MultiStem,Integer>,Void> attributesFunction = appeared -> {
+            Collection<MultiStem> cooccurringStems = appeared.keySet().stream().filter(docStem->data.contains(docStem)).map(docStem->multiStemToSelfMap.get(docStem)).collect(Collectors.toList());
 
             if(debug)
                 System.out.println("Num coocurrences: "+cooccurringStems.size());

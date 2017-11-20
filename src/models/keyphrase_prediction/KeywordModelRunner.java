@@ -7,6 +7,7 @@ import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.models.*;
 
 import models.keyphrase_prediction.stages.*;
+import models.text_streaming.FileTextDataSetIterator;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -67,18 +68,11 @@ public class KeywordModelRunner {
             }
         }
 
-        CPCHierarchy hierarchy = new CPCHierarchy();
-        hierarchy.loadGraph();
-
-        Map<String,List<String>> technologyMap = Collections.synchronizedMap(new HashMap<>());
 
         // stage 1;
         Stage1 stage1 = new Stage1(model);
         stage1.run(alwaysRerun);
         //if(alwaysRerun)stage1.createVisualization();
-
-        // time density stage
-        System.out.println("Computing time densities...");
 
         Set<MultiStem> multiStems;
 
@@ -96,31 +90,10 @@ public class KeywordModelRunner {
         //if(alwaysRerun) stage3.createVisualization();
         multiStems = stage3.get();
 
-        // stage 4
-        System.out.println("Pre-grouping data for cpc density stage...");
-        System.out.println("Num multistems before CPC Density: "+multiStems.size());
-        CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model, hierarchy);
-        CPCDensityStage.run(alwaysRerun);
-        //CPCDensityStage.createVisualization();
-        multiStems = CPCDensityStage.get();
-        System.out.println("Num multistems after CPC Density: "+multiStems.size());
 
-        // stage 5
-        System.out.println("Starting stage 5...");
-        Stage5 stage5 = new Stage5(stage1, multiStems, model, hierarchy);
-        stage5.run(alwaysRerun); // always run on last 2 years
-        try {
-            //stage5.createVisualization();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error on visualization...");
-        }
-        technologyMap.putAll(stage5.get());
-        System.out.println("Num assets classified: " + stage5.get().size());
-        System.out.println("Total num assets so far: " + technologyMap.size());
-
-
-        saveModelMap(model,technologyMap);
+        // TODO technology predictions
+        //Map<String,List<String>> technologyMap = Collections.synchronizedMap(new HashMap<>());
+        //saveModelMap(model,technologyMap);
 
     }
 

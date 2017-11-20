@@ -1,5 +1,8 @@
 package models.text_streaming;
 
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import models.keyphrase_prediction.stages.Stage;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.deeplearning4j.text.documentiterator.FileLabelAwareIterator;
@@ -7,10 +10,14 @@ import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.deeplearning4j.text.documentiterator.LabelsSource;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.FileWriter;
+import java.util.*;
+import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 /**
  * Created by Evan on 11/19/2017.
@@ -101,5 +108,47 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
         doc.setContent(text);
         doc.setLabels(Collections.singletonList(label));
         return doc;
+    }
+
+    public static void transformData(File newBaseDir, Function<LabelledDocument,String> transformFunction) {
+        if(!newBaseDir.exists()) newBaseDir.mkdirs();
+        typeToFileMap.forEach((type,file)->{
+            FileTextDataSetIterator iterator = new FileTextDataSetIterator(type);
+            File newFile = new File(newBaseDir,file.getName());
+
+            int taskLimit = 32;
+            int sampling = 1000000;
+            AtomicInteger cnt = new AtomicInteger(0);
+            List<RecursiveTask<String>> tasks = new ArrayList<>();
+            try(BufferedWriter writer = new BufferedWriter(new FileWriter(newFile))) {
+                while (iterator.hasNext() && cnt.get() < sampling) {
+                    if (cnt.getAndIncrement() % 10000 == 9999) System.out.println("Iterated through: " + cnt.get());
+                    if (tasks.size() >= taskLimit) {
+                        String result = tasks.remove(0).join();
+                        if(result!=null) {
+                            writer.write(result+"\n");
+                        }
+                    }
+                    LabelledDocument doc = iterator.next();
+                    RecursiveTask<String> task = new RecursiveTask<String>() {
+                        @Override
+                        protected String compute() {
+                            return transformFunction.apply(doc);
+                        }
+                    };
+                    task.fork();
+                    tasks.add(task);
+                }
+                for(RecursiveTask<String> task : tasks) {
+                    String result = task.join();
+                    if(result!=null) {
+                        writer.write(result+"\n");
+                    }
+                }
+                writer.flush();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 }

@@ -1,11 +1,13 @@
 package models.keyphrase_prediction.stages;
 
 
+import lombok.Getter;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
 
 import seeding.Database;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -16,7 +18,6 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 9/12/17.
  */
 public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
-
     private static final boolean debug = false;
     private int minDocFrequency;
     private  Map<String,Map<String,AtomicInteger>> phraseCountMap;
@@ -26,17 +27,13 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
         this.minDocFrequency=model.getMinDocFrequency();
     }
 
-    public Stage1(Model model, int minDocFrequency) {
-        this(model);
-        this.minDocFrequency=minDocFrequency;
-    }
-
     @Override
     public Map<MultiStem,AtomicLong> run(boolean alwaysRerun) {
-        if(alwaysRerun || !getFile().exists()) {
+        if(alwaysRerun || !getFile().exists() || !getTransformedDataFolder().exists()) {
             data = buildVocabularyCounts();
             data = truncateBetweenLengths();
             Database.trySaveObject(data, getFile());
+
         } else {
             try {
                 loadData();
@@ -55,7 +52,10 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
 
     private Map<MultiStem,AtomicLong> buildVocabularyCounts() {
         return this.buildVocabularyCounts(function->{
-            runSamplingIterator(function);
+            collectVocabAndTransformData(function,getDefaultAnnotator((stem,label,map)->{
+                checkStem(stem,label,map,phraseCountMap);
+                return null;
+            }));
             return null;
         },attr->null);
     }
@@ -97,8 +97,7 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
     }
 
 
-    @Override
-    protected void checkStem(String[] stems, String label, Map<MultiStem,AtomicInteger> appeared) {
+    private static void checkStem(String[] stems, String label, Map<MultiStem,AtomicInteger> appeared, Map<String,Map<String,AtomicInteger>> phraseCountMap) {
         MultiStem multiStem = new MultiStem(stems,-1);
         String stemPhrase = multiStem.toString();
         phraseCountMap.putIfAbsent(stemPhrase,Collections.synchronizedMap(new HashMap<>()));

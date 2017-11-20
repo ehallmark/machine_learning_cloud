@@ -1,5 +1,6 @@
 package models.keyphrase_prediction.stages;
 
+import data_pipeline.helpers.Function3;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -14,6 +15,8 @@ import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.scorers.KeywordScorer;
 import models.text_streaming.ESTextDataSetIterator;
 import models.text_streaming.FileTextDataSetIterator;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -28,6 +31,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.gephi.graph.api.Node;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import seeding.ai_db_updater.tools.Helper;
@@ -55,6 +59,8 @@ import java.util.stream.Stream;
  * Created by ehallmark on 9/12/17.
  */
 public abstract class Stage<V> {
+    @Getter
+    private static File transformedDataFolder = new File("keyword_with_counts_data/");
     public static final Collection<String> validPOS = Arrays.asList("JJ","JJR","JJS","NN","NNS","NNP","NNPS","VBG","VBN");
     public static final Collection<String> adjectivesPOS = Arrays.asList("JJ","JJR","JJS");
     static double scoreThreshold = 200f;
@@ -98,7 +104,7 @@ public abstract class Stage<V> {
 
     public abstract V run(boolean run);
 
-    protected void checkStem(String[] stems, String label, Map<MultiStem,AtomicInteger> appeared) {
+    protected static void checkStem(String[] stems, String label, Map<MultiStem,AtomicInteger> appeared) {
         MultiStem stem = new MultiStem(stems,-1);
         appeared.putIfAbsent(stem,new AtomicInteger(0));
         appeared.get(stem).getAndIncrement();
@@ -178,11 +184,18 @@ public abstract class Stage<V> {
         return node;
     }
 
-    public Function<Map<String,Object>,Consumer<Annotation>> getDefaultAnnotator() {
-        return getDefaultAnnotator(3);
+    public static Function<Map<String,Object>,Consumer<Annotation>> getDefaultAnnotator() {
+        return getDefaultAnnotator(3,(stem,label,map)->{
+            checkStem(stem,label,map);
+            return null;
+        });
     }
 
-    public Function<Map<String,Object>,Consumer<Annotation>> getDefaultAnnotator(int maxPhraseLength) {
+    public static Function<Map<String,Object>,Consumer<Annotation>> getDefaultAnnotator(Function3<String[],String,Map<MultiStem, AtomicInteger>,Void> checkStemFunction) {
+        return getDefaultAnnotator(3,checkStemFunction);
+    }
+
+    public static Function<Map<String,Object>,Consumer<Annotation>> getDefaultAnnotator(int maxPhraseLength, Function3<String[],String,Map<MultiStem, AtomicInteger>,Void> checkStemFunction) {
         return dataMap -> d -> {
             List<CoreMap> sentences = d.get(CoreAnnotations.SentencesAnnotation.class);
             Map<MultiStem,AtomicInteger> appeared = new HashMap<>();
@@ -221,24 +234,24 @@ public abstract class Stage<V> {
 
                     try {
                         String stem = new Stemmer().stem(lemma);
-                        String pos = null;
+                        String pos;
                         if (stem.length() > 3 && !Constants.STOP_WORD_SET.contains(stem)) {
                             // this is the POS tag of the token
                             pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
                             if (validPOS.contains(pos)) {
                                 // don't want to end in adjectives (nor past tense verb)
                                 if (!adjectivesPOS.contains(pos) && !((!pos.startsWith("N"))&&(word.endsWith("ing")||word.endsWith("ed")))) {
-                                    checkStem(new String[]{stem}, word, appeared);
+                                    checkStemFunction.apply(new String[]{stem}, word, appeared);
                                     if(maxPhraseLength>1) {
                                         if (prevStem != null && !prevStem.equals(stem)) {
                                             long numVerbs = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("V")).count();
                                             if (numVerbs <= 1) {
-                                                checkStem(new String[]{prevStem, stem}, String.join(" ", prevWord, word), appeared);
+                                                checkStemFunction.apply(new String[]{prevStem, stem}, String.join(" ", prevWord, word), appeared);
                                                 if(maxPhraseLength>2) {
                                                     if (prevPrevStem != null && !prevStem.equals(prevPrevStem) && !prevPrevStem.equals(stem)) {
                                                         numVerbs = Stream.of(pos, prevPos, prevPrevPos).filter(p -> p != null && p.startsWith("V")).count();
                                                         if (numVerbs <= 1) {
-                                                            checkStem(new String[]{prevPrevStem, prevStem, stem}, String.join(" ", prevPrevWord, prevWord, word), appeared);
+                                                            checkStemFunction.apply(new String[]{prevPrevStem, prevStem, stem}, String.join(" ", prevPrevWord, prevWord, word), appeared);
                                                         }
                                                     }
                                                 }
@@ -277,26 +290,70 @@ public abstract class Stage<V> {
         };
     }
 
-    protected void runSamplingIterator(Function<Map<String,Object>,Void> attributesFunction) {
+
+
+    protected static void collectVocabAndTransformData(Function<Map<String,Object>,Void> attributesFunction, Function<Map<String,Object>,Consumer<Annotation>> annotator) {
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
-        Function<LabelledDocument,Void> documentTransformer = doc -> {
+        Function<LabelledDocument,String> documentTransformer = doc -> {
             String asset = doc.getLabels().get(0);
             String text = doc.getContent();
             Annotation annotation = new Annotation(text);
             Map<String,Object> data = new HashMap<>();
             data.put(TEXT,text);
             data.put(ASSET_ID,asset);
-            pipeline.annotate(annotation, getDefaultAnnotator().apply(data));
+            pipeline.annotate(annotation, annotator.apply(data));
+            attributesFunction.apply(data);
+            Map<String,AtomicInteger> docCounts = (Map<String,AtomicInteger>)data.get(APPEARED_WITH_COUNTS);
+            if(docCounts==null) return null;
+            String ret= asset+","+String.join(",",docCounts.entrySet().stream().map(e->e.getKey().toString()+":"+e.getValue().get()).collect(Collectors.toList()));
+            if(ret==null||ret.isEmpty()) return null;
+            return ret;
+        };
+
+        FileTextDataSetIterator.transformData(transformedDataFolder,documentTransformer);
+
+    }
+
+    public static void runSamplingIterator(Function<Map<MultiStem,Integer>,Void> attributesFunction) {
+        Function<String,Map<String,Integer>> lineTransformer = line -> {
+            Map<MultiStem,Integer> data = Stream.of(line.split(",")).map(str->{
+                String[] pair = str.split(":");
+                return new Pair<>(new MultiStem(pair[0].split("_"),-1),Integer.valueOf(pair[1]));
+            }).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
             attributesFunction.apply(data);
             return null;
         };
+        samplingIteratorHelper(lineTransformer);
+    }
 
+    protected static void runSamplingIteratorWithLabels(Function<Pair<String,Map<MultiStem,Integer>>,Void> attributesFunction) {
+        Function<String,Map<String,Integer>> lineTransformer = line -> {
+            String[] cells = line.split(",",2);
+            String asset = cells[0];
+            String text = cells[1];
+            Map<MultiStem,Integer> data = Stream.of(text.split(",")).map(str->{
+                String[] pair = str.split(":");
+                return new Pair<>(new MultiStem(pair[0].split("_"),-1),Integer.valueOf(pair[1]));
+            }).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
+            attributesFunction.apply(new Pair<>(asset,data));
+            return null;
+        };
+        samplingIteratorHelper(lineTransformer);
+    }
+
+    private static void samplingIteratorHelper(Function<String,Map<String,Integer>> lineTransformer) {
         int sampling = 1000000;
         int taskLimit = 32;
-        FileTextDataSetIterator iterator = new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN);
+        File file = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.Type.TRAIN.toString());
+        LineIterator iterator;
+        try {
+            iterator = FileUtils.lineIterator(file);
+        } catch(Exception e) {
+            throw new RuntimeException("Unable to find file: "+file.getAbsolutePath());
+        }
         AtomicInteger cnt = new AtomicInteger(0);
         List<RecursiveAction> tasks = new ArrayList<>();
         while(iterator.hasNext()&&cnt.get()<sampling) {
@@ -304,20 +361,24 @@ public abstract class Stage<V> {
             if(tasks.size()>=taskLimit) {
                 tasks.remove(0).join();
             }
-            LabelledDocument doc = iterator.next();
-            RecursiveAction task = new RecursiveAction() {
-                @Override
-                protected void compute() {
-                    documentTransformer.apply(doc);
-                }
-            };
-            task.fork();
-            tasks.add(task);
+            try {
+                String line = iterator.nextLine();
+                RecursiveAction task = new RecursiveAction() {
+                    @Override
+                    protected void compute() {
+                        lineTransformer.apply(line);
+                    }
+                };
+                task.fork();
+                tasks.add(task);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         }
         tasks.forEach(task->task.join());
     }
 
-    protected void runFullElasticSearchIterator(Function<Map<String,Object>,Void> attributesFunction) {
+    public static void runFullElasticSearchIterator(Function<Map<String,Object>,Void> attributesFunction) {
         BoolQueryBuilder query = QueryBuilders.boolQuery();
 
         BoolQueryBuilder innerQuery = QueryBuilders.boolQuery()

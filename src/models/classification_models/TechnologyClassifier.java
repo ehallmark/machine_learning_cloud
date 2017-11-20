@@ -53,7 +53,11 @@ public class TechnologyClassifier extends ClassificationAttr {
 
     private List<Pair<String,Double>> technologyHelper(Collection<String> patents, int limit) {
         if(patents.isEmpty()) return Collections.emptyList();
-        return patents.stream().flatMap(item->attribute.attributesFor(Arrays.asList(item),1).stream()).filter(tech->tech!=null).collect(Collectors.groupingBy(tech->tech,Collectors.counting()))
+        return patents.stream().flatMap(item->{
+            Collection<String> attributes = attribute.attributesFor(Arrays.asList(item),1);
+            if(attributes==null) return Stream.empty();
+            else return attributes.stream();
+        }).filter(tech->tech!=null).collect(Collectors.groupingBy(tech->tech,Collectors.counting()))
                 .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(limit)
                 .map(e->new Pair<>(e.getKey(),e.getValue().doubleValue()/patents.size())).collect(Collectors.toList());
     }

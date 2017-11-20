@@ -43,6 +43,6 @@ public class MultiStem implements Serializable{
 
     @Override
     public String toString() {
-        return String.join(" ",stems);
+        return String.join("_",stems);
     }
 }
