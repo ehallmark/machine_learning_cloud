@@ -71,7 +71,7 @@ public class KeywordModelRunner {
 
         // stage 1;
         Stage1 stage1 = new Stage1(model);
-        stage1.run(alwaysRerun);
+        stage1.run(false);
         //if(alwaysRerun)stage1.createVisualization();
 
         Set<MultiStem> multiStems;
