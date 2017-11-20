@@ -124,7 +124,7 @@ public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<INDArray> 
     protected void splitData() {
         System.out.println("Starting to recreate datasets...");
         int limit = 1000000;
-        int numTest = 30000;
+        int numTest = 20000;
         getCPCMap();
         System.out.println("Loaded cpcMap");
         List<String> allAssets = new ArrayList<>(cpcMap.keySet().parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
