@@ -320,6 +320,7 @@ public abstract class Stage<V> {
     public static void runSamplingIterator(Function<Map<MultiStem,Integer>,Void> attributesFunction) {
         Function<String,Void> lineTransformer = line -> {
             String[] cells = line.split(",",2);
+            if(cells.length==1) return null;
             String text = cells[1];
             Map<MultiStem,Integer> data = Stream.of(text.split(",")).map(str->{
                 String[] pair = str.split(":");
@@ -335,6 +336,7 @@ public abstract class Stage<V> {
         Function<String,Void> lineTransformer = line -> {
             String[] cells = line.split(",",2);
             String asset = cells[0];
+            if(cells.length==1) return null;
             String text = cells[1];
             Map<MultiStem,Integer> data = Stream.of(text.split(",")).map(str->{
                 String[] pair = str.split(":");
