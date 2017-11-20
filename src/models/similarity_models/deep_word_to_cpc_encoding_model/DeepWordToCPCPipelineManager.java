@@ -58,7 +58,7 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArra
         System.out.println("Rebuilding vocabulary map...");
         final int totalDocCount = 5000000;
         LabelAwareIterator iterator = new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN);
-        final int minDocCount = 3;
+        final int minDocCount = 10;
         final int maxDocCount = Math.round(0.3f*totalDocCount);
         WordToCPCIterator vocabIter = new WordToCPCIterator(iterator,BATCH_SIZE);
         vocabIter.buildVocabMap(minDocCount,maxDocCount);
@@ -79,7 +79,7 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArra
     @Override
     public synchronized DataSetManager getDatasetManager() {
         if(datasetManager==null) {
-            setDatasetManager();
+            datasetManager = new PreSaveDataSetManager(dataFolder);
         }
         return datasetManager;
     }
@@ -96,7 +96,7 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArra
 
     @Override
     protected void setDatasetManager() {
-        datasetManager = new NoSaveDataSetManager(
+        datasetManager = new PreSaveDataSetManager(dataFolder,
                 getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN)),
                 getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.DEV1)),
                 getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TEST))

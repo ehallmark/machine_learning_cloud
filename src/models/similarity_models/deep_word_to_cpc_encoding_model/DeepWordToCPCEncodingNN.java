@@ -120,7 +120,6 @@ public class DeepWordToCPCEncodingNN extends TrainablePredictionModel<INDArray> 
             }
         }*/
 
-        System.out.println("Building validation matrix...");
         DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
         Function<MultiLayerNetwork,Double> testErrorFunction = (net) -> {
             return test(validationIterator,net);
@@ -137,7 +136,7 @@ public class DeepWordToCPCEncodingNN extends TrainablePredictionModel<INDArray> 
 
         // Optimizer
         int numNetworks = 1;
-        final int hiddenLayerSize = 2048;
+        final int hiddenLayerSize = 1048;
         final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
         final int inputSize = pipelineManager.getWordToIdxMap().size();
         final MultiScoreReporter reporter = new MultiScoreReporter(numNetworks, 1);
@@ -219,7 +218,7 @@ public class DeepWordToCPCEncodingNN extends TrainablePredictionModel<INDArray> 
 
     private List<HyperParameter> getModelParameters() {
         return Arrays.asList(
-                new LearningRateParameter(0.15,0.15),
+                new LearningRateParameter(0.1,0.1),
                 new UpdaterParameter(Arrays.asList(
                         Updater.RMSPROP
                 )),
