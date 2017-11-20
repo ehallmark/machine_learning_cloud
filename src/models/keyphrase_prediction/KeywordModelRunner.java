@@ -75,7 +75,7 @@ public class KeywordModelRunner {
         // stage 1;
         Stage1 stage1 = new Stage1(model);
         stage1.run(alwaysRerun);
-        if(alwaysRerun)stage1.createVisualization();
+        //if(alwaysRerun)stage1.createVisualization();
 
         // time density stage
         System.out.println("Computing time densities...");

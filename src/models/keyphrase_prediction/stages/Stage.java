@@ -295,10 +295,10 @@ public abstract class Stage<V> {
         };
 
         int sampling = 1000000;
+        int taskLimit = 32;
         FileTextDataSetIterator iterator = new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN);
         AtomicInteger cnt = new AtomicInteger(0);
         List<RecursiveAction> tasks = new ArrayList<>();
-        int taskLimit = 16;
         while(iterator.hasNext()&&cnt.get()<sampling) {
             if(cnt.getAndIncrement()%10000==9999) System.out.println("Iterated through: "+cnt.get());
             if(tasks.size()>=taskLimit) {
