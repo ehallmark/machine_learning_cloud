@@ -26,7 +26,7 @@ import java.util.Map;
 public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
     public static final String MODEL_NAME = "deep_word_to_cpc_encoder";
     public static final File currentVocabMapFile = new File(Constants.DATA_FOLDER+"deep_word_to_cpc_encoding_word_idx_map.jobj");
-    private static final int BATCH_SIZE = 128;
+    private static final int BATCH_SIZE = 32;
     private static final File INPUT_DATA_FOLDER = new File("deep_word_to_cpc_encoding_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deep_word_to_cpc_encoding_predictions/predictions_map.jobj");
     @Getter
@@ -59,7 +59,7 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArra
         final int totalDocCount = 5000000;
         LabelAwareIterator iterator = new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN);
         final int minDocCount = 10;
-        final int maxDocCount = Math.round(0.3f*totalDocCount);
+        final int maxDocCount = Math.round(0.2f*totalDocCount);
         WordToCPCIterator vocabIter = new WordToCPCIterator(iterator,BATCH_SIZE);
         vocabIter.buildVocabMap(minDocCount,maxDocCount);
         wordToIdxMap = vocabIter.getWordToIdxMap();
@@ -79,7 +79,8 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArra
     @Override
     public synchronized DataSetManager getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder);
+            //datasetManager = new PreSaveDataSetManager(dataFolder);
+            setDatasetManager();
         }
         return datasetManager;
     }
@@ -96,7 +97,7 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArra
 
     @Override
     protected void setDatasetManager() {
-        datasetManager = new PreSaveDataSetManager(dataFolder,
+        datasetManager = new NoSaveDataSetManager(//dataFolder,
                 getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN)),
                 getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.DEV1)),
                 getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TEST))

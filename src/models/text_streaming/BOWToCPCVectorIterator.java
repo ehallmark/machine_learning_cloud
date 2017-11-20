@@ -95,7 +95,7 @@ public class BOWToCPCVectorIterator implements DataSetIterator{
 
     @Override
     public boolean asyncSupported() {
-        return true;
+        return false;
     }
 
     @Override
