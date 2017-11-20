@@ -293,8 +293,11 @@ public abstract class Stage<V> {
             return null;
         };
 
+        int sampling = 1000000;
         FileTextDataSetIterator iterator = new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN);
-        while(iterator.hasNext()) {
+        AtomicInteger cnt = new AtomicInteger(0);
+        while(iterator.hasNext()&&cnt.get()<sampling) {
+            if(cnt.getAndIncrement()%10000==9999) System.out.println("Iterated through: "+cnt.get());
             documentTransformer.apply(iterator.next());
         }
     }
