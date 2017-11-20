@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -296,10 +297,23 @@ public abstract class Stage<V> {
         int sampling = 1000000;
         FileTextDataSetIterator iterator = new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN);
         AtomicInteger cnt = new AtomicInteger(0);
+        List<RecursiveAction> tasks = new ArrayList<>();
+        int taskLimit = 16;
         while(iterator.hasNext()&&cnt.get()<sampling) {
             if(cnt.getAndIncrement()%10000==9999) System.out.println("Iterated through: "+cnt.get());
-            documentTransformer.apply(iterator.next());
+            if(tasks.size()>=taskLimit) {
+                tasks.remove(0).join();
+            }
+            RecursiveAction task = new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    documentTransformer.apply(iterator.next());
+                }
+            };
+            task.fork();
+            tasks.add(task);
         }
+        tasks.forEach(task->task.join());
     }
 
     protected void runFullElasticSearchIterator(Function<Map<String,Object>,Void> attributesFunction) {
