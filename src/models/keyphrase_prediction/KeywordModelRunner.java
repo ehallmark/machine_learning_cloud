@@ -52,7 +52,7 @@ public class KeywordModelRunner {
     public static final boolean debug = false;
 
     public static void main(String[] args) {
-        runModel(false,true,true);
+        runModel(false,false,true);
     }
 
     public static void runModel(boolean rerunVocab, boolean rerunFilters, boolean rerunPredictions) {
@@ -75,6 +75,13 @@ public class KeywordModelRunner {
         stage3.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
+        // stage 4
+        System.out.println("Pre-grouping data for stage 3...");
+        CPCHierarchy hierarchy = new CPCHierarchy();
+        hierarchy.loadGraph();
+        CPCDensityStage stage4 = new CPCDensityStage(stage3.get(), model, hierarchy);
+        stage4.run(rerunFilters);
+        //if(alwaysRerun) stage3.createVisualization();
 
         if(rerunPredictions) {
             // TODO technology predictions
