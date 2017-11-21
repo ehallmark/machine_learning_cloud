@@ -2,6 +2,7 @@ package models.similarity_models.keyword_embedding_model;
 
 import data_pipeline.models.Word2VecPredictionModel;
 import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
+import org.deeplearning4j.models.embeddings.learning.impl.elements.CBOW;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.embeddings.learning.impl.sequence.DBOW;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
@@ -28,7 +29,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 11/21/17.
  */
 public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
-    public static final int VECTOR_SIZE = 128;
+    public static final int VECTOR_SIZE = 64;
     private static final int BATCH_SIZE = 128;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"keyword_embedding_word2vec_model_data");
 
@@ -46,12 +47,15 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
     @Override
     public void train(int nEpochs) {
         Function<SequenceVectors<VocabWord>,Void> saveFunction = sequenceVectors->{
-            double score = sequenceVectors.getElementsScore();
-            System.out.println("Score: "+score);
-            try {
-                save(LocalDateTime.now(),score,(Word2Vec)sequenceVectors);
-            } catch(Exception e) {
-                e.printStackTrace();
+            System.out.println("Saving...");
+            synchronized (FileSequenceIterator.class) {
+                double score = sequenceVectors.getElementsScore();
+                System.out.println("Score: " + score);
+                try {
+                    save(LocalDateTime.now(), score, (Word2Vec) sequenceVectors);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             return null;
         };
@@ -62,18 +66,18 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
                     .epochs(1) // hard coded to avoid learning rate from resetting
                     .windowSize(6)
                     .layerSize(VECTOR_SIZE)
-                    .sampling(0.1)
+                    .sampling(-1)
                     .negativeSample(-1)
                     .learningRate(0.05)
-                    .minLearningRate(0.0001)
+                    .minLearningRate(0.001)
                     .allowParallelTokenization(true)
                     .useAdaGrad(true)
                     .resetModel(true)
                     .minWordFrequency(5)
                     .workers(Math.max(1,Runtime.getRuntime().availableProcessors()/2))
-                    .iterations(1)
+                    .iterations(3)
                     .useHierarchicSoftmax(true)
-                    .elementsLearningAlgorithm(new SkipGram<>())
+                    .elementsLearningAlgorithm(new CBOW<>())
                     .build();
         }
 

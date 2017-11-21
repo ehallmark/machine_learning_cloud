@@ -362,7 +362,7 @@ public abstract class Stage<V> {
         AtomicInteger cnt = new AtomicInteger(0);
         List<RecursiveAction> tasks = new ArrayList<>();
         while(iterator.hasNext()) {
-            if(cnt.getAndIncrement()%10000==9999) {
+            if(cnt.getAndIncrement()%100000==99999) {
                 taskLimit = Math.max(Runtime.getRuntime().availableProcessors(),1);
                 System.out.println("Iterated through: "+cnt.get());
             }

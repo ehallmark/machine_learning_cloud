@@ -40,11 +40,13 @@ public class FileSequenceIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public Sequence<VocabWord> nextSequence() {
-        while(!task.isDone() && queue.isEmpty()) {
-            try {
-                TimeUnit.MILLISECONDS.sleep(50);
-            }catch(Exception e) {
-                e.printStackTrace();
+        synchronized (FileSequenceIterator.class) {
+            while (!task.isDone() && queue.isEmpty()) {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(5);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
         return queue.poll();
