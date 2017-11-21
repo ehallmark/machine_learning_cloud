@@ -110,6 +110,7 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
         return doc;
     }
 
+
     public static void transformData(File newBaseDir, Function<LabelledDocument,String> transformFunction) {
         if(!newBaseDir.exists()) newBaseDir.mkdirs();
         typeToFileMap.forEach((type,file)->{

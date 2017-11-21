@@ -25,10 +25,18 @@ public class FileSequenceIterator implements SequenceIterator<VocabWord> {
     private boolean vocabPass;
     private int numEpochs;
     public FileSequenceIterator(Set<String> onlyWords, int numEpochs) {
+        this(onlyWords,numEpochs,true);
+    }
+
+    public FileSequenceIterator(Set<String> onlyWords, int numEpochs, boolean vocabPass) {
         this.onlyWords=onlyWords;
         this.numEpochs=numEpochs;
         this.queue = new ArrayBlockingQueue<>(5000);
-        this.vocabPass=true;
+        this.vocabPass=vocabPass;
+    }
+
+    public void setRunVocab(boolean vocab) {
+        this.vocabPass=vocab;
     }
 
 
@@ -39,13 +47,11 @@ public class FileSequenceIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public Sequence<VocabWord> nextSequence() {
-        synchronized (FileSequenceIterator.class) {
-            while (!task.isDone() && queue.isEmpty()) {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(5);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        while (!task.isDone() && queue.isEmpty()) {
+            try {
+                TimeUnit.MILLISECONDS.sleep(5);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return queue.poll();

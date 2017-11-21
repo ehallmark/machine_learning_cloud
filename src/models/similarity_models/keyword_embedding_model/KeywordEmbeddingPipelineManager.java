@@ -26,7 +26,9 @@ public class KeywordEmbeddingPipelineManager extends DefaultPipelineManager<Sequ
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyword_embedding_predictions/predictions_map.jobj");
 
     private String modelName;
+    @Getter
     private Set<String> onlyWords;
+    @Getter
     private int numEpochs;
     @Getter
     private List<String> testWords;
@@ -66,19 +68,12 @@ public class KeywordEmbeddingPipelineManager extends DefaultPipelineManager<Sequ
 
     @Override
     public DataSetManager<SequenceIterator<VocabWord>> getDatasetManager() {
-        if(datasetManager==null) {
-            setDatasetManager();
-        }
-        return datasetManager;
+        return null;
     }
 
     @Override
     protected void setDatasetManager() {
-        datasetManager = new NoSaveDataSetManager<>(
-                new FileSequenceIterator(onlyWords,numEpochs),
-                null,
-                null
-        );
+
     }
 
 

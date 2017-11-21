@@ -48,17 +48,17 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
     public void train(int nEpochs) {
         Function<SequenceVectors<VocabWord>,Void> saveFunction = sequenceVectors->{
             System.out.println("Saving...");
-            synchronized (FileSequenceIterator.class) {
-                double score = sequenceVectors.getElementsScore();
-                System.out.println("Score: " + score);
-                try {
-                    save(LocalDateTime.now(), score, (Word2Vec) sequenceVectors);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            double score = sequenceVectors.getElementsScore()+sequenceVectors.getSequencesScore();
+            System.out.println("Score: " + score);
+            try {
+                save(LocalDateTime.now(), score, (Word2Vec) sequenceVectors);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             return null;
         };
+
+        FileSequenceIterator iterator = new FileSequenceIterator(pipelineManager.getOnlyWords(),pipelineManager.getNumEpochs());
         if(net==null) {
             net = new Word2Vec.Builder()
                     .seed(41)
@@ -79,9 +79,11 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
                     .useHierarchicSoftmax(true)
                     .elementsLearningAlgorithm(new CBOW<>())
                     .build();
+        } else {
+            // no need to redo vocab
+            iterator.setRunVocab(false);
         }
 
-        SequenceIterator<VocabWord> iterator = pipelineManager.getDatasetManager().getTrainingIterator();
         net.setSequenceIterator(iterator);
         net.setEventListeners(Stream.of(
                 new CustomWordVectorListener(saveFunction,"Keyword Embedding Model",1000000,null,pipelineManager.getTestWords().toArray(new String[]{}))
