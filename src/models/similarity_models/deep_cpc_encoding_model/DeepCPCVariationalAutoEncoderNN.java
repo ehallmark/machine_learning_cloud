@@ -166,9 +166,10 @@ public class DeepCPCVariationalAutoEncoderNN extends TrainablePredictionModel<IN
             net.init();
         } else {
             net = NNRefactorer.updateNetworkLearningRate(net,0.01,false);
+            net = NNRefactorer.updatePretrainAndBackprop(net,true,false,false);
             System.out.println("new learning rates: ");
-            net.getDefaultConfiguration().getLearningRateByParam().forEach((param,rate)->{
-                System.out.println("  "+param+": "+rate);
+            net.getLayerWiseConfigurations().getConfs().forEach((conf)->{
+                System.out.println("  "+conf.getLayer().getLearningRate());
             });
         }
 

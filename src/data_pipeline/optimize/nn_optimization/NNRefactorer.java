@@ -21,16 +21,23 @@ public class NNRefactorer {
             layer.setBiasLearningRate(learningRate);
             return null;
         };
-        return updateNetwork(orig,netApplier,layerApplier,dup);
+        return updateNetwork(orig,netApplier,layerApplier,false,true,dup);
     }
 
+    public static MultiLayerNetwork updatePretrainAndBackprop(MultiLayerNetwork orig, boolean pretrain, boolean backprop, boolean dup) {
+        Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier = builder -> builder;
+        Function<Layer,Void> layerApplier = layer -> {
+            return null;
+        };
+        return updateNetwork(orig,netApplier,layerApplier,pretrain,backprop,dup);
+    }
     public static MultiLayerNetwork updateNetworkUpdater(MultiLayerNetwork orig, Updater updater, boolean dup) {
         Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier = builder -> builder.updater(updater);
         Function<Layer,Void> layerApplier = layer -> {
             layer.setUpdater(updater);
             return null;
         };
-        return updateNetwork(orig,netApplier,layerApplier,dup);
+        return updateNetwork(orig,netApplier,layerApplier,false,true,dup);
     }
 
     public static MultiLayerNetwork updateNetworkRegularization(MultiLayerNetwork orig, boolean regularize, double l2, boolean dup) {
@@ -39,10 +46,10 @@ public class NNRefactorer {
             layer.setL2(l2);
             return null;
         };
-        return updateNetwork(orig,netApplier,layerApplier,dup);
+        return updateNetwork(orig,netApplier,layerApplier,false,true,dup);
     }
 
-    public static MultiLayerNetwork updateNetwork(MultiLayerNetwork orig, Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier, Function<Layer,Void> layerApplier, boolean duplicateParameters) {
+    public static MultiLayerNetwork updateNetwork(MultiLayerNetwork orig, Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier, Function<Layer,Void> layerApplier, boolean pretrain, boolean backprop, boolean duplicateParameters) {
         INDArray params = orig.params();
         NeuralNetConfiguration.ListBuilder conf = netApplier.apply(new NeuralNetConfiguration.Builder(orig.getDefaultConfiguration().clone()))
                 .list();
@@ -62,7 +69,9 @@ public class NNRefactorer {
         }
         conf.setConfs(confs);
 
-        MultiLayerNetwork net = new MultiLayerNetwork(conf.build());
+        MultiLayerNetwork net = new MultiLayerNetwork(
+                conf.backprop(backprop).pretrain(pretrain).build()
+        );
         net.init(params,duplicateParameters);
         return net;
     }
