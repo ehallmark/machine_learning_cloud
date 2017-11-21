@@ -53,6 +53,7 @@ public class FileSequenceIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public void reset() {
+        if(task!=null) task.join();
         queue.clear();
         final boolean singleEpoch = vocabPass;
         Function<Pair<String,Map<MultiStem,Integer>>,Void> function = pair -> {
