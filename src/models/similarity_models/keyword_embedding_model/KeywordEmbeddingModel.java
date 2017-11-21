@@ -66,12 +66,10 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
                     .minLearningRate(0.0001)
                     .useAdaGrad(true)
                     .resetModel(true)
-                    .minWordFrequency(30)
+                    .minWordFrequency(10)
                     .workers(Math.max(1,Runtime.getRuntime().availableProcessors()/2))
                     .iterations(1)
                     .useHierarchicSoftmax(true)
-                    .trainSequencesRepresentation(false)
-                    .trainElementsRepresentation(true)
                     .elementsLearningAlgorithm(new SkipGram<>())
                     .setVectorsListeners(Arrays.asList(
                             new CustomWordVectorListener(saveFunction,"Keyword Embedding Model",100000,null,pipelineManager.getTestWords().toArray(new String[]{}))
