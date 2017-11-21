@@ -69,7 +69,7 @@ public class FileSequenceIterator implements SequenceIterator<VocabWord> {
                         VocabWord word = new VocabWord();
                         word.setSequencesCount(1);
                         word.setElementFrequency(1);
-                        word.setWord(e.getValue().toString());
+                        word.setWord(e.getKey().toString());
                         return IntStream.range(0,e.getValue()).mapToObj(i->word);
                     }).collect(Collectors.toList());
             Collections.shuffle(words);
