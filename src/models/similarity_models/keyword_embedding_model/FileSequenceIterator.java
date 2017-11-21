@@ -7,14 +7,13 @@ import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.primitives.Pair;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Created by ehallmark on 11/21/17.
@@ -58,14 +57,21 @@ public class FileSequenceIterator implements SequenceIterator<VocabWord> {
         final boolean singleEpoch = vocabPass;
         Function<Pair<String,Map<MultiStem,Integer>>,Void> function = pair -> {
             Map<MultiStem,Integer> countMap = pair.getSecond();
-            VocabWord label = new VocabWord(1,pair.getFirst());
+            VocabWord label = new VocabWord();
+            label.setElementFrequency(1);
+            label.setSequencesCount(1);
+            label.setWord(pair.getFirst());
             label.setSpecial(true);
-            Collection<VocabWord> words = countMap.entrySet().stream()
+            List<VocabWord> words = countMap.entrySet().stream()
                     .filter(e->onlyWords.contains(e.getKey().toString()))
-                    .map(e->{
-                        VocabWord word = new VocabWord(e.getValue(),e.getKey().toString());
-                        return word;
+                    .flatMap(e->{
+                        VocabWord word = new VocabWord();
+                        word.setSequencesCount(1);
+                        word.setElementFrequency(1);
+                        word.setWord(e.getValue().toString());
+                        return IntStream.range(0,e.getValue()).mapToObj(i->word);
                     }).collect(Collectors.toList());
+            Collections.shuffle(words);
             Sequence<VocabWord> sequence = new Sequence<>(words);
             sequence.setSequenceLabel(label);
             try {
