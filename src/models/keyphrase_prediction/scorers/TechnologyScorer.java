@@ -3,7 +3,7 @@ package models.keyphrase_prediction.scorers;
 import models.keyphrase_prediction.MultiStem;
 import org.apache.commons.math3.linear.RealMatrix;
 
-import java.util.Collection;
+import java.util.Set;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
@@ -16,7 +16,7 @@ public class TechnologyScorer implements KeywordScorer {
 
     // T is a matrix where rows denote keywords and columns denote cpcs
     @Override
-    public Map<MultiStem, Double> scoreKeywords(Collection<MultiStem> keywords, RealMatrix matrix) {
+    public Map<MultiStem, Double> scoreKeywords(Set<MultiStem> keywords, RealMatrix matrix) {
         // get row sums
         int length = matrix.getRowDimension();
         double[] squaredRowSums = new double[length];

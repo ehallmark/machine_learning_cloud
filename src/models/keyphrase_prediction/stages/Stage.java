@@ -152,7 +152,7 @@ public abstract class Stage<V> {
         visualizer.save();
     }
 
-    public static Set<MultiStem> applyFilters(KeywordScorer scorer, RealMatrix matrix, Collection<MultiStem> keywords, double lowerBoundPercent, double upperBoundPercent, double minValue) {
+    public static Set<MultiStem> applyFilters(KeywordScorer scorer, RealMatrix matrix, Set<MultiStem> keywords, double lowerBoundPercent, double upperBoundPercent, double minValue) {
         Map<MultiStem,Double> scoreMap = scorer.scoreKeywords(keywords,matrix);
         long count = scoreMap.size();
         double skipFirst = lowerBoundPercent*count;

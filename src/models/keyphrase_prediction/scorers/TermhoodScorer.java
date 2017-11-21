@@ -8,6 +8,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
@@ -19,12 +20,13 @@ import java.util.stream.IntStream;
 public class TermhoodScorer implements KeywordScorer {
     // expects a 1 dimensional vector of counts
     @Override
-    public Map<MultiStem, Double> scoreKeywords(Collection<MultiStem> keywords, RealMatrix matrix) {
+    public Map<MultiStem, Double> scoreKeywords(Set<MultiStem> keywords, RealMatrix matrix) {
         // get row sums
         final double[] wordCountSums = new double[keywords.size()];
         AtomicInteger idx = new AtomicInteger(0);
+        System.out.println("Num keywords: "+keywords.size());
         IntStream.range(0,keywords.size()).parallel().forEach(i->{
-            if(idx.getAndIncrement()%1==0) System.out.println("Word count sums: "+idx.get());
+            if(idx.getAndIncrement()%100==99) System.out.println("Word count sums: "+idx.get() + " / "+keywords.size());
             RealVector row = matrix.getRowVector(i);
             wordCountSums[i] = row.getL1Norm();
         });

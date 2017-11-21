@@ -55,6 +55,7 @@ public class Stage3 extends Stage<Set<MultiStem>> {
             // apply filter 2
             System.out.println("Num keywords before stage 3: " + data.size());
             RealMatrix M = buildMMatrix(data,multiStemToSelfMap);
+            System.out.println("M Matrix dimensions: ("+M.getRowDimension()+"x"+M.getColumnDimension()+")");
             data = applyFilters(new TermhoodScorer(), M, data, defaultLower, defaultUpper, minValue);
             System.out.println("Num keywords after stage 3: " + data.size());
 
