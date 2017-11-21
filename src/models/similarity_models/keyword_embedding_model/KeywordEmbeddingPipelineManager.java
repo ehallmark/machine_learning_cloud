@@ -2,22 +2,40 @@ package models.similarity_models.keyword_embedding_model;
 
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
+import data_pipeline.vectorize.NoSaveDataSetManager;
+import data_pipeline.vectorize.PreSaveDataSetManager;
 import models.keyphrase_prediction.KeywordModelRunner;
+import models.similarity_models.deep_word_to_cpc_encoding_model.DeepWordToCPCEncodingNN;
+import models.text_streaming.FileTextDataSetIterator;
+import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import seeding.Constants;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 11/21/17.
  */
-public class KeywordEmbeddingPipelineManager extends DefaultPipelineManager<INDArray> {
-    public KeywordEmbeddingPipelineManager(File dataFolder, File finalPredictionsFile) {
-        super(dataFolder, finalPredictionsFile);
-    }
+public class KeywordEmbeddingPipelineManager extends DefaultPipelineManager<SequenceIterator<VocabWord>,INDArray> {
+    public static final String MODEL_NAME = "keyword_embedding_model";
+    private static final int BATCH_SIZE = 128;
+    private static final File INPUT_DATA_FOLDER = new File("keyword_embedding_data");
+    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyword_embedding_predictions/predictions_map.jobj");
 
-    @Override
-    public DataSetManager getDatasetManager() {
-        return null;
+    private String modelName;
+    private Set<String> onlyWords;
+    private int numEpochs;
+    public KeywordEmbeddingPipelineManager(String modelName, Set<String> onlyWords, int numEpochs) {
+        super(INPUT_DATA_FOLDER, PREDICTION_DATA_FILE);
+        this.numEpochs=numEpochs;
+        this.modelName=modelName;
+        this.onlyWords=onlyWords;
     }
 
     @Override
@@ -26,18 +44,40 @@ public class KeywordEmbeddingPipelineManager extends DefaultPipelineManager<INDA
         KeywordModelRunner.main(null);
     }
 
-    @Override
-    protected void initModel(boolean forceRecreateModel) {
-
+    protected void initModel(boolean forceRecreateModels) {
+        model = new KeywordEmbeddingModel(this, modelName);
+        if(!forceRecreateModels) {
+            System.out.println("Warning: Loading previous model.");
+            try {
+                model.loadBestModel();
+            } catch(Exception e) {
+                System.out.println("Error loading previous model: "+e.getMessage());
+            }
+        }
     }
 
     @Override
     protected void splitData() {
+        // purposefully do nothing
+    }
 
+
+    @Override
+    public DataSetManager<SequenceIterator<VocabWord>> getDatasetManager() {
+        if(datasetManager==null) {
+            datasetManager = null;
+        }
+        return datasetManager;
     }
 
     @Override
     protected void setDatasetManager() {
-
+        datasetManager = new NoSaveDataSetManager<>(
+                new FileSequenceIterator(onlyWords,numEpochs),
+                null,
+                null
+        );
     }
+
+
 }

@@ -333,7 +333,7 @@ public abstract class Stage<V> {
         samplingIteratorHelper(lineTransformer);
     }
 
-    protected static void runSamplingIteratorWithLabels(Function<Pair<String,Map<MultiStem,Integer>>,Void> attributesFunction) {
+    public static void runSamplingIteratorWithLabels(Function<Pair<String,Map<MultiStem,Integer>>,Void> attributesFunction) {
         Function<String,Void> lineTransformer = line -> {
             String[] cells = line.split(",",2);
             String asset = cells[0];

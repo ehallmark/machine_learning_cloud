@@ -1,27 +1,20 @@
 package data_pipeline.models;
 
-import lombok.Getter;
+import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
+import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.util.ModelSerializer;
-import seeding.Constants;
-import seeding.Database;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 11/8/17.
  */
-public abstract class NeuralNetworkPredictionModel<T> extends BaseTrainablePredictionModel<T,MultiLayerNetwork> {
-    protected NeuralNetworkPredictionModel(String modelName) {
+public abstract class Word2VecPredictionModel<T> extends BaseTrainablePredictionModel<T,Word2Vec> {
+    protected Word2VecPredictionModel(String modelName) {
         super(modelName);
     }
 
@@ -32,14 +25,14 @@ public abstract class NeuralNetworkPredictionModel<T> extends BaseTrainablePredi
     public abstract File getModelBaseDirectory();
 
     @Override
-    protected void saveNet(MultiLayerNetwork net, File file) throws IOException {
-        ModelSerializer.writeModel(net,file,true);
+    protected void saveNet(Word2Vec net, File file) throws IOException {
+        WordVectorSerializer.writeWord2VecModel(net,file);
     }
 
     @Override
     protected void restoreFromFile(File modelFile) throws IOException {
         if(modelFile!=null&&modelFile.exists()) {
-            this.net = ModelSerializer.restoreMultiLayerNetwork(modelFile, true);
+            this.net = WordVectorSerializer.readWord2VecModel(modelFile);
             this.isSaved.set(true);
         } else {
             System.out.println("WARNING: Model file does not exist: "+modelFile.getAbsolutePath());

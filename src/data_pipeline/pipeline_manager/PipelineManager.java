@@ -10,8 +10,8 @@ import java.util.Map;
 /**
  * Created by ehallmark on 11/7/17.
  */
-public interface PipelineManager<T> {
-    DataSetManager getDatasetManager();
+public interface PipelineManager<D,T> {
+    DataSetManager<D> getDatasetManager();
     void rebuildPrerequisiteData();
     void saveRawDatasets();
     void trainModels(int nEpochs);

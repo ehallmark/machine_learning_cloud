@@ -2,6 +2,7 @@ package models.similarity_models.deep_word_to_cpc_encoding_model;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import data_pipeline.helpers.Function3;
+import data_pipeline.models.NeuralNetworkPredictionModel;
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.MultiScoreReporter;
@@ -39,7 +40,7 @@ import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
 /**
  * Created by Evan on 10/29/2017.
  */
-public class DeepWordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
+public class DeepWordToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArray> {
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"deep_word_to_cpc_deep_nn_model_data");
 
     private DeepWordToCPCPipelineManager pipelineManager;

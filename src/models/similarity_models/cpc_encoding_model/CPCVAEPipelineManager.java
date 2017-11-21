@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
+public class CPCVAEPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
     public static final String MODEL_NAME = "cpc_autoencoder";
     public static final int MAX_CPC_DEPTH = 4;
     private static final int BATCH_SIZE = 128;
@@ -69,7 +69,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<INDArray> {
     }
 
     @Override
-    public synchronized DataSetManager getDatasetManager() {
+    public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
             datasetManager = new PreSaveDataSetManager(dataFolder);
         }

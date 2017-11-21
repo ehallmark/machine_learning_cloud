@@ -10,7 +10,7 @@ import java.util.Random;
 /**
  * Created by ehallmark on 11/7/17.
  */
-public interface DataSetManager {
+public interface DataSetManager<T> {
     String TRAIN = "training";
     String TEST = "testing";
     String VALIDATION = "validation";
@@ -19,13 +19,13 @@ public interface DataSetManager {
 
     void removeDataFromDisk();
 
-    DataSetIterator getTrainingIterator();
+    T getTrainingIterator();
 
-    DataSetIterator getTrainingIterator(int limit);
+    T getTrainingIterator(int limit);
 
-    DataSetIterator getTestIterator();
+    T getTestIterator();
 
-    DataSetIterator getValidationIterator();
+    T getValidationIterator();
 
     void saveDataSets();
 

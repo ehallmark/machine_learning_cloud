@@ -7,6 +7,8 @@ import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.models.*;
 
 import models.keyphrase_prediction.stages.*;
+import models.similarity_models.keyword_embedding_model.KeywordEmbeddingModel;
+import models.similarity_models.keyword_embedding_model.KeywordEmbeddingPipelineManager;
 import models.text_streaming.FileTextDataSetIterator;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -52,10 +54,10 @@ public class KeywordModelRunner {
     public static final boolean debug = false;
 
     public static void main(String[] args) {
-        runModel(false,false,true);
+        runModel(false,false,false,true);
     }
 
-    public static void runModel(boolean rerunVocab, boolean rerunFilters, boolean rerunPredictions) {
+    public static void runModel(boolean rerunVocab, boolean rerunFilters, boolean rerunWordEmbeddings, boolean rerunPredictions) {
         Model model = new TimeDensityModel();
 
         // stage 1;
@@ -88,6 +90,12 @@ public class KeywordModelRunner {
         ValidWordStage stage5 = new ValidWordStage(stage4.get(), model);
         stage5.run(rerunFilters);
         //if(alwaysRerun) stage5.createVisualization();
+
+        String keywordModelName = KeywordEmbeddingPipelineManager.MODEL_NAME;
+        Set<String> onlyWords = stage5.get().stream().map(stem->stem.toString()).collect(Collectors.toSet());
+        KeywordEmbeddingPipelineManager keywordEmbeddingPipelineManager = new KeywordEmbeddingPipelineManager(keywordModelName,onlyWords,10);
+        keywordEmbeddingPipelineManager.runPipeline(false, false, true, rerunWordEmbeddings, 1, false);
+
 
         if(rerunPredictions) {
             // TODO technology predictions

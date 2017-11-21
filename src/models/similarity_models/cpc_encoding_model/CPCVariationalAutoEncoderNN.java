@@ -2,6 +2,7 @@ package models.similarity_models.cpc_encoding_model;
 
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
+import data_pipeline.models.NeuralNetworkPredictionModel;
 import data_pipeline.models.TrainablePredictionModel;
 import models.similarity_models.signatures.CPCDataSetIterator;
 import models.NDArrayHelper;
@@ -38,7 +39,7 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 10/26/17.
  */
-public class CPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArray> {
+public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<INDArray> {
     public static final int VECTOR_SIZE = 32;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"cpc_deep_vae_nn_model_data");
     private Map<String,Integer> cpcToIdxMap;

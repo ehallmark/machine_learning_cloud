@@ -15,11 +15,11 @@ import java.util.Random;
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class NoSaveDataSetManager implements DataSetManager {
-    private DataSetIterator rawTrain;
-    private DataSetIterator rawTest;
-    private DataSetIterator rawVal;
-    public NoSaveDataSetManager(DataSetIterator rawTrain, DataSetIterator rawTest, DataSetIterator rawVal) {
+public class NoSaveDataSetManager<T> implements DataSetManager<T> {
+    private T rawTrain;
+    private T rawTest;
+    private T rawVal;
+    public NoSaveDataSetManager(T rawTrain, T rawTest, T rawVal) {
         this.rawTrain=rawTrain;
         this.rawTest=rawTest;
         this.rawVal=rawVal;
@@ -28,19 +28,19 @@ public class NoSaveDataSetManager implements DataSetManager {
     public void removeDataFromDisk() {
     }
 
-    public DataSetIterator getTrainingIterator() {
+    public T getTrainingIterator() {
         return rawTrain;
     }
 
-    public DataSetIterator getTrainingIterator(int limit) {
+    public T getTrainingIterator(int limit) {
         return rawTrain;
     }
 
-    public DataSetIterator getTestIterator() {
+    public T getTestIterator() {
         return rawTest;
     }
 
-    public DataSetIterator getValidationIterator() {
+    public T getValidationIterator() {
         return rawVal;
     }
 

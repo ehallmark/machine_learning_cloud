@@ -20,8 +20,7 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 11/8/17.
  */
-public abstract class NeuralNetworkPredictionModel<T> implements TrainablePredictionModel<T,MultiLayerNetwork> {
-    protected static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ISO_DATE_TIME;
+public abstract class BaseTrainablePredictionModel<T,N> implements TrainablePredictionModel<T,N> {
     protected static Map<String,Map<LocalDateTime,Double>> modelToScoreMap; // Stores results for ALL models. Bad idea?
     protected static File modelToScoreMapFile = new File(Constants.DATA_FOLDER+"prediction_models_to_score_map.jobj");
     static {
@@ -37,9 +36,9 @@ public abstract class NeuralNetworkPredictionModel<T> implements TrainablePredic
     protected AtomicBoolean isSaved;
     protected String modelName;
     @Getter
-    protected MultiLayerNetwork net;
+    protected N net;
 
-    protected NeuralNetworkPredictionModel(String modelName) {
+    protected BaseTrainablePredictionModel(String modelName) {
         this.modelName = modelName;
         this.isSaved = new AtomicBoolean(false);
     }
@@ -54,7 +53,7 @@ public abstract class NeuralNetworkPredictionModel<T> implements TrainablePredic
         return new File(getModelBaseDirectory(), modelName+"_"+dateTime.format(DATE_TIME_FORMAT));
     }
 
-    protected File getMostRecentModelFile() {
+    public File getMostRecentModelFile() {
         File baseDir = getModelBaseDirectory();
         if(baseDir==null||!baseDir.exists()||!baseDir.isDirectory()) return null;
         File[] matchingFiles = baseDir.listFiles(file->file!=null&&file.getName().startsWith(modelName+"_"));
@@ -68,7 +67,7 @@ public abstract class NeuralNetworkPredictionModel<T> implements TrainablePredic
         }).findFirst().orElse(null);
     }
 
-    protected File getBestModelFile() {
+    public File getBestModelFile() {
         mergeModelScoreMaps();
         File baseDir = getModelBaseDirectory();
         if(baseDir==null||!baseDir.exists()||!baseDir.isDirectory()) return null;
@@ -96,11 +95,13 @@ public abstract class NeuralNetworkPredictionModel<T> implements TrainablePredic
         return bestFile;
     }
 
+    @Override
     public synchronized void save(LocalDateTime time, double score) throws IOException {
         this.save(time,score,net);
     }
 
-    public synchronized void save(LocalDateTime time, double score, MultiLayerNetwork net) throws IOException {
+    @Override
+    public synchronized void save(LocalDateTime time, double score, N net) throws IOException {
         if(net!=null) {
             isSaved.set(true);
             // merge models core map (in case it was updated by another process)
@@ -109,10 +110,12 @@ public abstract class NeuralNetworkPredictionModel<T> implements TrainablePredic
             modelToScoreMap.get(modelName).put(time,score);
             if(!getModelBaseDirectory().exists()) getModelBaseDirectory().mkdirs();
             File networkFile = getModelFile(time);
-            ModelSerializer.writeModel(net,networkFile,true);
+            saveNet(net,networkFile);
             saveModelToScoreMap();
         }
     }
+
+    protected abstract void saveNet(N net, File file) throws IOException;
 
     public synchronized boolean isSaved() {
         return isSaved.get();
@@ -133,14 +136,7 @@ public abstract class NeuralNetworkPredictionModel<T> implements TrainablePredic
         restoreFromFile(modelFile);
     }
 
-    private void restoreFromFile(File modelFile) throws IOException {
-        if(modelFile!=null&&modelFile.exists()) {
-            this.net = ModelSerializer.restoreMultiLayerNetwork(modelFile, true);
-            this.isSaved.set(true);
-        } else {
-            System.out.println("WARNING: Model file does not exist: "+modelFile.getAbsolutePath());
-        }
-    }
+    protected abstract void restoreFromFile(File modelFile) throws IOException;
 
     private static Map<String,Map<LocalDateTime,Double>> loadModelScoreMap() {
         return (Map<String,Map<LocalDateTime,Double>>)Database.tryLoadObject(modelToScoreMapFile);

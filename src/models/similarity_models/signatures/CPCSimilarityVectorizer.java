@@ -116,7 +116,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         int cpcDepth = CPCVAEPipelineManager.MAX_CPC_DEPTH;
 
         System.out.println("Restoring model: "+modelName);
-        TrainablePredictionModel<INDArray> clone = new CPCVariationalAutoEncoderNN((CPCVAEPipelineManager)pipelineManager,modelName,cpcDepth);
+        TrainablePredictionModel<INDArray,?> clone = new CPCVariationalAutoEncoderNN((CPCVAEPipelineManager)pipelineManager,modelName,cpcDepth);
 
 
         List<String> allAssets = new ArrayList<>(latestAssets==null?(Database.getAllPatentsAndApplications()):latestAssets);

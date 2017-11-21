@@ -10,7 +10,7 @@ import java.util.Random;
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class PreSaveDataSetManager implements DataSetManager {
+public class PreSaveDataSetManager implements DataSetManager<DataSetIterator> {
     private DataSetIterator rawTrain;
     private DataSetIterator rawTest;
     private DataSetIterator rawVal;

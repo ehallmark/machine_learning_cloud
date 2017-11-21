@@ -3,6 +3,7 @@ package models.similarity_models.deep_cpc_encoding_model;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.helpers.Function2;
+import data_pipeline.models.NeuralNetworkPredictionModel;
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
@@ -39,7 +40,7 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 10/26/17.
  */
-public class DeepCPCVariationalAutoEncoderNN extends TrainablePredictionModel<INDArray> {
+public class DeepCPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<INDArray> {
     public static final int VECTOR_SIZE = 32;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"deep_cpc_deep_vae_nn_model_data");
     private Map<String,Integer> cpcToIdxMap;

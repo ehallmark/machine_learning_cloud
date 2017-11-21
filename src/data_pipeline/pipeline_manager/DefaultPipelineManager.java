@@ -15,15 +15,15 @@ import java.util.Map;
 /**
  * Created by ehallmark on 11/8/17.
  */
-public abstract class DefaultPipelineManager<T> implements PipelineManager<T> {
+public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T> {
     protected List<String> testAssets;
     protected List<String> trainAssets;
     protected List<String> validationAssets;
-    protected DataSetManager datasetManager;
+    protected DataSetManager<D> datasetManager;
     protected File dataFolder;
     @Getter
     protected File predictionsFile;
-    protected TrainablePredictionModel<T> model;
+    protected TrainablePredictionModel<T,?> model;
 
     protected DefaultPipelineManager(File dataFolder, File finalPredictionsFile) {
         this.dataFolder=dataFolder;

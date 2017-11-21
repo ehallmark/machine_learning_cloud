@@ -1,6 +1,7 @@
 package models.similarity_models.word_to_cpc_encoding_model;
 
 import data_pipeline.helpers.Function3;
+import data_pipeline.models.NeuralNetworkPredictionModel;
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.MultiScoreReporter;
@@ -39,7 +40,7 @@ import java.util.function.Function;
 /**
  * Created by Evan on 10/29/2017.
  */
-public class WordToCPCEncodingNN extends TrainablePredictionModel<INDArray> {
+public class WordToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArray> {
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"word_to_cpc_deep_nn_model_data");
 
     private WordToCPCPipelineManager pipelineManager;

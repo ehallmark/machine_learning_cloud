@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArray> {
+public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
     public static final String MODEL_NAME = "deep_word_to_cpc_encoder";
     public static final File currentVocabMapFile = new File(Constants.DATA_FOLDER+"deep_word_to_cpc_encoding_word_idx_map.jobj");
     private static final int BATCH_SIZE = 128;
@@ -77,7 +77,7 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<INDArra
     }
 
     @Override
-    public synchronized DataSetManager getDatasetManager() {
+    public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
             datasetManager = new PreSaveDataSetManager(dataFolder);
             //setDatasetManager();
