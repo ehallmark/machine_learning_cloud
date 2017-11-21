@@ -8,6 +8,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -21,7 +22,9 @@ public class TermhoodScorer implements KeywordScorer {
     public Map<MultiStem, Double> scoreKeywords(Collection<MultiStem> keywords, RealMatrix matrix) {
         // get row sums
         final double[] wordCountSums = new double[keywords.size()];
+        AtomicInteger idx = new AtomicInteger(0);
         IntStream.range(0,keywords.size()).parallel().forEach(i->{
+            if(idx.getAndIncrement()%1000==999) System.out.println("Word count sums: "+idx.get());
             RealVector row = matrix.getRowVector(i);
             wordCountSums[i] = row.getL1Norm();
         });
@@ -30,7 +33,9 @@ public class TermhoodScorer implements KeywordScorer {
         if(wordCountSums.length!=keywords.size()) {
             throw new RuntimeException("Invalid word count sums size. Should be: "+keywords.size());
         }
+        idx.set(0);
         return keywords.parallelStream().collect(Collectors.toMap(keyword->keyword,keyword->{
+            if(idx.getAndIncrement()%1000==999) System.out.println("Scored: "+idx.get());
             RealVector Mi = matrix.getRowVector(keyword.getIndex());
             double wordCountSumI = wordCountSums[keyword.getIndex()];
             double score = 0d;

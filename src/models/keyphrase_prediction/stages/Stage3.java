@@ -6,7 +6,9 @@ import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.scorers.TermhoodScorer;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SparseRealMatrix;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -52,7 +54,7 @@ public class Stage3 extends Stage<Set<MultiStem>> {
         if(alwaysRerun || !getFile().exists()) {
             // apply filter 2
             System.out.println("Num keywords before stage 3: " + data.size());
-            SparseRealMatrix M = buildMMatrix(data,multiStemToSelfMap);
+            RealMatrix M = buildMMatrix(data,multiStemToSelfMap);
             data = applyFilters(new TermhoodScorer(), M, data, defaultLower, defaultUpper, minValue);
             System.out.println("Num keywords after stage 3: " + data.size());
 
@@ -69,15 +71,15 @@ public class Stage3 extends Stage<Set<MultiStem>> {
         return data;
     }
 
-    public SparseRealMatrix buildMMatrix(Collection<MultiStem> data, Map<MultiStem,MultiStem> multiStemToSelfMap) {
+    public RealMatrix buildMMatrix(Collection<MultiStem> data, Map<MultiStem,MultiStem> multiStemToSelfMap) {
         return this.buildMMatrix(data,multiStemToSelfMap,attrFunc->{
             runSamplingIterator(attrFunc);
             return null;
         });
     }
 
-    public SparseRealMatrix buildMMatrix(Collection<MultiStem> data, Map<MultiStem,MultiStem> multiStemToSelfMap, Function<Function<Map<MultiStem,Integer>,Void>,Void> function) {
-        SparseRealMatrix matrix = new OpenMapBigRealMatrix(data.size(),data.size());
+    public RealMatrix buildMMatrix(Collection<MultiStem> data, Map<MultiStem,MultiStem> multiStemToSelfMap, Function<Function<Map<MultiStem,Integer>,Void>,Void> function) {
+        RealMatrix matrix = new Array2DRowRealMatrix(data.size(),data.size());
         KeywordModelRunner.reindex(data);
 
         Function<Map<MultiStem,Integer>,Void> attributesFunction = appeared -> {
