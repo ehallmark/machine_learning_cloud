@@ -126,7 +126,11 @@ public class KeywordModelRunner {
     public static void writeToCSV(Collection<MultiStem> multiStems, File file) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.write("Multi-Stem, Key Phrase, Score\n");
-            multiStems.forEach(e->{
+            multiStems.stream().sorted((m1,m2)->{
+                float s1 = m1.getScore();
+                float s2 = m2.getScore();
+                return Float.compare(s2,s1);
+            }).forEach(e->{
                 try {
                     writer.write(e.toString()+","+e.getBestPhrase()+","+e.getScore()+"\n");
                 }catch(Exception e2) {
