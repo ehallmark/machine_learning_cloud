@@ -80,7 +80,6 @@ public class KeywordModelRunner {
         // stage 4
         System.out.println("Pre-grouping data for stage 4...");
         CPCHierarchy hierarchy = new CPCHierarchy();
-        hierarchy.loadGraph();
         CPCDensityStage stage4 = new CPCDensityStage(stage3.get(), model, hierarchy);
         stage4.run(rerunFilters);
         //if(alwaysRerun) stage4.createVisualization();

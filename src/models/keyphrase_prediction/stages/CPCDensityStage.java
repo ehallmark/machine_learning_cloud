@@ -47,6 +47,9 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
     @Override
     public Set<MultiStem> run(boolean alwaysRerun) {
         if(alwaysRerun || !getFile().exists()) {
+            if(hierarchy.getTopLevel()==null) {
+                hierarchy.loadGraph();
+            }
             // apply filter 3
             System.out.println("Num keywords before stage 4: " + data.size());
             RealMatrix T = buildTMatrix()._2;
