@@ -1,6 +1,7 @@
 package models.dl4j_neural_nets.listeners;
 
 import edu.stanford.nlp.util.Triple;
+import models.dl4j_neural_nets.tests.ModelEvaluator;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.glove.Glove;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
@@ -63,12 +64,11 @@ public class CustomWordVectorListener implements VectorsListener<VocabWord> {
     @Override
     public void processEvent(ListenerEvent event, SequenceVectors<VocabWord> sequenceVectors, long argument) {
         if (event.equals(ListenerEvent.LINE)) {
-            saveFunction.apply(sequenceVectors);
             try {
                 // Evaluate model
                 String currentName = modelName + "[EPOCH "+currentEpoch+", LINE " + argument + "]";
                 System.out.println(currentName);
-               // String stats = new ModelEvaluator().evaluateWordVectorModel(sequenceVectors.getLookupTable(),currentName);
+                //String stats = new ModelEvaluator().evaluateWordVectorModel(sequenceVectors.getLookupTable(),currentName);
                 //System.out.println(stats);
             } catch(Exception e) {
                 e.printStackTrace();
@@ -76,8 +76,8 @@ public class CustomWordVectorListener implements VectorsListener<VocabWord> {
             for (String word : words) {
                 Collection<String> lst = sequenceVectors.wordsNearest(word, 10);
                 System.out.println("10 Words closest to '" + word + "': " + lst);
-
             }
+            saveFunction.apply(sequenceVectors);
         }
     }
 }
