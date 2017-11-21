@@ -66,7 +66,7 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
                     .minLearningRate(0.0001)
                     .useAdaGrad(true)
                     .resetModel(true)
-                    .minWordFrequency(10)
+                    .minWordFrequency(3)
                     .workers(Math.max(1,Runtime.getRuntime().availableProcessors()/2))
                     .iterations(1)
                     .useHierarchicSoftmax(true)

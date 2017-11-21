@@ -28,7 +28,7 @@ public class FileSequenceIterator implements SequenceIterator<VocabWord> {
     public FileSequenceIterator(Set<String> onlyWords, int numEpochs) {
         this.onlyWords=onlyWords;
         this.numEpochs=numEpochs;
-        this.queue = new ArrayBlockingQueue<>(1000);
+        this.queue = new ArrayBlockingQueue<>(5000);
         this.vocabPass=true;
     }
 
@@ -42,7 +42,7 @@ public class FileSequenceIterator implements SequenceIterator<VocabWord> {
     public Sequence<VocabWord> nextSequence() {
         while(!task.isDone() && queue.isEmpty()) {
             try {
-                TimeUnit.MILLISECONDS.sleep(500);
+                TimeUnit.MILLISECONDS.sleep(50);
             }catch(Exception e) {
                 e.printStackTrace();
             }
