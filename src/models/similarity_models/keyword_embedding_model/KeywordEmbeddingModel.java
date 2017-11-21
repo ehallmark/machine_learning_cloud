@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 11/21/17.
@@ -60,25 +62,26 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
                     .epochs(1) // hard coded to avoid learning rate from resetting
                     .windowSize(6)
                     .layerSize(VECTOR_SIZE)
-                    .sampling(0.01)
+                    .sampling(0.1)
                     .negativeSample(-1)
                     .learningRate(0.05)
                     .minLearningRate(0.0001)
+                    .allowParallelTokenization(true)
                     .useAdaGrad(true)
                     .resetModel(true)
-                    .minWordFrequency(3)
+                    .minWordFrequency(5)
                     .workers(Math.max(1,Runtime.getRuntime().availableProcessors()/2))
                     .iterations(1)
                     .useHierarchicSoftmax(true)
                     .elementsLearningAlgorithm(new SkipGram<>())
-                    .setVectorsListeners(Arrays.asList(
-                            new CustomWordVectorListener(saveFunction,"Keyword Embedding Model",100000,null,pipelineManager.getTestWords().toArray(new String[]{}))
-                    ))
                     .build();
         }
 
         SequenceIterator<VocabWord> iterator = pipelineManager.getDatasetManager().getTrainingIterator();
         net.setSequenceIterator(iterator);
+        net.setEventListeners(Stream.of(
+                new CustomWordVectorListener(saveFunction,"Keyword Embedding Model",1000000,null,pipelineManager.getTestWords().toArray(new String[]{}))
+        ).collect(Collectors.toSet()));
         net.fit();
     }
 
