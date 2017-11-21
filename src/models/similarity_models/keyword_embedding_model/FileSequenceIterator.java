@@ -59,7 +59,7 @@ public class FileSequenceIterator implements SequenceIterator<VocabWord> {
             VocabWord label = new VocabWord(1,pair.getFirst());
             label.setSpecial(true);
             Collection<VocabWord> words = countMap.entrySet().stream()
-                    .filter(word->onlyWords.contains(word.toString()))
+                    .filter(e->onlyWords.contains(e.getKey().toString()))
                     .map(e->{
                         VocabWord word = new VocabWord(e.getValue(),e.getKey().toString());
                         return word;
