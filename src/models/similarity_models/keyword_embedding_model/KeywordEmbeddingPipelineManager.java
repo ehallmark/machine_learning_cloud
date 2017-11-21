@@ -4,6 +4,7 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
+import lombok.Getter;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.similarity_models.deep_word_to_cpc_encoding_model.DeepWordToCPCEncodingNN;
 import models.text_streaming.FileTextDataSetIterator;
@@ -13,10 +14,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Constants;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Set;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -24,18 +22,22 @@ import java.util.stream.Collectors;
  */
 public class KeywordEmbeddingPipelineManager extends DefaultPipelineManager<SequenceIterator<VocabWord>,INDArray> {
     public static final String MODEL_NAME = "keyword_embedding_model";
-    private static final int BATCH_SIZE = 128;
     private static final File INPUT_DATA_FOLDER = new File("keyword_embedding_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyword_embedding_predictions/predictions_map.jobj");
 
     private String modelName;
     private Set<String> onlyWords;
     private int numEpochs;
+    @Getter
+    private List<String> testWords;
     public KeywordEmbeddingPipelineManager(String modelName, Set<String> onlyWords, int numEpochs) {
         super(INPUT_DATA_FOLDER, PREDICTION_DATA_FILE);
         this.numEpochs=numEpochs;
         this.modelName=modelName;
         this.onlyWords=onlyWords;
+        List<String> onlyWordsList = new ArrayList<>(onlyWords);
+        Collections.shuffle(onlyWordsList);
+        this.testWords = new ArrayList<>(onlyWordsList.subList(0,Math.min(10,onlyWordsList.size())));
     }
 
     @Override
@@ -78,6 +80,7 @@ public class KeywordEmbeddingPipelineManager extends DefaultPipelineManager<Sequ
                 null
         );
     }
+
 
 
 }

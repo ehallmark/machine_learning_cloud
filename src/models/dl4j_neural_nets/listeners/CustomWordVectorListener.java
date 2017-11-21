@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Created by ehallmark on 12/1/16.
@@ -24,16 +25,16 @@ public class CustomWordVectorListener implements VectorsListener<VocabWord> {
     private List<Triple<String,String,String>> analogies;
     private static org.slf4j.Logger log = LoggerFactory.getLogger(CustomWordVectorListener.class);
     private long currentEpoch = 0;
-    private String filepath;
+    private Function<SequenceVectors<VocabWord>,Void> saveFunction;
     private String modelName;
 
 
-    public CustomWordVectorListener(File file, String modelName, int lines, List<Triple<String,String,String>> analogies, String... words) {
+    public CustomWordVectorListener(Function<SequenceVectors<VocabWord>,Void> saveFunction, String modelName, int lines, List<Triple<String,String,String>> analogies, String... words) {
         this.lines=lines;
         this.analogies=analogies;
         this.words=words;
         this.modelName=modelName;
-        this.filepath=file==null?null:file.getAbsolutePath();
+        this.saveFunction=saveFunction;
     }
 
     @Override
@@ -62,15 +63,7 @@ public class CustomWordVectorListener implements VectorsListener<VocabWord> {
     @Override
     public void processEvent(ListenerEvent event, SequenceVectors<VocabWord> sequenceVectors, long argument) {
         if (event.equals(ListenerEvent.LINE)) {
-            if (filepath != null) {
-                if (sequenceVectors instanceof Glove) {
-                    WordVectorSerializer.writeWordVectors((Glove) sequenceVectors, filepath + currentEpoch);
-                } else if (sequenceVectors instanceof ParagraphVectors) {
-                    WordVectorSerializer.writeParagraphVectors((ParagraphVectors) sequenceVectors, filepath + argument);
-                } else {
-                    WordVectorSerializer.writeWord2VecModel((Word2Vec) sequenceVectors, filepath + currentEpoch);
-                }
-            }
+            saveFunction.apply(sequenceVectors);
             try {
                 // Evaluate model
                 String currentName = modelName + "[EPOCH "+currentEpoch+", LINE " + argument + "]";
