@@ -79,7 +79,7 @@ public class Stage3 extends Stage<Set<MultiStem>> {
     }
 
     public RealMatrix buildMMatrix(Collection<MultiStem> data, Map<MultiStem,MultiStem> multiStemToSelfMap, Function<Function<Map<MultiStem,Integer>,Void>,Void> function) {
-        RealMatrix matrix = new Array2DRowRealMatrix(data.size(),data.size());
+        RealMatrix matrix = new OpenMapBigRealMatrix(data.size(),data.size());
         KeywordModelRunner.reindex(data);
 
         Function<Map<MultiStem,Integer>,Void> attributesFunction = appeared -> {

@@ -24,7 +24,7 @@ public class TermhoodScorer implements KeywordScorer {
         final double[] wordCountSums = new double[keywords.size()];
         AtomicInteger idx = new AtomicInteger(0);
         IntStream.range(0,keywords.size()).parallel().forEach(i->{
-            if(idx.getAndIncrement()%1000==999) System.out.println("Word count sums: "+idx.get());
+            if(idx.getAndIncrement()%1==0) System.out.println("Word count sums: "+idx.get());
             RealVector row = matrix.getRowVector(i);
             wordCountSums[i] = row.getL1Norm();
         });
