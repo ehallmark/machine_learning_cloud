@@ -8,6 +8,7 @@ import models.keyphrase_prediction.scorers.TermhoodScorer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.math3.linear.RealMatrix;
+import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 11/21/2017.
  */
 public class ValidWordStage extends Stage<Set<MultiStem>>  {
-    private static final File dictionaryFile = new File("data/word_list.txt");
+    private static final File dictionaryFile = new File(Constants.DATA_FOLDER+"word_list.txt");
     public ValidWordStage(Collection<MultiStem> multiStems, Model model) {
         super(model);
         this.data = new HashSet<>(multiStems);
