@@ -6,6 +6,7 @@ import data_pipeline.helpers.Function2;
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
+import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import models.similarity_models.signatures.CPCDataSetIterator;
 import models.NDArrayHelper;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -163,6 +164,12 @@ public class DeepCPCVariationalAutoEncoderNN extends TrainablePredictionModel<IN
 
             net = new MultiLayerNetwork(conf);
             net.init();
+        } else {
+            net = NNRefactorer.updateNetworkLearningRate(net,0.01,false);
+            System.out.println("new learning rates: ");
+            net.getDefaultConfiguration().getLearningRateByParam().forEach((param,rate)->{
+                System.out.println("  "+param+": "+rate);
+            });
         }
 
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
