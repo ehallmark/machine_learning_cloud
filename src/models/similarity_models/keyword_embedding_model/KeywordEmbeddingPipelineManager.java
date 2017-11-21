@@ -67,7 +67,7 @@ public class KeywordEmbeddingPipelineManager extends DefaultPipelineManager<Sequ
     @Override
     public DataSetManager<SequenceIterator<VocabWord>> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = null;
+            setDatasetManager();
         }
         return datasetManager;
     }
