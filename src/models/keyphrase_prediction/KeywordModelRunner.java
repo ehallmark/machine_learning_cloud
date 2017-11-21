@@ -76,12 +76,18 @@ public class KeywordModelRunner {
         //if(alwaysRerun) stage3.createVisualization();
 
         // stage 4
-        System.out.println("Pre-grouping data for stage 3...");
+        System.out.println("Pre-grouping data for stage 4...");
         CPCHierarchy hierarchy = new CPCHierarchy();
         hierarchy.loadGraph();
         CPCDensityStage stage4 = new CPCDensityStage(stage3.get(), model, hierarchy);
         stage4.run(rerunFilters);
-        //if(alwaysRerun) stage3.createVisualization();
+        //if(alwaysRerun) stage4.createVisualization();
+
+        // stage 4
+        System.out.println("Pre-grouping data for stage 5...");
+        ValidWordStage stage5 = new ValidWordStage(stage4.get(), model);
+        stage5.run(rerunFilters);
+        //if(alwaysRerun) stage5.createVisualization();
 
         if(rerunPredictions) {
             // TODO technology predictions
