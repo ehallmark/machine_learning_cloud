@@ -17,10 +17,7 @@ import seeding.Constants;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,7 +54,17 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
             return null;
         };
 
-        FileSequenceIterator iterator = new FileSequenceIterator(pipelineManager.getOnlyWords(),pipelineManager.getNumEpochs());
+        Collection<String> words = pipelineManager.getTestWords();
+        Function<Void,Void> afterEpochFunction = (v) -> {
+            for (String word : words) {
+                Collection<String> lst = getNet().wordsNearest(word, 10);
+                System.out.println("10 Words closest to '" + word + "': " + lst);
+            }
+            saveFunction.apply(getNet());
+            return null;
+        };
+
+        FileSequenceIterator iterator = new FileSequenceIterator(pipelineManager.getOnlyWords(),pipelineManager.getNumEpochs(), afterEpochFunction);
         if(net==null) {
             net = new Word2Vec.Builder()
                     .seed(41)
@@ -84,9 +91,6 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
         }
 
         net.setSequenceIterator(iterator);
-        net.setEventListeners(Stream.of(
-                new CustomWordVectorListener(saveFunction,"Keyword Embedding Model",1000000,null,pipelineManager.getTestWords().toArray(new String[]{}))
-        ).collect(Collectors.toSet()));
         net.fit();
         synchronized (CustomWordVectorListener.class) {
             System.out.println("Everything should be saved.");

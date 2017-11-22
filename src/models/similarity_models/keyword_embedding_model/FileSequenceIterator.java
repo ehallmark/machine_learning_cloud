@@ -1,5 +1,6 @@
 package models.similarity_models.keyword_embedding_model;
 
+import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.stages.Stage;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
@@ -24,15 +25,17 @@ public class FileSequenceIterator implements SequenceIterator<VocabWord> {
     private RecursiveAction task;
     private boolean vocabPass;
     private int numEpochs;
+    private Function<Void,Void> afterEpochFunction;
     public FileSequenceIterator(Set<String> onlyWords, int numEpochs) {
-        this(onlyWords,numEpochs,true);
+        this(onlyWords,numEpochs,null);
     }
 
-    public FileSequenceIterator(Set<String> onlyWords, int numEpochs, boolean vocabPass) {
+    public FileSequenceIterator(Set<String> onlyWords, int numEpochs, Function<Void,Void> afterEpochFunction) {
         this.onlyWords=onlyWords;
         this.numEpochs=numEpochs;
         this.queue = new ArrayBlockingQueue<>(5000);
-        this.vocabPass=vocabPass;
+        this.vocabPass=true;
+        this.afterEpochFunction=afterEpochFunction;
     }
 
     public void setRunVocab(boolean vocab) {
@@ -98,6 +101,9 @@ public class FileSequenceIterator implements SequenceIterator<VocabWord> {
                     System.out.println("Running multiple epochs: "+numEpochs);
                     for(int i = 0; i < numEpochs; i++) {
                         Stage.runSamplingIteratorWithLabels(function);
+                        System.out.println("Finished epoch: "+(i+1));
+                        // Evaluate model
+                        if(afterEpochFunction!=null)afterEpochFunction.apply(null);
                     }
                 }
             }

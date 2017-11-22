@@ -67,15 +67,10 @@ public class CustomWordVectorListener implements VectorsListener<VocabWord> {
     public void processEvent(ListenerEvent event, SequenceVectors<VocabWord> sequenceVectors, long argument) {
         if (event.equals(ListenerEvent.LINE)) {
             synchronized (CustomWordVectorListener.class) {
-                try {
-                    // Evaluate model
-                    String currentName = modelName + "[EPOCH " + currentEpoch + ", LINE " + argument + "]";
-                    System.out.println(currentName);
-                    //String stats = new ModelEvaluator().evaluateWordVectorModel(sequenceVectors.getLookupTable(),currentName);
-                    //System.out.println(stats);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                // Evaluate model
+                String currentName = modelName + "[EPOCH " + currentEpoch + ", LINE " + argument + "]";
+                System.out.println(currentName);
+
                 for (String word : words) {
                     Collection<String> lst = sequenceVectors.wordsNearest(word, 10);
                     System.out.println("10 Words closest to '" + word + "': " + lst);
