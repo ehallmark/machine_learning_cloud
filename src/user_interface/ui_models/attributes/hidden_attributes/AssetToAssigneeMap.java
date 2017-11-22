@@ -28,7 +28,7 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
                 assignee = ((List)assignee).get(0);
             }
             ret = ((Map<String,Object>)assignee).get(Constants.ASSIGNEE);
-            System.out.println("FOUND ASSIGNEE: "+ret);
+            //System.out.println("FOUND ASSIGNEE: "+ret);
             // check execution date
             // TODO check execution date
             Object executionDate = ((Map<String,Object>)allData.getOrDefault(Constants.ASSIGNMENTS,new HashMap<>())).get(Constants.EXECUTION_DATE);
@@ -37,7 +37,7 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
                 // check
                 if(!(executionDate instanceof LocalDate)) {
                     try {
-                        executionDate = LocalDate.parse(executionDate.toString(), DateTimeFormatter.BASIC_ISO_DATE);
+                        executionDate = LocalDate.parse(executionDate.toString(), DateTimeFormatter.ISO_DATE);
                     } catch(Exception e) {
                         System.out.println("Error parsing execution date: "+executionDate);
                         executionDate=null;
