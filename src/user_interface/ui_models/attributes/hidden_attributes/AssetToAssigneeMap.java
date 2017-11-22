@@ -30,9 +30,7 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
             ret = ((Map<String,Object>)assignee).get(Constants.ASSIGNEE);
             //System.out.println("FOUND ASSIGNEE: "+ret);
             // check execution date
-            // TODO check execution date
             Object executionDate = ((Map<String,Object>)allData.getOrDefault(Constants.ASSIGNMENTS,new HashMap<>())).get(Constants.EXECUTION_DATE);
-            System.out.println("Execution date: "+executionDate);
             if(executionDate!=null) {
                 // check
                 if(!(executionDate instanceof LocalDate)) {
@@ -57,9 +55,6 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
                 }
                 // update latest execution date map
                 latestExecutionDateMap.put(name, (LocalDate)executionDate);
-
-                // TODO remove this debug line below
-                System.out.println("Updating execution date for "+name+": "+executionDate.toString());
             }
         }
         if(ret==null) return null;
