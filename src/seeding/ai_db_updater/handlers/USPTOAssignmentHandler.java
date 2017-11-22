@@ -119,7 +119,6 @@ public class USPTOAssignmentHandler extends NestedHandler {
                     }).distinct().collect(Collectors.toList());
                     if(computableAttributes!=null) {
                         computableAttributes.forEach(attr -> {
-                            System.out.println("Data: "+new Gson().toJson(toIngest));
 
                             // for each patent or application
                             allAssets.forEach(name->{
