@@ -43,7 +43,7 @@ public abstract class EndFlag extends Flag {
         additionalData.forEach(pair->{
             String name = pair.getFirst();
             Object data = pair.getSecond();
-            System.out.println("Additional data "+name+": "+data);
+            //System.out.println("Additional data "+name+": "+data);
             transform.put(name,data);
         });
         additionalData.clear();

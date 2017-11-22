@@ -84,7 +84,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                     }
                     String reelFrame = reel.toString()+":"+frame.toString();
                     assignmentMap.put(Constants.REEL_FRAME, reelFrame);
-                    AtomicReference<Collection<String>> assets = new AtomicReference<>();
+                    AtomicReference<Collection<String>> assets = new AtomicReference<>(new HashSet<>());
                     nestedEndFlags.forEach(endFlag -> {
                         List<Map<String, Object>> data = endFlag.dataQueue;
                         if (data.isEmpty() || endFlag.children.isEmpty()) return;
@@ -116,7 +116,8 @@ public class USPTOAssignmentHandler extends NestedHandler {
                         }
                         return set.stream();
                     }).distinct().collect(Collectors.toList());
-                    if(computableAttributes!=null && assets.get() != null) {
+                    System.out.println("Num assets: "+allAssets.size());
+                    if(computableAttributes!=null) {
                         computableAttributes.forEach(attr -> {
                             // for each patent or application
                             allAssets.forEach(name->{
