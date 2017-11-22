@@ -48,8 +48,7 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
     public void train(int nEpochs) {
         Function<SequenceVectors<VocabWord>,Void> saveFunction = sequenceVectors->{
             System.out.println("Saving...");
-            double score = sequenceVectors.getElementsScore()+sequenceVectors.getSequencesScore();
-            System.out.println("Score: " + score);
+            double score = 0d;
             try {
                 save(LocalDateTime.now(), score, (Word2Vec) sequenceVectors);
             } catch (Exception e) {
@@ -66,7 +65,7 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
                     .epochs(1) // hard coded to avoid learning rate from resetting
                     .windowSize(6)
                     .layerSize(VECTOR_SIZE)
-                    .sampling(-1)
+                    .sampling(0.001)
                     .negativeSample(-1)
                     .learningRate(0.05)
                     .minLearningRate(0.001)
@@ -75,7 +74,7 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
                     .resetModel(true)
                     .minWordFrequency(5)
                     .workers(Math.max(1,Runtime.getRuntime().availableProcessors()/2))
-                    .iterations(3)
+                    .iterations(5)
                     .useHierarchicSoftmax(true)
                     .elementsLearningAlgorithm(new CBOW<>())
                     .build();
