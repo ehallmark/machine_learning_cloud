@@ -19,7 +19,7 @@ public class ValidWordStage extends Stage<Set<MultiStem>>  {
     private static final File dictionaryFile = new File(Constants.DATA_FOLDER+"word_list.txt");
     public ValidWordStage(Collection<MultiStem> multiStems, Model model) {
         super(model);
-        this.data = new HashSet<>(multiStems);
+        this.data = multiStems==null? Collections.emptySet() : new HashSet<>(multiStems);
     }
 
     @Override
