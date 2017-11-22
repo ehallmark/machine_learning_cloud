@@ -63,11 +63,11 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
                     .seed(41)
                     .batchSize(BATCH_SIZE)
                     .epochs(1) // hard coded to avoid learning rate from resetting
-                    .windowSize(6)
+                    .windowSize(4)
                     .layerSize(VECTOR_SIZE)
                     .sampling(0.001)
                     .negativeSample(-1)
-                    .learningRate(0.05)
+                    .learningRate(0.01)
                     .minLearningRate(0.001)
                     .allowParallelTokenization(true)
                     .useAdaGrad(true)
@@ -88,6 +88,9 @@ public class KeywordEmbeddingModel extends Word2VecPredictionModel<INDArray> {
                 new CustomWordVectorListener(saveFunction,"Keyword Embedding Model",1000000,null,pipelineManager.getTestWords().toArray(new String[]{}))
         ).collect(Collectors.toSet()));
         net.fit();
+        synchronized (CustomWordVectorListener.class) {
+            System.out.println("Everything should be saved.");
+        }
     }
 
     @Override
