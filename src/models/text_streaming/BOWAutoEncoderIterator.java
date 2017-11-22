@@ -1,5 +1,6 @@
 package models.text_streaming;
 
+import models.keyphrase_prediction.MultiStem;
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -7,29 +8,45 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.primitives.Pair;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Evan on 11/19/2017.
  */
 public class BOWAutoEncoderIterator implements DataSetIterator {
+
+    private static Function<String,Map<String,Integer>> defaultBOWFunction = content -> {
+        return Stream.of(content.split(",")).map(str->{
+            String[] pair = str.split(":");
+            if(pair.length==1) return null;
+            return new Pair<>(pair[0],Integer.valueOf(pair[1]));
+        }).filter(p->p!=null).collect(Collectors.toMap(p->p.getFirst(), p->p.getSecond()));
+    };
+
+
     private int batch;
     private LabelAwareIterator documentIterator;
-    private BOWVectorFromTextTransformer transformer;
+    private BOWVectorFromCountMapTransformer transformer;
     private int numInputs;
-    private Function<String,Collection<String>> tokenizer;
-    public BOWAutoEncoderIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, Function<String,Collection<String>> tokenizer) {
+    private Function<String,Map<String,Integer>> BOWFunction;
+    public BOWAutoEncoderIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, Function<String,Map<String,Integer>> BOWFunction) {
         this.batch=batch;
         this.documentIterator=documentIterator;
-        this.transformer = new BOWVectorFromTextTransformer(wordToIdxMap);
+        this.transformer = new BOWVectorFromCountMapTransformer(wordToIdxMap);
         this.numInputs=wordToIdxMap.size();
-        this.tokenizer=tokenizer;
+        this.BOWFunction=BOWFunction;
     }
+
+    public BOWAutoEncoderIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap) {
+        this(batch,documentIterator,wordToIdxMap,defaultBOWFunction);
+    }
+
+
     @Override
     public boolean hasNext() {
         return documentIterator.hasNext();
@@ -41,7 +58,7 @@ public class BOWAutoEncoderIterator implements DataSetIterator {
         for(int i = 0; i < batch; i++) {
             INDArray vec;
             if(documentIterator.hasNext()) {
-                vec = transformer.apply(tokenizer.apply(documentIterator.next().getContent()));
+                vec = transformer.apply(BOWFunction.apply(documentIterator.next().getContent()));
             } else {
                 vec = Nd4j.zeros(numInputs);
             }

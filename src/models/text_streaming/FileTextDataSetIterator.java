@@ -25,11 +25,11 @@ import java.util.function.Function;
 public class FileTextDataSetIterator implements LabelAwareIterator {
     private static File BASE_DIR = new File("asset_text_data/");
     public static final File trainFile = new File(BASE_DIR, "train_data.csv");
-    static File devFile1 = new File(BASE_DIR, "dev1_data.csv");
-    static File devFile2 = new File(BASE_DIR, "dev2_data.csv");
+    public static File devFile1 = new File(BASE_DIR, "dev1_data.csv");
+    public static File devFile2 = new File(BASE_DIR, "dev2_data.csv");
     static File devFile3 = new File(BASE_DIR, "dev3_data.csv");
     static File devFile4 = new File(BASE_DIR, "dev4_data.csv");
-    static File testFile = new File(BASE_DIR, "test_data.csv");
+    public static File testFile = new File(BASE_DIR, "test_data.csv");
     private static Map<Type,File> typeToFileMap = Collections.synchronizedMap(new HashMap<>());
 
     public enum Type {
@@ -55,8 +55,12 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
 
     private File dataFile;
     private LineIterator lineIterator;
+
     public FileTextDataSetIterator(Type type) {
-        dataFile = typeToFileMap.get(type);
+        this(typeToFileMap.get(type));
+    }
+    public FileTextDataSetIterator(File file) {
+        dataFile = file;
         reset();
     }
 
