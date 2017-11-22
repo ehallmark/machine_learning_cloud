@@ -31,6 +31,7 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
             // check execution date
             // TODO check execution date
             Object executionDate = ((Map<String,Object>)assignee).get(Constants.EXECUTION_DATE);
+            System.out.println("Execution date: "+executionDate);
             if(executionDate!=null) {
                 // check
                 if(!(executionDate instanceof LocalDate)) {

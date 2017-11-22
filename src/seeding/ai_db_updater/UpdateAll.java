@@ -43,6 +43,7 @@ public class UpdateAll {
                 } else if (arg.equals("9")) {
                     NormalizeAssignees.main(args);
                     new AssetToAssigneeMap().save();
+                    Database.main(args);
                 } else if (arg.equals("10")) {
                     UpdateAssetGraphs.main(args);
                 } else if (arg.equals("11")) {

@@ -3,11 +3,8 @@ package models.keyphrase_prediction.stages;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
-import models.keyphrase_prediction.scorers.KeywordScorer;
-import models.keyphrase_prediction.scorers.TermhoodScorer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
-import org.apache.commons.math3.linear.RealMatrix;
 import seeding.Constants;
 import seeding.Database;
 
