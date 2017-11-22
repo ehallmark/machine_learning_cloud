@@ -177,6 +177,17 @@ public class USPTOAssignmentHandler extends NestedHandler {
                 dataQueue.add(getTransform(null));
             }
         };
+        endFlags.add(assigneeFlag);
+
+        assigneeFlag.addChild(Flag.simpleFlag("name",Constants.ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
+        assigneeFlag.addChild(Flag.simpleFlag("address-1",Constants.ADDRESS_1, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("address-2",Constants.ADDRESS_2, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("address-3",Constants.ADDRESS_3, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("city",Constants.CITY, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("state",Constants.STATE, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("postcode",Constants.POSTAL_CODE, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("country",Constants.COUNTRY, assigneeFlag));
+
 
         // assignor
         EndFlag assignorFlag = new EndFlag("patent-assignor") {
@@ -194,24 +205,12 @@ public class USPTOAssignmentHandler extends NestedHandler {
         assignorFlag.addChild(Flag.dateFlag("execution-date", Constants.EXECUTION_DATE, assignorFlag).withTransformationFunction(Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE)));
         assignorFlag.addChild(Flag.dateFlag("execution-date", Constants.EXECUTION_DATE, assignorFlag).withTransformationFunction(f->s->{
             Object formatted = Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE).apply(f).apply(s);
+            System.out.println("Found execution date: "+formatted);
             if(formatted!=null) {
                 assigneeFlag.getDataMap().put(f, formatted.toString());
             }
             return null;
         }).setIsForeign(true));
-
-        // add assignee flag after assignor flag to get execution dates
-        endFlags.add(assigneeFlag);
-
-        assigneeFlag.addChild(Flag.simpleFlag("name",Constants.ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
-        assigneeFlag.addChild(Flag.simpleFlag("address-1",Constants.ADDRESS_1, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("address-2",Constants.ADDRESS_2, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("address-3",Constants.ADDRESS_3, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("city",Constants.CITY, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("state",Constants.STATE, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("postcode",Constants.POSTAL_CODE, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("country",Constants.COUNTRY, assigneeFlag));
-
 
         // assignor
         EndFlag assetsFlag = new EndFlag("document-id") {
