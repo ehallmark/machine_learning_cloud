@@ -166,7 +166,9 @@ public class DeepCPCVariationalAutoEncoderNN extends NeuralNetworkPredictionMode
             net = new MultiLayerNetwork(conf);
             net.init();
         } else {
-            net = NNRefactorer.updateNetworkLearningRate(net,0.01,false);
+            //double learningRate1 = 0.01;
+            double learningRate2 = 0.001;
+            net = NNRefactorer.updateNetworkLearningRate(net,learningRate2,false);
             net = NNRefactorer.updatePretrainAndBackprop(net,true,false,false);
             System.out.println("new learning rates: ");
             net.getLayerWiseConfigurations().getConfs().forEach((conf)->{
