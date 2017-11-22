@@ -27,10 +27,10 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
                 assignee = ((List)assignee).get(0);
             }
             ret = ((Map<String,Object>)assignee).get(Constants.ASSIGNEE);
-            //System.out.println("FOUND ASSIGNEE: "+assignee);
+            System.out.println("FOUND ASSIGNEE: "+ret);
             // check execution date
             // TODO check execution date
-            Object executionDate = ((Map<String,Object>)assignee).get(Constants.EXECUTION_DATE);
+            Object executionDate = allData.get(Constants.EXECUTION_DATE);
             System.out.println("Execution date: "+executionDate);
             if(executionDate!=null) {
                 // check

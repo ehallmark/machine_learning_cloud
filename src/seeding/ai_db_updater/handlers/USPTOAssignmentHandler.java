@@ -101,24 +101,25 @@ public class USPTOAssignmentHandler extends NestedHandler {
                         }
                     });
                     // update computable attrs
+                    List<String> allAssets = assets.get().stream().flatMap(asset->{
+                        Set<String> set = new HashSet<>();
+                        if(asset.contains("/")) {
+                            set.addAll(filingToAssetMap.getPatentDataMap().getOrDefault(asset,Collections.emptyList()));
+                            set.addAll(filingToAssetMap.getApplicationDataMap().getOrDefault(asset,Collections.emptyList()));
+                        } else {
+                            String filing = assetToFilingMap.getPatentDataMap().getOrDefault(asset,assetToFilingMap.getApplicationDataMap().get(asset));
+                            if(filing!=null) {
+                                set.addAll(filingToAssetMap.getPatentDataMap().getOrDefault(filing,Collections.emptyList()));
+                                set.addAll(filingToAssetMap.getApplicationDataMap().getOrDefault(filing,Collections.emptyList()));
+                            }
+                            set.add(asset);
+                        }
+                        return set.stream();
+                    }).distinct().collect(Collectors.toList());
                     if(computableAttributes!=null && assets.get() != null) {
                         computableAttributes.forEach(attr -> {
                             // for each patent or application
-                            assets.get().stream().flatMap(asset->{
-                                Set<String> set = new HashSet<>();
-                                if(asset.contains("/")) {
-                                    set.addAll(filingToAssetMap.getPatentDataMap().getOrDefault(asset,Collections.emptyList()));
-                                    set.addAll(filingToAssetMap.getApplicationDataMap().getOrDefault(asset,Collections.emptyList()));
-                                } else {
-                                    String filing = assetToFilingMap.getPatentDataMap().getOrDefault(asset,assetToFilingMap.getApplicationDataMap().get(asset));
-                                    if(filing!=null) {
-                                        set.addAll(filingToAssetMap.getPatentDataMap().getOrDefault(filing,Collections.emptyList()));
-                                        set.addAll(filingToAssetMap.getApplicationDataMap().getOrDefault(filing,Collections.emptyList()));
-                                    }
-                                    set.add(asset);
-                                }
-                                return set.stream();
-                            }).distinct().forEach(name->{
+                            allAssets.forEach(name->{
                                 if (Database.isApplication(name)) {
                                     attr.handleApplicationData(name, assignmentMap);
                                 } else {
@@ -133,14 +134,8 @@ public class USPTOAssignmentHandler extends NestedHandler {
                             System.out.println(cnt.get());
                         }
                         // for each patent or application
-                        if(assets.get()!=null&&assets.get().size()>0) {
-                            List<String> assetsClean = assets.get().stream().map(o->o==null?null:o).filter(o->o!=null).flatMap(asset->{
-                                return Stream.of(asset,assetToFilingMap.getPatentDataMap().getOrDefault(asset,assetToFilingMap.getApplicationDataMap().get(asset)))
-                                        .filter(a->a!=null);
-                            }).collect(Collectors.toList());
-                            if(assetsClean.size()>0) {
-                                saveElasticSearch(assetsClean,toIngest);
-                            }
+                        if(allAssets!=null&&allAssets.size()>0) {
+                            saveElasticSearch(allAssets,toIngest);
                         }
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
@@ -205,9 +200,9 @@ public class USPTOAssignmentHandler extends NestedHandler {
         assignorFlag.addChild(Flag.dateFlag("execution-date", Constants.EXECUTION_DATE, assignorFlag).withTransformationFunction(Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE)));
         assignorFlag.addChild(Flag.dateFlag("execution-date", Constants.EXECUTION_DATE, assignorFlag).withTransformationFunction(f->s->{
             Object formatted = Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE).apply(f).apply(s);
-            System.out.println("Found execution date: "+formatted);
+            //System.out.println("Found execution date: "+formatted);
             if(formatted!=null) {
-                assigneeFlag.getDataMap().put(f, formatted.toString());
+                documentFlag.addData(Constants.EXECUTION_DATE, formatted.toString());
             }
             return null;
         }).setIsForeign(true));
