@@ -91,6 +91,9 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
         AssetToNormalizedAssigneeMap normalized = new AssetToNormalizedAssigneeMap();
         normalized.normalize(this);
         normalized.save();
+
+        // save latest execution date
+        latestExecutionDateAttribute.save();
     }
 
     protected void assigneeToAssetHelper(Map<String,String> assetToAssignee, Map<String,Collection<String>> assigneeToAssets) {
