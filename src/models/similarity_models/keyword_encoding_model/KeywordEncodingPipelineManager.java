@@ -97,7 +97,7 @@ public class KeywordEncodingPipelineManager extends DefaultPipelineManager<DataS
     }
 
     public static void main(String[] args) throws Exception {
-        Nd4j.setDataType(DataBuffer.Type.FLOAT);
+        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;

@@ -29,7 +29,7 @@ public class WordIndexMap {
                 System.out.println("Could not find cpc idx map... creating new one now.");
                 cache = words.stream().sorted().sequential().collect(Collectors.toMap(word -> word, e -> idx.getAndIncrement()));
                 System.out.println("Input size: " + cache.size());
-                System.out.println("Saving cpc idx map...");
+                System.out.println("Saving idx map...");
                 Database.trySaveObject(cache,new File(WORD_TO_INDEX_FILENAME));
             }
         }

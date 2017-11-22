@@ -8,6 +8,7 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.primitives.Pair;
 
 import java.util.*;
@@ -55,14 +56,18 @@ public class BOWAutoEncoderIterator implements DataSetIterator {
     @Override
     public DataSet next(int batch) {
         INDArray mat = Nd4j.create(batch,numInputs);
-        for(int i = 0; i < batch; i++) {
+        int i;
+        for(i = 0; i < batch; i++) {
             INDArray vec;
             if(documentIterator.hasNext()) {
                 vec = transformer.apply(BOWFunction.apply(documentIterator.next().getContent()));
             } else {
-                vec = Nd4j.zeros(numInputs);
+                break;
             }
             mat.putRow(i,vec);
+        }
+        if(i<batch) {
+            mat = mat.get(NDArrayIndex.interval(0,i),NDArrayIndex.all());
         }
         return new DataSet(mat,mat);
     }
