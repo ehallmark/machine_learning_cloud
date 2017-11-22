@@ -177,16 +177,6 @@ public class USPTOAssignmentHandler extends NestedHandler {
                 dataQueue.add(getTransform(null));
             }
         };
-        endFlags.add(assigneeFlag);
-
-        assigneeFlag.addChild(Flag.simpleFlag("name",Constants.ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
-        assigneeFlag.addChild(Flag.simpleFlag("address-1",Constants.ADDRESS_1, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("address-2",Constants.ADDRESS_2, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("address-3",Constants.ADDRESS_3, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("city",Constants.CITY, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("state",Constants.STATE, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("postcode",Constants.POSTAL_CODE, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("country",Constants.COUNTRY, assigneeFlag));
 
         // assignor
         EndFlag assignorFlag = new EndFlag("patent-assignor") {
@@ -209,6 +199,19 @@ public class USPTOAssignmentHandler extends NestedHandler {
             }
             return null;
         }).setIsForeign(true));
+
+        // add assignee flag after assignor flag to get execution dates
+        endFlags.add(assigneeFlag);
+
+        assigneeFlag.addChild(Flag.simpleFlag("name",Constants.ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
+        assigneeFlag.addChild(Flag.simpleFlag("address-1",Constants.ADDRESS_1, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("address-2",Constants.ADDRESS_2, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("address-3",Constants.ADDRESS_3, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("city",Constants.CITY, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("state",Constants.STATE, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("postcode",Constants.POSTAL_CODE, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("country",Constants.COUNTRY, assigneeFlag));
+
 
         // assignor
         EndFlag assetsFlag = new EndFlag("document-id") {
