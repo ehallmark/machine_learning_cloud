@@ -92,7 +92,7 @@ public class KeywordModelRunner {
 
         String keywordModelName = KeywordEmbeddingPipelineManager.MODEL_NAME;
         Set<String> onlyWords = stage5.get().stream().map(stem->stem.toString()).collect(Collectors.toSet());
-        KeywordEmbeddingPipelineManager keywordEmbeddingPipelineManager = new KeywordEmbeddingPipelineManager(keywordModelName,onlyWords,20);
+        KeywordEmbeddingPipelineManager keywordEmbeddingPipelineManager = new KeywordEmbeddingPipelineManager(keywordModelName,onlyWords,50);
         keywordEmbeddingPipelineManager.runPipeline(false, false, true, rerunWordEmbeddings, 1, false);
 
 
