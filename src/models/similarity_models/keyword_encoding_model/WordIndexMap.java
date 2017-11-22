@@ -17,7 +17,7 @@ public class WordIndexMap {
     private static final String WORD_TO_INDEX_FILENAME = Constants.DATA_FOLDER+"keyword_encoding_word_to_idx_map.jobj";
     private static Map<String,Integer> cache;
     public static synchronized Map<String,Integer> loadOrCreateWordIdxMap(Set<String> words) {
-        if (cache!=null) {
+        if (cache==null) {
             // try loading from file
             try {
                 cache = (Map<String,Integer>)Database.tryLoadObject(new File(WORD_TO_INDEX_FILENAME));
