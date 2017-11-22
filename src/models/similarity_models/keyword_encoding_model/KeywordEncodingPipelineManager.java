@@ -112,7 +112,7 @@ public class KeywordEncodingPipelineManager extends DefaultPipelineManager<DataS
         stage5.run(false);
 
         Set<String> onlyWords = stage5.get().stream().map(stem->stem.toString()).collect(Collectors.toSet());
-        KeywordEmbeddingPipelineManager pipelineManager = new KeywordEmbeddingPipelineManager(modelName,onlyWords,nEpochs);
+        KeywordEncodingPipelineManager pipelineManager = new KeywordEncodingPipelineManager(modelName,onlyWords);
 
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }
