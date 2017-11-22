@@ -4,6 +4,7 @@ package seeding.ai_db_updater.handlers;
  * Created by ehallmark on 1/3/17.
  */
 
+import com.google.gson.Gson;
 import elasticsearch.DataIngester;
 import lombok.Setter;
 import org.bson.Document;
@@ -35,7 +36,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
     private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
     private static final FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
     @Setter
-    protected static Collection<ComputableAttribute> computableAttributes = Arrays.asList(new AssetToAssigneeMap());
+    private static Collection<ComputableAttribute> computableAttributes = Arrays.asList(new AssetToAssigneeMap());
     static {
         computableAttributes.forEach(attr->{
             attr.initMaps();
@@ -116,9 +117,11 @@ public class USPTOAssignmentHandler extends NestedHandler {
                         }
                         return set.stream();
                     }).distinct().collect(Collectors.toList());
-                    System.out.println("Num assets: "+allAssets.size());
                     if(computableAttributes!=null) {
                         computableAttributes.forEach(attr -> {
+                            System.out.println("Handling computable attr: "+attr.getFullName());
+                            System.out.println("Data: "+new Gson().toJson(assignmentMap));
+
                             // for each patent or application
                             allAssets.forEach(name->{
                                 if (Database.isApplication(name)) {
@@ -135,7 +138,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                             System.out.println(cnt.get());
                         }
                         // for each patent or application
-                        if(allAssets!=null&&allAssets.size()>0) {
+                        if(allAssets.size()>0) {
                             saveElasticSearch(allAssets,toIngest);
                         }
                     }

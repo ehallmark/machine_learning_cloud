@@ -1,5 +1,6 @@
 package user_interface.ui_models.attributes.hidden_attributes;
 
+import com.google.gson.Gson;
 import seeding.Constants;
 import user_interface.ui_models.attributes.computable_attributes.LatestExecutionDateAttribute;
 
@@ -20,6 +21,7 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
     @Override
     public String handleIncomingData(String name, Map<String,Object> allData, Map<String, String> myData, boolean isApp) {
         Object assignee = allData.get(Constants.LATEST_ASSIGNEE);
+        System.out.println("Handling data for "+name+" isApp: "+isApp);
         Object ret = null;
         if(assignee!=null&&(assignee instanceof Map || assignee instanceof List)) {
             if(assignee instanceof List) {
