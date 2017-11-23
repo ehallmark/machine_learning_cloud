@@ -36,18 +36,12 @@ public class AppCPCHandler implements LineHandler {
                 String cpcSubclass = cpcClass + line.substring(24, 25);
                 String cpcMainGroup = cpcSubclass + line.substring(25, 29);
                 String cpcSubGroup = cpcMainGroup + line.substring(30, 36);
-                Map<String, Object> doc = new HashMap<>();
                 Set<String> data = appToClassificationHash.get(patNum);
                 if (data == null) {
                     data = new HashSet<>();
                     appToClassificationHash.put(patNum, data);
                 }
                 data.add(ClassCodeHandler.convertToHumanFormat(cpcSubGroup));
-                doc.put(Constants.CPC_CODES, data);
-                String filingName = assetToFilingMap.getApplicationDataMap().get(patNum);
-                if (filingName != null) {
-                    DataIngester.ingestBulk(patNum, filingName, doc, false);
-                }
             }
         }
     }
