@@ -235,9 +235,11 @@ public class Flag {
     }
 
     public String getDataForField(String field) {
-        Flag flag = getEndFlag().flagMap.get(field);
+        EndFlag endFlag = getEndFlag();
+        if(endFlag==null||endFlag.flagMap==null) return "";
+        Flag flag = endFlag.flagMap.get(field);
         if(flag==null) return "";
-        return getEndFlag().getDataMap().getOrDefault(flag,"");
+        return endFlag.getDataMap().getOrDefault(flag,"");
     }
 
     public void reset() {
