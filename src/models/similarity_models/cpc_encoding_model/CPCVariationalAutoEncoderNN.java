@@ -82,12 +82,12 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         AtomicInteger idx = new AtomicInteger(0);
         Map<String,INDArray> assetToEncodingMap = Collections.synchronizedMap(new HashMap<>());
         while(iterator.hasNext()) {
-            System.out.println(idx.get());
             DataSet ds = iterator.next();
             INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
             for(int i = 0; i < encoding.rows() && idx.get()<assets.size(); i++) {
                 INDArray vector = encoding.getRow(i);
                 assetToEncodingMap.put(assets.get(idx.getAndIncrement()), vector);
+                if(idx.get()%10000==9999)System.out.println(idx.get());
             }
         }
         // assignees
