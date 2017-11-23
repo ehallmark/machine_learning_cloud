@@ -28,6 +28,7 @@ import java.util.stream.Stream;
  */
 public class CPCSimilarityVectorizer implements Vectorizer {
     //private static final File vectorMapFile = new File(Constants.DATA_FOLDER+"signature_model_vector_map-depth4.jobj");
+    private static final File bestModelFile = new File("data/word_to_cpc_deep_nn_model_data/word_to_cpc_encoder_2017-11-17T07:37:15.921");
     private static final PipelineManager pipelineManager = new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME);
     private static Map<String,INDArray> DATA;
     private Map<String,INDArray> data;

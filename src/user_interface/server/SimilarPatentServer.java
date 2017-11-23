@@ -46,6 +46,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -538,6 +540,9 @@ public class SimilarPatentServer {
                 attributes.forEach(model -> {
                     Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1);
                     if(obj!=null) {
+                        if(obj instanceof LocalDate) {
+                            obj = ((LocalDate)obj).format(DateTimeFormatter.ISO_DATE);
+                        }
                         item.addData(model.getMongoDBName(),obj);
                     }
                 });
