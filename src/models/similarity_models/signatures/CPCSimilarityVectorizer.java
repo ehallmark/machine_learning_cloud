@@ -27,7 +27,7 @@ import java.util.stream.Stream;
  * Created by Evan on 10/28/2017.
  */
 public class CPCSimilarityVectorizer implements Vectorizer {
-    private static final File vectorMapFile = new File(Constants.DATA_FOLDER+"signature_model_vector_map-depth4.jobj");
+    //private static final File vectorMapFile = new File(Constants.DATA_FOLDER+"signature_model_vector_map-depth4.jobj");
     private static final PipelineManager pipelineManager = new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME);
     private static Map<String,INDArray> DATA;
     private Map<String,INDArray> data;
@@ -95,13 +95,13 @@ public class CPCSimilarityVectorizer implements Vectorizer {
     }
 
     public synchronized static Map<String,INDArray> getLookupTable() {
-        boolean notUpdatedYet = true;
+        //boolean notUpdatedYet = true;
         if (DATA == null) {
-            if(notUpdatedYet) { // TODO remove this (after update)
-                DATA = (Map<String, INDArray>) Database.tryLoadObject(vectorMapFile);
-            } else {
+            //if(notUpdatedYet) { // TODO remove this (after update)
+            //    DATA = (Map<String, INDArray>) Database.tryLoadObject(vectorMapFile);
+            //} else {
                 DATA = (Map<String, INDArray>) Database.tryLoadObject(pipelineManager.getPredictionsFile());
-            }
+            //}
         }
         return DATA;
     }
