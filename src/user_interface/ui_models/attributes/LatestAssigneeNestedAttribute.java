@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public class LatestAssigneeNestedAttribute extends NestedAttribute {
     public LatestAssigneeNestedAttribute() {
-        super(Arrays.asList(new NormalizedPortfolioSizeAttribute(), new NormalizedAssigneeNameAttribute(), new CompDBAssetsPurchasedAttribute(),new CompDBAssetsSoldAttribute(), new EntityTypeAttribute(), new LatestExecutionDateAttribute(), new AssigneeNameAttribute(), new PortfolioSizeAttribute(), new OrgRoleAttribute(), new FirstNameAttribute(), new LastNameAttribute(), new CityAttribute(), new CountryAttribute(), new StateAttribute()));
+        super(Arrays.asList(new NormalizedPortfolioSizeAttribute(), new NormalizedAssigneeNameAttribute(), new CompDBAssetsPurchasedAttribute(),new CompDBAssetsSoldAttribute(), new EntityTypeAttribute(), new LatestExecutionDateAttribute(), new LatestAssigneeNameAttribute(), new PortfolioSizeAttribute(), new OrgRoleAttribute(), new FirstNameAttribute(), new LastNameAttribute(), new CityAttribute(), new CountryAttribute(), new StateAttribute()));
         this.isObject=true;
     }
     

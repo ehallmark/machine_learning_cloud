@@ -1,8 +1,8 @@
-package user_interface.ui_models.attributes;
+package user_interface.ui_models.attributes.computable_attributes;
 
 import lombok.NonNull;
 import seeding.Constants;
-import user_interface.ui_models.attributes.computable_attributes.ComputableAssigneeAttribute;
+import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 import user_interface.ui_models.filters.AbstractFilter;
 
@@ -13,8 +13,8 @@ import java.util.Map;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class AssigneeNameAttribute extends AbstractAttribute {
-    public AssigneeNameAttribute() {
+public class LatestAssigneeNameAttribute extends ComputableAssigneeAttribute<String> implements AjaxMultiselect {
+    public LatestAssigneeNameAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword,AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude));
     }
     @Override
@@ -41,4 +41,13 @@ public class AssigneeNameAttribute extends AbstractAttribute {
         return fields;
     }
 
+    @Override
+    public String ajaxUrl() {
+        return Constants.ASSIGNEE_NAME_AJAX_URL;
+    }
+
+    @Override
+    protected String attributesForAssigneeHelper(@NonNull String assignee) {
+        return assignee;
+    }
 }

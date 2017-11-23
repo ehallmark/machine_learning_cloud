@@ -1,7 +1,6 @@
 package user_interface.server;
 
 import com.google.gson.Gson;
-import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import elasticsearch.DataIngester;
 import lombok.Getter;
@@ -9,7 +8,6 @@ import lombok.Getter;
 import models.keyphrase_prediction.models.NewestModel;
 import models.similarity_models.DefaultSimilarityModel;
 import models.similarity_models.Vectorizer;
-import org.jetbrains.annotations.NotNull;
 import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import spark.Session;

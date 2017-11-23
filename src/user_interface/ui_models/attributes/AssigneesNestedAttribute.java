@@ -1,6 +1,7 @@
 package user_interface.ui_models.attributes;
 
 import seeding.Constants;
+import user_interface.ui_models.attributes.computable_attributes.LatestAssigneeNameAttribute;
 
 import java.util.Arrays;
 

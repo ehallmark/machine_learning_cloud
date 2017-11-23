@@ -1,5 +1,6 @@
 package user_interface.ui_models.attributes.computable_attributes;
 
+import lombok.NonNull;
 import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToNormalizedAssigneeMap;
@@ -14,11 +15,9 @@ import java.util.Map;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class NormalizedAssigneeNameAttribute extends ComputableAttribute<String> implements AjaxMultiselect {
-    private AssetToNormalizedAssigneeMap assetToNormalizedAssigneeMap;
+public class NormalizedAssigneeNameAttribute extends ComputableNormalizedAssigneeAttribute<String> implements AjaxMultiselect {
     public NormalizedAssigneeNameAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword,AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude));
-        assetToNormalizedAssigneeMap = new AssetToNormalizedAssigneeMap();
     }
     @Override
     public String getType() {
@@ -35,11 +34,9 @@ public class NormalizedAssigneeNameAttribute extends ComputableAttribute<String>
         return Constants.NORMALIZED_LATEST_ASSIGNEE;
     }
 
-
     @Override
-    public String attributesFor(Collection<String> portfolio, int limit) {
-        String asset = portfolio.stream().findAny().get();
-        return assetToNormalizedAssigneeMap.getApplicationDataMap().getOrDefault(asset, assetToNormalizedAssigneeMap.getPatentDataMap().get(asset));
+    protected String attributesForAssigneeHelper(@NonNull String assignee) {
+        return assignee;
     }
 
     @Override
