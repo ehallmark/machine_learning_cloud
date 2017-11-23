@@ -9,11 +9,11 @@ import java.util.Collection;
  */
 public class UpdateClassificationModels {
     public static void main(String[] args) throws Exception {
-        updateLatest(false);
+        updateLatest();
     }
 
     // TODO
-    public static void updateLatest(boolean newAssetsOnly) {
+    public static void updateLatest() {
        // KeywordModelRunner.runModel(newAssetsOnly);
     }
 }
