@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  */
 public class CPCSimilarityVectorizer implements Vectorizer {
     //private static final File vectorMapFile = new File(Constants.DATA_FOLDER+"signature_model_vector_map-depth4.jobj");
-    private static final File bestModelFile = new File("data/word_to_cpc_deep_nn_model_data/word_to_cpc_encoder_2017-11-17T07:37:15.921");
+    //private static final File bestModelFile = new File("data/word_to_cpc_deep_nn_model_data/word_to_cpc_encoder_2017-11-17T07:37:15.921");
     private static final PipelineManager pipelineManager = new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME);
     private static Map<String,INDArray> DATA;
     private Map<String,INDArray> data;
@@ -118,7 +118,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
 
         System.out.println("Restoring model: "+modelName);
         TrainablePredictionModel<INDArray,?> clone = new CPCVariationalAutoEncoderNN((CPCVAEPipelineManager)pipelineManager,modelName,cpcDepth);
-
+        clone.loadBestModel();
 
         List<String> allAssets = new ArrayList<>(latestAssets==null?(Database.getAllPatentsAndApplications()):latestAssets);
         List<String> allAssignees = new ArrayList<>(latestAssets==null?Database.getAssignees():latestAssets.stream().map(asset->Database.assigneeFor(asset)).filter(assignee->assignee!=null).collect(Collectors.toList()));
