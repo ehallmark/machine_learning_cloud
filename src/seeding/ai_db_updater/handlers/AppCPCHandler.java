@@ -19,6 +19,7 @@ public class AppCPCHandler implements LineHandler {
     protected static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
     public AppCPCHandler(Map<String,Set<String>> appToClassificationHash) {
         this.appToClassificationHash=appToClassificationHash;
+        this.appToClassificationHash.clear();
     }
 
     @Override
