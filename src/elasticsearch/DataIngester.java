@@ -156,11 +156,11 @@ public class DataIngester {
         addToUpdateMap(collection,model);
     }
 
-    private static synchronized void waitForMongo() {
-        while(mongoCount.get() >= 400) {
+    private static void waitForMongo() {
+        while(mongoCount.get() >= 300) {
             System.out.println("Waiting for mongo to ingest batch...");
             try {
-                TimeUnit.SECONDS.sleep(5);
+                TimeUnit.MILLISECONDS.sleep(50);
             }catch(Exception e) {
                 e.printStackTrace();
             }
@@ -168,8 +168,8 @@ public class DataIngester {
     }
 
     private static void updateBatch() {
-        waitForMongo();
         synchronized (DataIngester.class) {
+            waitForMongo();
             updateBatchMap.forEach((collection, updateBatch) -> {
                 if (updateBatch.size() > 0) {
                     mongoCount.getAndIncrement();
@@ -186,8 +186,8 @@ public class DataIngester {
     }
 
     private static void insertBatch() {
-        waitForMongo();
         synchronized (DataIngester.class) {
+            waitForMongo();
             insertBatchMap.forEach((collection, insertBatch) -> {
                 if (insertBatch.size() > 0) {
                     mongoCount.getAndIncrement();

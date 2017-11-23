@@ -54,20 +54,13 @@ public class UpdateValueModels {
             public Item transform(Item item) {
                 boolean isPatent = item.getDataMap().getOrDefault(Constants.DOC_TYPE, "patents").toString().equals(PortfolioList.Type.patents.toString());
 
-                // don't compute if already seen
                 if(isPatent) {
                     if(patentCnt.getAndIncrement()%10000==0) {
                         System.out.println("Seen patents: "+patentCnt.get());
                     }
-                    if(patentModel.containsKey(item.getName())) {
-                        return null;
-                    }
                 } else {
                     if(appCnt.getAndIncrement()%10000==0) {
                         System.out.println("Seen applications: "+appCnt.get());
-                    }
-                    if(applicationModel.containsKey(item.getName())) {
-                        return null;
                     }
                 }
 
