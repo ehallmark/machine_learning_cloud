@@ -1042,124 +1042,147 @@ public class SimilarPatentServer {
             e.printStackTrace();
             System.out.println("While pinging platform starter...");
         }
-        try {
-            if(req.session(false).attribute(EXCEL_SESSION)!=null) req.session(false).removeAttribute(EXCEL_SESSION);
-            System.out.println("Getting parameters...");
-            System.out.println("Getting models...");
-            long timeStart = System.currentTimeMillis();
-            // Sorted by
-            // Get Models to use
-            List<String> attributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
-            List<String> nestedAttributeParents = getNestedAttrMap().keySet().stream().filter(attr->attributes.contains(attr)).collect(Collectors.toList());
-            Map<String,List<String>> nestedAttributeParentMap = nestedAttributeParents.stream().collect(Collectors.toMap(attr->attr,attr->{
-                return extractArray(req, attr+"[]");
-            }));
-            List<String> nestedAttributes = nestedAttributeParentMap.entrySet().stream().flatMap(e->e.getValue().stream()).collect(Collectors.toList());
-            List<String> itemAttributes = Stream.of(attributes.stream().filter(attr->!getNestedAttrMap().containsKey(attr)),nestedAttributes.stream()).flatMap(stream->stream).collect(Collectors.toList());
+        // start timer
+        RecursiveTask<String> handleReportTask = new RecursiveTask<String>() {
+            @Override
+            protected String compute() {
+                try {
+                    if (req.session(false).attribute(EXCEL_SESSION) != null)
+                        req.session(false).removeAttribute(EXCEL_SESSION);
+                    System.out.println("Getting parameters...");
+                    System.out.println("Getting models...");
+                    long timeStart = System.currentTimeMillis();
+                    // Sorted by
+                    // Get Models to use
+                    List<String> attributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
+                    List<String> nestedAttributeParents = getNestedAttrMap().keySet().stream().filter(attr -> attributes.contains(attr)).collect(Collectors.toList());
+                    Map<String, List<String>> nestedAttributeParentMap = nestedAttributeParents.stream().collect(Collectors.toMap(attr -> attr, attr -> {
+                        return extractArray(req, attr + "[]");
+                    }));
+                    List<String> nestedAttributes = nestedAttributeParentMap.entrySet().stream().flatMap(e -> e.getValue().stream()).collect(Collectors.toList());
+                    List<String> itemAttributes = Stream.of(attributes.stream().filter(attr -> !getNestedAttrMap().containsKey(attr)), nestedAttributes.stream()).flatMap(stream -> stream).collect(Collectors.toList());
 
-            System.out.println("FOUND ATTRIBUTES: "+String.join("; ",itemAttributes));
-            System.out.println("FOUND NESTED ATTRIBUTES: "+String.join("; ",nestedAttributes));
-            List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
+                    System.out.println("FOUND ATTRIBUTES: " + String.join("; ", itemAttributes));
+                    System.out.println("FOUND NESTED ATTRIBUTES: " + String.join("; ", nestedAttributes));
+                    List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
 
-            similarityEngine.extractRelevantInformationFromParams(req);
-            PortfolioList portfolioList = similarityEngine.getPortfolioList();
+                    similarityEngine.extractRelevantInformationFromParams(req);
+                    PortfolioList portfolioList = similarityEngine.getPortfolioList();
 
 
-            res.type("application/json");
+                    res.type("application/json");
 
-            // build ordering
+                    // build ordering
 
-            Map<String,Integer> baseOrderMap = new HashMap<>();
-            attributes.forEach(attr->{
-                baseOrderMap.put(attr, extractInt(req, "order_"+attr, 0) * itemAttributes.size());
-            });
-            nestedAttributeParentMap.entrySet().forEach(e->{
-                int baseOrder = baseOrderMap.get(e.getKey());
-                e.getValue().forEach(nested->{
-                    baseOrderMap.put(nested,baseOrder + extractInt(req,"order_"+nested,0));
-                });
-            });
+                    Map<String, Integer> baseOrderMap = new HashMap<>();
+                    attributes.forEach(attr -> {
+                        baseOrderMap.put(attr, extractInt(req, "order_" + attr, 0) * itemAttributes.size());
+                    });
+                    nestedAttributeParentMap.entrySet().forEach(e -> {
+                        int baseOrder = baseOrderMap.get(e.getKey());
+                        e.getValue().forEach(nested -> {
+                            baseOrderMap.put(nested, baseOrder + extractInt(req, "order_" + nested, 0));
+                        });
+                    });
 
-            List<String> tableHeaders = new ArrayList<>(itemAttributes);
-            tableHeaders.sort(Comparator.comparing(h->baseOrderMap.get(h)));
+                    List<String> tableHeaders = new ArrayList<>(itemAttributes);
+                    tableHeaders.sort(Comparator.comparing(h -> baseOrderMap.get(h)));
 
-            System.out.println("Rendering table...");
-            boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
-            List<Map<String, String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, false));
-            List<Map<String, String>> tableDataHighlighted;
-            if(useHighlighter) {
-                tableDataHighlighted = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, true));
-            } else {
-                tableDataHighlighted = tableData;
-            }
+                    System.out.println("Rendering table...");
+                    boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
+                    List<Map<String, String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, false));
+                    List<Map<String, String>> tableDataHighlighted;
+                    if (useHighlighter) {
+                        tableDataHighlighted = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, true));
+                    } else {
+                        tableDataHighlighted = tableData;
+                    }
 
-            boolean onlyExcel = extractBool(req, "onlyExcel");
-            String html;
+                    boolean onlyExcel = extractBool(req, "onlyExcel");
+                    String html;
 
-            Map<String,Object> excelRequestMap = new HashMap<>();
-            excelRequestMap.put("headers", tableHeaders);
-            excelRequestMap.put("rows", tableData);
-            excelRequestMap.put("rows-highlighted", tableDataHighlighted);
-            req.session().attribute(EXCEL_SESSION, excelRequestMap);
+                    Map<String, Object> excelRequestMap = new HashMap<>();
+                    excelRequestMap.put("headers", tableHeaders);
+                    excelRequestMap.put("rows", tableData);
+                    excelRequestMap.put("rows-highlighted", tableDataHighlighted);
+                    req.session().attribute(EXCEL_SESSION, excelRequestMap);
 
-            if(onlyExcel) {
-                System.out.println("ONLY EXCEL:: Skipping chart building and html building...");
-                Map<String,String> results = new HashMap<>();
-                results.put("message","success");
-                html = new Gson().toJson(results);
-            } else {
-                // add chart futures
-                List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart).dup()).collect(Collectors.toList());
-                charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
+                    if (onlyExcel) {
+                        System.out.println("ONLY EXCEL:: Skipping chart building and html building...");
+                        Map<String, String> results = new HashMap<>();
+                        results.put("message", "success");
+                        html = new Gson().toJson(results);
+                    } else {
+                        // add chart futures
+                        List<ChartAttribute> charts = chartModels.stream().map(chart -> chartModelMap.get(chart).dup()).collect(Collectors.toList());
+                        charts.forEach(chart -> chart.extractRelevantInformationFromParams(req));
 
-                AtomicInteger totalChartCnt = new AtomicInteger(0);
-                charts.forEach(chart->{
-                    for(int i = 0; i < chart.getAttributes().size(); i++) {
-                        final int idx = i;
-                        RecursiveTask<List<? extends AbstractChart>> chartTask = new RecursiveTask<List<? extends AbstractChart>>() {
-                            @Override
-                            protected List<? extends AbstractChart> compute() {
-                                return chart.create(portfolioList, idx);
+                        AtomicInteger totalChartCnt = new AtomicInteger(0);
+                        charts.forEach(chart -> {
+                            for (int i = 0; i < chart.getAttributes().size(); i++) {
+                                final int idx = i;
+                                RecursiveTask<List<? extends AbstractChart>> chartTask = new RecursiveTask<List<? extends AbstractChart>>() {
+                                    @Override
+                                    protected List<? extends AbstractChart> compute() {
+                                        return chart.create(portfolioList, idx);
+                                    }
+                                };
+                                chartTask.fork();
+                                req.session().attribute("chart-" + totalChartCnt.getAndIncrement(), chartTask);
                             }
-                        };
-                        chartTask.fork();
-                        req.session().attribute("chart-" + totalChartCnt.getAndIncrement(), chartTask);
+                        });
+
+                        List<String> chartTypes = new ArrayList<>();
+                        charts.forEach(chart -> {
+                            for (int i = 0; i < chart.getAttributes().size(); i++) {
+                                chartTypes.add(chart.getType());
+                            }
+                        });
+
+                        AtomicInteger chartCnt = new AtomicInteger(0);
+                        Tag chartTag = totalChartCnt.get() == 0 ? div() : div().withClass("row").attr("style", "margin-bottom: 10px;").with(
+                                h4("Charts").withClass("collapsible-header").attr("data-target", "#data-charts"),
+                                span().withId("data-charts").withClass("collapse show").with(
+                                        chartTypes.stream().map(type -> div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(type).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                )
+                        );
+                        Tag tableTag = portfolioList == null ? div() : div().withClass("row").attr("style", "margin-top: 10px;").with(
+                                h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
+                                tableFromPatentList(Collections.emptyList(), tableHeaders)
+                        );
+                        long timeEnd = System.currentTimeMillis();
+                        double timeSeconds = new Double(timeEnd - timeStart) / 1000;
+                        html = new Gson().toJson(new AjaxChartMessage(div().with(
+                                p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
+                                chartTag, br(),
+                                tableTag, br()
+
+                        ).render(), totalChartCnt.get()));
                     }
-                });
 
-                List<String> chartTypes = new ArrayList<>();
-                charts.forEach(chart->{
-                    for(int i = 0; i < chart.getAttributes().size(); i++) {
-                        chartTypes.add(chart.getType());
-                    }
-                });
-
-                AtomicInteger chartCnt = new AtomicInteger(0);
-                Tag chartTag = totalChartCnt.get() == 0 ? div() : div().withClass("row").attr("style", "margin-bottom: 10px;").with(
-                        h4("Charts").withClass("collapsible-header").attr("data-target", "#data-charts"),
-                        span().withId("data-charts").withClass("collapse show").with(
-                                chartTypes.stream().map(type -> div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(type).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
-                        )
-                );
-                Tag tableTag = portfolioList == null ? div() : div().withClass("row").attr("style", "margin-top: 10px;").with(
-                        h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
-                        tableFromPatentList(Collections.emptyList(), tableHeaders)
-                );
-                long timeEnd = System.currentTimeMillis();
-                double timeSeconds = new Double(timeEnd-timeStart)/1000;
-                html = new Gson().toJson(new AjaxChartMessage(div().with(
-                        p("Matched "+tableData.size()+" results in "+timeSeconds+" seconds."), br(),
-                        chartTag, br(),
-                        tableTag, br()
-
-                ).render(), totalChartCnt.get()));
+                    return html;
+                } catch (Exception e) {
+                    System.out.println(e.getClass().getName() + ": " + e.getMessage());
+                    e.printStackTrace();
+                    return new Gson().toJson(new AjaxChartMessage("ERROR " + e.getClass().getName() + ": " + e.getMessage(), 0));
+                }
             }
+        };
 
+        handleReportTask.fork();
+        long maxTimeMillis =  180 * 1000;
+        try {
+            String html = handleReportTask.get(maxTimeMillis, TimeUnit.MILLISECONDS);
             return html;
-        } catch (Exception e) {
-            System.out.println(e.getClass().getName() + ": " + e.getMessage());
-            e.printStackTrace();
-            return new Gson().toJson(new AjaxChartMessage("ERROR "+e.getClass().getName()+": " + e.getMessage(), 0));
+        } catch(Exception e) {
+            System.out.println("Timeout exception!");
+            return new Gson().toJson(new SimpleAjaxMessage("Timeout occured after 3 minutes."));
+        } finally {
+            try {
+                if(!handleReportTask.isDone()) handleReportTask.cancel(true);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
