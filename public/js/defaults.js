@@ -126,9 +126,9 @@ $(document).ready(function() {
                         pushState: false
                      }
                    });
-               } else {
-                   alert("Please include some attributes in the Attributes section.");
-               }
+               } //else {
+                   //alert("Please include some attributes in the Attributes section.");
+               //}
 
                setCollapsibleHeaders('#results .collapsible-header');
 
