@@ -1305,11 +1305,11 @@ public class SimilarPatentServer {
                                                                         button().withType("submit").withText("Save").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
                                                         ), div().attr("style","height: 60%;").with(
-                                                                h5("Default Forms").withClass("collapsible-header").attr("data-target","#default-templates"),
-                                                                div().withId("default-templates").with(
+                                                                h5("Default Forms"),
+                                                                div().attr("style","max-height: 45%; overflow-y: auto;").withId("default-templates").with(
                                                                         getTemplatesForUser(SUPER_USER,false)
                                                                 ),
-                                                                h5("My Forms").withClass("collapsible-header").attr("data-target","#my-templates"),
+                                                                h5("My Forms"),
                                                                 div().attr("style","max-height: 45%; overflow-y: auto;").withId("my-templates").with(
                                                                         getTemplatesForUser(req.session().attribute("username"),true)
                                                                 )
@@ -1331,7 +1331,7 @@ public class SimilarPatentServer {
 
     public static Tag templateHelper(FormTemplate template, File file) {
         return li().withClass("nav-item").with(
-                button(template.getName()).withClass("btn btn-secondary template-show-button").attr("style","width: "+(file==null?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
+                button(template.getName()).withClass("btn btn-sm btn-secondary template-show-button").attr("style","width: "+(file==null?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
                         .attr("data-highlight", template.getHighlightMap())
                         .attr("data-attributesMap", template.getAttributesMap()).attr("data-filtersMap", template.getFiltersMap()).attr("data-searchOptionsMap", template.getSearchOptionsMap()),
                 file==null?span():span("X").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",file.getName()).withClass("template-remove-button")
