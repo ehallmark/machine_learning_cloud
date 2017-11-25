@@ -1305,11 +1305,11 @@ public class SimilarPatentServer {
                                                                         button().withType("submit").withText("Save").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
                                                         ), div().attr("style","height: 60%;").with(
-                                                                h5("Default Forms"),
-                                                                div().with(
+                                                                h5("Default Forms").withClass("collapsible-header").attr("data-target","#default-templates"),
+                                                                div().withId("default-templates").with(
                                                                         getTemplatesForUser(SUPER_USER,false)
                                                                 ),
-                                                                h5("My Forms"),
+                                                                h5("My Forms").withClass("collapsible-header").attr("data-target","#my-templates"),
                                                                 div().attr("style","max-height: 45%; overflow-y: auto;").withId("my-templates").with(
                                                                         getTemplatesForUser(req.session().attribute("username"),true)
                                                                 )
