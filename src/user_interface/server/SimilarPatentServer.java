@@ -1176,7 +1176,7 @@ public class SimilarPatentServer {
             return html;
         } catch(Exception e) {
             System.out.println("Timeout exception!");
-            return new Gson().toJson(new SimpleAjaxMessage("Timeout occured after 3 minutes."));
+            return new Gson().toJson(new SimpleAjaxMessage("Timeout occurred after 3 minutes."));
         } finally {
             try {
                 if(!handleReportTask.isDone()) handleReportTask.cancel(true);
