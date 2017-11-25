@@ -1304,9 +1304,9 @@ public class SimilarPatentServer {
                                                                         input().withType("text").withClass("form-control").attr("placeholder","Template Name").withName("name").withId("template_name").attr("style","width: 80%; margin-left: 10%; margin-right: 10%; display: inline-block; text-align: center;"),
                                                                         button().withType("submit").withText("Save").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
-                                                        ), div().attr("style","height: 55%;").with(
+                                                        ), div().attr("style","height: 60%;").with(
                                                                 h5("Default Forms"),
-                                                                div().attr("style","max-height: 40%; overflow-y: auto;").with(
+                                                                div().with(
                                                                         getTemplatesForUser(SUPER_USER,false)
                                                                 ),
                                                                 h5("My Forms"),
