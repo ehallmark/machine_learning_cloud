@@ -8,6 +8,7 @@ import user_interface.server.SimilarPatentServer;
 import spark.Request;
 import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.filters.AbstractIncludeFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
@@ -43,8 +44,11 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine implement
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
-                textarea().withClass("form-control").attr("placeholder","1 assignee per line").withId(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD).withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD)
+                AbstractIncludeFilter.ajaxMultiSelect(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD, ajaxUrl(), SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD)
         );
+        //return div().with(
+        //        textarea().withClass("form-control").attr("placeholder","1 assignee per line").withId(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD).withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD)
+        //);
     }
 
     @Override

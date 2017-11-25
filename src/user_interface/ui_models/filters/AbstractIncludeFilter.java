@@ -103,7 +103,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
         } else {
             if(attribute instanceof AjaxMultiselect) {
                 return div().with(
-                        ajaxMultiSelect(getName(), ((AjaxMultiselect) attribute).ajaxUrl())
+                        ajaxMultiSelect(getName(), ((AjaxMultiselect) attribute).ajaxUrl(), ("multiselect-multiselect-"+getName()).replaceAll("[\\[\\] ]",""))
                 );
             } else {
                 return div().with(
@@ -113,7 +113,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
         }
     }
 
-    public Tag ajaxMultiSelect(String name, String url) {
-        return select().attr("style","width:100%;").withName(name).withId(("multiselect-multiselect-"+name).replaceAll("[\\[\\] ]","")).withClass("multiselect-ajax").attr("data-url",url).attr("multiple","multiple");
+    public static Tag ajaxMultiSelect(String name, String url, String id) {
+        return select().attr("style","width:100%;").withName(name).withId(id).withClass("multiselect-ajax").attr("data-url",url).attr("multiple","multiple");
     }
 }
