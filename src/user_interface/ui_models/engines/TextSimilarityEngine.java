@@ -84,6 +84,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
             if(bowVector!=null&&bowVector.sumNumber().doubleValue()>0) {
                 // encode using word to cpc network
                 avg = net.join().activateSelectedLayers(0, net.join().getnLayers() - 1, bowVector);
+                avg.divi(avg.norm2Number());
             }
         }
     }
