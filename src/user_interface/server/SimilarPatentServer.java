@@ -1287,7 +1287,7 @@ public class SimilarPatentServer {
                 body().with(
                         div().withClass("container-fluid text-center").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
-                                        nav().withClass("col-3 sidebar").attr("style","height: 100%; position: fixed; padding: 0px; padding-top: 75px;").with(
+                                        nav().withClass("col-3 sidebar").attr("style","overflow-y: auto; height: 100%; position: fixed; padding: 0px; padding-top: 75px;").with(
                                                 (authorized ? a("Sign Out").attr("style","padding: 0;").withHref("/logout").withClass("nav-link") : a("Log In").withHref("/").withClass("nav-link").attr("style","padding: 0;")),
                                                 (authorized ? a("Create User").attr("style","padding: 0;").withHref("/create_user").withClass("nav-link") : span()),
                                                 (authorized ? p("Signed in as "+req.session().attribute("username")+". Role: "+req.session().attribute("role")+".") : p("Not signed in.")),
