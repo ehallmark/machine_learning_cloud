@@ -20,8 +20,10 @@ import java.util.stream.Collectors;
  */
 public class BOWVectorFromTextTransformer implements Function<Collection<String>,INDArray> {
     private Map<String,Integer> wordToIdxMap;
-    public BOWVectorFromTextTransformer(Map<String,Integer> wordToIdxMap) {
+    private boolean binary;
+    public BOWVectorFromTextTransformer(Map<String,Integer> wordToIdxMap, boolean binary) {
         this.wordToIdxMap=wordToIdxMap;
+        this.binary=binary;
     }
 
     @Override
@@ -34,9 +36,9 @@ public class BOWVectorFromTextTransformer implements Function<Collection<String>
                 .entrySet().forEach(e->{
                     int idx = wordToIdxMap.get(e.getKey());
                     cnt.getAndAdd(e.getValue());
-                    vec.putScalar(idx,e.getValue());
+                    vec.putScalar(idx,binary?1.0:e.getValue());
                 });
-        if(cnt.get()>0) vec.divi(cnt);
+        if(!binary && cnt.get()>0) vec.divi(cnt);
         return vec;
     }
 }

@@ -33,10 +33,10 @@ public class WordVectorizerAutoEncoderIterator implements DataSetIterator {
     private Function<Map<String,Integer>,INDArray>  transformer;
     private int numInputs;
     private Function<String,Map<String,Integer>> BOWFunction;
-    public WordVectorizerAutoEncoderIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, Function<String,Map<String,Integer>> BOWFunction) {
+    public WordVectorizerAutoEncoderIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, Function<String,Map<String,Integer>> BOWFunction, boolean binary) {
         this.batch=batch;
         this.documentIterator=documentIterator;
-        this.transformer = new BOWVectorFromCountMapTransformer(wordToIdxMap);
+        this.transformer = new BOWVectorFromCountMapTransformer(wordToIdxMap, binary);
         this.numInputs=wordToIdxMap.size();
         this.BOWFunction=BOWFunction;
     }
@@ -49,8 +49,8 @@ public class WordVectorizerAutoEncoderIterator implements DataSetIterator {
         this.BOWFunction=BOWFunction;
     }
 
-    public WordVectorizerAutoEncoderIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap) {
-        this(batch,documentIterator,wordToIdxMap,defaultBOWFunction);
+    public WordVectorizerAutoEncoderIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, boolean binary) {
+        this(batch,documentIterator,wordToIdxMap,defaultBOWFunction,binary);
     }
 
 

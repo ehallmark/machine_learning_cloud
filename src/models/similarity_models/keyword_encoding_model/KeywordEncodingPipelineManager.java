@@ -85,9 +85,9 @@ public class KeywordEncodingPipelineManager extends DefaultPipelineManager<DataS
             LabelAwareIterator testIter = new FileTextDataSetIterator(testFile);
             LabelAwareIterator devIter = new FileTextDataSetIterator(devFile);
             datasetManager = new NoSaveDataSetManager<>(
-                    new WordVectorizerAutoEncoderIterator(batch,trainIter,wordToIdxMap),
-                    new WordVectorizerAutoEncoderIterator(batch,testIter,wordToIdxMap),
-                    new WordVectorizerAutoEncoderIterator(batch,devIter,wordToIdxMap)
+                    new WordVectorizerAutoEncoderIterator(batch,trainIter,wordToIdxMap,false),
+                    new WordVectorizerAutoEncoderIterator(batch,testIter,wordToIdxMap,false),
+                    new WordVectorizerAutoEncoderIterator(batch,devIter,wordToIdxMap,false)
             );
         }
     }

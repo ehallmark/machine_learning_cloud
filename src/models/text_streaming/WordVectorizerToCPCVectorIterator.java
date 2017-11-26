@@ -29,12 +29,12 @@ public abstract class WordVectorizerToCPCVectorIterator implements DataSetIterat
     protected int numOutputs;
 
     // for BOW
-    public WordVectorizerToCPCVectorIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, Function<String,Collection<String>> tokenizer, Vectorizer vectorizer, int numOutputs) {
+    public WordVectorizerToCPCVectorIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, Function<String,Collection<String>> tokenizer, Vectorizer vectorizer, int numOutputs, boolean binary) {
         this.batch=batch;
         this.vectorizer=vectorizer;
         this.numOutputs=numOutputs;
         this.documentIterator=documentIterator;
-        this.transformer = new BOWVectorFromTextTransformer(wordToIdxMap);
+        this.transformer = new BOWVectorFromTextTransformer(wordToIdxMap, binary);
         this.numInputs=wordToIdxMap==null?0:wordToIdxMap.size();
         this.tokenizer=tokenizer;
     }

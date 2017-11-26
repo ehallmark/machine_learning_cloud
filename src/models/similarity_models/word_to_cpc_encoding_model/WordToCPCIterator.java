@@ -30,11 +30,11 @@ public class WordToCPCIterator extends WordVectorizerToCPCVectorIterator {
     private Map<String,AtomicInteger> wordToDocCountMap;
 
     public WordToCPCIterator(LabelAwareIterator documentIterator, int batchSize) {
-        super(batchSize,documentIterator,null,defaultTokenizer,null,-1);
+        super(batchSize,documentIterator,null,defaultTokenizer,null,-1,false);
     }
 
     public WordToCPCIterator(LabelAwareIterator documentIterator, Map<String, INDArray> cpcEncodings, Map<String,Integer> wordToIdxMap, int batchSize, boolean binarize, boolean normalize, boolean probability) {
-        super(batchSize,documentIterator,wordToIdxMap,defaultTokenizer,new CPCSimilarityVectorizer(cpcEncodings, binarize, normalize, probability),CPCVariationalAutoEncoderNN.VECTOR_SIZE);
+        super(batchSize,documentIterator,wordToIdxMap,defaultTokenizer,new CPCSimilarityVectorizer(cpcEncodings, binarize, normalize, probability),CPCVariationalAutoEncoderNN.VECTOR_SIZE,false);
         this.wordToIdxMap=wordToIdxMap;
     }
 

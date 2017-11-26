@@ -14,8 +14,10 @@ import java.util.stream.Collectors;
  */
 public class BOWVectorFromCountMapTransformer implements Function<Map<String,Integer>,INDArray> {
     private Map<String,Integer> wordToIdxMap;
-    public BOWVectorFromCountMapTransformer(Map<String,Integer> wordToIdxMap) {
+    private boolean binary;
+    public BOWVectorFromCountMapTransformer(Map<String,Integer> wordToIdxMap, boolean binary) {
         this.wordToIdxMap=wordToIdxMap;
+        this.binary=binary;
     }
 
     @Override

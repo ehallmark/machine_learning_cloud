@@ -504,8 +504,9 @@ public class SimilarPatentServer {
                 @Override
                 protected SimilarityEngineController compute() {
                     // current word vectorizer
+                    boolean binary = true;
                     Function<String,Collection<String>> tokenizer = WordToCPCIterator.getDefaultTokenizer();
-                    Function<String,INDArray> wordVectorizer = tokenizer.andThen(new BOWVectorFromTextTransformer(TextSimilarityEngine.getWordIdxMap().join()));
+                    Function<String,INDArray> wordVectorizer = tokenizer.andThen(new BOWVectorFromTextTransformer(TextSimilarityEngine.getWordIdxMap().join(),binary));
                     return new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(wordVectorizer), new CPCSimilarityEngine()));
                 }
             };
