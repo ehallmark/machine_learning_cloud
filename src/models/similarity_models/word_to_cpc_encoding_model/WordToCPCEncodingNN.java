@@ -2,11 +2,10 @@ package models.similarity_models.word_to_cpc_encoding_model;
 
 import data_pipeline.helpers.Function3;
 import data_pipeline.models.NeuralNetworkPredictionModel;
-import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.MultiScoreReporter;
 import data_pipeline.models.listeners.OptimizationScoreListener;
-import data_pipeline.optimize.nn_optimization.MultiLayerNetworkWrapper;
+import data_pipeline.optimize.nn_optimization.ModelWrapper;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
 
@@ -161,7 +160,7 @@ public class WordToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArray> 
                     getLayerParameters(),
                     numNetworks,
                     net -> {
-                        IterationListener listener = new OptimizationScoreListener(reporter, net, printIterations, testErrorFunction, saveFunction);
+                        IterationListener listener = new OptimizationScoreListener<>(reporter, net, printIterations, testErrorFunction, saveFunction);
                         net.getNet().setListeners(listener);
                         return null;
                     }
@@ -199,8 +198,8 @@ public class WordToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArray> 
 
             System.out.println("Conf: "+net.getLayerWiseConfigurations().toYaml());
 
-            MultiLayerNetworkWrapper netWrapper = new MultiLayerNetworkWrapper(net,Collections.emptyList());
-            IterationListener listener = new OptimizationScoreListener(reporter, netWrapper, printIterations, testErrorFunction, saveFunction);
+            ModelWrapper netWrapper = new ModelWrapper<>(net,Collections.emptyList());
+            IterationListener listener = new OptimizationScoreListener<>(reporter, netWrapper, printIterations, testErrorFunction, saveFunction);
             net.setListeners(listener);
             for (int i = 0; i < nEpochs; i++) {
                 System.out.println("Starting epoch {" + (i + 1) + "} of {" + nEpochs + "}");

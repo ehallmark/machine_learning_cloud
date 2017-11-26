@@ -1,23 +1,21 @@
 package data_pipeline.models.listeners;
 
-import data_pipeline.helpers.Function2;
 import data_pipeline.helpers.Function3;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
-import data_pipeline.optimize.nn_optimization.MultiLayerNetworkWrapper;
+import data_pipeline.optimize.nn_optimization.ModelWrapper;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.api.IterationListener;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 /**
  * Created by Evan on 10/29/2017.
  */
-public class OptimizationScoreListener implements IterationListener {
-    private static Map<MultiLayerNetwork,Double> modelToBestScoreMap = Collections.synchronizedMap(new HashMap<>());
+public class OptimizationScoreListener<T extends Model> implements IterationListener {
+    private static Map<Model,Double> modelToBestScoreMap = Collections.synchronizedMap(new HashMap<>());
     private boolean invoked = false;
     private Double previousAverageError;
     private double averageError;
@@ -29,12 +27,12 @@ public class OptimizationScoreListener implements IterationListener {
     // train
     private List<Double> movingAverage = new ArrayList<>();
     private final int averagePeriod = 10;
-    private Function3<MultiLayerNetwork,LocalDateTime,Double,Void> saveFunction;
-    private  Function<MultiLayerNetwork,Double> testErrorFunction;
+    private Function3<T,LocalDateTime,Double,Void> saveFunction;
+    private  Function<T,Double> testErrorFunction;
     private Long lastTime;
-    private MultiLayerNetworkWrapper net;
+    private ModelWrapper<T> net;
     private final MultiScoreReporter reporter;
-    public OptimizationScoreListener(MultiScoreReporter reporter, MultiLayerNetworkWrapper net, int printIterations, Function<MultiLayerNetwork,Double> testErrorFunction, Function3<MultiLayerNetwork,LocalDateTime,Double,Void> saveFunction) {
+    public OptimizationScoreListener(MultiScoreReporter reporter, ModelWrapper<T> net, int printIterations, Function<T,Double> testErrorFunction, Function3<T,LocalDateTime,Double,Void> saveFunction) {
         this.printIterations = printIterations;
         this.testErrorFunction=testErrorFunction;
         this.saveFunction=saveFunction;

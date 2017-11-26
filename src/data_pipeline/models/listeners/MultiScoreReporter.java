@@ -1,6 +1,5 @@
 package data_pipeline.models.listeners;
 
-import data_pipeline.optimize.nn_optimization.MultiLayerNetworkWrapper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

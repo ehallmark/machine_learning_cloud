@@ -2,6 +2,7 @@ package data_pipeline.optimize.parameters;
 
 import data_pipeline.optimize.parameters.distributions.ParameterDistribution;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.graph.GraphVertex;
 import org.deeplearning4j.nn.conf.layers.Layer;
 
 import java.util.Random;
