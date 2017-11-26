@@ -77,7 +77,7 @@ public class FileSequenceIterator implements SentenceIterator {
 
     @Override
     public void reset() {
-        if(task!=null) task.join();
+        if(task!=null && !task.isDone()) return;
         queue.clear();
         final boolean singleEpoch = vocabPass;
         task = new RecursiveAction() {
@@ -94,7 +94,7 @@ public class FileSequenceIterator implements SentenceIterator {
                             e.printStackTrace();
                         }
                     }
-
+                    iterator.reset();
                     System.out.println("Finished epoch: "+(i+1));
                     // Evaluate model
                     if(afterEpochFunction!=null)afterEpochFunction.apply(null);
