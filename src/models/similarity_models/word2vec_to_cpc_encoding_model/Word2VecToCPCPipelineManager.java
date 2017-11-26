@@ -59,7 +59,7 @@ public class Word2VecToCPCPipelineManager extends DefaultPipelineManager<DataSet
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
-                model.loadBestModel();
+                model.loadMostRecentModel();
             } catch(Exception e) {
                 System.out.println("Error loading previous model: "+e.getMessage());
             }
@@ -123,7 +123,7 @@ public class Word2VecToCPCPipelineManager extends DefaultPipelineManager<DataSet
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = true;
+        boolean forceRecreateModels = false;
         boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
         boolean rebuildPrerequisites = false;
 
