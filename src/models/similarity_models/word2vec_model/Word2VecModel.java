@@ -62,7 +62,7 @@ public class Word2VecModel extends WordVectorPredictionModel<INDArray> {
         };
 
         FileSequenceIterator iterator = new FileSequenceIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN), nEpochs, afterEpochFunction);
-        iterator.reset();
+        //iterator.reset();
         DefaultTokenizerFactory tf = new DefaultTokenizerFactory();
         tf.setTokenPreProcessor(new TokenPreProcess() {
             @Override
@@ -81,7 +81,7 @@ public class Word2VecModel extends WordVectorPredictionModel<INDArray> {
                     .negativeSample(-1)
                     .learningRate(0.1)
                     .minLearningRate(0.001)
-                    .allowParallelTokenization(true)
+                    .allowParallelTokenization(false)
                     .useAdaGrad(true)
                     .resetModel(true)
                     .minWordFrequency(5)
