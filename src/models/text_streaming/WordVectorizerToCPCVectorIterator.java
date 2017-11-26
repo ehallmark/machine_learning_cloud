@@ -19,15 +19,17 @@ import java.util.function.Function;
 /**
  * Created by Evan on 11/19/2017.
  */
-public class BOWToCPCVectorIterator implements DataSetIterator{
+public abstract class WordVectorizerToCPCVectorIterator implements DataSetIterator{
     private int batch;
     protected LabelAwareIterator documentIterator;
-    protected BOWVectorFromTextTransformer transformer;
+    protected Function<Collection<String>,INDArray> transformer;
     protected int numInputs;
     protected Function<String,Collection<String>> tokenizer;
     protected Vectorizer vectorizer;
     protected int numOutputs;
-    public BOWToCPCVectorIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, Function<String,Collection<String>> tokenizer, Vectorizer vectorizer, int numOutputs) {
+
+    // for BOW
+    public WordVectorizerToCPCVectorIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, Function<String,Collection<String>> tokenizer, Vectorizer vectorizer, int numOutputs) {
         this.batch=batch;
         this.vectorizer=vectorizer;
         this.numOutputs=numOutputs;
@@ -36,6 +38,18 @@ public class BOWToCPCVectorIterator implements DataSetIterator{
         this.numInputs=wordToIdxMap==null?0:wordToIdxMap.size();
         this.tokenizer=tokenizer;
     }
+
+    // for tf-idf
+    public WordVectorizerToCPCVectorIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, Map<String,Integer> docCountMap, int totalNumDocuments, Function<String,Collection<String>> tokenizer, Vectorizer vectorizer, int numOutputs) {
+        this.batch=batch;
+        this.vectorizer=vectorizer;
+        this.numOutputs=numOutputs;
+        this.documentIterator=documentIterator;
+        this.transformer = new TFIDFVectorFromTextTransformer(wordToIdxMap, docCountMap, totalNumDocuments);
+        this.numInputs=wordToIdxMap==null?0:wordToIdxMap.size();
+        this.tokenizer=tokenizer;
+    }
+
     @Override
     public boolean hasNext() {
         return documentIterator.hasNext();

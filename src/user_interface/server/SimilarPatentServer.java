@@ -8,6 +8,9 @@ import lombok.Getter;
 import models.keyphrase_prediction.models.NewestModel;
 import models.similarity_models.DefaultSimilarityModel;
 import models.similarity_models.Vectorizer;
+import models.similarity_models.keyword_encoding_model.WordIndexMap;
+import models.similarity_models.word_to_cpc_encoding_model.WordToCPCIterator;
+import models.text_streaming.BOWVectorFromTextTransformer;
 import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import spark.Session;
@@ -100,7 +103,7 @@ public class SimilarPatentServer {
     private static RecursiveTask<AbstractSimilarityModel> TEXT_SIMILARITY_MODEL;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     public static Map<String,RecursiveTask<AbstractSimilarityModel>> similarityModelMap = new HashMap<>();
-    public static SimilarityEngineController similarityEngine;
+    public static RecursiveTask<SimilarityEngineController> similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     private static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
@@ -361,7 +364,7 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.DOES_NOT_EXIST_IN_GATHER_FILTER, new DoesNotExistInGatherFilter());
                 buildJavaToHumanAttrMap();
                 List<AbstractAttribute> nestedAttributes = new ArrayList<>(allAttributes.getAttributes());
-                nestedAttributes.addAll(similarityEngine.getEngineMap().values().stream().map(engine->(AbstractAttribute)engine).collect(Collectors.toList()));
+                nestedAttributes.addAll(similarityEngine.join().getEngineMap().values().stream().map(engine->(AbstractAttribute)engine).collect(Collectors.toList()));
                 NestedAttribute attributeWithSimilarity = new NestedAttribute(nestedAttributes,false) {
                     @Override
                     public String getName() {
@@ -497,10 +500,18 @@ public class SimilarPatentServer {
                 DEFAULT_SIMILARITY_MODEL.fork();
             }
             // similarity engine
-            similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(), new CPCSimilarityEngine()));
+            similarityEngine = new RecursiveTask<SimilarityEngineController>() {
+                @Override
+                protected SimilarityEngineController compute() {
+                    // current word vectorizer
+                    Function<String,Collection<String>> tokenizer = WordToCPCIterator.getDefaultTokenizer();
+                    Function<String,INDArray> wordVectorizer = tokenizer.andThen(new BOWVectorFromTextTransformer(TextSimilarityEngine.getWordIdxMap().join()));
+                    return new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(wordVectorizer), new CPCSimilarityEngine()));
+                }
+            };
+            similarityEngine.fork();
 
             allTopLevelAttributes = new ArrayList<>(attributesMap.values());
-
 
             allAttributes = new NestedAttribute(allTopLevelAttributes,false) {
                 @Override
@@ -1068,8 +1079,8 @@ public class SimilarPatentServer {
                     System.out.println("FOUND NESTED ATTRIBUTES: " + String.join("; ", nestedAttributes));
                     List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
 
-                    similarityEngine.extractRelevantInformationFromParams(req);
-                    PortfolioList portfolioList = similarityEngine.getPortfolioList();
+                    similarityEngine.join().extractRelevantInformationFromParams(req);
+                    PortfolioList portfolioList = similarityEngine.join().getPortfolioList();
 
 
                     res.type("application/json");

@@ -1,8 +1,6 @@
 package models.text_streaming;
 
-import models.keyphrase_prediction.MultiStem;
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
-import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
@@ -19,7 +17,7 @@ import java.util.stream.Stream;
 /**
  * Created by Evan on 11/19/2017.
  */
-public class BOWAutoEncoderIterator implements DataSetIterator {
+public class WordVectorizerAutoEncoderIterator implements DataSetIterator {
 
     private static Function<String,Map<String,Integer>> defaultBOWFunction = content -> {
         return Stream.of(content.split(",")).map(str->{
@@ -32,10 +30,10 @@ public class BOWAutoEncoderIterator implements DataSetIterator {
 
     private int batch;
     private LabelAwareIterator documentIterator;
-    private BOWVectorFromCountMapTransformer transformer;
+    private Function<Map<String,Integer>,INDArray>  transformer;
     private int numInputs;
     private Function<String,Map<String,Integer>> BOWFunction;
-    public BOWAutoEncoderIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, Function<String,Map<String,Integer>> BOWFunction) {
+    public WordVectorizerAutoEncoderIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, Function<String,Map<String,Integer>> BOWFunction) {
         this.batch=batch;
         this.documentIterator=documentIterator;
         this.transformer = new BOWVectorFromCountMapTransformer(wordToIdxMap);
@@ -43,9 +41,23 @@ public class BOWAutoEncoderIterator implements DataSetIterator {
         this.BOWFunction=BOWFunction;
     }
 
-    public BOWAutoEncoderIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap) {
+    public WordVectorizerAutoEncoderIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, Map<String,Integer> docCountMap, int totalNumDocuments, Function<String,Map<String,Integer>> BOWFunction) {
+        this.batch=batch;
+        this.documentIterator=documentIterator;
+        this.transformer = new TFIDFVectorFromCountMapTransformer(wordToIdxMap,docCountMap,totalNumDocuments);
+        this.numInputs=wordToIdxMap.size();
+        this.BOWFunction=BOWFunction;
+    }
+
+    public WordVectorizerAutoEncoderIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap) {
         this(batch,documentIterator,wordToIdxMap,defaultBOWFunction);
     }
+
+
+    public WordVectorizerAutoEncoderIterator(int batch, LabelAwareIterator documentIterator, Map<String,Integer> wordToIdxMap, Map<String,Integer> docCountMap, int totalNumDocuments) {
+        this(batch,documentIterator,wordToIdxMap,docCountMap,totalNumDocuments,defaultBOWFunction);
+    }
+
 
 
     @Override

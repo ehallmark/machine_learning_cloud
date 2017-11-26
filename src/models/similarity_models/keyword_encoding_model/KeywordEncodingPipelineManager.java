@@ -9,12 +9,8 @@ import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.models.TimeDensityModel;
 import models.keyphrase_prediction.stages.Stage1;
 import models.keyphrase_prediction.stages.ValidWordStage;
-import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
-import models.similarity_models.keyword_embedding_model.KeywordEmbeddingPipelineManager;
-import models.text_streaming.BOWAutoEncoderIterator;
+import models.text_streaming.WordVectorizerAutoEncoderIterator;
 import models.text_streaming.FileTextDataSetIterator;
-import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
-import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -89,9 +85,9 @@ public class KeywordEncodingPipelineManager extends DefaultPipelineManager<DataS
             LabelAwareIterator testIter = new FileTextDataSetIterator(testFile);
             LabelAwareIterator devIter = new FileTextDataSetIterator(devFile);
             datasetManager = new NoSaveDataSetManager<>(
-                    new BOWAutoEncoderIterator(batch,trainIter,wordToIdxMap),
-                    new BOWAutoEncoderIterator(batch,testIter,wordToIdxMap),
-                    new BOWAutoEncoderIterator(batch,devIter,wordToIdxMap)
+                    new WordVectorizerAutoEncoderIterator(batch,trainIter,wordToIdxMap),
+                    new WordVectorizerAutoEncoderIterator(batch,testIter,wordToIdxMap),
+                    new WordVectorizerAutoEncoderIterator(batch,devIter,wordToIdxMap)
             );
         }
     }

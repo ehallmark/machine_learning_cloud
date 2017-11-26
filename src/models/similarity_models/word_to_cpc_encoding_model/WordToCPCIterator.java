@@ -1,7 +1,7 @@
 package models.similarity_models.word_to_cpc_encoding_model;
 
 import lombok.Getter;
-import models.text_streaming.BOWToCPCVectorIterator;
+import models.text_streaming.WordVectorizerToCPCVectorIterator;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
@@ -22,17 +22,24 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 10/27/17.
  */
-public class WordToCPCIterator extends BOWToCPCVectorIterator {
-    private static Function<String,Collection<String>> defaultTokenizer = str->Stream.of(str.split("\\s+")).filter(w->!Constants.STOP_WORD_SET.contains(w)).map(w->new Stemmer().stem(w)).filter(w->!Constants.STOP_WORD_SET.contains(w)).collect(Collectors.toList());
+public class WordToCPCIterator extends WordVectorizerToCPCVectorIterator {
+    @Getter
+    private static final Function<String,Collection<String>> defaultTokenizer = str->Stream.of(str.toLowerCase().split("\\s+")).filter(w->!Constants.STOP_WORD_SET.contains(w)).map(w->new Stemmer().stem(w)).filter(w->!Constants.STOP_WORD_SET.contains(w)).collect(Collectors.toList());
     @Getter
     private Map<String,Integer> wordToIdxMap;
     private Map<String,AtomicInteger> wordToDocCountMap;
+
     public WordToCPCIterator(LabelAwareIterator documentIterator, int batchSize) {
         super(batchSize,documentIterator,null,defaultTokenizer,null,-1);
     }
 
     public WordToCPCIterator(LabelAwareIterator documentIterator, Map<String, INDArray> cpcEncodings, Map<String,Integer> wordToIdxMap, int batchSize, boolean binarize, boolean normalize, boolean probability) {
         super(batchSize,documentIterator,wordToIdxMap,defaultTokenizer,new CPCSimilarityVectorizer(cpcEncodings, binarize, normalize, probability),CPCVariationalAutoEncoderNN.VECTOR_SIZE);
+        this.wordToIdxMap=wordToIdxMap;
+    }
+
+    public WordToCPCIterator(LabelAwareIterator documentIterator, Map<String, INDArray> cpcEncodings, Map<String,Integer> wordToIdxMap, Map<String,Integer> docCountMap, int totalNumDocuments, int batchSize, boolean binarize, boolean normalize, boolean probability) {
+        super(batchSize,documentIterator,wordToIdxMap,docCountMap,totalNumDocuments,defaultTokenizer,new CPCSimilarityVectorizer(cpcEncodings, binarize, normalize, probability),CPCVariationalAutoEncoderNN.VECTOR_SIZE);
         this.wordToIdxMap=wordToIdxMap;
     }
 
@@ -63,30 +70,6 @@ public class WordToCPCIterator extends BOWToCPCVectorIterator {
             return e.getValue().get()>=minDocCount&&e.getValue().get()<maxDocCount;
         }).collect(Collectors.toMap(e->e.getKey(),e->idx.getAndIncrement())));
         System.out.println("Vocab size after: "+wordToIdxMap.size());
-    }
-
-    public static INDArray createBagOfWordsVector(Stream<Collection<String>> wordStream, Map<String,Integer> wordToIdxMap, int batchSize) {
-        AtomicInteger batch = new AtomicInteger(0);
-        int numInputs = wordToIdxMap.size();
-        double[][] vecs = new double[batchSize][numInputs];
-        wordStream.forEach(words->{
-            double[] vec = new double[numInputs];
-            words.forEach(word->{
-                Integer idx = wordToIdxMap.get(word);
-                if(idx!=null) {
-                    vec[idx] = 1d;
-                }
-            });
-            vecs[batch.get()] = vec;
-            batch.getAndIncrement();
-        });
-        if(batch.get()==0) {
-            return null;
-        } else if(batch.get()<batchSize) {
-            return Nd4j.create(Arrays.copyOf(vecs,batch.get()));
-        } else {
-            return Nd4j.create(vecs);
-        }
     }
 
 }

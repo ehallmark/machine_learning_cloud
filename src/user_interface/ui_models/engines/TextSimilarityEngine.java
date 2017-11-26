@@ -1,12 +1,14 @@
 package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
+import lombok.Getter;
 import models.similarity_models.AbstractSimilarityModel;
 import models.similarity_models.DefaultSimilarityModel;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.word_to_cpc_encoding_model.WordToCPCEncodingNN;
 import models.similarity_models.word_to_cpc_encoding_model.WordToCPCIterator;
 import models.similarity_models.word_to_cpc_encoding_model.WordToCPCPipelineManager;
+import models.text_streaming.WordVectorizerToCPCVectorIterator;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Constants;
@@ -31,7 +33,8 @@ import static user_interface.server.SimilarPatentServer.*;
  * Created by ehallmark on 2/28/17.
  */
 public class TextSimilarityEngine extends AbstractSimilarityEngine {
-    private static RecursiveTask<Map<String,Integer>> wordIdxMap;
+    @Getter
+    private static final RecursiveTask<Map<String,Integer>> wordIdxMap;
     private static RecursiveTask<MultiLayerNetwork> net;
     static {
         String modelName = WordToCPCPipelineManager.MODEL_NAME;
@@ -63,24 +66,24 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
         wordIdxMap.fork();
     }
 
+    private Function<String,INDArray> textVectorizer;
+    public TextSimilarityEngine(Function<String,INDArray> textVectorizer) {
+        this.textVectorizer=textVectorizer;
+    }
+
+
     @Override
     protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
-        System.out.println("Collecting inputs to search for...");
         // get input data
-        String text = extractString(req, TEXT_TO_SEARCH_FOR, "").toLowerCase().trim();
-        Collection<String> keywords = Arrays.asList(text.split("\\s+"));
-        System.out.println("Found "+keywords.size()+" patents...");
-        return keywords;
+        return null;
     }
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        List<String> resultTypes = SimilarPatentServer.extractArray(req,  Constants.DOC_TYPE_INCLUDE_FILTER_STR);
-        inputs = getInputsToSearchFor(req,resultTypes);
-        if(inputs!=null&&inputs.size()>0) {
-            Stream<Collection<String>> wordStream = Stream.of(inputs);
+        String text = extractString(req, TEXT_TO_SEARCH_FOR, "").toLowerCase().trim();
+        if(text.length()>0) {
             // get the input to the word to cpc network
-            INDArray bowVector = WordToCPCIterator.createBagOfWordsVector(wordStream,wordIdxMap.join(),1);
+            INDArray bowVector = textVectorizer.apply(text);
             if(bowVector!=null&&bowVector.sumNumber().doubleValue()>0) {
                 // encode using word to cpc network
                 avg = net.join().activateSelectedLayers(0, net.join().getnLayers() - 1, bowVector);
@@ -109,6 +112,6 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public AbstractSimilarityEngine dup() {
-        return new TextSimilarityEngine();
+        return new TextSimilarityEngine(textVectorizer);
     }
 }
