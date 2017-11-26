@@ -6,7 +6,7 @@ import java.util.Random;
  * Created by ehallmark on 11/10/17.
  */
 public class ShuffleArray {
-    private static Random random = new Random(5692);
+    private static Random random = new Random(System.currentTimeMillis());
     public static void shuffleArray(int[] a) {
         int n = a.length;
         random.nextInt();
