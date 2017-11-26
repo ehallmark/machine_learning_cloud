@@ -135,7 +135,7 @@ public class Word2VecToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArr
 
             System.out.println("Conf: "+net.getLayerWiseConfigurations().toYaml());
 
-            ModelWrapper netWrapper = new ModelWrapper<>(net,Collections.emptyList());
+            ModelWrapper<MultiLayerNetwork> netWrapper = new ModelWrapper<>(net,Collections.emptyList());
             IterationListener listener = new OptimizationScoreListener<>(reporter, netWrapper, printIterations, testErrorFunction, saveFunction);
             net.setListeners(listener);
             for (int i = 0; i < nEpochs; i++) {
