@@ -23,6 +23,7 @@ import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,10 +44,12 @@ public class Word2VecToCPCPipelineManager extends DefaultPipelineManager<DataSet
     private Set<String> onlyWords;
     @Getter
     private Word2Vec word2Vec;
-    public Word2VecToCPCPipelineManager(String modelName, Set<String> onlyWords, Word2Vec word2Vec, CPCVAEPipelineManager previousManager) {
+    private Map<String,String> stemToBestPhraseMap;
+    public Word2VecToCPCPipelineManager(String modelName, Set<String> onlyWords, Map<String,String> stemToBestPhraseMap, Word2Vec word2Vec, CPCVAEPipelineManager previousManager) {
         super(INPUT_DATA_FOLDER,PREDICTION_DATA_FILE);
         this.word2Vec=word2Vec;
         this.modelName=modelName;
+        this.stemToBestPhraseMap=stemToBestPhraseMap;
         this.onlyWords=onlyWords;
         this.previousManager=previousManager;
     }
@@ -113,7 +116,7 @@ public class Word2VecToCPCPipelineManager extends DefaultPipelineManager<DataSet
 
 
     protected DataSetIterator getRawIterator(LabelAwareIterator iterator) {
-        return new Word2VecToCPCIterator(iterator,getAssetToEncodingMap(),onlyWords,word2Vec,BATCH_SIZE,false,false,false);
+        return new Word2VecToCPCIterator(iterator,getAssetToEncodingMap(),onlyWords,stemToBestPhraseMap,word2Vec,BATCH_SIZE,false,false,false);
     }
 
     public static void main(String[] args) throws Exception {
@@ -132,7 +135,8 @@ public class Word2VecToCPCPipelineManager extends DefaultPipelineManager<DataSet
         // get latest keywords
         ValidWordStage stage5 = new ValidWordStage(null,new TimeDensityModel());
         stage5.run(false);
-        Set<String> onlyWords = stage5.get().stream().map(stem->stem.getBestPhrase()).collect(Collectors.toSet());
+        Map<String,String> stemToBestPhraseMap = stage5.get().stream().collect(Collectors.toMap(stem->stem.toString(),stem->stem.getBestPhrase()));
+        Set<String> onlyWords = new HashSet<>(stemToBestPhraseMap.keySet());
 
         Word2VecModel word2VecModel = new Word2VecModel(new Word2VecPipelineManager(word2VecModelName,-1), word2VecModelName);
         word2VecModel.loadMostRecentModel();
