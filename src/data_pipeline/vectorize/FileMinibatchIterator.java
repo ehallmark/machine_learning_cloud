@@ -2,6 +2,7 @@ package data_pipeline.vectorize;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.RecursiveAction;
@@ -23,6 +24,7 @@ public class FileMinibatchIterator implements DataSetIterator {
     private final String pattern;
     private boolean async;
     private int[] shuffledIndices;
+    private final List<RecursiveTask<DataSet>> dataSetQueue;
     public FileMinibatchIterator(File rootDir) {
         this(rootDir,DEFAULT_ASYNC);
     }
@@ -45,6 +47,7 @@ public class FileMinibatchIterator implements DataSetIterator {
         int numFiles = rootDir.list().length;
         this.totalBatches = limit > 0 ? Math.min(limit,numFiles) : numFiles;
         this.pattern = pattern;
+        this.dataSetQueue = new ArrayList<>();
         this.currIdx = new AtomicInteger(0);
         this.async=async;
         this.shuffledIndices=new int[totalBatches];
@@ -107,8 +110,28 @@ public class FileMinibatchIterator implements DataSetIterator {
         return null;
     }
 
-    public boolean hasNext() {
-        return this.currIdx.get() < this.totalBatches;
+    public boolean hasNext(){
+        int nWorkers = 4;
+        while(dataSetQueue.size()<nWorkers && this.currIdx.get()<shuffledIndices.length) {
+            final int readIdx = shuffledIndices[this.currIdx.getAndIncrement()];
+            RecursiveTask<DataSet> task = new RecursiveTask<DataSet>() {
+                @Override
+                protected DataSet compute() {
+                    try {
+                        DataSet e = read(readIdx);
+                        if (dataSetPreProcessor != null) {
+                            dataSetPreProcessor.preProcess(e);
+                        }
+                        return e;
+                    } catch (Exception var2) {
+                        throw new IllegalStateException("Unable to read dataset");
+                    }
+                }
+            };
+            task.fork();
+            dataSetQueue.add(task);
+        }
+        return dataSetQueue.size()>0;
     }
 
     public DataSet next() {
@@ -116,17 +139,7 @@ public class FileMinibatchIterator implements DataSetIterator {
     }
 
     private DataSet nextDataSet() {
-        //System.gc();
-        final int readIdx = shuffledIndices[this.currIdx.getAndIncrement()];
-        try {
-            DataSet e = this.read(readIdx);
-            if (this.dataSetPreProcessor != null) {
-                this.dataSetPreProcessor.preProcess(e);
-            }
-            return e;
-        } catch (Exception var2) {
-            throw new IllegalStateException("Unable to read dataset");
-        }
+        return dataSetQueue.remove(0).join();
     }
 
     private DataSet read(int idx) throws IOException {
