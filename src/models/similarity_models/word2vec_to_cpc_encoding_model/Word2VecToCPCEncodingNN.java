@@ -87,8 +87,8 @@ public class Word2VecToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArr
         int numNetworks = 1;
         final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
         final int inputSize = pipelineManager.getWord2Vec().getLayerSize()*3;
-        final int hiddenLayerSize1 = (3*inputSize)/2;
-        final int hiddenLayerSize2 = (2*inputSize+outputSize)/3;
+        final int hiddenLayerSize1 = 1024;
+        final int hiddenLayerSize2 = 512;
         final MultiScoreReporter reporter = new MultiScoreReporter(numNetworks, 1);
 
         if(net==null) {
@@ -172,7 +172,7 @@ public class Word2VecToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArr
                         Updater.ADAM
                 )),
                 new ActivationFunctionParameter(Arrays.asList(
-                        Activation.LEAKYRELU//,
+                        Activation.TANH//,
                        // Activation.TANH
                 ))
         );
