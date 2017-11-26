@@ -142,7 +142,7 @@ public class Word2VecToCPCPipelineManager extends DefaultPipelineManager<DataSet
         word2VecModel.loadMostRecentModel();
 
         setLoggingLevel(Level.INFO);
-        Word2VecToCPCPipelineManager pipelineManager = new Word2VecToCPCPipelineManager(modelName, onlyWords, (Word2Vec)word2VecModel.getNet(), new CPCVAEPipelineManager(cpcEncodingModel));
+        Word2VecToCPCPipelineManager pipelineManager = new Word2VecToCPCPipelineManager(modelName, onlyWords, stemToBestPhraseMap, (Word2Vec)word2VecModel.getNet(), new CPCVAEPipelineManager(cpcEncodingModel));
 
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
