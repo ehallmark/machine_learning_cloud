@@ -125,16 +125,13 @@ public class Word2VecToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArr
                 trainIter.reset();
             }
         } else {
-            double newLearningRate = 0.001;
-            Updater newUpdater = Updater.ADAM;
-            double newRegularization = 1e-4;
-            boolean newUseRegularization = true;
+            double newLearningRate = 0.1;
+           // double newRegularization = 1e-4;
+           // boolean newUseRegularization = true;
             System.out.println("Updating network with learning rate: "+newLearningRate);
             net = NNRefactorer.updateNetworkLearningRate(net,newLearningRate,false);
-            System.out.println("Updating network with new updater: "+newUpdater.toString());
-            net = NNRefactorer.updateNetworkUpdater(net,newUpdater,false);
-            System.out.println("Updating network with new regularization: "+newRegularization);
-            net = NNRefactorer.updateNetworkRegularization(net,newUseRegularization,newRegularization,false);
+            //  System.out.println("Updating network with new regularization: "+newRegularization);
+            //  net = NNRefactorer.updateNetworkRegularization(net,newUseRegularization,newRegularization,false);
 
             System.out.println("Conf: "+net.getLayerWiseConfigurations().toYaml());
 
