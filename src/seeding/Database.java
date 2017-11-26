@@ -443,6 +443,7 @@ public class Database {
 
 	public synchronized static List<String> sortedPossibleClassCodes(String base) {
 		if(base==null||base.isEmpty()) return Collections.emptyList();
+		base = base.toUpperCase();
 		final String cleanBase = ClassCodeHandler.convertToLabelFormat(base);
 		if(cleanBase.isEmpty()) return Collections.emptyList();
 		SortedSet<String> possible = new TreeSet<>();
