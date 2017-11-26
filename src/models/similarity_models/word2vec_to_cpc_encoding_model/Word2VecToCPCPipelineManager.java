@@ -6,6 +6,7 @@ import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.keyphrase_prediction.models.TimeDensityModel;
+import models.keyphrase_prediction.stages.Stage1;
 import models.keyphrase_prediction.stages.ValidWordStage;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.keyword_encoding_model.KeywordEncodingPipelineManager;
@@ -88,10 +89,18 @@ public class Word2VecToCPCPipelineManager extends DefaultPipelineManager<DataSet
 
     @Override
     protected void setDatasetManager() {
+        File trainFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.trainFile.getName());
+        File testFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.testFile.getName());
+        File devFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.devFile2.getName());
+
+        LabelAwareIterator trainIter = new FileTextDataSetIterator(trainFile);
+        LabelAwareIterator testIter = new FileTextDataSetIterator(testFile);
+        LabelAwareIterator devIter = new FileTextDataSetIterator(devFile);
+
         datasetManager = new PreSaveDataSetManager(dataFolder,
-                getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN)),
-                getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.DEV1)),
-                getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TEST))
+                getRawIterator(trainIter),
+                getRawIterator(testIter),
+                getRawIterator(devIter)
         );
     }
 

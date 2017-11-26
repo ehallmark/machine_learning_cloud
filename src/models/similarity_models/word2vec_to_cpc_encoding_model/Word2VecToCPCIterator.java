@@ -127,6 +127,7 @@ public class Word2VecToCPCIterator implements DataSetIterator {
         List<INDArray> labels = new ArrayList<>();
         List<INDArray> features = new ArrayList<>();
         while(documentIterator.hasNext()&&idx<batch) {
+            System.out.println("Starting batch: "+idx);
             LabelledDocument document = documentIterator.next();
             String label = document.getLabels().get(0);
             INDArray labelVec = vectorizer.vectorFor(label);
@@ -160,6 +161,7 @@ public class Word2VecToCPCIterator implements DataSetIterator {
 
     public static INDArray getPhraseVector(Word2Vec word2Vec, String phrase) {
         String[] words = phrase.split("\\s+");
+        System.out.println("Phrase: "+phrase);
         List<INDArray> validWords = Stream.of(words).map(word->word2Vec.getLookupTable().vector(word)).filter(vec->vec!=null).collect(Collectors.toList());
         if(validWords.isEmpty()) return null;
         if(validWords.size()==1) {
