@@ -87,8 +87,8 @@ public class Word2VecToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArr
         int numNetworks = 1;
         final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
         final int inputSize = pipelineManager.getWord2Vec().getLayerSize()*3;
-        final int hiddenLayerSize1 = inputSize;
-        final int hiddenLayerSize2 = (inputSize+outputSize)/2;
+        final int hiddenLayerSize1 = (3*inputSize)/2;
+        final int hiddenLayerSize2 = (2*inputSize+outputSize)/3;
         final MultiScoreReporter reporter = new MultiScoreReporter(numNetworks, 1);
 
         if(net==null) {
@@ -188,6 +188,10 @@ public class Word2VecToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArr
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
                 // output layer
                 Arrays.asList(
                         new ActivationFunctionParameter(Arrays.asList(
@@ -213,6 +217,10 @@ public class Word2VecToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArr
                 newDenseLayer(hiddenLayerSize1,hiddenLayerSize1),
                 newBatchNormLayer(hiddenLayerSize1,hiddenLayerSize1),
                 newDenseLayer(hiddenLayerSize1,hiddenLayerSize2),
+                newBatchNormLayer(hiddenLayerSize2,hiddenLayerSize2),
+                newDenseLayer(hiddenLayerSize2,hiddenLayerSize2),
+                newBatchNormLayer(hiddenLayerSize2,hiddenLayerSize2),
+                newDenseLayer(hiddenLayerSize2,hiddenLayerSize2),
                 newBatchNormLayer(hiddenLayerSize2,hiddenLayerSize2),
                 newDenseLayer(hiddenLayerSize2,hiddenLayerSize2),
                 newBatchNormLayer(hiddenLayerSize2,hiddenLayerSize2),
