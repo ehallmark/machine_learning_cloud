@@ -790,7 +790,7 @@ public class SimilarPatentServer {
 
         // setup select2 ajax remote data sources
         get(Constants.CPC_CODE_AJAX_URL, (req,res)->{
-            Function<String,List<String>> resultsSearchFunction = search -> Database.sortedPossibleClassCodes(search));
+            Function<String,List<String>> resultsSearchFunction = search -> Database.sortedPossibleClassCodes(search);
             Function<String,String> displayFunction = result -> result;
             return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
         });
