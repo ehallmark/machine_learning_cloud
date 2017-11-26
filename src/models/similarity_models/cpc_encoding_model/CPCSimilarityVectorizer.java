@@ -36,7 +36,6 @@ public class CPCSimilarityVectorizer implements Vectorizer {
     private boolean binarize;
     private boolean normalize;
     private boolean probability;
-    private int numDimensions;
     public CPCSimilarityVectorizer(boolean binarize, boolean normalize, boolean probability) {
         this(getLookupTable(),binarize, normalize, probability);
     }
@@ -46,7 +45,6 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         this.probability=probability;
         this.normalize=normalize;
         this.data=data;
-        this.numDimensions = data.values().stream().findAny().get().length();
     }
 
     public INDArray vectorFor(String item) {
@@ -57,11 +55,6 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         if(probability) vec = probability(vec);
         if(normalize) vec = normalize(vec);
         return vec;
-    }
-
-    @Override
-    public int numDimensions() {
-        return numDimensions;
     }
 
     public List<WordFrequencyPair<String,Double>> similarTo(String item, int limit) {

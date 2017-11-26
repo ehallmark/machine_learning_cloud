@@ -45,12 +45,14 @@ public class Word2VecToCPCIterator implements DataSetIterator {
     private Word2Vec word2Vec;
     private int batch;
     private DataSet currentDataSet;
+    private int numDimensions;
     public Word2VecToCPCIterator(LabelAwareIterator documentIterator, Map<String, INDArray> cpcEncodings, Set<String> onlyWords, Word2Vec word2Vec, int batchSize, boolean binarize, boolean normalize, boolean probability) {
         this.onlyWords=onlyWords;
         this.documentIterator=documentIterator;
         this.vectorizer = new CPCSimilarityVectorizer(cpcEncodings,binarize,normalize,probability);
         this.word2Vec=word2Vec;
         this.batch=batchSize;
+        this.numDimensions=cpcEncodings.values().stream().findAny().get().length();
     }
 
     @Override
@@ -70,7 +72,7 @@ public class Word2VecToCPCIterator implements DataSetIterator {
 
     @Override
     public int totalOutcomes() {
-        return vectorizer.numDimensions();
+        return numDimensions;
     }
 
     @Override
