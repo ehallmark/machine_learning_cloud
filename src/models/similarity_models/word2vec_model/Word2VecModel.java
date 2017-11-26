@@ -69,35 +69,46 @@ public class Word2VecModel extends WordVectorPredictionModel<INDArray> {
                 return s;
             }
         });
-        if(net==null) {
-            net = new Word2Vec.Builder()
-                    .seed(41)
-                    .batchSize(BATCH_SIZE)
-                    .epochs(1) // hard coded to avoid learning rate from resetting
-                    .windowSize(8)
-                    .layerSize(VECTOR_SIZE)
-                    .sampling(0.0001)
-                    .negativeSample(-1)
-                    .learningRate(0.1)
-                    .minLearningRate(0.001)
-                    .allowParallelTokenization(false)
-                    .useAdaGrad(true)
-                    .resetModel(true)
-                    .minWordFrequency(5)
-                    .tokenizerFactory(tf)
-                    .workers(Math.max(1,Runtime.getRuntime().availableProcessors()/2))
-                    .iterations(1)
-                    .useHierarchicSoftmax(true)
-                    .elementsLearningAlgorithm(new SkipGram<>())
-                    .iterate(iterator)
-                    .build();
 
-        } else {
-            // no need to redo vocab
+        int windowSize = 8;
+        int minWordFrequency = 5;
+        double negativeSampling = -1;
+        double sampling = 0.0001;
+        //double learningRate = 0.1;
+        //double minLearningRate = 0.001;
+        double learningRate = 0.01;
+        double minLearningRate = 0.0001;
+
+        boolean newModel = net == null;
+        Word2Vec.Builder builder = new Word2Vec.Builder()
+                .seed(41)
+                .batchSize(BATCH_SIZE)
+                .epochs(1) // hard coded to avoid learning rate from resetting
+                .windowSize(windowSize)
+                .layerSize(VECTOR_SIZE)
+                .sampling(sampling)
+                .negativeSample(negativeSampling)
+                .learningRate(learningRate)
+                .minLearningRate(minLearningRate)
+                .allowParallelTokenization(true)
+                .useAdaGrad(true)
+                .resetModel(newModel)
+                .minWordFrequency(minWordFrequency)
+                .tokenizerFactory(tf)
+                .workers(Math.max(1,Runtime.getRuntime().availableProcessors()/2))
+                .iterations(1)
+                .useHierarchicSoftmax(true)
+                .elementsLearningAlgorithm(new SkipGram<>())
+                .iterate(iterator);
+        if(!newModel) {
             iterator.setRunVocab(false);
+            builder = builder
+                    .vocabCache(net.vocab())
+                    .lookupTable(net.lookupTable());
         }
 
-        ((Word2Vec)net).setSentenceIterator(iterator);
+        net = builder.build();
+
         ((Word2Vec)net).fit();
         synchronized (CustomWordVectorListener.class) {
             System.out.println("Everything should be saved.");
