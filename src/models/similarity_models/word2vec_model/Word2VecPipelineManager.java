@@ -40,8 +40,7 @@ public class Word2VecPipelineManager extends DefaultPipelineManager<SequenceIter
 
     @Override
     public void rebuildPrerequisiteData() {
-        // rerun keyword model
-        KeywordModelRunner.main(null);
+
     }
 
     protected void initModel(boolean forceRecreateModels) {

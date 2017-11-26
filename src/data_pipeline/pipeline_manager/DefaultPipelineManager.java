@@ -41,13 +41,18 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
         splitData();
         System.out.println("Finished splitting test and train.");
 
-        if(!dataFolder.exists()) dataFolder.mkdir();
-
         setDatasetManager();
+        if(datasetManager!=null) {
+            if (!dataFolder.exists()) dataFolder.mkdir();
 
-        datasetManager.removeDataFromDisk();
-        System.out.println("Saving datasets...");
-        datasetManager.saveDataSets();
+            setDatasetManager();
+
+            datasetManager.removeDataFromDisk();
+            System.out.println("Saving datasets...");
+            datasetManager.saveDataSets();
+        } else {
+            System.out.println("Warning: No dataset manager...");
+        }
     }
 
     protected abstract void setDatasetManager();
