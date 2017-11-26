@@ -15,7 +15,7 @@ public interface PipelineManager<D,T> {
     void rebuildPrerequisiteData();
     void saveRawDatasets();
     void trainModels(int nEpochs);
-    Map<String,T> predict(List<String> items, List<String> assignees);
+    Map<String,T> predict(List<String> items, List<String> assignees, List<String> classCodes);
     File getPredictionsFile();
     void savePredictions(Map<String,T> predictions);
     Map<String,T> loadPredictions();

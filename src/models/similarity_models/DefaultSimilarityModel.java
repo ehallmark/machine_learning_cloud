@@ -1,6 +1,6 @@
 package models.similarity_models;
 
-import models.similarity_models.signatures.CPCSimilarityVectorizer;
+import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.Collection;

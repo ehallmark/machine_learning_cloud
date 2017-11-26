@@ -2,7 +2,7 @@ package models.similarity_models.deep_word_to_cpc_encoding_model;
 
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
-import models.similarity_models.signatures.CPCSimilarityVectorizer;
+import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
 import models.similarity_models.word_to_cpc_encoding_model.WordToCPCIterator;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;

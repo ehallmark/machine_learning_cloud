@@ -1,4 +1,4 @@
-package models.similarity_models.signatures;
+package models.similarity_models.cpc_encoding_model;
 
 import ch.qos.logback.classic.Level;
 import data_pipeline.models.TrainablePredictionModel;
@@ -122,15 +122,16 @@ public class CPCSimilarityVectorizer implements Vectorizer {
 
         List<String> allAssets = new ArrayList<>(latestAssets==null?(Database.getAllPatentsAndApplications()):latestAssets);
         List<String> allAssignees = new ArrayList<>(latestAssets==null?Database.getAssignees():latestAssets.stream().map(asset->Database.assigneeFor(asset)).filter(assignee->assignee!=null).collect(Collectors.toList()));
+        List<String> allClassCodes = new ArrayList<>(latestAssets==null?Database.getClassCodes():latestAssets.stream().flatMap(asset->Database.classificationsFor(asset).stream()).filter(cpc->cpc!=null).collect(Collectors.toList()));
 
         System.out.println("Testing encodings");
         if(latestAssets==null) {
             // not updating
-            DATA = clone.predict(allAssets,allAssignees);
+            DATA = clone.predict(allAssets,allAssignees,allClassCodes);
         } else {
             // updating
             DATA = getLookupTable();
-            DATA.putAll(clone.predict(allAssets,allAssignees));
+            DATA.putAll(clone.predict(allAssets,allAssignees,allClassCodes));
         }
         System.out.println("Num patent vectors found: "+DATA.size());
         System.out.println("Saving results...");

@@ -43,9 +43,6 @@ public abstract class BaseTrainablePredictionModel<T,N> implements TrainablePred
         this.isSaved = new AtomicBoolean(false);
     }
 
-    public abstract Map<String,T> predict(List<String> assets, List<String> assignees);
-
-    public abstract void train(int nEpochs);
 
     public abstract File getModelBaseDirectory();
 

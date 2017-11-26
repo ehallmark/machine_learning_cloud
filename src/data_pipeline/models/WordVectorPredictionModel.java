@@ -25,10 +25,6 @@ public abstract class WordVectorPredictionModel<T> extends BaseTrainablePredicti
     }
 
 
-    public abstract Map<String,T> predict(List<String> assets, List<String> assignees);
-
-    public abstract void train(int nEpochs);
-
     public abstract File getModelBaseDirectory();
 
     @Override

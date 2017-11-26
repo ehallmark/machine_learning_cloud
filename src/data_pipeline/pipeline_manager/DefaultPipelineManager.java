@@ -65,8 +65,8 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
     }
 
     @Override
-    public Map<String,T> predict(List<String> items, List<String> assignees) {
-        return model.predict(items,assignees);
+    public Map<String,T> predict(List<String> items, List<String> assignees, List<String> classCodes) {
+        return model.predict(items,assignees,classCodes);
     }
 
     @Override
@@ -114,7 +114,8 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
             System.out.println("Predicting results...");
             List<String> allAssets = new ArrayList<>(Database.getAllPatentsAndApplications());
             List<String> allAssignees = new ArrayList<>(Database.getAssignees());
-            Map<String,T> allPredictions = predict(allAssets, allAssignees);
+            List<String> allClassCodes = new ArrayList<>(Database.getClassCodes());
+            Map<String,T> allPredictions = predict(allAssets, allAssignees, allClassCodes);
             savePredictions(allPredictions);
         }
     }

@@ -3,8 +3,6 @@ package models.similarity_models.cpc_encoding_model;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.models.NeuralNetworkPredictionModel;
-import data_pipeline.models.TrainablePredictionModel;
-import models.similarity_models.signatures.CPCDataSetIterator;
 import models.NDArrayHelper;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
@@ -25,6 +23,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import data_pipeline.helpers.Function2;
 import seeding.Constants;
 import seeding.Database;
+import tools.ClassCodeHandler;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -70,11 +69,11 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
     }
 
     @Override
-    public Map<String,INDArray> predict(List<String> assets, List<String> assignees) {
-        return encode(assets,assignees,pipelineManager.getCPCMap(),pipelineManager.getBatchSize());
+    public Map<String,INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
+        return encode(assets,assignees,classCodes,pipelineManager.getCPCMap(),pipelineManager.getBatchSize());
     }
 
-    public Map<String,INDArray> encode(List<String> assets, List<String> assignees, Map<String, ? extends Collection<CPC>> cpcMap, int batchSize) {
+    private Map<String,INDArray> encode(List<String> assets, List<String> assignees, List<String> classCodes, Map<String, ? extends Collection<CPC>> cpcMap, int batchSize) {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         assets = assets.stream().filter(asset->cpcMap.containsKey(asset)).collect(Collectors.toList());
@@ -91,7 +90,7 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
             }
         }
         // assignees
-        AtomicInteger cnt = new AtomicInteger(0);
+        idx.set(0);
         assignees.parallelStream().forEach(assignee->{
             List<INDArray> vectors = new ArrayList<>(Stream.of(
                     Database.selectPatentNumbersFromExactAssignee(assignee),
@@ -109,10 +108,30 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
 
             INDArray assigneeVec = Nd4j.vstack(vectors).mean(0);
             assetToEncodingMap.put(assignee, assigneeVec);
-            if (cnt.getAndIncrement() % 10000 == 9999) {
-                System.out.println("Vectorized " + cnt.get() + " assignees.");
+            if (idx.getAndIncrement() % 10000 == 9999) {
+                System.out.println("Vectorized " + idx.get() + " / "+assignees.size()+" assignees.");
             }
         });
+        // cpcs
+        CPCHierarchy hierarchy = pipelineManager.getHierarchy();
+        Map<String,Integer> cpcToIdxMap = getCpcToIdxMap();
+        idx.set(0);
+        AtomicInteger noData = new AtomicInteger(0);
+        classCodes.parallelStream().forEach(cpc->{
+            Collection<CPC> cpcFamily = hierarchy.cpcWithAncestors(ClassCodeHandler.convertToLabelFormat(cpc)).stream().filter(c->cpcToIdxMap.containsKey(c.getName())).collect(Collectors.toList());
+            if(cpcFamily.size()>0) {
+                INDArray cpcVec = CPCDataSetIterator.createVector(Stream.of(cpcFamily), cpcToIdxMap, 1, cpcToIdxMap.size()).mean(0);
+                INDArray encoding = vae.activate(cpcVec, false);
+                assetToEncodingMap.put(cpc, encoding);
+                if (idx.getAndIncrement() % 10000 == 9999) {
+                    System.out.println("Vectorized " + idx.get() + " / " + classCodes.size() + " cpcs.");
+                    System.out.println("Num not found: " + noData.get());
+                }
+            } else {
+                noData.getAndIncrement();
+            }
+        });
+        System.out.println("Total num errors: "+noData.get());
         return assetToEncodingMap;
     };
 

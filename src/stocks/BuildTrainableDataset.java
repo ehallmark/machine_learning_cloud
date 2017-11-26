@@ -1,9 +1,6 @@
 package stocks;
 
-import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
-import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
-import models.similarity_models.signatures.CPCSimilarityVectorizer;
-import models.value_models.regression.AIValueModel;
+import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;

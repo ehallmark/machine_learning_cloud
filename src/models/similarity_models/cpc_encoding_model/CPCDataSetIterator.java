@@ -1,4 +1,4 @@
-package models.similarity_models.signatures;
+package models.similarity_models.cpc_encoding_model;
 
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
@@ -40,7 +40,7 @@ public class CPCDataSetIterator implements DataSetIterator {
         reset();
     }
 
-    private INDArray createVector(Stream<Collection<CPC>> cpcStream) {
+    public static INDArray createVector(Stream<Collection<CPC>> cpcStream, Map<String,Integer> cpcToIdxMap, int batchSize, int numInputs) {
         AtomicInteger batch = new AtomicInteger(0);
         INDArray vecs = Nd4j.create(batchSize,numInputs);
         cpcStream.forEach(cpcs->{
@@ -58,7 +58,7 @@ public class CPCDataSetIterator implements DataSetIterator {
             vecs.putRow(batch.get(),Nd4j.create(vec));
             batch.getAndIncrement();
         });
-        if(batch.get()<batch()) {
+        if(batch.get()<batchSize) {
             System.out.println("Did not find a full batch");
             return vecs.get(NDArrayIndex.interval(0,batch.get(),false),NDArrayIndex.all());
         } else {
@@ -80,7 +80,7 @@ public class CPCDataSetIterator implements DataSetIterator {
             if(idx>=assets.size()) return null;
             INDArray vector = createVector(assets.subList(idx,Math.min(assets.size(),idx+batchSize)).stream().map(asset->{
                 return cpcMap.get(asset);
-            }));
+            }),cpcToIdxMap,batch(),numInputs);
             return vector;
         }).filter(v->v!=null);
     }

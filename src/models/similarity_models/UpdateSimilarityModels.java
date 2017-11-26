@@ -1,11 +1,6 @@
 package models.similarity_models;
 
-import models.dl4j_neural_nets.vectorization.ParagraphVectorModel;
-import models.similarity_models.class_vectors.CPCSimilarityFinder;
-import models.similarity_models.class_vectors.WIPOSimilarityFinder;
-import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
-import models.similarity_models.signatures.CPCSimilarityVectorizer;
-import seeding.Database;
+import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
 
 import java.util.Collection;
 

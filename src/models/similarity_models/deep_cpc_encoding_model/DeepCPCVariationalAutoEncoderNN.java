@@ -4,11 +4,10 @@ import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.helpers.Function2;
 import data_pipeline.models.NeuralNetworkPredictionModel;
-import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
-import models.similarity_models.signatures.CPCDataSetIterator;
+import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.NDArrayHelper;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
@@ -71,7 +70,7 @@ public class DeepCPCVariationalAutoEncoderNN extends NeuralNetworkPredictionMode
     }
 
     @Override
-    public Map<String,INDArray> predict(List<String> assets, List<String> assignees) {
+    public Map<String,INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         return encode(assets,assignees,pipelineManager.getCPCMap(),pipelineManager.getBatchSize());
     }
 

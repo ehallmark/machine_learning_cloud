@@ -32,6 +32,7 @@ public class Constants {
 	public static final String MICRO = "micro";
 	public static final String TEXT_SIMILARITY = "textSimilarity";
 	public static final String LARGE = "large";
+	public static final String CPC_SIMILARITY = "cpcSimilarity";
 	public static final String NORMALIZED_PORTFOLIO_SIZE = "normalizedPortfolioSize";
 	public static final String REEL_NO = "reelNo";
 	public static final String NORMALIZED_LATEST_ASSIGNEE = "normalizedAssignee";

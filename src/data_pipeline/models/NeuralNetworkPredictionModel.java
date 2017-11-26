@@ -25,9 +25,6 @@ public abstract class NeuralNetworkPredictionModel<T> extends BaseTrainablePredi
         super(modelName);
     }
 
-    public abstract Map<String,T> predict(List<String> assets, List<String> assignees);
-
-    public abstract void train(int nEpochs);
 
     public abstract File getModelBaseDirectory();
 

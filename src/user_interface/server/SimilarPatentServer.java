@@ -70,6 +70,7 @@ public class SimilarPatentServer {
     private static final String PROTECTED_URL_PREFIX = "/secure";
     public static final String EXCEL_SESSION = "excel_data";
     public static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
+    public static final String CPCS_TO_SEARCH_FOR_FIELD = "cpcsToSearchFor";
     public static final String LINE_CHART_MAX = "lineChartMax";
     public static final String TEXT_TO_SEARCH_FOR = "textToSearchFor";
     public static final String LINE_CHART_MIN = "lineChartMin";
@@ -130,6 +131,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Technology Similarity", Constants.TECHNOLOGY_SIMILARITY);
             humanAttrToJavaAttrMap.put("Assignee Similarity", Constants.ASSIGNEE_SIMILARITY);
             humanAttrToJavaAttrMap.put("Text Similarity", Constants.TEXT_SIMILARITY);
+            humanAttrToJavaAttrMap.put("CPC Code Similarity", Constants.CPC_SIMILARITY);
             humanAttrToJavaAttrMap.put("Asset Similarity", Constants.PATENT_SIMILARITY);
             humanAttrToJavaAttrMap.put("Total Asset Count", Constants.TOTAL_ASSET_COUNT);
             humanAttrToJavaAttrMap.put("Assignee Name", Constants.ASSIGNEE);
@@ -495,7 +497,7 @@ public class SimilarPatentServer {
                 DEFAULT_SIMILARITY_MODEL.fork();
             }
             // similarity engine
-            similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine()));
+            similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(), new CPCSimilarityEngine()));
 
             allTopLevelAttributes = new ArrayList<>(attributesMap.values());
 

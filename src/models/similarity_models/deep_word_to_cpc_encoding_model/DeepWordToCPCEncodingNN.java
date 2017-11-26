@@ -50,7 +50,7 @@ public class DeepWordToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArr
     }
 
     @Override
-    public Map<String, INDArray> predict(List<String> assets, List<String> assignees) {
+    public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         throw new UnsupportedOperationException("This model does not make asset predictions.");
     }
 

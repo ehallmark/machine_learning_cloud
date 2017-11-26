@@ -1,10 +1,8 @@
 package models.similarity_models.word_to_cpc_encoding_model;
 
-import ch.qos.logback.classic.Level;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
-import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
-import models.similarity_models.signatures.CPCSimilarityVectorizer;
+import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 

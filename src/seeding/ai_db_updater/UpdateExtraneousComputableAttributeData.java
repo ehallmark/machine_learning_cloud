@@ -1,15 +1,10 @@
 package seeding.ai_db_updater;
 
 import models.similarity_models.Vectorizer;
-import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
-import models.similarity_models.signatures.CPCSimilarityVectorizer;
-import org.nd4j.linalg.api.ndarray.INDArray;
+import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
 import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.attributes.computable_attributes.*;
 import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
 
-import java.util.Arrays;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
