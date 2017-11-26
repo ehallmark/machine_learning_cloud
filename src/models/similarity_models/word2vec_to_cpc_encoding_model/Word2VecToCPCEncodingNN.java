@@ -169,12 +169,14 @@ public class Word2VecToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArr
 
     private List<HyperParameter> getModelParameters() {
         return Arrays.asList(
-                new LearningRateParameter(0.15,0.15),
+                new LearningRateParameter(0.25,0.01),
                 new UpdaterParameter(Arrays.asList(
-                        Updater.RMSPROP
+                        Updater.RMSPROP,
+                        Updater.ADAM
                 )),
                 new ActivationFunctionParameter(Arrays.asList(
-                        Activation.LEAKYRELU
+                        Activation.LEAKYRELU,
+                        Activation.TANH
                 ))
         );
     }
@@ -192,7 +194,8 @@ public class Word2VecToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArr
                 // output layer
                 Arrays.asList(
                         new ActivationFunctionParameter(Arrays.asList(
-                                Activation.IDENTITY
+                                Activation.IDENTITY,
+                                Activation.TANH
                         )),
                         new LossFunctionParameter(Arrays.asList(
                                 LossFunctions.LossFunction.COSINE_PROXIMITY//,
