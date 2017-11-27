@@ -87,7 +87,7 @@ public class KMeansStage extends Stage<Set<MultiStem>>  {
 
 
     public static Map<String,INDArray> computeMultiStemToEncodingMap(Map<String,String> stemToBestPhraseMap, Word2Vec word2Vec, MultiLayerNetwork net) {
-        int batchSize = 128;
+        int batchSize = 1000;
         AtomicInteger idx = new AtomicInteger(0);
         List<Map.Entry<String,String>> entries = new ArrayList<>(stemToBestPhraseMap.entrySet());
         List<List<Map.Entry<String,String>>> entryBatches = new ArrayList<>();
@@ -109,11 +109,11 @@ public class KMeansStage extends Stage<Set<MultiStem>>  {
             List<Pair<String,INDArray>> pairs = new ArrayList<>();
             for(int i = 0; i < vecPairs.size(); i++) {
                 pairs.add(new Pair<>(vecPairs.get(i).getFirst(),encoding.getRow(i)));
-                if (idx.getAndIncrement() % 1000 == 999) {
+                if (idx.getAndIncrement() % 5000 == 4999) {
                     System.out.println("Finished: " + idx.get());
+                    System.gc();
                 }
             }
-            System.gc();
             return pairs.stream();
         }).filter(p->p!=null).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
     }
