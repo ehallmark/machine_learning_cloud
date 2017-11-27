@@ -125,7 +125,7 @@ public class Word2VecToCPCEncodingNN extends NeuralNetworkPredictionModel<INDArr
                 trainIter.reset();
             }
         } else {
-            double newLearningRate = 0.025;
+            double newLearningRate = 0.01;
            // double newRegularization = 1e-4;
            // boolean newUseRegularization = true;
             System.out.println("Updating network with learning rate: "+newLearningRate);
