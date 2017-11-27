@@ -92,9 +92,9 @@ public class KMeansStage extends Stage<Set<MultiStem>>  {
         List<Map.Entry<String,String>> entries = new ArrayList<>(stemToBestPhraseMap.entrySet());
         List<List<Map.Entry<String,String>>> entryBatches = new ArrayList<>();
         for(int i = 0; i < entries.size(); i+= batchSize) {
-            int interval = Math.min(i+batchSize,entries.size());
-            if(interval>i) {
-                entryBatches.add(entries.subList(i, i + interval));
+            int endIdx = Math.min(i+batchSize,entries.size());
+            if(endIdx>i) {
+                entryBatches.add(entries.subList(i, endIdx));
             }
         }
         return entryBatches.stream().flatMap(batch->{
