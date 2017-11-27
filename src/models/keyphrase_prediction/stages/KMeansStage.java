@@ -97,6 +97,7 @@ public class KMeansStage extends Stage<Set<MultiStem>>  {
                 entryBatches.add(entries.subList(i, endIdx));
             }
         }
+        System.gc();
         return entryBatches.stream().flatMap(batch->{
             List<Pair<String,INDArray>> vecPairs = batch.stream().map(e->new Pair<>(e.getKey(),Word2VecToCPCIterator.getPhraseVector(word2Vec,e.getValue())))
                     .filter(p->p.getSecond()!=null).collect(Collectors.toList());
@@ -109,9 +110,8 @@ public class KMeansStage extends Stage<Set<MultiStem>>  {
             List<Pair<String,INDArray>> pairs = new ArrayList<>();
             for(int i = 0; i < vecPairs.size(); i++) {
                 pairs.add(new Pair<>(vecPairs.get(i).getFirst(),encoding.getRow(i)));
-                if (idx.getAndIncrement() % 5000 == 4999) {
+                if (idx.getAndIncrement() % 10000 == 9999) {
                     System.out.println("Finished: " + idx.get());
-                    System.gc();
                 }
             }
             return pairs.stream();
