@@ -60,7 +60,7 @@ public class KMeans {
         List<Centroid> centroids = Collections.synchronizedList(new ArrayList<>());
         for(int i = 0; i < k; i++) {
             INDArray dataPoint = dataPoints.get(random.nextInt(dataPoints.size())).dataPoint;
-            INDArray rand = Nd4j.randn(dataPoint.shape(),new CpuNativeRandom()).div(10);
+            INDArray rand = Nd4j.randn(dataPoint.shape()).div(10);
             centroids.add(new Centroid(dataPoint.add(rand)));
         }
         return centroids;
