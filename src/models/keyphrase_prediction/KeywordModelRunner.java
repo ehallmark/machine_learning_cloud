@@ -1,50 +1,23 @@
 package models.keyphrase_prediction;
 
-import ch.qos.logback.classic.Level;
-import cpc_normalization.CPC;
+
 import cpc_normalization.CPCHierarchy;
-import elasticsearch.DataIngester;
-import elasticsearch.DataSearcher;
+
 import models.keyphrase_prediction.models.*;
 
 import models.keyphrase_prediction.stages.*;
-import models.kmeans.DistanceFunctions;
-import models.kmeans.KMeans;
+
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
-import models.similarity_models.keyword_embedding_model.KeywordEmbeddingModel;
-import models.similarity_models.keyword_embedding_model.KeywordEmbeddingPipelineManager;
 import models.similarity_models.word2vec_model.Word2VecModel;
 import models.similarity_models.word2vec_model.Word2VecPipelineManager;
-import models.similarity_models.word2vec_to_cpc_encoding_model.Word2VecToCPCEncodingNN;
-import models.similarity_models.word2vec_to_cpc_encoding_model.Word2VecToCPCIterator;
 import models.similarity_models.word2vec_to_cpc_encoding_model.Word2VecToCPCPipelineManager;
-import models.text_streaming.FileTextDataSetIterator;
-import org.apache.commons.io.FileUtils;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.InnerHitBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
-import org.elasticsearch.join.query.HasParentQueryBuilder;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
-import org.elasticsearch.search.sort.SortBuilders;
 
-import org.gephi.graph.api.Node;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.primitives.Pair;
+
 import seeding.Constants;
 import seeding.Database;
 
-import user_interface.ui_models.portfolios.PortfolioList;
-import user_interface.ui_models.portfolios.items.Item;
-import visualization.Visualizer;
 
 import java.awt.*;
 import java.io.BufferedWriter;
@@ -57,8 +30,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 9/11/17.
