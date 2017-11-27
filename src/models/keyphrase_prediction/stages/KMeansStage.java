@@ -112,6 +112,7 @@ public class KMeansStage extends Stage<Set<MultiStem>>  {
                 pairs.add(new Pair<>(vecPairs.get(i).getFirst(),encoding.getRow(i)));
                 if (idx.getAndIncrement() % 10000 == 9999) {
                     System.out.println("Finished: " + idx.get());
+                    System.gc();
                 }
             }
             return pairs.stream();
