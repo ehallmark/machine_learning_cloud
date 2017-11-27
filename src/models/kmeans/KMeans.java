@@ -145,7 +145,7 @@ public class KMeans {
             dataMap.put("v"+i, Nd4j.create(new double[]{rand.nextDouble(),rand.nextDouble(),rand.nextDouble()}));
         }
 
-        kMeans.fit(dataMap, 20, false);
+        kMeans.fit(dataMap, 2000, false);
 
         System.out.println(kMeans.toString());
     }
