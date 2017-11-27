@@ -8,6 +8,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -72,6 +73,7 @@ public class KMeans {
 
     private double reassignDataToClusters() {
         INDArray centroidsMatrix = Nd4j.vstack(centroids.stream().map(centroid->centroid.mean).collect(Collectors.toList()));
+        AtomicInteger cnt = new AtomicInteger(0);
         return dataPoints.parallelStream().mapToDouble(dataPoint->{
             Centroid centroid = findClosestCentroid(dataPoint,centroidsMatrix);
             if(dataPoint.centroid!=null&&!dataPoint.centroid.equals(centroid)) {
@@ -79,6 +81,7 @@ public class KMeans {
             }
             centroid.dataPoints.add(dataPoint);
             dataPoint.centroid=centroid;
+            if(cnt.getAndIncrement()%1000==999) System.out.println("Finished assigning: "+cnt.get());
             return distanceFunction.apply(dataPoint.dataPoint,centroid.mean).getDouble(0);
         }).average().orElse(Double.NaN);
     }
