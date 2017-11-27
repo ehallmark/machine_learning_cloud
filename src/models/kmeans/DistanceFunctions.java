@@ -21,10 +21,9 @@ public interface DistanceFunctions {
     static INDArray cosineSimByRow(INDArray m1, INDArray m2) {
         INDArray norms1 = m1.norm2(1);
         INDArray norms2 = m2.norm2(1);
-        INDArray dot = m2.mul(m1).sum(1);
-        INDArray norm = norms1.muli(norms2);
-        INDArray cosineSim = dot.divi(norm.addi(EPSILON));
-        return cosineSim;
+        INDArray dot = m2.mulRowVector(m1).sum(1);
+        INDArray norm = norms2.muliRowVector(norms1);
+        return dot.divi(norm.addi(EPSILON));
     }
 
     static INDArray l2SimByRow(INDArray m1, INDArray m2) {

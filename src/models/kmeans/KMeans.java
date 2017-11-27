@@ -87,7 +87,7 @@ public class KMeans {
     }
 
     private Centroid findClosestCentroid(DataPoint dataPoint, INDArray centroidsMatrix) {
-        INDArray distanceMatrix = distanceFunction.apply(dataPoint.dataPoint.broadcast(centroidsMatrix.shape()),centroidsMatrix);
+        INDArray distanceMatrix = distanceFunction.apply(dataPoint.dataPoint,centroidsMatrix);
         int bestChoice = Nd4j.argMax(distanceMatrix,0).getInt(0);
         return centroids.get(bestChoice);
     }
