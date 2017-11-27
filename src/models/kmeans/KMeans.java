@@ -76,8 +76,9 @@ public class KMeans {
         DataPoint dataPoint = dataPointsRemaining.remove(random.nextInt(dataPointsRemaining.size()));
         int n = this.centroids.size();
         this.centroidMatrix.putRow(n,dataPoint.dataPoint.dup());
-        this.centroids.add(new Centroid(this.centroidMatrix.getRow(n)));
+        this.centroids.add(new Centroid(this.centroidMatrix.get(NDArrayIndex.point(n),NDArrayIndex.all())));
         while(this.centroids.size()<k) {
+            System.out.print("-");
             INDArray validCentroidMatrix = this.centroidMatrix.get(NDArrayIndex.interval(0,this.centroids.size()),NDArrayIndex.all());
             dataPointsRemaining.parallelStream().forEach(remaining->remaining.dist=distanceFunction.apply(findClosestCentroid(remaining,validCentroidMatrix).mean,remaining.dataPoint).getDouble(0));
 
@@ -89,12 +90,12 @@ public class KMeans {
             for(int i = 0; i < probabilities.length; i++) {
                 curr += probabilities[i];
                 if(curr >= rand) {
-                    System.out.print("-");
+                    System.out.print("_");
                     // done
                     dataPoint = dataPointsRemaining.remove(i);
                     n = this.centroids.size();
                     this.centroidMatrix.putRow(n,dataPoint.dataPoint.dup());
-                    this.centroids.add(new Centroid(this.centroidMatrix.getRow(n)));
+                    this.centroids.add(new Centroid(this.centroidMatrix.get(NDArrayIndex.point(n),NDArrayIndex.all())));
                     break;
                 }
             }
