@@ -81,7 +81,10 @@ public class KMeans {
             }
             centroid.dataPoints.add(dataPoint);
             dataPoint.centroid=centroid;
-            if(cnt.getAndIncrement()%1000==999) System.out.println("Finished assigning: "+cnt.get());
+            if(cnt.getAndIncrement()%1000==999) {
+                System.gc();
+                System.out.println("Finished assigning: "+cnt.get());
+            }
             return distanceFunction.apply(dataPoint.dataPoint,centroid.mean).getDouble(0);
         }).average().orElse(Double.NaN);
     }
