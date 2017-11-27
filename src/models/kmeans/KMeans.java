@@ -88,6 +88,7 @@ public class KMeans {
             dataPoint.centroid=centroid;
             if(cnt.getAndIncrement()%10000==9999) {
                 System.out.print("-");
+                System.gc();
             }
             return distanceFunction.apply(dataPoint.dataPoint,centroid.mean).getDouble(0);
         }).average().orElse(Double.NaN);
