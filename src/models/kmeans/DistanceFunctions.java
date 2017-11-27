@@ -27,16 +27,13 @@ public interface DistanceFunctions {
     }
 
     static INDArray l2SimByRow(INDArray m1, INDArray m2) {
-        INDArray diff = m1.sub(m2);
-        Transforms.pow(diff,2,false);
+        INDArray diff = Transforms.pow(m2.subRowVector(m1),2,false);
         INDArray sumOfSquareDiffs = diff.sum(1);
-        Transforms.sqrt(sumOfSquareDiffs,false);
-        return sumOfSquareDiffs;
+        return Transforms.sqrt(sumOfSquareDiffs,false);
     }
 
     static INDArray l1SimByRow(INDArray m1, INDArray m2) {
-        INDArray diff = m1.sub(m2);
-        Transforms.abs(diff,false);
+        INDArray diff = Transforms.abs(m2.subRowVector(m1),false);
         INDArray sumOfAbsDiffs = diff.sum(1);
         return sumOfAbsDiffs;
     }
