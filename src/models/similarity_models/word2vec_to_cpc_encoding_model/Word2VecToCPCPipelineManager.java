@@ -59,7 +59,7 @@ public class Word2VecToCPCPipelineManager extends DefaultPipelineManager<DataSet
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
-                model.loadMostRecentModel();
+                model.loadBestModel();
             } catch(Exception e) {
                 System.out.println("Error loading previous model: "+e.getMessage());
             }
