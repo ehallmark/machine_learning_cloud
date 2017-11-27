@@ -134,7 +134,7 @@ public class KMeans {
 
     public static void main(String[] args) {
         // test
-        KMeans kMeans = new KMeans(3, DistanceFunctions.L2_DISTANCE_FUNCTION);
+        KMeans kMeans = new KMeans(10, DistanceFunctions.COSINE_DISTANCE_FUNCTION);
 
         Map<String,INDArray> dataMap = new HashMap<>();
         Random rand = new Random();
