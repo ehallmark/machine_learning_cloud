@@ -23,6 +23,7 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
     protected File dataFolder;
     @Getter
     protected File predictionsFile;
+    @Getter
     protected TrainablePredictionModel<T,?> model;
 
     protected DefaultPipelineManager(File dataFolder, File finalPredictionsFile) {
@@ -123,5 +124,7 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
             Map<String,T> allPredictions = predict(allAssets, allAssignees, allClassCodes);
             savePredictions(allPredictions);
         }
+
+        if(model==null) initModel(forceRecreateModel);
     }
 }

@@ -1,5 +1,6 @@
 package models.keyphrase_prediction;
 
+import ch.qos.logback.classic.Level;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import elasticsearch.DataIngester;
@@ -7,10 +8,20 @@ import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.models.*;
 
 import models.keyphrase_prediction.stages.*;
+import models.kmeans.DistanceFunctions;
+import models.kmeans.KMeans;
+import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.keyword_embedding_model.KeywordEmbeddingModel;
 import models.similarity_models.keyword_embedding_model.KeywordEmbeddingPipelineManager;
+import models.similarity_models.word2vec_model.Word2VecModel;
+import models.similarity_models.word2vec_model.Word2VecPipelineManager;
+import models.similarity_models.word2vec_to_cpc_encoding_model.Word2VecToCPCEncodingNN;
+import models.similarity_models.word2vec_to_cpc_encoding_model.Word2VecToCPCIterator;
+import models.similarity_models.word2vec_to_cpc_encoding_model.Word2VecToCPCPipelineManager;
 import models.text_streaming.FileTextDataSetIterator;
 import org.apache.commons.io.FileUtils;
+import org.deeplearning4j.models.word2vec.Word2Vec;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
@@ -26,6 +37,8 @@ import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilders;
 
 import org.gephi.graph.api.Node;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 
@@ -90,11 +103,35 @@ public class KeywordModelRunner {
         stage5.run(rerunFilters);
         //if(alwaysRerun) stage5.createVisualization();
 
-        String keywordModelName = KeywordEmbeddingPipelineManager.MODEL_NAME;
-        Set<String> onlyWords = stage5.get().stream().map(stem->stem.toString()).collect(Collectors.toSet());
-        KeywordEmbeddingPipelineManager keywordEmbeddingPipelineManager = new KeywordEmbeddingPipelineManager(keywordModelName,onlyWords,50);
-        keywordEmbeddingPipelineManager.runPipeline(false, false, true, rerunWordEmbeddings, 1, false);
+        // Word2Vec model
+        boolean rebuildDatasets = false;
+        boolean runModels = rerunWordEmbeddings;
+        boolean forceRecreateModels = false;
+        boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
+        boolean rebuildPrerequisites = false;
 
+        int nEpochs = 5;
+        String modelName = Word2VecToCPCPipelineManager.MODEL_NAME;
+        String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
+        String word2VecModelName = Word2VecPipelineManager.MODEL_NAME;
+
+        // get latest keywords
+        Map<String,String> stemToBestPhraseMap = stage5.get().stream().collect(Collectors.toMap(stem->stem.toString(),stem->stem.getBestPhrase()));
+        Set<String> onlyWords = new HashSet<>(stemToBestPhraseMap.keySet());
+
+        Word2VecModel word2VecModel = new Word2VecModel(new Word2VecPipelineManager(word2VecModelName,-1), word2VecModelName);
+        try {
+            word2VecModel.loadMostRecentModel();
+        } catch(Exception e) {
+            throw new RuntimeException("Unable to load word2vec...");
+        }
+
+        Word2VecToCPCPipelineManager pipelineManager = new Word2VecToCPCPipelineManager(modelName, onlyWords, stemToBestPhraseMap, (Word2Vec)word2VecModel.getNet(), new CPCVAEPipelineManager(cpcEncodingModel));
+        pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
+
+
+        KMeansStage kMeansStage = new KMeansStage(stage5.get(),stemToBestPhraseMap,stage1.get(),pipelineManager.getWord2Vec(),(MultiLayerNetwork)pipelineManager.getModel().getNet(), model);
+        kMeansStage.run(runModels);
 
         if(rerunPredictions) {
             // TODO technology predictions

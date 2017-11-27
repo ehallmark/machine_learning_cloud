@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
  */
 public class Word2VecToCPCPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
     public static final String MODEL_NAME = "word2vec_to_cpc_encoder";
-    public static final File currentVocabMapFile = new File(Constants.DATA_FOLDER+"word2vec_to_cpc_encoding_word_idx_map.jobj");
     private static final int BATCH_SIZE = 128;
     private static final File INPUT_DATA_FOLDER = new File("word2vec_to_cpc_encoding_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"word2vec_to_cpc_encoding_predictions/predictions_map.jobj");
