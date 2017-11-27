@@ -1,6 +1,7 @@
 package models.kmeans;
 
 import data_pipeline.helpers.Function2;
+import models.NDArrayHelper;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
 
@@ -10,10 +11,35 @@ import java.util.function.Function;
  * Created by Evan on 11/27/2017.
  */
 public interface DistanceFunctions {
+    double EPSILON = 0.0000001;
 
-    Function2<INDArray,INDArray,Double> COSINE_DISTANCE_FUNCTION = (v1,v2)->  1.0 - Transforms.cosineSim(v1,v2);
-    Function2<INDArray,INDArray,Double> L1_DISTANCE_FUNCTION = Transforms::manhattanDistance;
-    Function2<INDArray,INDArray,Double> L2_DISTANCE_FUNCTION = Transforms::euclideanDistance;
+    Function2<INDArray,INDArray,INDArray> COSINE_DISTANCE_FUNCTION = (v1,v2)-> cosineSimByRow(v1,v2).rsubi(1.0);
+    Function2<INDArray,INDArray,INDArray> L1_DISTANCE_FUNCTION = DistanceFunctions::l1SimByRow;
+    Function2<INDArray,INDArray,INDArray> L2_DISTANCE_FUNCTION = DistanceFunctions::l2SimByRow;
 
+
+    static INDArray cosineSimByRow(INDArray m1, INDArray m2) {
+        INDArray norms1 = m1.norm2(1);
+        INDArray norms2 = m2.norm2(1);
+        INDArray dot = m2.mul(m1).sum(1);
+        INDArray norm = norms1.muli(norms2);
+        INDArray cosineSim = dot.divi(norm.addi(EPSILON));
+        return cosineSim;
+    }
+
+    static INDArray l2SimByRow(INDArray m1, INDArray m2) {
+        INDArray diff = m1.sub(m2);
+        Transforms.pow(diff,2,false);
+        INDArray sumOfSquareDiffs = diff.sum(1);
+        Transforms.sqrt(sumOfSquareDiffs,false);
+        return sumOfSquareDiffs;
+    }
+
+    static INDArray l1SimByRow(INDArray m1, INDArray m2) {
+        INDArray diff = m1.sub(m2);
+        Transforms.abs(diff,false);
+        INDArray sumOfAbsDiffs = diff.sum(1);
+        return sumOfAbsDiffs;
+    }
 
 }
