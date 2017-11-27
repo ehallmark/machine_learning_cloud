@@ -101,6 +101,7 @@ public class KeywordModelRunner {
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
 
 
+        // K Means Stage
         KMeansStage kMeansStage = new KMeansStage(stage5.get(),stemToBestPhraseMap,stage1.get(),pipelineManager.getWord2Vec(),(MultiLayerNetwork)pipelineManager.getModel().getNet(), model);
         kMeansStage.run(runModels);
 
