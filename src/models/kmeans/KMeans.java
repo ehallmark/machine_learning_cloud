@@ -133,8 +133,8 @@ public class KMeans {
         List<DataPoint> dataPointsRemaining = Collections.synchronizedList(new ArrayList<>(this.dataPoints));
 
         // step 1: pick one center uniformly at random
-        DataPoint dataPoint = pickRandomly(dataPointsRemaining,sampleProbabilities,random);
-        INDArray centroid0 = dataPoint.dataPoint.dup();
+        DataPoint dataPoint0 = pickRandomly(dataPointsRemaining,sampleProbabilities,random);
+        INDArray centroid0 = dataPoint0.dataPoint.dup();
         this.centroids.add(new Centroid(centroid0));
         this.centroidMatrix = centroid0;
 
@@ -169,6 +169,7 @@ public class KMeans {
                 centroidCandidates.addAll(newCentroids);
                 this.centroidMatrix = Nd4j.vstack(newCentroids.stream().map(centroid->centroid.mean).collect(Collectors.toList()));
                 indicesToRemove.stream().sorted(Comparator.reverseOrder()).forEach(idx->dataPointsRemaining.remove(idx.intValue()));
+                System.out.println("Reassigning data...");
                 this.error = this.reassignDataToClusters(false);
             }
             // compute w
@@ -235,22 +236,21 @@ public class KMeans {
     private double reassignDataToClusters(boolean forceAssign) {
         AtomicInteger cnt = new AtomicInteger(0);
         System.gc();
-        double sumOfSquares = dataPoints.parallelStream().mapToDouble(dataPoint->{
+        return dataPoints.parallelStream().mapToDouble(dataPoint->{
             Centroid centroid = findClosestCentroid(dataPoint,forceAssign);
-            if(centroid==null)return dataPoint.squareDist;
-            if(dataPoint.centroid!=null&&!dataPoint.centroid.equals(centroid)) {
-                dataPoint.centroid.dataPoints.remove(dataPoint);
+            if(centroid!=null) {
+                if (dataPoint.centroid != null && !dataPoint.centroid.equals(centroid)) {
+                    dataPoint.centroid.dataPoints.remove(dataPoint);
+                }
+                centroid.dataPoints.add(dataPoint);
+                dataPoint.centroid = centroid;
             }
-            centroid.dataPoints.add(dataPoint);
-            dataPoint.centroid=centroid;
             if(cnt.getAndIncrement()%10000==9999) {
                 System.out.print("-");
                 System.gc();
             }
              return dataPoint.squareDist;
         }).sum();
-
-        return sumOfSquares;
     }
 
     private Centroid findClosestCentroid(DataPoint dataPoint, boolean forceAssign) {
