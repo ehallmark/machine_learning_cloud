@@ -230,6 +230,8 @@ public class KMeans {
         double squareDist = Math.pow(distanceMatrix.getDouble(bestChoice),2);
         if(forceAssign||dataPoint.squareDist>squareDist) {
             dataPoint.squareDist = squareDist;
+        } else {
+            return null;
         }
         return centroids.get(bestChoice);
     }
