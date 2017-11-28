@@ -99,7 +99,7 @@ public class KMeans {
                 w[i] = centroids.get(i).dataPoints.size();
             }
         } else {
-            /* k-means++ algorithm
+             /* k-means++ algorithm
                 1- Choose one center uniformly at random from among the data points.
                 2- For each data point x, compute D(x), the distance between x and the nearest center that has already been chosen.
                 3- Choose one new data point at random as a new center, using a weighted probability distribution where a point x is chosen with probability proportional to D(x)2.
