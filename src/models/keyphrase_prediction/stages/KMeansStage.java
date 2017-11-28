@@ -50,7 +50,7 @@ public class KMeansStage extends Stage<Set<MultiStem>>  {
             // apply filter 2
             System.out.println("Num keywords before kmeans stage: " + data.size());
 
-            KMeans kMeansModel = new KMeans(5000, DistanceFunctions.COSINE_DISTANCE_FUNCTION);
+            KMeans kMeansModel = new KMeans(5000, DistanceFunctions.COSINE_DISTANCE_FUNCTION, true);
             int numKMeansEpochs = 20;
             System.out.println("Computing multi stem encoding map...");
             Map<String,INDArray> multiStemToEncodingsMap = computeMultiStemToEncodingMap(stemToBestPhraseMap,word2Vec,net);
