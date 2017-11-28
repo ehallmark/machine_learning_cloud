@@ -18,7 +18,7 @@ public class KMeans {
     private static final int DEFAULT_MAX_NUM_EPOCHS_FOR_CENTROID_INIT = 100;
     private static final double EPSILON = 0.0000001;
     private final int k;
-    private final int l;
+    private final double l;
     @Getter
     private List<Centroid> centroids;
     private List<DataPoint> dataPoints;
@@ -31,7 +31,7 @@ public class KMeans {
     @Getter
     private boolean converged;
     private int maxNumEpochsForCentroidInit;
-    public KMeans(int k, int l, Function2<INDArray,INDArray,INDArray> distanceFunction, boolean largeDataset, int maxNumEpochsForCentroidInit) {
+    public KMeans(int k, double l, Function2<INDArray,INDArray,INDArray> distanceFunction, boolean largeDataset, int maxNumEpochsForCentroidInit) {
         this.k=k;
         this.l=l;
         this.maxNumEpochsForCentroidInit=maxNumEpochsForCentroidInit;
@@ -46,7 +46,7 @@ public class KMeans {
         this(k,2*k,distanceFunction,largeDataset,maxNumEpochsForCentroidInit);
     }
 
-    public KMeans(int k, int l, Function2<INDArray,INDArray,INDArray> distanceFunction) {
+    public KMeans(int k, double l, Function2<INDArray,INDArray,INDArray> distanceFunction) {
         this(k,l,distanceFunction,true,DEFAULT_MAX_NUM_EPOCHS_FOR_CENTROID_INIT);
     }
 
