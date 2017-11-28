@@ -233,6 +233,7 @@ public class KMeans {
         this.centroidMatrix = Nd4j.vstack(centroids.stream().map(centroid->centroid.mean).collect(Collectors.toList()));
     }
 
+    // TODO Most Computationally intensive part (speed this up!)
     private double reassignDataToClusters(boolean forceAssign) {
         AtomicInteger cnt = new AtomicInteger(0);
         System.gc();
