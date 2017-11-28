@@ -82,11 +82,11 @@ public class KMeans {
             System.out.println("Starting epoch: "+(n+1));
 
             // reassign points to nearest cluster
-            this.error = this.reassignDataToClusters();
+            this.error = this.reassignDataToClusters(true);
             System.out.println("Current error: "+error);
 
             // compute average error
-            this.avgError = (1d-avgErrorAlpha)*this.avgError + avgErrorAlpha*this.error;
+            this.avgError = (1d-avgErrorAlpha)*this.error + avgErrorAlpha*this.avgError;
             double unbiasedAvgError = this.avgError / (1d - Math.pow(avgErrorAlpha,n+1));
             System.out.println("Avg error: "+unbiasedAvgError);
 
@@ -118,7 +118,8 @@ public class KMeans {
         this.centroidMatrix = centroid0;
 
         if(largeDataset) {
-            this.error = this.reassignDataToClusters();
+            this.error = this.reassignDataToClusters(true);
+            List<Centroid> centroidCandidates = new ArrayList<>();
             long iterations = Math.round(Math.log(this.error));
             for (int iteration = 0; iteration < iterations; iteration++) {
                 System.out.println("Finding centroid approximation: "+(iteration+1) + " / "+iterations);
@@ -135,27 +136,28 @@ public class KMeans {
                         indicesToRemove.add(i);
                     }
                 });
-                newCentroids.forEach(centroid -> {
-                    this.centroids.add(centroid);
-                    this.centroidMatrix = Nd4j.vstack(centroidMatrix, centroid.mean);
-                });
+                this.centroids.clear();
+                this.centroids.addAll(newCentroids);
+                centroidCandidates.addAll(newCentroids);
+                this.centroidMatrix = Nd4j.vstack(newCentroids.stream().map(centroid->centroid.mean).collect(Collectors.toList()));
                 indicesToRemove.stream().sorted(Comparator.reverseOrder()).forEach(dataPointsRemaining::remove);
-                this.error = this.reassignDataToClusters();
+                this.error = this.reassignDataToClusters(false);
             }
             // compute w
-            int[] w = new int[this.centroids.size()];
+            int[] w = new int[centroidCandidates.size()];
             Arrays.fill(w, 0);
-            for (int i = 0; i < centroids.size(); i++) {
-                w[i] = centroids.get(i).dataPoints.size();
+            for (int i = 0; i < centroidCandidates.size(); i++) {
+                w[i] = centroidCandidates.get(i).dataPoints.size();
             }
             Map<String,INDArray> centroidMap = Collections.synchronizedMap(new HashMap<>());
             AtomicInteger idx = new AtomicInteger(0);
-            centroids.forEach(centroid->centroidMap.put(String.valueOf(idx.getAndIncrement()),centroid.mean));
+            centroidCandidates.forEach(centroid->centroidMap.put(String.valueOf(idx.getAndIncrement()),centroid.mean));
             System.out.println("Recentering "+centroidMap.size()+" centroids...");
             KMeans child = new KMeans(k,distanceFunction,false);
             child.fit(centroidMap,maxNumEpochsForCentroidInit,true);
             List<Centroid> newCentroids = child.getCentroids();
             this.centroids.clear();
+            centroidCandidates.clear();
             int vectorSize = dataPoints.get(0).dataPoint.length();
             this.centroidMatrix=Nd4j.create(k,vectorSize);
             idx.set(0);
@@ -174,7 +176,7 @@ public class KMeans {
             // recluster the weighted points in C into k clusters
             while(this.centroids.size()<k&&!dataPointsRemaining.isEmpty()) {
                 System.out.print("-");
-                this.error = reassignDataToClusters();
+                this.error = reassignDataToClusters(true);
 
                 // step 2: compute distances
                 double[] probabilities = dataPointsRemaining.stream().mapToDouble(d->d.squareDist).toArray();
@@ -203,12 +205,12 @@ public class KMeans {
         this.centroidMatrix = Nd4j.vstack(centroids.stream().map(centroid->centroid.mean).collect(Collectors.toList()));
     }
 
-    private double reassignDataToClusters() {
+    private double reassignDataToClusters(boolean forceAssign) {
         AtomicInteger cnt = new AtomicInteger(0);
         System.gc();
         return dataPoints.parallelStream().mapToDouble(dataPoint->{
-            Centroid centroid = centroids.size()==1?centroids.get(0):findClosestCentroid(dataPoint);
-            if(centroids.size()==1) dataPoint.squareDist=distanceFunction.apply(dataPoint.dataPoint,centroid.mean).getDouble(0);
+            Centroid centroid = findClosestCentroid(dataPoint,forceAssign);
+            if(centroid==null)return dataPoint.squareDist;
             if(dataPoint.centroid!=null&&!dataPoint.centroid.equals(centroid)) {
                 dataPoint.centroid.dataPoints.remove(dataPoint);
             }
@@ -222,10 +224,13 @@ public class KMeans {
         }).sum();
     }
 
-    private Centroid findClosestCentroid(DataPoint dataPoint) {
+    private Centroid findClosestCentroid(DataPoint dataPoint, boolean forceAssign) {
         INDArray distanceMatrix = distanceFunction.apply(dataPoint.dataPoint,centroidMatrix);
         int bestChoice = Nd4j.argMax(distanceMatrix.neg(),0).getInt(0);
-        dataPoint.squareDist = Math.pow(distanceMatrix.getDouble(bestChoice),2);
+        double squareDist = Math.pow(distanceMatrix.getDouble(bestChoice),2);
+        if(forceAssign||dataPoint.squareDist>squareDist) {
+            dataPoint.squareDist = squareDist;
+        }
         return centroids.get(bestChoice);
     }
 
@@ -242,6 +247,7 @@ public class KMeans {
         DataPoint(String name, INDArray dataPoint) {
             this.name=name;
             this.dataPoint=dataPoint;
+            this.squareDist = Double.MAX_VALUE;
         }
 
         @Override
