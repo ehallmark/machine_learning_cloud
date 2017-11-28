@@ -69,7 +69,7 @@ public class KMeans {
 
         if(parallel) {
             long iterations = Math.round(Math.log(this.error));
-            int l = 2; // sampling factor
+            int l = 2*k; // sampling factor
             for (int iteration = 0; iteration < iterations; iteration++) {
                 // step 2: compute distances
                 this.error = this.reassignDataToClusters();
