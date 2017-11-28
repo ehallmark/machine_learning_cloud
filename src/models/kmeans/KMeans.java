@@ -236,7 +236,7 @@ public class KMeans {
     private double reassignDataToClusters(boolean forceAssign) {
         AtomicInteger cnt = new AtomicInteger(0);
         System.gc();
-        return dataPoints.parallelStream().mapToDouble(dataPoint->{
+        return dataPoints.stream().mapToDouble(dataPoint->{
             Centroid centroid = findClosestCentroid(dataPoint,forceAssign);
             if(centroid!=null) {
                 if (dataPoint.centroid != null && !dataPoint.centroid.equals(centroid)) {
