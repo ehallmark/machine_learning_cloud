@@ -19,7 +19,7 @@ public class TechnologyAttribute extends ComputableAttribute<List<String>> {
     private Map<String,List<String>> modelMap;
     private Model model;
     private TechnologyAttribute(Model model) {
-        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword));
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
         this.model=model;
     }
 

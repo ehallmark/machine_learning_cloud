@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class SellerAttribute extends AbstractAttribute {
     public SellerAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword));
+        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
     }
     @Override
     public String getType() {

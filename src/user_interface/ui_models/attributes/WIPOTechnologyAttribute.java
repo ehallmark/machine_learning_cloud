@@ -19,7 +19,7 @@ import static j2html.TagCreator.div;
  */
 public class WIPOTechnologyAttribute extends AbstractAttribute {
     public WIPOTechnologyAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword));
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
     }
 
     @Override

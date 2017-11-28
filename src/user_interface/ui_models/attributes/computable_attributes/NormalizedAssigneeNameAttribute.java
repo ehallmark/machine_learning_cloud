@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public class NormalizedAssigneeNameAttribute extends ComputableNormalizedAssigneeAttribute<String> implements AjaxMultiselect {
     public NormalizedAssigneeNameAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword,AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude));
+        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp, AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude));
     }
     @Override
     public String getType() {

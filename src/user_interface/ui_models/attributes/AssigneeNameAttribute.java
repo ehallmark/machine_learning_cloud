@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public class AssigneeNameAttribute extends AbstractAttribute {
     public AssigneeNameAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword,AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude));
+        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp,AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude));
     }
     @Override
     public String getType() {

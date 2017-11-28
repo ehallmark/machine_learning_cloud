@@ -169,6 +169,10 @@ public abstract class AbstractAttribute {
                     filter = new AdvancedKeywordFilter(this, filterType);
                     break;
                 }
+                case Regexp: {
+                    filter = new RegexpTextFilter(this, filterType);
+                    break;
+                }
                 case PrefixExclude: {
                     filter = new AbstractPrefixExcludeFilter(this, filterType, getFieldType(), null);
                     break;

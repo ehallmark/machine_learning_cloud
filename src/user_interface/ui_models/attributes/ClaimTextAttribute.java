@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public class ClaimTextAttribute extends AbstractAttribute {
     public ClaimTextAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword));
+        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
     }
 
     @Override

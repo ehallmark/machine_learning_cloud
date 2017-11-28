@@ -16,7 +16,7 @@ import java.util.Map;
 public class CompDBTechnologyAttribute extends AbstractAttribute {
 
     public CompDBTechnologyAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude,AbstractFilter.FilterType.AdvancedKeyword));
+        super(Arrays.asList(AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude,AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
     }
 
     @Override

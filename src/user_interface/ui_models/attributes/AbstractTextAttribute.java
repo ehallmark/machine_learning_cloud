@@ -12,7 +12,7 @@ import java.util.Collection;
 public class AbstractTextAttribute extends AbstractAttribute {
 
     public AbstractTextAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword));
+        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
     }
 
     @Override

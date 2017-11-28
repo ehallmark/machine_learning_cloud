@@ -15,7 +15,7 @@ import java.util.Map;
 public class GatherTechnologyAttribute extends ComputableAttribute<Collection<String>> {
 
     public GatherTechnologyAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude,AbstractFilter.FilterType.AdvancedKeyword));
+        super(Arrays.asList(AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude,AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
     }
 
     @Override
