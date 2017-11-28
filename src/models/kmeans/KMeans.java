@@ -2,11 +2,7 @@ package models.kmeans;
 
 import data_pipeline.helpers.Function2;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.api.rng.DefaultRandom;
-import org.nd4j.linalg.cpu.nativecpu.rng.CpuNativeRandom;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.NDArrayIndex;
-import org.nd4j.linalg.ops.transforms.Transforms;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -66,21 +62,18 @@ public class KMeans {
             3- Choose one new data point at random as a new center, using a weighted probability distribution where a point x is chosen with probability proportional to D(x)2.
             4- Repeat Steps 2 and 3 until k centers have been chosen.
          */
-        int vectorSize = dataPoints.get(0).dataPoint.length();
         Random random = new Random(6342);
-        this.centroidMatrix = Nd4j.create(k,vectorSize);
         this.centroids = Collections.synchronizedList(new ArrayList<>());
         List<DataPoint> dataPointsRemaining = new ArrayList<>(this.dataPoints);
 
         // step 1: pick one center uniformly at random
         DataPoint dataPoint = dataPointsRemaining.remove(random.nextInt(dataPointsRemaining.size()));
-        int n = this.centroids.size();
-        this.centroidMatrix.putRow(n,dataPoint.dataPoint.dup());
-        this.centroids.add(new Centroid(this.centroidMatrix.get(NDArrayIndex.point(n),NDArrayIndex.all())));
+        INDArray centroid = dataPoint.dataPoint.dup();
+        this.centroids.add(new Centroid(centroid));
+        this.centroidMatrix = centroid;
         while(this.centroids.size()<k) {
             System.out.print("-");
-            INDArray validCentroidMatrix = this.centroidMatrix.get(NDArrayIndex.interval(0,this.centroids.size()),NDArrayIndex.all());
-            dataPointsRemaining.parallelStream().forEach(remaining->remaining.dist=distanceFunction.apply(findClosestCentroid(remaining,validCentroidMatrix).mean,remaining.dataPoint).getDouble(0));
+            dataPointsRemaining.parallelStream().forEach(remaining->remaining.dist=distanceFunction.apply(findClosestCentroid(remaining).mean,remaining.dataPoint).getDouble(0));
 
             // step 2: compute distances
             double[] probabilities = dataPointsRemaining.stream().mapToDouble(d->Math.pow(d.dist,2)).toArray();
@@ -93,9 +86,9 @@ public class KMeans {
                     System.out.print("_");
                     // done
                     dataPoint = dataPointsRemaining.remove(i);
-                    n = this.centroids.size();
-                    this.centroidMatrix.putRow(n,dataPoint.dataPoint.dup());
-                    this.centroids.add(new Centroid(this.centroidMatrix.get(NDArrayIndex.point(n),NDArrayIndex.all())));
+                    centroid = dataPoint.dataPoint.dup();
+                    this.centroids.add(new Centroid(centroid));
+                    this.centroidMatrix = Nd4j.vstack(this.centroidMatrix,centroid);
                     break;
                 }
             }
@@ -105,14 +98,16 @@ public class KMeans {
 
     private double recomputeClusterAverages() {
         System.gc();
-        return this.centroids.parallelStream().mapToDouble(Centroid::recomputeMeanAndReturnError).average().orElse(Double.NaN);
+        double error = this.centroids.parallelStream().mapToDouble(Centroid::recomputeMeanAndReturnError).average().orElse(Double.NaN);
+        this.centroidMatrix = Nd4j.vstack(centroids.stream().map(centroid->centroid.mean).collect(Collectors.toList()));
+        return error;
     }
 
     private double reassignDataToClusters() {
         AtomicInteger cnt = new AtomicInteger(0);
         System.gc();
         return dataPoints.parallelStream().mapToDouble(dataPoint->{
-            Centroid centroid = findClosestCentroid(dataPoint,this.centroidMatrix);
+            Centroid centroid = findClosestCentroid(dataPoint);
             if(dataPoint.centroid!=null&&!dataPoint.centroid.equals(centroid)) {
                 dataPoint.centroid.dataPoints.remove(dataPoint);
             }
@@ -126,7 +121,7 @@ public class KMeans {
         }).average().orElse(Double.NaN);
     }
 
-    private Centroid findClosestCentroid(DataPoint dataPoint, INDArray centroidMatrix) {
+    private Centroid findClosestCentroid(DataPoint dataPoint) {
         INDArray distanceMatrix = distanceFunction.apply(dataPoint.dataPoint,centroidMatrix);
         int bestChoice = Nd4j.argMax(distanceMatrix.negi(),0).getInt(0);
         return centroids.get(bestChoice);
@@ -164,7 +159,7 @@ public class KMeans {
         private double recomputeMeanAndReturnError() {
             INDArray meanTminus1 = mean.dup();
             if(!dataPoints.isEmpty()) {
-                mean.assign(Nd4j.vstack(dataPoints.stream().map(dp -> dp.dataPoint).collect(Collectors.toList())).mean(0));
+                mean = Nd4j.vstack(dataPoints.stream().map(dp -> dp.dataPoint).collect(Collectors.toList())).mean(0);
                 System.gc();
             }
             return distanceFunction.apply(meanTminus1,mean).getDouble(0);
