@@ -108,25 +108,28 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
             for(int i = 0; i < encoding.rows() && idx.get()<assets.size(); i++) {
                 INDArray vector = encoding.getRow(i);
                 assetToEncodingMap.put(assets.get(idx.getAndIncrement()), vector);
-                if(idx.get()%10000==9999)System.out.println(idx.get());
+                if(idx.get()%100000==99999) {
+                    System.gc();
+                    System.out.println(idx.get());
+                }
             }
         }
         // assignees
         idx.set(0);
         final int cpcLimit = 30;
         noData.set(0);
-        assignees.parallelStream().forEach(assignee->{
+        assignees.forEach(assignee->{
             Map<CPC,Double> cpcScoreMap = Stream.of(
                     Database.selectPatentNumbersFromExactAssignee(assignee),
                     Database.selectApplicationNumbersFromExactAssignee(assignee)
-            ).flatMap(portfolio->portfolio.stream()).map(asset->{
+            ).parallel().flatMap(portfolio->portfolio.stream()).map(asset->{
                 return cpcMap.get(asset);
             }).filter(set->set!=null).flatMap(set->set.stream())
                     .filter(cpc->cpc.getNumParts()>2)
                     .collect(Collectors.groupingBy(cpc->cpc,Collectors.summingDouble(cpc->Math.exp(cpc.getNumParts()))));
 
             List<CPC> topCPCs = cpcScoreMap.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(cpcLimit).map(e->e.getKey()).collect(Collectors.toList());
-            Collection<CPC> topCPCsWithHierarchy = topCPCs.stream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).distinct().collect(Collectors.toList());
+            Collection<CPC> topCPCsWithHierarchy = topCPCs.parallelStream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).distinct().collect(Collectors.toList());
 
             if(topCPCsWithHierarchy.size()>0) {
                 INDArray assigneeVec = CPCDataSetIterator.createVector(Stream.of(topCPCsWithHierarchy), cpcToIdxMap, 1, cpcToIdxMap.size());
@@ -138,6 +141,7 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
             if (idx.getAndIncrement() % 10000 == 9999) {
                 System.out.println("Vectorized " + idx.get() + " / "+assignees.size()+" assignees.");
                 System.out.println("Num Errors: "+noData.get());
+                System.gc();
             }
         });
         System.out.println("Total num assignee errors: "+noData.get());
