@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
 
@@ -287,6 +288,26 @@ public class USPTOAssignmentHandler extends NestedHandler {
                 if (recordedDate!=null) {
                     mergeDataMapHelper(mergedDataMap, executionDate, Constants.EXECUTION_DATE);
                 }
+
+                Map<String,Object> correspondentMap = (Map<String,Object>)assignmentMap.get(Constants.CORRESPONDENT);
+                if(correspondentMap!=null) {
+                    Object correspondentName = correspondentMap.get(Constants.CORRESPONDENT);
+                    if(correspondentName!=null) {
+                        mergeDataMapHelper(mergedDataMap, correspondentName, Constants.CORRESPONDENT);
+                    }
+                    Object correspondentAddress1 = correspondentMap.get(Constants.ADDRESS_1);
+                    Object correspondentAddress2 = correspondentMap.get(Constants.ADDRESS_2);
+                    Object correspondentAddress3 = correspondentMap.get(Constants.ADDRESS_3);
+                    List<String> correspondentAddresses = Stream.of(correspondentAddress1,correspondentAddress2,correspondentAddress3)
+                            .filter(address->address!=null)
+                            .map(address->address.toString())
+                            .collect(Collectors.toList());
+                    if(correspondentAddresses.size() > 0) {
+                        String correspondentAddress = String.join(" ",correspondentAddresses);
+                        mergeDataMapHelper(mergedDataMap,correspondentAddress,Constants.CORRESPONDENT_ADDRESS);
+                    }
+                }
+
 
                 if (mergedDataMap.size()>0) {
                     if(debug) {
