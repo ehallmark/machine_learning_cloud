@@ -302,7 +302,6 @@ public class USPTOAssignmentHandler extends NestedHandler {
                     mergeDataMapHelper(mergedDataMap,correspondentAddress,Constants.CORRESPONDENT_ADDRESS);
                 }
 
-
                 if (mergedDataMap.size()>0) {
                     DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.ASSIGNMENTS, mergedDataMap);
                 }
