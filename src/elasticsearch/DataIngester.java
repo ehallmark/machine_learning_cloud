@@ -135,11 +135,11 @@ public class DataIngester {
         addToUpdateMap(collection,model);
     }
 
-    public static void updateMongoArray(String collection, Document query, String arrayName, Object value, String constraintKey, Object constraintValue) {
-        Document updateDoc = new Document("$push",new Document(arrayName,value));
-        Map<String,Object> ne = new HashMap<>();
-        ne.put("$ne",constraintValue);
-        query = query.append(constraintKey, ne);
+    public static void updateMongoArray(String collection, Document query, String arrayName, Object value) {
+        Document updateDoc = new Document("$addToSet",new Document(arrayName,value));
+        //Map<String,Object> ne = new HashMap<>();
+        //ne.put("$ne",constraintValue);
+        //query = query.append(constraintKey, ne);
         WriteModel<Document> model = new UpdateManyModel<>(query, updateDoc);
         addToUpdateMap(collection,model);
     }
