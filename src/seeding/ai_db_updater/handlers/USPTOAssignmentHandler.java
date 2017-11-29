@@ -261,14 +261,14 @@ public class USPTOAssignmentHandler extends NestedHandler {
 
                 mergeDataMapHelper(mergedDataMap, reelFrame, Constants.REEL_FRAME);
 
-                List<Map<String, Object>> latestAssigneeData = (List<Map<String, Object>>) assignmentMap.get(Constants.LATEST_ASSIGNEE);
+                List<Map<String, Object>> latestAssigneeData = (List<Map<String, Object>>) doc.get(Constants.LATEST_ASSIGNEE);
                 if (latestAssigneeData != null && latestAssigneeData.size() > 0) {
                     List<String> assignees = latestAssigneeData.stream().map(map->map.get(Constants.ASSIGNEE)).filter(assignee->assignee!=null).map(obj->obj.toString()).collect(Collectors.toList());
                     if (assignees.size()>0) mergeDataMapHelper(mergedDataMap, assignees, Constants.ASSIGNEE);
                 }
 
                 // add assignor data
-                List<Map<String, Object>> latestAssignorData = (List<Map<String, Object>>) assignmentMap.get(Constants.ASSIGNORS);
+                List<Map<String, Object>> latestAssignorData = (List<Map<String, Object>>) doc.get(Constants.ASSIGNORS);
                 if (latestAssignorData != null && latestAssignorData.size() > 0) {
                     List<String> assignors = latestAssignorData.stream().map(map->map.get(Constants.ASSIGNOR)).filter(assignor->assignor!=null).map(obj->obj.toString()).collect(Collectors.toList());
                     if (assignors.size()>0) mergeDataMapHelper(mergedDataMap, assignors, Constants.ASSIGNOR);
@@ -289,7 +289,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                     mergeDataMapHelper(mergedDataMap, executionDate, Constants.EXECUTION_DATE);
                 }
 
-                Map<String,Object> correspondentMap = (Map<String,Object>)assignmentMap.get(Constants.CORRESPONDENT);
+                Map<String,Object> correspondentMap = (Map<String,Object>)doc.get(Constants.CORRESPONDENT);
                 if(correspondentMap!=null) {
                     Object correspondentName = correspondentMap.get(Constants.CORRESPONDENT);
                     if(correspondentName!=null) {
