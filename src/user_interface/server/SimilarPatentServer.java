@@ -1617,7 +1617,7 @@ public class SimilarPatentServer {
         if(preLoad)Database.preLoad();
         long t2 = System.currentTimeMillis();
         // perform quick search
-        DataSearcher.searchForAssets(attributesMap.values(),Collections.emptyList(),Constants.AI_VALUE, SortOrder.DESC,100,getNestedAttrMap(),false,false);
+        DataSearcher.searchForAssets(attributesMap.values(),Collections.emptyList(),Constants.AI_VALUE, SortOrder.DESC,100,getNestedAttrMap(),false,true);
         System.out.println("Time to start user_interface.server: "+ ((t2-t1)/(1000*60)) + " minutes");
     }
 }
