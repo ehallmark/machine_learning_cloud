@@ -60,14 +60,6 @@ public class DataSearcher {
             .field(Constants.ABSTRACT)
             .field(Constants.INVENTION_TITLE)
             .field(Constants.ASSIGNMENTS+"."+Constants.CONVEYANCE_TEXT);
-    public static final HighlightBuilder nestedHighlighter = new HighlightBuilder()
-            .highlighterType("plain")
-            .postTags("</span>")
-            .preTags("<span style=\"background-color: yellow;\">")
-            .requireFieldMatch(false)
-            .highlightFilter(true)
-            .field(Constants.CLAIM)
-            .field(Constants.CONVEYANCE_TEXT);
 
     public static final String ARRAY_SEPARATOR = "; ";
     @Getter
@@ -144,13 +136,9 @@ public class DataSearcher {
                         currentQuery.set(currentQuery.get().must(filter.getFilterQuery().boost(10)));
                     } else if (isOverallScore && filter instanceof AbstractNestedFilter) {
                         AbstractNestedFilter nestedFilter = (AbstractNestedFilter)filter;
-                        QueryBuilder scoreQuery = nestedFilter.getScorableQuery();
-                        QueryBuilder nonScoreQuery = nestedFilter.getNonScorableQuery();
-                        if(scoreQuery!=null) {
-                            currentQuery.set(currentQuery.get().must(scoreQuery.boost(10)));
-                        }
-                        if(nonScoreQuery!=null) {
-                            currentFilter.set(currentFilter.get().must(nonScoreQuery.boost(0)));
+                        QueryBuilder nestedQuery = nestedFilter.getScorableQuery();
+                        if(nestedQuery!=null) {
+                            currentQuery.set(currentQuery.get().must(nestedQuery.boost(10)));
                         }
                     } else {
                         currentFilter.set(currentFilter.get().must(filter.getFilterQuery().boost(0)));
@@ -367,12 +355,13 @@ public class DataSearcher {
                // }
             }
         }
-        if(isUsingScore) {
-            item.addData(Constants.SIMILARITY, hit.getScore());
-        }
 
         // override highlights if any
         handleHighlightFields(item, hit.getHighlightFields(), foundInnerHits, false);
+
+        if(isUsingScore) {
+            item.addData(Constants.SIMILARITY, hit.getScore());
+        }
         return item;
     }
 

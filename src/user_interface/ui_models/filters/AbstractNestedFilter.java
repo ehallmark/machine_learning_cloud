@@ -56,33 +56,33 @@ public class AbstractNestedFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        return queryHelper(filterSubset);
+        return queryHelper(filterSubset,false);
     }
 
     public QueryBuilder getScorableQuery() {
-        return queryHelper(filterSubset.stream().filter(filter->filter.contributesToScore()).collect(Collectors.toList()));
-    }
-
-    public QueryBuilder getNonScorableQuery() {
-        return queryHelper(filterSubset.stream().filter(filter->!filter.contributesToScore()).collect(Collectors.toList()));
+        return queryHelper(filterSubset,true);
     }
 
 
-    private QueryBuilder queryHelper(Collection<AbstractFilter> subset) {
+    private QueryBuilder queryHelper(Collection<AbstractFilter> subset, boolean usingScore) {
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        BoolQueryBuilder filterQuery = QueryBuilders.boolQuery();
         for(AbstractFilter filter : subset) {
             if(filter.isActive()) {
-                boolQuery = boolQuery.must(filter.getFilterQuery());
+                if(usingScore && filter.contributesToScore()) {
+                    boolQuery = boolQuery.must(filter.getFilterQuery());
+                } else {
+                    filterQuery = filterQuery.must(filter.getFilterQuery());
+                }
             }
         }
-        QueryBuilder query;
-        if(attribute.isObject()) {
-            System.out.println("Is object");
-            query = boolQuery; // hack for objects that haven't been mapped as nested yet (CompDB at the moment.)
-        } else {
+        QueryBuilder query = QueryBuilders.boolQuery()
+                .must(boolQuery)
+                .filter(filterQuery);
+        if(!attribute.isObject()) {
             System.out.print("Is nested");
-            query = QueryBuilders.nestedQuery(getFullPrerequisite(), boolQuery, ScoreMode.Max)
-                    .innerHit(new InnerHitBuilder().setHighlightBuilder(DataSearcher.nestedHighlighter));
+            query = QueryBuilders.nestedQuery(getFullPrerequisite(), query, ScoreMode.Max)
+                    .innerHit(new InnerHitBuilder().setHighlightBuilder(DataSearcher.highlighter));
         }
         if(debug) System.out.println("Query for "+getName()+": "+query.toString());
         return query;
