@@ -60,6 +60,14 @@ public class DataSearcher {
             .field(Constants.ABSTRACT)
             .field(Constants.INVENTION_TITLE)
             .field(Constants.ASSIGNMENTS+"."+Constants.CONVEYANCE_TEXT);
+    public static final HighlightBuilder nestedHighlighter = new HighlightBuilder()
+            .highlighterType("plain")
+            .postTags("</span>")
+            .preTags("<span style=\"background-color: yellow;\">")
+            .requireFieldMatch(false)
+            .highlightFilter(true)
+            .field(Constants.CLAIM)
+            .field(Constants.CONVEYANCE_TEXT);
 
     public static final String ARRAY_SEPARATOR = "; ";
     @Getter

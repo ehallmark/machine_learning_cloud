@@ -4,14 +4,13 @@ import seeding.Constants;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Created by ehallmark on 6/15/17.
  */
 public class ClaimNumberAttribute extends AbstractAttribute {
     public ClaimNumberAttribute() {
-        super(Collections.emptyList());
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }
     @Override
     public String getType() {
