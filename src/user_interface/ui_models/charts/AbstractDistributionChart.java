@@ -3,14 +3,13 @@ package user_interface.ui_models.charts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import lombok.Getter;
-import user_interface.ui_models.charts.highcharts.AbstractChart;
-import user_interface.ui_models.charts.highcharts.PieChart;
 import j2html.tags.Tag;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
-import user_interface.server.SimilarPatentServer;
 import spark.Request;
+import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.charts.highcharts.AbstractChart;
+import user_interface.ui_models.charts.highcharts.PieChart;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.*;
@@ -25,7 +24,7 @@ public class AbstractDistributionChart extends ChartAttribute {
     protected Collection<String> searchTypes;
 
     public AbstractDistributionChart() {
-        super(Arrays.asList(Constants.TECHNOLOGY,Constants.WIPO_TECHNOLOGY,Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE), Constants.PIE_CHART);
+        super(Arrays.asList(Constants.TECHNOLOGY,Constants.WIPO_TECHNOLOGY,Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE,Constants.LATEST_ASSIGNEE+"."+Constants.NORMALIZED_LATEST_ASSIGNEE), Constants.PIE_CHART);
     }
 
     @Override

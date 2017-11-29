@@ -3,7 +3,6 @@ package user_interface.ui_models.filters;
 import j2html.tags.Tag;
 import lombok.NonNull;
 import lombok.Setter;
-import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import seeding.Constants;
@@ -57,8 +56,8 @@ public class RegexpTextFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
-                button("Syntax").withClass("miniTip btn btn-sm btn-secondary"),
-                textarea().withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withClass("form-control").attr("placeholder","Example: (\"find this phrase\" | \"or this one\")").withName(getName())
+                a("Syntax").withHref("https://www.elastic.co/guide/en/elasticsearch/reference/5.6/query-dsl-regexp-query.html#regexp-syntax").withClass("btn btn-sm btn-secondary"),
+                textarea().withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withClass("form-control").attr("placeholder","Certain regular expressions may drastically reduce performance. Use with caution.").withName(getName())
         );
     }
 

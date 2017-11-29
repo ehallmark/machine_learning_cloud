@@ -3,17 +3,28 @@ package user_interface.server;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import elasticsearch.DataIngester;
+import elasticsearch.DataSearcher;
+import j2html.tags.ContainerTag;
+import j2html.tags.Tag;
 import lombok.Getter;
-
+import models.dl4j_neural_nets.tools.MyPreprocessor;
 import models.keyphrase_prediction.models.NewestModel;
+import models.similarity_models.AbstractSimilarityModel;
 import models.similarity_models.DefaultSimilarityModel;
 import models.similarity_models.Vectorizer;
-import models.similarity_models.keyword_encoding_model.WordIndexMap;
 import models.similarity_models.word_to_cpc_encoding_model.WordToCPCIterator;
 import models.text_streaming.BOWVectorFromTextTransformer;
-import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
+import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
+import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
+import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import seeding.Constants;
+import seeding.Database;
+import spark.QueryParamsMap;
+import spark.Request;
+import spark.Response;
 import spark.Session;
+import user_interface.server.tools.AjaxChartMessage;
 import user_interface.server.tools.PasswordHandler;
 import user_interface.server.tools.SimpleAjaxMessage;
 import user_interface.ui_models.attributes.*;
@@ -22,27 +33,18 @@ import user_interface.ui_models.attributes.computable_attributes.asset_graphs.Ba
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.RelatedAssetsAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 import user_interface.ui_models.attributes.script_attributes.*;
+import user_interface.ui_models.charts.AbstractDistributionChart;
+import user_interface.ui_models.charts.AbstractHistogramChart;
+import user_interface.ui_models.charts.AbstractLineChart;
+import user_interface.ui_models.charts.ChartAttribute;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
-import j2html.tags.ContainerTag;
-import user_interface.server.tools.AjaxChartMessage;
-import user_interface.ui_models.charts.*;
 import user_interface.ui_models.engines.*;
 import user_interface.ui_models.excel.ExcelHandler;
-import user_interface.ui_models.templates.*;
-import models.similarity_models.AbstractSimilarityModel;
-import models.dl4j_neural_nets.tools.MyPreprocessor;
-import j2html.tags.Tag;
-
-import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import seeding.Constants;
-import seeding.Database;
-import user_interface.ui_models.filters.*;
-import user_interface.ui_models.portfolios.items.Item;
-import spark.QueryParamsMap;
-import spark.Request;
-import spark.Response;
+import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.filters.AbstractNestedFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
+import user_interface.ui_models.portfolios.items.Item;
+import user_interface.ui_models.templates.FormTemplate;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
@@ -52,7 +54,8 @@ import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -195,6 +198,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Less Than Filter", AbstractFilter.FilterType.LessThan.toString());
             humanAttrToJavaAttrMap.put("Filters", AbstractFilter.FilterType.Nested.toString());
             humanAttrToJavaAttrMap.put("Latest Execution Date", Constants.EXECUTION_DATE);
+            humanAttrToJavaAttrMap.put("Execution Date", Constants.ASSIGNMENTS+"."+Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("First Name", Constants.FIRST_NAME);
             humanAttrToJavaAttrMap.put("Number of Assignments", Constants.NUM_ASSIGNMENTS);
             humanAttrToJavaAttrMap.put("Number of Related Docs", Constants.NUM_RELATED_ASSETS);
@@ -219,6 +223,9 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Exists in Gather Filter", Constants.EXISTS_IN_GATHER_FILTER);
             humanAttrToJavaAttrMap.put("Does not exist in CompDB Filter", Constants.DOES_NOT_EXIST_IN_COMPDB_FILTER);
             humanAttrToJavaAttrMap.put("Does not exist in Gather Filter", Constants.DOES_NOT_EXIST_IN_GATHER_FILTER);
+            humanAttrToJavaAttrMap.put("Assignor Name", Constants.ASSIGNOR);
+            humanAttrToJavaAttrMap.put("Conveyance Text", Constants.CONVEYANCE_TEXT);
+
             // custom filter name for excluding granted apps
             humanAttrToJavaAttrMap.put("Exclude Granted Applications Filter", Constants.GRANTED+ AbstractFilter.FilterType.BoolFalse+ Constants.FILTER_SUFFIX);
             humanAttrToJavaAttrMap.put("Related Docs", Constants.ALL_RELATED_ASSETS);
@@ -226,7 +233,6 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
             humanAttrToJavaAttrMap.put("Original Assignee", Constants.ASSIGNEES);
             humanAttrToJavaAttrMap.put("Applicants", Constants.APPLICANTS);
-            humanAttrToJavaAttrMap.put("Assignors", Constants.ASSIGNORS);
             humanAttrToJavaAttrMap.put("Inventors", Constants.INVENTORS);
             humanAttrToJavaAttrMap.put("Agents", Constants.AGENTS);
             humanAttrToJavaAttrMap.put("Backward Citations", Constants.CITATIONS);
@@ -461,6 +467,7 @@ public class SimilarPatentServer {
             // nested attrs
             attributesMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());
             attributesMap.put(Constants.ASSIGNEES, new AssigneesNestedAttribute());
+            attributesMap.put(Constants.ASSIGNMENTS, new AssignmentsNestedAttribute());
             attributesMap.put(Constants.APPLICANTS, new ApplicantsNestedAttribute());
             attributesMap.put(Constants.INVENTORS, new InventorsNestedAttribute());
             attributesMap.put(Constants.AGENTS, new AgentsNestedAttribute());
@@ -1604,6 +1611,8 @@ public class SimilarPatentServer {
         GatherClassificationServer.StartServer();
         if(preLoad)Database.preLoad();
         long t2 = System.currentTimeMillis();
+        // perform quick search
+        DataSearcher.searchForAssets(attributesMap.values(),Collections.emptyList(),Constants.AI_VALUE, SortOrder.DESC,100,nestedAttrMap,false);
         System.out.println("Time to start user_interface.server: "+ ((t2-t1)/(1000*60)) + " minutes");
     }
 }

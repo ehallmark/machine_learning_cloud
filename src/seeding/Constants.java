@@ -145,6 +145,7 @@ public class Constants {
 	public static final String REMAINING_LIFE = "remainingLife";
 	public static final String PATENT_FAMILY = "patentFamily";
 	public static final String ASSIGNORS = "assignors";
+	public static final String ASSIGNOR = "assignor";
 	public static final String DATA_FOLDER = "data/";
 	public static final int MIN_WORDS_PER_SENTENCE = 3;
 
@@ -231,7 +232,8 @@ public class Constants {
 			AGENTS,
 			CITATIONS,
 			CLAIMS,
-			PATENT_FAMILY
+			PATENT_FAMILY,
+			ASSIGNMENTS
 	);
 
 	public static Collection<String> FILING_ATTRIBUTES_SET = Stream.of(

@@ -1,24 +1,12 @@
 package elasticsearch;
 
-import com.mongodb.WriteConcern;
-import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
 import com.mongodb.client.model.*;
 import org.bson.Document;
-import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.client.Response;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import seeding.Constants;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
-import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
@@ -147,11 +135,11 @@ public class DataIngester {
         addToUpdateMap(collection,model);
     }
 
-    public static void updateMongoArray(String collection, Document query, String arrayName, String value) {
+    public static void updateMongoArray(String collection, Document query, String arrayName, Object value, String constraintKey, Object constraintValue) {
         Document updateDoc = new Document("$push",new Document(arrayName,value));
-        Map<String,String> ne = new HashMap<>();
-        ne.put("$ne",value);
-        query = query.append(arrayName, ne);
+        Map<String,Object> ne = new HashMap<>();
+        ne.put("$ne",constraintValue);
+        query = query.append(constraintKey, ne);
         WriteModel<Document> model = new UpdateOneModel<>(query, updateDoc);
         addToUpdateMap(collection,model);
     }

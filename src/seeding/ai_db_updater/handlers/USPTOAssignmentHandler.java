@@ -15,17 +15,14 @@ import seeding.ai_db_updater.handlers.flags.Flag;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
-import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 
-import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
 
@@ -247,6 +244,8 @@ public class USPTOAssignmentHandler extends NestedHandler {
     }
 
     private void saveElasticSearch(List<String> ids, Map<String,Object> doc) {
+        boolean debug = true; // TODO GET RID OF DEBUG!!
+
         // get reel frame for id
         Map<String,Object> assignmentMap = (Map<String,Object>)doc.get(Constants.ASSIGNMENTS);
         if(assignmentMap!=null) {
@@ -254,30 +253,47 @@ public class USPTOAssignmentHandler extends NestedHandler {
             if(reelFrame!=null) {
                 Document assetQuery = new Document("_id",new Document("$in", ids));
                 // update reel frames array
-                DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.REEL_FRAME, reelFrame);
+                if (!debug) DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.REEL_FRAME, reelFrame, Constants.REEL_FRAME, reelFrame);
 
                 // update complex data
                 Map<String,Object> mergedDataMap = new HashMap<>();
-                /* No need to add latest assignee data since that is
-                    already updated during the computable attributes
+
+                mergeDataMapHelper(mergedDataMap, reelFrame, Constants.REEL_FRAME);
+
                 List<Map<String, Object>> latestAssigneeData = (List<Map<String, Object>>) assignmentMap.get(Constants.LATEST_ASSIGNEE);
                 if (latestAssigneeData != null && latestAssigneeData.size() > 0) {
-                    mergeDataMapHelper(mergedDataMap, latestAssigneeData.stream().findFirst().get(), Constants.LATEST_ASSIGNEE);
-                } */
+                    List<String> assignees = latestAssigneeData.stream().map(map->map.get(Constants.ASSIGNEE)).filter(assignee->assignee!=null).map(obj->obj.toString()).collect(Collectors.toList());
+                    if (assignees.size()>0) mergeDataMapHelper(mergedDataMap, assignees, Constants.ASSIGNEE);
+                }
 
                 // add assignor data
                 List<Map<String, Object>> latestAssignorData = (List<Map<String, Object>>) assignmentMap.get(Constants.ASSIGNORS);
                 if (latestAssignorData != null && latestAssignorData.size() > 0) {
-                    mergeDataMapHelper(mergedDataMap, latestAssignorData.stream().findFirst().get(), Constants.ASSIGNORS);
+                    List<String> assignors = latestAssignorData.stream().map(map->map.get(Constants.ASSIGNOR)).filter(assignor->assignor!=null).map(obj->obj.toString()).collect(Collectors.toList());
+                    if (assignors.size()>0) mergeDataMapHelper(mergedDataMap, assignors, Constants.ASSIGNOR);
                 }
                 // add conveyance text (helpful to fiend liens)
                 Object conveyanceText = assignmentMap.get(Constants.CONVEYANCE_TEXT);
-                if(conveyanceText!=null) {
+                if (conveyanceText!=null) {
                     mergeDataMapHelper(mergedDataMap, conveyanceText, Constants.CONVEYANCE_TEXT);
                 }
 
-                if(mergedDataMap.size()>0) {
-                    DataIngester.updateMongoByQuery(DataIngester.PARENT_TYPE_NAME, assetQuery, mergedDataMap);
+                Object recordedDate = assignmentMap.get(Constants.RECORDED_DATE);
+                if (recordedDate!=null) {
+                    mergeDataMapHelper(mergedDataMap, recordedDate, Constants.RECORDED_DATE);
+                }
+
+                Object executionDate = assignmentMap.get(Constants.EXECUTION_DATE);
+                if (recordedDate!=null) {
+                    mergeDataMapHelper(mergedDataMap, executionDate, Constants.EXECUTION_DATE);
+                }
+
+                if (mergedDataMap.size()>0) {
+                    if(debug) {
+                        System.out.println(new Gson().toJson(mergedDataMap));
+                    } else {
+                        DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.ASSIGNMENTS, mergedDataMap, Constants.ASSIGNMENTS+"."+Constants.REEL_FRAME, reelFrame);
+                    }
                 }
             }
         }
