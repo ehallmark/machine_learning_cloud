@@ -246,7 +246,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
 
     private void saveElasticSearch(List<String> ids, Map<String,Object> doc) {
         boolean debug = true; // TODO GET RID OF DEBUG!!
-
+        System.out.println("Full DOC: "+new Gson().toJson(doc));
         // get reel frame for id
         Map<String,Object> assignmentMap = (Map<String,Object>)doc.get(Constants.ASSIGNMENTS);
         if(assignmentMap!=null) {
@@ -270,7 +270,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                 // add assignor data
                 List<Map<String, Object>> latestAssignorData = (List<Map<String, Object>>) doc.get(Constants.ASSIGNORS);
                 if (latestAssignorData != null && latestAssignorData.size() > 0) {
-                    List<String> assignors = latestAssignorData.stream().map(map->map.get(Constants.ASSIGNOR)).filter(assignor->assignor!=null).map(obj->obj.toString()).collect(Collectors.toList());
+                    List<String> assignors = latestAssignorData.stream().map(map->map.get(Constants.FULL_NAME)).filter(assignor->assignor!=null).map(obj->obj.toString()).collect(Collectors.toList());
                     if (assignors.size()>0) mergeDataMapHelper(mergedDataMap, assignors, Constants.ASSIGNOR);
                 }
                 // add conveyance text (helpful to fiend liens)
@@ -289,9 +289,9 @@ public class USPTOAssignmentHandler extends NestedHandler {
                     mergeDataMapHelper(mergedDataMap, executionDate, Constants.EXECUTION_DATE);
                 }
 
-                Map<String,Object> correspondentMap = (Map<String,Object>)doc.get(Constants.CORRESPONDENT);
+                Map<String,Object> correspondentMap = (Map<String,Object>)assignmentMap.get(Constants.CORRESPONDENT);
                 if(correspondentMap!=null) {
-                    Object correspondentName = correspondentMap.get(Constants.CORRESPONDENT);
+                    Object correspondentName = correspondentMap.get(Constants.FULL_NAME);
                     if(correspondentName!=null) {
                         mergeDataMapHelper(mergedDataMap, correspondentName, Constants.CORRESPONDENT);
                     }
@@ -311,7 +311,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
 
                 if (mergedDataMap.size()>0) {
                     if(debug) {
-                        System.out.println(new Gson().toJson(mergedDataMap));
+                        System.out.println("   FOUND: "+new Gson().toJson(mergedDataMap));
                     } else {
                         DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.ASSIGNMENTS, mergedDataMap, Constants.ASSIGNMENTS+"."+Constants.REEL_FRAME, reelFrame);
                     }
