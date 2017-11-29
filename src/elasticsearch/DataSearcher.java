@@ -3,7 +3,6 @@ package elasticsearch;
 import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.NonNull;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.ClearScrollResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -60,7 +59,7 @@ public class DataSearcher {
             .field(Constants.CLAIMS+"."+Constants.CLAIM)
             .field(Constants.ABSTRACT)
             .field(Constants.INVENTION_TITLE)
-            .field(Constants.CONVEYANCE_TEXT);
+            .field(Constants.ASSIGNMENTS+"."+Constants.CONVEYANCE_TEXT);
 
     public static final String ARRAY_SEPARATOR = "; ";
     @Getter
@@ -284,8 +283,32 @@ public class DataSearcher {
         }
     }
 
-    private static Item[] merge(Item[] v1, Item[] v2) {
-        return (Item[]) ArrayUtils.addAll(v1, v2);
+    private static void filterNestedObjects(Map<String,NestedAttribute> nestedAttrNameMap, SearchHit hit, Item item, Set<String> foundInnerHits) {
+        // try to get inner hits from nested attrs
+        nestedAttrNameMap.entrySet().forEach(e -> {
+            SearchHits nestedHits = hit.getInnerHits().get(e.getKey());
+            if (nestedHits != null) {
+                SearchHit[] innerHits = nestedHits.getHits();
+                if (innerHits != null && innerHits.length > 0) {
+                    for (SearchHit nestedHit : innerHits) {
+                        nestedHit.getSource().forEach((k, v) -> {
+                            hitToItemHelper(e.getKey() + "." + k, v, item.getDataMap(), nestedAttrNameMap);
+                        });
+                        handleFields(item, nestedHit, Collections.emptySet());
+                        // handle highlight
+                        // test
+                        if (debug) {
+                            System.out.println(" Nested inner fields: " + new Gson().toJson(nestedHit.getFields()));
+                            System.out.println(" Nested inner source: " + new Gson().toJson(nestedHit.getSource()));
+                            System.out.println(" Nested inner highlighting: " + new Gson().toJson(nestedHit.getHighlightFields()));
+                        }
+                        handleHighlightFields(item, nestedHit.getHighlightFields(), Collections.emptySet());
+                    }
+                }
+                foundInnerHits.add(e.getKey());
+                e.getValue().getAttributes().forEach(attr -> foundInnerHits.add(attr.getFullName()));
+            }
+        });
     }
 
     private static Item hitToItem(SearchHit hit, Map<String,NestedAttribute> nestedAttrNameMap, boolean isUsingScore, boolean filterNestedObjects) {
@@ -293,31 +316,7 @@ public class DataSearcher {
 
         Set<String> foundInnerHits = new HashSet<>();
         if(filterNestedObjects) {
-            // try to get inner hits from nested attrs
-            nestedAttrNameMap.entrySet().forEach(e -> {
-                SearchHits nestedHits = hit.getInnerHits().get(e.getKey());
-                if (nestedHits != null) {
-                    SearchHit[] innerHits = nestedHits.getHits();
-                    if (innerHits != null && innerHits.length > 0) {
-                        for (SearchHit nestedHit : innerHits) {
-                            nestedHit.getSource().forEach((k, v) -> {
-                                hitToItemHelper(e.getKey() + "." + k, v, item.getDataMap(), nestedAttrNameMap);
-                            });
-                            handleFields(item, nestedHit, e.getKey(), Collections.emptySet());
-                            // handle highlight
-                            // test
-                            if (debug) {
-                                System.out.println(" Nested inner fields: " + new Gson().toJson(nestedHit.getFields()));
-                                System.out.println(" Nested inner source: " + new Gson().toJson(nestedHit.getSource()));
-                                System.out.println(" Nested inner highlighting: " + new Gson().toJson(nestedHit.getHighlightFields()));
-                            }
-                            handleHighlightFields(item, nestedHit.getHighlightFields(), e.getKey(), Collections.emptySet());
-                        }
-                    }
-                    foundInnerHits.add(e.getKey());
-                    e.getValue().getAttributes().forEach(attr -> foundInnerHits.add(attr.getFullName()));
-                }
-            });
+            filterNestedObjects(nestedAttrNameMap,hit,item,foundInnerHits);
         }
 
         //if(debug) {
@@ -339,6 +338,12 @@ public class DataSearcher {
             SearchHit[] innerHits = innerHit.getHits();
             if(innerHits != null && innerHits.length > 0) {
                 SearchHit firstHit = innerHits[0];
+                // try nested inner hits
+                if(filterNestedObjects) {
+                    filterNestedObjects(nestedAttrNameMap,firstHit,item,foundInnerHits);
+                }
+
+                // get regular attrs
                 firstHit.getSource().forEach((k,v)->{
                     if(!foundInnerHits.contains(k)) {
                         hitToItemHelper(k, v, item.getDataMap(), nestedAttrNameMap);
@@ -362,11 +367,8 @@ public class DataSearcher {
         return item;
     }
 
-    private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap, Set<String> alreadyFound) {
-        handleHighlightFields(item,highlightFieldMap,null, alreadyFound); // default is no prefix
-    }
 
-    private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap, String prefix, Set<String> alreadyFound) {
+    private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap, Set<String> alreadyFound) {
         if(highlightFieldMap != null) {
             highlightFieldMap.entrySet().forEach(e->{
                 if(!alreadyFound.contains(e.getKey())) {
@@ -376,7 +378,7 @@ public class DataSearcher {
                         for (Text fragment : fragments) {
                             sj.add(fragment.toString());
                         }
-                        item.addData((prefix == null ? e.getKey() : (prefix + "." + e.getKey())) + Constants.HIGHLIGHTED, sj.toString());
+                        item.addData( e.getKey() + Constants.HIGHLIGHTED, sj.toString());
                     }
                 }
             });
@@ -385,11 +387,6 @@ public class DataSearcher {
 
 
     private static void handleFields(Item item, SearchHit hit, Set<String> alreadyFound) {
-        // default no prefix
-        handleFields(item,hit,null,alreadyFound);
-    }
-
-    private static void handleFields(Item item, SearchHit hit, String prefix, Set<String> alreadyFound) {
         Map<String,SearchHitField> searchHitFieldMap = hit.getFields();
         if(searchHitFieldMap==null) return;
 
@@ -402,7 +399,7 @@ public class DataSearcher {
                         long longValue = ((Number) val).longValue();
                         val = Instant.ofEpochMilli(longValue).atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ISO_DATE);
                     }
-                    item.addData(prefix == null ? k : (prefix + "." + k), val);
+                    item.addData(k, val);
                 }
             }
         });
