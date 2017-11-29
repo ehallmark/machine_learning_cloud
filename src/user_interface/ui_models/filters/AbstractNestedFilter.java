@@ -81,7 +81,7 @@ public class AbstractNestedFilter extends AbstractFilter {
         } else {
             System.out.print("Is nested");
             query = QueryBuilders.nestedQuery(getFullPrerequisite(), boolQuery, ScoreMode.Max)
-                    .innerHit(new InnerHitBuilder());
+                    .innerHit(new InnerHitBuilder().);
         }
         if(debug) System.out.println("Query for "+getName()+": "+query.toString());
         return query;

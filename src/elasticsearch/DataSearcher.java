@@ -20,6 +20,7 @@ import org.elasticsearch.join.query.HasParentQueryBuilder;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
@@ -50,6 +51,17 @@ import java.util.stream.IntStream;
  * Created by Evan on 7/22/2017.
  */
 public class DataSearcher {
+    public static final HighlightBuilder highlighter = new HighlightBuilder()
+            .highlighterType("plain")
+            .postTags("</span>")
+            .preTags("<span style=\"background-color: yellow;\">")
+            .requireFieldMatch(false)
+            .highlightFilter(true)
+            .field(Constants.CLAIMS+"."+Constants.CLAIM)
+            .field(Constants.ABSTRACT)
+            .field(Constants.INVENTION_TITLE)
+            .field(Constants.CONVEYANCE_TEXT);
+
     public static final String ARRAY_SEPARATOR = "; ";
     @Getter
     private static TransportClient client = MyClient.get();
@@ -164,6 +176,9 @@ public class DataSearcher {
 
             }
 
+            if(highlight) {
+                innerHitBuilder.set(innerHitBuilder.get().setHighlightBuilder(highlighter));
+            }
 
             System.out.println("Combining Query...");
             // Add filter to query
@@ -176,15 +191,6 @@ public class DataSearcher {
 
            if(highlight) {
                // possible highlighting
-               HighlightBuilder highlighter = new HighlightBuilder()
-                       .highlighterType("plain")
-                       .postTags("</span>")
-                       .preTags("<span style=\"background-color: yellow;\">")
-                       .requireFieldMatch(false)
-                       .highlightFilter(true)
-                       .field(Constants.CLAIMS+"."+Constants.CLAIM)
-                       .field(Constants.ABSTRACT)
-                       .field(Constants.INVENTION_TITLE);
                request.set(request.get().highlighter(highlighter));
             }
 
@@ -314,6 +320,12 @@ public class DataSearcher {
                         });
                         handleFields(item,nestedHit,e.getKey(),Collections.emptySet());
                         // handle highlight
+                        // test
+                        if(debug) {
+                            System.out.println(" Nested inner fields: " + new Gson().toJson(nestedHit.getFields()));
+                            System.out.println(" Nested inner source: " + new Gson().toJson(nestedHit.getSource()));
+                            System.out.println(" Nested inner highlighting: " + new Gson().toJson(nestedHit.getHighlightFields()));
+                        }
                         handleHighlightFields(item, nestedHit.getHighlightFields(),e.getKey(),Collections.emptySet());
                     }
                 }
@@ -348,8 +360,9 @@ public class DataSearcher {
                 });
                 handleFields(item, firstHit, foundInnerHits);
                 if(debug) {
-                    System.out.println("  inner fields: " + new Gson().toJson(firstHit.getFields()));
-                    System.out.println("  inner source: " + new Gson().toJson(firstHit.getSource()));
+                    System.out.println(" Filings inner fields: " + new Gson().toJson(firstHit.getFields()));
+                    System.out.println(" Filings inner source: " + new Gson().toJson(firstHit.getSource()));
+                    System.out.println(" Filings inner highlighting: " + new Gson().toJson(firstHit.getHighlightFields()));
                 }
                 // handle highlight
                 handleHighlightFields(item, firstHit.getHighlightFields(), foundInnerHits);
@@ -392,7 +405,10 @@ public class DataSearcher {
     }
 
     private static void handleFields(Item item, SearchHit hit, String prefix, Set<String> alreadyFound) {
-        hit.getFields().forEach((k,v)->{
+        Map<String,SearchHitField> searchHitFieldMap = hit.getFields();
+        if(searchHitFieldMap==null) return;
+
+        searchHitFieldMap.forEach((k,v)->{
             Object val = v.getValue();
             if(!alreadyFound.contains(k)) {
                 if (val != null) {
