@@ -1,5 +1,6 @@
 package elasticsearch;
 
+import com.google.gson.Gson;
 import com.mongodb.async.client.MongoDatabase;
 import com.mongodb.client.model.*;
 import org.bson.Document;
@@ -142,8 +143,9 @@ public class DataIngester {
         //Map<String,Object> ne = new HashMap<>();
         //ne.put("$ne",constraintValue);
         //query = query.append(constraintKey, ne);
+        System.out.println("UPDATE: "+new Gson().toJson(updateDoc));
         WriteModel<Document> model = new UpdateManyModel<>(query, updateDoc);
-        addToUpdateMap(collection,model);
+        //addToUpdateMap(collection,model);
     }
 
     private static void waitForMongo() {
