@@ -320,11 +320,11 @@ public class DataSearcher {
             });
         }
 
-        if(debug) {
-            System.out.println("fields: "+new Gson().toJson(hit.getFields()));
-            System.out.println("source: "+new Gson().toJson(hit.getSource()));
-            System.out.println("highlights: "+new Gson().toJson(hit.getHighlightFields()));
-        }
+        //if(debug) {
+        //    System.out.println("fields: "+new Gson().toJson(hit.getFields()));
+        //    System.out.println("source: "+new Gson().toJson(hit.getSource()));
+        //    System.out.println("highlights: "+new Gson().toJson(hit.getHighlightFields()));
+        // }
 
         hit.getSource().forEach((k,v)->{
             if(!foundInnerHits.contains(k)) {
