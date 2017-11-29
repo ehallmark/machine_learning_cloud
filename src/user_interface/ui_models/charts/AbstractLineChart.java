@@ -84,12 +84,23 @@ public class AbstractLineChart extends ChartAttribute {
     private List<Series<?>> collectTimelineData(Collection<Item> data, String attribute, String humanSearchType) {
         PointSeries series = new PointSeries();
         series.setName(singularize(humanSearchType)+ " Count");
-        Map<Integer,Long> dataMap = data.stream().filter(item->{Object r = item.getData(attribute); return r!=null && r.toString().length()>4;})
-                .map(item->{
-                    System.out.println("timeline date attr: "+item);
-                    return Integer.valueOf(item.getData(attribute).toString().substring(0,4));
-                })
-                .collect(Collectors.groupingBy(year->year,Collectors.counting()));
+        Map<Integer,Long> dataMap = data.stream().flatMap(item-> {
+            Object r = item.getData(attribute);
+            if (r != null) {
+                if (r instanceof List) {
+                    return ((List) r).stream();
+                } else {
+                    return Stream.of(r);
+                }
+            }
+            return Stream.empty();
+        }).map(item->{
+            System.out.println("timeline date attr: "+item);
+            if(item!=null&&item.toString().length()>4) {
+                return Integer.valueOf(item.toString().substring(0, 4));
+            } else return null;
+        }).filter(year->year!=null)
+        .collect(Collectors.groupingBy(year->year,Collectors.counting()));
         dataMap.entrySet().stream().sorted(Comparator.comparing(e->e.getKey())).forEach(e ->{
             series.addPoint(new Point(e.getKey(),e.getValue()));
         });
