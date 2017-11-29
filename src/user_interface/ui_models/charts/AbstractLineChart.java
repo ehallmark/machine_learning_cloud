@@ -98,7 +98,7 @@ public class AbstractLineChart extends ChartAttribute {
             }
             return Stream.empty();
         }).map(item->{
-            System.out.println("timeline date attr: "+item);
+            //System.out.println("timeline date attr: "+item);
             if(item!=null&&item.toString().length()>4) {
                 return Integer.valueOf(item.toString().substring(0, 4));
             } else return null;
