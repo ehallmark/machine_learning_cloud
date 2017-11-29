@@ -83,7 +83,7 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         // cpcs
         idx.set(0);
         AtomicInteger noData = new AtomicInteger(0);
-        classCodes.parallelStream().forEach(cpc->{
+        classCodes.forEach(cpc->{
             Collection<CPC> cpcFamily = hierarchy.cpcWithAncestors(ClassCodeHandler.convertToLabelFormat(cpc)).stream().filter(c->cpcToIdxMap.containsKey(c.getName())).collect(Collectors.toList());
             if(cpcFamily.size()>0) {
                 INDArray cpcVec = CPCDataSetIterator.createVector(Stream.of(cpcFamily), cpcToIdxMap, 1, cpcToIdxMap.size());
