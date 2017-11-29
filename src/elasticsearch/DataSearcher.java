@@ -68,7 +68,7 @@ public class DataSearcher {
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
     private static final int PAGE_LIMIT = 10000;
-    private static final boolean debug = false;
+    private static final boolean debug = true;
 
     public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, boolean highlight, boolean filterNestedObjects) {
         return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true, highlight,filterNestedObjects);
@@ -76,14 +76,6 @@ public class DataSearcher {
 
     public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
         try {
-            if(debug) {
-                attributes.forEach(attr->{
-                   System.out.println("Root name for "+attr.getFullName()+": "+attr.getRootName());
-                });
-                filters.forEach(filter->{
-                    System.out.println("Root name for filter "+filter.getName()+": "+filter.getAttribute().getRootName());
-                });
-            }
             String[] attrNames = attributes.stream().filter(attr->!Constants.FILING_ATTRIBUTES_SET.contains(attr.getRootName())).map(attr->(attr instanceof NestedAttribute) ? attr.getName()+".*" : attr.getFullName()).toArray(size->new String[size]);
             String[] filingAttrNames = attributes.stream().filter(attr->Constants.FILING_ATTRIBUTES_SET.contains(attr.getRootName())).map(attr->(attr instanceof NestedAttribute) ? attr.getName()+".*" : attr.getFullName()).toArray(size->new String[size]);
             // Run elasticsearch
@@ -135,11 +127,9 @@ public class DataSearcher {
                     AtomicReference<BoolQueryBuilder> currentQuery;
                     AtomicReference<BoolQueryBuilder> currentFilter;
                     if(Constants.FILING_ATTRIBUTES_SET.contains(filter.getAttribute().getRootName())) {
-                        System.out.println("IS FILING: "+filter.getAttribute().getRootName());
                         currentQuery = parentQueryBuilder;
                         currentFilter = parentFilterBuilder;
                     } else {
-                        System.out.println("NOT FILING: "+filter.getAttribute().getRootName());
                         currentQuery = queryBuilder;
                         currentFilter = filterBuilder;
                     }
@@ -426,7 +416,7 @@ public class DataSearcher {
 
     private static Map<String,Object> mapAccumulator(List<Map<String,Object>> maps) {
         Map<String,Object> newMap = new HashMap<>();
-        Collection<String> keys = maps.stream().flatMap(m->m.keySet().stream()).distinct().collect(Collectors.toList());
+        Set<String> keys = maps.stream().flatMap(m->m.keySet().stream()).collect(Collectors.toSet());
         keys.forEach(key->{
             newMap.put(key, String.join(ARRAY_SEPARATOR, maps.stream().map(m->m.getOrDefault(key," ").toString()).collect(Collectors.toList())).trim());
         });
