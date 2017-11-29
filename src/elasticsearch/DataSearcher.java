@@ -299,6 +299,28 @@ public class DataSearcher {
 
     private static Item hitToItem(SearchHit hit, Map<String,NestedAttribute> nestedAttrNameMap, boolean isUsingScore) {
         Item item = new Item(hit.getId());
+
+        Set<String> foundInnerHits = new HashSet<>();
+
+        // try to get inner hits from nested attrs
+        nestedAttrNameMap.entrySet().forEach(e->{
+            SearchHits nestedHits = hit.getInnerHits().get(e.getKey());
+            if(nestedHits!=null) {
+                SearchHit[] innerHits = nestedHits.getHits();
+                if(innerHits != null && innerHits.length > 0) {
+                    for(SearchHit nestedHit : innerHits) {
+                        nestedHit.getSource().forEach((k,v) -> {
+                            hitToItemHelper(e.getKey()+"."+k, v, item.getDataMap(), nestedAttrNameMap);
+                        });
+                        handleFields(item,nestedHit,e.getKey());
+                        // handle highlight
+                        handleHighlightFields(item, nestedHit.getHighlightFields(),e.getKey());
+                    }
+                }
+                foundInnerHits.add(e.getKey());
+            }
+        });
+
         if(debug) {
             System.out.println("fields: "+new Gson().toJson(hit.getFields()));
             System.out.println("source: "+new Gson().toJson(hit.getSource()));
@@ -306,9 +328,12 @@ public class DataSearcher {
         }
 
         hit.getSource().forEach((k,v)->{
-            hitToItemHelper(k,v,item.getDataMap(),nestedAttrNameMap);
+            if(!foundInnerHits.contains(k)) {
+                hitToItemHelper(k, v, item.getDataMap(), nestedAttrNameMap);
+            }
         });
         handleFields(item, hit);
+
 
         SearchHits innerHit = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
         if(innerHit != null) {
@@ -316,7 +341,9 @@ public class DataSearcher {
             if(innerHits != null && innerHits.length > 0) {
                 SearchHit firstHit = innerHits[0];
                 firstHit.getSource().forEach((k,v)->{
-                    hitToItemHelper(k,v,item.getDataMap(),nestedAttrNameMap);
+                    if(!foundInnerHits.contains(k)) {
+                        hitToItemHelper(k, v, item.getDataMap(), nestedAttrNameMap);
+                    }
                 });
                 handleFields(item, firstHit);
                 if(debug) {
@@ -337,6 +364,10 @@ public class DataSearcher {
     }
 
     private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap) {
+        handleHighlightFields(item,highlightFieldMap,null); // default is no prefix
+    }
+
+    private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap, String prefix) {
         if(highlightFieldMap != null) {
             highlightFieldMap.entrySet().forEach(e->{
                 Text[] fragments = e.getValue().getFragments();
@@ -345,15 +376,19 @@ public class DataSearcher {
                     for(Text fragment : fragments) {
                         sj.add(fragment.toString());
                     }
-                    item.addData(e.getKey()+Constants.HIGHLIGHTED, sj.toString());
+                    item.addData((prefix==null?e.getKey():(prefix+"."+e.getKey()))+Constants.HIGHLIGHTED, sj.toString());
                 }
             });
         }
     }
 
 
-
     private static void handleFields(Item item, SearchHit hit) {
+        // default no prefix
+        handleFields(item,hit,null);
+    }
+
+    private static void handleFields(Item item, SearchHit hit, String prefix) {
         hit.getFields().forEach((k,v)->{
             Object val = v.getValue();
             if(val!=null) {
@@ -362,7 +397,7 @@ public class DataSearcher {
                     long longValue = ((Number)val).longValue();
                     val = Instant.ofEpochMilli(longValue).atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ISO_DATE);
                 }
-                item.addData(k,val);
+                item.addData(prefix==null?k:(prefix+"."+k),val);
             }
         });
     }
