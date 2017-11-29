@@ -1,5 +1,6 @@
 package user_interface.ui_models.filters;
 
+import elasticsearch.DataSearcher;
 import j2html.tags.Tag;
 import lombok.Getter;
 import lombok.NonNull;
@@ -81,7 +82,7 @@ public class AbstractNestedFilter extends AbstractFilter {
         } else {
             System.out.print("Is nested");
             query = QueryBuilders.nestedQuery(getFullPrerequisite(), boolQuery, ScoreMode.Max)
-                    .innerHit(new InnerHitBuilder().);
+                    .innerHit(new InnerHitBuilder().setHighlightBuilder(DataSearcher.highlighter));
         }
         if(debug) System.out.println("Query for "+getName()+": "+query.toString());
         return query;

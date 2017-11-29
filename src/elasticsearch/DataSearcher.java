@@ -70,11 +70,11 @@ public class DataSearcher {
     private static final int PAGE_LIMIT = 10000;
     private static final boolean debug = false;
 
-    public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, boolean highlight) {
-        return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true, highlight);
+    public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, boolean highlight, boolean filterNestedObjects) {
+        return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true, highlight,filterNestedObjects);
     }
 
-    public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight) {
+    public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
         try {
             if(debug) {
                 attributes.forEach(attr->{
@@ -203,7 +203,7 @@ public class DataSearcher {
             request.set(request.get().setQuery(queryBuilder.get()));
 
             SearchResponse response = request.get().get();
-            return iterateOverSearchResults(response, hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore)), maxLimit, merge);
+            return iterateOverSearchResults(response, hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore, filterNestedObjects)), maxLimit, merge);
 
         } catch(Exception e) {
             e.printStackTrace();
@@ -303,36 +303,37 @@ public class DataSearcher {
         return (Item[]) ArrayUtils.addAll(v1, v2);
     }
 
-    private static Item hitToItem(SearchHit hit, Map<String,NestedAttribute> nestedAttrNameMap, boolean isUsingScore) {
+    private static Item hitToItem(SearchHit hit, Map<String,NestedAttribute> nestedAttrNameMap, boolean isUsingScore, boolean filterNestedObjects) {
         Item item = new Item(hit.getId());
 
         Set<String> foundInnerHits = new HashSet<>();
-
-        // try to get inner hits from nested attrs
-        nestedAttrNameMap.entrySet().forEach(e->{
-            SearchHits nestedHits = hit.getInnerHits().get(e.getKey());
-            if(nestedHits!=null) {
-                SearchHit[] innerHits = nestedHits.getHits();
-                if(innerHits != null && innerHits.length > 0) {
-                    for(SearchHit nestedHit : innerHits) {
-                        nestedHit.getSource().forEach((k,v) -> {
-                            hitToItemHelper(e.getKey()+"."+k, v, item.getDataMap(), nestedAttrNameMap);
-                        });
-                        handleFields(item,nestedHit,e.getKey(),Collections.emptySet());
-                        // handle highlight
-                        // test
-                        if(debug) {
-                            System.out.println(" Nested inner fields: " + new Gson().toJson(nestedHit.getFields()));
-                            System.out.println(" Nested inner source: " + new Gson().toJson(nestedHit.getSource()));
-                            System.out.println(" Nested inner highlighting: " + new Gson().toJson(nestedHit.getHighlightFields()));
+        if(filterNestedObjects) {
+            // try to get inner hits from nested attrs
+            nestedAttrNameMap.entrySet().forEach(e -> {
+                SearchHits nestedHits = hit.getInnerHits().get(e.getKey());
+                if (nestedHits != null) {
+                    SearchHit[] innerHits = nestedHits.getHits();
+                    if (innerHits != null && innerHits.length > 0) {
+                        for (SearchHit nestedHit : innerHits) {
+                            nestedHit.getSource().forEach((k, v) -> {
+                                hitToItemHelper(e.getKey() + "." + k, v, item.getDataMap(), nestedAttrNameMap);
+                            });
+                            handleFields(item, nestedHit, e.getKey(), Collections.emptySet());
+                            // handle highlight
+                            // test
+                            if (debug) {
+                                System.out.println(" Nested inner fields: " + new Gson().toJson(nestedHit.getFields()));
+                                System.out.println(" Nested inner source: " + new Gson().toJson(nestedHit.getSource()));
+                                System.out.println(" Nested inner highlighting: " + new Gson().toJson(nestedHit.getHighlightFields()));
+                            }
+                            handleHighlightFields(item, nestedHit.getHighlightFields(), e.getKey(), Collections.emptySet());
                         }
-                        handleHighlightFields(item, nestedHit.getHighlightFields(),e.getKey(),Collections.emptySet());
                     }
+                    foundInnerHits.add(e.getKey());
+                    e.getValue().getAttributes().forEach(attr -> foundInnerHits.add(attr.getFullName()));
                 }
-                foundInnerHits.add(e.getKey());
-                e.getValue().getAttributes().forEach(attr->foundInnerHits.add(attr.getFullName()));
-            }
-        });
+            });
+        }
 
         if(debug) {
             System.out.println("fields: "+new Gson().toJson(hit.getFields()));
