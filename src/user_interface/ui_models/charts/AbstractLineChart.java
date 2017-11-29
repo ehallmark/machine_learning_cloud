@@ -3,6 +3,7 @@ package user_interface.ui_models.charts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
+import elasticsearch.DataSearcher;
 import j2html.tags.Tag;
 import seeding.Constants;
 import spark.Request;
@@ -89,6 +90,8 @@ public class AbstractLineChart extends ChartAttribute {
             if (r != null) {
                 if (r instanceof Collection) {
                     return ((Collection) r).stream();
+                } else if (r.toString().contains(DataSearcher.ARRAY_SEPARATOR)) {
+                    return Stream.of(r.toString().split(DataSearcher.ARRAY_SEPARATOR));
                 } else {
                     return Stream.of(r);
                 }

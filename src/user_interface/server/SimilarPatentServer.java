@@ -1609,7 +1609,7 @@ public class SimilarPatentServer {
         System.out.println("Finished loading base finder.");
         System.out.println("Starting user_interface.server...");
         server();
-        System.out.println("Finished starting user_interface.server.");
+        System.out.println("Finished starting server.");
         GatherClassificationServer.StartServer();
         if(preLoad)Database.preLoad();
         long t2 = System.currentTimeMillis();

@@ -4,30 +4,23 @@ import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.NonNull;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.lucene.queryparser.xml.builders.BooleanQueryBuilder;
 import org.apache.lucene.search.join.ScoreMode;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.ClearScrollResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.lucene.search.function.CombineFunction;
-import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.InnerHitBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.join.query.HasParentQueryBuilder;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
@@ -35,16 +28,12 @@ import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
-import seeding.ai_db_updater.tools.Helper;
-import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
-import user_interface.ui_models.engines.AbstractSimilarityEngine;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractGreaterThanFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
-import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
 
@@ -53,19 +42,15 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import static user_interface.server.SimilarPatentServer.SORT_DIRECTION_FIELD;
-import static user_interface.server.SimilarPatentServer.extractString;
 
 /**
  * Created by Evan on 7/22/2017.
  */
 public class DataSearcher {
+    public static final String ARRAY_SEPARATOR = "; ";
     @Getter
     private static TransportClient client = MyClient.get();
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
@@ -386,7 +371,7 @@ public class DataSearcher {
         Map<String,Object> newMap = new HashMap<>();
         Collection<String> keys = maps.stream().flatMap(m->m.keySet().stream()).distinct().collect(Collectors.toList());
         keys.forEach(key->{
-            newMap.put(key, String.join("; ", maps.stream().map(m->m.getOrDefault(key," ").toString()).collect(Collectors.toList())).trim());
+            newMap.put(key, String.join(ARRAY_SEPARATOR, maps.stream().map(m->m.getOrDefault(key," ").toString()).collect(Collectors.toList())).trim());
         });
         return newMap;
     }
@@ -424,7 +409,7 @@ public class DataSearcher {
             } else {
                 // add as normal list
                 if (v != null) {
-                    hitToItemHelper(attrName, String.join("; ", (List<String>) ((List) v).stream().map(v2 -> v2.toString()).collect(Collectors.toList())), itemDataMap, nestedAttrNameMap);
+                    hitToItemHelper(attrName, String.join(ARRAY_SEPARATOR, (List<String>) ((List) v).stream().map(v2 -> v2.toString()).collect(Collectors.toList())), itemDataMap, nestedAttrNameMap);
                 }
             }
         } else {
