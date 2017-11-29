@@ -246,7 +246,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
 
     private void saveElasticSearch(List<String> ids, Map<String,Object> doc) {
         boolean debug = true; // TODO GET RID OF DEBUG!!
-        System.out.println("Full DOC: "+new Gson().toJson(doc));
+        //System.out.println("Full DOC: "+new Gson().toJson(doc));
         // get reel frame for id
         Map<String,Object> assignmentMap = (Map<String,Object>)doc.get(Constants.ASSIGNMENTS);
         if(assignmentMap!=null) {
@@ -289,23 +289,20 @@ public class USPTOAssignmentHandler extends NestedHandler {
                     mergeDataMapHelper(mergedDataMap, executionDate, Constants.EXECUTION_DATE);
                 }
 
-                Map<String,Object> correspondentMap = (Map<String,Object>)assignmentMap.get(Constants.CORRESPONDENT);
-                if(correspondentMap!=null) {
-                    Object correspondentName = correspondentMap.get(Constants.FULL_NAME);
-                    if(correspondentName!=null) {
-                        mergeDataMapHelper(mergedDataMap, correspondentName, Constants.CORRESPONDENT);
-                    }
-                    Object correspondentAddress1 = correspondentMap.get(Constants.ADDRESS_1);
-                    Object correspondentAddress2 = correspondentMap.get(Constants.ADDRESS_2);
-                    Object correspondentAddress3 = correspondentMap.get(Constants.ADDRESS_3);
-                    List<String> correspondentAddresses = Stream.of(correspondentAddress1,correspondentAddress2,correspondentAddress3)
-                            .filter(address->address!=null)
-                            .map(address->address.toString())
-                            .collect(Collectors.toList());
-                    if(correspondentAddresses.size() > 0) {
-                        String correspondentAddress = String.join(" ",correspondentAddresses);
-                        mergeDataMapHelper(mergedDataMap,correspondentAddress,Constants.CORRESPONDENT_ADDRESS);
-                    }
+                Object correspondentName = doc.get(Constants.FULL_NAME);
+                if(correspondentName!=null) {
+                    mergeDataMapHelper(mergedDataMap, correspondentName, Constants.CORRESPONDENT);
+                }
+                Object correspondentAddress1 = doc.get(Constants.ADDRESS_1);
+                Object correspondentAddress2 = doc.get(Constants.ADDRESS_2);
+                Object correspondentAddress3 = doc.get(Constants.ADDRESS_3);
+                List<String> correspondentAddresses = Stream.of(correspondentAddress1,correspondentAddress2,correspondentAddress3)
+                        .filter(address->address!=null)
+                        .map(address->address.toString())
+                        .collect(Collectors.toList());
+                if(correspondentAddresses.size() > 0) {
+                    String correspondentAddress = String.join(" ",correspondentAddresses);
+                    mergeDataMapHelper(mergedDataMap,correspondentAddress,Constants.CORRESPONDENT_ADDRESS);
                 }
 
 
