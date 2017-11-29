@@ -3,16 +3,10 @@ package assignee_normalization;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
-import info.debatty.java.stringsimilarity.*;
+import info.debatty.java.stringsimilarity.JaroWinkler;
 import info.debatty.java.stringsimilarity.interfaces.StringDistance;
-import models.keyphrase_prediction.KeywordModelRunner;
-import models.keyphrase_prediction.MultiStem;
-import models.keyphrase_prediction.scorers.TechnologyScorer;
-import models.keyphrase_prediction.stages.Stage;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import seeding.Constants;
 import seeding.Database;
-import tools.OpenMapBigRealMatrix;
 import util.Pair;
 
 import java.io.BufferedWriter;
@@ -22,8 +16,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Created by Evan on 10/8/2017.
@@ -294,7 +286,8 @@ public class NormalizeAssignees {
 
             // do manual cleans
             newWord = manualCleanse(newWord);
-            int portfolioSize = assigneeToPortfolioSizeMap.get(assignee);
+            int portfolioSize = assigneeToPortfolioSizeMap.getOrDefault(assignee,0);
+            if(portfolioSize==0) System.out.println("Warning: portfolio size of 0 for "+assignee);
             if(newWord.equals(assignee)) {
                 assigneeToPortfolioSizeMap.put(newWord, portfolioSize);
             } else {
