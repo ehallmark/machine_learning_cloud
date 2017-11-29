@@ -200,10 +200,12 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Latest Execution Date", Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("Execution Date", Constants.ASSIGNMENTS+"."+Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("First Name", Constants.FIRST_NAME);
-            humanAttrToJavaAttrMap.put("Number of Assignments", Constants.NUM_ASSIGNMENTS);
             humanAttrToJavaAttrMap.put("Number of Related Docs", Constants.NUM_RELATED_ASSETS);
             humanAttrToJavaAttrMap.put("Number of Forward Citations", Constants.NUM_BACKWARD_CITATIONS);
             humanAttrToJavaAttrMap.put("Last Name", Constants.LAST_NAME);
+            humanAttrToJavaAttrMap.put("Correspondent Address", Constants.CORRESPONDENT_ADDRESS);
+            humanAttrToJavaAttrMap.put("Correspondent Name", Constants.CORRESPONDENT);
+            humanAttrToJavaAttrMap.put("Number of Reel Frames", Constants.NUM_ASSIGNMENTS);
             humanAttrToJavaAttrMap.put("Country", Constants.COUNTRY);
             humanAttrToJavaAttrMap.put("City", Constants.CITY);
             humanAttrToJavaAttrMap.put("State", Constants.STATE);

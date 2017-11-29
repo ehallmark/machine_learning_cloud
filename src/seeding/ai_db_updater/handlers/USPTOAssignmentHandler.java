@@ -289,7 +289,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                 }
 
                 Object executionDate = assignmentMap.get(Constants.EXECUTION_DATE);
-                if (recordedDate!=null) {
+                if (executionDate!=null) {
                     mergeDataMapHelper(mergedDataMap, executionDate, Constants.EXECUTION_DATE);
                 }
 
