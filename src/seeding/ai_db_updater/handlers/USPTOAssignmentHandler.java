@@ -289,13 +289,13 @@ public class USPTOAssignmentHandler extends NestedHandler {
                     mergeDataMapHelper(mergedDataMap, executionDate, Constants.EXECUTION_DATE);
                 }
 
-                Object correspondentName = doc.get(Constants.FULL_NAME);
+                Object correspondentName = assignmentMap.get(Constants.FULL_NAME);
                 if(correspondentName!=null) {
                     mergeDataMapHelper(mergedDataMap, correspondentName, Constants.CORRESPONDENT);
                 }
-                Object correspondentAddress1 = doc.get(Constants.ADDRESS_1);
-                Object correspondentAddress2 = doc.get(Constants.ADDRESS_2);
-                Object correspondentAddress3 = doc.get(Constants.ADDRESS_3);
+                Object correspondentAddress1 = assignmentMap.get(Constants.ADDRESS_1);
+                Object correspondentAddress2 = assignmentMap.get(Constants.ADDRESS_2);
+                Object correspondentAddress3 = assignmentMap.get(Constants.ADDRESS_3);
                 List<String> correspondentAddresses = Stream.of(correspondentAddress1,correspondentAddress2,correspondentAddress3)
                         .filter(address->address!=null)
                         .map(address->address.toString())
