@@ -139,7 +139,9 @@ public class USPTOAssignmentHandler extends NestedHandler {
                                     .map(asset->assetToFilingMap.getApplicationDataMap().getOrDefault(asset,assetToFilingMap.getPatentDataMap().get(asset)))
                                     .filter(filing->filing!=null)
                                     .collect(Collectors.toList());
-                            saveElasticSearch(allFilings,toIngest);
+                            if(allFilings.size()>0) {
+                                saveElasticSearch(allFilings, toIngest);
+                            }
                         }
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
