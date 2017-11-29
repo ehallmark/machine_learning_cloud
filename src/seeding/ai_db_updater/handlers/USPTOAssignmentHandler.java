@@ -4,7 +4,6 @@ package seeding.ai_db_updater.handlers;
  * Created by ehallmark on 1/3/17.
  */
 
-import com.google.gson.Gson;
 import elasticsearch.DataIngester;
 import lombok.Setter;
 import org.bson.Document;
@@ -245,8 +244,6 @@ public class USPTOAssignmentHandler extends NestedHandler {
     }
 
     private void saveElasticSearch(List<String> ids, Map<String,Object> doc) {
-        boolean debug = true; // TODO GET RID OF DEBUG!!
-        //System.out.println("Full DOC: "+new Gson().toJson(doc));
         // get reel frame for id
         Map<String,Object> assignmentMap = (Map<String,Object>)doc.get(Constants.ASSIGNMENTS);
         if(assignmentMap!=null) {
@@ -254,7 +251,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
             if(reelFrame!=null) {
                 Document assetQuery = new Document("_id",new Document("$in", ids));
                 // update reel frames array
-                if (!debug) DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.REEL_FRAME, reelFrame, Constants.REEL_FRAME, reelFrame);
+                DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.REEL_FRAME, reelFrame, Constants.REEL_FRAME, reelFrame);
 
                 // update complex data
                 Map<String,Object> mergedDataMap = new HashMap<>();
@@ -307,11 +304,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
 
 
                 if (mergedDataMap.size()>0) {
-                    if(debug) {
-                        System.out.println("   FOUND: "+new Gson().toJson(mergedDataMap));
-                    } else {
-                        DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.ASSIGNMENTS, mergedDataMap, Constants.ASSIGNMENTS+"."+Constants.REEL_FRAME, reelFrame);
-                    }
+                    DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.ASSIGNMENTS, mergedDataMap, Constants.ASSIGNMENTS+"."+Constants.REEL_FRAME, reelFrame);
                 }
             }
         }
