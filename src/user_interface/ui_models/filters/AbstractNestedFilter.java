@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.InnerHitBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import spark.Request;
@@ -16,10 +17,8 @@ import user_interface.ui_models.attributes.NestedAttribute;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static j2html.TagCreator.div;
-import static j2html.TagCreator.label;
 
 /**
  * Created by Evan on 6/13/2017.
@@ -81,7 +80,8 @@ public class AbstractNestedFilter extends AbstractFilter {
             query = boolQuery; // hack for objects that haven't been mapped as nested yet (CompDB at the moment.)
         } else {
             System.out.print("Is nested");
-            query = QueryBuilders.nestedQuery(getFullPrerequisite(), boolQuery, ScoreMode.Max);
+            query = QueryBuilders.nestedQuery(getFullPrerequisite(), boolQuery, ScoreMode.Max)
+                    .innerHit(new InnerHitBuilder());
         }
         if(debug) System.out.println("Query for "+getName()+": "+query.toString());
         return query;
