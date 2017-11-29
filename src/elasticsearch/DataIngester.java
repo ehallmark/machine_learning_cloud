@@ -1,6 +1,5 @@
 package elasticsearch;
 
-import com.google.gson.Gson;
 import com.mongodb.async.client.MongoDatabase;
 import com.mongodb.client.model.*;
 import org.bson.Document;
@@ -136,16 +135,13 @@ public class DataIngester {
         addToUpdateMap(collection,model);
     }
 
-    public static void updateMongoArray(String collection, Document query, String arrayName, Object value) {
-        Map<String,Object> map = new HashMap<>();
-        map.put(arrayName,value);
-        Document updateDoc = new Document("$addToSet",new Document(map));
-        //Map<String,Object> ne = new HashMap<>();
-        //ne.put("$ne",constraintValue);
-        //query = query.append(constraintKey, ne);
-        System.out.println("UPDATE: "+new Gson().toJson(updateDoc));
+    public static void updateMongoArray(String collection, Document query, String arrayName, Object value, String constraintKey, Object constraintValue) {
+        Document updateDoc = new Document("$push",new Document(arrayName,value));
+        Map<String,Object> ne = new HashMap<>();
+        ne.put("$ne",constraintValue);
+        query = query.append(constraintKey, ne);
         WriteModel<Document> model = new UpdateManyModel<>(query, updateDoc);
-        //addToUpdateMap(collection,model);
+        addToUpdateMap(collection,model);
     }
 
     private static void waitForMongo() {

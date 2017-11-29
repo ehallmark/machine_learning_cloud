@@ -134,7 +134,12 @@ public class USPTOAssignmentHandler extends NestedHandler {
                         }
                         // for each patent or application
                         if(allAssets.size()>0) {
-                            saveElasticSearch(allAssets,toIngest);
+                            // get all filings
+                            List<String> allFilings = allAssets.stream()
+                                    .map(asset->assetToFilingMap.getApplicationDataMap().getOrDefault(asset,assetToFilingMap.getPatentDataMap().get(asset)))
+                                    .filter(filing->filing!=null)
+                                    .collect(Collectors.toList());
+                            saveElasticSearch(allFilings,toIngest);
                         }
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
@@ -251,7 +256,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
             if(reelFrame!=null) {
                 Document assetQuery = new Document("_id",new Document("$in", ids));
                 // update reel frames array
-                DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.REEL_FRAME, reelFrame);
+                DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.REEL_FRAME, reelFrame, Constants.REEL_FRAME, reelFrame);
 
                 // update complex data
                 Map<String,Object> mergedDataMap = new HashMap<>();
@@ -303,7 +308,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                 }
 
                 if (mergedDataMap.size()>0) {
-                    DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.ASSIGNMENTS, mergedDataMap);
+                    DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.ASSIGNMENTS, mergedDataMap, Constants.ASSIGNMENTS+"."+Constants.REEL_FRAME, reelFrame);
                 }
             }
         }
