@@ -1,7 +1,6 @@
 package user_interface.ui_models.attributes;
 
 import seeding.Constants;
-import user_interface.ui_models.attributes.computable_attributes.LatestExecutionDateAttribute;
 
 import java.util.Arrays;
 
@@ -11,7 +10,7 @@ import java.util.Arrays;
 public class AssignmentsNestedAttribute extends NestedAttribute {
 
     public AssignmentsNestedAttribute() {
-        super(Arrays.asList(new AssigneeNameAttribute(), new AssignorNameAttribute(), new RecordedDateAttribute(), new CorrespondentAddressAttribute(), new CorrespondentNameAttribute(), new LatestExecutionDateAttribute(), new ReelFrameAttribute(), new ConveyanceTextAttribute()));
+        super(Arrays.asList(new AssigneeNameAttribute(), new AssignorNameAttribute(), new RecordedDateAttribute(), new CorrespondentAddressAttribute(), new CorrespondentNameAttribute(), new ExecutionDateAttribute(), new ReelFrameAttribute(), new ConveyanceTextAttribute()));
     }
 
     @Override
