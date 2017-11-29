@@ -54,7 +54,7 @@ public class DataSearcher {
             .highlighterType("plain")
             .postTags("</span>")
             .preTags("<span style=\"background-color: yellow;\">")
-            .requireFieldMatch(false)
+            .requireFieldMatch(true)
             .highlightFilter(true)
             .field(Constants.CLAIMS+"."+Constants.CLAIM)
             .field(Constants.ABSTRACT)
