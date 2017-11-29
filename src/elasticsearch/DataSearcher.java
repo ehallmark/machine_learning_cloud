@@ -285,6 +285,7 @@ public class DataSearcher {
 
     private static void filterNestedObjects(Map<String,NestedAttribute> nestedAttrNameMap, SearchHit hit, Item item, Set<String> foundInnerHits) {
         // try to get inner hits from nested attrs
+        if(hit.getInnerHits()==null) return;
         nestedAttrNameMap.entrySet().forEach(e -> {
             SearchHits nestedHits = hit.getInnerHits().get(e.getKey());
             if (nestedHits != null) {
