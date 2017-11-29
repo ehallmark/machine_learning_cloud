@@ -98,7 +98,7 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
             rebuildPrerequisiteData();
         }
 
-        rebuildDatasets = rebuildDatasets || ! dataFolder.exists();
+        rebuildDatasets = rebuildDatasets || (runModels && ! dataFolder.exists());
 
         // STAGE 1 of pipeline: LOAD DATA
         if(rebuildDatasets) {

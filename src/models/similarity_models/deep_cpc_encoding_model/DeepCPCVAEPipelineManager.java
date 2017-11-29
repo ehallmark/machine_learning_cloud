@@ -163,10 +163,10 @@ public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<DataSetIte
     }
 
     public static void main(String[] args) throws Exception {
-        Nd4j.setDataType(DataBuffer.Type.FLOAT);
+        Nd4j.setDataType(DataBuffer.Type.HALF);
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
-        boolean runModels = true;
+        boolean runModels = false;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
         int nEpochs = 5;
