@@ -312,12 +312,13 @@ public class DataSearcher {
                         nestedHit.getSource().forEach((k,v) -> {
                             hitToItemHelper(e.getKey()+"."+k, v, item.getDataMap(), nestedAttrNameMap);
                         });
-                        handleFields(item,nestedHit,e.getKey());
+                        handleFields(item,nestedHit,e.getKey(),Collections.emptySet());
                         // handle highlight
-                        handleHighlightFields(item, nestedHit.getHighlightFields(),e.getKey());
+                        handleHighlightFields(item, nestedHit.getHighlightFields(),e.getKey(),Collections.emptySet());
                     }
                 }
                 foundInnerHits.add(e.getKey());
+                e.getValue().getAttributes().forEach(attr->foundInnerHits.add(attr.getFullName()));
             }
         });
 
@@ -332,7 +333,7 @@ public class DataSearcher {
                 hitToItemHelper(k, v, item.getDataMap(), nestedAttrNameMap);
             }
         });
-        handleFields(item, hit);
+        handleFields(item, hit, foundInnerHits);
 
 
         SearchHits innerHit = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
@@ -345,13 +346,13 @@ public class DataSearcher {
                         hitToItemHelper(k, v, item.getDataMap(), nestedAttrNameMap);
                     }
                 });
-                handleFields(item, firstHit);
+                handleFields(item, firstHit, foundInnerHits);
                 if(debug) {
                     System.out.println("  inner fields: " + new Gson().toJson(firstHit.getFields()));
                     System.out.println("  inner source: " + new Gson().toJson(firstHit.getSource()));
                 }
                 // handle highlight
-                handleHighlightFields(item, firstHit.getHighlightFields());
+                handleHighlightFields(item, firstHit.getHighlightFields(), foundInnerHits);
             }
         }
         if(isUsingScore) {
@@ -359,45 +360,49 @@ public class DataSearcher {
         }
 
         // override highlights if any
-        handleHighlightFields(item, hit.getHighlightFields());
+        handleHighlightFields(item, hit.getHighlightFields(), foundInnerHits);
         return item;
     }
 
-    private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap) {
-        handleHighlightFields(item,highlightFieldMap,null); // default is no prefix
+    private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap, Set<String> alreadyFound) {
+        handleHighlightFields(item,highlightFieldMap,null, alreadyFound); // default is no prefix
     }
 
-    private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap, String prefix) {
+    private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap, String prefix, Set<String> alreadyFound) {
         if(highlightFieldMap != null) {
             highlightFieldMap.entrySet().forEach(e->{
-                Text[] fragments = e.getValue().getFragments();
-                if(fragments!=null) {
-                    StringJoiner sj = new StringJoiner("<br />","","");
-                    for(Text fragment : fragments) {
-                        sj.add(fragment.toString());
+                if(!alreadyFound.contains(e.getKey())) {
+                    Text[] fragments = e.getValue().getFragments();
+                    if (fragments != null) {
+                        StringJoiner sj = new StringJoiner("<br />", "", "");
+                        for (Text fragment : fragments) {
+                            sj.add(fragment.toString());
+                        }
+                        item.addData((prefix == null ? e.getKey() : (prefix + "." + e.getKey())) + Constants.HIGHLIGHTED, sj.toString());
                     }
-                    item.addData((prefix==null?e.getKey():(prefix+"."+e.getKey()))+Constants.HIGHLIGHTED, sj.toString());
                 }
             });
         }
     }
 
 
-    private static void handleFields(Item item, SearchHit hit) {
+    private static void handleFields(Item item, SearchHit hit, Set<String> alreadyFound) {
         // default no prefix
-        handleFields(item,hit,null);
+        handleFields(item,hit,null,alreadyFound);
     }
 
-    private static void handleFields(Item item, SearchHit hit, String prefix) {
+    private static void handleFields(Item item, SearchHit hit, String prefix, Set<String> alreadyFound) {
         hit.getFields().forEach((k,v)->{
             Object val = v.getValue();
-            if(val!=null) {
-                // check for date field
-                if(k.endsWith("Date") && val instanceof Number) {
-                    long longValue = ((Number)val).longValue();
-                    val = Instant.ofEpochMilli(longValue).atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ISO_DATE);
+            if(!alreadyFound.contains(k)) {
+                if (val != null) {
+                    // check for date field
+                    if (k.endsWith("Date") && val instanceof Number) {
+                        long longValue = ((Number) val).longValue();
+                        val = Instant.ofEpochMilli(longValue).atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ISO_DATE);
+                    }
+                    item.addData(prefix == null ? k : (prefix + "." + k), val);
                 }
-                item.addData(prefix==null?k:(prefix+"."+k),val);
             }
         });
     }
