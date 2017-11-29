@@ -48,6 +48,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         super(pipelineManager,modelName,maxCpcDepth);
     }
 
+    @Override
     public Map<String,Integer> getCpcToIdxMap() {
         if(cpcToIdxMap==null) {
             RecursiveTask<CPCHierarchy> hierarchyTask = new RecursiveTask<CPCHierarchy>() {
@@ -67,6 +68,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
     }
 
 
+    @Override
     public void train(int nEpochs) {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();

@@ -81,6 +81,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     }
 
 
+    @Override
     public synchronized Map<String,? extends Collection<CPC>> getCPCMap() {
         if(cpcMap==null) {
             getHierarchy();
@@ -134,10 +135,12 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     }
 
 
+    @Override
     protected DataSetIterator getRawIterator(List<String> assets, boolean test) {
         boolean shuffle = !test;
         return new CPCDataSetIterator(assets,shuffle,BATCH_SIZE,cpcMap,getCpcToIdxMap());
     }
+
 
     public Map<String,Integer> getCpcToIdxMap() {
         if(cpcToIdxMap==null) {
