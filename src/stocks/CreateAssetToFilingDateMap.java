@@ -48,6 +48,7 @@ public class CreateAssetToFilingDateMap {
                     return null;
                 },
                 false,
+                false,
                 false
         );
 

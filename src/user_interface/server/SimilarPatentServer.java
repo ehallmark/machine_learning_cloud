@@ -99,6 +99,7 @@ public class SimilarPatentServer {
     public static final String RANDOM_TOKEN = "<><><>";
     public static final String SUPER_USER = "form_creator";
     public static final String USE_HIGHLIGHTER_FIELD = "useHighlighter";
+    public static final String FILTER_NESTED_OBJECTS_FIELD = "filterNestedObjects";
     public static final String ANALYST_USER = "analyst";
     public static final String INTERNAL_USER = "internal";
     public static final List<String> USER_ROLES = Arrays.asList(ANALYST_USER,INTERNAL_USER);
@@ -1422,6 +1423,8 @@ public class SimilarPatentServer {
                                                                 div().withClass("col-12 attributeElement").with(
                                                                         h5("Highlighting").attr("style","width: 100%;").with(
                                                                                 input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
+                                                                        ), h5("Filter Nested Attributes").attr("style","width: 100%;").with(
+                                                                                input().withId("main-options-"+FILTER_NESTED_OBJECTS_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(FILTER_NESTED_OBJECTS_FIELD)
                                                                         )
                                                                 )
                                                         ),
@@ -1614,7 +1617,7 @@ public class SimilarPatentServer {
         if(preLoad)Database.preLoad();
         long t2 = System.currentTimeMillis();
         // perform quick search
-        DataSearcher.searchForAssets(attributesMap.values(),Collections.emptyList(),Constants.AI_VALUE, SortOrder.DESC,100,getNestedAttrMap(),false);
+        DataSearcher.searchForAssets(attributesMap.values(),Collections.emptyList(),Constants.AI_VALUE, SortOrder.DESC,100,getNestedAttrMap(),false,false);
         System.out.println("Time to start user_interface.server: "+ ((t2-t1)/(1000*60)) + " minutes");
     }
 }

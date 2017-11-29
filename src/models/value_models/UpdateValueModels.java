@@ -1,20 +1,17 @@
 package models.value_models;
 
-import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
-import models.value_models.graphical.UpdateGraphicalModels;
 import models.value_models.graphical.WIPOValueModel;
 import models.value_models.regression.AIValueModel;
-import seeding.Database;
-import user_interface.ui_models.attributes.AssetNumberAttribute;
-import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.AssetNumberAttribute;
 import user_interface.ui_models.attributes.ResultTypeAttribute;
-import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 import user_interface.ui_models.attributes.WIPOTechnologyAttribute;
+import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
+import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -22,9 +19,6 @@ import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
 
 import java.util.*;
-import java.util.concurrent.Future;
-import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -84,7 +78,7 @@ public class UpdateValueModels {
         } else {
             filters = Arrays.asList(new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, onlyUpdateAssets));
         }
-        DataSearcher.searchForAssets(toSearchFor,filters,null, SortOrder.ASC, 20000000,SimilarPatentServer.getNestedAttrMap(), transformer, false,false);
+        DataSearcher.searchForAssets(toSearchFor,filters,null, SortOrder.ASC, 20000000,SimilarPatentServer.getNestedAttrMap(), transformer, false,false,false);
         aiValueModel.save();
     }
 }

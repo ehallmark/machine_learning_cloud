@@ -2,21 +2,17 @@ package user_interface.ui_models.engines;
 
 import elasticsearch.DataSearcher;
 import lombok.Getter;
-import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.sort.SortOrder;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
-import seeding.Database;
-import user_interface.server.SimilarPatentServer;
-import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
-import user_interface.ui_models.attributes.*;
+import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.AssetNumberAttribute;
+import user_interface.ui_models.attributes.DependentAttribute;
+import user_interface.ui_models.attributes.LatestAssigneeNestedAttribute;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
-import user_interface.ui_models.filters.AdvancedKeywordFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -105,8 +101,9 @@ public class SimilarityEngineController {
         }).collect(Collectors.toList());
 
         boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
+        boolean filterNestedObjects = extractBool(req, FILTER_NESTED_OBJECTS_FIELD);
 
-        List<Item> scope = DataSearcher.searchForAssets(topLevelAttributes, preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap(), useHighlighter);
+        List<Item> scope = DataSearcher.searchForAssets(topLevelAttributes, preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap(), useHighlighter, filterNestedObjects);
         System.out.println("Elasticsearch found: "+scope.size()+ " assets");
 
         portfolioList = new PortfolioList(scope);

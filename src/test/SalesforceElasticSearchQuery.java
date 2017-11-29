@@ -1,12 +1,9 @@
 package test;
 
-import com.google.gson.Gson;
 import elasticsearch.DataSearcher;
 import j2html.tags.Tag;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import spark.Request;
@@ -15,12 +12,13 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.filters.AbstractIncludeFilter;
-import user_interface.ui_models.portfolios.items.Item;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
@@ -102,7 +100,7 @@ public class SalesforceElasticSearchQuery {
                 e.printStackTrace();
             }
             return null;
-        },false,false);
+        },false,false,false);
 
         writer.flush();
         writer.close();

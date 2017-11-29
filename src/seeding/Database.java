@@ -1,14 +1,13 @@
 package seeding;
 
+import assignee_normalization.AssigneeTrimmer;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
-
 import elasticsearch.DataSearcher;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.compdb.CreateCompDBAssigneeTransactionData;
-import assignee_normalization.AssigneeTrimmer;
 import tools.ClassCodeHandler;
 import user_interface.ui_models.attributes.AssetNumberAttribute;
 import user_interface.ui_models.attributes.ReelFrameAttribute;
@@ -19,7 +18,6 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.io.*;
 import java.sql.*;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -811,7 +809,7 @@ public class Database {
 		// get Reelframes Map
 		Set<String> allCompDBReelFrames = getCompDBReelFrames();
 		// Collect patent numbers
-		List<Item> items = DataSearcher.searchForAssets(Arrays.asList(new AssetNumberAttribute(), new ReelFrameAttribute()),Arrays.asList(new AbstractIncludeFilter(new ReelFrameAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, allCompDBReelFrames)),null, SortOrder.ASC, 100000, Collections.emptyMap(),false);
+		List<Item> items = DataSearcher.searchForAssets(Arrays.asList(new AssetNumberAttribute(), new ReelFrameAttribute()),Arrays.asList(new AbstractIncludeFilter(new ReelFrameAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, allCompDBReelFrames)),null, SortOrder.ASC, 100000, Collections.emptyMap(),false,false);
 		Map<String,Collection<String>> reelFrameToAssetsMap = Collections.synchronizedMap(new HashMap<>());
 		items.parallelStream().forEach(item->{
 			Object reelFrameStr = item.getData(Constants.REEL_FRAME);
