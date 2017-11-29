@@ -301,9 +301,9 @@ public class DataSearcher {
                 if (innerHits != null && innerHits.length > 0) {
                     for (SearchHit nestedHit : innerHits) {
                         nestedHit.getSource().forEach((k, v) -> {
-                            hitToItemHelper(e.getKey() + "." + k, v, item.getDataMap(), nestedAttrNameMap);
+                            hitToItemHelper(e.getKey() + "." + k, v, item.getDataMap(), nestedAttrNameMap, true);
                         });
-                        handleFields(item, nestedHit, Collections.emptySet());
+                        handleFields(item, nestedHit, Collections.emptySet(), true);
                         // handle highlight
                         // test
                         if (debug) {
@@ -311,7 +311,7 @@ public class DataSearcher {
                             System.out.println(" Nested inner source: " + new Gson().toJson(nestedHit.getSource()));
                             System.out.println(" Nested inner highlighting: " + new Gson().toJson(nestedHit.getHighlightFields()));
                         }
-                        handleHighlightFields(item, nestedHit.getHighlightFields(), Collections.emptySet());
+                        handleHighlightFields(item, nestedHit.getHighlightFields(), Collections.emptySet(), true);
                     }
                 }
                 foundInnerHits.add(e.getKey());
@@ -336,10 +336,10 @@ public class DataSearcher {
 
         hit.getSource().forEach((k,v)->{
             if(!foundInnerHits.contains(k)) {
-                hitToItemHelper(k, v, item.getDataMap(), nestedAttrNameMap);
+                hitToItemHelper(k, v, item.getDataMap(), nestedAttrNameMap, false);
             }
         });
-        handleFields(item, hit, foundInnerHits);
+        handleFields(item, hit, foundInnerHits, false);
 
 
         SearchHits innerHit = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
@@ -355,11 +355,11 @@ public class DataSearcher {
                 // get regular attrs
                 firstHit.getSource().forEach((k,v)->{
                     if(!foundInnerHits.contains(k)) {
-                        hitToItemHelper(k, v, item.getDataMap(), nestedAttrNameMap);
+                        hitToItemHelper(k, v, item.getDataMap(), nestedAttrNameMap, false);
                     }
                 });
-                handleFields(item, firstHit, foundInnerHits);
-                handleHighlightFields(item, firstHit.getHighlightFields(), foundInnerHits);
+                handleFields(item, firstHit, foundInnerHits, false);
+                handleHighlightFields(item, firstHit.getHighlightFields(), foundInnerHits, false);
                 // if(debug) {
                //     System.out.println(" Filings inner fields: " + new Gson().toJson(firstHit.getFields()));
                //     System.out.println(" Filings inner source: " + new Gson().toJson(firstHit.getSource()));
@@ -372,12 +372,12 @@ public class DataSearcher {
         }
 
         // override highlights if any
-        handleHighlightFields(item, hit.getHighlightFields(), foundInnerHits);
+        handleHighlightFields(item, hit.getHighlightFields(), foundInnerHits, false);
         return item;
     }
 
 
-    private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap, Set<String> alreadyFound) {
+    private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap, Set<String> alreadyFound, boolean append) {
         if(highlightFieldMap != null) {
             highlightFieldMap.entrySet().forEach(e->{
                 if(!alreadyFound.contains(e.getKey())) {
@@ -387,7 +387,11 @@ public class DataSearcher {
                         for (Text fragment : fragments) {
                             sj.add(fragment.toString());
                         }
-                        item.addData( e.getKey() + Constants.HIGHLIGHTED, sj.toString());
+                        if(append && item.getDataMap().containsKey(e.getKey() + Constants.HIGHLIGHTED)) {
+                            item.addData(e.getKey() + Constants.HIGHLIGHTED, String.join(ARRAY_SEPARATOR, item.getData(e.getKey() + Constants.HIGHLIGHTED).toString(), sj.toString()));
+                        } else {
+                            item.addData( e.getKey() + Constants.HIGHLIGHTED, sj.toString());
+                        }
                     }
                 }
             });
@@ -395,7 +399,7 @@ public class DataSearcher {
     }
 
 
-    private static void handleFields(Item item, SearchHit hit, Set<String> alreadyFound) {
+    private static void handleFields(Item item, SearchHit hit, Set<String> alreadyFound, boolean append) {
         Map<String,SearchHitField> searchHitFieldMap = hit.getFields();
         if(searchHitFieldMap==null) return;
 
@@ -408,7 +412,11 @@ public class DataSearcher {
                         long longValue = ((Number) val).longValue();
                         val = Instant.ofEpochMilli(longValue).atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ISO_DATE);
                     }
-                    item.addData(k, val);
+                    if(append && item.getDataMap().containsKey(k)) {
+                        item.addData(k, String.join(ARRAY_SEPARATOR, item.getData(k).toString(), val.toString()));
+                    } else {
+                        item.addData(k, val);
+                    }
                 }
             }
         });
@@ -423,7 +431,8 @@ public class DataSearcher {
         return newMap;
     }
 
-    private static void hitToItemHelper(String attrName, Object v, Map<String,Object> itemDataMap, Map<String,NestedAttribute> nestedAttrNameMap) {
+    // set append=true to append singleton values instead of replacing them
+    private static void hitToItemHelper(String attrName, Object v, Map<String,Object> itemDataMap, Map<String,NestedAttribute> nestedAttrNameMap, boolean append) {
         if (v == null) return;
         if (v instanceof Map) {
             // get attr
@@ -432,7 +441,7 @@ public class DataSearcher {
                 for (AbstractAttribute nestedAttr : attr.getAttributes()) {
                     Object v2 = ((Map) v).get(nestedAttr.getName());
                     if (v2 != null) {
-                        hitToItemHelper(attrName + "." + nestedAttr.getName(), v2, itemDataMap, nestedAttrNameMap);
+                        hitToItemHelper(attrName + "." + nestedAttr.getName(), v2, itemDataMap, nestedAttrNameMap, append);
                     }
                 }
             }
@@ -445,7 +454,7 @@ public class DataSearcher {
                 for (Object obj : (List) v) {
                     if (obj instanceof Map) {
                         Map<String,Object> nestedDataMap = new HashMap<>();
-                        hitToItemHelper(attrName, obj, nestedDataMap, nestedAttrNameMap);
+                        hitToItemHelper(attrName, obj, nestedDataMap, nestedAttrNameMap, append);
                         nestedDataMaps.add(nestedDataMap);
                     }
                 }
@@ -456,11 +465,15 @@ public class DataSearcher {
             } else {
                 // add as normal list
                 if (v != null) {
-                    hitToItemHelper(attrName, String.join(ARRAY_SEPARATOR, (List<String>) ((List) v).stream().map(v2 -> v2.toString()).collect(Collectors.toList())), itemDataMap, nestedAttrNameMap);
+                    hitToItemHelper(attrName, String.join(ARRAY_SEPARATOR, (List<String>) ((List) v).stream().map(v2 -> v2.toString()).collect(Collectors.toList())), itemDataMap, nestedAttrNameMap, append);
                 }
             }
         } else {
-            itemDataMap.put(attrName, v);
+            if(append && itemDataMap.containsKey(attrName)) {
+                itemDataMap.put(attrName, String.join(ARRAY_SEPARATOR, itemDataMap.get(attrName).toString(), v.toString()));
+            } else {
+                itemDataMap.put(attrName, v);
+            }
         }
     }
 }
