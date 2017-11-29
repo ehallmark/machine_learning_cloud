@@ -41,9 +41,9 @@ import java.util.stream.Stream;
 public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<INDArray> {
     public static final int VECTOR_SIZE = 32;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"cpc_deep_vae_nn_model_data");
-    private Map<String,Integer> cpcToIdxMap;
-    private CPCVAEPipelineManager pipelineManager;
-    private int maxCPCDepth;
+    protected Map<String,Integer> cpcToIdxMap;
+    protected CPCVAEPipelineManager pipelineManager;
+    protected int maxCPCDepth;
     public CPCVariationalAutoEncoderNN(CPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {
         super(modelName);
         this.pipelineManager= pipelineManager;
@@ -70,10 +70,10 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
 
     @Override
     public Map<String,INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        return encode(assets,assignees,classCodes,pipelineManager.getCPCMap(),pipelineManager.getBatchSize());
+        return encodeVAE(assets,assignees,classCodes,pipelineManager.getCPCMap(),getCpcToIdxMap(),pipelineManager.getHierarchy(),net,pipelineManager.getBatchSize());
     }
 
-    private Map<String,INDArray> encode(List<String> assets, List<String> assignees, List<String> classCodes, Map<String, ? extends Collection<CPC>> cpcMap, int batchSize) {
+    public static Map<String,INDArray> encodeVAE(List<String> assets, List<String> assignees, List<String> classCodes, Map<String, ? extends Collection<CPC>> cpcMap, Map<String,Integer> cpcToIdxMap, CPCHierarchy hierarchy, MultiLayerNetwork net, int batchSize) {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         Map<String,INDArray> assetToEncodingMap = Collections.synchronizedMap(new HashMap<>());
@@ -81,8 +81,6 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         AtomicInteger idx = new AtomicInteger(0);
 
         // cpcs
-        CPCHierarchy hierarchy = pipelineManager.getHierarchy();
-        Map<String,Integer> cpcToIdxMap = getCpcToIdxMap();
         idx.set(0);
         AtomicInteger noData = new AtomicInteger(0);
         classCodes.parallelStream().forEach(cpc->{
@@ -102,7 +100,7 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         System.out.println("Total num cpc errors: "+noData.get());
 
         assets = assets.stream().filter(asset->cpcMap.containsKey(asset)).collect(Collectors.toList());
-        CPCDataSetIterator iterator = new CPCDataSetIterator(assets,false,batchSize,cpcMap,getCpcToIdxMap());
+        CPCDataSetIterator iterator = new CPCDataSetIterator(assets,false,batchSize,cpcMap,cpcToIdxMap);
         idx.set(0);
         while(iterator.hasNext()) {
             DataSet ds = iterator.next();

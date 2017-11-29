@@ -30,18 +30,24 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<DataSetIterato
     private static final int BATCH_SIZE = 128;
     private static final File INPUT_DATA_FOLDER = new File("cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"cpc_vae_predictions/predictions_map.jobj");
-    private Map<String,? extends Collection<CPC>> cpcMap;
+    protected Map<String,? extends Collection<CPC>> cpcMap;
     @Setter
-    private CPCHierarchy hierarchy;
-    private Map<String,Integer> cpcToIdxMap;
-    private String modelName;
+    protected CPCHierarchy hierarchy;
+    protected Map<String,Integer> cpcToIdxMap;
+    protected String modelName;
+    protected int maxCPCDepth;
     public CPCVAEPipelineManager(String modelName) {
-        super(INPUT_DATA_FOLDER,PREDICTION_DATA_FILE);
+        this(modelName,INPUT_DATA_FOLDER,PREDICTION_DATA_FILE,MAX_CPC_DEPTH);
+    }
+
+    protected CPCVAEPipelineManager(String modelName, File inputDataFolder, File predictionDataFile, int maxCPCDepth) {
+        super(inputDataFolder,predictionDataFile);
         this.modelName=modelName;
+        this.maxCPCDepth=maxCPCDepth;
     }
 
     protected void initModel(boolean forceRecreateModels) {
-        model = new CPCVariationalAutoEncoderNN(this, modelName, MAX_CPC_DEPTH);
+        model = new CPCVariationalAutoEncoderNN(this, modelName, maxCPCDepth);
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
@@ -99,7 +105,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<DataSetIterato
                             .filter(cpc->cpc!=null)
                             .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
                             .distinct()
-                            .filter(cpc -> cpc.getNumParts() <= MAX_CPC_DEPTH)
+                            .filter(cpc -> cpc.getNumParts() <= maxCPCDepth)
                             .filter(cpc -> cpcToIdxMap==null||cpcToIdxMap.containsKey(cpc.getName()))
                             .collect(Collectors.toSet())))
                     .entrySet().parallelStream()
@@ -121,7 +127,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<DataSetIterato
             }
         };
 
-        cpcToIdxMap = CPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,MAX_CPC_DEPTH);
+        cpcToIdxMap = CPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,maxCPCDepth);
 
         getCPCMap();
         System.out.println("Loaded cpcMap");

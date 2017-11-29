@@ -9,6 +9,7 @@ import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.NDArrayHelper;
+import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -39,16 +40,12 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 10/26/17.
  */
-public class DeepCPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<INDArray> {
+public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN {
     public static final int VECTOR_SIZE = 32;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"deep_cpc_deep_vae_nn_model_data");
-    private Map<String,Integer> cpcToIdxMap;
-    private DeepCPCVAEPipelineManager pipelineManager;
-    private int maxCPCDepth;
+
     public DeepCPCVariationalAutoEncoderNN(DeepCPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {
-        super(modelName);
-        this.pipelineManager= pipelineManager;
-        this.maxCPCDepth=maxCpcDepth;
+        super(pipelineManager,modelName,maxCpcDepth);
     }
 
     public Map<String,Integer> getCpcToIdxMap() {
@@ -59,7 +56,7 @@ public class DeepCPCVariationalAutoEncoderNN extends NeuralNetworkPredictionMode
                     return pipelineManager.getHierarchy();
                 }
             };
-            cpcToIdxMap = DeepCPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,maxCPCDepth,pipelineManager.getMinCPCOccurrences());
+            cpcToIdxMap = DeepCPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,maxCPCDepth,((DeepCPCVAEPipelineManager)pipelineManager).getMinCPCOccurrences());
         }
         return cpcToIdxMap;
     }
@@ -68,53 +65,6 @@ public class DeepCPCVariationalAutoEncoderNN extends NeuralNetworkPredictionMode
     public File getModelBaseDirectory() {
         return BASE_DIR;
     }
-
-    @Override
-    public Map<String,INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        return encode(assets,assignees,pipelineManager.getCPCMap(),pipelineManager.getBatchSize());
-    }
-
-    public Map<String,INDArray> encode(List<String> assets, List<String> assignees, Map<String, ? extends Collection<CPC>> cpcMap, int batchSize) {
-        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
-                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
-        assets = assets.stream().filter(asset->cpcMap.containsKey(asset)).collect(Collectors.toList());
-        CPCDataSetIterator iterator = new CPCDataSetIterator(assets,false,batchSize,cpcMap,getCpcToIdxMap());
-        AtomicInteger idx = new AtomicInteger(0);
-        Map<String,INDArray> assetToEncodingMap = Collections.synchronizedMap(new HashMap<>());
-        while(iterator.hasNext()) {
-            System.out.println(idx.get());
-            DataSet ds = iterator.next();
-            INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
-            for(int i = 0; i < encoding.rows() && idx.get()<assets.size(); i++) {
-                INDArray vector = encoding.getRow(i);
-                assetToEncodingMap.put(assets.get(idx.getAndIncrement()), vector);
-            }
-        }
-        // assignees
-        AtomicInteger cnt = new AtomicInteger(0);
-        assignees.parallelStream().forEach(assignee->{
-            List<INDArray> vectors = new ArrayList<>(Stream.of(
-                    Database.selectPatentNumbersFromExactAssignee(assignee),
-                    Database.selectApplicationNumbersFromExactAssignee(assignee)
-            ).flatMap(portfolio->portfolio.stream()).map(asset->{
-                return assetToEncodingMap.get(asset);
-            }).filter(vec->vec!=null).collect(Collectors.toList()));
-
-            if(vectors.isEmpty()) return;
-
-            if(vectors.size()>1000) {
-                Collections.shuffle(vectors);
-                vectors = vectors.subList(0,1000);
-            }
-
-            INDArray assigneeVec = Nd4j.vstack(vectors).mean(0);
-            assetToEncodingMap.put(assignee, assigneeVec);
-            if (cnt.getAndIncrement() % 10000 == 9999) {
-                System.out.println("Vectorized " + cnt.get() + " assignees.");
-            }
-        });
-        return assetToEncodingMap;
-    };
 
 
     public void train(int nEpochs) {

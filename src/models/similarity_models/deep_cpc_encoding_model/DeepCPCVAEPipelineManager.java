@@ -8,6 +8,7 @@ import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Setter;
 import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
+import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -25,25 +26,21 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
+public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     public static final String MODEL_NAME = "deep_cpc_autoencoder";
     public static final int MAX_CPC_DEPTH = 5;
     private static final int BATCH_SIZE = 128;
     private static final int MIN_CPC_APPEARANCES = 200;
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_vae_predictions/predictions_map.jobj");
-    private Map<String,? extends Collection<CPC>> cpcMap;
-    @Setter
-    private CPCHierarchy hierarchy;
-    private Map<String,Integer> cpcToIdxMap;
-    private String modelName;
+
     public DeepCPCVAEPipelineManager(String modelName) {
-        super(INPUT_DATA_FOLDER,PREDICTION_DATA_FILE);
-        this.modelName=modelName;
+        super(modelName,INPUT_DATA_FOLDER,PREDICTION_DATA_FILE,MAX_CPC_DEPTH);
     }
 
+    @Override
     protected void initModel(boolean forceRecreateModels) {
-        model = new DeepCPCVariationalAutoEncoderNN(this, modelName, MAX_CPC_DEPTH);
+        model = new DeepCPCVariationalAutoEncoderNN(this, modelName, maxCPCDepth);
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
@@ -83,13 +80,6 @@ public class DeepCPCVAEPipelineManager extends DefaultPipelineManager<DataSetIte
         return BATCH_SIZE;
     }
 
-    public synchronized CPCHierarchy getHierarchy() {
-        if(hierarchy==null) {
-            hierarchy = new CPCHierarchy();
-            hierarchy.loadGraph();
-        }
-        return hierarchy;
-    }
 
     public synchronized Map<String,? extends Collection<CPC>> getCPCMap() {
         if(cpcMap==null) {
