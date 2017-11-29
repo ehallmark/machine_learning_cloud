@@ -269,20 +269,15 @@ public class DataSearcher {
                 System.out.println("Using custom score component on filings: " + sortScript);
                 QueryBuilder query = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(new Script(ScriptType.INLINE, "expression", sortScript, Collections.emptyMap())));
                 if(attribute.getParent() != null && !attribute.getParent().isObject()) {
-                    System.out.println("Is nested");
                     queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), query, ScoreMode.Avg)));
                 } else {
-                    System.out.println("Not nested");
                     queryBuilder.set(queryBuilder.get().must(query));
                 }
             } else {
-                System.out.println("Adding score field value factor for: " + attribute.getFullName());
                 QueryBuilder query = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.fieldValueFactorFunction(attribute.getFullName()).missing(0));
                 if(attribute.getParent() != null && !attribute.getParent().isObject()) {
-                    System.out.println("Is nested");
                     queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), query, ScoreMode.Avg)));
                 } else {
-                    System.out.println("Not nested");
                     queryBuilder.set(queryBuilder.get().must(query));
                 }
             }
@@ -350,13 +345,12 @@ public class DataSearcher {
                     }
                 });
                 handleFields(item, firstHit, foundInnerHits);
-                if(debug) {
-                    System.out.println(" Filings inner fields: " + new Gson().toJson(firstHit.getFields()));
-                    System.out.println(" Filings inner source: " + new Gson().toJson(firstHit.getSource()));
-                    System.out.println(" Filings inner highlighting: " + new Gson().toJson(firstHit.getHighlightFields()));
-                }
-                // handle highlight
                 handleHighlightFields(item, firstHit.getHighlightFields(), foundInnerHits);
+                // if(debug) {
+               //     System.out.println(" Filings inner fields: " + new Gson().toJson(firstHit.getFields()));
+               //     System.out.println(" Filings inner source: " + new Gson().toJson(firstHit.getSource()));
+               //     System.out.println(" Filings inner highlighting: " + new Gson().toJson(firstHit.getHighlightFields()));
+               // }
             }
         }
         if(isUsingScore) {
