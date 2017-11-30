@@ -19,7 +19,6 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Constants;
@@ -33,7 +32,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
-import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
+import static data_pipeline.optimize.nn_optimization.NNOptimizer.newGravesLSTMLayer;
+import static data_pipeline.optimize.nn_optimization.NNOptimizer.newRNNOutputLayer;
 
 /**
  * Created by Evan on 11/30/2017.
@@ -205,11 +205,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
 
 
     private double test(DataSetIterator iterator, ComputationGraph net) {
-        Evaluation eval = new Evaluation(2);
-        while(iterator.hasNext()) {
-            DataSet next = iterator.next();
-            eval.evalTimeSeries(next.getLabels(), net.output(false, next.getFeatureMatrix())[0],next.getLabelsMaskArray());
-        }
+        Evaluation eval = net.evaluate(iterator);
         System.out.println(eval.stats());
         return 1d - eval.f1();
     }
