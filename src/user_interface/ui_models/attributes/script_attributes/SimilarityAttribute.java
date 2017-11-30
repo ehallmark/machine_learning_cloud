@@ -1,7 +1,5 @@
 package user_interface.ui_models.attributes.script_attributes;
 
-import models.similarity_models.AbstractSimilarityModel;
-
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -14,10 +12,10 @@ import user_interface.ui_models.engines.SimilarityEngineController;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
 import java.util.stream.Collectors;
 
-import static user_interface.server.SimilarPatentServer.*;
+import static user_interface.server.SimilarPatentServer.PRE_FILTER_ARRAY_FIELD;
+import static user_interface.server.SimilarPatentServer.extractArray;
 
 /**
  * Created by ehallmark on 6/15/17.
@@ -26,22 +24,32 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
     public static final int vectorSize = 32;
 
     public static final String EXPRESSION_SIMILARITY_SCRIPT;
-    public static final String COSINE_SIM;
+    public static final String EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT;
     static {
-        StringJoiner cos = new StringJoiner("+","doc['vector_obj.0'].empty ? _score : ((99.0 * (",")) + _score)");
-        for(int i = 0; i < vectorSize; i++) {
-            cos.add("(doc['vector_obj."+i+"'].value*avg_vector"+i+")");
+        StringJoiner cosSort = new StringJoiner("+", "doc['vector_obj.0'].empty ? _score : ((99.0 * (", ")) + _score)");
+        StringJoiner cos = new StringJoiner("+", "doc['vector_obj.0'].empty ? 0.0 : ((100.0 * (", ")))");
+        for (int i = 0; i < vectorSize; i++) {
+            String inner = "(doc['vector_obj." + i + "'].value*avg_vector" + i + ")";
+            cos.add(inner);
+            cosSort.add(inner);
         }
-        COSINE_SIM=cos.toString();
-        System.out.println("Cosine distance script: "+COSINE_SIM);
-
-        EXPRESSION_SIMILARITY_SCRIPT = COSINE_SIM;
+        EXPRESSION_SIMILARITY_SCRIPT = cos.toString();
+        EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT = cosSort.toString();
     }
     protected List<INDArray> simVectors;
 
 
     @Override
     public Script getScript() {
+        return getScriptHelper(EXPRESSION_SIMILARITY_SCRIPT);
+    }
+
+    @Override
+    public Script getSortScript() {
+        return getScriptHelper(EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT);
+    }
+
+    private Script getScriptHelper(String script) {
         Script searchScript = null;
         if(simVectors!=null&&simVectors.size()>0) {
             System.out.println("Found similarity vectors!!!");
@@ -54,7 +62,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
             searchScript = new Script(
                     ScriptType.INLINE,
                     "expression",
-                    EXPRESSION_SIMILARITY_SCRIPT,
+                    script,
                     params
             );
         }

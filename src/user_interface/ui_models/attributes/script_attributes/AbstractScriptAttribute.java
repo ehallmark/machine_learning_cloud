@@ -7,10 +7,8 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.script.Script;
 import seeding.Constants;
-import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.DependentAttribute;
-import user_interface.ui_models.filters.*;
+import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -45,13 +43,18 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute  {
 
     public abstract Script getScript();
 
+    // override
+    public Script getSortScript() {
+        return getScript();
+    }
+
     public String getRemainingLifeQuery() {
         return "("+getPriorityDateField("date.year")+"+20+("+getPriorityDateField("date.monthOfYear")+"-1)/12)+("+getTermExtensionField()+"/365.25)-"+getCurrentYearAndMonth();
     }
 
 
-    public QueryBuilder getSortScript() {
-        Script searchScript = getScript();
+    public QueryBuilder getSortQuery() {
+        Script searchScript = getSortScript();
         if(searchScript==null) return null;
         System.out.println("Getting "+getName()+" sort script");
         return  QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(searchScript).setWeight(getWeight()))

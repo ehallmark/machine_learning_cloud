@@ -3,20 +3,18 @@ package user_interface.ui_models.portfolios.items;
 import lombok.Getter;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
-import models.value_models.ValueModelCombination;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import static j2html.TagCreator.td;
 
 /**
  * Created by ehallmark on 11/19/16.
  */
-public class Item implements Comparable<Item> {
+public class Item  {
     @Getter
     protected Map<String,Object> dataMap = new HashMap<>();
-    protected Double similarityCache;
     protected String name;
 
     public Item(String name) {
@@ -29,15 +27,6 @@ public class Item implements Comparable<Item> {
         return item;
     }
 
-    public void setSimilarity(double sim) {
-        this.similarityCache=sim;
-        addData(Constants.SIMILARITY, sim*100d);
-    }
-
-    public double getSimilarity() {
-        return similarityCache == null ? ValueModelCombination.DEFAULT_START : similarityCache;
-    }
-
     public void setName(String name) {
         this.name=name;
         addData(Constants.NAME,name);
@@ -45,13 +34,6 @@ public class Item implements Comparable<Item> {
 
     public String getName() {
         return name;
-    }
-
-    public List<String> getDataAsRow(List<String> attributes) {
-        return attributes.stream().map(attr->{
-            Object cell = dataMap.get(attr);
-            return cell==null? "": ((cell instanceof Double || cell instanceof Float) ? (((Number)cell).doubleValue()==(double) ((Number)cell).intValue() ? String.valueOf(((Number)cell).intValue()) : String.format("%.1f",cell)) : cell.toString());
-        }).collect(Collectors.toList());
     }
 
     public Map<String,String> getDataAsMap(List<String> attributes,boolean useHighlighter) {
@@ -67,11 +49,6 @@ public class Item implements Comparable<Item> {
 
     public void addData(String param, Object data) {
         dataMap.put(param,data);
-    }
-
-    @Override
-    public int compareTo(Item o) {
-        return Double.compare(getSimilarity(), o.getSimilarity());
     }
 
     @Override

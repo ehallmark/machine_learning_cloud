@@ -243,7 +243,7 @@ public class DataSearcher {
                 if (componentOfScore) {
                     System.out.println("Component of script score...");
                     // try adding custom sort script
-                    QueryBuilder sortScript = scriptAttribute.getSortScript();
+                    QueryBuilder sortScript = scriptAttribute.getSortQuery();
                     if (sortScript != null) {
                         if (attribute.getParent() != null && !attribute.getParent().isObject()) {
                             System.out.println("Is nested");
