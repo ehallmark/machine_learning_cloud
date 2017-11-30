@@ -312,6 +312,10 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                     labels = labels.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
                 }
 
+                System.out.println("Label shape: "+labels.shapeInfoToString());
+                System.out.println("Feature shape: "+features.shapeInfoToString());
+                System.out.println("Feature Mask shape: "+featureMask.shapeInfoToString());
+                
                 return new DataSet(features,labels,featureMask,null);
             }
 
