@@ -218,6 +218,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
             INDArray outputs = net.output(false,ds.getFeatures())[0];
             net.clearLayerMaskArrays();
             eval.evalTimeSeries(ds.getLabels(),outputs,labelMask);
+            System.gc();
         }
         System.out.println(eval.stats());
         return 1d - eval.f1();
