@@ -208,7 +208,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
         Evaluation eval = new Evaluation(2);
         while(iterator.hasNext()) {
             DataSet next = iterator.next();
-            eval.eval(next.getLabels(), net.output(false, next.getFeatureMatrix())[0]);
+            eval.evalTimeSeries(next.getLabels(), net.output(false, next.getFeatureMatrix())[0],next.getLabelsMaskArray());
         }
         System.out.println(eval.stats());
         return 1d - eval.f1();
