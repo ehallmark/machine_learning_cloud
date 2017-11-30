@@ -14,7 +14,6 @@ import data_pipeline.optimize.parameters.impl.UpdaterParameter;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
-import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
@@ -102,7 +101,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                     outputs
             );
             // initialize optimizer
-            optimizer.initNetworkSamples(InputType.recurrent(pipelineManager.getNumTimeSteps()));
+            optimizer.initNetworkSamples();
 
 
             for (int i = 0; i < nEpochs; i++) {
