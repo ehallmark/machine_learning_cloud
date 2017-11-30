@@ -107,7 +107,6 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
             // initialize optimizer
             optimizer.initNetworkSamples();
 
-
             for (int i = 0; i < nEpochs; i++) {
                 System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
                 while(trainIter.hasNext()) {
@@ -120,6 +119,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                     if (stoppingCondition.get()) {
                         break;
                     }
+
                 }
                 if(stoppingCondition.get()) break;
                 trainIter.reset();

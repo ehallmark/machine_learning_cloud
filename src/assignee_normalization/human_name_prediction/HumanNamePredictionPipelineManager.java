@@ -310,7 +310,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                     labels.put(new int[]{idx,labelIdx,MAX_NAME_LENGTH-1}, Nd4j.scalar(1d));
                     idx++;
                     cnt.getAndIncrement();
-                    //System.gc();
+                    if(cnt.get()%5==0) System.gc();
                 }
 
                 if(idx>0) {
@@ -356,8 +356,8 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
 
             @Override
             public void reset() {
-                List<String> companiesRemaining = new ArrayList<>(_companies);
-                List<String> humansRemaining = new ArrayList<>(_humans);
+                companiesRemaining = new ArrayList<>(_companies);
+                humansRemaining = new ArrayList<>(_humans);
                 cnt.set(0);
             }
 
