@@ -23,13 +23,15 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
-import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Constants;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
@@ -62,20 +64,9 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
 
-        System.out.println("Building validation matrix...");
         DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
-        List<INDArray> partialValidationInputs = new ArrayList<>();
-        List<INDArray> partialValidationLabels = new ArrayList<>();
-        while(validationIterator.hasNext()) {
-            DataSet ds = validationIterator.next();
-            partialValidationInputs.add(ds.getFeatureMatrix());
-            partialValidationLabels.add(ds.getLabels());
-        }
-
-        INDArray validationInputs = Nd4j.vstack(partialValidationInputs);
-        INDArray validationOutputs = Nd4j.vstack(partialValidationLabels);
         Function<ComputationGraph,Double> testErrorFunction = (net) -> {
-            return test(validationInputs,validationOutputs,net);
+            return test(validationIterator,net);
         };
 
         Function3<ComputationGraph,LocalDateTime,Double,Void> saveFunction = (net, datetime, score) -> {
