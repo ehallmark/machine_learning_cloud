@@ -2,40 +2,47 @@ package assignee_normalization.human_name_prediction;
 
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
+import data_pipeline.vectorize.NoSaveDataSetManager;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
-import models.similarity_models.word2vec_to_cpc_encoding_model.Word2VecToCPCEncodingNN;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.sort.SortBuilders;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.INDArrayIndex;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import seeding.Constants;
 import seeding.Database;
-import user_interface.ui_models.attributes.AssigneesNestedAttribute;
-import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 11/30/2017.
  */
 public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
+    public static final String MODEL_NAME = "human_name_prediction_model";
     public static final char[] VALID_CHARS = new char[]{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',' ','.',',','-','\'','&' };
+    static {
+        Arrays.sort(VALID_CHARS);
+    }
     private static final File allCompanyNamesFile = new File(Constants.DATA_FOLDER+"human_name_model_all_company_names.jobj");
     private static final File allHumanNamesFile = new File(Constants.DATA_FOLDER+"human_name_model_all_human_names.jobj");
     private static final File INPUT_DATA_FOLDER = new File("human_name_prediction_input_data/");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"human_name_assignee_predictions/predictions_map.jobj");
+    public static final int MAX_NAME_LENGTH = 128;
+    public static final int BATCH_SIZE = 128;
+
     private Set<String> humanNames;
     private Set<String> companyNames;
     private String modelName;
@@ -48,8 +55,12 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         this(INPUT_DATA_FOLDER,PREDICTION_DATA_FILE,modelName);
     }
 
+    public int getNumTimeSteps() {
+        return MAX_NAME_LENGTH;
+    }
+
     public int inputSize() {
-        return VALID_CHARS.length;
+        return VALID_CHARS.length+1;
     }
 
     @Override
@@ -164,14 +175,182 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
 
     @Override
     protected void splitData() {
-
-    }
-
-    @Override
-    protected void setDatasetManager() {
         getAllHumanNames();
         getAllCompanyNames();
 
         int numTests = 10000;
+        int seed = 569;
+
+        List<String> allCompanies = new ArrayList<>(companyNames.stream().map(name->"0"+name).collect(Collectors.toList()));
+        List<String> allHumans = new ArrayList<>(humanNames.stream().map(name->"1"+name).collect(Collectors.toList()));
+
+        Collections.shuffle(allCompanies,new Random(seed));
+        Collections.shuffle(allHumans, new Random(seed));
+
+        testAssets = new ArrayList<>();
+        trainAssets = new ArrayList<>();
+        validationAssets = new ArrayList<>();
+
+        testAssets.addAll(allCompanies.subList(0,numTests/2));
+        testAssets.addAll(allHumans.subList(0,numTests/2));
+
+        validationAssets.addAll(allCompanies.subList(numTests/2,numTests));
+        validationAssets.addAll(allHumans.subList(numTests/2,numTests));
+
+        trainAssets.addAll(allCompanies.subList(numTests,allCompanies.size()));
+        trainAssets.addAll(allHumans.subList(numTests,allCompanies.size()));
+
+        Collections.shuffle(trainAssets);
+        Collections.shuffle(testAssets);
+        Collections.shuffle(validationAssets);
+
+        System.out.println("Num training: "+trainAssets.size());
+        System.out.println("Num test: "+testAssets.size());
+        System.out.println("Num validation: "+validationAssets.size());
+    }
+
+    @Override
+    protected void setDatasetManager() {
+        if(datasetManager==null) {
+            datasetManager = new NoSaveDataSetManager<>(
+                    getRawIterator(trainAssets),
+                    getRawIterator(testAssets),
+                    getRawIterator(validationAssets)
+            );
+        }
+    }
+
+    private DataSetIterator getRawIterator(List<String> names) {
+        return new DataSetIterator() {
+            Iterator<String> iterator = names.iterator();
+            @Override
+            public DataSet next(int batch) {
+                INDArray features = Nd4j.create(batch(),this.inputColumns(),MAX_NAME_LENGTH);
+                INDArray featureMask = Nd4j.create(batch(),MAX_NAME_LENGTH);
+                INDArray labels = Nd4j.zeros(batch(),2);
+
+                int idx = 0;
+                while(idx < batch && iterator.hasNext()) {
+                    float[] mask = new float[MAX_NAME_LENGTH];
+                    String name = iterator.next().toLowerCase().trim()+" ";
+                    String labelStr = name.substring(0,1);
+                    name = name.substring(1);
+                    float[][] x = new float[MAX_NAME_LENGTH][this.inputColumns()];
+                    for(int i = 0; i < MAX_NAME_LENGTH; i++) { x[i] = new float[this.inputColumns()];}
+                    for(int i = 0; i < name.length() && i < MAX_NAME_LENGTH; i++) {
+                        mask[i]=1;
+                        char c = name.charAt(i);
+                        float[] xi = x[i];
+                        int pos = Arrays.binarySearch(VALID_CHARS,c);
+                        if(pos>=0) {
+                            // exists
+                            xi[pos]=1;
+                        } else {
+                            xi[xi.length-1]=1;
+                        }
+                    }
+                    features.put(new INDArrayIndex[]{NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()},Nd4j.create(x));
+                    featureMask.putRow(idx,Nd4j.create(mask));
+                    labels.putScalar(Integer.valueOf(labelStr),1);
+                    idx++;
+                }
+
+                if(idx < batch) {
+                    features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all(),NDArrayIndex.all());
+                    featureMask = featureMask.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+                    labels = labels.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+                }
+
+                return new DataSet(features,labels,featureMask,null);
+            }
+
+            @Override
+            public int totalExamples() {
+                return names.size();
+            }
+
+            @Override
+            public int inputColumns() {
+                return HumanNamePredictionPipelineManager.this.inputSize();
+            }
+
+            @Override
+            public int totalOutcomes() {
+                return 2;
+            }
+
+            @Override
+            public boolean resetSupported() {
+                return true;
+            }
+
+            @Override
+            public boolean asyncSupported() {
+                return true;
+            }
+
+            @Override
+            public void reset() {
+                iterator=names.iterator();
+            }
+
+            @Override
+            public int batch() {
+                return BATCH_SIZE;
+            }
+
+            @Override
+            public int cursor() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public int numExamples() {
+                return names.size();
+            }
+
+            @Override
+            public void setPreProcessor(DataSetPreProcessor dataSetPreProcessor) {
+
+            }
+
+            @Override
+            public DataSetPreProcessor getPreProcessor() {
+                return null;
+            }
+
+            @Override
+            public List<String> getLabels() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public synchronized boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public DataSet next() {
+                return next(batch());
+            }
+        };
+    }
+
+    public static void main(String[] args) throws Exception {
+        boolean rebuildDatasets = false;
+        boolean runModels = true;
+        boolean forceRecreateModels = false;
+        boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
+        boolean rebuildPrerequisites = false;
+
+        int nEpochs = 5;
+        String modelName = MODEL_NAME;
+
+        //setLoggingLevel(Level.INFO);
+        HumanNamePredictionPipelineManager pipelineManager = new HumanNamePredictionPipelineManager(modelName);
+
+        rebuildPrerequisites = rebuildPrerequisites || !allCompanyNamesFile.exists() || !allHumanNamesFile.exists(); // Check if vocab map exists
+
+        pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 }

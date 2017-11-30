@@ -14,7 +14,9 @@ import data_pipeline.optimize.parameters.impl.UpdaterParameter;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
-import org.deeplearning4j.nn.conf.layers.Layer;
+import org.deeplearning4j.nn.conf.graph.PreprocessorVertex;
+import org.deeplearning4j.nn.conf.inputs.InputType;
+import org.deeplearning4j.nn.conf.preprocessor.RnnToFeedForwardPreProcessor;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
@@ -38,7 +40,6 @@ import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
  */
 public class HumanNamePredictionModel extends ComputationGraphPredictionModel<INDArray> {
     public static final int VECTOR_SIZE = 128;
-    public static final int BATCH_SIZE = 128;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"human_name_prediction_model_data/");
 
     private HumanNamePredictionPipelineManager pipelineManager;
@@ -112,7 +113,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                     outputs
             );
             // initialize optimizer
-            optimizer.initNetworkSamples();
+            optimizer.initNetworkSamples(InputType.recurrent(pipelineManager.getNumTimeSteps()));
 
 
             for (int i = 0; i < nEpochs; i++) {
@@ -185,15 +186,16 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                 new LayerWrapper("l1", newGravesLSTMLayer(inputSize,hiddenLayerSize), "x"),
                 new LayerWrapper("l2", newGravesLSTMLayer(inputSize+hiddenLayerSize,hiddenLayerSize), "x","l1"),
                 new LayerWrapper("l3", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l1","l2"),
-                new LayerWrapper("l4", newGravesLSTMLayer(inputSize+hiddenLayerSize,hiddenLayerSize), "l2","l3"),
-                new LayerWrapper("l5", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l3","l4"),
-                new LayerWrapper("y", newRNNOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l4","l5")
+                new LayerWrapper("l4", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l2","l3"),
+                new LayerWrapper("l5", newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"rnn_to_dense1","rnn_to_dense2"),
+                new LayerWrapper("y", newOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l5")
         );
     }
 
     private List<VertexWrapper> getVertexModels() {
         return Arrays.asList(
-
+                new VertexWrapper("rnn_to_dense1",new PreprocessorVertex(new RnnToFeedForwardPreProcessor()),"l3"),
+                new VertexWrapper("rnn_to_dense2",new PreprocessorVertex(new RnnToFeedForwardPreProcessor()),"l4")
         );
     }
 

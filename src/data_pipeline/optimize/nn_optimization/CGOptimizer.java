@@ -6,21 +6,15 @@ import data_pipeline.optimize.parameters.HyperParameter;
 import data_pipeline.optimize.parameters.impl.ActivationFunctionParameter;
 import data_pipeline.optimize.parameters.impl.LearningRateParameter;
 import data_pipeline.optimize.parameters.impl.LossFunctionParameter;
-import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
-import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.graph.MergeVertex;
-import org.deeplearning4j.nn.conf.layers.BatchNormalization;
-import org.deeplearning4j.nn.conf.layers.DenseLayer;
+import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.Layer;
-import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.graph.ComputationGraph;
-import org.deeplearning4j.nn.weights.WeightInit;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
-import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +23,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
 
 /**
  * Created by ehallmark on 11/10/17.
@@ -60,7 +56,7 @@ public class CGOptimizer {
     }
 
 
-    public void initNetworkSamples() {
+    public void initNetworkSamples(InputType... inputTypes) {
         if(init) throw new RuntimeException("Samples have already been initialized.");
         init = true;
         for(int i = 0; i < nSamples; i++) {
@@ -75,7 +71,8 @@ public class CGOptimizer {
                     newModelParams,
                     newLayerParams,
                     inputs,
-                    outputs
+                    outputs,
+                    inputTypes
             );
             ModelWrapper netWrap = new ModelWrapper<>(net,flattenParams(newModelParams,newLayerParams));
             addListenerFunction.apply(netWrap);
@@ -106,7 +103,7 @@ public class CGOptimizer {
 
     private static ComputationGraph buildNetworkWithHyperParameters(
             NeuralNetConfiguration preModel, List<LayerWrapper> layerModels, List<VertexWrapper> vertexModels,
-            List<HyperParameter> modelParameters, List<List<HyperParameter>> layerParameters, String[] inputs, String[] outputs)
+            List<HyperParameter> modelParameters, List<List<HyperParameter>> layerParameters, String[] inputs, String[] outputs, InputType... inputTypes)
     {
         if(layerModels.size()!=layerParameters.size()) throw new RuntimeException("layer models and layer parameters must have the same size.");
         NeuralNetConfiguration.Builder newModelConf = new NeuralNetConfiguration.Builder(preModel.clone());
@@ -129,6 +126,8 @@ public class CGOptimizer {
             VertexWrapper vertexModel = vertexModels.get(i);
             networkLayerBuilder = networkLayerBuilder.addVertex(vertexModel.getName(),vertexModel.getVertex().clone(),vertexModel.getInputs());
         }
+
+        if(inputTypes.length>0) networkLayerBuilder = networkLayerBuilder.setInputTypes(inputTypes);
 
         // swap out configs
         ComputationGraph net = new ComputationGraph(networkLayerBuilder.build().clone());

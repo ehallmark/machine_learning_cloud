@@ -31,7 +31,6 @@ import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
-import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractGreaterThanFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
@@ -169,20 +168,7 @@ public class DataSearcher {
 
             // special case to handle similarity greater than filter without sorting by similarity
             if(!isOverallScore && similarityThreshold > 0f) {
-                // TODO HANDLE THIS SPECIAL CASE
-                // THE CODE BELOW DOES NOT WORK!!! (need access to similarity vectors)
-                // Figure out why this doesn't happen automatically
-                // ANOTHER OPTION IS TO FORBID SIMILARITY FILTERING UNLESS SORTING BY SIMILARITY
-                //   POSSIBILITY TO INCORPORATE A FEEDBACK ON SEARCH
-                //      --1 CASE WHERE THIS SPECIAL CASE HAPPENS
-                //      --2 CASE WHERE Similarity Vectors are missing
-                //      --3 ANYTHING ELSE?
-                System.out.println("Special case!!!");
-                QueryBuilder specialCaseFilter = new AbstractGreaterThanFilter(new SimilarityAttribute(), AbstractFilter.FilterType.GreaterThan, similarityThreshold).getScriptFilter();
-                System.out.println("Special case filter: "+specialCaseFilter.toString());
-                parentFilterBuilder.set(parentFilterBuilder.get().must(
-                        specialCaseFilter
-                ));
+                throw new RuntimeException("Unable to filter apply filter: Similarity Greater Than "+similarityThreshold+". Reason: Must sort by Similarity.");
             } // end of special case
 
             System.out.println("Combining Query...");
