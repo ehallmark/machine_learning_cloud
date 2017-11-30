@@ -1,9 +1,5 @@
 package user_interface.ui_models.attributes.computable_attributes;
 
-import assignee_normalization.NormalizeAssignees;
-import lombok.NonNull;
-import seeding.Database;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToNormalizedAssigneeMap;
 import user_interface.ui_models.filters.AbstractFilter;
 

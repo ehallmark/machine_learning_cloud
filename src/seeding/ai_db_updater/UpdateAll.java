@@ -1,6 +1,6 @@
 package seeding.ai_db_updater;
 
-import assignee_normalization.NormalizeAssignees;
+import assignee_normalization.name_correction.NormalizeAssignees;
 import elasticsearch.DataIngester;
 import seeding.CleanseAttributesAndMongoBeforeReseed;
 import seeding.Database;

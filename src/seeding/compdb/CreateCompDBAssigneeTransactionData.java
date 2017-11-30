@@ -2,7 +2,7 @@ package seeding.compdb;
 
 import seeding.Constants;
 import seeding.Database;
-import assignee_normalization.AssigneeTrimmer;
+import assignee_normalization.name_correction.AssigneeTrimmer;
 
 import java.io.File;
 import java.sql.Connection;

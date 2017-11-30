@@ -20,6 +20,7 @@ import org.deeplearning4j.nn.weights.WeightInit;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,12 +41,12 @@ public class CGOptimizer {
     private List<List<HyperParameter>> layerParameters;
     private int nSamples;
     private List<ModelWrapper> networkSamples;
-    private Function<ModelWrapper,Void> addListenerFunction;
+    private Function<ModelWrapper<ComputationGraph>,Void> addListenerFunction;
     private boolean init = false;
     private String[] inputs;
     private String[] outputs;
     public CGOptimizer(NeuralNetConfiguration preModel, List<LayerWrapper> layerModels, List<VertexWrapper> vertexModels,
-                       List<HyperParameter> modelParameters, List<List<HyperParameter>> layerParameters, int nSamples, Function<ModelWrapper,Void> addListenerFunction, String[] inputs, String[] outputs) {
+                       List<HyperParameter> modelParameters, List<List<HyperParameter>> layerParameters, int nSamples, Function<ModelWrapper<ComputationGraph>,Void> addListenerFunction, String[] inputs, String[] outputs) {
         this.preModel=preModel;
         this.vertexModels=vertexModels;
         this.inputs=inputs;
@@ -135,25 +136,6 @@ public class CGOptimizer {
         return net;
     }
 
-    public static Layer.Builder newDenseLayer(int nIn, int nOut) {
-        return new DenseLayer.Builder().nIn(nIn).nOut(nOut);
-    }
-
-    public static BatchNormalization.Builder newBatchNormLayer(int nIn, int nOut) {
-        return new BatchNormalization.Builder().nIn(nIn).nOut(nOut).minibatch(true);
-    }
-
-    public static OutputLayer.Builder newOutputLayer(int nIn, int nOut) {
-        return new OutputLayer.Builder().nIn(nIn).nOut(nOut);
-    }
-
-    public static NeuralNetConfiguration defaultNetworkConfig() {
-        return new NeuralNetConfiguration.Builder()
-                .miniBatch(true)
-                .weightInit(WeightInit.XAVIER)
-                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .build();
-    }
 
     public static void main(String[] args) {
         List<HyperParameter> modelHyperParameters = Arrays.asList(
@@ -186,7 +168,7 @@ public class CGOptimizer {
         );
 
         final int hiddenLayerSize = 512;
-        final int outputSize = CPCVariationalAutoEncoderNN.VECTOR_SIZE;
+        final int outputSize = 2;
         final int inputSize = 30000;
         final String[] inputs = new String[]{"inputs"};
         final String[] outputs = new String[]{"output"};
@@ -202,7 +184,7 @@ public class CGOptimizer {
                 new LayerWrapper("output",newOutputLayer(hiddenLayerSize,outputSize),"v3")
         );
 
-        Function<ModelWrapper,Void> addListenerFunction = net -> {
+        Function<ModelWrapper<ComputationGraph>,Void> addListenerFunction = net -> {
             DefaultScoreListener listener = null; //new OptimizationScoreListener(printIterations, )
             net.getNet().setListeners(listener);
             return null;

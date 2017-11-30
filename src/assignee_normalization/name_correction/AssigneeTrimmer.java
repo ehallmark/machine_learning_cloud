@@ -1,4 +1,4 @@
-package assignee_normalization;
+package assignee_normalization.name_correction;
 
 import seeding.Database;
 

@@ -1,4 +1,4 @@
-package assignee_normalization;
+package assignee_normalization.name_correction;
 
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
