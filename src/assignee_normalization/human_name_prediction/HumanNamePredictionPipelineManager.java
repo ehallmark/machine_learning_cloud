@@ -274,6 +274,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
             AtomicBoolean flip = new AtomicBoolean(false);
             List<String> companiesRemaining = new ArrayList<>(_companies);
             List<String> humansRemaining = new ArrayList<>(_humans);
+            int gcIdx = 0;
             @Override
             public DataSet next(int batch) {
                 INDArray features = Nd4j.create(batch,this.inputColumns(),MAX_NAME_LENGTH);
@@ -310,9 +311,11 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                     labels.put(new int[]{idx,labelIdx,MAX_NAME_LENGTH-1}, Nd4j.scalar(1d));
                     idx++;
                     cnt.getAndIncrement();
-                    if(cnt.get()%5==0) System.gc();
                 }
-
+                gcIdx++;
+                if(gcIdx%10==0) {
+                    System.gc();
+                }
                 if(idx>0) {
                     if (idx < batch) {
                         features = features.get(NDArrayIndex.interval(0, idx), NDArrayIndex.all(), NDArrayIndex.all());
