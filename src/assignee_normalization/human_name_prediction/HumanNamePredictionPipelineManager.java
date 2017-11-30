@@ -98,6 +98,30 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
 
         Function<SearchHit,Item> hitTransformer = hit -> {
             Map<String,Object> source = hit.getSource();
+            if(source.containsKey(Constants.INVENTORS)) {
+                List<Map<String,Object>> inventors = (List<Map<String,Object>>) source.get(Constants.INVENTORS);
+                inventors.forEach(assignee-> {
+                    // try first and last name
+                    Object firstName = assignee.get(Constants.FIRST_NAME);
+                    Object lastName = assignee.get(Constants.LAST_NAME);
+                    if (firstName != null && lastName != null) {
+                        String name = String.join(", ", lastName.toString(), firstName.toString());
+                        humanNames.add(name);
+                    }
+                });
+            }
+            if(source.containsKey(Constants.APPLICANTS)) {
+                List<Map<String,Object>> applicants = (List<Map<String,Object>>) source.get(Constants.APPLICANTS);
+                applicants.forEach(assignee-> {
+                    // try first and last name
+                    Object firstName = assignee.get(Constants.FIRST_NAME);
+                    Object lastName = assignee.get(Constants.LAST_NAME);
+                    if (firstName != null && lastName != null) {
+                        String name = String.join(", ", lastName.toString(), firstName.toString());
+                        humanNames.add(name);
+                    }
+                });
+            }
             if(source.containsKey(Constants.ASSIGNEES)) {
                 List<Map<String,Object>> assignees = (List<Map<String,Object>>) source.get(Constants.ASSIGNEES);
                 assignees.forEach(assignee->{
@@ -120,22 +144,21 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                             if(roleNum == 4 || roleNum == 5) {
                                 // is human
                                 humanNames.add(name.toString());
-                                if(debug) System.out.println("HUMAN: "+name.toString());
+                                //if(debug) System.out.println("HUMAN: "+name.toString());
                             } else {
                                 // corporation
                                 companyNames.add(name.toString());
-                                if(debug) System.out.println("COMPANY: "+name.toString());
-                            }
-
-                            // finished
-                            if(cnt.getAndIncrement()%10000==9999) {
-                                System.out.println("Found "+cnt.get()+" total. "+humanNames.size()+" humans. "+companyNames.size()+" companies.");
+                                //if(debug) System.out.println("COMPANY: "+name.toString());
                             }
                         } catch(Exception e) {
                             e.printStackTrace();
                         }
                     }
                 });
+            }
+            // finished
+            if(cnt.getAndIncrement()%10000==9999) {
+                System.out.println("Found "+cnt.get()+" total. "+humanNames.size()+" humans. "+companyNames.size()+" companies.");
             }
             return null;
         };
@@ -146,7 +169,16 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                 .setExplain(false)
                 .setFrom(0)
                 .setSize(10000)
-                .setFetchSource(new String[]{Constants.ASSIGNEES+"."+Constants.ASSIGNEE_ROLE,Constants.ASSIGNEES+"."+Constants.ASSIGNEE,Constants.ASSIGNEES+"."+Constants.FIRST_NAME,Constants.ASSIGNEES+"."+Constants.LAST_NAME},new String[]{})
+                .setFetchSource(new String[]{
+                        Constants.ASSIGNEES+"."+Constants.ASSIGNEE_ROLE,
+                        Constants.ASSIGNEES+"."+Constants.ASSIGNEE,
+                        Constants.ASSIGNEES+"."+Constants.FIRST_NAME,
+                        Constants.ASSIGNEES+"."+Constants.LAST_NAME,
+                        Constants.INVENTORS+"."+Constants.FIRST_NAME,
+                        Constants.INVENTORS+"."+Constants.LAST_NAME,
+                        Constants.APPLICANTS+"."+Constants.FIRST_NAME,
+                        Constants.APPLICANTS+"."+Constants.LAST_NAME
+                },new String[]{})
                 .setQuery(QueryBuilders.matchAllQuery());
 
         SearchResponse response = request.get();
