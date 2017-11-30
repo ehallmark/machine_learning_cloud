@@ -212,6 +212,9 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
             INDArray labelMask = ds.getLabelsMaskArray();
             net.setLayerMaskArrays(new INDArray[]{ds.getFeaturesMaskArray()},new INDArray[]{ds.getLabelsMaskArray()});
             INDArray outputs = net.output(false,ds.getFeatures())[0];
+
+            System.out.println("Shape of actual labels: "+ds.getLabels().shapeInfoToString());
+            System.out.println("Shape of predicted labels: "+outputs.shapeInfoToString());
             eval.evalTimeSeries(ds.getLabels(),outputs,labelMask);
         }
         System.out.println(eval.stats());
