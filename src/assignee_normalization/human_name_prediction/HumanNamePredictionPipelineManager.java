@@ -262,7 +262,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         if(datasetManager==null) {
             if(trainHumans==null) splitData();
             datasetManager = new NoSaveDataSetManager<>(
-                    new AsyncDataSetIterator(getRawIterator(trainHumans,trainCompanies,5000000,BATCH_SIZE,true),2),
+                    new AsyncDataSetIterator(getRawIterator(trainHumans,trainCompanies,5000000,BATCH_SIZE,true),4),
                     getRawIterator(testHumans,testCompanies,20000,TEST_BATCH_SIZE,false),
                     getRawIterator(valHumans,valCompanies,20000,TEST_BATCH_SIZE,false)
             );
