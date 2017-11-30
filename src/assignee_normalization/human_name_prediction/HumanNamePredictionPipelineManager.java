@@ -307,6 +307,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                     labels.put(new int[]{idx,labelIdx,MAX_NAME_LENGTH-1}, Nd4j.scalar(1d));
                     idx++;
                     cnt.getAndIncrement();
+                    System.gc();
                 }
 
                 if(idx < batch) {
