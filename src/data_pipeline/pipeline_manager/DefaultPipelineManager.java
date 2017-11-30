@@ -2,7 +2,6 @@ package data_pipeline.pipeline_manager;
 
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.vectorize.DataSetManager;
-import data_pipeline.vectorize.NoSaveDataSetManager;
 import lombok.Getter;
 import seeding.Database;
 
@@ -45,8 +44,6 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
         setDatasetManager();
         if(datasetManager!=null) {
             if (!dataFolder.exists()) dataFolder.mkdir();
-
-            setDatasetManager();
 
             datasetManager.removeDataFromDisk();
             System.out.println("Saving datasets...");

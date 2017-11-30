@@ -255,6 +255,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
     @Override
     protected void setDatasetManager() {
         if(datasetManager==null) {
+            if(trainHumans==null) splitData();
             datasetManager = new NoSaveDataSetManager<>(
                     getRawIterator(trainHumans,trainCompanies,1000000),
                     getRawIterator(testHumans,testCompanies,10000),
@@ -264,6 +265,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
     }
 
     private DataSetIterator getRawIterator(List<String> humans, List<String> companies, int numSamples) {
+        System.out.println("Iterator with "+humans.size()+" humans and "+companies.size()+" companies...");
         return new DataSetIterator() {
             Random rand = new Random(69);
             AtomicInteger cnt = new AtomicInteger(0);
@@ -390,7 +392,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
-        boolean rebuildPrerequisites = true;
+        boolean rebuildPrerequisites = false;
 
         int nEpochs = 5;
         String modelName = MODEL_NAME;
