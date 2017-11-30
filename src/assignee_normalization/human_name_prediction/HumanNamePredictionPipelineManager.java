@@ -303,7 +303,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                     }
                     features.put(new INDArrayIndex[]{NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()},Nd4j.create(x).transposei());
                     featureMask.putRow(idx,Nd4j.create(mask));
-                    labels.putScalar(labelIdx,1,MAX_NAME_LENGTH-1);
+                    labels.put(new int[]{batch,labelIdx,MAX_NAME_LENGTH-1}, Nd4j.scalar(1d));
                     idx++;
                     cnt.getAndIncrement();
                 }
