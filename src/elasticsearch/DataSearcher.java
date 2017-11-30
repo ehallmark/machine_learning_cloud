@@ -31,6 +31,7 @@ import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
+import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractGreaterThanFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
@@ -111,6 +112,7 @@ public class DataSearcher {
                     .setSize(Math.min(PAGE_LIMIT,maxLimit))
                     .setMinScore(isOverallScore&&similarityThreshold>0f?similarityThreshold:0f)
                     .setFrom(0));
+
             if(!comparator.isEmpty()) {
                 request.set(request.get().addSort(sortBuilder));
             }
@@ -164,6 +166,13 @@ public class DataSearcher {
             if(highlight) {
                 innerHitBuilder.set(innerHitBuilder.get().setHighlightBuilder(highlighter));
             }
+
+            // special case to handle similarity greater than filter without sorting by similarity
+            if(!isOverallScore && similarityThreshold > 0f) {
+                parentFilterBuilder.set(parentFilterBuilder.get().must(
+                        new AbstractGreaterThanFilter(new SimilarityAttribute(), AbstractFilter.FilterType.GreaterThan).getScriptFilter()
+                ));
+            } // end of special case
 
             System.out.println("Combining Query...");
             // Add filter to query
