@@ -169,6 +169,9 @@ public class DataSearcher {
 
             // special case to handle similarity greater than filter without sorting by similarity
             if(!isOverallScore && similarityThreshold > 0f) {
+                // TODO HANDLE THIS SPECIAL CASE
+                // THE CODE BELOW DOES NOT WORK!!! (need access to similarity vectors)
+                // Figure out why this doesn't happen automatically
                 System.out.println("Special case!!!");
                 QueryBuilder specialCaseFilter = new AbstractGreaterThanFilter(new SimilarityAttribute(), AbstractFilter.FilterType.GreaterThan, similarityThreshold).getScriptFilter();
                 System.out.println("Special case filter: "+specialCaseFilter.toString());
