@@ -275,7 +275,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
             public DataSet next(int batch) {
                 INDArray features = Nd4j.create(batch,this.inputColumns(),MAX_NAME_LENGTH);
                 INDArray labels = Nd4j.zeros(batch,this.totalOutcomes(),MAX_NAME_LENGTH);
-                INDArray featureMask = Nd4j.create(batch(),MAX_NAME_LENGTH);
+                INDArray featureMask = Nd4j.create(batch,MAX_NAME_LENGTH);
 
                 int idx = 0;
                 while(idx < batch && hasNext()) {
@@ -312,7 +312,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                     if (idx < batch) {
                         features = features.get(NDArrayIndex.interval(0, idx), NDArrayIndex.all(), NDArrayIndex.all());
                         featureMask = featureMask.get(NDArrayIndex.interval(0, idx), NDArrayIndex.all());
-                        labels = labels.get(NDArrayIndex.interval(0, idx), NDArrayIndex.all());
+                        labels = labels.get(NDArrayIndex.interval(0, idx), NDArrayIndex.all(), NDArrayIndex.all());
                     }
 
                     INDArray labelMask = Nd4j.zeros(idx, MAX_NAME_LENGTH);
