@@ -43,6 +43,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"human_name_assignee_predictions/predictions_map.jobj");
     public static final int MAX_NAME_LENGTH = 64;
     public static final int BATCH_SIZE = 32;
+    public static final int TEST_BATCH_SIZE = 512;
 
     private Set<String> humanNames;
     private Set<String> companyNames;
@@ -258,14 +259,14 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         if(datasetManager==null) {
             if(trainHumans==null) splitData();
             datasetManager = new NoSaveDataSetManager<>(
-                    getRawIterator(trainHumans,trainCompanies,1000000),
-                    getRawIterator(testHumans,testCompanies,10000),
-                    getRawIterator(valHumans,valCompanies,10000)
+                    getRawIterator(trainHumans,trainCompanies,1000000,BATCH_SIZE),
+                    getRawIterator(testHumans,testCompanies,10000,TEST_BATCH_SIZE),
+                    getRawIterator(valHumans,valCompanies,10000,TEST_BATCH_SIZE)
             );
         }
     }
 
-    private DataSetIterator getRawIterator(List<String> humans, List<String> companies, int numSamples) {
+    private DataSetIterator getRawIterator(List<String> humans, List<String> companies, int numSamples, int batchSize) {
         System.out.println("Iterator with "+humans.size()+" humans and "+companies.size()+" companies...");
         return new DataSetIterator() {
             Random rand = new Random(69);

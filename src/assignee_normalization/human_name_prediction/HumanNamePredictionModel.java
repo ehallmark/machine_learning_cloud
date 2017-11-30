@@ -25,10 +25,7 @@ import seeding.Constants;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
@@ -63,10 +60,16 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
 
         DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
-        Function<ComputationGraph,Double> testErrorFunction = (net) -> {
-            return test(validationIterator,net);
-        };
+        System.out.println("Loading validation iterator...");
+        List<DataSet> validationDataSets = new ArrayList<>();
+        while(validationIterator.hasNext()) {
+            validationDataSets.add(validationIterator.next());
+        }
 
+        System.out.println("Done.");
+        Function<ComputationGraph,Double> testErrorFunction = (net) -> {
+            return test(validationDataSets,net);
+        };
         Function3<ComputationGraph,LocalDateTime,Double,Void> saveFunction = (net, datetime, score) -> {
             try {
                 save(datetime,score,net);
@@ -204,7 +207,8 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
     }
 
 
-    private double test(DataSetIterator iterator, ComputationGraph net) {
+    private double test(List<DataSet> dataSets, ComputationGraph net) {
+        Iterator<DataSet> iterator = dataSets.iterator();
         System.out.println("Train score: "+net.score());
         Evaluation eval = new Evaluation(2);
         while(iterator.hasNext()) {
@@ -215,7 +219,6 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
             net.clearLayerMaskArrays();
             eval.evalTimeSeries(ds.getLabels(),outputs,labelMask);
         }
-        iterator.reset();
         System.out.println(eval.stats());
         return 1d - eval.f1();
     }
