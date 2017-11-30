@@ -191,14 +191,14 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
 
     private List<HyperParameter> getModelParameters() {
         return Arrays.asList(
-                new LearningRateParameter(0.001,0.15),
+                new LearningRateParameter(0.01,0.01),
                 new UpdaterParameter(Arrays.asList(
-                        Updater.RMSPROP,
-                        Updater.ADAM
+                        Updater.RMSPROP//,
+                        //Updater.ADAM
                 )),
                 new ActivationFunctionParameter(Arrays.asList(
-                        Activation.TANH,
-                        Activation.LEAKYRELU
+                        Activation.TANH//,
+                        //Activation.LEAKYRELU
                 ))
         );
     }
@@ -212,11 +212,12 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
             INDArray labelMask = ds.getLabelsMaskArray();
             net.setLayerMaskArrays(new INDArray[]{ds.getFeaturesMaskArray()},new INDArray[]{ds.getLabelsMaskArray()});
             INDArray outputs = net.output(false,ds.getFeatures())[0];
-
+            net.clearLayerMaskArrays();
             System.out.println("Shape of actual labels: "+ds.getLabels().shapeInfoToString());
             System.out.println("Shape of predicted labels: "+outputs.shapeInfoToString());
             eval.evalTimeSeries(ds.getLabels(),outputs,labelMask);
         }
+        iterator.reset();
         System.out.println(eval.stats());
         return 1d - eval.f1();
     }
