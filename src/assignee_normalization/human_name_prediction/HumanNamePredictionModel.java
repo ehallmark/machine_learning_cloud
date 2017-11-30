@@ -190,7 +190,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                 new LayerWrapper("l3", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l1","l2"),
                 new LayerWrapper("l4", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l2","l3"),
                 new LayerWrapper("l5", newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"rnn_to_dense1","rnn_to_dense2"),
-                new LayerWrapper("y", newOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l5")
+                new LayerWrapper("y", newOutputLayer(hiddenLayerSize,outputSize), "l5")
         );
     }
 
@@ -217,9 +217,12 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
     }
 
 
-    private double test(INDArray input, INDArray output, ComputationGraph net) {
+    private double test(DataSetIterator iterator, ComputationGraph net) {
         Evaluation eval = new Evaluation(2);
-        eval.eval(output, net.output(false,input)[0]);
+        while(iterator.hasNext()) {
+            DataSet next = iterator.next();
+            eval.eval(next.getLabels(), net.output(false, next.getFeatureMatrix())[0]);
+        }
         System.out.println(eval.stats());
         return 1d - eval.f1();
     }

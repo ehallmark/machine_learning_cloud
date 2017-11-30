@@ -241,7 +241,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         valHumans.addAll(allHumans.subList(numTests/2,numTests));
 
         trainCompanies.addAll(allCompanies.subList(numTests,allCompanies.size()));
-        trainHumans.addAll(allHumans.subList(numTests,allCompanies.size()));
+        trainHumans.addAll(allHumans.subList(numTests,allHumans.size()));
 
         Collections.shuffle(trainCompanies);
         Collections.shuffle(testCompanies);
