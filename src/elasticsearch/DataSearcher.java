@@ -172,6 +172,11 @@ public class DataSearcher {
                 // TODO HANDLE THIS SPECIAL CASE
                 // THE CODE BELOW DOES NOT WORK!!! (need access to similarity vectors)
                 // Figure out why this doesn't happen automatically
+                // ANOTHER OPTION IS TO FORBID SIMILARITY FILTERING UNLESS SORTING BY SIMILARITY
+                //   POSSIBILITY TO INCORPORATE A FEEDBACK ON SEARCH
+                //      --1 CASE WHERE THIS SPECIAL CASE HAPPENS
+                //      --2 CASE WHERE Similarity Vectors are missing
+                //      --3 ANYTHING ELSE?
                 System.out.println("Special case!!!");
                 QueryBuilder specialCaseFilter = new AbstractGreaterThanFilter(new SimilarityAttribute(), AbstractFilter.FilterType.GreaterThan, similarityThreshold).getScriptFilter();
                 System.out.println("Special case filter: "+specialCaseFilter.toString());
