@@ -219,7 +219,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         getAllHumanNames();
         getAllCompanyNames();
 
-        int numTests = 10000;
+        int numTests = 20000;
         int seed = 569;
 
         List<String> allCompanies = new ArrayList<>(companyNames);
@@ -259,19 +259,21 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         if(datasetManager==null) {
             if(trainHumans==null) splitData();
             datasetManager = new NoSaveDataSetManager<>(
-                    getRawIterator(trainHumans,trainCompanies,1000000,BATCH_SIZE),
-                    getRawIterator(testHumans,testCompanies,10000,TEST_BATCH_SIZE),
-                    getRawIterator(valHumans,valCompanies,10000,TEST_BATCH_SIZE)
+                    getRawIterator(trainHumans,trainCompanies,5000000,BATCH_SIZE,true),
+                    getRawIterator(testHumans,testCompanies,20000,TEST_BATCH_SIZE,false),
+                    getRawIterator(valHumans,valCompanies,20000,TEST_BATCH_SIZE,false)
             );
         }
     }
 
-    private DataSetIterator getRawIterator(List<String> humans, List<String> companies, int numSamples, int batchSize) {
-        System.out.println("Iterator with "+humans.size()+" humans and "+companies.size()+" companies...");
+    private DataSetIterator getRawIterator(List<String> _humans, List<String> _companies, int numSamples, int batchSize, boolean replace) {
+        System.out.println("Iterator with "+_humans.size()+" humans and "+_companies.size()+" companies...");
         return new DataSetIterator() {
             Random rand = new Random(69);
             AtomicInteger cnt = new AtomicInteger(0);
             AtomicBoolean flip = new AtomicBoolean(false);
+            List<String> companiesRemaining = new ArrayList<>(_companies);
+            List<String> humansRemaining = new ArrayList<>(_humans);
             @Override
             public DataSet next(int batch) {
                 INDArray features = Nd4j.create(batch,this.inputColumns(),MAX_NAME_LENGTH);
@@ -282,7 +284,9 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                 while(idx < batch && hasNext()) {
                     float[] mask = new float[MAX_NAME_LENGTH];
                     boolean isHuman = flip.getAndSet(!flip.get());
-                    String name = (isHuman ? humans.get(rand.nextInt(humans.size())) : companies.get(rand.nextInt(companies.size())))
+                    List<String> toSampleFrom = isHuman ? humansRemaining : companiesRemaining;
+                    int randIdx = rand.nextInt(toSampleFrom.size());
+                    String name = (replace ? toSampleFrom.get(randIdx) : toSampleFrom.remove(randIdx))
                             .toLowerCase().trim()+" ";
 
                     int labelIdx = isHuman ? 1 : 0;
@@ -319,11 +323,6 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                     INDArray labelMask = Nd4j.zeros(idx, MAX_NAME_LENGTH);
                     labelMask.putColumn(MAX_NAME_LENGTH - 1, Nd4j.ones(idx));
 
-                    //System.out.println("Label shape: "+labels.shapeInfoToString());
-                    //System.out.println("Label Mask shape: "+labelMask.shapeInfoToString());
-                    //System.out.println("Feature shape: "+features.shapeInfoToString());
-                    //System.out.println("Feature Mask shape: "+featureMask.shapeInfoToString());
-
                     return new DataSet(features, labels, featureMask, labelMask);
                 } else {
                     return null;
@@ -357,6 +356,8 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
 
             @Override
             public void reset() {
+                List<String> companiesRemaining = new ArrayList<>(_companies);
+                List<String> humansRemaining = new ArrayList<>(_humans);
                 cnt.set(0);
             }
 
@@ -392,7 +393,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
 
             @Override
             public synchronized boolean hasNext() {
-                return cnt.get()<numSamples;
+                return cnt.get()<numSamples && humansRemaining.size()>0 && companiesRemaining.size()>0;
             }
 
             @Override
