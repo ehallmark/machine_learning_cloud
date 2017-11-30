@@ -176,7 +176,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                 new LayerWrapper("l2", newGravesLSTMLayer(inputSize+hiddenLayerSize,hiddenLayerSize), "x","l1"),
                 new LayerWrapper("l3", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l1","l2"),
                 //new LayerWrapper("l4", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l2","l3"),
-                new LayerWrapper("y", newRNNOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l2","l3")
+                new LayerWrapper("y", newRNNOutputLayer(hiddenLayerSize,outputSize), "l3")
         );
     }
 
@@ -204,6 +204,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
 
 
     private double test(DataSetIterator iterator, ComputationGraph net) {
+        System.out.println("Train score: "+net.score());
         Evaluation eval = net.evaluate(iterator,Arrays.asList("company","human"));
         System.out.println(eval.stats());
         return 1d - eval.f1();
