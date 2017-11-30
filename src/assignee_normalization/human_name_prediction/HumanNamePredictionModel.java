@@ -205,7 +205,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
 
 
     private double test(DataSetIterator iterator, ComputationGraph net) {
-        Evaluation eval = net.evaluate(iterator);
+        Evaluation eval = net.evaluate(iterator,Arrays.asList("company","human"));
         System.out.println(eval.stats());
         return 1d - eval.f1();
     }
