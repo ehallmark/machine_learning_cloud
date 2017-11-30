@@ -23,9 +23,9 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 11/30/2017.
@@ -46,6 +46,12 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
     private Set<String> humanNames;
     private Set<String> companyNames;
     private String modelName;
+    private List<String> testHumans;
+    private List<String> trainHumans;
+    private List<String> valHumans;
+    private List<String> testCompanies;
+    private List<String> trainCompanies;
+    private List<String> valCompanies;
     private HumanNamePredictionPipelineManager(File dataFolder, File finalPredictionsFile, String modelName) {
         super(dataFolder, finalPredictionsFile);
         this.modelName=modelName;
@@ -213,48 +219,54 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         int numTests = 10000;
         int seed = 569;
 
-        List<String> allCompanies = new ArrayList<>(companyNames.stream().map(name->"0"+name).collect(Collectors.toList()));
-        List<String> allHumans = new ArrayList<>(humanNames.stream().map(name->"1"+name).collect(Collectors.toList()));
+        List<String> allCompanies = new ArrayList<>(companyNames);
+        List<String> allHumans = new ArrayList<>(humanNames);
 
         Collections.shuffle(allCompanies,new Random(seed));
         Collections.shuffle(allHumans, new Random(seed));
 
-        testAssets = new ArrayList<>();
-        trainAssets = new ArrayList<>();
-        validationAssets = new ArrayList<>();
+        trainCompanies = new ArrayList<>();
+        testCompanies = new ArrayList<>();
+        valCompanies = new ArrayList<>();
 
-        testAssets.addAll(allCompanies.subList(0,numTests/2));
-        testAssets.addAll(allHumans.subList(0,numTests/2));
+        trainHumans = new ArrayList<>();
+        testHumans = new ArrayList<>();
+        valHumans = new ArrayList<>();
 
-        validationAssets.addAll(allCompanies.subList(numTests/2,numTests));
-        validationAssets.addAll(allHumans.subList(numTests/2,numTests));
+        testCompanies.addAll(allCompanies.subList(0,numTests/2));
+        testHumans.addAll(allHumans.subList(0,numTests/2));
 
-        trainAssets.addAll(allCompanies.subList(numTests,allCompanies.size()));
-        trainAssets.addAll(allHumans.subList(numTests,allCompanies.size()));
+        valCompanies.addAll(allCompanies.subList(numTests/2,numTests));
+        valHumans.addAll(allHumans.subList(numTests/2,numTests));
 
-        Collections.shuffle(trainAssets);
-        Collections.shuffle(testAssets);
-        Collections.shuffle(validationAssets);
+        trainCompanies.addAll(allCompanies.subList(numTests,allCompanies.size()));
+        trainHumans.addAll(allHumans.subList(numTests,allCompanies.size()));
 
-        System.out.println("Num training: "+trainAssets.size());
-        System.out.println("Num test: "+testAssets.size());
-        System.out.println("Num validation: "+validationAssets.size());
+        Collections.shuffle(trainCompanies);
+        Collections.shuffle(testCompanies);
+        Collections.shuffle(valCompanies);
+        Collections.shuffle(trainHumans);
+        Collections.shuffle(testHumans);
+        Collections.shuffle(valHumans);
+
     }
 
     @Override
     protected void setDatasetManager() {
         if(datasetManager==null) {
             datasetManager = new NoSaveDataSetManager<>(
-                    getRawIterator(trainAssets),
-                    getRawIterator(testAssets),
-                    getRawIterator(validationAssets)
+                    getRawIterator(trainHumans,trainCompanies,1000000),
+                    getRawIterator(testHumans,testCompanies,10000),
+                    getRawIterator(valHumans,valCompanies,10000)
             );
         }
     }
 
-    private DataSetIterator getRawIterator(List<String> names) {
+    private DataSetIterator getRawIterator(List<String> humans, List<String> companies, int numSamples) {
         return new DataSetIterator() {
-            Iterator<String> iterator = names.iterator();
+            Random rand = new Random(69);
+            AtomicInteger cnt = new AtomicInteger(0);
+            AtomicBoolean flip = new AtomicBoolean(false);
             @Override
             public DataSet next(int batch) {
                 INDArray features = Nd4j.create(batch(),this.inputColumns(),MAX_NAME_LENGTH);
@@ -262,10 +274,13 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                 INDArray labels = Nd4j.zeros(batch(),2);
 
                 int idx = 0;
-                while(idx < batch && iterator.hasNext()) {
+                while(idx < batch && hasNext()) {
                     float[] mask = new float[MAX_NAME_LENGTH];
-                    String name = iterator.next().toLowerCase().trim()+" ";
-                    String labelStr = name.substring(0,1);
+                    boolean isHuman = flip.getAndSet(!flip.get());
+                    String name = (isHuman ? humans.get(rand.nextInt(humans.size())) : companies.get(rand.nextInt(companies.size())))
+                            .toLowerCase().trim()+" ";
+
+                    int labelIdx = isHuman ? 1 : 0;
                     name = name.substring(1);
                     float[][] x = new float[MAX_NAME_LENGTH][this.inputColumns()];
                     for(int i = 0; i < MAX_NAME_LENGTH; i++) { x[i] = new float[this.inputColumns()];}
@@ -283,8 +298,9 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                     }
                     features.put(new INDArrayIndex[]{NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()},Nd4j.create(x));
                     featureMask.putRow(idx,Nd4j.create(mask));
-                    labels.putScalar(Integer.valueOf(labelStr),1);
+                    labels.putScalar(labelIdx,1);
                     idx++;
+                    cnt.getAndIncrement();
                 }
 
                 if(idx < batch) {
@@ -298,7 +314,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
 
             @Override
             public int totalExamples() {
-                return names.size();
+                return numSamples;
             }
 
             @Override
@@ -318,12 +334,12 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
 
             @Override
             public boolean asyncSupported() {
-                return true;
+                return false;
             }
 
             @Override
             public void reset() {
-                iterator=names.iterator();
+                cnt.set(0);
             }
 
             @Override
@@ -338,7 +354,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
 
             @Override
             public int numExamples() {
-                return names.size();
+                return numSamples;
             }
 
             @Override
@@ -358,7 +374,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
 
             @Override
             public synchronized boolean hasNext() {
-                return iterator.hasNext();
+                return cnt.get()<numSamples;
             }
 
             @Override

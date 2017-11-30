@@ -165,6 +165,8 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
                 // output layer
                 Arrays.asList(
                         new ActivationFunctionParameter(Arrays.asList(
