@@ -77,7 +77,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
         };
 
         // Optimizer
-        int numNetworks = 4;
+        int numNetworks = 1;
         final int outputSize = 2;
         final int inputSize = pipelineManager.inputSize();
         final int hiddenLayerSize = 64;
