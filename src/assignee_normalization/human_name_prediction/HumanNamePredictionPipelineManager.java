@@ -78,14 +78,14 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
     }
 
     public Set<String> getAllHumanNames() {
-        if(humanNames!=null) {
+        if(humanNames==null) {
             humanNames = (Set<String>)Database.tryLoadObject(allHumanNamesFile);
         }
         return humanNames;
     }
 
     public Set<String> getAllCompanyNames() {
-        if(companyNames!=null) {
+        if(companyNames==null) {
             companyNames = (Set<String>)Database.tryLoadObject(allCompanyNamesFile);
         }
         return companyNames;
