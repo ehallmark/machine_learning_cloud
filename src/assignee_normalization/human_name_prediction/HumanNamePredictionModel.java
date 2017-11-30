@@ -83,7 +83,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
         int numNetworks = 1;
         final int outputSize = 2;
         final int inputSize = pipelineManager.inputSize();
-        final int hiddenLayerSize = 124;
+        final int hiddenLayerSize = 96;
         final MultiScoreReporter reporter = new MultiScoreReporter(numNetworks, 3);
         final String[] inputs = new String[]{"x"};
         final String[] outputs = new String[]{"y"};
