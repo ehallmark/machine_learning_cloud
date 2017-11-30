@@ -18,6 +18,7 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Constants;
@@ -176,7 +177,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                 new LayerWrapper("l2", newGravesLSTMLayer(inputSize+hiddenLayerSize,hiddenLayerSize), "x","l1"),
                 new LayerWrapper("l3", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l1","l2"),
                 //new LayerWrapper("l4", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l2","l3"),
-                new LayerWrapper("y", newRNNOutputLayer(hiddenLayerSize,outputSize), "l3")
+                new LayerWrapper("y", newRNNOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l2","l3")
         );
     }
 
@@ -205,7 +206,14 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
 
     private double test(DataSetIterator iterator, ComputationGraph net) {
         System.out.println("Train score: "+net.score());
-        Evaluation eval = net.evaluate(iterator,Arrays.asList("company","human"));
+        Evaluation eval = new Evaluation(2);
+        while(iterator.hasNext()) {
+            DataSet ds = iterator.next();
+            INDArray labelMask = ds.getLabelsMaskArray();
+            net.setLayerMaskArrays(new INDArray[]{ds.getFeaturesMaskArray()},new INDArray[]{ds.getLabelsMaskArray()});
+            INDArray outputs = net.output(false,ds.getFeatures())[0];
+            eval.evalTimeSeries(ds.getLabels(),outputs,labelMask);
+        }
         System.out.println(eval.stats());
         return 1d - eval.f1();
     }
