@@ -7,6 +7,7 @@ import data_pipeline.vectorize.NoSaveDataSetManager;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import lombok.NonNull;
+import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
@@ -261,7 +262,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         if(datasetManager==null) {
             if(trainHumans==null) splitData();
             datasetManager = new NoSaveDataSetManager<>(
-                    getRawIterator(trainHumans,trainCompanies,5000000,BATCH_SIZE,true),
+                    new AsyncDataSetIterator(getRawIterator(trainHumans,trainCompanies,5000000,BATCH_SIZE,true),2),
                     getRawIterator(testHumans,testCompanies,20000,TEST_BATCH_SIZE,false),
                     getRawIterator(valHumans,valCompanies,20000,TEST_BATCH_SIZE,false)
             );
