@@ -141,6 +141,9 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         SearchResponse response = request.get();
         DataSearcher.iterateOverSearchResults(response, hitTransformer, limit,false);
 
+        System.out.println("Total number of human names: "+humanNames.size());
+        System.out.println("Total number of company names: "+companyNames.size());
+
         // save results
         Database.saveObject(companyNames,allCompanyNamesFile);
         Database.saveObject(humanNames,allHumanNamesFile);
@@ -169,6 +172,6 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         getAllHumanNames();
         getAllCompanyNames();
 
-        
+        int numTests = 10000;
     }
 }
