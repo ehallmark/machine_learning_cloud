@@ -6,6 +6,7 @@ import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
+import lombok.NonNull;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
@@ -18,6 +19,7 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.portfolios.items.Item;
@@ -42,7 +44,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
     private static final File INPUT_DATA_FOLDER = new File("human_name_prediction_input_data/");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"human_name_assignee_predictions/predictions_map.jobj");
     public static final int MAX_NAME_LENGTH = 96;
-    public static final int BATCH_SIZE = 16;
+    public static final int BATCH_SIZE = 32;
     public static final int TEST_BATCH_SIZE = 512;
 
     private Set<String> humanNames;
@@ -266,8 +268,30 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         }
     }
 
+    public Pair<INDArray,INDArray> getFeaturesAndFeatureMask(@NonNull String name) {
+        name = name.toLowerCase().trim()+" ";
+        float[][] x = new float[MAX_NAME_LENGTH][this.inputSize()];
+        float[] mask = new float[MAX_NAME_LENGTH];
+        for(int i = 0; i < MAX_NAME_LENGTH; i++) { x[i] = new float[this.inputSize()];}
+        for(int i = 0; i < name.length() && i < MAX_NAME_LENGTH; i++) {
+            mask[i]=1;
+            char c = name.charAt(i);
+            float[] xi = x[i];
+            int pos = Arrays.binarySearch(VALID_CHARS,c);
+            if(pos>=0) {
+                // exists
+                xi[pos]=1;
+            } else {
+                xi[xi.length-1]=1;
+            }
+        }
+        return new Pair<>(Nd4j.create(x).transposei(),Nd4j.create(mask));
+    }
+
     private DataSetIterator getRawIterator(List<String> _humans, List<String> _companies, int numSamples, int batchSize, boolean replace) {
         System.out.println("Iterator with "+_humans.size()+" humans and "+_companies.size()+" companies...");
+        INDArray labelMaskCopy = Nd4j.zeros(batchSize, MAX_NAME_LENGTH);
+        labelMaskCopy.putColumn(MAX_NAME_LENGTH - 1, Nd4j.ones(batchSize));
         return new DataSetIterator() {
             Random rand = new Random(69);
             AtomicInteger cnt = new AtomicInteger(0);
@@ -278,53 +302,36 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
             @Override
             public DataSet next(int batch) {
                 INDArray features = Nd4j.create(batch,this.inputColumns(),MAX_NAME_LENGTH);
-                INDArray labels = Nd4j.zeros(batch,this.totalOutcomes(),MAX_NAME_LENGTH);
                 INDArray featureMask = Nd4j.create(batch,MAX_NAME_LENGTH);
-
+                INDArray labels = Nd4j.zeros(batch(),this.totalOutcomes(),MAX_NAME_LENGTH);
                 int idx = 0;
                 while(idx < batch && hasNext()) {
-                    float[] mask = new float[MAX_NAME_LENGTH];
                     boolean isHuman = flip.getAndSet(!flip.get());
                     List<String> toSampleFrom = isHuman ? humansRemaining : companiesRemaining;
                     int randIdx = rand.nextInt(toSampleFrom.size());
-                    String name = (replace ? toSampleFrom.get(randIdx) : toSampleFrom.remove(randIdx))
-                            .toLowerCase().trim()+" ";
+                    String name = (replace ? toSampleFrom.get(randIdx) : toSampleFrom.remove(randIdx));
+
+                    Pair<INDArray,INDArray> featuresAndMask = getFeaturesAndFeatureMask(name);
+                    features.put(new INDArrayIndex[]{NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()},featuresAndMask.getFirst());
+                    featureMask.putRow(idx,featuresAndMask.getSecond());
 
                     int labelIdx = isHuman ? 1 : 0;
-                    name = name.substring(1);
-                    float[][] x = new float[MAX_NAME_LENGTH][this.inputColumns()];
-                    for(int i = 0; i < MAX_NAME_LENGTH; i++) { x[i] = new float[this.inputColumns()];}
-                    for(int i = 0; i < name.length() && i < MAX_NAME_LENGTH; i++) {
-                        mask[i]=1;
-                        char c = name.charAt(i);
-                        float[] xi = x[i];
-                        int pos = Arrays.binarySearch(VALID_CHARS,c);
-                        if(pos>=0) {
-                            // exists
-                            xi[pos]=1;
-                        } else {
-                            xi[xi.length-1]=1;
-                        }
-                    }
-                    features.put(new INDArrayIndex[]{NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()},Nd4j.create(x).transposei());
-                    featureMask.putRow(idx,Nd4j.create(mask));
                     labels.put(new int[]{idx,labelIdx,MAX_NAME_LENGTH-1}, Nd4j.scalar(1d));
                     idx++;
                     cnt.getAndIncrement();
                 }
                 gcIdx++;
-                if(gcIdx%10==0) {
+                if(gcIdx%20==0) {
                     System.gc();
                 }
                 if(idx>0) {
+                    INDArray labelMask = labelMaskCopy;
                     if (idx < batch) {
                         features = features.get(NDArrayIndex.interval(0, idx), NDArrayIndex.all(), NDArrayIndex.all());
                         featureMask = featureMask.get(NDArrayIndex.interval(0, idx), NDArrayIndex.all());
                         labels = labels.get(NDArrayIndex.interval(0, idx), NDArrayIndex.all(), NDArrayIndex.all());
+                        labelMask = labelMask.get(NDArrayIndex.interval(0,idx), NDArrayIndex.all());
                     }
-
-                    INDArray labelMask = Nd4j.zeros(idx, MAX_NAME_LENGTH);
-                    labelMask.putColumn(MAX_NAME_LENGTH - 1, Nd4j.ones(idx));
 
                     return new DataSet(features, labels, featureMask, labelMask);
                 } else {

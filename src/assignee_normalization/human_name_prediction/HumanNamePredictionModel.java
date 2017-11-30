@@ -11,6 +11,7 @@ import data_pipeline.optimize.parameters.impl.ActivationFunctionParameter;
 import data_pipeline.optimize.parameters.impl.LearningRateParameter;
 import data_pipeline.optimize.parameters.impl.LossFunctionParameter;
 import data_pipeline.optimize.parameters.impl.UpdaterParameter;
+import lombok.NonNull;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
@@ -20,7 +21,10 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 
 import java.io.File;
@@ -51,6 +55,37 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
 
         // assignees.forEach(->assignee ...
         return null;
+    }
+
+    private Map<String,Boolean> isHuman(@NonNull String... names) {
+        List<INDArray> allMasks = new ArrayList<>();
+        List<INDArray> allFeatures = new ArrayList<>();
+        for(String name : names) {
+            Pair<INDArray,INDArray> featuresAndMask = pipelineManager.getFeaturesAndFeatureMask(name);
+            allMasks.add(featuresAndMask.getFirst());
+            allFeatures.add(featuresAndMask.getSecond());
+        }
+        INDArray features = Nd4j.vstack(allMasks);
+        INDArray mask = Nd4j.vstack(allMasks);
+        INDArray labelMask = Nd4j.zeros(features.shape()[0],features.shape()[2]);
+        labelMask.putColumn(labelMask.columns()-1,Nd4j.ones(labelMask.rows()));
+        net.setLayerMaskArrays(new INDArray[]{mask}, new INDArray[]{labelMask});
+        INDArray output = net.output(false,features)[0];
+        net.clearLayerMaskArrays();
+        INDArray predictions = output.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(output.shape()[2]-1));
+        Map<String,Boolean> predictionMap = new HashMap<>();
+        float[] probCompany = predictions.getColumn(0).data().asFloat();
+        float[] probHuman = predictions.getColumn(1).data().asFloat();
+        for(int i = 0; i < names.length; i++) {
+            if (probCompany[i] > probHuman[i]) {
+                System.out.println(names[i]+" is a company!");
+                predictionMap.put(names[i],false);
+            } else {
+                System.out.println(names[i]+" is a human!");
+                predictionMap.put(names[i],true);
+            }
+        }
+        return predictionMap;
     }
 
     @Override
@@ -222,6 +257,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
             System.gc();
         }
         System.out.println(eval.stats());
+        isHuman("hallmark, evan", "linkedin, llc", "microsoft corporation", "google", "lubitz, michael");
         return 1d - eval.f1();
     }
 }
