@@ -272,9 +272,11 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
             AtomicBoolean flip = new AtomicBoolean(false);
             @Override
             public DataSet next(int batch) {
-                INDArray features = Nd4j.create(batch(),this.inputColumns(),MAX_NAME_LENGTH);
+                INDArray features = Nd4j.create(batch,this.inputColumns(),MAX_NAME_LENGTH);
+                INDArray labelMask = Nd4j.create(batch,MAX_NAME_LENGTH);
+                labelMask.putColumn(MAX_NAME_LENGTH-1,Nd4j.ones(batch));
+                INDArray labels = Nd4j.zeros(batch(),this.totalOutcomes(),MAX_NAME_LENGTH);
                 INDArray featureMask = Nd4j.create(batch(),MAX_NAME_LENGTH);
-                INDArray labels = Nd4j.zeros(batch(),2);
 
                 int idx = 0;
                 while(idx < batch && hasNext()) {
@@ -299,9 +301,9 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                             xi[xi.length-1]=1;
                         }
                     }
-                    features.put(new INDArrayIndex[]{NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()},Nd4j.create(x));
+                    features.put(new INDArrayIndex[]{NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()},Nd4j.create(x).transposei());
                     featureMask.putRow(idx,Nd4j.create(mask));
-                    labels.putScalar(labelIdx,1);
+                    labels.putScalar(labelIdx,1,MAX_NAME_LENGTH-1);
                     idx++;
                     cnt.getAndIncrement();
                 }
@@ -312,10 +314,11 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                     labels = labels.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
                 }
 
-                System.out.println("Label shape: "+labels.shapeInfoToString());
-                System.out.println("Feature shape: "+features.shapeInfoToString());
-                System.out.println("Feature Mask shape: "+featureMask.shapeInfoToString());
-                
+                //System.out.println("Label shape: "+labels.shapeInfoToString());
+                //System.out.println("Label Mask shape: "+labelMask.shapeInfoToString());
+                //System.out.println("Feature shape: "+features.shapeInfoToString());
+                //System.out.println("Feature Mask shape: "+featureMask.shapeInfoToString());
+
                 return new DataSet(features,labels,featureMask,null);
             }
 

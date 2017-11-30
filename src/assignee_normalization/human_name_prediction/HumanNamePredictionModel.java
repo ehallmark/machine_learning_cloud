@@ -14,9 +14,7 @@ import data_pipeline.optimize.parameters.impl.UpdaterParameter;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
-import org.deeplearning4j.nn.conf.graph.PreprocessorVertex;
 import org.deeplearning4j.nn.conf.inputs.InputType;
-import org.deeplearning4j.nn.conf.preprocessor.RnnToFeedForwardPreProcessor;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
@@ -157,7 +155,6 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),
-                Collections.emptyList(),
                 // output layer
                 Arrays.asList(
                         new ActivationFunctionParameter(Arrays.asList(
@@ -180,15 +177,14 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                 new LayerWrapper("l2", newGravesLSTMLayer(inputSize+hiddenLayerSize,hiddenLayerSize), "x","l1"),
                 new LayerWrapper("l3", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l1","l2"),
                 new LayerWrapper("l4", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l2","l3"),
-                new LayerWrapper("l5", newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"rnn_to_dense1","rnn_to_dense2"),
-                new LayerWrapper("y", newOutputLayer(hiddenLayerSize,outputSize), "l5")
+                new LayerWrapper("y", newRNNOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l3","l4")
         );
     }
 
     private List<VertexWrapper> getVertexModels() {
         return Arrays.asList(
-                new VertexWrapper("rnn_to_dense1",new PreprocessorVertex(new RnnToFeedForwardPreProcessor()),"l3"),
-                new VertexWrapper("rnn_to_dense2",new PreprocessorVertex(new RnnToFeedForwardPreProcessor()),"l4")
+                //new VertexWrapper("rnn_to_dense1",new PreprocessorVertex(new RnnToFeedForwardPreProcessor()),"l3"),
+                //new VertexWrapper("rnn_to_dense2",new PreprocessorVertex(new RnnToFeedForwardPreProcessor()),"l4")
         );
     }
 
