@@ -1,5 +1,6 @@
 package data_pipeline.pipeline_manager;
 
+import ch.qos.logback.classic.Level;
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.vectorize.DataSetManager;
 import lombok.Getter;
@@ -123,5 +124,14 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
         }
 
         if(model==null) initModel(forceRecreateModel);
+    }
+
+    public static void setLoggingLevel(Level level) {
+        try {
+            ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+            root.setLevel(level);
+        } catch (Exception e) {
+            System.out.println("Error setting log level: "+e.getMessage());
+        }
     }
 }

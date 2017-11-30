@@ -3,7 +3,6 @@ package models.similarity_models.deep_word_to_cpc_encoding_model;
 import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
-import data_pipeline.vectorize.NoSaveDataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
@@ -136,12 +135,4 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<DataSet
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
-    public static void setLoggingLevel(Level level) {
-        try {
-            ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-            root.setLevel(level);
-        } catch (Exception e) {
-            System.out.println("Error setting log level: "+e.getMessage());
-        }
-    }
 }

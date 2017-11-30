@@ -1,5 +1,6 @@
 package assignee_normalization.human_name_prediction;
 
+import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
@@ -32,7 +33,7 @@ import java.util.function.Function;
  */
 public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
     public static final String MODEL_NAME = "human_name_prediction_model";
-    public static final char[] VALID_CHARS = new char[]{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',' ','.',',','-','\'','&' };
+    public static final char[] VALID_CHARS = new char[]{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',' ','.',',','-','&' };
     static {
         Arrays.sort(VALID_CHARS);
     }
@@ -404,7 +405,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         int nEpochs = 5;
         String modelName = MODEL_NAME;
 
-        //setLoggingLevel(Level.INFO);
+        setLoggingLevel(Level.INFO);
         HumanNamePredictionPipelineManager pipelineManager = new HumanNamePredictionPipelineManager(modelName);
 
         rebuildPrerequisites = rebuildPrerequisites || !allCompanyNamesFile.exists() || !allHumanNamesFile.exists(); // Check if vocab map exists

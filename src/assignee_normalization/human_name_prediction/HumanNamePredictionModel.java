@@ -77,10 +77,10 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
         };
 
         // Optimizer
-        int numNetworks = 10;
+        int numNetworks = 4;
         final int outputSize = 2;
         final int inputSize = pipelineManager.inputSize();
-        final int hiddenLayerSize = 128;
+        final int hiddenLayerSize = 64;
         final MultiScoreReporter reporter = new MultiScoreReporter(numNetworks, 3);
         final String[] inputs = new String[]{"x"};
         final String[] outputs = new String[]{"y"};
@@ -154,7 +154,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),
-                Collections.emptyList(),
+               // Collections.emptyList(),
                 // output layer
                 Arrays.asList(
                         new ActivationFunctionParameter(Arrays.asList(
@@ -176,8 +176,8 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                 new LayerWrapper("l1", newGravesLSTMLayer(inputSize,hiddenLayerSize), "x"),
                 new LayerWrapper("l2", newGravesLSTMLayer(inputSize+hiddenLayerSize,hiddenLayerSize), "x","l1"),
                 new LayerWrapper("l3", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l1","l2"),
-                new LayerWrapper("l4", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l2","l3"),
-                new LayerWrapper("y", newRNNOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l3","l4")
+                //new LayerWrapper("l4", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l2","l3"),
+                new LayerWrapper("y", newRNNOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l2","l3")
         );
     }
 

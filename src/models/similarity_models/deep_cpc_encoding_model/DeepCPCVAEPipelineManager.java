@@ -3,14 +3,11 @@ package models.similarity_models.deep_cpc_encoding_model;
 import ch.qos.logback.classic.Level;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
-import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
-import lombok.Setter;
 import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import org.nd4j.linalg.api.buffer.DataBuffer;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
@@ -170,12 +167,4 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
-    public static void setLoggingLevel(Level level) {
-        try {
-            ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-            root.setLevel(level);
-        } catch (Exception e) {
-            System.out.println("Error setting log level: "+e.getMessage());
-        }
-    }
 }

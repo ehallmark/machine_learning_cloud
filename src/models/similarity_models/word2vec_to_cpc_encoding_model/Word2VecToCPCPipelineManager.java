@@ -9,7 +9,6 @@ import models.keyphrase_prediction.models.TimeDensityModel;
 import models.keyphrase_prediction.stages.Stage1;
 import models.keyphrase_prediction.stages.ValidWordStage;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
-import models.similarity_models.keyword_encoding_model.KeywordEncodingPipelineManager;
 import models.similarity_models.word2vec_model.Word2VecModel;
 import models.similarity_models.word2vec_model.Word2VecPipelineManager;
 import models.text_streaming.FileTextDataSetIterator;
@@ -20,7 +19,6 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
-import seeding.Database;
 
 import java.io.File;
 import java.util.HashSet;
@@ -146,12 +144,4 @@ public class Word2VecToCPCPipelineManager extends DefaultPipelineManager<DataSet
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
-    public static void setLoggingLevel(Level level) {
-        try {
-            ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-            root.setLevel(level);
-        } catch (Exception e) {
-            System.out.println("Error setting log level: "+e.getMessage());
-        }
-    }
 }
