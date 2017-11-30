@@ -362,7 +362,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
 
             @Override
             public int batch() {
-                return BATCH_SIZE;
+                return batchSize;
             }
 
             @Override
