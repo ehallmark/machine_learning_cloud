@@ -41,7 +41,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
     private static final File allHumanNamesFile = new File(Constants.DATA_FOLDER+"human_name_model_all_human_names.jobj");
     private static final File INPUT_DATA_FOLDER = new File("human_name_prediction_input_data/");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"human_name_assignee_predictions/predictions_map.jobj");
-    public static final int MAX_NAME_LENGTH = 128;
+    public static final int MAX_NAME_LENGTH = 64;
     public static final int BATCH_SIZE = 32;
 
     private Set<String> humanNames;
