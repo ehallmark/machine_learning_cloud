@@ -62,8 +62,8 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
         List<INDArray> allFeatures = new ArrayList<>();
         for(String name : names) {
             Pair<INDArray,INDArray> featuresAndMask = pipelineManager.getFeaturesAndFeatureMask(name);
-            allMasks.add(featuresAndMask.getFirst());
-            allFeatures.add(featuresAndMask.getSecond());
+            allFeatures.add(featuresAndMask.getFirst());
+            allMasks.add(featuresAndMask.getSecond());
         }
         INDArray features = Nd4j.create(allFeatures.size(),allFeatures.get(0).shape()[0],allFeatures.get(0).shape()[1]);
         for(int i = 0; i < allFeatures.size(); i++) {
