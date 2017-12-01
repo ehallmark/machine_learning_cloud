@@ -13,7 +13,7 @@ public class UniformDoubleDistribution implements ParameterDistribution<Double> 
         this.min=min;
         this.rand = new Random(System.currentTimeMillis());
         this.max=max;
-        if(max<=min) throw new RuntimeException("Illegal boundary... min="+min+", max="+max);
+        if(max<min) throw new RuntimeException("Illegal boundary... min="+min+", max="+max);
     }
     @Override
     public Double nextSample() {

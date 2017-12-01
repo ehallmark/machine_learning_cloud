@@ -13,10 +13,11 @@ public class UniformIntegerDistribution implements ParameterDistribution<Integer
         this.min=min;
         this.rand = new Random(System.currentTimeMillis());
         this.max=max;
-        if(max<=min) throw new RuntimeException("Illegal boundary... min="+min+", max="+max);
+        if(max<min) throw new RuntimeException("Illegal boundary... min="+min+", max="+max);
     }
     @Override
     public Integer nextSample() {
+        if(min==max) return min;
         return min + (rand.nextInt(max-min));
     }
 }

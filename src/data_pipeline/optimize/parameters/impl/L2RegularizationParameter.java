@@ -2,7 +2,7 @@ package data_pipeline.optimize.parameters.impl;
 
 import data_pipeline.optimize.parameters.AveragingDoubleHyperParameter;
 import data_pipeline.optimize.parameters.HyperParameter;
-import data_pipeline.optimize.parameters.distributions.UniformDoubleDistribution;
+import data_pipeline.optimize.parameters.distributions.ExponentialDoubleDistribution;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.Layer;
 
@@ -13,7 +13,7 @@ public class L2RegularizationParameter extends AveragingDoubleHyperParameter {
     private double min;
     private double max;
     public L2RegularizationParameter(double min, double max) {
-        super(new UniformDoubleDistribution(min,max));
+        super(new ExponentialDoubleDistribution(min,max,false));
         this.min=min;
         this.max=max;
     }
