@@ -10,7 +10,6 @@ import data_pipeline.optimize.parameters.HyperParameter;
 import data_pipeline.optimize.parameters.impl.*;
 import lombok.NonNull;
 import org.deeplearning4j.eval.Evaluation;
-import org.deeplearning4j.nn.conf.LearningRatePolicy;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.graph.ComputationGraph;
@@ -206,8 +205,6 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptyList(),
                 // output layer
                 Arrays.asList(
                         new ActivationFunctionParameter(Arrays.asList(
@@ -230,9 +227,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                 new LayerWrapper("l2", newGravesLSTMLayer(inputSize+hiddenLayerSize,hiddenLayerSize), "x","l1"),
                 new LayerWrapper("l3", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l1","l2"),
                 new LayerWrapper("l4", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l2","l3"),
-                new LayerWrapper("l5", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l3","l4"),
-                new LayerWrapper("l6", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l4","l5"),
-                new LayerWrapper("y", newRNNOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l5","l6")
+                new LayerWrapper("y", newRNNOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l3","l4")
         );
     }
 
@@ -246,16 +241,11 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
 
     private List<HyperParameter> getModelParameters() {
         return Arrays.asList(
-                new LearningRateParameter(0.025,0.025),
-                new LearningRatePolicyParameter(Arrays.asList(
-                        LearningRatePolicy.Inverse
-                )),
-                new LearningRatePowerParameter(0.7,0.7),
-                new LearningRateWeightDecayParameter(0.00001,0.00001),
-                new L2RegularizationParameter(1e-4,1e-4),
+                new LearningRateParameter(0.01,0.01),
+                //new L2RegularizationParameter(1e-4,1e-4),
                 new UpdaterParameter(Arrays.asList(
-                        //Updater.RMSPROP,
-                        Updater.ADAM
+                        Updater.RMSPROP//,
+                        //Updater.ADAM
                 )),
                 new ActivationFunctionParameter(Arrays.asList(
                         Activation.TANH//,

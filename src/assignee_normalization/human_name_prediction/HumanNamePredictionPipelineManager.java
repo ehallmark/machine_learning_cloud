@@ -417,7 +417,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
     public static void main(String[] args) throws Exception {
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = false;
+        boolean forceRecreateModels = true;
         boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
         boolean rebuildPrerequisites = false;
 
