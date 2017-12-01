@@ -7,7 +7,10 @@ import data_pipeline.models.listeners.MultiScoreReporter;
 import data_pipeline.models.listeners.OptimizationScoreListener;
 import data_pipeline.optimize.nn_optimization.*;
 import data_pipeline.optimize.parameters.HyperParameter;
-import data_pipeline.optimize.parameters.impl.*;
+import data_pipeline.optimize.parameters.impl.ActivationFunctionParameter;
+import data_pipeline.optimize.parameters.impl.LearningRateParameter;
+import data_pipeline.optimize.parameters.impl.LossFunctionParameter;
+import data_pipeline.optimize.parameters.impl.UpdaterParameter;
 import lombok.NonNull;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -24,11 +27,14 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static data_pipeline.optimize.nn_optimization.NNOptimizer.newGravesLSTMLayer;
 import static data_pipeline.optimize.nn_optimization.NNOptimizer.newRNNOutputLayer;
@@ -83,7 +89,31 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
                 predictionMap.put(names[i],true);
             }
         }
+        // print map to csv
+        try {
+            printSampleToCSV(predictionMap);
+        }catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Error while printing sample to csv...");
+        }
         return predictionMap;
+    }
+
+    private static void printSampleToCSV(Map<String,Boolean> predictionMap) throws Exception {
+        Random rand = new Random();
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(new File(Constants.DATA_FOLDER+"human_or_company_predictions.csv")))) {
+            List<String> lines = new ArrayList<>(predictionMap.entrySet().parallelStream()
+                    .map(e->{
+                        String name = e.getKey();
+                        if(e.getValue()) return name+",human";
+                        else return name+",company";
+                    }).collect(Collectors.toList()));
+
+            for(int i = 0; i < 50000 && lines.size()>0; i++) {
+                writer.write(lines.get(rand.nextInt(lines.size()))+"\n");
+            }
+            writer.flush();
+        }
     }
 
     @Override
