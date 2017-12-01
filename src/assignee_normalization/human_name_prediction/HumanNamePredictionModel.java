@@ -54,8 +54,23 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
     @Override
     public Map<String, Boolean> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         // only predicts with assignees
+        int batchSize = 512;
         String[] assigneeArray = assignees.toArray(new String[assignees.size()]);
-        return isHuman(net,assigneeArray);
+        Map<String,Boolean> predictionsMap = new HashMap<>();
+        for(int i = 0; i < assigneeArray.length; i+=batchSize) {
+            int r = Math.min(assigneeArray.length,i+batchSize);
+            Map<String,Boolean> partial = isHuman(net,Arrays.copyOfRange(assigneeArray,i,r));
+            System.out.println("Finished predicting "+r);
+            predictionsMap.putAll(partial);
+        }
+        // print map to csv
+        try {
+            printSampleToCSV(predictionsMap);
+        }catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Error while printing sample to csv...");
+        }
+        return predictionsMap;
     }
 
     private Map<String,Boolean> isHuman(ComputationGraph net, @NonNull String... names) {
@@ -82,19 +97,12 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
         float[] probHuman = predictions.getColumn(1).data().asFloat();
         for(int i = 0; i < names.length; i++) {
             if (probCompany[i] > probHuman[i]) {
-                System.out.println(names[i]+" is a company!");
+                //System.out.println(names[i]+" is a company!");
                 predictionMap.put(names[i],false);
             } else {
-                System.out.println(names[i]+" is a human!");
+                //System.out.println(names[i]+" is a human!");
                 predictionMap.put(names[i],true);
             }
-        }
-        // print map to csv
-        try {
-            printSampleToCSV(predictionMap);
-        }catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Error while printing sample to csv...");
         }
         return predictionMap;
     }
