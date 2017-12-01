@@ -108,14 +108,14 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
         return predictionMap;
     }
 
-    private static void printSampleToCSV(Map<String,Boolean> predictionMap) throws Exception {
+    public static void printSampleToCSV(Map<String,Boolean> predictionMap) throws Exception {
         Random rand = new Random();
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(new File(Constants.DATA_FOLDER+"human_or_company_predictions.csv")))) {
             List<String> lines = new ArrayList<>(predictionMap.entrySet().parallelStream()
                     .map(e->{
                         String name = e.getKey();
-                        if(e.getValue()) return name+",human";
-                        else return name+",company";
+                        if(e.getValue()) return "\""+name+"\",human";
+                        else return "\""+name+"\",company";
                     }).collect(Collectors.toList()));
 
             for(int i = 0; i < 50000 && lines.size()>0; i++) {

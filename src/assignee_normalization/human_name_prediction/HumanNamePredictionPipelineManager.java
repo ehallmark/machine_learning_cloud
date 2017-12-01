@@ -450,8 +450,9 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         boolean rebuildDatasets = false;
         boolean runModels = false;
         boolean forceRecreateModels = false;
-        boolean runPredictions = true;
+        boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
+        boolean reprintCSV = true;
 
         int nEpochs = 5;
         String modelName = MODEL_NAME;
@@ -462,5 +463,10 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         rebuildPrerequisites = rebuildPrerequisites || !allCompanyNamesFile.exists() || !allHumanNamesFile.exists(); // Check if vocab map exists
 
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
+
+        if(reprintCSV) {
+            HumanNamePredictionModel.printSampleToCSV(pipelineManager.loadPredictions());
+        }
+
     }
 }
