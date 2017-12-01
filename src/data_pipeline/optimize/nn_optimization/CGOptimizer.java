@@ -89,7 +89,7 @@ public class CGOptimizer {
                 .filter(net->net.isKeepTraining())
                 .forEach(net->{
                     try {
-                        ((ComputationGraph)net.getNet()).fit(ds);
+                        net.getNet().fit(ds);
                     } catch(StoppingConditionMetException e) {
                         // stop training particular model
                         System.out.println("hit stopping condition for: "+net.describeHyperParameters());
