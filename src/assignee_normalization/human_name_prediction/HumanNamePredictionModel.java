@@ -74,7 +74,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
         return predictionsMap;
     }
 
-    private Map<String,Boolean> isHuman(ComputationGraph net, @NonNull String... names) {
+    public Map<String,Boolean> isHuman(ComputationGraph net, @NonNull String... names) {
         List<INDArray> allMasks = new ArrayList<>();
         List<INDArray> allFeatures = new ArrayList<>();
         for(String name : names) {
