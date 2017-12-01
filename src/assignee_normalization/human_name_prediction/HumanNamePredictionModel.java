@@ -38,7 +38,6 @@ import static data_pipeline.optimize.nn_optimization.NNOptimizer.newRNNOutputLay
  * Created by Evan on 11/30/2017.
  */
 public class HumanNamePredictionModel extends ComputationGraphPredictionModel<INDArray> {
-    public static final int VECTOR_SIZE = 128;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"human_name_prediction_model_data/");
 
     private HumanNamePredictionPipelineManager pipelineManager;
