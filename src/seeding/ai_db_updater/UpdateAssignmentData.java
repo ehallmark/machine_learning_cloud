@@ -14,7 +14,6 @@ import seeding.data_downloader.FileStreamDataDownloader;
 public class UpdateAssignmentData {
 
     private static void ingestData() {
-        boolean testing = true; // TODO CHANGE THIS BACK TO FALSE
         FileStreamDataDownloader downloader = new AssignmentDataDownloader();
         WebIterator iterator = new ZipFileIterator(downloader, "assignments_temp", true, false);
         NestedHandler handler = new USPTOAssignmentHandler();
