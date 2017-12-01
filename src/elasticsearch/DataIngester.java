@@ -144,7 +144,7 @@ public class DataIngester {
     }
 
     public static void updateMongoSet(String collection, Document query, String arrayName, Object value) {
-        Document updateDoc = new Document("$push",new Document(arrayName,value));
+        Document updateDoc = new Document("$addToSet",new Document(arrayName,value));
         WriteModel<Document> model = new UpdateManyModel<>(query, updateDoc);
         addToUpdateMap(collection,model);
     }
