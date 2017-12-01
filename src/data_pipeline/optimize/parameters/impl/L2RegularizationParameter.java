@@ -9,10 +9,10 @@ import org.deeplearning4j.nn.conf.layers.Layer;
 /**
  * Created by ehallmark on 11/10/17.
  */
-public class DropoutParameter extends AveragingDoubleHyperParameter {
+public class L2RegularizationParameter extends AveragingDoubleHyperParameter {
     private double min;
     private double max;
-    public DropoutParameter(double min, double max) {
+    public L2RegularizationParameter(double min, double max) {
         super(new UniformDoubleDistribution(min,max));
         this.min=min;
         this.max=max;
@@ -20,18 +20,18 @@ public class DropoutParameter extends AveragingDoubleHyperParameter {
 
     @Override
     protected HyperParameter<Double> createNew(Double val) {
-        DropoutParameter param = new DropoutParameter(min,max);
+        L2RegularizationParameter param = new L2RegularizationParameter(min,max);
         param.set(val);
         return param;
     }
 
     @Override
     public NeuralNetConfiguration.Builder applyToNetwork(NeuralNetConfiguration.Builder networkBuilder) {
-        return networkBuilder.dropOut(get());
+        return networkBuilder.regularization(true).l2(get()).dropOut(get());
     }
 
     @Override
     public Layer.Builder applyToLayer(Layer.Builder layerBuilder) {
-        return layerBuilder.dropOut(get());
+        return layerBuilder.l2(get());
     }
 }

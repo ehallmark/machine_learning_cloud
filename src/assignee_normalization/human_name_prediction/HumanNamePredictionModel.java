@@ -7,12 +7,10 @@ import data_pipeline.models.listeners.MultiScoreReporter;
 import data_pipeline.models.listeners.OptimizationScoreListener;
 import data_pipeline.optimize.nn_optimization.*;
 import data_pipeline.optimize.parameters.HyperParameter;
-import data_pipeline.optimize.parameters.impl.ActivationFunctionParameter;
-import data_pipeline.optimize.parameters.impl.LearningRateParameter;
-import data_pipeline.optimize.parameters.impl.LossFunctionParameter;
-import data_pipeline.optimize.parameters.impl.UpdaterParameter;
+import data_pipeline.optimize.parameters.impl.*;
 import lombok.NonNull;
 import org.deeplearning4j.eval.Evaluation;
+import org.deeplearning4j.nn.conf.LearningRatePolicy;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.graph.ComputationGraph;
@@ -118,7 +116,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
         };
 
         // Optimizer
-        int numNetworks = 3;
+        int numNetworks = 1;
         final int outputSize = 2;
         final int inputSize = pipelineManager.inputSize();
         final int hiddenLayerSize = 96;
@@ -205,10 +203,12 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
 
     private List<List<HyperParameter>> getLayerParameters() {
         return Arrays.asList(
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptyList(),
+                Collections.singletonList(new DropoutParameter(0.5,0.5)),
+                Collections.singletonList(new DropoutParameter(0.5,0.5)),
+                Collections.singletonList(new DropoutParameter(0.5,0.5)),
+                Collections.singletonList(new DropoutParameter(0.5,0.5)),
+                Collections.singletonList(new DropoutParameter(0.5,0.5)),
+                Collections.singletonList(new DropoutParameter(0.5,0.5)),
                 // output layer
                 Arrays.asList(
                         new ActivationFunctionParameter(Arrays.asList(
@@ -231,7 +231,9 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                 new LayerWrapper("l2", newGravesLSTMLayer(inputSize+hiddenLayerSize,hiddenLayerSize), "x","l1"),
                 new LayerWrapper("l3", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l1","l2"),
                 new LayerWrapper("l4", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l2","l3"),
-                new LayerWrapper("y", newRNNOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l3","l4")
+                new LayerWrapper("l5", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l3","l4"),
+                new LayerWrapper("l6", newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l4","l5"),
+                new LayerWrapper("y", newRNNOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l5","l6")
         );
     }
 
@@ -245,7 +247,13 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
 
     private List<HyperParameter> getModelParameters() {
         return Arrays.asList(
-                new LearningRateParameter(0.001,0.1),
+                new LearningRateParameter(0.05,0.05),
+                new LearningRatePolicyParameter(Arrays.asList(
+                        LearningRatePolicy.Inverse
+                )),
+                new LearningRatePowerParameter(0.7,0.7),
+                new LearningRateWeightDecayParameter(0.00001,0.00001),
+                new L2RegularizationParameter(0.0001,0.0001),
                 new UpdaterParameter(Arrays.asList(
                         //Updater.RMSPROP,
                         Updater.ADAM
