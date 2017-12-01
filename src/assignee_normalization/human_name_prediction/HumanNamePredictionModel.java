@@ -202,12 +202,12 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
 
     private List<List<HyperParameter>> getLayerParameters() {
         return Arrays.asList(
-                Collections.singletonList(new DropoutParameter(0.5,0.5)),
-                Collections.singletonList(new DropoutParameter(0.5,0.5)),
-                Collections.singletonList(new DropoutParameter(0.5,0.5)),
-                Collections.singletonList(new DropoutParameter(0.5,0.5)),
-                Collections.singletonList(new DropoutParameter(0.5,0.5)),
-                Collections.singletonList(new DropoutParameter(0.5,0.5)),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
                 // output layer
                 Arrays.asList(
                         new ActivationFunctionParameter(Arrays.asList(
@@ -246,13 +246,13 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
 
     private List<HyperParameter> getModelParameters() {
         return Arrays.asList(
-                new LearningRateParameter(0.05,0.05),
+                new LearningRateParameter(0.025,0.025),
                 new LearningRatePolicyParameter(Arrays.asList(
                         LearningRatePolicy.Inverse
                 )),
                 new LearningRatePowerParameter(0.7,0.7),
                 new LearningRateWeightDecayParameter(0.00001,0.00001),
-                new L2RegularizationParameter(0.0001,0.0001),
+                new L2RegularizationParameter(1e-4,1e-4),
                 new UpdaterParameter(Arrays.asList(
                         //Updater.RMSPROP,
                         Updater.ADAM
