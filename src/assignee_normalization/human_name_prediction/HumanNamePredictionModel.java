@@ -57,7 +57,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
         return null;
     }
 
-    private Map<String,Boolean> isHuman(@NonNull String... names) {
+    private Map<String,Boolean> isHuman(ComputationGraph net, @NonNull String... names) {
         List<INDArray> allMasks = new ArrayList<>();
         List<INDArray> allFeatures = new ArrayList<>();
         for(String name : names) {
@@ -65,7 +65,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
             allMasks.add(featuresAndMask.getFirst());
             allFeatures.add(featuresAndMask.getSecond());
         }
-        INDArray features = Nd4j.vstack(allMasks);
+        INDArray features = Nd4j.vstack(allFeatures);
         INDArray mask = Nd4j.vstack(allMasks);
         INDArray labelMask = Nd4j.zeros(features.shape()[0],features.shape()[2]);
         labelMask.putColumn(labelMask.columns()-1,Nd4j.ones(labelMask.rows()));
@@ -141,6 +141,10 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
             );
             // initialize optimizer
             optimizer.initNetworkSamples();
+            // initial test
+            optimizer.getNetworkSamples().forEach(networkSample->{
+                testErrorFunction.apply(networkSample.getNet());
+            });
 
             for (int i = 0; i < nEpochs; i++) {
                 System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
@@ -159,6 +163,14 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
                 if(stoppingCondition.get()) break;
                 trainIter.reset();
             }
+
+            // set net to most recent one
+            try {
+                loadMostRecentModel();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+
         } else {
             double newLearningRate = 0.001;
             // no way to change learning rate (yet) for comp graphs
@@ -257,7 +269,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
             System.gc();
         }
         System.out.println(eval.stats());
-        isHuman("hallmark, evan", "linkedin, llc", "microsoft corporation", "google", "lubitz, michael");
+        isHuman(net,"hallmark, evan", "linkedin, llc", "microsoft corporation", "google", "lubitz, michael");
         return 1d - eval.f1();
     }
 }

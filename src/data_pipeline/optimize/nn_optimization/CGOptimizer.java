@@ -6,6 +6,7 @@ import data_pipeline.optimize.parameters.HyperParameter;
 import data_pipeline.optimize.parameters.impl.ActivationFunctionParameter;
 import data_pipeline.optimize.parameters.impl.LearningRateParameter;
 import data_pipeline.optimize.parameters.impl.LossFunctionParameter;
+import lombok.Getter;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.graph.MergeVertex;
@@ -36,7 +37,8 @@ public class CGOptimizer {
     private List<HyperParameter> modelParameters;
     private List<List<HyperParameter>> layerParameters;
     private int nSamples;
-    private List<ModelWrapper> networkSamples;
+    @Getter
+    private List<ModelWrapper<ComputationGraph>> networkSamples;
     private Function<ModelWrapper<ComputationGraph>,Void> addListenerFunction;
     private boolean init = false;
     private String[] inputs;
