@@ -118,7 +118,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
         };
 
         // Optimizer
-        int numNetworks = 1;
+        int numNetworks = 3;
         final int outputSize = 2;
         final int inputSize = pipelineManager.inputSize();
         final int hiddenLayerSize = 96;
@@ -245,7 +245,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
 
     private List<HyperParameter> getModelParameters() {
         return Arrays.asList(
-                new LearningRateParameter(0.01,0.01),
+                new LearningRateParameter(0.001,0.1),
                 new UpdaterParameter(Arrays.asList(
                         //Updater.RMSPROP,
                         Updater.ADAM
