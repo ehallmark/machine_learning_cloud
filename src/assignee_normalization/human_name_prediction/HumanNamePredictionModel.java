@@ -54,13 +54,13 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
     @Override
     public Map<String, Boolean> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         // only predicts with assignees
-        int batchSize = 250;
+        int batchSize = 1000;
         String[] assigneeArray = assignees.toArray(new String[assignees.size()]);
         Map<String,Boolean> predictionsMap = new HashMap<>();
         for(int i = 0; i < assigneeArray.length; i+=batchSize) {
             int r = Math.min(assigneeArray.length,i+batchSize);
             Map<String,Boolean> partial = isHuman(net,Arrays.copyOfRange(assigneeArray,i,r));
-            System.out.println("Finished predicting "+r);
+            System.out.println("Finished predicting "+r+" / "+assigneeArray.length);
             predictionsMap.putAll(partial);
             System.gc();
         }
