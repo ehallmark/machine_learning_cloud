@@ -1,5 +1,6 @@
 package assignee_normalization.human_name_prediction;
 
+import assignee_normalization.name_correction.NormalizeAssignees;
 import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
@@ -30,11 +31,12 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 11/30/2017.
  */
-public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
+public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<DataSetIterator,Boolean> {
     public static final String MODEL_NAME = "human_name_prediction_model";
     public static final char[] VALID_CHARS = new char[]{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',' ','.',',','-','&' };
     static {
@@ -225,8 +227,21 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         int numTests = 20000;
         int seed = 569;
 
-        List<String> allCompanies = new ArrayList<>(companyNames);
-        List<String> allHumans = new ArrayList<>(humanNames);
+        List<String> allCompanies = Collections.synchronizedList(new ArrayList<>(companyNames));
+        List<String> allHumans = Collections.synchronizedList(new ArrayList<>(humanNames));
+
+        // add in data augmentations
+        {   // normalized companies
+            NormalizeAssignees normalizer = new NormalizeAssignees();
+            List<String> tmp = allCompanies.parallelStream()
+                    .map(company->{
+                        String normalized = normalizer.normalizedAssignee(company);
+                        if(normalized!=null && ! normalized.equals(company)) {
+                            return normalized;
+                        } else return null;
+                    }).filter(company->company!=null).collect(Collectors.toList());
+            allCompanies.addAll(tmp);
+        }
 
         Collections.shuffle(allCompanies,new Random(seed));
         Collections.shuffle(allHumans, new Random(seed));
@@ -294,7 +309,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         INDArray labelMaskCopy = Nd4j.zeros(batchSize, MAX_NAME_LENGTH);
         labelMaskCopy.putColumn(MAX_NAME_LENGTH - 1, Nd4j.ones(batchSize));
         return new DataSetIterator() {
-            Random rand = new Random(69);
+            Random rand = new Random(System.currentTimeMillis());
             AtomicInteger cnt = new AtomicInteger(0);
             AtomicBoolean flip = new AtomicBoolean(false);
             List<String> companiesRemaining = new ArrayList<>(_companies);
@@ -417,7 +432,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
     public static void main(String[] args) throws Exception {
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = true;
+        boolean forceRecreateModels = false;
         boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
         boolean rebuildPrerequisites = false;
 

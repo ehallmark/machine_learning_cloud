@@ -36,7 +36,7 @@ import static data_pipeline.optimize.nn_optimization.NNOptimizer.newRNNOutputLay
 /**
  * Created by Evan on 11/30/2017.
  */
-public class HumanNamePredictionModel extends ComputationGraphPredictionModel<INDArray> {
+public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Boolean> {
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"human_name_prediction_model_data/");
 
     private HumanNamePredictionPipelineManager pipelineManager;
@@ -46,11 +46,10 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
     }
 
     @Override
-    public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
+    public Map<String, Boolean> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         // only predicts with assignees
-
-        // assignees.forEach(->assignee ...
-        return null;
+        String[] assigneeArray = assignees.toArray(new String[assignees.size()]);
+        return isHuman(net,assigneeArray);
     }
 
     private Map<String,Boolean> isHuman(ComputationGraph net, @NonNull String... names) {
@@ -174,7 +173,9 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
             double newLearningRate = 0.001;
             // no way to change learning rate (yet) for comp graphs
 
+            net = CGRefactorer.updateNetworkLearningRate(net,newLearningRate,false);
             System.out.println("Conf: "+net.getConfiguration().toYaml());
+
 
             ModelWrapper<ComputationGraph> netWrapper = new ModelWrapper<>(net, Collections.emptyList());
             IterationListener listener = new OptimizationScoreListener<>(reporter, netWrapper, printIterations, testErrorFunction, saveFunction);
