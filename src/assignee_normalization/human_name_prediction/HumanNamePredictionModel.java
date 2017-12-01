@@ -65,7 +65,10 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
             allMasks.add(featuresAndMask.getFirst());
             allFeatures.add(featuresAndMask.getSecond());
         }
-        INDArray features = Nd4j.vstack(allFeatures);
+        INDArray features = Nd4j.create(allFeatures.size(),allFeatures.get(0).shape()[0],allFeatures.get(0).shape()[1]);
+        for(int i = 0; i < allFeatures.size(); i++) {
+            features.get(NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.all()).assign(allFeatures.get(i));
+        }
         INDArray mask = Nd4j.vstack(allMasks);
         INDArray labelMask = Nd4j.zeros(features.shape()[0],features.shape()[2]);
         labelMask.putColumn(labelMask.columns()-1,Nd4j.ones(labelMask.rows()));
@@ -256,6 +259,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
 
 
     private double test(List<DataSet> dataSets, ComputationGraph net) {
+        isHuman(net,"hallmark, evan", "linkedin, llc", "microsoft corporation", "google", "lubitz, michael");
         Iterator<DataSet> iterator = dataSets.iterator();
         System.out.println("Train score: "+net.score());
         Evaluation eval = new Evaluation(2);
@@ -269,7 +273,6 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<IN
             System.gc();
         }
         System.out.println(eval.stats());
-        isHuman(net,"hallmark, evan", "linkedin, llc", "microsoft corporation", "google", "lubitz, michael");
         return 1d - eval.f1();
     }
 }
