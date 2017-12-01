@@ -6,10 +6,6 @@ import seeding.ai_db_updater.iterators.WebIterator;
 import seeding.ai_db_updater.iterators.ZipFileIterator;
 import seeding.data_downloader.AssignmentDataDownloader;
 import seeding.data_downloader.FileStreamDataDownloader;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
-import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
-
-import java.util.Arrays;
 
 
 /**
@@ -18,6 +14,7 @@ import java.util.Arrays;
 public class UpdateAssignmentData {
 
     private static void ingestData() {
+        boolean testing = true; // TODO CHANGE THIS BACK TO FALSE
         FileStreamDataDownloader downloader = new AssignmentDataDownloader();
         WebIterator iterator = new ZipFileIterator(downloader, "assignments_temp", true, false);
         NestedHandler handler = new USPTOAssignmentHandler();
