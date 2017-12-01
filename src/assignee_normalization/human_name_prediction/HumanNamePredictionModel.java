@@ -88,7 +88,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
 
     @Override
     public void train(int nEpochs) {
-        final int printIterations = 500;
+        final int printIterations = 100;
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
 
