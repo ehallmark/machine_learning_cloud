@@ -170,7 +170,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
             }
 
         } else {
-            double newLearningRate = 0.001;
+            double newLearningRate = 0.0005;
             // no way to change learning rate (yet) for comp graphs
 
             net = CGRefactorer.updateNetworkLearningRate(net,newLearningRate,false);

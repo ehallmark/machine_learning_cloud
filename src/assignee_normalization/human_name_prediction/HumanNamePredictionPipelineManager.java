@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Evan on 11/30/2017.
@@ -227,21 +228,9 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         int numTests = 20000;
         int seed = 569;
 
-        List<String> allCompanies = Collections.synchronizedList(new ArrayList<>(companyNames));
-        List<String> allHumans = Collections.synchronizedList(new ArrayList<>(humanNames));
+        List<String> allCompanies = new ArrayList<>(companyNames);
+        List<String> allHumans = new ArrayList<>(humanNames);
 
-        // add in data augmentations
-        {   // normalized companies
-            NormalizeAssignees normalizer = new NormalizeAssignees();
-            List<String> tmp = allCompanies.parallelStream()
-                    .map(company->{
-                        String normalized = normalizer.normalizedAssignee(company);
-                        if(normalized!=null && ! normalized.equals(company)) {
-                            return normalized;
-                        } else return null;
-                    }).filter(company->company!=null).collect(Collectors.toList());
-            allCompanies.addAll(tmp);
-        }
 
         Collections.shuffle(allCompanies,new Random(seed));
         Collections.shuffle(allHumans, new Random(seed));
@@ -262,6 +251,34 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
 
         trainCompanies.addAll(allCompanies.subList(numTests,allCompanies.size()));
         trainHumans.addAll(allHumans.subList(numTests,allHumans.size()));
+
+        // add in data augmentations to (training set only)
+        {   // normalized companies
+            NormalizeAssignees normalizer = new NormalizeAssignees();
+            List<String> normalizedCompanies = trainCompanies.parallelStream()
+                    .map(company->{
+                        String normalized = normalizer.normalizedAssignee(company);
+                        if(normalized!=null && ! normalized.equals(company)) {
+                            return normalized;
+                        } else return null;
+                    }).filter(company->company!=null).collect(Collectors.toList());
+            trainCompanies.addAll(normalizedCompanies);
+            List<String> noPeriod = trainCompanies.parallelStream().map(company->{
+                if(company.endsWith(".")) return company.substring(0,company.length()-1).trim();
+                return null;
+            }).filter(company->company!=null).collect(Collectors.toList());
+            trainCompanies.addAll(noPeriod);
+            List<String> removeLastWord = trainCompanies.parallelStream().map(company->{
+                if(company.contains(" ")) return company.substring(0,company.lastIndexOf(" ")).trim();
+                return null;
+            }).filter(company->company!=null).collect(Collectors.toList());
+            trainCompanies.addAll(removeLastWord);
+            List<String> replaceDashes = trainCompanies.parallelStream().flatMap(company->{
+                if(company.contains("-")) return Stream.of(company.replace("-","").trim(),company.replace("-"," ").trim());
+                return Stream.empty();
+            }).collect(Collectors.toList());
+            trainCompanies.addAll(replaceDashes);
+        }
 
         Collections.shuffle(trainCompanies);
         Collections.shuffle(testCompanies);
