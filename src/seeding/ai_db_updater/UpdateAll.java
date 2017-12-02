@@ -21,10 +21,13 @@ public class UpdateAll {
                     RestoreGatherAndCompDB.main(args);
                 } else if(arg.equals("0")) {
                     UpdatePre2005DataFromPatentDB.main(args);
+                    DataIngester.finishCurrentMongoBatch();
                 } else if (arg.equals("1")) {
                     UpdateBaseApplicationData.main(args);
+                    DataIngester.finishCurrentMongoBatch();
                 } else if (arg.equals("2")) {
                     UpdateBasePatentData.main(args);
+                    DataIngester.finishCurrentMongoBatch();
                 } else if (arg.equals("3")) {
                     // update compdb
                     Database.main(args);
@@ -39,6 +42,7 @@ public class UpdateAll {
                     UpdateWIPOTechnologies.main(args);
                 } else if (arg.equals("8")) {
                     UpdateAssignmentData.main(args);
+                    DataIngester.finishCurrentMongoBatch();
                     Database.main(args);
                 } else if (arg.equals("9")) {
                     NormalizeAssignees.main(args);

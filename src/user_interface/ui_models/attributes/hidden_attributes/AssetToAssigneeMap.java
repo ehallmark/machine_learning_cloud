@@ -92,7 +92,9 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
         normalized.save();
 
         // save latest execution date
+        System.out.println("Saving latest execution date map...");
         latestExecutionDateAttribute.save();
+        System.out.println("Saved.");
     }
 
     protected void assigneeToAssetHelper(Map<String,String> assetToAssignee, Map<String,Collection<String>> assigneeToAssets) {
