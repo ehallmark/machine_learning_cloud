@@ -1,8 +1,5 @@
 package user_interface.ui_models.attributes.computable_attributes;
 
-import j2html.tags.Tag;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.io.FileUtils;
 import seeding.Constants;
 import seeding.Database;
@@ -10,10 +7,7 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.io.File;
-import java.time.LocalDate;
 import java.util.*;
-
-import static j2html.TagCreator.div;
 
 /**
  * Created by Evan on 5/9/2017.
@@ -152,8 +146,8 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
     }
 
     public void save() {
-        if(patentDataMap!=null&&patentDataMap.size()>0) synchronized (patentDataMap) { safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType())); }
-        if(applicationDataMap!=null&&applicationDataMap.size()>0) synchronized (applicationDataMap) { safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType())); }
+        if(patentDataMap!=null&&patentDataMap.size()>0) synchronized (this) { safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType())); }
+        if(applicationDataMap!=null&&applicationDataMap.size()>0) synchronized (this) { safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType())); }
     }
 
     protected static void safeSaveFile(Object obj, File file) {

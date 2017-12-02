@@ -1,6 +1,5 @@
 package user_interface.ui_models.attributes.hidden_attributes;
 
-import com.google.gson.Gson;
 import seeding.Constants;
 import user_interface.ui_models.attributes.computable_attributes.LatestExecutionDateAttribute;
 
@@ -75,13 +74,13 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
         AssigneeToAssetsMap assigneeToAssetsMap = new AssigneeToAssetsMap();
         assigneeToAssetsMap.initMaps();
         if(patentDataMap!=null && patentDataMap.size()>0) {
-            synchronized (patentDataMap) {
+            synchronized (AssetToAssigneeMap.class) {
                 safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER, getName(), getType()));
                 assigneeToAssetHelper(patentDataMap,assigneeToAssetsMap.getPatentDataMap());
             }
         }
         if(applicationDataMap!=null && applicationDataMap.size()>0) {
-            synchronized (applicationDataMap) {
+            synchronized (AssetToAssigneeMap.class) {
                 safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
                 assigneeToAssetHelper(applicationDataMap,assigneeToAssetsMap.getApplicationDataMap());
             }
