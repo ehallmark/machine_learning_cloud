@@ -1,19 +1,20 @@
 package seeding.ai_db_updater.iterators;
 
+import lombok.NonNull;
 import seeding.ai_db_updater.handlers.CustomHandler;
-import seeding.ai_db_updater.iterators.WebIterator;
 import seeding.ai_db_updater.tools.ZipHelper;
 import seeding.data_downloader.FileStreamDataDownloader;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 
 /**
@@ -25,16 +26,18 @@ public class ZipFileIterator implements WebIterator {
     private FileStreamDataDownloader dataDownloader;
     private boolean parallel;
     private boolean perDocument;
-    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean parallel, boolean perDocument) {
+    private final Function<File,Boolean> orFunction;
+    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean parallel, boolean perDocument, @NonNull Function<File,Boolean> orFunction) {
         this.cnt=new AtomicInteger(0);
         this.dataDownloader=dataDownloader;
         this.destinationPrefix=destinationPrefix;
         this.parallel=parallel;
         this.perDocument=perDocument;
+        this.orFunction=orFunction;
     }
 
     public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix) {
-        this(dataDownloader,destinationPrefix,true, true);
+        this(dataDownloader,destinationPrefix,true, true,file->false);
     }
 
     @Override
@@ -42,7 +45,7 @@ public class ZipFileIterator implements WebIterator {
         // pull latest data
         dataDownloader.pullMostRecentData();
         dataDownloader.save();
-        List<File> fileStream = dataDownloader.zipFileStream().sorted(Comparator.comparing(e->e.getName())).collect(Collectors.toList());
+        List<File> fileStream = dataDownloader.zipFileStream(orFunction).sorted(Comparator.comparing(e->e.getName())).collect(Collectors.toList());
         (parallel ? fileStream.parallelStream() : fileStream.stream()).forEach(zipFile->{
             final String destinationFilename = destinationPrefix + zipFile.getName();
             AtomicBoolean failed = new AtomicBoolean(false);

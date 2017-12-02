@@ -5,8 +5,6 @@ import org.apache.commons.io.FileUtils;
 import seeding.Constants;
 import seeding.Database;
 import seeding.ai_db_updater.iterators.DateIterator;
-import seeding.ai_db_updater.iterators.IngestUSPTOIterator;
-import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 
 import java.io.File;
 import java.io.Serializable;
@@ -17,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -56,11 +55,11 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
         // pull zips only
         LocalDate dateToUse = null;
         try {
-            LocalDate date = LocalDate.parse(zipFileStream().sorted((f1,f2)->f2.getName().compareTo(f1.getName())).findFirst().orElse(null).getName(), DateTimeFormatter.ISO_DATE);
+            LocalDate date = LocalDate.parse(zipFileStream(file->false).sorted((f1,f2)->f2.getName().compareTo(f1.getName())).findFirst().orElse(null).getName(), DateTimeFormatter.ISO_DATE);
             dateToUse = date;
         } catch(Exception e) {
             try {
-                LocalDate date = zipFileStream().map(file->{
+                LocalDate date = zipFileStream(file->false).map(file->{
                     try {
                         return LocalDate.parse("20"+file.getName(), DateTimeFormatter.BASIC_ISO_DATE);
                     } catch(Exception e2) {
@@ -77,8 +76,8 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
         if(dateToUse!=null) zipDownloader.run(dateToUse,failedDates);
     }
 
-    public Stream<File> zipFileStream() {
-        return Arrays.stream(new File(zipFilePrefix).listFiles()).filter(file->!finishedFiles.contains(file.getAbsolutePath()));
+    public Stream<File> zipFileStream(Function<File,Boolean> orFilter) {
+        return Arrays.stream(new File(zipFilePrefix).listFiles()).filter(file->orFilter.apply(file)||!finishedFiles.contains(file.getAbsolutePath()));
     }
 
     public synchronized void save() {
