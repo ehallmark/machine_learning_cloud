@@ -117,13 +117,15 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         }
         // assignees
         idx.set(0);
-        final int cpcLimit = 30;
+        final int cpcLimit = 10;
         final int assetLimit = 100;
         final int assigneeBatch = 100;
         noData.set(0);
         Random rand = new Random();
         System.out.println("Predicting assignees...");
-        for(int i = 0; i < assignees.size(); i+=assigneeBatch) {
+        IntStream.range(0,(assignees.size()+1/assigneeBatch)).parallel().forEach(i->{
+            i = i * assigneeBatch;
+            if(i>=assignees.size()) return;
             int r = Math.min(assignees.size(),i+assigneeBatch);
             List<String> assigneeSample = assignees.subList(i,r);
             List<Collection<CPC>> cpcStreams = assigneeSample.stream().map(assignee->{
@@ -131,11 +133,11 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
                         Database.selectPatentNumbersFromExactAssignee(assignee),
                         Database.selectApplicationNumbersFromExactAssignee(assignee)
                 ).flatMap(portfolio->portfolio.stream()).collect(Collectors.toCollection(ArrayList::new));
-                Map<CPC,Double> cpcScoreMap = IntStream.range(0,Math.min(assigneeAssets.size(),assetLimit)).mapToObj(a->assigneeAssets.remove(rand.nextInt(assigneeAssets.size()))).map(asset->{
+                Map<CPC,Long> cpcScoreMap = IntStream.range(0,Math.min(assigneeAssets.size(),assetLimit)).mapToObj(a->assigneeAssets.remove(rand.nextInt(assigneeAssets.size()))).map(asset->{
                     return cpcMap.get(asset);
                 }).filter(set->set!=null).flatMap(set->set.stream())
                         .filter(cpc->cpc.getNumParts()>2)
-                        .collect(Collectors.groupingBy(cpc->cpc,Collectors.summingDouble(cpc->Math.exp(cpc.getNumParts()))));
+                        .collect(Collectors.groupingBy(cpc->cpc,Collectors.counting()));
 
                 List<CPC> topCPCs = cpcScoreMap.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(cpcLimit).map(e->e.getKey()).collect(Collectors.toList());
                 Collection<CPC> topCPCsWithHierarchy = topCPCs.stream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).distinct().collect(Collectors.toList());
@@ -160,13 +162,16 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
             }
 
             INDArray assigneeVec = CPCDataSetIterator.createVector(validStreams.stream(), cpcToIdxMap, validStreams.size(), cpcToIdxMap.size());
-            INDArray encoding = vae.activate(assigneeVec, false);
+            INDArray encoding;
+            synchronized (vae) {
+                encoding = vae.activate(assigneeVec, false);
+            }
             for(int j = 0; j < validAssignees.size(); j++) {
                 assetToEncodingMap.put(validAssignees.get(j),encoding.getRow(j).dup());
             }
             System.out.print("_");
             System.gc();
-        }
+        });
 
         System.out.println("Total num assignee errors: "+noData.get());
         return assetToEncodingMap;
