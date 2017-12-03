@@ -450,6 +450,15 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
     private static HumanNamePredictionPipelineManager PIPELINE;
     public static synchronized HumanNamePredictionModel load() {
         if(MODEL==null) {
+            loadPipelineManager();
+        }
+        return MODEL;
+    }
+
+    public static synchronized HumanNamePredictionPipelineManager loadPipelineManager() {
+        if(PIPELINE==null) {
+            String modelName = MODEL_NAME;
+            PIPELINE = new HumanNamePredictionPipelineManager(modelName);
             boolean rebuildDatasets = false;
             boolean runModels = false;
             boolean forceRecreateModels = false;
@@ -460,14 +469,6 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
             pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
             MODEL = (HumanNamePredictionModel)pipelineManager.getModel();
         }
-        return MODEL;
-    }
-
-    public static synchronized HumanNamePredictionPipelineManager loadPipelineManager() {
-        if(PIPELINE==null) {
-            String modelName = MODEL_NAME;
-            PIPELINE = new HumanNamePredictionPipelineManager(modelName);
-        }
         return PIPELINE;
     }
 
@@ -477,7 +478,6 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
-        boolean updateModel = true;
 
         int nEpochs = 5;
         String modelName = MODEL_NAME;
