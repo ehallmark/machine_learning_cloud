@@ -119,7 +119,7 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         idx.set(0);
         final int cpcLimit = 10;
         final int assetLimit = 100;
-        final int assigneeBatch = 100;
+        final int assigneeBatch = 500;
         noData.set(0);
         Random rand = new Random();
         System.out.println("Predicting assignees...");
