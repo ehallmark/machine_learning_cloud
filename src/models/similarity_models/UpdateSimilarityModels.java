@@ -29,14 +29,5 @@ public class UpdateSimilarityModels {
         System.out.println("Updating cpc similarity vectorizer...");
         CPCSimilarityVectorizer.updateLatest(assets);
 
-        // Update human map
-        System.out.println("Updating is human model map...");
-        HumanNamePredictionPipelineManager pipelineManager = HumanNamePredictionPipelineManager.loadPipelineManager();
-        System.out.println("Predicting results...");
-        List<String> allAssets = new ArrayList<>(Database.getAllPatentsAndApplications());
-        List<String> allAssignees = new ArrayList<>(Database.getAssignees());
-        List<String> allClassCodes = new ArrayList<>(Database.getClassCodes());
-        Map<String,Boolean> predictions = pipelineManager.updatePredictions(allAssets,allAssignees,allClassCodes);
-        pipelineManager.savePredictions(predictions);
     }
 }

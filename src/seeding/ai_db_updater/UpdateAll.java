@@ -1,11 +1,16 @@
 package seeding.ai_db_updater;
 
+import assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
 import assignee_normalization.name_correction.NormalizeAssignees;
 import elasticsearch.DataIngester;
 import seeding.CleanseAttributesAndMongoBeforeReseed;
 import seeding.Database;
 import seeding.compdb.CreateCompDBAssigneeTransactionData;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Evan on 7/6/2017.
@@ -45,6 +50,15 @@ public class UpdateAll {
                     DataIngester.finishCurrentMongoBatch();
                     Database.main(args);
                 } else if (arg.equals("9")) {
+                    // Update human map
+                    System.out.println("Updating is human model map...");
+                    HumanNamePredictionPipelineManager pipelineManager = HumanNamePredictionPipelineManager.loadPipelineManager();
+                    System.out.println("Predicting results...");
+                    List<String> allAssets = new ArrayList<>(Database.getAllPatentsAndApplications());
+                    List<String> allAssignees = new ArrayList<>(Database.getAssignees());
+                    List<String> allClassCodes = new ArrayList<>(Database.getClassCodes());
+                    Map<String,Boolean> predictions = pipelineManager.updatePredictions(allAssets,allAssignees,allClassCodes);
+                    pipelineManager.savePredictions(predictions);
                     NormalizeAssignees.main(args);
                     new AssetToAssigneeMap().save();
                     Database.main(args);
