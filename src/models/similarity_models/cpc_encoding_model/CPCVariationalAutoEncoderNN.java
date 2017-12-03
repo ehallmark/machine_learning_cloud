@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -117,34 +118,54 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         // assignees
         idx.set(0);
         final int cpcLimit = 30;
-        final int assetLimit = 200;
+        final int assetLimit = 500;
+        final int assigneeBatch = 100;
         noData.set(0);
-        assignees.forEach(assignee->{
-            Map<CPC,Double> cpcScoreMap = Stream.of(
-                    Database.selectPatentNumbersFromExactAssignee(assignee),
-                    Database.selectApplicationNumbersFromExactAssignee(assignee)
-            ).parallel().flatMap(portfolio->portfolio.stream()).limit(assetLimit).map(asset->{
-                return cpcMap.get(asset);
-            }).filter(set->set!=null).flatMap(set->set.stream())
-                    .filter(cpc->cpc.getNumParts()>2)
-                    .collect(Collectors.groupingBy(cpc->cpc,Collectors.summingDouble(cpc->Math.exp(cpc.getNumParts()))));
+        for(int i = 0; i < assignees.size(); i+=assigneeBatch) {
+            int r = Math.min(assignees.size(),i+assigneeBatch);
+            List<String> assigneeSample = assignees.subList(i,r);
+            List<Collection<CPC>> cpcStreams = assigneeSample.stream().map(assignee->{
+                List<String> assigneeAssets = Stream.of(
+                        Database.selectPatentNumbersFromExactAssignee(assignee),
+                        Database.selectApplicationNumbersFromExactAssignee(assignee)
+                ).flatMap(portfolio->portfolio.stream()).collect(Collectors.toCollection(ArrayList::new));
+                Collections.shuffle(assigneeAssets);
+                Map<CPC,Double> cpcScoreMap = assigneeAssets.stream().limit(assetLimit).map(asset->{
+                    return cpcMap.get(asset);
+                }).filter(set->set!=null).flatMap(set->set.stream())
+                        .filter(cpc->cpc.getNumParts()>2)
+                        .collect(Collectors.groupingBy(cpc->cpc,Collectors.summingDouble(cpc->Math.exp(cpc.getNumParts()))));
 
-            List<CPC> topCPCs = cpcScoreMap.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(cpcLimit).map(e->e.getKey()).collect(Collectors.toList());
-            Collection<CPC> topCPCsWithHierarchy = topCPCs.parallelStream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).distinct().collect(Collectors.toList());
+                List<CPC> topCPCs = cpcScoreMap.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(cpcLimit).map(e->e.getKey()).collect(Collectors.toList());
+                Collection<CPC> topCPCsWithHierarchy = topCPCs.stream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).distinct().collect(Collectors.toList());
+                return topCPCsWithHierarchy;
+            }).collect(Collectors.toList());
+            List<String> validAssignees = new ArrayList<>();
+            List<Collection<CPC>> validStreams = new ArrayList<>();
+            for(int j = 0; j < assigneeSample.size(); j++) {
+                String assignee = assigneeSample.get(j);
+                Collection<CPC> topCPCsWithHierarchy = cpcStreams.get(i);
+                if(topCPCsWithHierarchy.size()>0) {
+                    validAssignees.add(assignee);
+                    validStreams.add(topCPCsWithHierarchy);
+                } else {
+                    noData.getAndIncrement();
+                }
+                if (idx.getAndIncrement() % 10000 == 9999) {
+                    System.out.println("Vectorized " + idx.get() + " / "+assignees.size()+" assignees.");
+                    System.out.println("Num Errors: "+noData.get());
+                }
+            }
 
-            if(topCPCsWithHierarchy.size()>0) {
-                INDArray assigneeVec = CPCDataSetIterator.createVector(Stream.of(topCPCsWithHierarchy), cpcToIdxMap, 1, cpcToIdxMap.size());
-                INDArray encoding = vae.activate(assigneeVec, false);
-                assetToEncodingMap.put(assignee, encoding);
-            } else {
-                noData.getAndIncrement();
+            INDArray assigneeVec = CPCDataSetIterator.createVector(validStreams.stream(), cpcToIdxMap, validStreams.size(), cpcToIdxMap.size());
+            INDArray encoding = vae.activate(assigneeVec, false);
+            for(int j = 0; j < validAssignees.size(); j++) {
+                assetToEncodingMap.put(validAssignees.get(j),encoding.getRow(j).dup());
             }
-            if (idx.getAndIncrement() % 10000 == 9999) {
-                System.out.println("Vectorized " + idx.get() + " / "+assignees.size()+" assignees.");
-                System.out.println("Num Errors: "+noData.get());
-                System.gc();
-            }
-        });
+
+            System.gc();
+        }
+
         System.out.println("Total num assignee errors: "+noData.get());
         return assetToEncodingMap;
     };
