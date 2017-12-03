@@ -128,11 +128,11 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         System.out.println("Testing encodings");
         if(latestAssets==null) {
             // not updating
-            DATA = clone.predict(allAssets,allAssignees,allClassCodes);
+            DATA = clone.predict(allAssets,allAssignees,allClassCodes, null);
         } else {
             // updating
             DATA = getLookupTable();
-            DATA.putAll(clone.predict(allAssets,allAssignees,allClassCodes));
+            DATA.putAll(clone.predict(allAssets,allAssignees,allClassCodes, DATA));
         }
         System.out.println("Num patent vectors found: "+DATA.size());
         System.out.println("Saving results...");

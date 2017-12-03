@@ -82,6 +82,7 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
             assignees = assignees.stream().filter(assignee -> !previous.containsKey(assignee)).collect(Collectors.toList());
             classCodes = classCodes.stream().filter(classCode -> !previous.containsKey(classCode)).collect(Collectors.toList());
         }
+        model.set
         Map<String,T> newPredictions = model.predict(items,assignees,classCodes);
         if(previous!=null) {
             previous.putAll(newPredictions);

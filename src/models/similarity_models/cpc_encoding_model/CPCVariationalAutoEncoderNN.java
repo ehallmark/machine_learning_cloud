@@ -45,6 +45,7 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
     protected Map<String,Integer> cpcToIdxMap;
     protected CPCVAEPipelineManager pipelineManager;
     protected int maxCPCDepth;
+    private Map<String,INDArray> predictions;
     public CPCVariationalAutoEncoderNN(CPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {
         super(modelName);
         this.pipelineManager= pipelineManager;
@@ -71,13 +72,17 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
 
     @Override
     public Map<String,INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        return encodeVAE(assets,assignees,classCodes,pipelineManager.getCPCMap(),getCpcToIdxMap(),pipelineManager.getHierarchy(),net,pipelineManager.getBatchSize());
+        return encodeVAE(assets,assignees,classCodes,predictions,pipelineManager.getCPCMap(),getCpcToIdxMap(),pipelineManager.getHierarchy(),net,pipelineManager.getBatchSize());
     }
 
-    public static Map<String,INDArray> encodeVAE(List<String> assets, List<String> assignees, List<String> classCodes, Map<String, ? extends Collection<CPC>> cpcMap, Map<String,Integer> cpcToIdxMap, CPCHierarchy hierarchy, MultiLayerNetwork net, int batchSize) {
+    public void setPredictions(Map<String,INDArray> predictions) {
+        this.predictions=predictions;
+    }
+
+    public static Map<String,INDArray> encodeVAE(List<String> assets, List<String> assignees, List<String> classCodes, Map<String,INDArray> previous, Map<String, ? extends Collection<CPC>> cpcMap, Map<String,Integer> cpcToIdxMap, CPCHierarchy hierarchy, MultiLayerNetwork net, int batchSize) {
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
-        Map<String,INDArray> assetToEncodingMap = Collections.synchronizedMap(new HashMap<>());
+        Map<String,INDArray> assetToEncodingMap = previous==null?Collections.synchronizedMap(new HashMap<>()) : previous;
 
         AtomicInteger idx = new AtomicInteger(0);
 

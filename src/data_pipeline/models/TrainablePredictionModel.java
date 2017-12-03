@@ -22,6 +22,7 @@ public interface TrainablePredictionModel<T,N> {
     DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ISO_DATE_TIME;
 
     Map<String,T> predict(List<String> assets, List<String> assignees, List<String> classCodes);
+
     void train(int nEpochs);
     File getModelBaseDirectory();
 
