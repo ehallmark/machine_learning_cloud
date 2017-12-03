@@ -465,6 +465,27 @@ public class DatabaseIterator {
                     fullMap.put(flag.dbName,attr);
                 });
 
+                if(fullMap.containsKey(Constants.LATEST_ASSIGNEE)) { // handle first name data
+                    Map<String, Object> latestAssigneeData = (Map<String,Object>)fullMap.get(Constants.LATEST_ASSIGNEE);
+                    Object assigneeName = latestAssigneeData.get(Constants.ASSIGNEE);
+                    boolean isHuman = false;
+                    if(assigneeName==null) {
+                        Object firstName = latestAssigneeData.get(Constants.FIRST_NAME);
+                        Object lastName = latestAssigneeData.get(Constants.LAST_NAME);
+                        if(firstName!=null&&lastName!=null) {
+                            assigneeName = lastName.toString().trim()+", "+firstName.toString().trim();
+                            if(assigneeName.toString().length()<4) assigneeName = null;
+                        }
+                        if(assigneeName!=null) {
+                            isHuman = true;
+                            latestAssigneeData.put(Constants.ASSIGNEE,assigneeName);
+                        }
+                    }
+                    if(assigneeName!=null) {
+                        latestAssigneeData.put(Constants.IS_HUMAN,isHuman);
+                    }
+                }
+
                 if (debug) System.out.println("Pre Data: " + new Gson().toJson(fullMap));
                 computableAttributes.forEach(computableAttribute -> {
                     computableAttribute.handlePatentData(patent, fullMap);
