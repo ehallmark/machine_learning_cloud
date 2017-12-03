@@ -24,7 +24,7 @@ public class UpdateSimilarityModels {
         updateLatest(unknownAssets);
     }
 
-    public static void updateLatest(Collection<String> assets) throws Exception {
+    private static void updateLatest(Collection<String> assets) throws Exception {
         // Update CPC encodings
         System.out.println("Updating cpc similarity vectorizer...");
         CPCSimilarityVectorizer.updateLatest(assets);

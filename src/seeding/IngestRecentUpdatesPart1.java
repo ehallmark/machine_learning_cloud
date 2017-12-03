@@ -38,7 +38,7 @@ public class IngestRecentUpdatesPart1 {
 
             try {
                 // add encodings
-                UpdateSimilarityModels.updateLatest(newAssets);
+                UpdateSimilarityModels.main(null);
             } catch(Exception e) {
                 System.out.println("Error updating encodings...");
                 e.printStackTrace();
