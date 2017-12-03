@@ -42,6 +42,7 @@ public class FileIterator implements WebIterator {
                     for (CustomHandler handler : handlers) {
                         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(xmlFile))) {
                             saxParser.parse(bis, handler.newInstance());
+                            System.gc();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

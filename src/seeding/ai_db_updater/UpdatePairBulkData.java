@@ -17,7 +17,7 @@ public class UpdatePairBulkData {
         boolean updatePostgres = false;
 
         PAIRDataDownloader downloader = new PAIRDataDownloader();
-        downloader.pullMostRecentData();
+        //downloader.pullMostRecentData();
         FileIterator pairIterator = new FileIterator(downloader.getDestinationFile(),(dir, name) -> {
             try {
                 return Integer.valueOf(name.substring(0,4)) >= LocalDate.now().minusYears(30).getYear();
