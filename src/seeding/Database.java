@@ -946,9 +946,10 @@ public class Database {
 
 		allClassCodes = Collections.synchronizedSet(new HashSet<>());
 		getPatentToClassificationMap().values().parallelStream().forEach(classSet -> {
-			classSet.forEach(cpcClass -> {
-				allClassCodes.add(cpcClass);
-			});
+			allClassCodes.addAll(classSet);
+		});
+		getAppToClassificationMap().values().parallelStream().forEach(classSet -> {
+			allClassCodes.addAll(classSet);
 		});
 		trySaveObject(allClassCodes,allClassCodesFile);
 	}

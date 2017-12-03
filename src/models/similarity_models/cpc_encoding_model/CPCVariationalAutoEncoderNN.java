@@ -117,12 +117,13 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         // assignees
         idx.set(0);
         final int cpcLimit = 30;
+        final int assetLimit = 200;
         noData.set(0);
         assignees.forEach(assignee->{
             Map<CPC,Double> cpcScoreMap = Stream.of(
                     Database.selectPatentNumbersFromExactAssignee(assignee),
                     Database.selectApplicationNumbersFromExactAssignee(assignee)
-            ).parallel().flatMap(portfolio->portfolio.stream()).map(asset->{
+            ).parallel().flatMap(portfolio->portfolio.stream()).limit(assetLimit).map(asset->{
                 return cpcMap.get(asset);
             }).filter(set->set!=null).flatMap(set->set.stream())
                     .filter(cpc->cpc.getNumParts()>2)
