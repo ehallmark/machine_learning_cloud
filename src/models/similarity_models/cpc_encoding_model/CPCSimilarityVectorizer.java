@@ -118,8 +118,9 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         int cpcDepth = CPCVAEPipelineManager.MAX_CPC_DEPTH;
 
         System.out.println("Restoring model: "+modelName);
-        TrainablePredictionModel<INDArray,?> clone = new CPCVariationalAutoEncoderNN((CPCVAEPipelineManager)pipelineManager,modelName,cpcDepth);
+        CPCVariationalAutoEncoderNN clone = new CPCVariationalAutoEncoderNN((CPCVAEPipelineManager)pipelineManager,modelName,cpcDepth);
         clone.loadBestModel();
+
 
         List<String> allAssets = new ArrayList<>(latestAssets==null?(Database.getAllPatentsAndApplications()):latestAssets);
         List<String> allAssignees = new ArrayList<>(latestAssets==null?Database.getAssignees():latestAssets.stream().map(asset->Database.assigneeFor(asset)).filter(assignee->assignee!=null).collect(Collectors.toList()));
@@ -128,11 +129,12 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         System.out.println("Testing encodings");
         if(latestAssets==null) {
             // not updating
-            DATA = clone.predict(allAssets,allAssignees,allClassCodes, null);
+            DATA = clone.predict(allAssets,allAssignees,allClassCodes);
         } else {
             // updating
             DATA = getLookupTable();
-            DATA.putAll(clone.predict(allAssets,allAssignees,allClassCodes, DATA));
+            clone.setPredictions(DATA);
+            DATA.putAll(clone.predict(allAssets,allAssignees,allClassCodes));
         }
         System.out.println("Num patent vectors found: "+DATA.size());
         System.out.println("Saving results...");
