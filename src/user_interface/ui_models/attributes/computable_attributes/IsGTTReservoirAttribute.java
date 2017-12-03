@@ -8,6 +8,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ehallmark on 6/15/17.

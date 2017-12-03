@@ -446,13 +446,38 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         };
     }
 
+    private static HumanNamePredictionModel MODEL;
+    private static HumanNamePredictionPipelineManager PIPELINE;
+    public static synchronized HumanNamePredictionModel load() {
+        if(MODEL==null) {
+            boolean rebuildDatasets = false;
+            boolean runModels = false;
+            boolean forceRecreateModels = false;
+            boolean runPredictions = false;
+            boolean rebuildPrerequisites = false;
+            int nEpochs = 5;
+            HumanNamePredictionPipelineManager pipelineManager = loadPipelineManager();
+            pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
+            MODEL = (HumanNamePredictionModel)pipelineManager.getModel();
+        }
+        return MODEL;
+    }
+
+    public static synchronized HumanNamePredictionPipelineManager loadPipelineManager() {
+        if(PIPELINE==null) {
+            String modelName = MODEL_NAME;
+            PIPELINE = new HumanNamePredictionPipelineManager(modelName);
+        }
+        return PIPELINE;
+    }
+
     public static void main(String[] args) throws Exception {
         boolean rebuildDatasets = false;
         boolean runModels = false;
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
-        boolean reprintCSV = true;
+        boolean updateModel = true;
 
         int nEpochs = 5;
         String modelName = MODEL_NAME;
@@ -463,10 +488,6 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         rebuildPrerequisites = rebuildPrerequisites || !allCompanyNamesFile.exists() || !allHumanNamesFile.exists(); // Check if vocab map exists
 
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
-
-        if(reprintCSV) {
-            HumanNamePredictionModel.printSampleToCSV(pipelineManager.loadPredictions());
-        }
 
     }
 }

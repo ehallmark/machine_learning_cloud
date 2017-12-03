@@ -49,6 +49,9 @@ public abstract class ComputableCPCAttribute<T> extends ComputableAttribute<T> {
 
     protected abstract T attributesforCPCsHelper(@NonNull Collection<String> cpcs);
 
-
+    @Override // don't want to update while ingesting
+    public T handleIncomingData(String item, Map<String, Object> data, Map<String,T> myData, boolean isApplication) {
+        return null;
+    }
 }
 

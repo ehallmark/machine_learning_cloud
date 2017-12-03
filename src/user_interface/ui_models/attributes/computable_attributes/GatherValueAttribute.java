@@ -9,6 +9,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Created by ehallmark on 6/15/17.
@@ -22,6 +23,11 @@ public class GatherValueAttribute extends ComputableAttribute<Integer> {
     @Override
     public Integer attributesFor(Collection<String> items, int limit) {
         return Database.getGatherIntValueMap().get(items.stream().findAny().get());
+    }
+
+    @Override // don't want to update while ingesting
+    public Integer handleIncomingData(String item, Map<String, Object> data, Map<String,Integer> myData, boolean isApplication) {
+        return null;
     }
 
     @Override

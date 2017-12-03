@@ -30,6 +30,7 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
             //System.out.println("FOUND ASSIGNEE: "+ret);
             // check execution date
             Object executionDate = ((Map<String,Object>)allData.getOrDefault(Constants.ASSIGNMENTS,new HashMap<>())).get(Constants.EXECUTION_DATE);
+
             if(executionDate!=null) {
                 // check
                 if(!(executionDate instanceof LocalDate)) {
@@ -55,6 +56,13 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
                 // update latest execution date map
                 latestExecutionDateMap.put(name, (LocalDate)executionDate);
             }
+
+            if(executionDate == null) {
+                // don't update unless nothing is there
+                if(myData.containsKey(name)) {
+                    return null;
+                }
+            }
         }
         if(ret==null) return null;
         return ret.toString();
@@ -70,6 +78,7 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
         return Constants.NAME+"_to_"+Constants.LATEST_ASSIGNEE;
     }
 
+    @Override
     public void save() {
         AssigneeToAssetsMap assigneeToAssetsMap = new AssigneeToAssetsMap();
         assigneeToAssetsMap.initMaps();

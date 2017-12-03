@@ -21,21 +21,12 @@ public class CorrespondentAddressAttribute extends AbstractAttribute {
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Multiselect;
+        return AbstractFilter.FieldType.Text;
     }
 
     @Override
     public String getName() {
         return Constants.CORRESPONDENT_ADDRESS;
-    }
-
-    @Override
-    public Map<String,Object> getNestedFields() {
-        Map<String,Object> fields = new HashMap<>();
-        Map<String,String> rawType = new HashMap<>();
-        rawType.put("type","keyword");
-        fields.put("raw",rawType);
-        return fields;
     }
 
 }

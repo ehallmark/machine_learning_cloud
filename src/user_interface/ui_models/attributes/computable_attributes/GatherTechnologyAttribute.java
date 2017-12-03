@@ -23,6 +23,11 @@ public class GatherTechnologyAttribute extends ComputableAttribute<Collection<St
         return Database.getGatherPatentToTechnologyMap().get(items.stream().findAny().get());
     }
 
+    @Override // don't want to update while ingesting
+    public Collection<String> handleIncomingData(String item, Map<String, Object> data, Map<String,Collection<String>> myData, boolean isApplication) {
+        return null;
+    }
+
     @Override
     public String getName() {
         return Constants.GATHER_TECHNOLOGY;

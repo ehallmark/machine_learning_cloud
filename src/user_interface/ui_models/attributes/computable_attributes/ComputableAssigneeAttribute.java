@@ -49,6 +49,11 @@ public abstract class ComputableAssigneeAttribute<T> extends ComputableAttribute
         return attributesForAssigneeHelper(assignee);
     }
 
+    @Override // don't want to update while ingesting
+    public T handleIncomingData(String item, Map<String, Object> data, Map<String,T> myData, boolean isApplication) {
+        return null;
+    }
+
     protected abstract T attributesForAssigneeHelper(@NonNull String assignee);
 
 

@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 11/8/17.
@@ -71,6 +72,23 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
     @Override
     public Map<String,T> predict(List<String> items, List<String> assignees, List<String> classCodes) {
         return model.predict(items,assignees,classCodes);
+    }
+
+    @Override
+    public Map<String,T> updatePredictions(List<String> items, List<String> assignees, List<String> classCodes) {
+        Map<String,T> previous = loadPredictions();
+        if(previous!=null) {
+            items = items.stream().filter(item -> !previous.containsKey(item)).collect(Collectors.toList());
+            assignees = assignees.stream().filter(assignee -> !previous.containsKey(assignee)).collect(Collectors.toList());
+            classCodes = classCodes.stream().filter(classCode -> !previous.containsKey(classCode)).collect(Collectors.toList());
+        }
+        Map<String,T> newPredictions = model.predict(items,assignees,classCodes);
+        if(previous!=null) {
+            previous.putAll(newPredictions);
+            return previous;
+        } else {
+            return newPredictions;
+        }
     }
 
     @Override

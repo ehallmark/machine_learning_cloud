@@ -4,6 +4,9 @@ package seeding.ai_db_updater.handlers;
  * Created by ehallmark on 1/3/17.
  */
 
+import assignee_normalization.human_name_prediction.HumanNamePredictionModel;
+import assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
+import data_pipeline.models.TrainablePredictionModel;
 import elasticsearch.DataIngester;
 import lombok.Setter;
 import org.bson.Document;

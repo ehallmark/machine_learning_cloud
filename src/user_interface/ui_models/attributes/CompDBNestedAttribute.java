@@ -11,7 +11,6 @@ public class CompDBNestedAttribute extends NestedAttribute {
 
     public CompDBNestedAttribute() {
         super(Arrays.asList(new CompDBTechnologyAttribute(), new CompDBDealIDAttribute(), new ReelFrameAttribute(), new AssetNumberAttribute(), new InactiveAttribute(), new AcquisitionAttribute(), new BuyerAttribute(), new SellerAttribute(), new RecordedDateAttribute(), new NumAssignmentsAttribute(), new NumAssetsAttribute()));
-        this.isObject=true;
     }
 
     @Override

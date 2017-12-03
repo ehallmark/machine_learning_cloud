@@ -142,6 +142,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Asset Similarity", Constants.PATENT_SIMILARITY);
             humanAttrToJavaAttrMap.put("Total Asset Count", Constants.TOTAL_ASSET_COUNT);
             humanAttrToJavaAttrMap.put("Assignee Name", Constants.ASSIGNEE);
+            humanAttrToJavaAttrMap.put("Organization Name", Constants.ASSIGNEES+"."+Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Invention Title", Constants.INVENTION_TITLE);
             humanAttrToJavaAttrMap.put("AI Value", Constants.AI_VALUE);
             humanAttrToJavaAttrMap.put("Reinstated", Constants.REINSTATED);
@@ -228,6 +229,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Does not exist in Gather Filter", Constants.DOES_NOT_EXIST_IN_GATHER_FILTER);
             humanAttrToJavaAttrMap.put("Assignor Name", Constants.ASSIGNOR);
             humanAttrToJavaAttrMap.put("Conveyance Text", Constants.CONVEYANCE_TEXT);
+            humanAttrToJavaAttrMap.put("Is Human", Constants.IS_HUMAN);
 
             // custom filter name for excluding granted apps
             humanAttrToJavaAttrMap.put("Exclude Granted Applications Filter", Constants.GRANTED+ AbstractFilter.FilterType.BoolFalse+ Constants.FILTER_SUFFIX);
@@ -564,11 +566,26 @@ public class SimilarPatentServer {
                 Item item = new Item(label);
                 attributes.forEach(model -> {
                     Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1);
+                    AbstractAttribute parent = model.getParent();
                     if(obj!=null) {
                         if(obj instanceof LocalDate) {
                             obj = ((LocalDate)obj).format(DateTimeFormatter.ISO_DATE);
                         }
-                        item.addData(model.getMongoDBName(),obj);
+                        boolean update = true;
+                        if(parent!=null) {
+                            if(parent.isObject()) {
+                                update = false;
+                                // group results to override other values
+                                if(item.getDataMap().containsKey(parent.getName())) {
+                                    ((Map<String,Object>)item.getDataMap().get(parent.getName())).put(model.getName(),obj);
+                                } else {
+                                    Map<String,Object> map = new HashMap<>();
+                                    map.put(model.getName(),obj);
+                                    item.addData(parent.getName(),map);
+                                }
+                            }
+                        }
+                        if(update) item.addData(model.getMongoDBName(),obj);
                     }
                 });
                 INDArray vec = vectorizer.vectorFor(filing);

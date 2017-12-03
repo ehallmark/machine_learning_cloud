@@ -35,6 +35,7 @@ public class Constants {
 	public static final String CPC_SIMILARITY = "cpcSimilarity";
 	public static final String NORMALIZED_PORTFOLIO_SIZE = "normalizedPortfolioSize";
 	public static final String REEL_NO = "reelNo";
+	public static final String IS_HUMAN = "isHuman";
 	public static final String CORRESPONDENT_ADDRESS = "correspondentAddress";
 	public static final String NORMALIZED_LATEST_ASSIGNEE = "normalizedAssignee";
 	public static final String USER_TEMPLATE_FOLDER = "userTemplates/";

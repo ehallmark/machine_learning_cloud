@@ -7,6 +7,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Created by ehallmark on 6/15/17.
@@ -20,6 +21,11 @@ public class GatherStageAttribute extends ComputableAttribute<Collection<String>
         return "keyword";
     }
 
+    @Override // don't want to update while ingesting
+    public Collection<String> handleIncomingData(String item, Map<String, Object> data, Map<String,Collection<String>> myData, boolean isApplication) {
+        return null;
+    }
+
     @Override
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Multiselect;
@@ -29,6 +35,7 @@ public class GatherStageAttribute extends ComputableAttribute<Collection<String>
     public String getName() {
         return Constants.GATHER_STAGE;
     }
+
 
     @Override
     public Collection<String> attributesFor(Collection<String> items, int limit) {

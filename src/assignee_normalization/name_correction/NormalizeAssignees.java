@@ -1,5 +1,7 @@
 package assignee_normalization.name_correction;
 
+import assignee_normalization.human_name_prediction.HumanNamePredictionModel;
+import assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
@@ -144,7 +146,7 @@ public class NormalizeAssignees {
 
         Map<String,String> rawToNormalizedAssigneeNameMap = rawToNormalizedMap.entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue()._1));
         Database.trySaveObject(rawToNormalizedAssigneeNameMap,new File(name));
-        // save portoflio size map
+        // save portfolio size map
         Database.trySaveObject(portfolioSizeMap,portfolioSizeMapFile);
         // save to csv
         NormalizeAssignees normalizer = new NormalizeAssignees(rawToNormalizedAssigneeNameMap,portfolioSizeMap);
@@ -368,9 +370,9 @@ public class NormalizeAssignees {
 
     public static void main(String[] args) {
         // find most common suffixes
-        Collection<String> allAssignees = Collections.synchronizedList(new ArrayList<>(Database.getAssignees()));
+        Collection<String> allCompanies = Collections.synchronizedList(HumanNamePredictionPipelineManager.loadPipelineManager().loadPredictions().entrySet().parallelStream().filter(e->!e.getValue()).map(e->e.getKey()).collect(Collectors.toList()));
 
-        Map<String,Integer> assigneeToPortfolioSizeMap = new HashMap<>(allAssignees
+        Map<String,Integer> assigneeToPortfolioSizeMap = new HashMap<>(allCompanies
                 .parallelStream()
                 .collect(Collectors.toMap(a->a,a->Database.getAssetCountFor(a))));
 
@@ -378,12 +380,12 @@ public class NormalizeAssignees {
         Map<String,String> rawToNormalizedAssigneeNameMap = Collections.synchronizedMap(new HashMap<>());
         for(int i = 0; i < numEpochs; i++) {
             System.out.println("Starting epoch: "+(i+1)+"/"+numEpochs);
-            Set<String> newAssignees = new HashSet<>(allAssignees);
+            Set<String> newAssignees = new HashSet<>(allCompanies);
             newAssignees.removeAll(rawToNormalizedAssigneeNameMap.keySet());
             newAssignees.addAll(rawToNormalizedAssigneeNameMap.values());
             System.out.println("Looking thru "+newAssignees.size()+" assignees.");
             Map<String,Pair<String,Double>> tempMap = Collections.synchronizedMap(new HashMap<>());
-            allAssignees = runIteration(newAssignees,tempMap,assigneeToPortfolioSizeMap, new JaroWinkler(), i);
+            allCompanies = runIteration(newAssignees,tempMap,assigneeToPortfolioSizeMap, new JaroWinkler(), i);
             tempMap.entrySet().parallelStream().forEach(newEntry->{
                 if(rawToNormalizedAssigneeNameMap.containsValue(newEntry.getKey())) {
                     // update

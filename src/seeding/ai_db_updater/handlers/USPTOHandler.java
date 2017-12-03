@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
 
@@ -40,7 +41,10 @@ public class USPTOHandler extends NestedHandler {
         boolean debug = false;
         int batchSize = 5000;
         List<EndFlag> nestedEndFlags = new ArrayList<>();
-        Collection<String> attrsToIngest = SimilarPatentServer.getAllStreamingAttributeNames();
+        Collection<String> attrsToIngest = Stream.of(
+                Stream.of(Constants.LATEST_ASSIGNEE+"."+Constants.FIRST_NAME, Constants.LATEST_ASSIGNEE+"."+Constants.LAST_NAME),
+                SimilarPatentServer.getAllStreamingAttributeNames().stream()).flatMap(s->s).collect(Collectors.toSet());
+
         // application flags
         EndFlag documentFlag = new EndFlag(topLevelTag) {
             @Override
@@ -73,6 +77,24 @@ public class USPTOHandler extends NestedHandler {
                                 Map<String,Object> latestAssigneeData = data.stream().filter(map -> map.size() > 0).findAny().orElse(null);
                                 if(latestAssigneeData!=null) {
                                     toIngest.put(endFlag.dbName, latestAssigneeData);
+                                    // computable assignee data
+                                    Object assigneeName = latestAssigneeData.get(Constants.ASSIGNEE);
+                                    boolean isHuman = false;
+                                    if(assigneeName==null) {
+                                        Object firstName = latestAssigneeData.get(Constants.FIRST_NAME);
+                                        Object lastName = latestAssigneeData.get(Constants.LAST_NAME);
+                                        if(firstName!=null&&lastName!=null) {
+                                            assigneeName = lastName.toString().trim()+", "+firstName.toString().trim();
+                                            if(assigneeName.toString().length()<4) assigneeName = null;
+                                        }
+                                        if(assigneeName!=null) {
+                                            isHuman = true;
+                                            latestAssigneeData.put(Constants.ASSIGNEE,assigneeName);
+                                        }
+                                    }
+                                    if(assigneeName!=null) {
+                                        latestAssigneeData.put(Constants.IS_HUMAN,isHuman);
+                                    }
                                 }
                             } else {
                                 toIngest.put(endFlag.dbName, data.stream().filter(map -> map.size() > 0).collect(Collectors.toList()));

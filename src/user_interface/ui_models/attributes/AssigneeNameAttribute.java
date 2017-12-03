@@ -2,7 +2,6 @@ package user_interface.ui_models.attributes;
 
 import lombok.NonNull;
 import seeding.Constants;
-import user_interface.ui_models.attributes.computable_attributes.ComputableAssigneeAttribute;
 import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 import user_interface.ui_models.filters.AbstractFilter;
 
@@ -24,7 +23,7 @@ public class AssigneeNameAttribute extends AbstractAttribute {
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Multiselect;
+        return AbstractFilter.FieldType.Text;
     }
 
     @Override

@@ -118,7 +118,6 @@ public class Database {
 		return all;
 	}
 
-
 	public static void ingestPairRecords(Map<Flag,String> data, String tableName) throws SQLException {
 		List<Map.Entry<Flag,String>> entries = data.entrySet().stream().collect(Collectors.toList());
 		String queryPrefix = "INSERT INTO "+tableName+" ("+String.join(",",entries.stream().map(e->e.getKey().dbName).collect(Collectors.toList()))+") VALUES ";
@@ -363,17 +362,6 @@ public class Database {
 			}
 		}
 		return true;
-	}
-
-	public synchronized static boolean isAssignee(String assignee) {
-		if(assignee.length() > 11 || assignee.length() < 7) return true;
-		for(int i = 2; i < assignee.length(); i++) {
-			char c = assignee.charAt(i);
-			if(Character.isAlphabetic(c)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 

@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class CorrespondentNameAttribute extends AbstractAttribute {
     public CorrespondentNameAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
     }
     @Override
     public String getType() {
@@ -21,7 +21,7 @@ public class CorrespondentNameAttribute extends AbstractAttribute {
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Multiselect;
+        return AbstractFilter.FieldType.Text;
     }
 
     @Override
