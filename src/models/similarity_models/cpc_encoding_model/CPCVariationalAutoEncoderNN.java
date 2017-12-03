@@ -144,7 +144,7 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
             List<Collection<CPC>> validStreams = new ArrayList<>();
             for(int j = 0; j < assigneeSample.size(); j++) {
                 String assignee = assigneeSample.get(j);
-                Collection<CPC> topCPCsWithHierarchy = cpcStreams.get(i);
+                Collection<CPC> topCPCsWithHierarchy = cpcStreams.get(j);
                 if(topCPCsWithHierarchy.size()>0) {
                     validAssignees.add(assignee);
                     validStreams.add(topCPCsWithHierarchy);
