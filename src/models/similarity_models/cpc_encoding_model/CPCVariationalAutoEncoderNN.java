@@ -117,10 +117,12 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         }
         // assignees
         idx.set(0);
-        final int cpcLimit = 100;
-        final int assetLimit = 500;
-        final int assigneeBatch = 500;
+        final int cpcLimit = 30;
+        final int assetLimit = 100;
+        final int assigneeBatch = 5000;
         noData.set(0);
+        Random rand = new Random();
+        System.out.println("Predicting assignees...");
         for(int i = 0; i < assignees.size(); i+=assigneeBatch) {
             int r = Math.min(assignees.size(),i+assigneeBatch);
             List<String> assigneeSample = assignees.subList(i,r);
@@ -129,8 +131,7 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
                         Database.selectPatentNumbersFromExactAssignee(assignee),
                         Database.selectApplicationNumbersFromExactAssignee(assignee)
                 ).flatMap(portfolio->portfolio.stream()).collect(Collectors.toCollection(ArrayList::new));
-                Collections.shuffle(assigneeAssets);
-                Map<CPC,Double> cpcScoreMap = assigneeAssets.stream().limit(assetLimit).map(asset->{
+                Map<CPC,Double> cpcScoreMap = IntStream.range(0,Math.min(assigneeAssets.size(),assetLimit)).mapToObj(a->assigneeAssets.remove(rand.nextInt(assigneeAssets.size()))).map(asset->{
                     return cpcMap.get(asset);
                 }).filter(set->set!=null).flatMap(set->set.stream())
                         .filter(cpc->cpc.getNumParts()>2)
@@ -140,6 +141,7 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
                 Collection<CPC> topCPCsWithHierarchy = topCPCs.stream().flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream()).distinct().collect(Collectors.toList());
                 return topCPCsWithHierarchy;
             }).collect(Collectors.toList());
+            System.out.print("-");
             List<String> validAssignees = new ArrayList<>();
             List<Collection<CPC>> validStreams = new ArrayList<>();
             for(int j = 0; j < assigneeSample.size(); j++) {
@@ -162,7 +164,7 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
             for(int j = 0; j < validAssignees.size(); j++) {
                 assetToEncodingMap.put(validAssignees.get(j),encoding.getRow(j).dup());
             }
-
+            System.out.print("_");
             System.gc();
         }
 
