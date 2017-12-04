@@ -10,7 +10,7 @@ $(document).ready(function() {
             "items": function(node) {
                 var items = {};
 
-                var isFolder = $(node).hasClass("folder");
+                var isFolder = ! $(node).hasClass("template-show-button");
                 if(isFolder) {
                     items["New Folder"] = {
                         "separator_before": false,
@@ -25,7 +25,7 @@ $(document).ready(function() {
 
                     };
                 }
-                
+
                 items["Delete"] = {
                     "separator_before": false,
                     "separator_after": false,
