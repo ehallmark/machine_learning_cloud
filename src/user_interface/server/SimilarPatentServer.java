@@ -1427,11 +1427,11 @@ public class SimilarPatentServer {
                                                                 )
                                                         ), div().attr("style","height: 60%;").with(
                                                                 h5("Default Forms"),
-                                                                div().attr("style","max-height: 45%; overflow-y: auto;").withId("default-templates").withClass("jstree").with(
+                                                                div().attr("style","max-height: 45%; overflow-y: auto; text-align: left;").withId("default-templates").withClass("jstree").with(
                                                                         getTemplatesForUser(SUPER_USER,false)
                                                                 ),
                                                                 h5("My Forms"),
-                                                                div().attr("style","max-height: 45%; overflow-y: auto;").withId("my-templates").withClass("jstree").with(
+                                                                div().attr("style","max-height: 45%; overflow-y: auto; text-align: left;").withId("my-templates").withClass("jstree").with(
                                                                         getTemplatesForUser(req.session().attribute("username"),true)
                                                                 )
                                                         )
