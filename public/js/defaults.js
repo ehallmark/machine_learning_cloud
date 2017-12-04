@@ -1,18 +1,51 @@
 $(document).ready(function() {
-    $(".jstree").jstree({
-      "core" : {
-        "multiple" : false,
-        "check_callback": true
-      },
-      "types": {
-        "folder": {
-          "icon": "jstree-folder"
+
+    $("#jstree").jstree({
+        "core" : {
+            "multiple" : false,
+            "check_callback": true
         },
-        "file" : {
-          "icon": "jstree-file"
-        }
-      },
-      "plugins": ["types"]
+        "contextmenu": {
+            "items": function($node) {
+                var tree = $('#jstree').jstree(true);
+                return {
+                    "Create": {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "Create",
+                        "action": function (obj) {
+                            $node = tree.create_node($node);
+                            tree.edit($node);
+                        }
+                    },
+                    "Rename": {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "Rename",
+                        "action": function (obj) {
+                            tree.edit($node);
+                        }
+                    },
+                    "Remove": {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "Remove",
+                        "action": function (obj) {
+                            tree.delete_node($node);
+                        }
+                    }
+                };
+            }
+        },
+        "types": {
+            "folder": {
+                "icon": "jstree-folder"
+            },
+            "file" : {
+                "icon": "jstree-file"
+            }
+        },
+        "plugins": ["types","wholerow","sort","contextmenu"]
     });
 
 

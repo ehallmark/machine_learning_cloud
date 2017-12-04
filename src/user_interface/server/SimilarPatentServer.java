@@ -1357,7 +1357,7 @@ public class SimilarPatentServer {
         ).with(
                 ul().with(
                         directoryStructure.getFirst().entrySet().stream()
-                                .sorted(Comparator.comparing(e->e.getKey()))
+                                //.sorted(Comparator.comparing(e->e.getKey()))
                                 .map(e->{
                                     List<String> parentDirsCopy = new ArrayList<>(parentDirs);
                                     parentDirsCopy.add(e.getKey());
@@ -1366,7 +1366,7 @@ public class SimilarPatentServer {
                         .collect(Collectors.toList())
                 ).with(
                         directoryStructure.getSecond().stream()
-                                .sorted(Comparator.comparing(e->e.getName()))
+                                //.sorted(Comparator.comparing(e->e.getName()))
                                 .map(template->{
                                     return li(template.getName()).attr("data-jstree","{\"type\":\"file\"}").withClass("template-show-button").attr("style","width: "+((!deletable)?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
                                             .attr("data-highlight", template.getHighlightMap())
