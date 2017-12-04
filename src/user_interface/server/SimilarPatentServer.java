@@ -1320,14 +1320,14 @@ public class SimilarPatentServer {
 
     private static Tag addFileToFolderButton(List<String> parentDirs) {
         return form().withAction(SAVE_TEMPLATE_URL).withClass("save-template-form").withMethod("post").with(
-                input().withType("hidden").withName("chartsMap").withId("chartsMap"),
-                input().withType("hidden").withName("filtersMap").withId("filtersMap"),
-                input().withType("hidden").withName("attributesMap").withId("attributesMap"),
-                input().withType("hidden").withName("searchOptionsMap").withId("searchOptionsMap"),
-                input().withType("hidden").withName("highlightMap").withId("highlightMap"),
+                input().withType("hidden").withName("chartsMap").withClass("chartsMap"),
+                input().withType("hidden").withName("filtersMap").withClass("filtersMap"),
+                input().withType("hidden").withName("attributesMap").withClass("attributesMap"),
+                input().withType("hidden").withName("searchOptionsMap").withClass("searchOptionsMap"),
+                input().withType("hidden").withName("highlightMap").withClass("highlightMap"),
                 input().withType("text").withClass("form-control")
                         .attr("placeholder","Template Name")
-                        .withName("name").withClass(".template_name")
+                        .withName("name").withClass("template_name")
                         .attr("style","width: 80%; margin-left: 10%; margin-right: 10%; display: inline-block; text-align: center;")
         ).with(
                 parentDirs.stream().map(dir->input().withName("parentDirs[]").withValue(dir).withType("hidden"))
@@ -1336,7 +1336,7 @@ public class SimilarPatentServer {
     }
 
     private static Tag addFolderToFolderButton() {
-        return form().withClass(".add-folder-form").with(
+        return form().withClass("add-folder-form").with(
                 input().withType("text").withClass("form-control")
                         .attr("placeholder","Folder Name")
                         .withName("name").withClass(".folder_name")
@@ -1367,7 +1367,7 @@ public class SimilarPatentServer {
                                     .attr("data-attributesMap", template.getAttributesMap())
                                     .attr("data-filtersMap", template.getFiltersMap())
                                     .attr("data-searchOptionsMap", template.getSearchOptionsMap()).with(
-                                            (!deletable)?span():span("X").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",template.getFile().getName()).withClass("template-remove-button")
+                                            (!deletable)?span():span("X").attr("style","margin-right: -10px;").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",template.getFile().getName()).withClass("template-remove-button")
                                     );
                 }).collect(Collectors.toList())
         );
@@ -1427,7 +1427,7 @@ public class SimilarPatentServer {
                                                                 )
                                                         ), div().attr("style","height: 60%;").with(
                                                                 h5("Default Forms"),
-                                                                div().attr("style","max-height: 45%; overflow-y: auto;").withId("default-templates").with(
+                                                                div().attr("style","max-height: 45%; overflow-y: auto;").withId("default-templates").withClass("jstree").with(
                                                                         getTemplatesForUser(SUPER_USER,false)
                                                                 ),
                                                                 h5("My Forms"),
