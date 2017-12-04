@@ -1350,9 +1350,6 @@ public class SimilarPatentServer {
     }
 
     public static Tag templateHelper(Pair<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable, List<String> parentDirs) {
-        if(directoryStructure.getSecond().isEmpty() && directoryStructure.getFirst().isEmpty()) {
-            return null;
-        }
         // find nested
         return li(folderName).attr("data-jstree","{\"type\":\"folder\"}").with(
             addFileToFolderButton(parentDirs),
@@ -1366,7 +1363,6 @@ public class SimilarPatentServer {
                                     parentDirsCopy.add(e.getKey());
                                     return templateHelper((Pair<Map<String,Object>,List<FormTemplate>>)e.getValue(),e.getKey(),deletable,parentDirsCopy);
                                 })
-                                .filter(tag->tag!=null)
                         .collect(Collectors.toList())
                 ).with(
                         directoryStructure.getSecond().stream()
