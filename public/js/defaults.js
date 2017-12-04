@@ -1,4 +1,11 @@
 $(document).ready(function() {
+    $(".jstree").jstree({
+      "core" : {
+        "multiple" : false
+      }
+    });
+
+
     $('.miniTip').miniTip({
         title: 'Advanced Keyword Syntax',
         event: 'click',

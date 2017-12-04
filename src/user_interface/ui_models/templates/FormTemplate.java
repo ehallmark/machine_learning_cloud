@@ -5,6 +5,7 @@ import lombok.Getter;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -23,7 +24,10 @@ public class FormTemplate {
     protected String searchOptionsMap;
     @Getter
     protected String highlightMap;
-    public FormTemplate(String name, String searchOptionsMap, String attributesMap, String filtersMap, String chartsMap, String highlightMap) {
+    @Getter
+    protected File file;
+    public FormTemplate(File file, String name, String searchOptionsMap, String attributesMap, String filtersMap, String chartsMap, String highlightMap) {
+        this.file=file;
         this.name=name;
         this.searchOptionsMap=searchOptionsMap;
         this.attributesMap=attributesMap;

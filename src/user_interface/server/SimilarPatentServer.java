@@ -18,6 +18,7 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import spark.QueryParamsMap;
@@ -1010,18 +1011,20 @@ public class SimilarPatentServer {
         String highlightMap = req.queryParams("highlightMap");
         String chartsMap = req.queryParams("chartsMap");
         String name = req.queryParams("name");
+        String[] parentDirs = req.queryParamsValues("parentDirs");
         String message;
         Random random = new Random(System.currentTimeMillis());
         Map<String,Object> responseMap = new HashMap<>();
         if(attributesMap!=null&&searchOptionsMap!=null&&chartsMap!=null&&highlightMap!=null&&filtersMap!=null&&name!=null&&name.length()>0) {
             System.out.println("Form "+name+" attributes: "+attributesMap);
-            Map<String,String> formMap = new HashMap<>();
+            Map<String,Object> formMap = new HashMap<>();
             formMap.put("name",name);
             formMap.put("attributesMap",attributesMap);
             formMap.put("searchOptionsMap",searchOptionsMap);
             formMap.put("filtersMap",filtersMap);
             formMap.put("chartsMap",chartsMap);
             formMap.put("highlightMap", highlightMap);
+            if(parentDirs!=null && parentDirs.length>0) formMap.put("parentDirs",parentDirs);
             String username = req.session().attribute("username");
             if(username!=null&&username.length()>0) {
                 String templateFolderStr = Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/";
@@ -1276,11 +1279,12 @@ public class SimilarPatentServer {
         return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.replaceAll(toReplace,"").trim():str).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
     }
 
-    public static List<Tag> getTemplatesForUser(String username, boolean deletable) {
+    public static Tag getTemplatesForUser(String username, boolean deletable) {
         if(username!=null && username.length()>0) {
             File folder = new File(Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/");
             if(!folder.exists()) folder.mkdirs();
-            return Arrays.stream(folder.listFiles()).sorted(Comparator.comparingLong(file->file.lastModified())).map(file->{
+            Pair<Map<String,Object>,List<FormTemplate>> directoryStructure = new Pair<>(new HashMap<>(),new ArrayList<>());
+            Arrays.stream(folder.listFiles()).forEach(file->{
                 Map<String,Object> templateMap = (Map<String,Object>)Database.tryLoadObject(file);
                 Object name = templateMap.get("name");
                 Object searchObjectsMap = templateMap.get("searchOptionsMap");
@@ -1288,16 +1292,62 @@ public class SimilarPatentServer {
                 Object chartsMap = templateMap.get("chartsMap");
                 Object filtersMap = templateMap.get("filtersMap");
                 Object highlightMap = templateMap.get("highlightMap");
+                String[] parentDirs = (String[])templateMap.get("parentDirs");
                 if(highlightMap==null) highlightMap="";
                 if(name!=null&&searchObjectsMap!=null&&attributesMap!=null&&chartsMap!=null&&filtersMap!=null) {
-                    FormTemplate template = new FormTemplate(name.toString(), searchObjectsMap.toString(), attributesMap.toString(), filtersMap.toString(), chartsMap.toString(), highlightMap.toString());
-                    return templateHelper(template, deletable ? file : null);
-                } else return null;
-            }).filter(t->t!=null).collect(Collectors.toList());
+
+                    Pair<Map<String,Object>,List<FormTemplate>> currentDirectory = directoryStructure;
+                    if(parentDirs!=null) { // build directory as necessary
+                        for(String dir : parentDirs) {
+                            currentDirectory.getFirst().putIfAbsent(dir, new Pair<>(new HashMap<>(), new ArrayList<>()));
+                            currentDirectory =(Pair<Map<String,Object>,List<FormTemplate>>) currentDirectory.getFirst().get(dir);
+                        }
+                    }
+                    // create template
+                    FormTemplate template = new FormTemplate(file, name.toString(), searchObjectsMap.toString(), attributesMap.toString(), filtersMap.toString(), chartsMap.toString(), highlightMap.toString());
+
+                    // add to current directory
+                    currentDirectory.getSecond().add(template);
+                }
+            });
+
+            // recursively build directory
+            return templateHelper(directoryStructure,"Root",deletable);
         } else {
-            return Collections.emptyList();
+            return div();
         }
     }
+
+
+    public static Tag templateHelper(Pair<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable) {
+        if(directoryStructure.getSecond().isEmpty() && directoryStructure.getFirst().isEmpty()) {
+            return null;
+        }
+
+        // find nested
+        return ul().withText(folderName).with(
+                directoryStructure.getFirst().entrySet().stream()
+                        .sorted(Comparator.comparing(e->e.getKey()))
+                        .map(e->templateHelper((Pair<Map<String,Object>,List<FormTemplate>>)e.getValue(),e.getKey(),deletable))
+                        .filter(tag->tag!=null)
+                .collect(Collectors.toList())
+        ).with(
+                directoryStructure.getSecond().stream()
+                        .sorted(Comparator.comparing(e->e.getName()))
+                        .map(template->{
+                            return li(template.getName()).withClass("template-show-button").attr("style","width: "+((!deletable)?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
+                                    .attr("data-highlight", template.getHighlightMap())
+                                    .attr("data-attributesMap", template.getAttributesMap())
+                                    .attr("data-filtersMap", template.getFiltersMap())
+                                    .attr("data-searchOptionsMap", template.getSearchOptionsMap()).with(
+                                            (!deletable)?span():span("X").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",template.getFile().getName()).withClass("template-remove-button")
+                                    );
+                }).collect(Collectors.toList())
+        );
+
+
+    }
+
 
     static Tag templateWrapper(boolean authorized, Request req, Response res, Tag form) {
         res.type("text/html");
@@ -1315,6 +1365,7 @@ public class SimilarPatentServer {
                         script().withSrc("/js/jquery.dynatable.js"),
                         script().withSrc("/js/defaults.js"),
                         script().withSrc("/js/jquery.miniTip.js"),
+                        script().withSrc("/js/jstree.min.js"),
                         script().withSrc("https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"),
                         script().withSrc("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"),
                         script().withSrc("https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"),
@@ -1323,6 +1374,7 @@ public class SimilarPatentServer {
                         link().withRel("stylesheet").withHref("/css/defaults.css"),
                         link().withRel("stylesheet").withHref("/css/jquery.dynatable.css"),
                         link().withRel("stylesheet").withHref("/css/miniTip.css"),
+                        link().withRel("stylesheet").withHref("/css/jstree.min.css"),
                         link().withRel("stylesheet").withHref("http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"),
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
@@ -1352,7 +1404,7 @@ public class SimilarPatentServer {
                                                                         getTemplatesForUser(SUPER_USER,false)
                                                                 ),
                                                                 h5("My Forms"),
-                                                                div().attr("style","max-height: 45%; overflow-y: auto;").withId("my-templates").with(
+                                                                div().attr("style","max-height: 45%; overflow-y: auto;").withId("my-templates").withClass("jstree").with(
                                                                         getTemplatesForUser(req.session().attribute("username"),true)
                                                                 )
                                                         )
@@ -1371,14 +1423,6 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag templateHelper(FormTemplate template, File file) {
-        return li().withClass("nav-item").with(
-                button(template.getName()).withClass("btn btn-sm btn-secondary template-show-button").attr("style","width: "+(file==null?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
-                        .attr("data-highlight", template.getHighlightMap())
-                        .attr("data-attributesMap", template.getAttributesMap()).attr("data-filtersMap", template.getFiltersMap()).attr("data-searchOptionsMap", template.getSearchOptionsMap()),
-                file==null?span():span("X").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",file.getName()).withClass("template-remove-button")
-        );
-    }
 
 
     public static Tag technologySelect(String name, Collection<String> orderedClassifications) {
