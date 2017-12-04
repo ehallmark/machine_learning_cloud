@@ -1,3 +1,6 @@
+.vakata-context {
+     z-index:99999 !important;
+}
 
 .toggle {
     display: none;
