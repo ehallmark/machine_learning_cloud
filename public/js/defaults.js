@@ -6,9 +6,41 @@ $(document).ready(function() {
             "multiple" : false,
             "check_callback": true
         },
-        //"contextmenu": {
+        "contextmenu": {
+            "items": function(node) {
+                var items = {};
 
-        //},
+                var isFolder = $(node).hasClass("folder");
+                if(isFolder) {
+                    items["New Folder"] = {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "New Folder",
+
+                    };
+                    items["New"] = {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "New",
+
+                    };
+                }
+                
+                items["Delete"] = {
+                    "separator_before": false,
+                    "separator_after": false,
+                    "label": "Delete",
+
+                };
+                items["Rename"] = {
+                    "separator_before": false,
+                    "separator_after": false,
+                    "label": "Rename",
+
+                };
+                return items;
+            }
+        },
         "types": {
             "folder": {
                 "icon": "jstree-folder"
