@@ -1,7 +1,8 @@
 $(document).ready(function() {
     $(".jstree").jstree({
       "core" : {
-        "multiple" : false
+        "multiple" : false,
+        "check_callback": true
       },
       "types": {
         "folder": {

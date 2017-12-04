@@ -8,8 +8,6 @@ import user_interface.server.SimilarPatentServer;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.security.SecureRandom;
-import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -158,8 +156,20 @@ public class PasswordHandler {
         System.out.println("Encrypted \"string\": "+encrypt("string"));
 
         PasswordHandler handler = new PasswordHandler();
-        handler.createUser(SimilarPatentServer.SUPER_USER,"klerjhdgtklh34h5jkhjkdsfhg39804758gjkhs834jhgs3y5456454bv4x5b5h55y45bfdcgjiytusvg", SimilarPatentServer.SUPER_USER);
-        System.out.println("Authorized: "+handler.authorizeUser("form_creator", "klerjhdgtklh34h5jkhjkdsfhg39804758gjkhs834jhgs3y5456454bv4x5b5h55y45bfdcgjiytusvg"));
+
+        try {
+            handler.createUser(SimilarPatentServer.SUPER_USER, "klerjhdgtklh34h5jkhjkdsfhg39804758gjkhs834jhgs3y5456454bv4x5b5h55y45bfdcgjiytusvg", SimilarPatentServer.SUPER_USER);
+        } catch(PasswordException pe) {
+            System.out.println(pe.getMessage());
+        }
+        System.out.println("Authorized: " + handler.authorizeUser(SimilarPatentServer.SUPER_USER, "klerjhdgtklh34h5jkhjkdsfhg39804758gjkhs834jhgs3y5456454bv4x5b5h55y45bfdcgjiytusvg"));
+        try {
+            handler.createUser(SimilarPatentServer.SHARED_USER, "a234643h5jkhjkasdgdsfhg39804ad9giua234x5b5h5dsg2352gjiytusvg", SimilarPatentServer.SUPER_USER);
+        } catch(PasswordException pe) {
+            System.out.println(pe.getMessage());
+        }
+        System.out.println("Authorized: " + handler.authorizeUser(SimilarPatentServer.SHARED_USER, "a234643h5jkhjkasdgdsfhg39804ad9giua234x5b5h5dsg2352gjiytusvg"));
+
     }
 
 }

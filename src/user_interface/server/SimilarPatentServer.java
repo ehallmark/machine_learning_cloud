@@ -99,6 +99,7 @@ public class SimilarPatentServer {
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
     public static final String RANDOM_TOKEN = "<><><>";
     public static final String SUPER_USER = "form_creator";
+    public static final String SHARED_USER = "shared_user";
     public static final String USE_HIGHLIGHTER_FIELD = "useHighlighter";
     public static final String FILTER_NESTED_OBJECTS_FIELD = "filterNestedObjects";
     public static final String ANALYST_USER = "analyst";
@@ -1283,7 +1284,7 @@ public class SimilarPatentServer {
         return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.replaceAll(toReplace,"").trim():str).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
     }
 
-    public static Tag getTemplatesForUser(String username, boolean deletable) {
+    public static Tag getTemplatesForUser(String username, boolean deletable, String rootName) {
         if(username!=null && username.length()>0) {
             File folder = new File(Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/");
             if(!folder.exists()) folder.mkdirs();
@@ -1316,7 +1317,7 @@ public class SimilarPatentServer {
             });
 
             // recursively build directory
-            return templateHelper(directoryStructure,"Root",deletable, new ArrayList<>());
+            return templateHelper(directoryStructure,rootName,deletable, new ArrayList<>());
         } else {
             return div();
         }
@@ -1353,38 +1354,34 @@ public class SimilarPatentServer {
             return null;
         }
         // find nested
-        return ul().with(
-                li(folderName).attr("data-jstree","{\"type\":\"folder\"}").with(
-                    addFileToFolderButton(parentDirs),
-                    addFolderToFolderButton()
+        return li(folderName).attr("data-jstree","{\"type\":\"folder\"}").with(
+            addFileToFolderButton(parentDirs),
+            addFolderToFolderButton()
+        ).with(
+                ul().with(
+                        directoryStructure.getFirst().entrySet().stream()
+                                .sorted(Comparator.comparing(e->e.getKey()))
+                                .map(e->{
+                                    List<String> parentDirsCopy = new ArrayList<>(parentDirs);
+                                    parentDirsCopy.add(e.getKey());
+                                    return templateHelper((Pair<Map<String,Object>,List<FormTemplate>>)e.getValue(),e.getKey(),deletable,parentDirsCopy);
+                                })
+                                .filter(tag->tag!=null)
+                        .collect(Collectors.toList())
                 ).with(
-                        ul().with(
-                                directoryStructure.getFirst().entrySet().stream()
-                                        .sorted(Comparator.comparing(e->e.getKey()))
-                                        .map(e->{
-                                            List<String> parentDirsCopy = new ArrayList<>(parentDirs);
-                                            parentDirsCopy.add(e.getKey());
-                                            return templateHelper((Pair<Map<String,Object>,List<FormTemplate>>)e.getValue(),e.getKey(),deletable,parentDirsCopy);
-                                        })
-                                        .filter(tag->tag!=null)
-                                .collect(Collectors.toList())
-                        ).with(
-                                directoryStructure.getSecond().stream()
-                                        .sorted(Comparator.comparing(e->e.getName()))
-                                        .map(template->{
-                                            return li(template.getName()).attr("data-jstree","{\"type\":\"file\"}").withClass("template-show-button").attr("style","width: "+((!deletable)?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
-                                                    .attr("data-highlight", template.getHighlightMap())
-                                                    .attr("data-attributesMap", template.getAttributesMap())
-                                                    .attr("data-filtersMap", template.getFiltersMap())
-                                                    .attr("data-searchOptionsMap", template.getSearchOptionsMap()).with(
-                                                            (!deletable)?span():span("X").attr("style","margin-right: -10px;").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",template.getFile().getName()).withClass("template-remove-button")
-                                                    );
-                                }).collect(Collectors.toList())
-                        )
+                        directoryStructure.getSecond().stream()
+                                .sorted(Comparator.comparing(e->e.getName()))
+                                .map(template->{
+                                    return li(template.getName()).attr("data-jstree","{\"type\":\"file\"}").withClass("template-show-button").attr("style","width: "+((!deletable)?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
+                                            .attr("data-highlight", template.getHighlightMap())
+                                            .attr("data-attributesMap", template.getAttributesMap())
+                                            .attr("data-filtersMap", template.getFiltersMap())
+                                            .attr("data-searchOptionsMap", template.getSearchOptionsMap()).with(
+                                                    (!deletable)?span():span("X").attr("style","margin-right: -10px;").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",template.getFile().getName()).withClass("template-remove-button")
+                                            );
+                        }).collect(Collectors.toList())
                 )
         );
-
-
     }
 
 
@@ -1438,13 +1435,14 @@ public class SimilarPatentServer {
                                                                         button().withType("submit").withText("Save").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
                                                         ), div().attr("style","height: 60%;").with(
-                                                                h5("Default Forms"),
-                                                                div().attr("style","max-height: 45%; overflow-y: auto; text-align: left;").withId("default-templates").withClass("jstree").with(
-                                                                        getTemplatesForUser(SUPER_USER,false)
-                                                                ),
-                                                                h5("My Forms"),
-                                                                div().attr("style","max-height: 45%; overflow-y: auto; text-align: left;").withId("my-templates").withClass("jstree").with(
-                                                                        getTemplatesForUser(req.session().attribute("username"),true)
+                                                                h5("Forms"),
+                                                                div().attr("style","max-height: 45%; overflow-y: auto; text-align: left;").withId("form-templates").withClass("jstree").with(
+                                                                        ul().with(
+                                                                                getTemplatesForUser(SUPER_USER,false,"Form Templates"),
+                                                                                getTemplatesForUser(req.session().attribute("username"),true,"My Forms"),
+                                                                                getTemplatesForUser(SHARED_USER,true, "Shared Forms")
+                                                                        )
+
                                                                 )
                                                         )
                                                 )
@@ -1702,7 +1700,7 @@ public class SimilarPatentServer {
         }
         long t1 = System.currentTimeMillis();
         //Database.setupSeedConn();
-        boolean preLoad = true;
+        boolean preLoad =  false; // TODO CHANGE BACK TO true;
         boolean initDatabase = false;
 
         if(initDatabase) Database.initializeDatabase();
