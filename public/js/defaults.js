@@ -7,36 +7,7 @@ $(document).ready(function() {
             "check_callback": true
         },
         "contextmenu": {
-            "items": function($node) {
-                var tree = $(form_template_id).jstree(true);
-                return {
-                    "Create": {
-                        "separator_before": false,
-                        "separator_after": false,
-                        "label": "Create",
-                        "action": function (obj) {
-                            $node = tree.create_node($node);
-                            tree.edit($node);
-                        }
-                    },
-                    "Rename": {
-                        "separator_before": false,
-                        "separator_after": false,
-                        "label": "Rename",
-                        "action": function (obj) {
-                            tree.edit($node);
-                        }
-                    },
-                    "Remove": {
-                        "separator_before": false,
-                        "separator_after": false,
-                        "label": "Remove",
-                        "action": function (obj) {
-                            tree.delete_node($node);
-                        }
-                    }
-                };
-            }
+      
         },
         "types": {
             "folder": {
