@@ -11,7 +11,7 @@ $(document).ready(function() {
                 var items = {};
 
                 var isFolder = node.type==='folder';
-                var topLevelFolder = isFolder && node.parents.length == 1;
+                var topLevelFolder = isFolder && (node.parents.length === 1);
 
                 if(isFolder) {
                     items["New Folder"] = {
