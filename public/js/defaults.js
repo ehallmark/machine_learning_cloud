@@ -47,13 +47,18 @@ $(document).ready(function() {
                         "separator_before": false,
                         "separator_after": false,
                         "label": "Delete",
-
+                        "action": function(obj) {
+                            node = tree.create_node(node, {
+                            tree.delete_node(node);
+                        }
                     };
                     items["Rename"] = {
                         "separator_before": false,
                         "separator_after": false,
                         "label": "Rename",
-
+                        "action": function(obj) {
+                            tree.edit(node);
+                        }
                     };
                 }
                 return items;
