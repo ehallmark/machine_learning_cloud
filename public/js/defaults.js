@@ -2,7 +2,16 @@ $(document).ready(function() {
     $(".jstree").jstree({
       "core" : {
         "multiple" : false
-      }
+      },
+      "types": {
+        "folder": {
+          "icon": "icon-folder-open"
+        },
+        "file" : {
+          "icon": "icon-file"
+        }
+      },
+      "plugins": ["types"]
     });
 
 

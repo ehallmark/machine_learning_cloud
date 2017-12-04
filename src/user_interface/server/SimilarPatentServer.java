@@ -1349,7 +1349,7 @@ public class SimilarPatentServer {
             return null;
         }
         // find nested
-        return ul().withText(folderName).with(addFileToFolderButton(parentDirs),addFolderToFolderButton()).with(directoryStructure.getFirst().entrySet().stream()
+        return ul().withText(folderName).attr("data-jstree","{\"type\":\"folder\"}").with(addFileToFolderButton(parentDirs),addFolderToFolderButton()).with(directoryStructure.getFirst().entrySet().stream()
                         .sorted(Comparator.comparing(e->e.getKey()))
                         .map(e->{
                             List<String> parentDirsCopy = new ArrayList<>(parentDirs);
@@ -1362,7 +1362,7 @@ public class SimilarPatentServer {
                 directoryStructure.getSecond().stream()
                         .sorted(Comparator.comparing(e->e.getName()))
                         .map(template->{
-                            return li(template.getName()).withClass("template-show-button").attr("style","width: "+((!deletable)?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
+                            return li(template.getName()).attr("data-jstree","{\"type\":\"file\"}").withClass("template-show-button").attr("style","width: "+((!deletable)?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
                                     .attr("data-highlight", template.getHighlightMap())
                                     .attr("data-attributesMap", template.getAttributesMap())
                                     .attr("data-filtersMap", template.getFiltersMap())
