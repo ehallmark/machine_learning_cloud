@@ -6,9 +6,9 @@ $(document).ready(function() {
             "multiple" : false,
             "check_callback": true
         },
-        "contextmenu": {
+        //"contextmenu": {
 
-        },
+        //},
         "types": {
             "folder": {
                 "icon": "jstree-folder"
