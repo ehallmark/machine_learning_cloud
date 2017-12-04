@@ -9,7 +9,7 @@ $(document).ready(function() {
         "contextmenu": {
             "items": function(node) {
                 var items = {};
-                var $tree = $(form_template_id).jstree(true);
+                var tree = $(form_template_id).jstree(true);
 
                 var isFolder = node.type==='folder';
                 var topLevelFolder = isFolder && (node.parents.length === 1);
@@ -20,7 +20,7 @@ $(document).ready(function() {
                         "separator_after": false,
                         "label": "New Folder",
                         "action": function(obj) {
-                            node = $tree.create_node(node);
+                            node = tree.create_node(node);
                             tree.edit(node);
                         }
                     };
