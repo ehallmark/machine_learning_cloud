@@ -33,15 +33,15 @@ $(document).ready(function() {
     };
 
 
-    $('#save-template-form-id').submit(function(e){
+    $('.save-template-form').submit(function(e){
         e.preventDefault();
-        saveTemplateFormHelper("#searchOptionsForm",".attributeElement","#save-template-form-id #searchOptionsMap");
-        saveTemplateFormHelper("#attributesForm",".attributeElement","#save-template-form-id #attributesMap");
-        saveTemplateFormHelper("#filtersForm",".attributeElement","#save-template-form-id #filtersMap");
-        saveTemplateFormHelper("#chartsForm",".attributeElement","#save-template-form-id #chartsMap");
-        saveTemplateFormHelper("#highlightForm",".attributeElement","#save-template-form-id #highlightMap");
 
         var $this = $(this);
+        saveTemplateFormHelper("#searchOptionsForm",".attributeElement",$this.find('.searchOptionsMap'));
+        saveTemplateFormHelper("#attributesForm",".attributeElement",$this.find('.attributesMap'));
+        saveTemplateFormHelper("#filtersForm",".attributeElement",$this.find('.filtersMap'));
+        saveTemplateFormHelper("#chartsForm",".attributeElement",$this.find('.chartsMap'));
+        saveTemplateFormHelper("#highlightForm",".attributeElement",$this.find('.highlightMap'));
 
         $.ajax({
           type: "POST",
@@ -59,10 +59,10 @@ $(document).ready(function() {
                 var filters = data.filtersMap;
                 var searchOptions = data.searchOptionsMap;
                 var file = data.file;
-                $('#my-templates').append($("<li class='nav-item'><button class='btn btn-secondary template-show-button' style='width: 70%;' data-highlight='"+highlight+"' data-name='"+name+"' data-chartsmap='"+charts+"' data-attributesmap='"+attributes+"' data-filtersmap='"+filters+"' data-searchoptionsmap='"+searchOptions+"'>"+name+"</button><span data-action='/secure/delete_template' data-file='"+file+"' class='template-remove-button' >X</span></li>"));
+                $('#my-templates ').append($("<li class='nav-item'><button class='btn btn-secondary template-show-button' style='width: 70%;' data-highlight='"+highlight+"' data-name='"+name+"' data-chartsmap='"+charts+"' data-attributesmap='"+attributes+"' data-filtersmap='"+filters+"' data-searchoptionsmap='"+searchOptions+"'>"+name+"</button><span data-action='/secure/delete_template' data-file='"+file+"' class='template-remove-button' >X</span></li>"));
                 $('.template-show-button').filter(':last').click(showTemplateFunction);
                 $('.template-remove-button').filter(':last').click(removeTemplateFunction);
-                $('#template_name').val(null);
+                $this.find('.template_name').val(null);
             }
           },
           dataType: "json"

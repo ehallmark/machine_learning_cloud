@@ -1050,7 +1050,7 @@ public class SimilarPatentServer {
         }
         responseMap.put("message", message);
         return new Gson().toJson(responseMap);
-    };
+    }
 
     private static Object handleDeleteForm(Request req, Response res) {
         String fileName = req.queryParams("path_to_remove");
@@ -1312,23 +1312,50 @@ public class SimilarPatentServer {
             });
 
             // recursively build directory
-            return templateHelper(directoryStructure,"Root",deletable);
+            return templateHelper(directoryStructure,"Root",deletable, new ArrayList<>());
         } else {
             return div();
         }
     }
 
+    private static Tag addFileToFolderButton(List<String> parentDirs) {
+        return form().withAction(SAVE_TEMPLATE_URL).withClass("save-template-form").withMethod("post").with(
+                input().withType("hidden").withName("chartsMap").withId("chartsMap"),
+                input().withType("hidden").withName("filtersMap").withId("filtersMap"),
+                input().withType("hidden").withName("attributesMap").withId("attributesMap"),
+                input().withType("hidden").withName("searchOptionsMap").withId("searchOptionsMap"),
+                input().withType("hidden").withName("highlightMap").withId("highlightMap"),
+                input().withType("text").withClass("form-control")
+                        .attr("placeholder","Template Name")
+                        .withName("name").withClass(".template_name")
+                        .attr("style","width: 80%; margin-left: 10%; margin-right: 10%; display: inline-block; text-align: center;")
+        ).with(
+                parentDirs.stream().map(dir->input().withName("parentDirs[]").withValue(dir).withType("hidden"))
+                .collect(Collectors.toList())
+        );
+    }
 
-    public static Tag templateHelper(Pair<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable) {
+    private static Tag addFolderToFolderButton() {
+        return form().withClass(".add-folder-form").with(
+                input().withType("text").withClass("form-control")
+                        .attr("placeholder","Folder Name")
+                        .withName("name").withClass(".folder_name")
+                        .attr("style","width: 80%; margin-left: 10%; margin-right: 10%; display: inline-block; text-align: center;")
+        );
+    }
+
+    public static Tag templateHelper(Pair<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable, List<String> parentDirs) {
         if(directoryStructure.getSecond().isEmpty() && directoryStructure.getFirst().isEmpty()) {
             return null;
         }
-
         // find nested
-        return ul().withText(folderName).with(
-                directoryStructure.getFirst().entrySet().stream()
+        return ul().withText(folderName).with(addFileToFolderButton(parentDirs),addFolderToFolderButton()).with(directoryStructure.getFirst().entrySet().stream()
                         .sorted(Comparator.comparing(e->e.getKey()))
-                        .map(e->templateHelper((Pair<Map<String,Object>,List<FormTemplate>>)e.getValue(),e.getKey(),deletable))
+                        .map(e->{
+                            List<String> parentDirsCopy = new ArrayList<>(parentDirs);
+                            parentDirsCopy.add(e.getKey());
+                            return templateHelper((Pair<Map<String,Object>,List<FormTemplate>>)e.getValue(),e.getKey(),deletable,parentDirsCopy);
+                        })
                         .filter(tag->tag!=null)
                 .collect(Collectors.toList())
         ).with(
