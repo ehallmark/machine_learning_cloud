@@ -11,6 +11,8 @@ $(document).ready(function() {
                 var items = {};
 
                 var isFolder = node.type==='folder';
+                var topLevelFolder = isFolder && node.parents.length == 1;
+
                 if(isFolder) {
                     items["New Folder"] = {
                         "separator_before": false,
@@ -25,19 +27,20 @@ $(document).ready(function() {
 
                     };
                 }
+                if(!topLevelFolder) {
+                    items["Delete"] = {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "Delete",
 
-                items["Delete"] = {
-                    "separator_before": false,
-                    "separator_after": false,
-                    "label": "Delete",
+                    };
+                    items["Rename"] = {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "Rename",
 
-                };
-                items["Rename"] = {
-                    "separator_before": false,
-                    "separator_after": false,
-                    "label": "Rename",
-
-                };
+                    };
+                }
                 return items;
             }
         },
