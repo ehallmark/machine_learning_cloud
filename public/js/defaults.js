@@ -20,10 +20,10 @@ $(document).ready(function() {
                         "separator_after": false,
                         "label": "New Folder",
                         "action": function(obj) {
-                            node = tree.create_node(node);
                             node.type='folder';
                             node.icon='jstree-folder';
                             node.jstree = { 'type': 'folder' };
+                            node = tree.create_node(node);
                             tree.edit(node);
                         }
                     };
@@ -32,10 +32,10 @@ $(document).ready(function() {
                         "separator_after": false,
                         "label": "New",
                         "action": function(obj) {
-                            node = tree.create_node(node);
                             node.type='file';
                             node.icon='jstree-file';
                             node.jstree = { 'type': 'file' };
+                            node = tree.create_node(node);
                             tree.edit(node);
                         }
                     };
