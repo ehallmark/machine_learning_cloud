@@ -10,7 +10,7 @@ $(document).ready(function() {
             "items": function(node) {
                 var items = {};
 
-                var isFolder = ! $(node).hasClass("template-show-button");
+                var isFolder = node.type==='folder';
                 if(isFolder) {
                     items["New Folder"] = {
                         "separator_before": false,
