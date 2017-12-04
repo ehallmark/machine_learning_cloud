@@ -5,10 +5,10 @@ $(document).ready(function() {
       },
       "types": {
         "folder": {
-          "icon": "icon-folder-open"
+          "icon": "jstree-folder"
         },
         "file" : {
-          "icon": "icon-file"
+          "icon": "jstree-file"
         }
       },
       "plugins": ["types"]
