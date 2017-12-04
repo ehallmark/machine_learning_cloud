@@ -1353,7 +1353,11 @@ public class SimilarPatentServer {
             return null;
         }
         // find nested
-        return ul().withText(folderName).attr("data-jstree","{\"type\":\"folder\"}").with(addFileToFolderButton(parentDirs),addFolderToFolderButton()).with(directoryStructure.getFirst().entrySet().stream()
+        return ul().withText(folderName).attr("data-jstree","{\"type\":\"folder\"}").with(
+                li("Add file").with(addFileToFolderButton(parentDirs)),
+                li("Add folder").with(addFolderToFolderButton())
+        ).with(
+                directoryStructure.getFirst().entrySet().stream()
                         .sorted(Comparator.comparing(e->e.getKey()))
                         .map(e->{
                             List<String> parentDirsCopy = new ArrayList<>(parentDirs);
