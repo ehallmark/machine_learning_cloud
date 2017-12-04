@@ -1352,9 +1352,6 @@ public class SimilarPatentServer {
     public static Tag templateHelper(Pair<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable, List<String> parentDirs) {
         // find nested
         return li(folderName).attr("data-jstree","{\"type\":\"folder\"}").with(
-            addFileToFolderButton(parentDirs),
-            addFolderToFolderButton()
-        ).with(
                 ul().with(
                         directoryStructure.getFirst().entrySet().stream()
                                 //.sorted(Comparator.comparing(e->e.getKey()))
@@ -1432,7 +1429,7 @@ public class SimilarPatentServer {
                                                                 )
                                                         ), div().attr("style","height: 60%;").with(
                                                                 h5("Forms"),
-                                                                div().attr("style","max-height: 45%; overflow-y: auto; text-align: left;").withId("form-templates").withClass("jstree").with(
+                                                                div().attr("style","max-height: 45%; overflow-y: auto; text-align: left;").withId("form-templates-tree").with(
                                                                         ul().with(
                                                                                 getTemplatesForUser(SUPER_USER,false,"Form Templates"),
                                                                                 getTemplatesForUser(req.session().attribute("username"),true,"My Forms"),

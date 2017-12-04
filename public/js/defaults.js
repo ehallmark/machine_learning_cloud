@@ -1,13 +1,14 @@
 $(document).ready(function() {
 
-    $("#jstree").jstree({
+    var form_template_id = "#form-templates-tree";
+    $(form_template_id).jstree({
         "core" : {
             "multiple" : false,
             "check_callback": true
         },
         "contextmenu": {
             "items": function($node) {
-                var tree = $('#jstree').jstree(true);
+                var tree = $(form_template_id).jstree(true);
                 return {
                     "Create": {
                         "separator_before": false,
