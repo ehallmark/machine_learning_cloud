@@ -1368,19 +1368,19 @@ public class SimilarPatentServer {
                                         })
                                         .filter(tag->tag!=null)
                                 .collect(Collectors.toList())
+                        ).with(
+                                directoryStructure.getSecond().stream()
+                                        .sorted(Comparator.comparing(e->e.getName()))
+                                        .map(template->{
+                                            return li(template.getName()).attr("data-jstree","{\"type\":\"file\"}").withClass("template-show-button").attr("style","width: "+((!deletable)?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
+                                                    .attr("data-highlight", template.getHighlightMap())
+                                                    .attr("data-attributesMap", template.getAttributesMap())
+                                                    .attr("data-filtersMap", template.getFiltersMap())
+                                                    .attr("data-searchOptionsMap", template.getSearchOptionsMap()).with(
+                                                            (!deletable)?span():span("X").attr("style","margin-right: -10px;").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",template.getFile().getName()).withClass("template-remove-button")
+                                                    );
+                                }).collect(Collectors.toList())
                         )
-                ).with(
-                        directoryStructure.getSecond().stream()
-                                .sorted(Comparator.comparing(e->e.getName()))
-                                .map(template->{
-                                    return li(template.getName()).attr("data-jstree","{\"type\":\"file\"}").withClass("template-show-button").attr("style","width: "+((!deletable)?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
-                                            .attr("data-highlight", template.getHighlightMap())
-                                            .attr("data-attributesMap", template.getAttributesMap())
-                                            .attr("data-filtersMap", template.getFiltersMap())
-                                            .attr("data-searchOptionsMap", template.getSearchOptionsMap()).with(
-                                                    (!deletable)?span():span("X").attr("style","margin-right: -10px;").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",template.getFile().getName()).withClass("template-remove-button")
-                                            );
-                        }).collect(Collectors.toList())
                 )
         );
 
