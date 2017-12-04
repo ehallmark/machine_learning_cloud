@@ -48,7 +48,6 @@ $(document).ready(function() {
                         "separator_after": false,
                         "label": "Delete",
                         "action": function(obj) {
-                            node = tree.create_node(node, {
                             tree.delete_node(node);
                         }
                     };
