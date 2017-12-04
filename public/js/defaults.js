@@ -7,7 +7,7 @@ $(document).ready(function() {
             "check_callback": true
         },
         "contextmenu": {
-      
+
         },
         "types": {
             "folder": {
