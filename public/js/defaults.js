@@ -1,6 +1,6 @@
 $(document).ready(function() {
     var renameTemplateFunction = function(tree,node,newName,file){
-         var nodeData = node;
+         var nodeData = tree.get_node(node.parent);
          var parents = [];
          while(typeof nodeData.text !== 'undefined') {
              parents.unshift(nodeData.text);
@@ -9,10 +9,11 @@ $(document).ready(function() {
          }
          $.ajax({
              type: "POST",
-             url: '/secure/delete_template',
+             url: '/secure/rename_template',
              data: {
                  name: newName,
-                 parentDirs: parents
+                 parentDirs: parents,
+                 file: node.data.file
              },
              success: function(data) {
 
@@ -95,7 +96,11 @@ $(document).ready(function() {
                         preData
                     }
                 });
-                tree.edit(node);
+                tree.edit(node,'New Template',function(node,status,cancelled) {
+                    if(status && ! cancelled) {
+                        renameTemplateFunction(tree,node,node.text,node.data.file);
+                    }
+                })
             }
           },
           dataType: "json"
