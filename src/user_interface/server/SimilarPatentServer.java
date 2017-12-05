@@ -1035,7 +1035,7 @@ public class SimilarPatentServer {
                 if(formMap!=null) {
                     formMap.put("name", name);
                     formMap.put("file", file);
-                    if (parentDirs != null && parentDirs.length > 0) formMap.put("parentDirs", parentDirs);
+                    if (parentDirs != null && parentDirs.length > 1) formMap.put("parentDirs", Arrays.copyOfRange(parentDirs,1,parentDirs.length));
                     Database.trySaveObject(formMap,file);
                     message = "Saved sucessfully.";
                 } else {
@@ -1080,7 +1080,7 @@ public class SimilarPatentServer {
             formMap.put("filtersMap",filtersMap);
             formMap.put("chartsMap",chartsMap);
             formMap.put("highlightMap", highlightMap);
-            if(parentDirs!=null && parentDirs.length>0) formMap.put("parentDirs",parentDirs);
+            if (parentDirs != null && parentDirs.length > 1) formMap.put("parentDirs", Arrays.copyOfRange(parentDirs,1,parentDirs.length));
             boolean isShared = false;
             if(parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
                 isShared = true;
