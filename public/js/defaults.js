@@ -25,7 +25,9 @@ $(document).ready(function() {
                                 'type': 'folder',
                                 'icon': 'jstree-folder',
                                 'jstree': {'type': 'folder'},
-                                'deletable': deletable
+                                'data' : {
+                                    'deletable': deletable
+                                }
                             });
                             tree.edit(node);
                         }
@@ -39,7 +41,9 @@ $(document).ready(function() {
                                 'type': 'file',
                                 'icon': 'jstree-file',
                                 'jstree': {'type': 'file'},
-                                'deletable': deletable
+                                'data' : {
+                                    'deletable': deletable
+                                }
                             });
                             tree.edit(node);
                         }
