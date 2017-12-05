@@ -1412,23 +1412,23 @@ public class SimilarPatentServer {
                                                                 li().withClass("nav-item").with(
                                                                         a("Forms").withClass("nav-link active").attr("data-toggle", "tab")
                                                                                 .attr("role","tab")
-                                                                                .withHref("#form-templates-tree")
+                                                                                .withHref("#templates-tree")
                                                                 ),
                                                                 li().withClass("nav-item").with(
                                                                         a("Datasets").withClass("nav-link").attr("data-toggle", "tab")
                                                                                 .attr("role","tab")
-                                                                                .withHref("#dataset-tree")
+                                                                                .withHref("#datasets-tree")
                                                                 )
                                                         ), br(),
-                                                        div().withClass("tab-content").attr("style","height: 70%; overflow-y: auto; width: 100%;").with(
-                                                                div().withClass("tab-pane active").attr("role","tabpanel").attr("style","text-align: left;").withId("form-templates-tree").with(
+                                                        div().withClass("tab-content").attr("style","max-height: 75%; overflow-y: auto; width: 100%;").with(
+                                                                div().withClass("tab-pane active").attr("role","tabpanel").attr("style","text-align: left;").withId("templates-tree").with(
                                                                         ul().with(
-                                                                                getTemplatesForUser(SUPER_USER,false,"Form Templates"),
-                                                                                getTemplatesForUser(req.session().attribute("username"),true,"My Forms"),
-                                                                                getTemplatesForUser(SHARED_USER,true, "Shared Forms")
+                                                                                getTemplatesForUser(SUPER_USER,false,"Default Templates"),
+                                                                                getTemplatesForUser(req.session().attribute("username"),true,"My Templates"),
+                                                                                getTemplatesForUser(SHARED_USER,true, "Shared Templates")
                                                                         )
 
-                                                                ),div().withClass("tab-pane").attr("role","tabpanel").withId("dataset-tree").with(
+                                                                ),div().withClass("tab-pane").attr("role","tabpanel").withId("datasets-tree").with(
                                                                     h6("Dataset feature coming soon...")
                                                                 )
                                                         )

@@ -1,7 +1,7 @@
 $(document).ready(function() {
 
-    var form_template_id = "#form-templates-tree";
-    $(form_template_id).jstree({
+    var templates_tree_id = "#templates-tree";
+    $(templates_tree_id).jstree({
         "core" : {
             "multiple" : false,
             "check_callback": true
@@ -9,7 +9,7 @@ $(document).ready(function() {
         "contextmenu": {
             "items": function(node) {
                 var items = {};
-                var tree = $(form_template_id).jstree(true);
+                var tree = $(templates_tree_id).jstree(true);
 
                 var isFolder = node.type==='folder';
                 var topLevelFolder = isFolder && (node.parents.length === 1);
@@ -20,9 +20,10 @@ $(document).ready(function() {
                         "separator_before": false,
                         "separator_after": false,
                         "label": "New Folder",
+                        "title": "Create a new subdirectory.",
                         "action": function(obj) {
                             node = tree.create_node(node, {
-                                'text': 'Create Subdirectory',
+                                'text': 'New Folder',
                                 'type': 'folder',
                                 'icon': 'jstree-folder',
                                 'jstree': {'type': 'folder'},
@@ -33,14 +34,25 @@ $(document).ready(function() {
                             tree.edit(node);
                         }
                     };
-                    items["New Form"] = {
+                    items["New Template"] = {
                         "separator_before": false,
                         "separator_after": false,
-                        "label": "Save Current Form",
-                        "title": "Saves the current form to this folder.",
+                        "label": "New Template",
+                        "title": "Create a new template.",
+                        "submenu": {
+                            "From Current Form": {
+                                "label": "From Current Form"
+                                "title": "Create new template from current form."
+                            },
+                            "From Blank Form": {
+                                "label": "From Blank Template",
+                                "title": "Create new blank template."
+
+                            }
+                        }
                         "action": function(obj) {
                             node = tree.create_node(node, {
-                                'text': 'New Form',
+                                'text': 'New Template',
                                 'type': 'file',
                                 'icon': 'jstree-file',
                                 'jstree': {'type': 'file'},
@@ -57,6 +69,7 @@ $(document).ready(function() {
                         "separator_before": false,
                         "separator_after": false,
                         "label": "Delete",
+                        "title": "Permanently delete this "+(isFolder ? "folder" : "template")+".",
                         "action": function(obj) {
                             tree.delete_node(node);
                         }
@@ -65,6 +78,7 @@ $(document).ready(function() {
                         "separator_before": false,
                         "separator_after": false,
                         "label": "Rename",
+                        "title": "Rename this "+(isFolder ? "folder" : "template")+".",
                         "action": function(obj) {
                             tree.edit(node);
                         }
