@@ -22,11 +22,11 @@ $(document).ready(function() {
         saveTemplateFormHelper("#highlightForm",".attributeElement",preData,"highlightMap");
         preData["parentDirs"] = []
         preData["deletable"] = deletable;
-        var nodeData = node.data;
+        var nodeData = node;
         while(nodeData.parents.length>1) {
             var currId = nodeData.parent;
             preData["parentDirs"].push(currId);
-            nodeData = $('#'+currId).data;
+            nodeData = $('#'+currId);
         }
         $.ajax({
           type: "POST",
