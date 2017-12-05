@@ -1410,7 +1410,7 @@ public class SimilarPatentServer {
                                                 (!authorized) ? div() : div().with(
                                                         ul().withClass("nav nav-tabs nav-fill").attr("role","tablist").with(
                                                                 li().withClass("nav-item").with(
-                                                                        a("Forms").withClass("nav-link active").attr("data-toggle", "tab")
+                                                                        a("Templates").withClass("nav-link active").attr("data-toggle", "tab")
                                                                                 .attr("role","tab")
                                                                                 .withHref("#templates-tree")
                                                                 ),
