@@ -69,6 +69,7 @@ $(document).ready(function() {
         saveTemplateFormHelper("#filtersForm",".attributeElement",preData,"filtersMap");
         saveTemplateFormHelper("#chartsForm",".attributeElement",preData,"chartsMap");
         saveTemplateFormHelper("#highlightForm",".attributeElement",preData,"highlightMap");
+
         preData["parentDirs"] = []
         preData["deletable"] = deletable;
         var nodeData = node;
@@ -652,18 +653,14 @@ var showTemplateFormHelper = function(formSelector,json) {
     $(formSelector+' select.nested-filter-select').trigger('change');
 };
 
-var showTemplateFunction = function(e){
-    e.preventDefault();
-    var $this = $(this);
-    $('button.template-show-button').removeClass('active');
-    $this.addClass('active');
+var showTemplateFunction = function(data){
     resetSearchForm();
-    showTemplateFormHelper("#searchOptionsForm",$this.attr("data-searchOptionsMap"));
-    showTemplateFormHelper("#attributesForm",$this.attr("data-attributesMap"));
-    showTemplateFormHelper("#filtersForm",$this.attr("data-filtersMap"));
-    showTemplateFormHelper("#chartsForm",$this.attr("data-chartsMap"));
+    showTemplateFormHelper("#searchOptionsForm",data["searchOptionsMap"]));
+    showTemplateFormHelper("#attributesForm",data["attributesMap"]);
+    showTemplateFormHelper("#filtersForm",data["filtersMap"]);
+    showTemplateFormHelper("#chartsForm",data["chartsMap"]);
     try {
-        showTemplateFormHelper("#highlightForm",$this.attr("data-highlight"));
+        showTemplateFormHelper("#highlightForm",data["highlightMap"]);
     } catch(err) {
 
     }

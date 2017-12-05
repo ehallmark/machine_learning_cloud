@@ -1361,6 +1361,7 @@ public class SimilarPatentServer {
                 Object chartsMap = templateMap.get("chartsMap");
                 Object filtersMap = templateMap.get("filtersMap");
                 Object highlightMap = templateMap.get("highlightMap");
+
                 String[] parentDirs = (String[])templateMap.get("parentDirs");
                 if(highlightMap==null) highlightMap="";
 
