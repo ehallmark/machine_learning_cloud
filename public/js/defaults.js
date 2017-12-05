@@ -27,14 +27,14 @@ $(document).ready(function() {
         while(nodeData.parents.length>1) {
             var currId = nodeData.parent;
             nodeData = tree.get_node(currId);
-            preData["parentDirs"].push(nodeData.text);
+            preData["parentDirs"].unshift(nodeData.text);
         }
+        preData["parentDirs"].unshift(tree.get_node(nodeData.parent).text);
         $.ajax({
           type: "POST",
           url: '/secure/save_template',
           data: preData,
           success: function(data) {
-            // add button // DO I REALLY NEED TO SEND ALL THIS DATA BACK TO CLIENT?
             if(!data.hasOwnProperty('file')) {
                 alert('Error saving template: '+data.message);
             } else {
@@ -107,6 +107,7 @@ $(document).ready(function() {
                                 "action": function(obj) {
                                     var name = 'New Template';
                                     saveTemplateFunction(tree,node,name,deletable);
+                                    return true;
                                 }
                             }
                         }
