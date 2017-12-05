@@ -15,7 +15,7 @@ $(document).ready(function() {
                 var topLevelFolder = isFolder && (node.parents.length === 1);
                 var deletable = node.data.deletable;
 
-                if(isFolder) {
+                if(isFolder && deletable) {
                     items["New Folder"] = {
                         "separator_before": false,
                         "separator_after": false,
