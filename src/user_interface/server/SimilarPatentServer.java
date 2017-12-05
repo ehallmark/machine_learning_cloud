@@ -1403,10 +1403,10 @@ public class SimilarPatentServer {
                                 div().withClass("row").attr("style","height: 100%;").with(
                                         nav().withClass("col-3 sidebar").attr("style","overflow-y: auto; height: 100%; position: fixed; padding: 0px; padding-top: 75px;").with(
                                                 div().withClass("row").with(
-                                                        div().withClass("col-12").with(authorized ? p("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : p("Not signed in.")),
-                                                        div().withClass("col-6").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
-                                                        div().withClass("col-6").with(authorized ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("www.gttgrp.com"))
-                                                ),
+                                                        div().withClass("col-12").with(authorized ? div().withText("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : div().withText("Not signed in.")),
+                                                        div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
+                                                        div().withClass("col-12").with(authorized ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("www.gttgrp.com"))
+                                                ), hr(),
                                                 h5("All Forms"),
                                                 (!authorized) ? div() : ul().withClass("nav nav-pills flex-column").with(
                                                         div().attr("style","height: 70%; overflow-y: auto;").with(
