@@ -399,7 +399,7 @@ $(document).ready(function() {
 
     setCollapsibleHeaders(".collapsible-header");
 
-    $(document).tooltip({
+    $('#main-content-id').tooltip({
         content: function() { return $(this).attr('title'); }
     });
 
