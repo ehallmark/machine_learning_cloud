@@ -1,4 +1,51 @@
 $(document).ready(function() {
+    var renameTemplateFunction = function(tree,node,newName,file){
+         var nodeData = node;
+         var parents = [];
+         while(typeof nodeData.text !== 'undefined') {
+             parents.unshift(nodeData.text);
+             var currId = nodeData.parent;
+             nodeData = tree.get_node(currId);
+         }
+         $.ajax({
+             type: "POST",
+             url: '/secure/delete_template',
+             data: {
+                 name: newName,
+                 parentDirs: parents
+             },
+             success: function(data) {
+
+             },
+             dataType: "json"
+         });
+         return false;
+    }
+
+    var removeTemplateFunction = function(tree,node,file){
+         var nodeData = node;
+         var parents = [];
+         while(typeof nodeData.text !== 'undefined') {
+             parents.unshift(nodeData.text);
+             var currId = nodeData.parent;
+             nodeData = tree.get_node(currId);
+         }
+         var shared = parents.length > 0 && parents[0].startsWith("Shared");
+         $.ajax({
+             type: "POST",
+             url: '/secure/delete_template',
+             data: {
+                 path_to_remove: file,
+                 shared: shared
+             },
+             success: function(data) {
+                 tree.delete_node(node);
+             },
+             dataType: "json"
+         });
+         return false;
+    }
+
     var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dataKey) {
         var tmpData = {};
         $(containerSelector+" "+itemSelector).find('textarea,input,select,div.attribute').each(function(i,e) {
@@ -26,7 +73,6 @@ $(document).ready(function() {
         var nodeData = node;
         while(typeof nodeData.text !== 'undefined') {
             preData["parentDirs"].unshift(nodeData.text);
-
             var currId = nodeData.parent;
             nodeData = tree.get_node(currId);
         }
@@ -98,20 +144,18 @@ $(document).ready(function() {
                         "separator_after": false,
                         "label": "New Template",
                         "title": "Create a new template.",
-                        "submenu": function(node) {
-                            return {
-                                "From Current Form": {
-                                    "separator_before": false,
-                                    "separator_after": false,
-                                    "label": "From Current Form",
-                                    "title": "Create new template from current form.",
-                                    "action": function(obj) {
-                                        var name = 'New Template';
-                                        saveTemplateFunction(tree,node,name,deletable);
-                                        return true;
-                                    }
+                        "submenu": {
+                            "From Current Form": {
+                                "separator_before": false,
+                                "separator_after": false,
+                                "label": "From Current Form",
+                                "title": "Create new template from current form.",
+                                "action": function(obj) {
+                                    var name = 'New Template';
+                                    saveTemplateFunction(tree,node,name,deletable);
+                                    return true;
                                 }
-                            };
+                            }
                         }
                     };
                 }
@@ -122,7 +166,13 @@ $(document).ready(function() {
                         "label": "Delete",
                         "title": "Permanently delete this "+(isFolder ? "folder" : "template")+".",
                         "action": function(obj) {
-                            tree.delete_node(node);
+                            if(isFolder) {
+                                // get all children
+
+                            } else {
+                                removeTemplateFunction(tree,node,node.data.file)
+                            }
+                            return true;
                         }
                     };
                     items["Rename"] = {
@@ -131,7 +181,16 @@ $(document).ready(function() {
                         "label": "Rename",
                         "title": "Rename this "+(isFolder ? "folder" : "template")+".",
                         "action": function(obj) {
-                            tree.edit(node);
+                            if(isFolder) {
+                                // not sure yet
+                            } else {
+                                tree.edit(node,'New Template',function(node,status,cancelled) {
+                                    if(status && ! cancelled) {
+                                        renameTemplateFunction(tree,node,node.text,node.data.file);
+                                    }
+                                })
+                            }
+                            return true;
                         }
                     };
                 }
@@ -279,8 +338,6 @@ $(document).ready(function() {
     $('#generate-reports-form-button').click(function(e) {return submitFormFunction(e,false);});
 
     $('#download-to-excel-button').click(function(e) {return submitFormFunction(e,true);});
-
-    $('.template-remove-button').click(removeTemplateFunction);
 
     // nested forms
     $('select.nested-filter-select').each(function() {
@@ -581,24 +638,6 @@ var showTemplateFunction = function(e){
     return false;
 };
 
-var removeTemplateFunction = function(e){
-     e.preventDefault();
-     var $this = $(this);
-     var $li = $this.closest('li');
-     $this.remove();
-     $.ajax({
-       type: "POST",
-       url: $(this).attr('data-action'),
-       data: {
-         path_to_remove: $(this).attr("data-file")
-       },
-       success: function(data) {
-         $li.remove();
-       },
-       dataType: "json"
-     });
-     return false;
-}
 
 var loadEvent = function(){
  // do nothing :(
