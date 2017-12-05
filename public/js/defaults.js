@@ -24,7 +24,8 @@ $(document).ready(function() {
                             node = tree.create_node(node, {
                                 'type': 'folder',
                                 'icon': 'jstree-folder',
-                                'jstree': {'type': 'folder'}
+                                'jstree': {'type': 'folder'},
+                                'deletable': deletable
                             });
                             tree.edit(node);
                         }
@@ -37,7 +38,8 @@ $(document).ready(function() {
                             node = tree.create_node(node, {
                                 'type': 'file',
                                 'icon': 'jstree-file',
-                                'jstree': {'type': 'file'}
+                                'jstree': {'type': 'file'},
+                                'deletable': deletable
                             });
                             tree.edit(node);
                         }
