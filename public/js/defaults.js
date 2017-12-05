@@ -99,7 +99,7 @@ $(document).ready(function() {
                 tree.edit(node,name,function(node,status,cancelled) {
                     if(status && ! cancelled) {
                         renameTemplateFunction(tree,node,node.text,data['file']);
-                        tree.refresh();
+                        tree.refresh_node(node);
                     }
                 })
             }
@@ -119,7 +119,7 @@ $(document).ready(function() {
                 var child = tree.get_node(node.children[i]);
                 removeDescendantsHelper(tree,child,child.data.file);
             }
-
+            tree.delete_node(node);
         } else {
             removeTemplateFunction(tree,node,node.data.file)
         }
