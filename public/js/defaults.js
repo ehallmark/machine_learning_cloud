@@ -97,7 +97,7 @@ $(document).ready(function() {
                     }
                 });
                 tree.edit(node,name,function(n,status,cancelled) {
-                    $('#'+node).dblclick(showTemplateFunction);
+                    $('#'+node).dblclick(showTemplateFunction(preData));
                     if(status && ! cancelled) {
                         renameTemplateFunction(tree,n,n.text,data['file']);
                     }
@@ -257,7 +257,7 @@ $(document).ready(function() {
 
 
 
-    $('.template-show-button').dblclick(showTemplateFunction);
+    $('.template-show-button').dblclick(function(e) { showTemplateFunction($(this).data()) });
 
     var submitFormFunction = function(e,onlyExcel) {
          e.preventDefault();
