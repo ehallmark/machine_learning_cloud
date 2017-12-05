@@ -1751,7 +1751,7 @@ public class SimilarPatentServer {
         }
         long t1 = System.currentTimeMillis();
         //Database.setupSeedConn();
-        boolean preLoad =  false; // TODO CHANGE BACK TO true;
+        boolean preLoad =  true;
         boolean initDatabase = false;
 
         if(initDatabase) Database.initializeDatabase();
@@ -1760,13 +1760,24 @@ public class SimilarPatentServer {
         initialize(false,false);
         System.out.println("Finished loading base finder.");
         System.out.println("Starting user_interface.server...");
-        server();
-        System.out.println("Finished starting server.");
-        GatherClassificationServer.StartServer();
-        if(preLoad)Database.preLoad();
-        long t2 = System.currentTimeMillis();
+
         // perform quick search
         DataSearcher.searchForAssets(attributesMap.values(),Collections.emptyList(),Constants.AI_VALUE, SortOrder.DESC,100,getNestedAttrMap(),false,true);
+
+        server();
+
+        System.out.println("Finished starting server.");
+        GatherClassificationServer.StartServer();
+        if(preLoad) {
+            Database.preLoad();
+            if(TEXT_SIMILARITY_MODEL!=null) {
+                TEXT_SIMILARITY_MODEL.join();
+            }
+            if(DEFAULT_SIMILARITY_MODEL!=null) {
+                DEFAULT_SIMILARITY_MODEL.join();
+            }
+        }
+        long t2 = System.currentTimeMillis();
         System.out.println("Time to start user_interface.server: "+ ((t2-t1)/(1000*60)) + " minutes");
     }
 }

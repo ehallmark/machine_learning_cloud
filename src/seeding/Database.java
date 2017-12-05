@@ -176,6 +176,8 @@ public class Database {
 		getNormalizedAssigneePrefixTrie();
 		getNormalizedAssigneeToAppsMap();
 		getNormalizedAssigneeToPatentsMap();
+		getClassCodesPrefixTrie();
+		getClassCodes();
 	}
 
 	public synchronized static void initializeDatabase() {
