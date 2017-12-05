@@ -24,10 +24,11 @@ $(document).ready(function() {
         preData["parentDirs"] = []
         preData["deletable"] = deletable;
         var nodeData = node;
-        while(nodeData) {
+        while(typeof nodeData.text !== 'undefined') {
+            preData["parentDirs"].unshift(nodeData.text);
+
             var currId = nodeData.parent;
             nodeData = tree.get_node(currId);
-            preData["parentDirs"].unshift(nodeData.text);
         }
         $.ajax({
           type: "POST",
