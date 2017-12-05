@@ -1019,7 +1019,7 @@ public class SimilarPatentServer {
     private static Object handleRenameForm(Request req, Response res) {
         String filename = req.queryParams("file");
         String name = req.queryParams("name");
-        String[] parentDirs = req.queryParamsValues("parentDirs");
+        String[] parentDirs = req.queryParamsValues("parentDirs[]");
         String message;
         Map<String,Object> responseMap = new HashMap<>();
         if(filename!=null&&name!=null&&name.length()>0) {
@@ -1062,7 +1062,7 @@ public class SimilarPatentServer {
         String highlightMap = req.queryParams("highlightMap");
         String chartsMap = req.queryParams("chartsMap");
         String name = req.queryParams("name");
-        String[] parentDirs = req.queryParamsValues("parentDirs");
+        String[] parentDirs = req.queryParamsValues("parentDirs[]");
         if(parentDirs==null) {
             System.out.println("Parent dirs is null...");
         } else {
@@ -1378,22 +1378,6 @@ public class SimilarPatentServer {
         }
     }
 
-    private static Tag addFileToFolderButton(List<String> parentDirs) {
-        return form().withAction(SAVE_TEMPLATE_URL).withClass("save-template-form").withMethod("post").with(
-                input().withType("hidden").withName("chartsMap").withClass("chartsMap"),
-                input().withType("hidden").withName("filtersMap").withClass("filtersMap"),
-                input().withType("hidden").withName("attributesMap").withClass("attributesMap"),
-                input().withType("hidden").withName("searchOptionsMap").withClass("searchOptionsMap"),
-                input().withType("hidden").withName("highlightMap").withClass("highlightMap"),
-                input().withType("text").withClass("form-control")
-                        .attr("placeholder","Template Name")
-                        .withName("name").withClass("template_name")
-                        .attr("style","width: 80%; margin-left: 10%; margin-right: 10%; display: inline-block; text-align: center;")
-        ).with(
-                parentDirs.stream().map(dir->input().withName("parentDirs[]").withValue(dir).withType("hidden"))
-                .collect(Collectors.toList())
-        );
-    }
 
     public static Tag templateHelper(Pair<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable, List<String> parentDirs) {
         // find nested
