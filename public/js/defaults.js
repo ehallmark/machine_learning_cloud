@@ -1,13 +1,14 @@
 $(document).ready(function() {
     var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dataKey) {
+        var tmpData = {};
         $(containerSelector+" "+itemSelector).find('textarea,input,select,div.attribute').each(function(i,e) {
             var $elem = $(this);
             if($elem.attr('id') && ! ($elem.prop('disabled') || $elem.hasClass('disabled'))) {
-                dataMap[$elem.attr("id")]=$elem.val();
-                dataMap["order_"+$elem.attr("id")]=i;
+                tmpData[$elem.attr("id")]=$elem.val();
+                tmpData["order_"+$elem.attr("id")]=i;
             }
         });
-        var json = JSON.stringify(dataMap);
+        var json = JSON.stringify(tmpData);
         dataMap[dataKey] = json;
     };
 
