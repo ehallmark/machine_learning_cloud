@@ -1045,7 +1045,6 @@ public class SimilarPatentServer {
             } else {
                 message = "Unable to find user.";
             }
-            responseMap.putAll(formMap);
         } else {
             if(name==null||name.isEmpty()) {
                 message = "Please enter a name for the new template.";
