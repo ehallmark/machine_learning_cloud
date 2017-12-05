@@ -97,7 +97,7 @@ $(document).ready(function() {
                     }
                 });
                 tree.edit(node,name,function(n,status,cancelled) {
-                    $('#'+node).dblclick(showTemplateFunction(preData));
+                    $('#'+node).dblclick(function(e) { showTemplateFunction(preData); });
                     if(status && ! cancelled) {
                         renameTemplateFunction(tree,n,n.text,data['file']);
                     }
@@ -257,7 +257,9 @@ $(document).ready(function() {
 
 
 
-    $('.template-show-button').dblclick(function(e) { showTemplateFunction($(this).data()) });
+    $('.template-show-button').dblclick(function(e) {
+        showTemplateFunction($(this).data());
+    });
 
     var submitFormFunction = function(e,onlyExcel) {
          e.preventDefault();
