@@ -1408,14 +1408,14 @@ public class SimilarPatentServer {
                                                         div().withClass("col-12").with(authorized ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com"))
                                                 ), hr(),
                                                 (!authorized) ? div() : div().with(
-                                                        ul().withClass("nav nav-pills nav-fill").attr("role","tablist").with(
+                                                        ul().withClass("nav nav-tabs nav-fill").attr("role","tablist").with(
                                                                 li().withClass("nav-item").with(
-                                                                        a("Forms").withClass("nav-link active h5").attr("data-toggle", "pill")
+                                                                        a("Forms").withClass("nav-link active h5").attr("data-toggle", "tab")
                                                                                 .attr("role","tab")
                                                                                 .withHref("#form-templates-tree")
                                                                 ),
                                                                 li().withClass("nav-item").with(
-                                                                        a("Datasets").withClass("nav-link h5").attr("data-toggle", "pill")
+                                                                        a("Datasets").withClass("nav-link h5").attr("data-toggle", "tab")
                                                                                 .attr("role","tab")
                                                                                 .withHref("#dataset-tree")
                                                                 )
