@@ -22,6 +22,7 @@ $(document).ready(function() {
                         "label": "New Folder",
                         "action": function(obj) {
                             node = tree.create_node(node, {
+                                'text': 'Create Subdirectory',
                                 'type': 'folder',
                                 'icon': 'jstree-folder',
                                 'jstree': {'type': 'folder'},
@@ -32,12 +33,14 @@ $(document).ready(function() {
                             tree.edit(node);
                         }
                     };
-                    items["New"] = {
+                    items["New Form"] = {
                         "separator_before": false,
                         "separator_after": false,
-                        "label": "New",
+                        "label": "Save Current Form",
+                        "title": "Saves the current form to this folder."
                         "action": function(obj) {
                             node = tree.create_node(node, {
+                                'text': 'New Form',
                                 'type': 'file',
                                 'icon': 'jstree-file',
                                 'jstree': {'type': 'file'},
@@ -78,7 +81,7 @@ $(document).ready(function() {
                 "icon": "jstree-file"
             }
         },
-        "plugins": ["types","wholerow","sort","contextmenu"]
+        "plugins": ["types","wholerow","sort","contextmenu","search"]
     });
 
 
