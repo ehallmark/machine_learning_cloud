@@ -1,4 +1,54 @@
 $(document).ready(function() {
+    var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dataKey) {
+        $(containerSelector+" "+itemSelector).find('textarea,input,select,div.attribute').each(function(i,e) {
+            var $elem = $(this);
+            if($elem.attr('id') && ! ($elem.prop('disabled') || $elem.hasClass('disabled'))) {
+                dataMap[$elem.attr("id")]=$elem.val();
+                dataMap["order_"+$elem.attr("id")]=i;
+            }
+        });
+        var json = JSON.stringify(dataMap);
+        dataMap[dataKey] = json;
+    };
+
+
+    var saveTemplateFunction = function(node,name){
+        var $this = $(form);
+        var data = {};
+        data["name"]=name;
+        saveTemplateFormHelper("#searchOptionsForm",".attributeElement",data,"searchOptionsMap");
+        saveTemplateFormHelper("#attributesForm",".attributeElement",data,"attributesMap");
+        saveTemplateFormHelper("#filtersForm",".attributeElement",data,"filtersMap");
+        saveTemplateFormHelper("#chartsForm",".attributeElement",data,"chartsMap");
+        saveTemplateFormHelper("#highlightForm",".attributeElement",data,"highlightMap");
+        data["parentDirs"] = []
+        var nodeData = node.data;
+        while(nodeData.parents.length>1) {
+            var currId = nodeData.parent;
+            data["parentDirs"].push(currId);
+            nodeData = $('#'+currId).data.parent;
+        }
+        $.ajax({
+          type: "POST",
+          url: '/secure/save_template',
+          data: data,
+          success: function(data) {
+            // add button
+            if(!(data.hasOwnProperty('name') && data.hasOwnProperty('chartsMap') && data.hasOwnProperty('highlightMap') && data.hasOwnProperty('attributesMap') && data.hasOwnProperty('filtersMap') && data.hasOwnProperty('searchOptionsMap') && data.hasOwnProperty('file'))) {
+                alert('Error saving template: '+data.message);
+            } else {
+                $('.template-show-button').filter(':last').click(showTemplateFunction);
+                $.each(data,function(k,v) {
+                    node.data[k]=v;
+                });
+            }
+          },
+          dataType: "json"
+        });
+
+        return false;
+    });
+
 
     var templates_tree_id = "#templates-tree";
     $(templates_tree_id).jstree({
@@ -41,26 +91,26 @@ $(document).ready(function() {
                         "title": "Create a new template.",
                         "submenu": {
                             "From Current Form": {
+                                "separator_before": false,
+                                "separator_after": false,
                                 "label": "From Current Form",
                                 "title": "Create new template from current form."
-                            },
-                            "From Blank Form": {
-                                "label": "From Blank Template",
-                                "title": "Create new blank template."
-
-                            }
-                        },
-                        "action": function(obj) {
-                            node = tree.create_node(node, {
-                                'text': 'New Template',
-                                'type': 'file',
-                                'icon': 'jstree-file',
-                                'jstree': {'type': 'file'},
-                                'data' : {
-                                    'deletable': deletable
+                                "action": function(obj) {
+                                    var name = 'New Template';
+                                    // form?
+                                    node = tree.create_node(node, {
+                                        'text': name,
+                                        'type': 'file',
+                                        'icon': 'jstree-file',
+                                        'jstree': {'type': 'file'},
+                                        'data' : {
+                                            'deletable': deletable
+                                        }
+                                    });
+                                    saveTemplateFunction(node,name);
+                                    tree.edit(node);
                                 }
-                            });
-                            tree.edit(node);
+                            }
                         }
                     };
                 }
@@ -112,57 +162,7 @@ $(document).ready(function() {
                  "<p>~N after a phrase signifies slop amount</p>"
     });
 
-    var saveTemplateFormHelper = function(containerSelector,itemSelector,hiddenValueSelector) {
-        var dataMap = {};
-        $(containerSelector+" "+itemSelector).find('textarea,input,select,div.attribute').each(function(i,e) {
-            var $elem = $(this);
-            if($elem.attr('id') && ! ($elem.prop('disabled') || $elem.hasClass('disabled'))) {
-                dataMap[$elem.attr("id")]=$elem.val();
-                dataMap["order_"+$elem.attr("id")]=i;
-            }
-        });
-        var json = JSON.stringify(dataMap);
-        $(hiddenValueSelector).val(json);
-    };
 
-
-    $('.save-template-form').submit(function(e){
-        e.preventDefault();
-
-        var $this = $(this);
-        saveTemplateFormHelper("#searchOptionsForm",".attributeElement",$this.find('.searchOptionsMap'));
-        saveTemplateFormHelper("#attributesForm",".attributeElement",$this.find('.attributesMap'));
-        saveTemplateFormHelper("#filtersForm",".attributeElement",$this.find('.filtersMap'));
-        saveTemplateFormHelper("#chartsForm",".attributeElement",$this.find('.chartsMap'));
-        saveTemplateFormHelper("#highlightForm",".attributeElement",$this.find('.highlightMap'));
-
-        $.ajax({
-          type: "POST",
-          url: $(this).attr('action'),
-          data: $(this).serialize(),
-          success: function(data) {
-            // add button
-            if(!(data.hasOwnProperty('name') && data.hasOwnProperty('chartsMap') && data.hasOwnProperty('highlightMap') && data.hasOwnProperty('attributesMap') && data.hasOwnProperty('filtersMap') && data.hasOwnProperty('searchOptionsMap') && data.hasOwnProperty('file'))) {
-                alert('Error saving template: '+data.message);
-            } else {
-                var name = data.name;
-                var charts = data.chartsMap;
-                var highlight = data.highlightMap;
-                var attributes = data.attributesMap;
-                var filters = data.filtersMap;
-                var searchOptions = data.searchOptionsMap;
-                var file = data.file;
-                $('#my-templates ').append($("<li class='nav-item'><button class='btn btn-secondary template-show-button' style='width: 70%;' data-highlight='"+highlight+"' data-name='"+name+"' data-chartsmap='"+charts+"' data-attributesmap='"+attributes+"' data-filtersmap='"+filters+"' data-searchoptionsmap='"+searchOptions+"'>"+name+"</button><span data-action='/secure/delete_template' data-file='"+file+"' class='template-remove-button' >X</span></li>"));
-                $('.template-show-button').filter(':last').click(showTemplateFunction);
-                $('.template-remove-button').filter(':last').click(removeTemplateFunction);
-                $this.find('.template_name').val(null);
-            }
-          },
-          dataType: "json"
-        });
-
-        return false;
-    });
 
     $('.template-show-button').click(showTemplateFunction);
 
