@@ -1363,6 +1363,17 @@ public class SimilarPatentServer {
                 Object highlightMap = templateMap.get("highlightMap");
                 String[] parentDirs = (String[])templateMap.get("parentDirs");
                 if(highlightMap==null) highlightMap="";
+
+                // check updates file
+                File updatesFile = new File(file.getAbsolutePath()+"_updates");
+                if(updatesFile.exists()) {
+                    Map<String,Object> updates = (Map<String,Object>) Database.tryLoadObject(updatesFile);
+                    if(updates!=null) {
+                        name = updates.get("name");
+                        parentDirs = (String[]) updates.get("parentDirs");
+                    }
+                }
+
                 if(name!=null&&searchObjectsMap!=null&&attributesMap!=null&&chartsMap!=null&&filtersMap!=null) {
 
                     Pair<Map<String,Object>,List<FormTemplate>> currentDirectory = directoryStructure;

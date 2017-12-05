@@ -21,7 +21,7 @@ $(document).ready(function() {
              dataType: "json"
          });
          return false;
-    }
+    };
 
     var removeTemplateFunction = function(tree,node,file){
          var nodeData = node;
@@ -45,7 +45,7 @@ $(document).ready(function() {
              dataType: "json"
          });
          return false;
-    }
+    };
 
     var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dataKey) {
         var tmpData = {};
@@ -107,6 +107,34 @@ $(document).ready(function() {
         });
 
         return false;
+    };
+
+    var removeDescendantsHelper = function(tree,node) {
+        if(isFolder) {
+            // get all children
+            var children = node.children;
+            for(var i = 0; i < children.length; i++) {
+                var child = tree.get_node(node.children[i]);
+                removeDescendantsHelper(tree,child,child.data.file);
+            }
+
+        } else {
+            removeTemplateFunction(tree,node,node.data.file)
+        }
+    };
+
+    var renameDescendantsOfFolderHelper = function(tree,node) {
+        if(isFolder) {
+            // get all children
+            var children = node.children;
+            for(var i = 0; i < children.length; i++) {
+                var child = tree.get_node(node.children[i]);
+                renameDescendantsOfFolderHelper(tree,child,child.data.file);
+            }
+
+        } else {
+            renameTemplateFunction(tree,node,node.text,node.data.file);
+        }
     };
 
 
@@ -171,12 +199,7 @@ $(document).ready(function() {
                         "label": "Delete",
                         "title": "Permanently delete this "+(isFolder ? "folder" : "template")+".",
                         "action": function(obj) {
-                            if(isFolder) {
-                                // get all children
-
-                            } else {
-                                removeTemplateFunction(tree,node,node.data.file)
-                            }
+                            removeDescendantsHelper(tree,node);
                             return true;
                         }
                     };
@@ -187,7 +210,7 @@ $(document).ready(function() {
                         "title": "Rename this "+(isFolder ? "folder" : "template")+".",
                         "action": function(obj) {
                             if(isFolder) {
-                                // not sure yet
+                                renameDescendantsOfFolderHelper(tree,node);
                             } else {
                                 tree.edit(node,'New Template',function(node,status,cancelled) {
                                     if(status && ! cancelled) {
