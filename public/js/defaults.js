@@ -13,7 +13,7 @@ $(document).ready(function() {
 
 
     var saveTemplateFunction = function(tree,node,name,deletable){
-        var data = {};
+        var preData = {};
         preData["name"]=name;
         saveTemplateFormHelper("#searchOptionsForm",".attributeElement",preData,"searchOptionsMap");
         saveTemplateFormHelper("#attributesForm",".attributeElement",preData,"attributesMap");
@@ -31,7 +31,7 @@ $(document).ready(function() {
         $.ajax({
           type: "POST",
           url: '/secure/save_template',
-          data: data,
+          data: preData,
           success: function(data) {
             // add button // DO I REALLY NEED TO SEND ALL THIS DATA BACK TO CLIENT?
             if(!(data.hasOwnProperty('parentDirs') && data.hasOwnProperty('name') && data.hasOwnProperty('chartsMap') && data.hasOwnProperty('highlightMap') && data.hasOwnProperty('attributesMap') && data.hasOwnProperty('filtersMap') && data.hasOwnProperty('searchOptionsMap') && data.hasOwnProperty('file'))) {
