@@ -99,6 +99,7 @@ $(document).ready(function() {
                 tree.edit(node,name,function(node,status,cancelled) {
                     if(status && ! cancelled) {
                         renameTemplateFunction(tree,node,node.text,data['file']);
+                        tree.refresh();
                     }
                 })
             }
