@@ -85,7 +85,6 @@ $(document).ready(function() {
             if(!data.hasOwnProperty('file')) {
                 alert('Error saving template: '+data.message);
             } else {
-                $('.template-show-button').filter(':last').click(showTemplateFunction);
                 preData['file']=data['file'];
                 node = tree.create_node(node, {
                     'text': name,
@@ -96,10 +95,10 @@ $(document).ready(function() {
                         preData
                     }
                 });
-                tree.edit(node,name,function(node,status,cancelled) {
+                tree.edit(node,name,function(n,status,cancelled) {
+                    $(node).dblclick(showTemplateFunction);
                     if(status && ! cancelled) {
-                        renameTemplateFunction(tree,node,node.text,data['file']);
-                        tree.refresh_node(node);
+                        renameTemplateFunction(tree,node,n.text,data['file']);
                     }
                 })
             }
@@ -213,9 +212,11 @@ $(document).ready(function() {
                         "title": "Rename this "+(isFolder ? "folder" : "template")+".",
                         "action": function(obj) {
                             if(isFolder) {
-                                renameDescendantsOfFolderHelper(tree,node);
+                                tree.edit(node,node.text,function(node,status,cancelled) {
+                                    renameDescendantsOfFolderHelper(tree,node);
+                                });
                             } else {
-                                tree.edit(node,'New Template',function(node,status,cancelled) {
+                                tree.edit(node,node.text,function(node,status,cancelled) {
                                     if(status && ! cancelled) {
                                         renameTemplateFunction(tree,node,node.text,node.data.file);
                                     }
@@ -255,7 +256,7 @@ $(document).ready(function() {
 
 
 
-    $('.template-show-button').click(showTemplateFunction);
+    $('.template-show-button').dblclick(showTemplateFunction);
 
     var submitFormFunction = function(e,onlyExcel) {
          e.preventDefault();
