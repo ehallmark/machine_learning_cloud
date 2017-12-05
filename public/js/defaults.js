@@ -110,6 +110,7 @@ $(document).ready(function() {
     };
 
     var removeDescendantsHelper = function(tree,node) {
+        var isFolder = node.type==='folder';
         if(isFolder) {
             // get all children
             var children = node.children;
@@ -124,6 +125,7 @@ $(document).ready(function() {
     };
 
     var renameDescendantsOfFolderHelper = function(tree,node) {
+        var isFolder = node.type==='folder';
         if(isFolder) {
             // get all children
             var children = node.children;
