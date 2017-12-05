@@ -96,9 +96,9 @@ $(document).ready(function() {
                     }
                 });
                 tree.edit(node,name,function(n,status,cancelled) {
-                    $(node).dblclick(showTemplateFunction);
+                    $('#'+node).dblclick(showTemplateFunction);
                     if(status && ! cancelled) {
-                        renameTemplateFunction(tree,node,n.text,data['file']);
+                        renameTemplateFunction(tree,n,n.text,data['file']);
                     }
                 })
             }
