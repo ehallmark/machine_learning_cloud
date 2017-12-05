@@ -1402,25 +1402,15 @@ public class SimilarPatentServer {
                         div().withClass("container-fluid text-center").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
                                         nav().withClass("col-3 sidebar").attr("style","overflow-y: auto; height: 100%; position: fixed; padding: 0px; padding-top: 75px;").with(
-                                                (authorized ? a("Sign Out").attr("style","padding: 0;").withHref("/logout").withClass("nav-link") : a("Log In").withHref("/").withClass("nav-link").attr("style","padding: 0;")),
-                                                (authorized ? a("Create User").attr("style","padding: 0;").withHref("/create_user").withClass("nav-link") : span()),
-                                                (authorized ? p("Signed in as "+req.session().attribute("username")+". Role: "+req.session().attribute("role")+".") : p("Not signed in.")),
-                                                h4("Saved Forms"),
+                                                div().withClass("row").with(
+                                                        div().withClass("col-12").with(authorized ? p("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : p("Not signed in.")),
+                                                        div().withClass("col-6").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
+                                                        div().withClass("col-6").with(authorized ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("www.gttgrp.com"))
+                                                ),
+                                                h5("All Forms"),
                                                 (!authorized) ? div() : ul().withClass("nav nav-pills flex-column").with(
-                                                        div().with(
-                                                                h5("Save Current Form"),
-                                                                form().withAction(SAVE_TEMPLATE_URL).withId("save-template-form-id").withMethod("post").with(
-                                                                        input().withType("hidden").withName("chartsMap").withId("chartsMap"),
-                                                                        input().withType("hidden").withName("filtersMap").withId("filtersMap"),
-                                                                        input().withType("hidden").withName("attributesMap").withId("attributesMap"),
-                                                                        input().withType("hidden").withName("searchOptionsMap").withId("searchOptionsMap"),
-                                                                        input().withType("hidden").withName("highlightMap").withId("highlightMap"),
-                                                                        input().withType("text").withClass("form-control").attr("placeholder","Template Name").withName("name").withId("template_name").attr("style","width: 80%; margin-left: 10%; margin-right: 10%; display: inline-block; text-align: center;"),
-                                                                        button().withType("submit").withText("Save").withClass("btn btn-secondary").withId("save-template-form-id-button")
-                                                                )
-                                                        ), div().attr("style","height: 60%;").with(
-                                                                h5("Forms"),
-                                                                div().attr("style","max-height: 45%; overflow-y: auto; text-align: left;").withId("form-templates-tree").with(
+                                                        div().attr("style","height: 70%; overflow-y: auto;").with(
+                                                                div().attr("style","text-align: left;").withId("form-templates-tree").with(
                                                                         ul().with(
                                                                                 getTemplatesForUser(SUPER_USER,false,"Form Templates"),
                                                                                 getTemplatesForUser(req.session().attribute("username"),true,"My Forms"),
