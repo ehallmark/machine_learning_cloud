@@ -94,7 +94,7 @@ $(document).ready(function() {
                                 "separator_before": false,
                                 "separator_after": false,
                                 "label": "From Current Form",
-                                "title": "Create new template from current form."
+                                "title": "Create new template from current form.",
                                 "action": function(obj) {
                                     var name = 'New Template';
                                     // form?
