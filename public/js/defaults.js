@@ -41,7 +41,7 @@ $(document).ready(function() {
                         "title": "Create a new template.",
                         "submenu": {
                             "From Current Form": {
-                                "label": "From Current Form"
+                                "label": "From Current Form",
                                 "title": "Create new template from current form."
                             },
                             "From Blank Form": {
@@ -49,7 +49,7 @@ $(document).ready(function() {
                                 "title": "Create new blank template."
 
                             }
-                        }
+                        },
                         "action": function(obj) {
                             node = tree.create_node(node, {
                                 'text': 'New Template',
