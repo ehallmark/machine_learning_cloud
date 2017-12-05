@@ -1340,18 +1340,9 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag addFolderToFolderButton() {
-        return form().withClass("add-folder-form").with(
-                input().withType("text").withClass("form-control")
-                        .attr("placeholder","Folder Name")
-                        .withName("name").withClass(".folder_name")
-                        .attr("style","width: 80%; margin-left: 10%; margin-right: 10%; display: inline-block; text-align: center;")
-        );
-    }
-
     public static Tag templateHelper(Pair<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable, List<String> parentDirs) {
         // find nested
-        return li(folderName).attr("data-jstree","{\"type\":\"folder\"}").with(
+        return li(folderName).attr("data-deletable", String.valueOf(deletable)).attr("data-jstree","{\"type\":\"folder\"}").with(
                 ul().with(
                         directoryStructure.getFirst().entrySet().stream()
                                 //.sorted(Comparator.comparing(e->e.getKey()))
@@ -1365,13 +1356,13 @@ public class SimilarPatentServer {
                         directoryStructure.getSecond().stream()
                                 //.sorted(Comparator.comparing(e->e.getName()))
                                 .map(template->{
-                                    return li(template.getName()).attr("data-jstree","{\"type\":\"file\"}").withClass("template-show-button").attr("style","width: "+((!deletable)?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
+                                    return li(template.getName()).attr("data-deletable", String.valueOf(deletable)).attr("data-jstree","{\"type\":\"file\"}").withClass("template-show-button")
+                                            .attr("data-name",template.getName())
+                                            .attr("data-chartsMap", template.getChartsMap())
                                             .attr("data-highlight", template.getHighlightMap())
                                             .attr("data-attributesMap", template.getAttributesMap())
                                             .attr("data-filtersMap", template.getFiltersMap())
-                                            .attr("data-searchOptionsMap", template.getSearchOptionsMap()).with(
-                                                    (!deletable)?span():span("X").attr("style","margin-right: -10px;").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",template.getFile().getName()).withClass("template-remove-button")
-                                            );
+                                            .attr("data-searchOptionsMap", template.getSearchOptionsMap());
                         }).collect(Collectors.toList())
                 )
         );
