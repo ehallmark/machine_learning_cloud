@@ -244,7 +244,13 @@ $(document).ready(function() {
     $(templates_tree_id).bind("dblclick.jstree", function(event) {
         var tree = $(this).jstree(true);
         var node = tree.get_node(event.target);
-        showTemplateFunction(node.data);
+        if(node.type==='file') {
+            e.preventDefault();
+            e.stopPropagation();
+            showTemplateFunction(node.data);
+            return false;
+        }
+        return true;
     });
 
     $('.miniTip').miniTip({
@@ -580,8 +586,7 @@ var setCollapsibleHeaders = function(selector) {
     });
 };
 
-var showTemplateFormHelper = function(formSelector,json) {
-    var dataMap = jQuery.parseJSON(json);
+var showTemplateFormHelper = function(formSelector,dataMap) {
     $.each(dataMap,function(id,value) {
         if(!id.startsWith("order_")) {
             var order = 0;
