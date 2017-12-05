@@ -96,9 +96,9 @@ $(document).ready(function() {
                         preData
                     }
                 });
-                tree.edit(node,'New Template',function(node,status,cancelled) {
+                tree.edit(node,name,function(node,status,cancelled) {
                     if(status && ! cancelled) {
-                        renameTemplateFunction(tree,node,node.text,node.data.file);
+                        renameTemplateFunction(tree,node,node.text,data['file']);
                     }
                 })
             }
