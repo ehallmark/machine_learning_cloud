@@ -13,7 +13,6 @@ $(document).ready(function() {
 
 
     var saveTemplateFunction = function(node,name){
-        var $this = $(form);
         var data = {};
         data["name"]=name;
         saveTemplateFormHelper("#searchOptionsForm",".attributeElement",data,"searchOptionsMap");
