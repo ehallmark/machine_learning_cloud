@@ -1408,25 +1408,27 @@ public class SimilarPatentServer {
                                                         div().withClass("col-12").with(authorized ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com"))
                                                 ), hr(),
                                                 (!authorized) ? div() : div().with(
-                                                        ul().withClass("nav nav-pills nav-fill").with(
+                                                        ul().withClass("nav nav-pills nav-fill").attr("role","tablist").with(
                                                                 li().withClass("nav-item").with(
                                                                         a("Forms").withClass("nav-link active h5").attr("data-toggle", "pill")
+                                                                                .attr("role","tab")
                                                                                 .withHref("#form-templates-tree")
                                                                 ),
                                                                 li().withClass("nav-item").with(
                                                                         a("Datasets").withClass("nav-link h5").attr("data-toggle", "pill")
+                                                                                .attr("role","tab")
                                                                                 .withHref("#dataset-tree")
                                                                 )
                                                         ), br(),
                                                         div().withClass("tab-content").attr("style","height: 70%; overflow-y: auto; width: 100%;").with(
-                                                                div().withClass("tab-pane active").attr("style","text-align: left;").withId("form-templates-tree").with(
+                                                                div().withClass("tab-pane active").attr("role","tabpanel").attr("style","text-align: left;").withId("form-templates-tree").with(
                                                                         ul().with(
                                                                                 getTemplatesForUser(SUPER_USER,false,"Form Templates"),
                                                                                 getTemplatesForUser(req.session().attribute("username"),true,"My Forms"),
                                                                                 getTemplatesForUser(SHARED_USER,true, "Shared Forms")
                                                                         )
 
-                                                                ),div().withClass("tab-pane").withId("dataset-tree").with(
+                                                                ),div().withClass("tab-pane").attr("role","tabpanel").withId("dataset-tree").with(
                                                                     h6("Dataset feature coming soon...")
                                                                 )
                                                         )
