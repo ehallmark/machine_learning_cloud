@@ -13,6 +13,7 @@ $(document).ready(function() {
 
                 var isFolder = node.type==='folder';
                 var topLevelFolder = isFolder && (node.parents.length === 1);
+                var deletable = node.data.jstree.deletable;
 
                 if(isFolder) {
                     items["New Folder"] = {
@@ -42,7 +43,7 @@ $(document).ready(function() {
                         }
                     };
                 }
-                if(!topLevelFolder) {
+                if(!topLevelFolder && deletable) {
                     items["Delete"] = {
                         "separator_before": false,
                         "separator_after": false,
