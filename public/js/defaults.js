@@ -245,8 +245,8 @@ $(document).ready(function() {
         var tree = $(this).jstree(true);
         var node = tree.get_node(event.target);
         if(node.type==='file') {
-            e.preventDefault();
-            e.stopPropagation();
+            event.preventDefault();
+            event.stopPropagation();
             showTemplateFunction(node.data);
             return false;
         }
