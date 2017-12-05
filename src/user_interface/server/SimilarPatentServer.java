@@ -1405,7 +1405,7 @@ public class SimilarPatentServer {
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").with(authorized ? div().withText("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : div().withText("Not signed in.")),
                                                         div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
-                                                        div().withClass("col-12").with(authorized ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("www.gttgrp.com"))
+                                                        div().withClass("col-12").with(authorized ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com"))
                                                 ), hr(),
                                                 (!authorized) ? div() : div().with(
                                                         ul().withClass("nav nav-pills nav-fill").with(
