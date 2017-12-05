@@ -27,7 +27,7 @@ $(document).ready(function() {
         while(nodeData.parents.length>1) {
             var currId = nodeData.parent;
             preData["parentDirs"].push(currId);
-            nodeData = $('#'+currId);
+            nodeData = tree.get_node(currId);
         }
         $.ajax({
           type: "POST",
