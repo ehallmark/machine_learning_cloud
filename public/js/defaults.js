@@ -98,18 +98,20 @@ $(document).ready(function() {
                         "separator_after": false,
                         "label": "New Template",
                         "title": "Create a new template.",
-                        "submenu": {
-                            "From Current Form": {
-                                "separator_before": false,
-                                "separator_after": false,
-                                "label": "From Current Form",
-                                "title": "Create new template from current form.",
-                                "action": function(obj) {
-                                    var name = 'New Template';
-                                    saveTemplateFunction(tree,node,name,deletable);
-                                    return true;
+                        "submenu": function(node) {
+                            return {
+                                "From Current Form": {
+                                    "separator_before": false,
+                                    "separator_after": false,
+                                    "label": "From Current Form",
+                                    "title": "Create new template from current form.",
+                                    "action": function(obj) {
+                                        var name = 'New Template';
+                                        saveTemplateFunction(tree,node,name,deletable);
+                                        return true;
+                                    }
                                 }
-                            }
+                            };
                         }
                     };
                 }
@@ -144,7 +146,7 @@ $(document).ready(function() {
                 "icon": "jstree-file"
             }
         },
-        "plugins": ["types","wholerow","sort","contextmenu","search"]
+        "plugins": ["types","wholerow","sort","contextmenu"]
     });
 
 
