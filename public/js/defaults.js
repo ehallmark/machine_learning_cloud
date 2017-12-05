@@ -97,7 +97,7 @@ $(document).ready(function() {
                     }
                 });
                 tree.edit(node,name,function(n,status,cancelled) {
-                    $('#'+node).dblclick(function(e) { showTemplateFunction(preData); });
+                    //$('#'+node).dblclick(function(e) { showTemplateFunction(preData); });
                     if(status && ! cancelled) {
                         renameTemplateFunction(tree,n,n.text,data['file']);
                     }
@@ -142,7 +142,7 @@ $(document).ready(function() {
 
 
     var templates_tree_id = "#templates-tree";
-    $(templates_tree_id).jstree({
+    var jstree = $(templates_tree_id).jstree({
         "core" : {
             "multiple" : false,
             "check_callback": true
@@ -241,6 +241,11 @@ $(document).ready(function() {
         "plugins": ["types","wholerow","sort","contextmenu"]
     });
 
+    $(templates_tree_id).bind("dblclick.jstree", function(event) {
+        var tree = $(this).jstree(true);
+        var node = tree.get_node(event.target);
+        showTemplateFunction(node.data);
+    });
 
     $('.miniTip').miniTip({
         title: 'Advanced Keyword Syntax',
@@ -255,11 +260,6 @@ $(document).ready(function() {
                  "<p>~N after a phrase signifies slop amount</p>"
     });
 
-
-
-    $('.template-show-button').dblclick(function(e) {
-        showTemplateFunction($(this).data());
-    });
 
     var submitFormFunction = function(e,onlyExcel) {
          e.preventDefault();
