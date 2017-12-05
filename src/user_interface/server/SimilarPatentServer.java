@@ -1426,6 +1426,8 @@ public class SimilarPatentServer {
                                                                                 getTemplatesForUser(SHARED_USER,true, "Shared Forms")
                                                                         )
 
+                                                                ),div().withClass("tab-pane").withId("dataset-tree").with(
+                                                                    h6("Dataset feature coming soon...")
                                                                 )
                                                         )
                                                 )
