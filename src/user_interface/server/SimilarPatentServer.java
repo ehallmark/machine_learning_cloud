@@ -1030,13 +1030,13 @@ public class SimilarPatentServer {
             String username = isShared ? SHARED_USER : req.session().attribute("username");
             if(username!=null&&username.length()>0) {
                 String templateFolderStr = Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/";
-                File file = new File(templateFolderStr+filename);
-                Map<String,Object> formMap = (Map<String,Object>)Database.tryLoadObject(file);
-                if(formMap!=null) {
-                    formMap.put("name", name);
-                    formMap.put("file", file);
-                    if (parentDirs != null && parentDirs.length > 1) formMap.put("parentDirs", Arrays.copyOfRange(parentDirs,1,parentDirs.length));
-                    Database.trySaveObject(formMap,file);
+                File formFile = new File(templateFolderStr+filename);
+                File updatesFile = new File(formFile.getAbsolutePath()+"_updates");
+                if(formFile.exists()) {
+                    Map<String,Object> updates = new HashMap<>();
+                    updates.put("name", name);
+                    if (parentDirs != null && parentDirs.length > 1) updates.put("parentDirs", Arrays.copyOfRange(parentDirs,1,parentDirs.length));
+                    Database.trySaveObject(updates,updatesFile);
                     message = "Saved sucessfully.";
                 } else {
                     message = "Unable to find form.";
@@ -1093,6 +1093,8 @@ public class SimilarPatentServer {
                 File file = null;
                 while(file == null || file.exists()) {
                     file = new File(templateFolderStr+Math.abs(random.nextInt()));
+                    File updatesFile = new File(file.getAbsolutePath()+"_updates"); // clear any updates
+                    if(updatesFile.exists()) updatesFile.delete();
                 }
                 Database.trySaveObject(formMap,file);
                 message = "Saved sucessfully.";
@@ -1124,8 +1126,15 @@ public class SimilarPatentServer {
                 } else {
                     File toDelete = new File(Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/"+fileName);
                     if(toDelete.exists() && toDelete.isFile()) {
-                        toDelete.delete();
-                        message = String.valueOf("Success: " + toDelete.delete());
+                        boolean success = toDelete.delete();
+                        if(success) {
+                            // check updates file
+                            File updatesFile = new File(toDelete.getAbsolutePath()+"_updates");
+                            if(updatesFile.exists()) {
+                                updatesFile.delete();
+                            }
+                        }
+                        message = String.valueOf("Success: " + success);
                     } else {
                         message = "Unable to locate file.";
                     }
