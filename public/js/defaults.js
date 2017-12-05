@@ -657,12 +657,12 @@ var showTemplateFormHelper = function(formSelector,json) {
 
 var showTemplateFunction = function(data){
     resetSearchForm();
-    showTemplateFormHelper("#searchOptionsForm",data["searchOptionsMap"]);
-    showTemplateFormHelper("#attributesForm",data["attributesMap"]);
-    showTemplateFormHelper("#filtersForm",data["filtersMap"]);
-    showTemplateFormHelper("#chartsForm",data["chartsMap"]);
+    showTemplateFormHelper("#searchOptionsForm",data["searchoptionsmap"]);
+    showTemplateFormHelper("#attributesForm",data["attributesmap"]);
+    showTemplateFormHelper("#filtersForm",data["filtersmap"]);
+    showTemplateFormHelper("#chartsForm",data["chartsmap"]);
     try {
-        showTemplateFormHelper("#highlightForm",data["highlightMap"]);
+        showTemplateFormHelper("#highlightForm",data["highlightmap"]);
     } catch(err) {
 
     }

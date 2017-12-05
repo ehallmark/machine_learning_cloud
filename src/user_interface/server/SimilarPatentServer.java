@@ -1421,7 +1421,7 @@ public class SimilarPatentServer {
                                             .attr("data-jstree","{\"type\":\"file\"}")
                                             .attr("data-name",template.getName())
                                             .attr("data-chartsMap", template.getChartsMap())
-                                            .attr("data-highlight", template.getHighlightMap())
+                                            .attr("data-highlightMap", template.getHighlightMap())
                                             .attr("data-attributesMap", template.getAttributesMap())
                                             .attr("data-filtersMap", template.getFiltersMap())
                                             .attr("data-searchOptionsMap", template.getSearchOptionsMap())
