@@ -12,19 +12,20 @@ $(document).ready(function() {
     };
 
 
-    var saveTemplateFunction = function(node,name){
+    var saveTemplateFunction = function(tree,node,name,deletable){
         var data = {};
-        data["name"]=name;
-        saveTemplateFormHelper("#searchOptionsForm",".attributeElement",data,"searchOptionsMap");
-        saveTemplateFormHelper("#attributesForm",".attributeElement",data,"attributesMap");
-        saveTemplateFormHelper("#filtersForm",".attributeElement",data,"filtersMap");
-        saveTemplateFormHelper("#chartsForm",".attributeElement",data,"chartsMap");
-        saveTemplateFormHelper("#highlightForm",".attributeElement",data,"highlightMap");
-        data["parentDirs"] = []
+        preData["name"]=name;
+        saveTemplateFormHelper("#searchOptionsForm",".attributeElement",preData,"searchOptionsMap");
+        saveTemplateFormHelper("#attributesForm",".attributeElement",preData,"attributesMap");
+        saveTemplateFormHelper("#filtersForm",".attributeElement",preData,"filtersMap");
+        saveTemplateFormHelper("#chartsForm",".attributeElement",preData,"chartsMap");
+        saveTemplateFormHelper("#highlightForm",".attributeElement",preData,"highlightMap");
+        preData["parentDirs"] = []
+        preData["deletable"] = deletable;
         var nodeData = node.data;
         while(nodeData.parents.length>1) {
             var currId = nodeData.parent;
-            data["parentDirs"].push(currId);
+            preData["parentDirs"].push(currId);
             nodeData = $('#'+currId).data;
         }
         $.ajax({
@@ -32,14 +33,22 @@ $(document).ready(function() {
           url: '/secure/save_template',
           data: data,
           success: function(data) {
-            // add button
-            if(!(data.hasOwnProperty('name') && data.hasOwnProperty('chartsMap') && data.hasOwnProperty('highlightMap') && data.hasOwnProperty('attributesMap') && data.hasOwnProperty('filtersMap') && data.hasOwnProperty('searchOptionsMap') && data.hasOwnProperty('file'))) {
+            // add button // DO I REALLY NEED TO SEND ALL THIS DATA BACK TO CLIENT?
+            if(!(data.hasOwnProperty('parentDirs') && data.hasOwnProperty('name') && data.hasOwnProperty('chartsMap') && data.hasOwnProperty('highlightMap') && data.hasOwnProperty('attributesMap') && data.hasOwnProperty('filtersMap') && data.hasOwnProperty('searchOptionsMap') && data.hasOwnProperty('file'))) {
                 alert('Error saving template: '+data.message);
             } else {
                 $('.template-show-button').filter(':last').click(showTemplateFunction);
-                $.each(data,function(k,v) {
-                    node.data[k]=v;
+                preData['file']=data['file'];
+                node = tree.create_node(node, {
+                    'text': name,
+                    'type': 'file',
+                    'icon': 'jstree-file',
+                    'jstree': {'type': 'file'},
+                    'data' : {
+                        preData
+                    }
                 });
+                tree.edit(node);
             }
           },
           dataType: "json"
@@ -96,18 +105,7 @@ $(document).ready(function() {
                                 "title": "Create new template from current form.",
                                 "action": function(obj) {
                                     var name = 'New Template';
-                                    // form?
-                                    node = tree.create_node(node, {
-                                        'text': name,
-                                        'type': 'file',
-                                        'icon': 'jstree-file',
-                                        'jstree': {'type': 'file'},
-                                        'data' : {
-                                            'deletable': deletable
-                                        }
-                                    });
-                                    saveTemplateFunction(node,name);
-                                    tree.edit(node);
+                                    saveTemplateFunction(tree,node,name,deletable);
                                 }
                             }
                         }
