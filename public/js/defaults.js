@@ -13,7 +13,7 @@ $(document).ready(function() {
              data: {
                  name: newName,
                  parentDirs: parents,
-                 file: node.data.file
+                 file: file
              },
              success: function(data) {
 
