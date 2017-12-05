@@ -35,7 +35,7 @@ $(document).ready(function() {
           data: preData,
           success: function(data) {
             // add button // DO I REALLY NEED TO SEND ALL THIS DATA BACK TO CLIENT?
-            if(!(data.hasOwnProperty('parentDirs') && data.hasOwnProperty('name') && data.hasOwnProperty('chartsMap') && data.hasOwnProperty('highlightMap') && data.hasOwnProperty('attributesMap') && data.hasOwnProperty('filtersMap') && data.hasOwnProperty('searchOptionsMap') && data.hasOwnProperty('file'))) {
+            if(!data.hasOwnProperty('file')) {
                 alert('Error saving template: '+data.message);
             } else {
                 $('.template-show-button').filter(':last').click(showTemplateFunction);
