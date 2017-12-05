@@ -25,7 +25,7 @@ $(document).ready(function() {
         while(nodeData.parents.length>1) {
             var currId = nodeData.parent;
             data["parentDirs"].push(currId);
-            nodeData = $('#'+currId).data.parent;
+            nodeData = $('#'+currId).data;
         }
         $.ajax({
           type: "POST",
