@@ -1407,10 +1407,19 @@ public class SimilarPatentServer {
                                                         div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
                                                         div().withClass("col-12").with(authorized ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("www.gttgrp.com"))
                                                 ), hr(),
-                                                h5("All Forms"),
-                                                (!authorized) ? div() : ul().withClass("nav nav-pills flex-column").with(
-                                                        div().attr("style","height: 70%; overflow-y: auto;").with(
-                                                                div().attr("style","text-align: left;").withId("form-templates-tree").with(
+                                                (!authorized) ? div() : div().with(
+                                                        ul().withClass("nav nav-pills nav-fill").with(
+                                                                li().withClass("nav-item").with(
+                                                                        a("Forms").withClass("nav-link active h5").attr("data-toggle", "pill")
+                                                                                .withHref("#form-templates-tree")
+                                                                ),
+                                                                li().withClass("nav-item").with(
+                                                                        a("Datasets").withClass("nav-link h5").attr("data-toggle", "pill")
+                                                                                .withHref("#dataset-tree")
+                                                                )
+                                                        ), br(),
+                                                        div().withClass("tab-content").attr("style","height: 70%; overflow-y: auto; width: 100%;").with(
+                                                                div().withClass("tab-pane active").attr("style","text-align: left;").withId("form-templates-tree").with(
                                                                         ul().with(
                                                                                 getTemplatesForUser(SUPER_USER,false,"Form Templates"),
                                                                                 getTemplatesForUser(req.session().attribute("username"),true,"My Forms"),
