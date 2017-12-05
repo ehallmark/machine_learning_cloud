@@ -47,7 +47,7 @@ $(document).ready(function() {
         });
 
         return false;
-    });
+    };
 
 
     var templates_tree_id = "#templates-tree";
