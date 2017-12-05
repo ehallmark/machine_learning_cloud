@@ -1,7 +1,9 @@
 package user_interface.server;
 
+import ch.qos.logback.classic.Level;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
+import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import j2html.tags.ContainerTag;
@@ -95,6 +97,7 @@ public class SimilarPatentServer {
     public static final String SAVE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/save_template";
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
     public static final String DELETE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/delete_template";
+    public static final String RENAME_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/rename_template";
     public static final String SHOW_DATATABLE_URL = PROTECTED_URL_PREFIX+"/dataTable.json";
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
     public static final String RANDOM_TOKEN = "<><><>";
@@ -791,6 +794,12 @@ public class SimilarPatentServer {
             return handleDeleteForm(req,res);
         });
 
+        post(RENAME_TEMPLATE_URL, (req, res) -> {
+            authorize(req,res);
+            return handleRenameForm(req,res);
+        });
+
+
         get(SHOW_DATATABLE_URL, (req, res) -> {
             authorize(req,res);
             return handleDataTable(req,res);
@@ -1007,7 +1016,44 @@ public class SimilarPatentServer {
         }
     }
 
-
+    private static Object handleRenameForm(Request req, Response res) {
+        String filename = req.queryParams("file");
+        String name = req.queryParams("name");
+        String[] parentDirs = req.queryParamsValues("parentDirs");
+        String message;
+        Map<String,Object> responseMap = new HashMap<>();
+        if(filename!=null&&name!=null&&name.length()>0) {
+            boolean isShared = false;
+            if(parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
+                isShared = true;
+            }
+            String username = isShared ? SHARED_USER : req.session().attribute("username");
+            if(username!=null&&username.length()>0) {
+                String templateFolderStr = Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/";
+                File file = new File(templateFolderStr+filename);
+                Map<String,Object> formMap = (Map<String,Object>)Database.tryLoadObject(file);
+                if(formMap!=null) {
+                    formMap.put("name", name);
+                    formMap.put("file", file);
+                    if (parentDirs != null && parentDirs.length > 0) formMap.put("parentDirs", parentDirs);
+                    Database.trySaveObject(formMap,file);
+                    message = "Saved sucessfully.";
+                } else {
+                    message = "Unable to find form.";
+                }
+            } else {
+                message = "Unable to find user.";
+            }
+        } else {
+            if(name==null||name.isEmpty()) {
+                message = "Please enter a valid name.";
+            } else {
+                message = "Unable to create form. Data missing.";
+            }
+        }
+        responseMap.put("message", message);
+        return new Gson().toJson(responseMap);
+    }
 
     private static Object handleSaveForm(Request req, Response res) {
         String attributesMap = req.queryParams("attributesMap");
@@ -1017,6 +1063,11 @@ public class SimilarPatentServer {
         String chartsMap = req.queryParams("chartsMap");
         String name = req.queryParams("name");
         String[] parentDirs = req.queryParamsValues("parentDirs");
+        if(parentDirs==null) {
+            System.out.println("Parent dirs is null...");
+        } else {
+            System.out.println("Parent dirs: "+Arrays.toString(parentDirs));
+        }
         String message;
         Random random = new Random(System.currentTimeMillis());
         Map<String,Object> responseMap = new HashMap<>();
@@ -1030,7 +1081,11 @@ public class SimilarPatentServer {
             formMap.put("chartsMap",chartsMap);
             formMap.put("highlightMap", highlightMap);
             if(parentDirs!=null && parentDirs.length>0) formMap.put("parentDirs",parentDirs);
-            String username = req.session().attribute("username");
+            boolean isShared = false;
+            if(parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
+                isShared = true;
+            }
+            String username = isShared ? SHARED_USER : req.session().attribute("username");
             if(username!=null&&username.length()>0) {
                 String templateFolderStr = Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/";
                 File templateFolder = new File(templateFolderStr);
@@ -1058,11 +1113,12 @@ public class SimilarPatentServer {
 
     private static Object handleDeleteForm(Request req, Response res) {
         String fileName = req.queryParams("path_to_remove");
+        boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
         String message;
         if(fileName!=null && fileName.replaceAll("[^0-9]","").length() > 0) {
             fileName = fileName.replaceAll("[^0-9]","");
             try {
-                String username = req.session().attribute("username");
+                String username = shared ? SHARED_USER : req.session().attribute("username");
                 if(username==null||username.isEmpty()) {
                     message = "Unable to locate user.";
                 } else {
@@ -1355,13 +1411,16 @@ public class SimilarPatentServer {
                         directoryStructure.getSecond().stream()
                                 //.sorted(Comparator.comparing(e->e.getName()))
                                 .map(template->{
-                                    return li(template.getName()).attr("data-deletable", String.valueOf(deletable)).attr("data-jstree","{\"type\":\"file\"}").withClass("template-show-button")
+                                    return li(template.getName()).withClass("template-show-button")
+                                            .attr("data-deletable", String.valueOf(deletable))
+                                            .attr("data-jstree","{\"type\":\"file\"}")
                                             .attr("data-name",template.getName())
                                             .attr("data-chartsMap", template.getChartsMap())
                                             .attr("data-highlight", template.getHighlightMap())
                                             .attr("data-attributesMap", template.getAttributesMap())
                                             .attr("data-filtersMap", template.getFiltersMap())
-                                            .attr("data-searchOptionsMap", template.getSearchOptionsMap());
+                                            .attr("data-searchOptionsMap", template.getSearchOptionsMap())
+                                            .attr("data-file", template.getFile().getName());
                         }).collect(Collectors.toList())
                 )
         );
@@ -1678,6 +1737,7 @@ public class SimilarPatentServer {
     }
 
     public static void main(String[] args) throws Exception {
+        DefaultPipelineManager.setLoggingLevel(Level.INFO);
         boolean testFilterNames = false;
         if(testFilterNames) {
             loadAttributes(false);
