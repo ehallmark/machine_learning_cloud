@@ -37,7 +37,7 @@ $(document).ready(function() {
                         "separator_before": false,
                         "separator_after": false,
                         "label": "Save Current Form",
-                        "title": "Saves the current form to this folder."
+                        "title": "Saves the current form to this folder.",
                         "action": function(obj) {
                             node = tree.create_node(node, {
                                 'text': 'New Form',
