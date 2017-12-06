@@ -96,10 +96,11 @@ $(document).ready(function() {
                 $.each(preData, function(k,v) { newData[k] = v; });
                 node = tree.create_node(
                     node,
-                    newData,
+                    { 'data' : newData},
                     'first',
                     function(newNode) {
                         setTimeout(function() {
+                            newNode.data = newData;
                             tree.edit(newNode,name,function(n,status,cancelled) {
                                 if(status && ! cancelled) {
                                     renameTemplateFunction(tree,n,n.text,data['file']);
