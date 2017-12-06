@@ -680,10 +680,10 @@ var showTemplateFunction = function(data){
 
         }
     } else { // data came from newly added node
-        showTemplateFormHelper("#searchOptionsForm",data["searchOptionsMap"]);
-        showTemplateFormHelper("#attributesForm",data["attributesMap"]);
-        showTemplateFormHelper("#filtersForm",data["filtersMap"]);
-        showTemplateFormHelper("#chartsForm",data["chartsMap"]);
+        showTemplateFormHelper("#searchOptionsForm",$.parseJson(data["searchOptionsMap"]));
+        showTemplateFormHelper("#attributesForm",$.parseJson(data["attributesMap"]));
+        showTemplateFormHelper("#filtersForm",$.parseJson(data["filtersMap"]));
+        showTemplateFormHelper("#chartsForm",$.parseJson(data["chartsMap"]));
         try {
             showTemplateFormHelper("#highlightForm",data["highlightMap"]);
         } catch(err) {
