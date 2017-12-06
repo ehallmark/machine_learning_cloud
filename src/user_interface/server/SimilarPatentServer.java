@@ -1762,7 +1762,11 @@ public class SimilarPatentServer {
         System.out.println("Starting user_interface.server...");
 
         // perform quick search
-        DataSearcher.searchForAssets(attributesMap.values(),Collections.emptyList(),Constants.AI_VALUE, SortOrder.DESC,100,getNestedAttrMap(),false,true);
+        try {
+            DataSearcher.searchForAssets(attributesMap.values(),Collections.emptyList(),Constants.AI_VALUE, SortOrder.DESC,100,getNestedAttrMap(),false,true);
+        } catch(Exception e) {
+            System.out.println("Error during presearch: "+e.getMessage());
+        }
 
         server();
 
