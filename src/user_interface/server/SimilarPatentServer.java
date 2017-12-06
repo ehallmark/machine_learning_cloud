@@ -1453,8 +1453,7 @@ public class SimilarPatentServer {
                 Object attributesMap = templateMap.get("attributesMap");
                 Object chartsMap = templateMap.get("chartsMap");
                 Object filtersMap = templateMap.get("filtersMap");
-                Object highlightMap = templateMap.get("highlightMap");
-                if (highlightMap == null) highlightMap = "";
+                Object highlightMap = templateMap.getOrDefault("highlightMap", templateMap.getOrDefault("highlight", ""));
 
                 if (name != null && searchObjectsMap != null && attributesMap != null && chartsMap != null && filtersMap != null) {
 
@@ -1712,10 +1711,12 @@ public class SimilarPatentServer {
                                                 ),
                                                 div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
                                                         div().withClass("collapsible-form row").withId("highlightForm").with(
-                                                                div().withClass("col-12 attributeElement").with(
+                                                                div().withClass("col-6 attributeElement").with(
                                                                         h5("Highlighting").attr("style","width: 100%;").with(
                                                                                 input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
-                                                                        ), h5("Filter Nested Attributes").attr("style","width: 100%;").with(
+                                                                        )
+                                                                ), div().withClass("col-6 attributeElement").with(
+                                                                        h5("Filter Nested Attributes").attr("style","width: 100%;").with(
                                                                                 input().withId("main-options-"+FILTER_NESTED_OBJECTS_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(FILTER_NESTED_OBJECTS_FIELD)
                                                                         )
                                                                 )
