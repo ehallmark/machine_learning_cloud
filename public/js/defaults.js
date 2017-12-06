@@ -88,29 +88,25 @@ $(document).ready(function() {
             } else {
                 preData['file']=data['file'];
                 node = tree.create_node(node, {
-                    'text': name,
-                    'type': 'file',
-                    'icon': 'jstree-file',
-                    'jstree': {'type': 'file'},
-                    'data' : {
-                        preData
-                    }
-                },
-                'first',
-                function(newNode) {
-                    setTimeout(function() {
-                        tree.edit(newNode,name,function(n,status,cancelled) {
-                            if(status && ! cancelled) {
-                                renameTemplateFunction(tree,n,n.text,data['file']);
-                            }
-                        });
-                    },0);
-                    tree.edit(node,name,function(n,status,cancelled) {
-                        if(status && ! cancelled) {
-                            renameTemplateFunction(tree,n,n.text,data['file']);
+                        'text': name,
+                        'type': 'file',
+                        'icon': 'jstree-file',
+                        'jstree': {'type': 'file'},
+                        'data' : {
+                            preData
                         }
-                    });
-                });
+                    },
+                    'first',
+                    function(newNode) {
+                        setTimeout(function() {
+                            tree.edit(newNode,name,function(n,status,cancelled) {
+                                if(status && ! cancelled) {
+                                    renameTemplateFunction(tree,n,n.text,data['file']);
+                                }
+                            });
+                        },0);
+                    }
+                );
             }
           },
           dataType: "json"
