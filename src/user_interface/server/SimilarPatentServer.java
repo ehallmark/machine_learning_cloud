@@ -1123,7 +1123,8 @@ public class SimilarPatentServer {
 
     private static Function<Request,Map<String,Object>> datasetFormMapFunction() {
         return req -> {
-            String[] assets = req.session(false).attribute("assets");
+            String[] assets = req.queryParamsValues("assets[]");
+            if(assets==null) assets = req.session(false).attribute("assets"); // default to last seen report
             String name = req.queryParams("name");
             if(assets!=null&&name!=null&&name.length()>0) {
                 Map<String, Object> formMap = new HashMap<>();
@@ -1629,6 +1630,10 @@ public class SimilarPatentServer {
                                                                                 getDatasetsForUser(req.session().attribute("username"),true,"My Datasets",false),
                                                                                 getDatasetsForUser(SHARED_USER,true, "Shared Datasets",false)
                                                                         )
+                                                                ),div().attr("style","display: none;").with(
+                                                                        input().withId("new-dataset-from-asset-list"),
+                                                                        button("Create").withId("new-dataset-from-asset-list-submit"),
+                                                                        button("Cancel").withId("new-dataset-from-asset-list-cancel")
                                                                 )
                                                         )
                                                 )

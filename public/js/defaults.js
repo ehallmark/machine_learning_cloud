@@ -1,6 +1,6 @@
 $(document).ready(function() {
-    setupJSTree("#templates-tree",templateDataFunction,showTemplateFunction,"template","From Current Form");
-    setupJSTree("#datasets-tree",datasetDataFunction,showDatasetFunction,"dataset","From Last Generated Report");
+    setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
+    setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[lastGeneratedDatasetDataFunction,assetListDatasetDataFunction],["From Last Generated Report", "From Asset List", "From CSV File"]);
 
     $('.miniTip').miniTip({
         title: 'Advanced Keyword Syntax',
@@ -565,7 +565,7 @@ var templateDataFunction = function(tree,node,name,deletable) {
     return preData;
 };
 
-var datasetDataFunction = function(tree,node,name,deletable) {
+var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable) {
     var preData = {};
     preData["name"]=name;
     preData["createDataset"]= true;
@@ -580,44 +580,96 @@ var datasetDataFunction = function(tree,node,name,deletable) {
     return preData;
 };
 
-var saveJSNodeFunction = function(tree,node,name,deletable,dataFunction,node_type){
-    var preData = dataFunction(tree,node,name,deletable);
-    $.ajax({
-        type: "POST",
-        url: '/secure/save_'+node_type,
-        data: preData,
-        success: function(data) {
-            if(!data.hasOwnProperty('file')) {
-                alert('Error saving template: '+data.message);
-            } else {
-                preData['file']=data['file'];
-                var newData = {
-                    'text': name,
-                    'type': 'file',
-                    'icon': 'jstree-file',
-                    'jstree': {'type': 'file'},
-                };
-                $.each(preData, function(k,v) { newData[k] = v; });
-                node = tree.create_node(
-                    node,
-                    { 'data' : newData},
-                    'first',
-                    function(newNode) {
-                        setTimeout(function() {
-                            newNode.data = newData;
-                            tree.edit(newNode,name,function(n,status,cancelled) {
-                                if(status && ! cancelled) {
-                                    renameJSNodeFunction(tree,n,n.text,data['file'],node_type);
-                                }
-                            });
-                        },0);
-                    }
-                );
-            }
-        },
-        dataType: "json"
+var assetListDatasetDataFunction = function(tree,node,name,deletable) {
+    // get user input
+    var $input = $('#new-dataset-from-asset-list');
+    var $container = $input.parent();
+    var $submit = $('#new-dataset-from-asset-list-submit');
+    var $cancel = $('#new-dataset-from-asset-list-cancel');
+
+    $input.val('');
+    $container.show();
+    $submit.off('click');
+    $cancel.off('click');
+
+    var clicked = false;
+    var canceled = false;
+    $.when(
+        $submit.click(function() {
+
+        })
+    ).done(function() {
+        clicked = true;
+    });
+    $.when(
+        $cancel.click(function() {
+
+        })
+    ).done(function() {
+        canceled = true;
     });
 
+    while(!clicked && !canceled) {
+        setTimeout(function() { }, 200)
+    }
+
+    $container.hide();
+
+    if(canceled) return null;
+
+    var preData = {};
+    preData["name"]=name;
+    preData["assets"] = $input.val().split(/\s+/);
+    preData["parentDirs"] = [];
+    preData["deletable"] = deletable;
+    var nodeData = node;
+    while(typeof nodeData.text !== 'undefined') {
+        preData["parentDirs"].unshift(nodeData.text);
+        var currId = nodeData.parent;
+        nodeData = tree.get_node(currId);
+    }
+    return preData;
+};
+
+var saveJSNodeFunction = function(tree,node,name,deletable,dataFunction,node_type){
+    var preData = dataFunction(tree,node,name,deletable);
+    if(preData!==null) {
+        $.ajax({
+            type: "POST",
+            url: '/secure/save_'+node_type,
+            data: preData,
+            success: function(data) {
+                if(!data.hasOwnProperty('file')) {
+                    alert('Error saving template: '+data.message);
+                } else {
+                    preData['file']=data['file'];
+                    var newData = {
+                        'text': name,
+                        'type': 'file',
+                        'icon': 'jstree-file',
+                        'jstree': {'type': 'file'},
+                    };
+                    $.each(preData, function(k,v) { newData[k] = v; });
+                    node = tree.create_node(
+                        node,
+                        { 'data' : newData},
+                        'first',
+                        function(newNode) {
+                            setTimeout(function() {
+                                newNode.data = newData;
+                                tree.edit(newNode,name,function(n,status,cancelled) {
+                                    if(status && ! cancelled) {
+                                        renameJSNodeFunction(tree,n,n.text,data['file'],node_type);
+                                    }
+                                });
+                            },0);
+                        }
+                    );
+                }
+            },
+            dataType: "json"
+        });
+    }
     return false;
 };
 
@@ -660,7 +712,7 @@ function capitalize(string)
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-var setupJSTree = function(tree_id, jsNodeDataFunction, dblclickFunction, node_type, newItemSubLabel) {
+var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunctions, newItemSubLabels) {
     $(tree_id).jstree({
         "core" : {
             "multiple" : false,
@@ -696,25 +748,29 @@ var setupJSTree = function(tree_id, jsNodeDataFunction, dblclickFunction, node_t
                     };
                     // must create a folder first in the shared environment
                     if(!(topLevelFolder && node.text.startsWith("Shared"))) {
+                        var subMenu = {};
+                        for(var i = 0; i < jsNodeDataFunctions.length; i++) {
+                            var jsNodeDataFunction = jsNodeDataFunctions[i];
+                            var newItemSubLabel = newItemSubLabels[i];
+                            subMenu[newItemSubLabel] = {
+                                "separator_before": false,
+                                "separator_after": false,
+                                "label": newItemSubLabel,
+                                "title": "Create new "+node_type+" "+newItemSubLabel.toLowerCase()+".",
+                                "action": function(obj) {
+                                    var name = 'New '+capitalize(node_type);
+                                    saveJSNodeFunction(tree,node,name,deletable,jsNodeDataFunction,node_type);
+                                    return true;
+                                }
+                            }
+                        }
                         var menuName = "New "+capitalize(node_type);
                         items[menuName] = {
                             "separator_before": false,
                             "separator_after": false,
                             "label": menuName,
                             "title": "Create a new "+node_type+".",
-                            "submenu": {
-                                newItemSubLabel: {
-                                    "separator_before": false,
-                                    "separator_after": false,
-                                    "label": newItemSubLabel,
-                                    "title": "Create new "+node_type+" "+newItemSubLabel.toLowerCase()+".",
-                                    "action": function(obj) {
-                                        var name = 'New '+capitalize(node_type);
-                                        saveJSNodeFunction(tree,node,name,deletable,jsNodeDataFunction,node_type);
-                                        return true;
-                                    }
-                                }
-                            }
+                            "submenu": subMenu
                         };
                     }
                 }
