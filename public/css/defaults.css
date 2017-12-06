@@ -30,6 +30,12 @@
     -ms-transform: translate(-50%,-50%);
 }
 
+#new-dataset-from-asset-list {
+    font-size: 15;
+    width: 300px;
+    height: 200px;
+}
+
 
 label {
     margin-bottom: 3px;

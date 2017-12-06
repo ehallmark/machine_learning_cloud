@@ -592,7 +592,7 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     $submit.off('click');
     $cancel.off('click');
     $input.off('click');
-    
+
     $input.click(function(e){
         e.stopPropagation();
     });
