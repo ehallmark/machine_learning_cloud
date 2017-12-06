@@ -1,6 +1,6 @@
 $(document).ready(function() {
-    setupJSTree("#templates-tree",templateDataFunction,showTemplateFunction,"template");
-    setupJSTree("#datasets-tree",datasetDataFunction,showDatasetFunction,"dataset");
+    setupJSTree("#templates-tree",templateDataFunction,showTemplateFunction,"template","From Current Form");
+    setupJSTree("#datasets-tree",datasetDataFunction,showDatasetFunction,"dataset","From Last Generated Report");
 
     $('.miniTip').miniTip({
         title: 'Advanced Keyword Syntax',
@@ -660,7 +660,7 @@ function capitalize(string)
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-var setupJSTree = function(tree_id, jsNodeDataFunction, dblclickFunction, node_type) {
+var setupJSTree = function(tree_id, jsNodeDataFunction, dblclickFunction, node_type, newItemSubLabel) {
     $(tree_id).jstree({
         "core" : {
             "multiple" : false,
@@ -696,17 +696,18 @@ var setupJSTree = function(tree_id, jsNodeDataFunction, dblclickFunction, node_t
                     };
                     // must create a folder first in the shared environment
                     if(!(topLevelFolder && node.text.startsWith("Shared"))) {
-                        items["New Template"] = {
+                        var menuName = "New "+capitalize(node_type);
+                        items[menuName] = {
                             "separator_before": false,
                             "separator_after": false,
-                            "label": "New Template",
+                            "label": menuName,
                             "title": "Create a new "+node_type+".",
                             "submenu": {
-                                "From Current Form": {
+                                newItemSubLabel: {
                                     "separator_before": false,
                                     "separator_after": false,
-                                    "label": "From Current Form",
-                                    "title": "Create new "+node_type+" from current form.",
+                                    "label": newItemSubLabel,
+                                    "title": "Create new "+node_type+" "+newItemSubLabel.toLowerCase()+".",
                                     "action": function(obj) {
                                         var name = 'New '+capitalize(node_type);
                                         saveJSNodeFunction(tree,node,name,deletable,jsNodeDataFunction,node_type);

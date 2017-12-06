@@ -1125,7 +1125,7 @@ public class SimilarPatentServer {
         return req -> {
             String[] assets = req.session(false).attribute("assets");
             String name = req.queryParams("name");
-            if(assets!=null&&name!=null&&name.length()>0) {
+            if(assets!=null&&assets.length>0&&name!=null&&name.length()>0) {
                 Map<String, Object> formMap = new HashMap<>();
                 formMap.put("name", name);
                 formMap.put("assets", assets);
@@ -1615,8 +1615,8 @@ public class SimilarPatentServer {
                                                                                 .withHref("#datasets-tree")
                                                                 )
                                                         ), br(),
-                                                        div().withClass("tab-content").attr("style","max-height: 75%; overflow-y: auto; ").with(
-                                                                div().withClass("tab-pane active").attr("role","tabpanel").attr("style","text-align: left;").withId("templates-tree").with(
+                                                        div().withClass("tab-content").attr("style","max-height: 75%; overflow-y: auto; text-align: left; ").with(
+                                                                div().withClass("tab-pane active").attr("role","tabpanel").withId("templates-tree").with(
                                                                         ul().with(
                                                                                 getTemplatesForUser(SUPER_USER,false,"Default Templates",true),
                                                                                 getTemplatesForUser(req.session().attribute("username"),true,"My Templates",false),
