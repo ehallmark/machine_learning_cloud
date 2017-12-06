@@ -182,25 +182,28 @@ $(document).ready(function() {
                             tree.edit(node);
                         }
                     };
-                    items["New Template"] = {
-                        "separator_before": false,
-                        "separator_after": false,
-                        "label": "New Template",
-                        "title": "Create a new template.",
-                        "submenu": {
-                            "From Current Form": {
-                                "separator_before": false,
-                                "separator_after": false,
-                                "label": "From Current Form",
-                                "title": "Create new template from current form.",
-                                "action": function(obj) {
-                                    var name = 'New Template';
-                                    saveTemplateFunction(tree,node,name,deletable);
-                                    return true;
+                    // must create a folder first in the shared environment
+                    if(!(topLevelFolder && node.text.startsWith("Shared"))) {
+                        items["New Template"] = {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "New Template",
+                            "title": "Create a new template.",
+                            "submenu": {
+                                "From Current Form": {
+                                    "separator_before": false,
+                                    "separator_after": false,
+                                    "label": "From Current Form",
+                                    "title": "Create new template from current form.",
+                                    "action": function(obj) {
+                                        var name = 'New Template';
+                                        saveTemplateFunction(tree,node,name,deletable);
+                                        return true;
+                                    }
                                 }
                             }
-                        }
-                    };
+                        };
+                    }
                 }
                 if(!topLevelFolder && deletable) {
                     items["Delete"] = {
