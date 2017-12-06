@@ -1488,32 +1488,32 @@ public class SimilarPatentServer {
         return html().with(
                 head().with(
                         title("AI Platform"),
-                        script().withSrc("https://code.jquery.com/jquery-3.1.0.js"),
-                        script().withSrc("https://code.jquery.com/ui/1.12.1/jquery-ui.js"),
-                        script().withSrc("http://code.highcharts.com/stock/highstock.js"),
-                        script().withSrc("http://code.highcharts.com/modules/exporting.js"),
-                        script().withSrc("http://code.highcharts.com/modules/offline-exporting.js"),
+                        script().withSrc("/js/jquery-3.1.0.js"),
+                        script().withSrc("/js/jquery-ui.1.12.1.min.js"),
+                        script().withSrc("/js/highstock.js"),
+                        script().withSrc("/js/exporting.js"),
+                        script().withSrc("/js/offline-exporting.js"),
                         script().withSrc("/js/customEvents.js"),
                         script().withSrc("/js/jquery.dynatable.js"),
                         script().withSrc("/js/defaults.js"),
                         script().withSrc("/js/jquery.miniTip.js"),
                         script().withSrc("/js/jstree.min.js"),
-                        script().withSrc("https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"),
-                        script().withSrc("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"),
-                        script().withSrc("https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"),
-                        link().withRel("stylesheet").withHref("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"),
-                        link().withRel("stylesheet").withHref("https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css"),
+                        script().withSrc("/js/select2.min.js"),
+                        script().withSrc("/js/bootstrap.min.js"),
+                        script().withSrc("/js/tether.min.js"),
+                        link().withRel("stylesheet").withHref("/css/bootstrap.min.css"),
+                        link().withRel("stylesheet").withHref("/css/select2.min.css"),
                         link().withRel("stylesheet").withHref("/css/defaults.css"),
                         link().withRel("stylesheet").withHref("/css/jquery.dynatable.css"),
                         link().withRel("stylesheet").withHref("/css/miniTip.css"),
                         link().withRel("stylesheet").withHref("/css/jstree.min.css"),
-                        link().withRel("stylesheet").withHref("http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"),
+                        link().withRel("stylesheet").withHref("/css/jquery-ui.css"),
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
                 body().with(
                         div().withClass("container-fluid text-center").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
-                                        nav().withClass("col-3 sidebar").attr("style","overflow-y: auto; height: 100%; position: fixed; padding: 0px; padding-top: 75px;").with(
+                                        nav().withClass("col-3 sidebar").attr("style","overflow-y: auto; height: 100%; position: fixed; padding-top: 75px;").with(
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").with(authorized ? div().withText("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : div().withText("Not signed in.")),
                                                         div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
@@ -1532,7 +1532,7 @@ public class SimilarPatentServer {
                                                                                 .withHref("#datasets-tree")
                                                                 )
                                                         ), br(),
-                                                        div().withClass("tab-content").attr("style","max-height: 75%; overflow-y: auto; width: 100%;").with(
+                                                        div().withClass("tab-content").attr("style","max-height: 75%; overflow-y: auto; ").with(
                                                                 div().withClass("tab-pane active").attr("role","tabpanel").attr("style","text-align: left;").withId("templates-tree").with(
                                                                         ul().with(
                                                                                 getTemplatesForUser(SUPER_USER,false,"Default Templates",true),
