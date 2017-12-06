@@ -1,6 +1,6 @@
 $(document).ready(function() {
     setupJSTree("#templates-tree",templateDataFunction,showTemplateFunction,"template");
-    //setupJSTree("#datasets-tree",datasetDataFunction,showDatasetFunction,"dataset");
+    setupJSTree("#datasets-tree",datasetDataFunction,showDatasetFunction,"dataset");
 
     $('.miniTip').miniTip({
         title: 'Advanced Keyword Syntax',
@@ -459,6 +459,31 @@ var showTemplateFunction = function(data,tree,node){
     return false;
 };
 
+var showDatasetFunction = function(data,tree,node){
+    // need to get data
+    var nodeData = node;
+    var parents = [];
+    while(typeof nodeData.text !== 'undefined') {
+        parents.unshift(nodeData.text);
+        var currId = nodeData.parent;
+        nodeData = tree.get_node(currId);
+    }
+    var shared = parents.length > 0 && parents[0].startsWith("Shared");
+    $.ajax({
+        type: "POST",
+        url: '/secure/get_dataset',
+        data: {
+            file: data.file,
+            shared: shared
+        },
+        success: function(data) {
+            alert(data.assets);
+        },
+        dataType: "json"
+    });
+    return false;
+};
+
 var renameJSNodeFunction = function(tree,node,newName,file,node_type){
      var nodeData = tree.get_node(node.parent);
      var parents = [];
@@ -529,7 +554,7 @@ var templateDataFunction = function(tree,node,name,deletable) {
     saveTemplateFormHelper("#chartsForm",".attributeElement",preData,"chartsMap");
     saveTemplateFormHelper("#highlightForm",".attributeElement",preData,"highlightMap");
 
-    preData["parentDirs"] = []
+    preData["parentDirs"] = [];
     preData["deletable"] = deletable;
     var nodeData = node;
     while(typeof nodeData.text !== 'undefined') {
@@ -540,6 +565,20 @@ var templateDataFunction = function(tree,node,name,deletable) {
     return preData;
 };
 
+var datasetDataFunction = function(tree,node,name,deletable) {
+    var preData = {};
+    preData["name"]=name;
+    preData["createDataset"]= true;
+    preData["parentDirs"] = [];
+    preData["deletable"] = deletable;
+    var nodeData = node;
+    while(typeof nodeData.text !== 'undefined') {
+        preData["parentDirs"].unshift(nodeData.text);
+        var currId = nodeData.parent;
+        nodeData = tree.get_node(currId);
+    }
+    return preData;
+};
 
 var saveJSNodeFunction = function(tree,node,name,deletable,dataFunction,node_type){
     var preData = dataFunction(tree,node,name,deletable);

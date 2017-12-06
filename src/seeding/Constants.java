@@ -39,6 +39,7 @@ public class Constants {
 	public static final String CORRESPONDENT_ADDRESS = "correspondentAddress";
 	public static final String NORMALIZED_LATEST_ASSIGNEE = "normalizedAssignee";
 	public static final String USER_TEMPLATE_FOLDER = "userTemplates/";
+	public static final String USER_DATASET_FOLDER = "userDatasets/";
 	public static final String REINSTATED = "reinstated";
 	public static final String FRAME_NO = "frameNo";
 	public static final String BUYER = "buyer";

@@ -3,10 +3,10 @@ package user_interface.ui_models.portfolios;
 import lombok.Getter;
 import lombok.Setter;
 import org.nd4j.linalg.primitives.Pair;
-import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,5 +44,9 @@ public class PortfolioList implements Comparable<PortfolioList> {
             } else this.avgSimilarity = 0.0d;
         }
         init=true;
+    }
+
+    public String[] getIds() {
+        return itemList.stream().map(item->item.getName()).toArray(size->new String[size]);
     }
 }

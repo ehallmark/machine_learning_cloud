@@ -3,6 +3,7 @@ package user_interface.server;
 import ch.qos.logback.classic.Level;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
+import data_pipeline.helpers.Function2;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
@@ -96,9 +97,13 @@ public class SimilarPatentServer {
     public static final String HOME_URL = PROTECTED_URL_PREFIX+"/home";
     public static final String SAVE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/save_template";
     public static final String GET_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/get_template";
-    public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
     public static final String DELETE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/delete_template";
     public static final String RENAME_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/rename_template";
+    public static final String SAVE_DATASET_URL = PROTECTED_URL_PREFIX+"/save_dataset";
+    public static final String GET_DATASET_URL = PROTECTED_URL_PREFIX+"/get_dataset";
+    public static final String DELETE_DATASET_URL = PROTECTED_URL_PREFIX+"/delete_dataset";
+    public static final String RENAME_DATASET_URL = PROTECTED_URL_PREFIX+"/rename_dataset";
+    public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
     public static final String SHOW_DATATABLE_URL = PROTECTED_URL_PREFIX+"/dataTable.json";
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
     public static final String RANDOM_TOKEN = "<><><>";
@@ -787,24 +792,43 @@ public class SimilarPatentServer {
 
         post(SAVE_TEMPLATE_URL, (req, res) -> {
             authorize(req,res);
-            return handleSaveForm(req,res);
+            return handleSaveForm(req,res,Constants.USER_TEMPLATE_FOLDER,templateFormMapFunction());
         });
 
         post(GET_TEMPLATE_URL, (req, res) -> {
             authorize(req,res);
-            return handleGetForm(req,res);
+            return handleGetForm(req,res,Constants.USER_TEMPLATE_FOLDER);
         });
 
         post(DELETE_TEMPLATE_URL, (req, res) -> {
             authorize(req,res);
-            return handleDeleteForm(req,res);
+            return handleDeleteForm(req,res,Constants.USER_TEMPLATE_FOLDER);
         });
 
         post(RENAME_TEMPLATE_URL, (req, res) -> {
             authorize(req,res);
-            return handleRenameForm(req,res);
+            return handleRenameForm(req,res,Constants.USER_TEMPLATE_FOLDER);
         });
 
+        post(SAVE_DATASET_URL, (req, res) -> {
+            authorize(req,res);
+            return handleSaveForm(req,res,Constants.USER_DATASET_FOLDER,datasetFormMapFunction());
+        });
+
+        post(GET_DATASET_URL, (req, res) -> {
+            authorize(req,res);
+            return handleGetForm(req,res,Constants.USER_DATASET_FOLDER);
+        });
+
+        post(DELETE_DATASET_URL, (req, res) -> {
+            authorize(req,res);
+            return handleDeleteForm(req,res,Constants.USER_DATASET_FOLDER);
+        });
+
+        post(RENAME_DATASET_URL, (req, res) -> {
+            authorize(req,res);
+            return handleRenameForm(req,res,Constants.USER_DATASET_FOLDER);
+        });
 
         get(SHOW_DATATABLE_URL, (req, res) -> {
             authorize(req,res);
@@ -1022,7 +1046,7 @@ public class SimilarPatentServer {
         }
     }
 
-    private static Object handleRenameForm(Request req, Response res) {
+    private static Object handleRenameForm(Request req, Response res, String baseFolder) {
         String filename = req.queryParams("file");
         String name = req.queryParams("name");
         String[] parentDirs = req.queryParamsValues("parentDirs[]");
@@ -1035,7 +1059,7 @@ public class SimilarPatentServer {
             }
             String username = isShared ? SHARED_USER : req.session().attribute("username");
             if(username!=null&&username.length()>0) {
-                String templateFolderStr = Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/";
+                String templateFolderStr = Constants.DATA_FOLDER+baseFolder+username+"/";
                 File formFile = new File(templateFolderStr+filename);
                 File updatesFile = new File(formFile.getAbsolutePath()+"_updates");
                 if(formFile.exists()) {
@@ -1061,7 +1085,7 @@ public class SimilarPatentServer {
         return new Gson().toJson(responseMap);
     }
 
-    private static Object handleGetForm(Request req, Response res) {
+    private static Object handleGetForm(Request req, Response res, String baseFolder) {
         String file = req.queryParams("file");
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
 
@@ -1070,18 +1094,47 @@ public class SimilarPatentServer {
             return null;
         }
 
-        String filename = Constants.DATA_FOLDER+ Constants.USER_TEMPLATE_FOLDER+ (shared ? SHARED_USER : user) + "/" + file;
-        Map<String,Object> data = getTemplateFromFile(new File(filename),true);
+        String filename = Constants.DATA_FOLDER+ baseFolder + (shared ? SHARED_USER : user) + "/" + file;
+        Map<String,Object> data = getMapFromFile(new File(filename),true);
 
         return new Gson().toJson(data);
     }
 
-    private static Object handleSaveForm(Request req, Response res) {
-        String attributesMap = req.queryParams("attributesMap");
-        String searchOptionsMap = req.queryParams("searchOptionsMap");
-        String filtersMap = req.queryParams("filtersMap");
-        String highlightMap = req.queryParams("highlightMap");
-        String chartsMap = req.queryParams("chartsMap");
+    private static Function<Request,Map<String,Object>> templateFormMapFunction() {
+        return req -> {
+            String attributesMap = req.queryParams("attributesMap");
+            String searchOptionsMap = req.queryParams("searchOptionsMap");
+            String filtersMap = req.queryParams("filtersMap");
+            String highlightMap = req.queryParams("highlightMap");
+            String chartsMap = req.queryParams("chartsMap");
+            String name = req.queryParams("name");
+            if(attributesMap!=null&&searchOptionsMap!=null&&chartsMap!=null&&highlightMap!=null&&filtersMap!=null&&name!=null&&name.length()>0) {
+                Map<String, Object> formMap = new HashMap<>();
+                formMap.put("name", name);
+                formMap.put("attributesMap", attributesMap);
+                formMap.put("searchOptionsMap", searchOptionsMap);
+                formMap.put("filtersMap", filtersMap);
+                formMap.put("chartsMap", chartsMap);
+                formMap.put("highlightMap", highlightMap);
+                return formMap;
+            } else return null;
+        };
+    }
+
+    private static Function<Request,Map<String,Object>> datasetFormMapFunction() {
+        return req -> {
+            String[] assets = req.session(false).attribute("assets");
+            String name = req.queryParams("name");
+            if(assets!=null&&name!=null&&name.length()>0) {
+                Map<String, Object> formMap = new HashMap<>();
+                formMap.put("name", name);
+                formMap.put("assets", assets);
+                return formMap;
+            } else return null;
+        };
+    }
+
+    private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction) {
         String name = req.queryParams("name");
         String[] parentDirs = req.queryParamsValues("parentDirs[]");
         if(parentDirs==null) {
@@ -1092,15 +1145,9 @@ public class SimilarPatentServer {
         String message;
         Random random = new Random(System.currentTimeMillis());
         Map<String,Object> responseMap = new HashMap<>();
-        if(attributesMap!=null&&searchOptionsMap!=null&&chartsMap!=null&&highlightMap!=null&&filtersMap!=null&&name!=null&&name.length()>0) {
+        Map<String,Object> formMap = formMapFunction.apply(req);
+        if(formMap!=null) {
             System.out.println("Form "+name+" attributes: "+attributesMap);
-            Map<String,Object> formMap = new HashMap<>();
-            formMap.put("name",name);
-            formMap.put("attributesMap",attributesMap);
-            formMap.put("searchOptionsMap",searchOptionsMap);
-            formMap.put("filtersMap",filtersMap);
-            formMap.put("chartsMap",chartsMap);
-            formMap.put("highlightMap", highlightMap);
             if (parentDirs != null && parentDirs.length > 1) formMap.put("parentDirs", Arrays.copyOfRange(parentDirs,1,parentDirs.length));
             boolean isShared = false;
             if(parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
@@ -1108,7 +1155,7 @@ public class SimilarPatentServer {
             }
             String username = isShared ? SHARED_USER : req.session().attribute("username");
             if(username!=null&&username.length()>0) {
-                String templateFolderStr = Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/";
+                String templateFolderStr = Constants.DATA_FOLDER+baseFolder+username+"/";
                 File templateFolder = new File(templateFolderStr);
                 if(!templateFolder.exists()) templateFolder.mkdirs();
                 File file = null;
@@ -1134,7 +1181,7 @@ public class SimilarPatentServer {
         return new Gson().toJson(responseMap);
     }
 
-    private static Object handleDeleteForm(Request req, Response res) {
+    private static Object handleDeleteForm(Request req, Response res, String baseFolder) {
         String fileName = req.queryParams("path_to_remove");
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
         String message;
@@ -1145,7 +1192,7 @@ public class SimilarPatentServer {
                 if(username==null||username.isEmpty()) {
                     message = "Unable to locate user.";
                 } else {
-                    File toDelete = new File(Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/"+fileName);
+                    File toDelete = new File(Constants.DATA_FOLDER+baseFolder+username+"/"+fileName);
                     if(toDelete.exists() && toDelete.isFile()) {
                         boolean success = toDelete.delete();
                         if(success) {
@@ -1241,6 +1288,7 @@ public class SimilarPatentServer {
                     excelRequestMap.put("rows", tableData);
                     excelRequestMap.put("rows-highlighted", tableDataHighlighted);
                     req.session().attribute(EXCEL_SESSION, excelRequestMap);
+                    req.session().attribute("assets", portfolioList.getIds());
 
                     if (onlyExcel) {
                         System.out.println("ONLY EXCEL:: Skipping chart building and html building...");
@@ -1311,7 +1359,7 @@ public class SimilarPatentServer {
             return html;
         } catch(Exception e) {
             System.out.println("Timeout exception!");
-            return new Gson().toJson(new SimpleAjaxMessage("Timeout occurred after 3 minutes."));
+            return new Gson().toJson(new SimpleAjaxMessage("Timeout occurred after "+(maxTimeMillis/(60*1000))+" minutes."));
         } finally {
             try {
                 if(!handleReportTask.isDone()) handleReportTask.cancel(true);
@@ -1369,7 +1417,7 @@ public class SimilarPatentServer {
         return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.replaceAll(toReplace,"").trim():str).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
     }
 
-    private static Map<String,Object> getTemplateFromFile(File file, boolean loadData) {
+    private static Map<String,Object> getMapFromFile(File file, boolean loadData) {
         File updatesFile = new File(file.getAbsolutePath() + "_updates");
         loadData = loadData || !updatesFile.exists();
 
@@ -1394,13 +1442,68 @@ public class SimilarPatentServer {
     }
 
     public static Tag getTemplatesForUser(String username, boolean deletable, String rootName, boolean loadData) {
+        Function2<Map<String,Object>,File,FormTemplate> formTemplateFunction = (templateMap,file) -> {
+            FormTemplate template;
+
+            Object name = templateMap.get("name");
+            if (loadData) {
+                Object searchObjectsMap = templateMap.get("searchOptionsMap");
+                Object attributesMap = templateMap.get("attributesMap");
+                Object chartsMap = templateMap.get("chartsMap");
+                Object filtersMap = templateMap.get("filtersMap");
+                Object highlightMap = templateMap.get("highlightMap");
+                if (highlightMap == null) highlightMap = "";
+
+                if (name != null && searchObjectsMap != null && attributesMap != null && chartsMap != null && filtersMap != null) {
+
+                    // create template
+                    template = new FormTemplate(file, name.toString(), searchObjectsMap.toString(), attributesMap.toString(), filtersMap.toString(), chartsMap.toString(), highlightMap.toString());
+
+
+                } else template = null;
+            } else {
+                if (name != null) {
+                    template = new FormTemplate(file, name.toString());
+                } else template = null;
+            }
+            return template;
+        };
+
+        return getDataForUser(username,deletable,rootName,Constants.USER_TEMPLATE_FOLDER,loadData,formTemplateFunction);
+    }
+
+    public static Tag getDatasetsForUser(String username, boolean deletable, String rootName, boolean loadData) {
+        Function2<Map<String,Object>,File,FormTemplate> formTemplateFunction = (templateMap,file) -> {
+            FormTemplate template;
+            Object name = templateMap.get("name");
+            if (loadData) {
+                Object assets = templateMap.get("assets");
+
+                if (name != null && assets != null) {
+
+                    // create template
+                    template = new FormTemplate(file, name.toString(), (String[])assets);
+
+
+                } else template = null;
+            } else {
+                if (name != null) {
+                    template = new FormTemplate(file, name.toString());
+                } else template = null;
+            }
+            return template;
+        };
+
+        return getDataForUser(username,deletable,rootName,Constants.USER_DATASET_FOLDER,loadData,formTemplateFunction);
+    }
+
+    public static Tag getDataForUser(String username, boolean deletable, String rootName, String baseFolder, boolean loadData, Function2<Map<String,Object>,File,FormTemplate> formTemplateFunction) {
         if(username!=null && username.length()>0) {
-            File folder = new File(Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/");
+            File folder = new File(Constants.DATA_FOLDER+baseFolder+username+"/");
             if(!folder.exists()) folder.mkdirs();
             Pair<Map<String,Object>,List<FormTemplate>> directoryStructure = new Pair<>(new HashMap<>(),new ArrayList<>());
             Arrays.stream(folder.listFiles(file->!file.getName().endsWith("_updates"))).forEach(file->{
-                Map<String,Object> templateMap = getTemplateFromFile(file, loadData);
-                Object name = templateMap.get("name");
+                Map<String,Object> templateMap = getMapFromFile(file, loadData);
 
                 String[] parentDirs = (String[])templateMap.get("parentDirs");
                 Pair<Map<String, Object>, List<FormTemplate>> currentDirectory = directoryStructure;
@@ -1411,27 +1514,7 @@ public class SimilarPatentServer {
                     }
                 }
 
-                FormTemplate template;
-                if(loadData) {
-                    Object searchObjectsMap = templateMap.get("searchOptionsMap");
-                    Object attributesMap = templateMap.get("attributesMap");
-                    Object chartsMap = templateMap.get("chartsMap");
-                    Object filtersMap = templateMap.get("filtersMap");
-                    Object highlightMap = templateMap.get("highlightMap");
-                    if (highlightMap == null) highlightMap = "";
-
-                    if (name != null && searchObjectsMap != null && attributesMap != null && chartsMap != null && filtersMap != null) {
-
-                        // create template
-                        template = new FormTemplate(file, name.toString(), searchObjectsMap.toString(), attributesMap.toString(), filtersMap.toString(), chartsMap.toString(), highlightMap.toString());
-
-
-                    } else template = null;
-                } else {
-                    if(name != null) {
-                        template = new FormTemplate(file,name.toString());
-                    } else template = null;
-                }
+                FormTemplate template = formTemplateFunction.apply(templateMap,file);
 
                 // add to current directory
                 if (template!=null) currentDirectory.getSecond().add(template);
@@ -1541,7 +1624,11 @@ public class SimilarPatentServer {
                                                                         )
 
                                                                 ),div().withClass("tab-pane").attr("role","tabpanel").withId("datasets-tree").with(
-                                                                    h6("Dataset feature coming soon...")
+                                                                        ul().with(
+                                                                                getDatasetsForUser(SUPER_USER,false,"Default Datasets",true),
+                                                                                getDatasetsForUser(req.session().attribute("username"),true,"My Datasets",false),
+                                                                                getDatasetsForUser(SHARED_USER,true, "Shared Datasets",false)
+                                                                        )
                                                                 )
                                                         )
                                                 )
