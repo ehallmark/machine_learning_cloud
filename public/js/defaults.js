@@ -545,7 +545,7 @@ var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dat
         dataMap[dataKey] = json;
     };
 
-var templateDataFunction = function(tree,node,name,deletable) {
+var templateDataFunction = function(tree,node,name,deletable,callback) {
     var preData = {};
     preData["name"]=name;
     saveTemplateFormHelper("#searchOptionsForm",".attributeElement",preData,"searchOptionsMap");
@@ -562,10 +562,10 @@ var templateDataFunction = function(tree,node,name,deletable) {
         var currId = nodeData.parent;
         nodeData = tree.get_node(currId);
     }
-    return preData;
+    callback(preData);
 };
 
-var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable) {
+var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable,callback) {
     var preData = {};
     preData["name"]=name;
     preData["createDataset"]= true;
@@ -577,16 +577,10 @@ var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable) {
         var currId = nodeData.parent;
         nodeData = tree.get_node(currId);
     }
-    return preData;
+    callback(preData);
 };
 
-var setTimeoutHelper = function(interval,checkFunction) {
-    if(!checkFunction()) {
-        setTimeout(setTimeoutHelper(interval,checkFunction),interval);
-    }
-};
-
-var assetListDatasetDataFunction = function(tree,node,name,deletable) {
+var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     // get user input
     var $input = $('#new-dataset-from-asset-list');
     var $container = $input.parent();
@@ -598,42 +592,27 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable) {
     $submit.off('click');
     $cancel.off('click');
 
-    $submit.attr('data-clicked', false);
-    $cancel.attr('data-clicked', false);
-
     $submit.click(function() {
-        $submit.attr('data-clicked', true);
+        var preData = {};
+        preData["name"]=name;
+        preData["assets"] = $input.val().split(/\s+/);
+        preData["parentDirs"] = [];
+        preData["deletable"] = deletable;
+        var nodeData = node;
+        while(typeof nodeData.text !== 'undefined') {
+            preData["parentDirs"].unshift(nodeData.text);
+            var currId = nodeData.parent;
+            nodeData = tree.get_node(currId);
+        }
+        callback(preData);
     });
+
     $cancel.click(function() {
-        $cancel.attr('data-clicked', true);
+        $container.hide();
     });
-
-    var checkFunction = function() {
-        return ($cancel.attr("data-clicked") == 'true') || ($submit.attr("data-clicked") == 'true')
-    };
-
-    setTimeoutHelper(200,checkFunction);
-
-    $container.hide();
-
-    if(canceled) return null;
-
-    var preData = {};
-    preData["name"]=name;
-    preData["assets"] = $input.val().split(/\s+/);
-    preData["parentDirs"] = [];
-    preData["deletable"] = deletable;
-    var nodeData = node;
-    while(typeof nodeData.text !== 'undefined') {
-        preData["parentDirs"].unshift(nodeData.text);
-        var currId = nodeData.parent;
-        nodeData = tree.get_node(currId);
-    }
-    return preData;
 };
 
-var saveJSNodeFunction = function(tree,node,name,deletable,dataFunction,node_type){
-    var preData = dataFunction(tree,node,name,deletable);
+var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type){
     if(preData!==null) {
         $.ajax({
             type: "POST",
@@ -760,7 +739,10 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 "title": "Create new "+node_type+" "+newItemSubLabel.toLowerCase()+".",
                                 "action": function(obj) {
                                     var name = 'New '+capitalize(node_type);
-                                    saveJSNodeFunction(tree,node,name,deletable,jsNodeDataFunction,node_type);
+                                    var callback = function(data) {
+                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type);
+                                    };
+                                    jsNodeDataFunction(tree,node,name,deletable,callback);
                                     return true;
                                 }
                             }

@@ -1631,9 +1631,9 @@ public class SimilarPatentServer {
                                                                                 getDatasetsForUser(SHARED_USER,true, "Shared Datasets",false)
                                                                         )
                                                                 ),div().attr("style","display: none;").with(
-                                                                        input().withId("new-dataset-from-asset-list"),
-                                                                        button("Create").withId("new-dataset-from-asset-list-submit"),
-                                                                        button("Cancel").withId("new-dataset-from-asset-list-cancel")
+                                                                        textarea().withId("new-dataset-from-asset-list"),br(),
+                                                                        button("Create").withClass("btn btn-sm").withId("new-dataset-from-asset-list-submit"),
+                                                                        button("Cancel").withClass("btn btn-sm").withId("new-dataset-from-asset-list-cancel")
                                                                 )
                                                         )
                                                 )
