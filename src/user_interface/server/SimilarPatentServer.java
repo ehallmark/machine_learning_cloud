@@ -1488,8 +1488,8 @@ public class SimilarPatentServer {
         return html().with(
                 head().with(
                         title("AI Platform"),
-                        script().withSrc("/js/jquery-3.1.0.js"),
-                        script().withSrc("/js/jquery-ui.1.12.1.min.js"),
+                        script().withSrc("/js/jquery-3.1.0.min.js"),
+                        script().withSrc("/js/jquery-ui-1.12.1.min.js"),
                         script().withSrc("/js/highstock.js"),
                         script().withSrc("/js/exporting.js"),
                         script().withSrc("/js/offline-exporting.js"),
@@ -1507,7 +1507,7 @@ public class SimilarPatentServer {
                         link().withRel("stylesheet").withHref("/css/jquery.dynatable.css"),
                         link().withRel("stylesheet").withHref("/css/miniTip.css"),
                         link().withRel("stylesheet").withHref("/css/jstree.min.css"),
-                        link().withRel("stylesheet").withHref("/css/jquery-ui.css"),
+                        link().withRel("stylesheet").withHref("/css/jquery-ui.min.css"),
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
                 body().with(
