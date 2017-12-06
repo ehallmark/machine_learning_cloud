@@ -1634,8 +1634,8 @@ public class SimilarPatentServer {
                                                                 ),div().withId("new-dataset-from-asset-list-overlay").with(
                                                                         div().withId("new-dataset-from-asset-list-inside").with(
                                                                                 textarea().withId("new-dataset-from-asset-list"),br(),
-                                                                                button("Create").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-submit"),
-                                                                                button("Cancel").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-cancel")
+                                                                                button("Create").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-submit"),
+                                                                                button("Cancel").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-cancel")
                                                                         )
                                                                 )
                                                         )
