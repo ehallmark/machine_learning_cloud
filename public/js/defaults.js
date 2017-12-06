@@ -87,15 +87,16 @@ $(document).ready(function() {
                 alert('Error saving template: '+data.message);
             } else {
                 preData['file']=data['file'];
-                node = tree.create_node(node, {
-                        'text': name,
-                        'type': 'file',
-                        'icon': 'jstree-file',
-                        'jstree': {'type': 'file'},
-                        'data' : {
-                            preData
-                        }
-                    },
+                var newData = {
+                    'text': name,
+                    'type': 'file',
+                    'icon': 'jstree-file',
+                    'jstree': {'type': 'file'},
+                };
+                $.each(preData, function(k,v) { newData[k] = v; });
+                node = tree.create_node(
+                    node,
+                    newData,
                     'first',
                     function(newNode) {
                         setTimeout(function() {
@@ -147,7 +148,7 @@ $(document).ready(function() {
 
 
     var templates_tree_id = "#templates-tree";
-    var jstree = $(templates_tree_id).jstree({
+    $(templates_tree_id).jstree({
         "core" : {
             "multiple" : false,
             "check_callback": true
