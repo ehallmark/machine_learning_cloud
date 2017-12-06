@@ -669,14 +669,26 @@ var showTemplateFormHelper = function(formSelector,dataMap) {
 
 var showTemplateFunction = function(data){
     resetSearchForm();
-    showTemplateFormHelper("#searchOptionsForm",data["searchoptionsmap"]);
-    showTemplateFormHelper("#attributesForm",data["attributesmap"]);
-    showTemplateFormHelper("#filtersForm",data["filtersmap"]);
-    showTemplateFormHelper("#chartsForm",data["chartsmap"]);
-    try {
-        showTemplateFormHelper("#highlightForm",data["highlightmap"]);
-    } catch(err) {
+    if(data.hasOwnProperty('searchoptionsmap')) { // data came from li node
+        showTemplateFormHelper("#searchOptionsForm",data["searchoptionsmap"]);
+        showTemplateFormHelper("#attributesForm",data["attributesmap"]);
+        showTemplateFormHelper("#filtersForm",data["filtersmap"]);
+        showTemplateFormHelper("#chartsForm",data["chartsmap"]);
+        try {
+            showTemplateFormHelper("#highlightForm",data["highlightmap"]);
+        } catch(err) {
 
+        }
+    } else { // data came from newly added node
+        showTemplateFormHelper("#searchOptionsForm",data["searchOptionsMap"]);
+        showTemplateFormHelper("#attributesForm",data["attributesMap"]);
+        showTemplateFormHelper("#filtersForm",data["filtersMap"]);
+        showTemplateFormHelper("#chartsForm",data["chartsMap"]);
+        try {
+            showTemplateFormHelper("#highlightForm",data["highlightMap"]);
+        } catch(err) {
+
+        }
     }
     return false;
 };
