@@ -1148,7 +1148,8 @@ public class SimilarPatentServer {
         Map<String,Object> responseMap = new HashMap<>();
         Map<String,Object> formMap = formMapFunction.apply(req);
         if(formMap!=null) {
-            System.out.println("Form "+name+" attributes: "+attributesMap);
+            if(debug) System.out.println("Form "+name+" attributes: "+new Gson().toJson(formMap));
+
             if (parentDirs != null && parentDirs.length > 1) formMap.put("parentDirs", Arrays.copyOfRange(parentDirs,1,parentDirs.length));
             boolean isShared = false;
             if(parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
@@ -1630,10 +1631,12 @@ public class SimilarPatentServer {
                                                                                 getDatasetsForUser(req.session().attribute("username"),true,"My Datasets",false),
                                                                                 getDatasetsForUser(SHARED_USER,true, "Shared Datasets",false)
                                                                         )
-                                                                ),div().attr("style","display: none;").with(
-                                                                        textarea().withId("new-dataset-from-asset-list"),br(),
-                                                                        button("Create").withClass("btn btn-sm").withId("new-dataset-from-asset-list-submit"),
-                                                                        button("Cancel").withClass("btn btn-sm").withId("new-dataset-from-asset-list-cancel")
+                                                                ),div().withId("new-dataset-from-asset-list-overlay").with(
+                                                                        div().withId("new-dataset-from-asset-list-inside").with(
+                                                                                textarea().withId("new-dataset-from-asset-list"),br(),
+                                                                                button("Create").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-submit"),
+                                                                                button("Cancel").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-cancel")
+                                                                        )
                                                                 )
                                                         )
                                                 )

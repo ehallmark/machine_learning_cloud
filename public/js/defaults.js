@@ -583,7 +583,7 @@ var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable,callbac
 var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     // get user input
     var $input = $('#new-dataset-from-asset-list');
-    var $container = $input.parent();
+    var $container = $('#new-dataset-from-asset-list-overlay');
     var $submit = $('#new-dataset-from-asset-list-submit');
     var $cancel = $('#new-dataset-from-asset-list-cancel');
 
@@ -604,6 +604,7 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
             var currId = nodeData.parent;
             nodeData = tree.get_node(currId);
         }
+        $container.hide();
         callback(preData);
     });
 
