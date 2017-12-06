@@ -591,7 +591,9 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     $container.show();
     $submit.off('click');
     $cancel.off('click');
-
+    $input.click(function(e){
+        $input.stopPropagation();
+    });
     $submit.click(function() {
         var preData = {};
         preData["name"]=name;
