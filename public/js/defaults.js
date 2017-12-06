@@ -254,7 +254,7 @@ $(document).ready(function() {
         if(node.type==='file') {
             event.preventDefault();
             event.stopPropagation();
-            showTemplateFunction(node.data);
+            showTemplateFunction(node.data,node);
             return false;
         }
         return true;

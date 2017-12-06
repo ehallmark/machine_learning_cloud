@@ -1397,7 +1397,7 @@ public class SimilarPatentServer {
             File folder = new File(Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/");
             if(!folder.exists()) folder.mkdirs();
             Pair<Map<String,Object>,List<FormTemplate>> directoryStructure = new Pair<>(new HashMap<>(),new ArrayList<>());
-            Arrays.stream(folder.listFiles()).forEach(file->{
+            Arrays.stream(folder.listFiles(file->!file.getName().endsWith("_updates"))).forEach(file->{
                 Map<String,Object> templateMap = getTemplateFromFile(file, loadData);
                 Object name = templateMap.get("name");
 
