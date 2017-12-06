@@ -1125,7 +1125,7 @@ public class SimilarPatentServer {
         return req -> {
             String[] assets = req.session(false).attribute("assets");
             String name = req.queryParams("name");
-            if(assets!=null&&assets.length>0&&name!=null&&name.length()>0) {
+            if(assets!=null&&name!=null&&name.length()>0) {
                 Map<String, Object> formMap = new HashMap<>();
                 formMap.put("name", name);
                 formMap.put("assets", assets);
