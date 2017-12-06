@@ -612,6 +612,8 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable) {
         return ($cancel.attr("data-clicked") == 'true') || ($submit.attr("data-clicked") == 'true')
     };
 
+    setTimeoutHelper(200,checkFunction);
+
     $container.hide();
 
     if(canceled) return null;
