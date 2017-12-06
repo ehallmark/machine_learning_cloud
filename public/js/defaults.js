@@ -594,18 +594,11 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable) {
 
     var clicked = false;
     var canceled = false;
-    $.when(
-        $submit.click(function() {
 
-        })
-    ).done(function() {
+    $submit.click(function() {
         clicked = true;
     });
-    $.when(
-        $cancel.click(function() {
-
-        })
-    ).done(function() {
+    $cancel.click(function() {
         canceled = true;
     });
 
