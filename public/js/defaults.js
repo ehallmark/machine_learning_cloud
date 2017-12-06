@@ -689,7 +689,7 @@ var showTemplateFunction = function(data,tree,node){
         } catch(err) {
 
         }
-    } else if(node!==null) {
+    } else if(node!==null && data.hasOwnProperty('file')) {
         // need to get data
          var nodeData = node;
          var parents = [];
@@ -703,7 +703,7 @@ var showTemplateFunction = function(data,tree,node){
              type: "POST",
              url: '/secure/get_template',
              data: {
-                 file: file,
+                 file: data.file,
                  shared: shared
              },
              success: function(data) {
