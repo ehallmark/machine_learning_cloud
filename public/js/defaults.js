@@ -94,14 +94,23 @@ $(document).ready(function() {
                     'jstree': {'type': 'file'},
                     'data' : {
                         preData
+                    },
+                    'first',
+                    function(newNode) {
+                        setTimeout(function() {
+                            tree.edit(newNode,name,function(n,status,cancelled) {
+                                if(status && ! cancelled) {
+                                    renameTemplateFunction(tree,n,n.text,data['file']);
+                                }
+                            });
+                        },0);
+                        tree.edit(node,name,function(n,status,cancelled) {
+                            if(status && ! cancelled) {
+                                renameTemplateFunction(tree,n,n.text,data['file']);
+                            }
+                        });
                     }
                 });
-                tree.edit(node,name,function(n,status,cancelled) {
-                    //$('#'+node).dblclick(function(e) { showTemplateFunction(preData); });
-                    if(status && ! cancelled) {
-                        renameTemplateFunction(tree,n,n.text,data['file']);
-                    }
-                })
             }
           },
           dataType: "json"
