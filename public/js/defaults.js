@@ -580,6 +580,12 @@ var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable) {
     return preData;
 };
 
+var setTimeoutHelper = function(interval,checkFunction) {
+    if(!checkFunction()) {
+        setTimeout(setTimeoutHelper(interval,checkFunction),interval);
+    }
+};
+
 var assetListDatasetDataFunction = function(tree,node,name,deletable) {
     // get user input
     var $input = $('#new-dataset-from-asset-list');
@@ -592,19 +598,19 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable) {
     $submit.off('click');
     $cancel.off('click');
 
-    var clicked = false;
-    var canceled = false;
+    $submit.attr('data-clicked', false);
+    $cancel.attr('data-clicked', false);
 
     $submit.click(function() {
-        clicked = true;
+        $submit.attr('data-clicked', true);
     });
     $cancel.click(function() {
-        canceled = true;
+        $cancel.attr('data-clicked', true);
     });
 
-    while(!clicked && !canceled) {
-        setTimeout(function() { }, 200)
-    }
+    var checkFunction = function() {
+        return ($cancel.attr("data-clicked") == 'true') || ($submit.attr("data-clicked") == 'true')
+    };
 
     $container.hide();
 
