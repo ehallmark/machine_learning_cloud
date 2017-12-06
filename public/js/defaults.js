@@ -797,6 +797,18 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         }
                     };
                 }
+                if((node_type==='dataset') && !isFolder) {
+                    items["Apply Current Form"] = {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "Apply Current Form",
+                        "title": "Generate report from the current form applied to this dataset.",
+                        "action": function(obj) {
+                            alert("Not yet implemented.");
+                            return true;
+                        }
+                    };
+                }
                 return items;
             }
         },
