@@ -611,6 +611,9 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     $cancel.click(function() {
         $container.hide();
     });
+    $container.click(function() {
+        $container.hide();
+    });
 };
 
 var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type){
