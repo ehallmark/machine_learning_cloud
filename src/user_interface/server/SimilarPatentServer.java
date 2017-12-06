@@ -1070,8 +1070,9 @@ public class SimilarPatentServer {
             return null;
         }
 
-        String filename = Constants.DATA_FOLDER+ Constants.USER_TEMPLATE_FOLDER+ (shared ? SHARED_USER : user) + file;
+        String filename = Constants.DATA_FOLDER+ Constants.USER_TEMPLATE_FOLDER+ (shared ? SHARED_USER : user) + "/" + file;
         Map<String,Object> data = getTemplateFromFile(new File(filename),true);
+
         return new Gson().toJson(data);
     }
 

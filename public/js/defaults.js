@@ -669,7 +669,9 @@ var showTemplateFormHelper = function(formSelector,dataMap) {
 
 var showTemplateFunction = function(data,tree,node){
     if(node!==null){ resetSearchForm(); }
-    if(data.hasOwnProperty('searchoptionsmap')) { // data came from li node
+    if(data===null) {
+        alert("Error finding template.");
+    } else if(data.hasOwnProperty('searchoptionsmap')) { // data came from li node
         showTemplateFormHelper("#searchOptionsForm",data["searchoptionsmap"]);
         showTemplateFormHelper("#attributesForm",data["attributesmap"]);
         showTemplateFormHelper("#filtersForm",data["filtersmap"]);
