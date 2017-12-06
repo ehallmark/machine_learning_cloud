@@ -254,7 +254,7 @@ $(document).ready(function() {
         if(node.type==='file') {
             event.preventDefault();
             event.stopPropagation();
-            showTemplateFunction(node.data,node);
+            showTemplateFunction(node.data,tree,node);
             return false;
         }
         return true;
@@ -667,7 +667,7 @@ var showTemplateFormHelper = function(formSelector,dataMap) {
     $(formSelector+' select.nested-filter-select').trigger('change');
 };
 
-var showTemplateFunction = function(data,node){
+var showTemplateFunction = function(data,tree,node){
     if(node!==null){ resetSearchForm(); }
     if(data.hasOwnProperty('searchoptionsmap')) { // data came from li node
         showTemplateFormHelper("#searchOptionsForm",data["searchoptionsmap"]);
@@ -707,7 +707,7 @@ var showTemplateFunction = function(data,node){
                  shared: shared
              },
              success: function(data) {
-                 showTemplateFunction(data,null);
+                 showTemplateFunction(data,null,null);
              },
              dataType: "json"
          });
