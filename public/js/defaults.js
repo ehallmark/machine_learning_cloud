@@ -1,267 +1,6 @@
 $(document).ready(function() {
-    var renameTemplateFunction = function(tree,node,newName,file){
-         var nodeData = tree.get_node(node.parent);
-         var parents = [];
-         while(typeof nodeData.text !== 'undefined') {
-             parents.unshift(nodeData.text);
-             var currId = nodeData.parent;
-             nodeData = tree.get_node(currId);
-         }
-         $.ajax({
-             type: "POST",
-             url: '/secure/rename_template',
-             data: {
-                 name: newName,
-                 parentDirs: parents,
-                 file: file
-             },
-             success: function(data) {
-
-             },
-             dataType: "json"
-         });
-         return false;
-    };
-
-    var removeTemplateFunction = function(tree,node,file){
-         var nodeData = node;
-         var parents = [];
-         while(typeof nodeData.text !== 'undefined') {
-             parents.unshift(nodeData.text);
-             var currId = nodeData.parent;
-             nodeData = tree.get_node(currId);
-         }
-         var shared = parents.length > 0 && parents[0].startsWith("Shared");
-         $.ajax({
-             type: "POST",
-             url: '/secure/delete_template',
-             data: {
-                 path_to_remove: file,
-                 shared: shared
-             },
-             success: function(data) {
-                 tree.delete_node(node);
-             },
-             dataType: "json"
-         });
-         return false;
-    };
-
-    var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dataKey) {
-        var tmpData = {};
-        $(containerSelector+" "+itemSelector).find('textarea,input,select,div.attribute').each(function(i,e) {
-            var $elem = $(this);
-            if($elem.attr('id') && ! ($elem.prop('disabled') || $elem.hasClass('disabled'))) {
-                tmpData[$elem.attr("id")]=$elem.val();
-                tmpData["order_"+$elem.attr("id")]=i;
-            }
-        });
-        var json = JSON.stringify(tmpData);
-        dataMap[dataKey] = json;
-    };
-
-
-    var saveTemplateFunction = function(tree,node,name,deletable){
-        var preData = {};
-        preData["name"]=name;
-        saveTemplateFormHelper("#searchOptionsForm",".attributeElement",preData,"searchOptionsMap");
-        saveTemplateFormHelper("#attributesForm",".attributeElement",preData,"attributesMap");
-        saveTemplateFormHelper("#filtersForm",".attributeElement",preData,"filtersMap");
-        saveTemplateFormHelper("#chartsForm",".attributeElement",preData,"chartsMap");
-        saveTemplateFormHelper("#highlightForm",".attributeElement",preData,"highlightMap");
-
-        preData["parentDirs"] = []
-        preData["deletable"] = deletable;
-        var nodeData = node;
-        while(typeof nodeData.text !== 'undefined') {
-            preData["parentDirs"].unshift(nodeData.text);
-            var currId = nodeData.parent;
-            nodeData = tree.get_node(currId);
-        }
-        $.ajax({
-          type: "POST",
-          url: '/secure/save_template',
-          data: preData,
-          success: function(data) {
-            if(!data.hasOwnProperty('file')) {
-                alert('Error saving template: '+data.message);
-            } else {
-                preData['file']=data['file'];
-                var newData = {
-                    'text': name,
-                    'type': 'file',
-                    'icon': 'jstree-file',
-                    'jstree': {'type': 'file'},
-                };
-                $.each(preData, function(k,v) { newData[k] = v; });
-                node = tree.create_node(
-                    node,
-                    { 'data' : newData},
-                    'first',
-                    function(newNode) {
-                        setTimeout(function() {
-                            newNode.data = newData;
-                            tree.edit(newNode,name,function(n,status,cancelled) {
-                                if(status && ! cancelled) {
-                                    renameTemplateFunction(tree,n,n.text,data['file']);
-                                }
-                            });
-                        },0);
-                    }
-                );
-            }
-          },
-          dataType: "json"
-        });
-
-        return false;
-    };
-
-    var removeDescendantsHelper = function(tree,node) {
-        var isFolder = node.type==='folder';
-        if(isFolder) {
-            // get all children
-            var children = node.children;
-            for(var i = 0; i < children.length; i++) {
-                var child = tree.get_node(node.children[i]);
-                removeDescendantsHelper(tree,child,child.data.file);
-            }
-            tree.delete_node(node);
-        } else {
-            removeTemplateFunction(tree,node,node.data.file)
-        }
-    };
-
-    var renameDescendantsOfFolderHelper = function(tree,node) {
-        var isFolder = node.type==='folder';
-        if(isFolder) {
-            // get all children
-            var children = node.children;
-            for(var i = 0; i < children.length; i++) {
-                var child = tree.get_node(node.children[i]);
-                renameDescendantsOfFolderHelper(tree,child,child.data.file);
-            }
-
-        } else {
-            renameTemplateFunction(tree,node,node.text,node.data.file);
-        }
-    };
-
-
-    var templates_tree_id = "#templates-tree";
-    $(templates_tree_id).jstree({
-        "core" : {
-            "multiple" : false,
-            "check_callback": true
-        },
-        "contextmenu": {
-            "items": function(node) {
-                var items = {};
-                var tree = $(templates_tree_id).jstree(true);
-
-                var isFolder = node.type==='folder';
-                var topLevelFolder = isFolder && (node.parents.length === 1);
-                var deletable = node.data.deletable;
-
-                if(isFolder && deletable) {
-                    items["New Folder"] = {
-                        "separator_before": false,
-                        "separator_after": false,
-                        "label": "New Folder",
-                        "title": "Create a new subdirectory.",
-                        "action": function(obj) {
-                            node = tree.create_node(node, {
-                                'text': 'New Folder',
-                                'type': 'folder',
-                                'icon': 'jstree-folder',
-                                'jstree': {'type': 'folder'},
-                                'data' : {
-                                    'deletable': deletable
-                                }
-                            });
-                            tree.edit(node);
-                        }
-                    };
-                    // must create a folder first in the shared environment
-                    if(!(topLevelFolder && node.text.startsWith("Shared"))) {
-                        items["New Template"] = {
-                            "separator_before": false,
-                            "separator_after": false,
-                            "label": "New Template",
-                            "title": "Create a new template.",
-                            "submenu": {
-                                "From Current Form": {
-                                    "separator_before": false,
-                                    "separator_after": false,
-                                    "label": "From Current Form",
-                                    "title": "Create new template from current form.",
-                                    "action": function(obj) {
-                                        var name = 'New Template';
-                                        saveTemplateFunction(tree,node,name,deletable);
-                                        return true;
-                                    }
-                                }
-                            }
-                        };
-                    }
-                }
-                if(!topLevelFolder && deletable) {
-                    items["Delete"] = {
-                        "separator_before": false,
-                        "separator_after": false,
-                        "label": "Delete",
-                        "title": "Permanently delete this "+(isFolder ? "folder" : "template")+".",
-                        "action": function(obj) {
-                            removeDescendantsHelper(tree,node);
-                            return true;
-                        }
-                    };
-                    items["Rename"] = {
-                        "separator_before": false,
-                        "separator_after": false,
-                        "label": "Rename",
-                        "title": "Rename this "+(isFolder ? "folder" : "template")+".",
-                        "action": function(obj) {
-                            if(isFolder) {
-                                tree.edit(node,node.text,function(node,status,cancelled) {
-                                    renameDescendantsOfFolderHelper(tree,node);
-                                });
-                            } else {
-                                tree.edit(node,node.text,function(node,status,cancelled) {
-                                    if(status && ! cancelled) {
-                                        renameTemplateFunction(tree,node,node.text,node.data.file);
-                                    }
-                                })
-                            }
-                            return true;
-                        }
-                    };
-                }
-                return items;
-            }
-        },
-        "types": {
-            "folder": {
-                "icon": "jstree-folder"
-            },
-            "file" : {
-                "icon": "jstree-file"
-            }
-        },
-        "plugins": ["types","wholerow","sort","contextmenu"]
-    });
-
-    $(templates_tree_id).bind("dblclick.jstree", function(event) {
-        var tree = $(this).jstree(true);
-        var node = tree.get_node(event.target);
-        if(node.type==='file') {
-            event.preventDefault();
-            event.stopPropagation();
-            showTemplateFunction(node.data,tree,node);
-            return false;
-        }
-        return true;
-    });
+    setupJSTree("#templates-tree",templateDataFunction,showTemplateFunction,"template");
+    //setupJSTree("#datasets-tree",datasetDataFunction,showDatasetFunction,"dataset");
 
     $('.miniTip').miniTip({
         title: 'Advanced Keyword Syntax',
@@ -720,7 +459,281 @@ var showTemplateFunction = function(data,tree,node){
     return false;
 };
 
+var renameJSNodeFunction = function(tree,node,newName,file,node_type){
+     var nodeData = tree.get_node(node.parent);
+     var parents = [];
+     while(typeof nodeData.text !== 'undefined') {
+         parents.unshift(nodeData.text);
+         var currId = nodeData.parent;
+         nodeData = tree.get_node(currId);
+     }
+     $.ajax({
+         type: "POST",
+         url: '/secure/rename_'+node_type,
+         data: {
+             name: newName,
+             parentDirs: parents,
+             file: file
+         },
+         success: function(data) {
+
+         },
+         dataType: "json"
+     });
+     return false;
+};
+
+var removeJSNodeFunction = function(tree,node,file,node_type){
+     var nodeData = node;
+     var parents = [];
+     while(typeof nodeData.text !== 'undefined') {
+         parents.unshift(nodeData.text);
+         var currId = nodeData.parent;
+         nodeData = tree.get_node(currId);
+     }
+     var shared = parents.length > 0 && parents[0].startsWith("Shared");
+     $.ajax({
+         type: "POST",
+         url: '/secure/delete_'+node_type,
+         data: {
+             path_to_remove: file,
+             shared: shared
+         },
+         success: function(data) {
+             tree.delete_node(node);
+         },
+         dataType: "json"
+     });
+     return false;
+};
+
+var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dataKey) {
+        var tmpData = {};
+        $(containerSelector+" "+itemSelector).find('textarea,input,select,div.attribute').each(function(i,e) {
+            var $elem = $(this);
+            if($elem.attr('id') && ! ($elem.prop('disabled') || $elem.hasClass('disabled'))) {
+                tmpData[$elem.attr("id")]=$elem.val();
+                tmpData["order_"+$elem.attr("id")]=i;
+            }
+        });
+        var json = JSON.stringify(tmpData);
+        dataMap[dataKey] = json;
+    };
+
+var templateDataFunction = function(tree,node,name,deletable) {
+    var preData = {};
+    preData["name"]=name;
+    saveTemplateFormHelper("#searchOptionsForm",".attributeElement",preData,"searchOptionsMap");
+    saveTemplateFormHelper("#attributesForm",".attributeElement",preData,"attributesMap");
+    saveTemplateFormHelper("#filtersForm",".attributeElement",preData,"filtersMap");
+    saveTemplateFormHelper("#chartsForm",".attributeElement",preData,"chartsMap");
+    saveTemplateFormHelper("#highlightForm",".attributeElement",preData,"highlightMap");
+
+    preData["parentDirs"] = []
+    preData["deletable"] = deletable;
+    var nodeData = node;
+    while(typeof nodeData.text !== 'undefined') {
+        preData["parentDirs"].unshift(nodeData.text);
+        var currId = nodeData.parent;
+        nodeData = tree.get_node(currId);
+    }
+    return preData;
+};
+
+
+var saveJSNodeFunction = function(tree,node,name,deletable,dataFunction,node_type){
+    var preData = dataFunction(tree,node,name,deletable);
+    $.ajax({
+        type: "POST",
+        url: '/secure/save_'+node_type,
+        data: preData,
+        success: function(data) {
+            if(!data.hasOwnProperty('file')) {
+                alert('Error saving template: '+data.message);
+            } else {
+                preData['file']=data['file'];
+                var newData = {
+                    'text': name,
+                    'type': 'file',
+                    'icon': 'jstree-file',
+                    'jstree': {'type': 'file'},
+                };
+                $.each(preData, function(k,v) { newData[k] = v; });
+                node = tree.create_node(
+                    node,
+                    { 'data' : newData},
+                    'first',
+                    function(newNode) {
+                        setTimeout(function() {
+                            newNode.data = newData;
+                            tree.edit(newNode,name,function(n,status,cancelled) {
+                                if(status && ! cancelled) {
+                                    renameJSNodeFunction(tree,n,n.text,data['file'],node_type);
+                                }
+                            });
+                        },0);
+                    }
+                );
+            }
+        },
+        dataType: "json"
+    });
+
+    return false;
+};
+
+var removeDescendantsHelper = function(tree,node,node_type) {
+    var isFolder = node.type==='folder';
+    if(isFolder) {
+        // get all children
+        var children = node.children;
+        for(var i = 0; i < children.length; i++) {
+            var child = tree.get_node(node.children[i]);
+            removeDescendantsHelper(tree,child,child.data.file,node_type);
+        }
+        tree.delete_node(node);
+    } else {
+        removeJSNodeFunction(tree,node,node.data.file,node_type)
+    }
+};
+
+var renameDescendantsOfFolderHelper = function(tree,node,node_type) {
+    var isFolder = node.type==='folder';
+    if(isFolder) {
+        // get all children
+        var children = node.children;
+        for(var i = 0; i < children.length; i++) {
+            var child = tree.get_node(node.children[i]);
+            renameDescendantsOfFolderHelper(tree,child,node_type);
+        }
+
+    } else {
+        renameJSNodeFunction(tree,node,node.text,node.data.file,node_type);
+    }
+};
 
 var loadEvent = function(){
  // do nothing :(
+};
+
+function capitalize(string)
+{
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+var setupJSTree = function(tree_id, jsNodeDataFunction, dblclickFunction, node_type) {
+    $(tree_id).jstree({
+        "core" : {
+            "multiple" : false,
+            "check_callback": true
+        },
+        "contextmenu": {
+            "items": function(node) {
+                var items = {};
+                var tree = $(tree_id).jstree(true);
+
+                var isFolder = node.type==='folder';
+                var topLevelFolder = isFolder && (node.parents.length === 1);
+                var deletable = node.data.deletable;
+
+                if(isFolder && deletable) {
+                    items["New Folder"] = {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "New Folder",
+                        "title": "Create a new subdirectory.",
+                        "action": function(obj) {
+                            node = tree.create_node(node, {
+                                'text': 'New Folder',
+                                'type': 'folder',
+                                'icon': 'jstree-folder',
+                                'jstree': {'type': 'folder'},
+                                'data' : {
+                                    'deletable': deletable
+                                }
+                            });
+                            tree.edit(node);
+                        }
+                    };
+                    // must create a folder first in the shared environment
+                    if(!(topLevelFolder && node.text.startsWith("Shared"))) {
+                        items["New Template"] = {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "New Template",
+                            "title": "Create a new "+node_type+".",
+                            "submenu": {
+                                "From Current Form": {
+                                    "separator_before": false,
+                                    "separator_after": false,
+                                    "label": "From Current Form",
+                                    "title": "Create new "+node_type+" from current form.",
+                                    "action": function(obj) {
+                                        var name = 'New '+capitalize(node_type);
+                                        saveJSNodeFunction(tree,node,name,deletable,jsNodeDataFunction,node_type);
+                                        return true;
+                                    }
+                                }
+                            }
+                        };
+                    }
+                }
+                if(!topLevelFolder && deletable) {
+                    items["Delete"] = {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "Delete",
+                        "title": "Permanently delete this "+(isFolder ? "folder" : node_type)+".",
+                        "action": function(obj) {
+                            removeDescendantsHelper(tree,node,node_type);
+                            return true;
+                        }
+                    };
+                    items["Rename"] = {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "Rename",
+                        "title": "Rename this "+(isFolder ? "folder" : node_type)+".",
+                        "action": function(obj) {
+                            if(isFolder) {
+                                tree.edit(node,node.text,function(node,status,cancelled) {
+                                    renameDescendantsOfFolderHelper(tree,node,node_type);
+                                });
+                            } else {
+                                tree.edit(node,node.text,function(node,status,cancelled) {
+                                    if(status && ! cancelled) {
+                                        renameJSNodeFunction(tree,node,node.text,node.data.file,node_type);
+                                    }
+                                })
+                            }
+                            return true;
+                        }
+                    };
+                }
+                return items;
+            }
+        },
+        "types": {
+            "folder": {
+                "icon": "jstree-folder"
+            },
+            "file" : {
+                "icon": "jstree-file"
+            }
+        },
+        "plugins": ["types","wholerow","sort","contextmenu"]
+    });
+
+    $(tree_id).bind("dblclick.jstree", function(event) {
+        var tree = $(this).jstree(true);
+        var node = tree.get_node(event.target);
+        if(node.type==='file') {
+            event.preventDefault();
+            event.stopPropagation();
+            dblclickFunction(node.data,tree,node);
+            return false;
+        }
+        return true;
+    });
+
 };
