@@ -667,8 +667,8 @@ var showTemplateFormHelper = function(formSelector,dataMap) {
     $(formSelector+' select.nested-filter-select').trigger('change');
 };
 
-var showTemplateFunction = function(data){
-    resetSearchForm();
+var showTemplateFunction = function(data,node){
+    if(node!==null){ resetSearchForm(); }
     if(data.hasOwnProperty('searchoptionsmap')) { // data came from li node
         showTemplateFormHelper("#searchOptionsForm",data["searchoptionsmap"]);
         showTemplateFormHelper("#attributesForm",data["attributesmap"]);
@@ -679,7 +679,7 @@ var showTemplateFunction = function(data){
         } catch(err) {
 
         }
-    } else { // data came from newly added node
+    } else if(data.hasOwnProperty('searchOptionsMap')) { // data came from newly added node
         showTemplateFormHelper("#searchOptionsForm",$.parseJSON(data["searchOptionsMap"]));
         showTemplateFormHelper("#attributesForm",$.parseJSON(data["attributesMap"]));
         showTemplateFormHelper("#filtersForm",$.parseJSON(data["filtersMap"]));
@@ -689,6 +689,28 @@ var showTemplateFunction = function(data){
         } catch(err) {
 
         }
+    } else if(node!==null) {
+        // need to get data
+         var nodeData = node;
+         var parents = [];
+         while(typeof nodeData.text !== 'undefined') {
+             parents.unshift(nodeData.text);
+             var currId = nodeData.parent;
+             nodeData = tree.get_node(currId);
+         }
+         var shared = parents.length > 0 && parents[0].startsWith("Shared");
+         $.ajax({
+             type: "POST",
+             url: '/secure/get_template',
+             data: {
+                 file: file,
+                 shared: shared
+             },
+             success: function(data) {
+                 showTemplateFunction(data,null);
+             },
+             dataType: "json"
+         });
     }
     return false;
 };

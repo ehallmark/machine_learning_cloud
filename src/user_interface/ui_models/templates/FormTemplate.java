@@ -1,12 +1,8 @@
 package user_interface.ui_models.templates;
 
-import com.google.gson.Gson;
 import lombok.Getter;
-import seeding.Constants;
-import user_interface.server.SimilarPatentServer;
 
 import java.io.File;
-import java.util.*;
 
 /**
  * Created by Evan on 6/24/2017.
@@ -34,5 +30,10 @@ public class FormTemplate {
         this.filtersMap=filtersMap;
         this.chartsMap=chartsMap;
         this.highlightMap=highlightMap;
+    }
+
+    public FormTemplate(File file, String name) {
+        this.file=file;
+        this.name=name;
     }
 }

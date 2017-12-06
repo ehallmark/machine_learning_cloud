@@ -95,6 +95,7 @@ public class SimilarPatentServer {
     public static final String REPORT_URL = PROTECTED_URL_PREFIX+"/patent_recommendation_engine";
     public static final String HOME_URL = PROTECTED_URL_PREFIX+"/home";
     public static final String SAVE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/save_template";
+    public static final String GET_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/get_template";
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
     public static final String DELETE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/delete_template";
     public static final String RENAME_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/rename_template";
@@ -789,6 +790,11 @@ public class SimilarPatentServer {
             return handleSaveForm(req,res);
         });
 
+        post(GET_TEMPLATE_URL, (req, res) -> {
+            authorize(req,res);
+            return handleGetForm(req,res);
+        });
+
         post(DELETE_TEMPLATE_URL, (req, res) -> {
             authorize(req,res);
             return handleDeleteForm(req,res);
@@ -1053,6 +1059,20 @@ public class SimilarPatentServer {
         }
         responseMap.put("message", message);
         return new Gson().toJson(responseMap);
+    }
+
+    private static Object handleGetForm(Request req, Response res) {
+        String file = req.queryParams("file");
+        boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
+
+        String user = req.session().attribute("username");
+        if(user==null||user.isEmpty()) {
+            return null;
+        }
+
+        String filename = Constants.DATA_FOLDER+ Constants.USER_TEMPLATE_FOLDER+ (shared ? SHARED_USER : user) + file;
+        Map<String,Object> data = getTemplateFromFile(new File(filename),true);
+        return new Gson().toJson(data);
     }
 
     private static Object handleSaveForm(Request req, Response res) {
@@ -1348,59 +1368,83 @@ public class SimilarPatentServer {
         return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.replaceAll(toReplace,"").trim():str).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
     }
 
-    public static Tag getTemplatesForUser(String username, boolean deletable, String rootName) {
+    private static Map<String,Object> getTemplateFromFile(File file, boolean loadData) {
+        File updatesFile = new File(file.getAbsolutePath() + "_updates");
+        loadData = loadData || !updatesFile.exists();
+
+        Map<String,Object> templateMap;
+        if(loadData) {
+            templateMap = (Map<String, Object>) Database.tryLoadObject(file);
+        } else {
+            templateMap = (Map<String,Object>) Database.tryLoadObject(updatesFile);
+        }
+
+        if(templateMap!=null && loadData) {
+            // check updates file
+            if (updatesFile.exists()) {
+                Map<String, Object> updates = (Map<String, Object>) Database.tryLoadObject(updatesFile);
+                if (updates != null) {
+                    templateMap.put("name", updates.get("name"));
+                    templateMap.put("parentDirs", (String[]) updates.get("parentDirs"));
+                }
+            }
+        }
+        return templateMap;
+    }
+
+    public static Tag getTemplatesForUser(String username, boolean deletable, String rootName, boolean loadData) {
         if(username!=null && username.length()>0) {
             File folder = new File(Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/");
             if(!folder.exists()) folder.mkdirs();
             Pair<Map<String,Object>,List<FormTemplate>> directoryStructure = new Pair<>(new HashMap<>(),new ArrayList<>());
             Arrays.stream(folder.listFiles()).forEach(file->{
-                Map<String,Object> templateMap = (Map<String,Object>)Database.tryLoadObject(file);
+                Map<String,Object> templateMap = getTemplateFromFile(file, loadData);
                 Object name = templateMap.get("name");
-                Object searchObjectsMap = templateMap.get("searchOptionsMap");
-                Object attributesMap = templateMap.get("attributesMap");
-                Object chartsMap = templateMap.get("chartsMap");
-                Object filtersMap = templateMap.get("filtersMap");
-                Object highlightMap = templateMap.get("highlightMap");
 
                 String[] parentDirs = (String[])templateMap.get("parentDirs");
-                if(highlightMap==null) highlightMap="";
-
-                // check updates file
-                File updatesFile = new File(file.getAbsolutePath()+"_updates");
-                if(updatesFile.exists()) {
-                    Map<String,Object> updates = (Map<String,Object>) Database.tryLoadObject(updatesFile);
-                    if(updates!=null) {
-                        name = updates.get("name");
-                        parentDirs = (String[]) updates.get("parentDirs");
+                Pair<Map<String, Object>, List<FormTemplate>> currentDirectory = directoryStructure;
+                if (parentDirs != null) { // build directory as necessary
+                    for (String dir : parentDirs) {
+                        currentDirectory.getFirst().putIfAbsent(dir, new Pair<>(new HashMap<>(), new ArrayList<>()));
+                        currentDirectory = (Pair<Map<String, Object>, List<FormTemplate>>) currentDirectory.getFirst().get(dir);
                     }
                 }
 
-                if(name!=null&&searchObjectsMap!=null&&attributesMap!=null&&chartsMap!=null&&filtersMap!=null) {
+                FormTemplate template;
+                if(loadData) {
+                    Object searchObjectsMap = templateMap.get("searchOptionsMap");
+                    Object attributesMap = templateMap.get("attributesMap");
+                    Object chartsMap = templateMap.get("chartsMap");
+                    Object filtersMap = templateMap.get("filtersMap");
+                    Object highlightMap = templateMap.get("highlightMap");
+                    if (highlightMap == null) highlightMap = "";
 
-                    Pair<Map<String,Object>,List<FormTemplate>> currentDirectory = directoryStructure;
-                    if(parentDirs!=null) { // build directory as necessary
-                        for(String dir : parentDirs) {
-                            currentDirectory.getFirst().putIfAbsent(dir, new Pair<>(new HashMap<>(), new ArrayList<>()));
-                            currentDirectory =(Pair<Map<String,Object>,List<FormTemplate>>) currentDirectory.getFirst().get(dir);
-                        }
-                    }
-                    // create template
-                    FormTemplate template = new FormTemplate(file, name.toString(), searchObjectsMap.toString(), attributesMap.toString(), filtersMap.toString(), chartsMap.toString(), highlightMap.toString());
+                    if (name != null && searchObjectsMap != null && attributesMap != null && chartsMap != null && filtersMap != null) {
 
-                    // add to current directory
-                    currentDirectory.getSecond().add(template);
+                        // create template
+                        template = new FormTemplate(file, name.toString(), searchObjectsMap.toString(), attributesMap.toString(), filtersMap.toString(), chartsMap.toString(), highlightMap.toString());
+
+
+                    } else template = null;
+                } else {
+                    if(name != null) {
+                        template = new FormTemplate(file,name.toString());
+                    } else template = null;
                 }
+
+                // add to current directory
+                if (template!=null) currentDirectory.getSecond().add(template);
             });
 
             // recursively build directory
-            return templateHelper(directoryStructure,rootName,deletable, new ArrayList<>());
+            return templateHelper(directoryStructure,rootName,deletable, new ArrayList<>(), loadData);
         } else {
             return div();
         }
     }
 
 
-    public static Tag templateHelper(Pair<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable, List<String> parentDirs) {
+    public static Tag templateHelper(Pair<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable, List<String> parentDirs, boolean loadData) {
         // find nested
         return li(folderName).attr("data-deletable", String.valueOf(deletable)).attr("data-jstree","{\"type\":\"folder\"}").with(
                 ul().with(
@@ -1409,24 +1453,28 @@ public class SimilarPatentServer {
                                 .map(e->{
                                     List<String> parentDirsCopy = new ArrayList<>(parentDirs);
                                     parentDirsCopy.add(e.getKey());
-                                    return templateHelper((Pair<Map<String,Object>,List<FormTemplate>>)e.getValue(),e.getKey(),deletable,parentDirsCopy);
+                                    return templateHelper((Pair<Map<String,Object>,List<FormTemplate>>)e.getValue(),e.getKey(),deletable,parentDirsCopy, loadData);
                                 })
                         .collect(Collectors.toList())
                 ).with(
                         directoryStructure.getSecond().stream()
                                 //.sorted(Comparator.comparing(e->e.getName()))
                                 .map(template->{
-                                    return li(template.getName()).withClass("template-show-button")
+                                    ContainerTag tag = li(template.getName()).withClass("template-show-button")
                                             .attr("data-deletable", String.valueOf(deletable))
                                             .attr("data-jstree","{\"type\":\"file\"}")
                                             .attr("data-name",template.getName())
-                                            .attr("data-chartsMap", template.getChartsMap())
-                                            .attr("data-highlightMap", template.getHighlightMap())
-                                            .attr("data-attributesMap", template.getAttributesMap())
-                                            .attr("data-filtersMap", template.getFiltersMap())
-                                            .attr("data-searchOptionsMap", template.getSearchOptionsMap())
                                             .attr("data-file", template.getFile().getName());
-                        }).collect(Collectors.toList())
+                                    if(loadData) {
+                                        tag = tag
+                                                .attr("data-chartsMap", template.getChartsMap())
+                                                .attr("data-highlightMap", template.getHighlightMap())
+                                                .attr("data-attributesMap", template.getAttributesMap())
+                                                .attr("data-filtersMap", template.getFiltersMap())
+                                                .attr("data-searchOptionsMap", template.getSearchOptionsMap());
+                                    }
+                                    return tag;
+                                }).collect(Collectors.toList())
                 )
         );
     }
@@ -1486,9 +1534,9 @@ public class SimilarPatentServer {
                                                         div().withClass("tab-content").attr("style","max-height: 75%; overflow-y: auto; width: 100%;").with(
                                                                 div().withClass("tab-pane active").attr("role","tabpanel").attr("style","text-align: left;").withId("templates-tree").with(
                                                                         ul().with(
-                                                                                getTemplatesForUser(SUPER_USER,false,"Default Templates"),
-                                                                                getTemplatesForUser(req.session().attribute("username"),true,"My Templates"),
-                                                                                getTemplatesForUser(SHARED_USER,true, "Shared Templates")
+                                                                                getTemplatesForUser(SUPER_USER,false,"Default Templates",true),
+                                                                                getTemplatesForUser(req.session().attribute("username"),true,"My Templates",false),
+                                                                                getTemplatesForUser(SHARED_USER,true, "Shared Templates",false)
                                                                         )
 
                                                                 ),div().withClass("tab-pane").attr("role","tabpanel").withId("datasets-tree").with(
