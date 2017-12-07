@@ -20,7 +20,7 @@ public class ClassCodeHandler {
         while(g3.startsWith("0")&&g3.length()>0) g3 = g3.substring(1);
 
         String cpc = code.substring(0,4) + g2 + "/" + g3;
-
+        if(cpc.endsWith("/")) cpc = cpc.substring(0,cpc.length()-1);
         return cpc;
     }
 
