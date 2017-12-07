@@ -1320,7 +1320,7 @@ public class SimilarPatentServer {
 
                         AtomicInteger totalChartCnt = new AtomicInteger(0);
                         charts.forEach(chart -> {
-                            for (int i = 0; i < chart.getAttributes().size(); i++) {
+                            for (int i = 0; i < chart.getAttrNames().size(); i++) {
                                 final int idx = i;
                                 RecursiveTask<List<? extends AbstractChart>> chartTask = new RecursiveTask<List<? extends AbstractChart>>() {
                                     @Override
