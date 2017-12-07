@@ -4,29 +4,19 @@ import j2html.tags.Tag;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import org.elasticsearch.common.lucene.search.function.CombineFunction;
-import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
-import org.elasticsearch.script.Script;
-import seeding.Constants;
-import seeding.Database;
 import spark.Request;
-import tools.ClassCodeHandler;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.attributes.tools.AjaxMultiselect;
-import user_interface.ui_models.portfolios.items.Item;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
-import static user_interface.server.SimilarPatentServer.extractString;
 import static user_interface.server.SimilarPatentServer.preProcess;
 
 /**
@@ -96,7 +86,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        if (!fieldType.equals(FieldType.Multiselect)) {
+        if (!fieldType.equals(FieldType.Multiselect)||filterType.equals(FilterType.PrefixExclude)||filterType.equals(FilterType.PrefixInclude)) {
             return div().with(
                     textarea().attr("data-attribute",attribute.getName()).attr("data-filtertype",filterType.toString()).withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
             );
