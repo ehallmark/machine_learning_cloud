@@ -69,7 +69,7 @@ public class AbstractDistributionChart extends ChartAttribute {
 
         if(portfolio.getItemList().size()==0) return Collections.emptyList();
 
-        List<Object> items = portfolio.getItemList().stream().flatMap(item-> {
+        List<Object> items = (List<Object>)portfolio.getItemList().stream().flatMap(item-> {
             Object r = item.getData(attribute);
             if (r != null) {
                 if (r instanceof Collection) {
