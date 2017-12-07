@@ -3,14 +3,15 @@ package user_interface.ui_models.charts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import user_interface.ui_models.charts.highcharts.AbstractChart;
-import user_interface.ui_models.charts.highcharts.ColumnChart;
 import j2html.tags.Tag;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
-import user_interface.server.SimilarPatentServer;
 import spark.Request;
-import models.value_models.*;
+import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.RangeAttribute;
+import user_interface.ui_models.charts.highcharts.AbstractChart;
+import user_interface.ui_models.charts.highcharts.ColumnChart;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -21,8 +22,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static j2html.TagCreator.*;
-import static j2html.TagCreator.select;
-import static j2html.TagCreator.span;
 
 /**
  * Created by Evan on 6/18/2017.
@@ -30,16 +29,20 @@ import static j2html.TagCreator.span;
 public class AbstractHistogramChart extends ChartAttribute {
     protected String groupedBy;
     protected Collection<String> searchTypes;
-    protected static final double MIN = ValueModelCombination.DEFAULT_START;
-    protected static final double MAX = ValueModelCombination.DEFAULT_END;
-
-    public AbstractHistogramChart() {
-        super(Arrays.asList(Constants.AI_VALUE,Constants.SIMILARITY,Constants.REMAINING_LIFE), Constants.HISTOGRAM);
+    Map<String,RangeAttribute> nameToRangeMap;
+    public AbstractHistogramChart(List<AbstractAttribute> attributes) {
+        this(attributes, attributes.stream().collect(Collectors.toMap(attr->attr.getFullName(),attr->(RangeAttribute)attr)));
     }
+
+    private AbstractHistogramChart(List<AbstractAttribute> attributes, Map<String,RangeAttribute> nameToRangeMap) {
+        super(attributes,Constants.HISTOGRAM);
+        this.nameToRangeMap=nameToRangeMap;
+    }
+
 
     @Override
     public ChartAttribute dup() {
-        return new AbstractHistogramChart();
+        return new AbstractHistogramChart(attributes,nameToRangeMap);
     }
 
     @Override
@@ -51,7 +54,7 @@ public class AbstractHistogramChart extends ChartAttribute {
                                 Stream.of(Constants.ASSIGNMENTS+"."+Constants.ASSIGNOR, Constants.ASSIGNMENTS+"."+Constants.ASSIGNEE, Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE, Constants.LATEST_ASSIGNEE+"."+Constants.NORMALIZED_LATEST_ASSIGNEE, Constants.TECHNOLOGY, Constants.WIPO_TECHNOLOGY)
                                         .map(key->option(SimilarPatentServer.humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
                         )
-                ),SimilarPatentServer.technologySelect(Constants.HISTOGRAM,getAttributes())
+                ), technologySelect(userRoleFunction)
         );
     }
 
@@ -62,7 +65,7 @@ public class AbstractHistogramChart extends ChartAttribute {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        attributes = SimilarPatentServer.extractArray(params, Constants.HISTOGRAM);
+        attrNames = SimilarPatentServer.extractArray(params, Constants.HISTOGRAM);
         searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE_INCLUDE_FILTER_STR);
         // what to do if not present?
         if(searchTypes.isEmpty()) {
@@ -73,21 +76,18 @@ public class AbstractHistogramChart extends ChartAttribute {
 
     @Override
     public List<? extends AbstractChart> create(PortfolioList portfolioList, int i) {
-        return Stream.of(attributes.get(i)).flatMap(attribute->{
+        return Stream.of(attrNames.get(i)).flatMap(attribute->{
             String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
             String humanSearchType = combineTypesToString(searchTypes);
             String title = humanAttr + " Histogram";
-            double min = MIN;
-            double max = MAX;
-            int nBins = 5;
-            String xAxisSuffix = "%";
+
+            RangeAttribute rangeAttribute = nameToRangeMap.get(attribute);
+            double min = rangeAttribute.min().doubleValue();
+            double max = rangeAttribute.max().doubleValue();
+            int nBins = rangeAttribute.nBins();
+            String xAxisSuffix = rangeAttribute.valueSuffix();
             String yAxisSuffix = "";
-            if(attribute.equals(Constants.REMAINING_LIFE)) {
-                // slightly change params
-                nBins = 4;
-                max = 20;
-                xAxisSuffix = " Years";
-            }
+
             List<String> categories = new ArrayList<>();
             int step = (int) Math.round((max-min)/nBins);
             for(int j = 0; j < max; j += step) {

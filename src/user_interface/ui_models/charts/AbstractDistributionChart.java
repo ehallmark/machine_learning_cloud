@@ -8,6 +8,7 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.highcharts.PieChart;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -23,19 +24,18 @@ import java.util.stream.Stream;
 public class AbstractDistributionChart extends ChartAttribute {
     protected Collection<String> searchTypes;
 
-    public AbstractDistributionChart() {
-        super(Arrays.asList(Constants.TECHNOLOGY,Constants.WIPO_TECHNOLOGY,Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE,Constants.LATEST_ASSIGNEE+"."+Constants.NORMALIZED_LATEST_ASSIGNEE), Constants.PIE_CHART);
+    public AbstractDistributionChart(List<AbstractAttribute> attributes) {
+        super(attributes, Constants.PIE_CHART);
     }
 
     @Override
     public ChartAttribute dup() {
-        return new AbstractDistributionChart();
+        return new AbstractDistributionChart(attributes);
     }
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return SimilarPatentServer.technologySelect(Constants.PIE_CHART,getAttributes());
-
+        return technologySelect(userRoleFunction);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class AbstractDistributionChart extends ChartAttribute {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        attributes = SimilarPatentServer.extractArray(params, Constants.PIE_CHART);
+        attrNames = SimilarPatentServer.extractArray(params, Constants.PIE_CHART);
         searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE_INCLUDE_FILTER_STR);
         // what to do if not present?
         if(searchTypes.isEmpty()) {
@@ -55,7 +55,7 @@ public class AbstractDistributionChart extends ChartAttribute {
 
     @Override
     public List<? extends AbstractChart> create(PortfolioList portfolioList, int i) {
-        return Stream.of(attributes.get(i)).map(attribute-> {
+        return Stream.of(attrNames.get(i)).map(attribute-> {
             String title = SimilarPatentServer.humanAttributeFor(attribute) + " Distribution";
             return new PieChart(title, collectDistributionData(portfolioList, attribute, title), combineTypesToString(searchTypes));
         }).collect(Collectors.toList());

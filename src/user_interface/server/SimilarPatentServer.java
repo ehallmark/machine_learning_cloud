@@ -353,10 +353,26 @@ public class SimilarPatentServer {
         }
     }
 
+    private static void getAttributesHelper(AbstractAttribute attr, List<AbstractAttribute> all) {
+        if(attr instanceof NestedAttribute) {
+            ((NestedAttribute) attr).getAttributes().forEach(child->getAttributesHelper(child,all));
+        } else {
+            all.add(attr);
+        }
+    }
+
     public static void loadChartModels() {
-        chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart());
-        chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart());
-        chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart());
+        List<AbstractAttribute> attributes = new ArrayList<>();
+        getAttributesHelper(allAttributes,attributes);
+
+        List<AbstractAttribute> dateAttrs = attributes.stream().filter(attr->attr.getType().equals("date")).collect(Collectors.toList());
+        List<AbstractAttribute> discreteAttrs = attributes.stream().filter(attr->attr.getType().equals("keyword")||attr.getType().equals("text")).collect(Collectors.toList());
+        List<AbstractAttribute> rangeAttrs = attributes.stream().filter(attr->attr instanceof RangeAttribute).collect(Collectors.toList());
+
+
+        chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart(discreteAttrs));
+        chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart(rangeAttrs));
+        chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart(dateAttrs));
 
         allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
             @Override

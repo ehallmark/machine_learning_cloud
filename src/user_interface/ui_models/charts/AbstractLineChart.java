@@ -8,6 +8,7 @@ import j2html.tags.Tag;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.highcharts.LineChart;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -28,13 +29,13 @@ public class AbstractLineChart extends ChartAttribute {
     protected Integer max;
     protected Integer min;
 
-    public AbstractLineChart() {
-        super(Arrays.asList(Constants.FILING_DATE, Constants.ASSIGNMENTS+"."+Constants.RECORDED_DATE, Constants.ASSIGNMENTS+"."+Constants.EXECUTION_DATE, Constants.PUBLICATION_DATE, Constants.EXPIRATION_DATE, Constants.PRIORITY_DATE),Constants.LINE_CHART);
+    public AbstractLineChart(List<AbstractAttribute> attributes) {
+        super(attributes,Constants.LINE_CHART);
     }
 
     @Override
     public ChartAttribute dup() {
-        return new AbstractLineChart();
+        return new AbstractLineChart(attributes);
     }
 
     @Override
@@ -47,7 +48,7 @@ public class AbstractLineChart extends ChartAttribute {
                                 label("Max"),br(),input().withId(SimilarPatentServer.LINE_CHART_MAX).withName(SimilarPatentServer.LINE_CHART_MAX).withType("number").withClass("form-control")
                         )
                 ),
-                SimilarPatentServer.technologySelect(Constants.LINE_CHART,getAttributes())
+                technologySelect(userRoleFunction)
         );
     }
 
@@ -59,7 +60,7 @@ public class AbstractLineChart extends ChartAttribute {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        attributes = SimilarPatentServer.extractArray(params, Constants.LINE_CHART);
+        attrNames = SimilarPatentServer.extractArray(params, Constants.LINE_CHART);
         searchTypes = SimilarPatentServer.extractArray(params,  Constants.DOC_TYPE_INCLUDE_FILTER_STR);
         // what to do if not present?
         if(searchTypes.isEmpty()) {
@@ -72,7 +73,7 @@ public class AbstractLineChart extends ChartAttribute {
     
     @Override
     public List<? extends AbstractChart> create(PortfolioList portfolioList, int i) {
-        return Stream.of(attributes.get(i)).map(attribute->{
+        return Stream.of(attrNames.get(i)).map(attribute->{
             String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
             String humanSearchType = combineTypesToString(searchTypes);
             String title = humanAttr + " Timeline";
