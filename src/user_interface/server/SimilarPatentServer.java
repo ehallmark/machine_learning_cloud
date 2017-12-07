@@ -421,7 +421,7 @@ public class SimilarPatentServer {
         String filterHumanName;
         if(!javaAttrToHumanAttrMap.containsKey(filter.getName())) {
             // build name
-            filterHumanName = AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getPrerequisite()) + " Filter" : humanAttributeFor(filter.getPrerequisite()) + " " + humanAttributeFor(filter.getFilterType().toString());
+            filterHumanName = AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getFullPrerequisite()) + " Filter" : humanAttributeFor(filter.getFullPrerequisite()) + " " + humanAttributeFor(filter.getFilterType().toString());
             while (humanAttrToJavaAttrMap.containsKey(filterHumanName)) {
                 // already exists
                 filterHumanName = filterHumanName + RANDOM_TOKEN;
