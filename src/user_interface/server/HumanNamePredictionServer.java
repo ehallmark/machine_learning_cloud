@@ -3,12 +3,15 @@ package user_interface.server;
 import assignee_normalization.human_name_prediction.HumanNamePredictionModel;
 import assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
 import ch.qos.logback.classic.Level;
+import com.google.gson.Gson;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import spark.Request;
 import spark.Response;
 
+import java.util.ArrayList;
 import java.util.Map;
-
+import java.util.List;
+import java.util.HashMap;
 import static spark.Spark.*;
 
 /**
@@ -43,13 +46,22 @@ public class HumanNamePredictionServer {
     }
 
     private synchronized static Object handleResults(Request req, Response res, HumanNamePredictionModel model) {
-        String name = req.queryParamOrDefault("name","");
-        if(name.length()>0) {
-            Map<String,Boolean> map = model.isHuman(model.getNet(),name);
-            if(map.containsKey(name)) {
-                return map.get(name);
-            }
+        String[] names = req.queryParamsValues("names");
+        Map<String,Object> responseMap = new HashMap<>();
+        if(names!=null && names.length>0) {
+            List<String> humans = new ArrayList<>();
+            List<String> companies = new ArrayList<>();
+            Map<String,Boolean> map = model.isHuman(model.getNet(),names);
+            map.entrySet().forEach(e->{
+                if(e.getValue()) {
+                    humans.add(e.getKey());
+                } else {
+                    companies.add(e.getKey());
+                }
+            });
+            responseMap.put("humans",humans);
+            responseMap.put("companies",companies);
         }
-        return null;
+        return new Gson().toJson(responseMap);
     }
 }
