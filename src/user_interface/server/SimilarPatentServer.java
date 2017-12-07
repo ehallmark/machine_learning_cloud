@@ -1335,7 +1335,7 @@ public class SimilarPatentServer {
 
                         List<String> chartTypes = new ArrayList<>();
                         charts.forEach(chart -> {
-                            for (int i = 0; i < chart.getAttributes().size(); i++) {
+                            for (int i = 0; i < chart.getAttrNames().size(); i++) {
                                 chartTypes.add(chart.getType());
                             }
                         });
