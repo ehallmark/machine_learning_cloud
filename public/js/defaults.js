@@ -737,9 +737,11 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                     // must create a folder first in the shared environment
                     if(!(topLevelFolder && node.text.startsWith("Shared"))) {
                         var subMenu = {};
+                        var labelToFunctions = {};
                         for(var i = 0; i < jsNodeDataFunctions.length; i++) {
                             var jsNodeDataFunction = jsNodeDataFunctions[i];
                             var newItemSubLabel = newItemSubLabels[i];
+                            labelToFunctions[newItemSubLabel]=jsNodeDataFunction;
                             subMenu[newItemSubLabel] = {
                                 "separator_before": false,
                                 "separator_after": false,
@@ -750,7 +752,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                     var callback = function(data) {
                                         saveJSNodeFunction(tree,node,name,deletable,data,node_type);
                                     };
-                                    jsNodeDataFunction(tree,node,name,deletable,callback);
+                                    labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
                                     return true;
                                 }
                             }
