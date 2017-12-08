@@ -140,7 +140,7 @@ public class CPC2VecPipelineManager extends DefaultPipelineManager<CPC2VecIterat
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
-        boolean runModels = true;
+        boolean runModels = false;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
         int nEpochs = 20;
