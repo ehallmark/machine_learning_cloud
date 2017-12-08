@@ -143,7 +143,7 @@ public class DataSearcher {
                             currentQuery.set(currentQuery.get().must(scorableQuery.boost(10)));
                         }
                         if(nonScorableQuery!=null) {
-                            currentFilter.set(currentFilter.get().must(nonScorableQuery));
+                            currentFilter.set(currentFilter.get().must(nonScorableQuery.boost(0)));
                         }
                     } else {
                         currentFilter.set(currentFilter.get().must(filter.getFilterQuery().boost(0)));
