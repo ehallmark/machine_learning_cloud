@@ -98,6 +98,13 @@ public class CPC2VecIterator implements SequenceIterator<VocabWord> {
                     }
                     Collections.shuffle(assets, new Random());
                     iterator = assets.iterator();
+                    while(queue.size()>0) {
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(50);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                     System.out.println("Finished epoch: "+(i+1));
                     // Evaluate model
                     if(afterEpochFunction!=null)afterEpochFunction.apply(null);

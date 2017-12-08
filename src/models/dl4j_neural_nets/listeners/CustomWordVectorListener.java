@@ -23,16 +23,14 @@ import java.util.function.Function;
 public class CustomWordVectorListener implements VectorsListener<VocabWord> {
     private int lines;
     private String[] words;
-    private List<Triple<String,String,String>> analogies;
     private static org.slf4j.Logger log = LoggerFactory.getLogger(CustomWordVectorListener.class);
     private long currentEpoch = 0;
     private Function<SequenceVectors<VocabWord>,Void> saveFunction;
     private String modelName;
 
 
-    public CustomWordVectorListener(Function<SequenceVectors<VocabWord>,Void> saveFunction, String modelName, int lines, List<Triple<String,String,String>> analogies, String... words) {
+    public CustomWordVectorListener(Function<SequenceVectors<VocabWord>,Void> saveFunction, String modelName, int lines, String... words) {
         this.lines=lines;
-        this.analogies=analogies;
         this.words=words;
         this.modelName=modelName;
         this.saveFunction=saveFunction;
@@ -75,7 +73,7 @@ public class CustomWordVectorListener implements VectorsListener<VocabWord> {
                     Collection<String> lst = sequenceVectors.wordsNearest(word, 10);
                     System.out.println("10 Words closest to '" + word + "': " + lst);
                 }
-                saveFunction.apply(sequenceVectors);
+                if(saveFunction!=null) saveFunction.apply(sequenceVectors);
             }
         }
     }

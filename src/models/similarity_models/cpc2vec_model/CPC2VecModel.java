@@ -5,6 +5,7 @@ import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
 import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.CBOW;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
+import org.deeplearning4j.models.sequencevectors.interfaces.VectorsListener;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
@@ -14,6 +15,7 @@ import seeding.Constants;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -40,29 +42,8 @@ public class CPC2VecModel extends WordVectorPredictionModel<INDArray> {
 
     @Override
     public void train(int nEpochs) {
-        Function<WordVectors,Void> saveFunction = sequenceVectors->{
-            System.out.println("Saving...");
-            double score = 0d;
-            try {
-                save(LocalDateTime.now(), score, sequenceVectors);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        };
-
         Collection<String> words = pipelineManager.getTestWords();
-        Function<Void,Void> afterEpochFunction = (v) -> {
-            for (String word : words) {
-                Collection<String> lst = getNet().wordsNearest(word, 10);
-                System.out.println("10 CPCs closest to '" + word + "': " + lst);
-            }
-            saveFunction.apply(getNet());
-            return null;
-        };
-
         CPC2VecIterator iterator = pipelineManager.getDatasetManager().getTrainingIterator();
-        iterator.setAfterEpochFunction(afterEpochFunction);
 
         DefaultTokenizerFactory tf = new DefaultTokenizerFactory();
         tf.setTokenPreProcessor(new TokenPreProcess() {
@@ -101,6 +82,7 @@ public class CPC2VecModel extends WordVectorPredictionModel<INDArray> {
                 .iterations(1)
                 .useHierarchicSoftmax(true)
                 .elementsLearningAlgorithm(new CBOW<>())
+                .setVectorsListeners(Collections.singleton(new CustomWordVectorListener(null,modelName,1000000,words.toArray(new String[]{}))))
                 .iterate(iterator);
         if(!newModel) {
             iterator.setRunVocab(false);
@@ -112,9 +94,28 @@ public class CPC2VecModel extends WordVectorPredictionModel<INDArray> {
         net = builder.build();
 
         ((Word2Vec)net).fit();
-        synchronized (CustomWordVectorListener.class) {
-            System.out.println("Everything should be saved.");
-        }
+
+        Function<WordVectors,Void> saveFunction = sequenceVectors->{
+            System.out.println("Saving...");
+            double score = 0d;
+            try {
+                save(LocalDateTime.now(), score, sequenceVectors);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        };
+
+        Function<Void,Void> afterEpochFunction = (v) -> {
+            for (String word : words) {
+                Collection<String> lst = getNet().wordsNearest(word, 10);
+                System.out.println("10 CPCs closest to '" + word + "': " + lst);
+            }
+            saveFunction.apply(getNet());
+            return null;
+        };
+
+        afterEpochFunction.apply(null);
     }
 
     @Override
