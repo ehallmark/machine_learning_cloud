@@ -74,8 +74,8 @@ public class CPC2VecPipelineManager extends DefaultPipelineManager<SequenceItera
         boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = false;
-        boolean runPredictions = false;
-        int nEpochs = 10;
+        boolean runPredictions = true;
+        int nEpochs = 30;
         String modelName = MODEL_NAME;
 
         CPC2VecPipelineManager pipelineManager = new CPC2VecPipelineManager(modelName,nEpochs);
