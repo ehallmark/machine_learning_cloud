@@ -55,6 +55,9 @@ public class CPC2VecIterator implements SentenceIterator {
 
 
     public boolean hasNextDocument() {
+        synchronized (this) {
+            if(task==null) reset();
+        }
         return queue.size()>0 || !task.isDone();
     }
 
@@ -71,7 +74,7 @@ public class CPC2VecIterator implements SentenceIterator {
     }
 
     @Override
-    public void reset() {
+    public synchronized void reset() {
         if(task!=null && !task.isDone()) return;
         queue.clear();
         final boolean singleEpoch = vocabPass;
