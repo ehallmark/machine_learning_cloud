@@ -181,6 +181,12 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Relation Type", Constants.RELATION_TYPE);
             humanAttrToJavaAttrMap.put("Filing Number", Constants.FILING_NAME);
             humanAttrToJavaAttrMap.put("CompDB", Constants.COMPDB);
+            humanAttrToJavaAttrMap.put("CPC Section", Constants.CPC_SECTION);
+            humanAttrToJavaAttrMap.put("CPC Class", Constants.CPC_CLASS);
+            humanAttrToJavaAttrMap.put("CPC Subclass", Constants.CPC_SUBCLASS);
+            humanAttrToJavaAttrMap.put("CPC Main Group", Constants.CPC_MAIN_GROUP);
+            humanAttrToJavaAttrMap.put("CPC Subgroup", Constants.CPC_SUBGROUP);
+            humanAttrToJavaAttrMap.put("CPC Title", Constants.CPC_TITLE);
             humanAttrToJavaAttrMap.put("Granted", Constants.GRANTED);
             humanAttrToJavaAttrMap.put("Filing Date", Constants.FILING_DATE);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
@@ -190,7 +196,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Filing Country", Constants.FILING_COUNTRY);
             humanAttrToJavaAttrMap.put("Original Expiration Date", Constants.EXPIRATION_DATE);
             humanAttrToJavaAttrMap.put("Term Adjustments (Days)", Constants.PATENT_TERM_ADJUSTMENT);
-            humanAttrToJavaAttrMap.put("CPC Codes", Constants.CPC_CODES);
+            humanAttrToJavaAttrMap.put("CPC Code", Constants.CPC_CODES);
+            humanAttrToJavaAttrMap.put("CPC Data", Constants.NESTED_CPC_CODES);
             humanAttrToJavaAttrMap.put("Buyer",Constants.BUYER);
             humanAttrToJavaAttrMap.put("Seller",Constants.SELLER);
             humanAttrToJavaAttrMap.put("Original Priority Date", Constants.PRIORITY_DATE);
@@ -508,6 +515,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.PATENT_FAMILY, new RelatedDocumentsNestedAttribute());
             attributesMap.put(Constants.GATHER, new GatherNestedAttribute());
             attributesMap.put(Constants.COMPDB, new CompDBNestedAttribute());
+            attributesMap.put(Constants.NESTED_CPC_CODES, new CPCNestedAttribute());
 
             // include count
             Constants.NESTED_ATTRIBUTES.forEach(attr->{
@@ -591,6 +599,7 @@ public class SimilarPatentServer {
             // vec
             if(filing!=null) {
                 Item item = new Item(label);
+                Set<String> attributesToRemove = new HashSet<>();
                 attributes.forEach(model -> {
                     Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1);
                     AbstractAttribute parent = model.getParent();
@@ -613,6 +622,8 @@ public class SimilarPatentServer {
                             }
                         }
                         if(update) item.addData(model.getMongoDBName(),obj);
+                    } else {
+                        attributesToRemove.add(model.getMongoDBName());
                     }
                 });
                 INDArray vec = vectorizer.vectorFor(filing);
@@ -621,10 +632,12 @@ public class SimilarPatentServer {
                 }
                 if(vec!=null) {
                     item.addData("vector_obj", vectorToElasticSearchObject(vec));
+                } else {
+                    attributesToRemove.add("vector_obj");
                 }
 
-                if(item.getDataMap().size()>0) {
-                    DataIngester.ingestItem(item, filing);
+                if(item.getDataMap().size()>0 || attributesToRemove.size()>0) {
+                    DataIngester.ingestItem(item, filing, attributesToRemove);
                     if (debug) System.out.println("Item: " + item.getName());
                 }
             }

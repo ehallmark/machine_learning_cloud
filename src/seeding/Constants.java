@@ -126,6 +126,13 @@ public class Constants {
 	public static final String FILING_DATE = "filingDate";
 	public static final String ABSTRACT = "abstract";
 	public static final String CPC_CODES = "cpcCodes";
+	public static final String NESTED_CPC_CODES = "nestedCpcCodes";
+	public static final String CPC_SECTION = "cpcSection";
+	public static final String CPC_CLASS = "cpcClass";
+	public static final String CPC_SUBCLASS = "cpcSubclass";
+	public static final String CPC_MAIN_GROUP = "cpcMainGroup";
+	public static final String CPC_SUBGROUP = "cpcSubgroup";
+	public static final String CPC_TITLE = "cpcTitle";
 	public static final String ESTIMATED_EXPIRATION_DATE = "estimatedExpirationDate";
 	public static final String ESTIMATED_PRIORITY_DATE = "estimatedPriorityDate";
 	public static final String PARAGRAPH_VECTOR_MODEL = "paragraphVectorModel";
@@ -237,7 +244,8 @@ public class Constants {
 			CITATIONS,
 			CLAIMS,
 			PATENT_FAMILY,
-			ASSIGNMENTS
+			ASSIGNMENTS,
+			NESTED_CPC_CODES
 	);
 
 	public static Collection<String> FILING_ATTRIBUTES_SET = Stream.of(

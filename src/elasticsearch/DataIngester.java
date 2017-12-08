@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 7/22/2017.
@@ -29,7 +30,7 @@ public class DataIngester {
     public static void ingestBulk(String name, String parent, Map<String,Object> doc, boolean create) {
        // if(create) bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
        // else bulkProcessor.add(new UpdateRequest(INDEX_NAME,TYPE_NAME, name).doc(doc));
-        ingestMongo(name, parent, null, doc, create);
+        ingestMongo(name, parent, doc, Collections.emptySet(), create);
     }
 
     public static void ingestBulkFromMongoDB(String type, String name,  Document doc) {
@@ -87,7 +88,7 @@ public class DataIngester {
         }
     }
 
-    public static synchronized void ingestMongo(String id, String parent, Document query, Map<String,Object> doc, boolean create) {
+    public static synchronized void ingestMongo(String id, String parent, Map<String,Object> doc, Set<String> unset, boolean create) {
         Collection<String> filingAttributes = Constants.FILING_ATTRIBUTES_SET;
         Map<String,Object> assetDoc = new HashMap<>();
         Map<String,Object> filingDoc = new HashMap<>();
@@ -114,17 +115,34 @@ public class DataIngester {
             addToUpdateMap(PARENT_TYPE_NAME, model);
 
         } else {
+            Map<String,String> unsetMap = unset.isEmpty()?Collections.emptyMap():unset.stream().collect(Collectors.toMap(d->d,d->""));
             if (id != null && assetDoc.size() > 0) {
-                Document updateDoc = new Document("$set", assetDoc);
-                Document updateQuery = query == null ? new Document("_id", id) : query.append("_id", id);
-                WriteModel<Document> model = new UpdateOneModel<>(updateQuery, updateDoc);
-                addToUpdateMap(TYPE_NAME, model);
+                Map<String,Object> updateDoc = new HashMap<>();
+                if(assetDoc.size()>0) {
+                    updateDoc.put("$set",assetDoc);
+                }
+                if(unsetMap.size()>0){
+                    updateDoc.put("$unset", unsetMap);
+                }
+                if(!updateDoc.isEmpty()) {
+                    Document updateQuery = new Document("_id", id);
+                    WriteModel<Document> model = new UpdateOneModel<>(updateQuery, new Document(updateDoc));
+                    addToUpdateMap(TYPE_NAME, model);
+                }
             }
             if(parent!=null && filingDoc.size() > 0) {
-                Document updateParentDoc = new Document("$set",filingDoc);
-                Document updateParentQuery = new Document("_id", parent);
-                WriteModel<Document> model = new UpdateOneModel<>(updateParentQuery, updateParentDoc);
-                addToUpdateMap(PARENT_TYPE_NAME, model);
+                Map<String,Object> updateParentDoc = new HashMap<>();
+                if(filingDoc.size()>0) {
+                    updateParentDoc.put("$set",filingDoc);
+                }
+                if(unsetMap.size()>0) {
+                    updateParentDoc.put("$unset",unsetMap);
+                }
+                if(!updateParentDoc.isEmpty()) {
+                    Document updateParentQuery = new Document("_id", parent);
+                    WriteModel<Document> model = new UpdateOneModel<>(updateParentQuery, new Document(updateParentDoc));
+                    addToUpdateMap(PARENT_TYPE_NAME, model);
+                }
             }
         }
     }
@@ -228,12 +246,12 @@ public class DataIngester {
         }
     }
 
-    public static void ingestItem(Item item, String filing) {
+    public static void ingestItem(Item item, String filing, Set<String> unset) {
         Map<String,Object> itemData = item.getDataMap();
         String name = item.getName();
-        if(itemData.size()>0) {
+        if(itemData.size()>0 || unset.size()>0) {
             if(filing!=null) {
-                ingestBulk(name,filing,itemData,false);
+                ingestMongo(name,filing,itemData,unset,false);
             }
         }
     }

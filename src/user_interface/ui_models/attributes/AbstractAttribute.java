@@ -2,25 +2,21 @@ package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
 import seeding.Constants;
-import seeding.Database;
-import spark.Request;
 import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.charts.ChartAttribute;
 import user_interface.ui_models.filters.*;
 
-import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static j2html.TagCreator.*;
+import static j2html.TagCreator.div;
+import static j2html.TagCreator.span;
 
 /**
  * Created by Evan on 5/9/2017.
@@ -31,9 +27,12 @@ public abstract class AbstractAttribute {
     protected boolean isObject = false;
     @Getter @Setter
     protected AbstractAttribute parent;
-
     public AbstractAttribute(Collection<AbstractFilter.FilterType> filterTypes) {
         this.filterTypes=filterTypes;
+    }
+
+    public boolean isDisplayable() {
+        return true;
     }
 
     public abstract String getName();
