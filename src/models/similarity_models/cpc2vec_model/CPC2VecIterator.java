@@ -89,11 +89,13 @@ public class CPC2VecIterator implements SequenceIterator<VocabWord> {
                                 .map(cpc->new VocabWord(1d,cpc.getName()))
                                 .collect(Collectors.toCollection(ArrayList::new));
                         Collections.shuffle(cpcs, new Random());
-                        Sequence<VocabWord> sequence = new Sequence<>(cpcs);
-                        try {
-                            queue.put(sequence);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                        if(cpcs.size()>0) {
+                            Sequence<VocabWord> sequence = new Sequence<>(cpcs);
+                            try {
+                                queue.put(sequence);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                     Collections.shuffle(assets, new Random());
