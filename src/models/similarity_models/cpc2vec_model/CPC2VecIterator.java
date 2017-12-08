@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 11/21/17.
  */
-public class CPC2VecIterator implements SequenceIterator<VocabWord> {
-    private ArrayBlockingQueue<Sequence<VocabWord>> queue;
+public class CPC2VecIterator implements SentenceIterator {
+    private ArrayBlockingQueue<String> queue;
     private RecursiveAction task;
     private boolean vocabPass;
     private int numEpochs;
@@ -59,7 +59,7 @@ public class CPC2VecIterator implements SequenceIterator<VocabWord> {
     }
 
     @Override
-    public Sequence<VocabWord> nextSequence() {
+    public String nextSentence() {
         while (!task.isDone() && queue.isEmpty()) {
             try {
                 TimeUnit.MILLISECONDS.sleep(5);
@@ -69,7 +69,6 @@ public class CPC2VecIterator implements SequenceIterator<VocabWord> {
         }
         return queue.poll();
     }
-
 
     @Override
     public void reset() {
@@ -84,19 +83,13 @@ public class CPC2VecIterator implements SequenceIterator<VocabWord> {
                 for(int i = 0; i < finalNumEpochs; i++) {
                     while(iterator.hasNext()) {
                         String asset = iterator.next();
-                        List<VocabWord> cpcs = cpcMap.getOrDefault(asset,Collections.emptyList()).stream()
-                                .map(cpc->{
-                                    VocabWord v = new VocabWord(1d,cpc.getName());
-                                    v.setElementFrequency(1);
-                                    v.setSequencesCount(1);
-                                    return v;
-                                })
+                        List<String> cpcs = cpcMap.getOrDefault(asset,Collections.emptyList()).stream()
+                                .map(cpc->cpc.getName())
                                 .collect(Collectors.toCollection(ArrayList::new));
                         Collections.shuffle(cpcs, new Random());
                         if(cpcs.size()>0) {
-                            Sequence<VocabWord> sequence = new Sequence<>(cpcs);
                             try {
-                                queue.put(sequence);
+                                queue.put(String.join(" ",cpcs));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -121,9 +114,24 @@ public class CPC2VecIterator implements SequenceIterator<VocabWord> {
         vocabPass=false;
     }
 
+    @Override
+    public void finish() {
+
+    }
 
     @Override
-    public boolean hasMoreSequences() {
+    public SentencePreProcessor getPreProcessor() {
+        return null;
+    }
+
+    @Override
+    public void setPreProcessor(SentencePreProcessor sentencePreProcessor) {
+
+    }
+
+
+    @Override
+    public boolean hasNext() {
         return hasNextDocument();
     }
 

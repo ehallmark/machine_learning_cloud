@@ -92,7 +92,6 @@ public class CPC2VecModel extends WordVectorPredictionModel<INDArray> {
         }
 
         net = builder.build();
-
         ((Word2Vec)net).fit();
 
         Function<WordVectors,Void> saveFunction = sequenceVectors->{
