@@ -29,7 +29,6 @@ public class CPC2VecIterator implements SequenceIterator<VocabWord> {
     private RecursiveAction task;
     private boolean vocabPass;
     private int numEpochs;
-    @Setter
     private Function<Void,Void> afterEpochFunction;
     private List<String> assets;
     private Iterator<String> iterator;
@@ -86,7 +85,12 @@ public class CPC2VecIterator implements SequenceIterator<VocabWord> {
                     while(iterator.hasNext()) {
                         String asset = iterator.next();
                         List<VocabWord> cpcs = cpcMap.getOrDefault(asset,Collections.emptyList()).stream()
-                                .map(cpc->new VocabWord(1d,cpc.getName()))
+                                .map(cpc->{
+                                    VocabWord v = new VocabWord(1d,cpc.getName());
+                                    v.setElementFrequency(1);
+                                    v.setSequencesCount(1);
+                                    return v;
+                                })
                                 .collect(Collectors.toCollection(ArrayList::new));
                         Collections.shuffle(cpcs, new Random());
                         if(cpcs.size()>0) {
