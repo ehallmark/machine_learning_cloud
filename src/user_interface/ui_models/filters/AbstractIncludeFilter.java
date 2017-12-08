@@ -124,7 +124,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
         // check if include
         if(minShouldMatchId!=null) {
             // add minimum should match parameter
-            tag = tag.with(label("Minimum Should Match").with(input().withClass("form-control").attr("style","margin-left: 10px;").withId(minShouldMatchId).withName(minShouldMatchId).withValue("1").withType("number")));
+            tag = tag.with(label("Minimum Should Match").with(input().attr("min","1").withClass("form-control").attr("style","margin-top: 5px; margin-bottom: 5px; margin-left: 10px; width: 65px; height: 30px; display: inline;").withId(minShouldMatchId).withName(minShouldMatchId).withValue("1").withType("number")));
         }
         return tag;
     }
