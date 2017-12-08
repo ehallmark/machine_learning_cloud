@@ -56,22 +56,26 @@ public class AbstractNestedFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        return queryHelper(filterSubset,false);
+        return queryHelper(filterSubset,false, true);
     }
 
     public QueryBuilder getScorableQuery() {
-        return queryHelper(filterSubset,true);
+        return queryHelper(filterSubset,true, false);
+    }
+
+    public QueryBuilder getNonScorableQuery() {
+        return queryHelper(filterSubset,false, false);
     }
 
 
-    private QueryBuilder queryHelper(Collection<AbstractFilter> subset, boolean usingScore) {
+    private QueryBuilder queryHelper(Collection<AbstractFilter> subset, boolean usingScore, boolean useAll) {
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         BoolQueryBuilder filterQuery = QueryBuilders.boolQuery();
         for(AbstractFilter filter : subset) {
             if(filter.isActive()) {
                 if(usingScore && filter.contributesToScore()) {
                     boolQuery = boolQuery.must(filter.getFilterQuery());
-                } else {
+                } else if(useAll || (!usingScore && !filter.contributesToScore())) {
                     filterQuery = filterQuery.must(filter.getFilterQuery());
                 }
             }
