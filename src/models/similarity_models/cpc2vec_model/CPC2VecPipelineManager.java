@@ -6,10 +6,6 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
 import lombok.Getter;
-import models.similarity_models.cpc_encoding_model.CPCIndexMap;
-import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
-import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
-import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -19,10 +15,7 @@ import tools.ClassCodeHandler;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 
 import java.io.File;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -60,7 +53,7 @@ public class CPC2VecPipelineManager extends DefaultPipelineManager<CPC2VecIterat
         return hierarchy;
     }
 
-    public synchronized Map<String,? extends Collection<CPC>> getCPCMap() {
+    public synchronized Map<String,Collection<CPC>> getCPCMap() {
         if(cpcMap==null) {
             Set<String> allAssets = new HashSet<>(Database.getAllPatentsAndApplications());
             getHierarchy();
