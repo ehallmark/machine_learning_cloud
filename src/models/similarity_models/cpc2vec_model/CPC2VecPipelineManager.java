@@ -133,7 +133,7 @@ public class CPC2VecPipelineManager extends DefaultPipelineManager<CPC2VecIterat
             if(trainAssets==null) {
                 splitData();
             }
-            
+
             datasetManager = new NoSaveDataSetManager<>(
                     new CPC2VecIterator(trainAssets,numEpochs,cpcMap),
                     new CPC2VecIterator(testAssets,1,cpcMap),
@@ -150,7 +150,7 @@ public class CPC2VecPipelineManager extends DefaultPipelineManager<CPC2VecIterat
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
-        int nEpochs = 30;
+        int nEpochs = 20;
         String modelName = MODEL_NAME;
 
         CPC2VecPipelineManager pipelineManager = new CPC2VecPipelineManager(modelName,nEpochs);

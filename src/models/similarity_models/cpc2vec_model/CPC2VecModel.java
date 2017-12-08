@@ -24,7 +24,7 @@ import java.util.function.Function;
  * Created by ehallmark on 11/21/17.
  */
 public class CPC2VecModel extends WordVectorPredictionModel<INDArray> {
-    public static final int VECTOR_SIZE = 128;
+    public static final int VECTOR_SIZE = 32;
     private static final int BATCH_SIZE = 512;
     private static Type MODEL_TYPE = Type.Word2Vec;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"cpc2vec_model_data");
