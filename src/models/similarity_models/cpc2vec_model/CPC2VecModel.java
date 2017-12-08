@@ -4,9 +4,7 @@ import data_pipeline.models.WordVectorPredictionModel;
 import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
 import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.CBOW;
-import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
-import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
@@ -24,10 +22,10 @@ import java.util.function.Function;
  * Created by ehallmark on 11/21/17.
  */
 public class CPC2VecModel extends WordVectorPredictionModel<INDArray> {
-    public static final int VECTOR_SIZE = 64;
+    public static final int VECTOR_SIZE = 128;
     private static final int BATCH_SIZE = 512;
     private static Type MODEL_TYPE = Type.Word2Vec;
-    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"word_word2vec_model_data");
+    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"cpc2vec_model_data");
 
     private CPC2VecPipelineManager pipelineManager;
     public CPC2VecModel(CPC2VecPipelineManager pipelineManager, String modelName) {
@@ -57,13 +55,15 @@ public class CPC2VecModel extends WordVectorPredictionModel<INDArray> {
         Function<Void,Void> afterEpochFunction = (v) -> {
             for (String word : words) {
                 Collection<String> lst = getNet().wordsNearest(word, 10);
-                System.out.println("10 Words closest to '" + word + "': " + lst);
+                System.out.println("10 CPCs closest to '" + word + "': " + lst);
             }
             saveFunction.apply(getNet());
             return null;
         };
 
-        FileSequenceIterator iterator = new FileSequenceIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN), nEpochs, afterEpochFunction);
+        CPC2VecIterator iterator = pipelineManager.getDatasetManager().getTrainingIterator();
+        iterator.setAfterEpochFunction(afterEpochFunction);
+
         DefaultTokenizerFactory tf = new DefaultTokenizerFactory();
         tf.setTokenPreProcessor(new TokenPreProcess() {
             @Override

@@ -131,7 +131,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<DataSetIterato
 
         getCPCMap();
         System.out.println("Loaded cpcMap");
-        List<String> allAssets = new ArrayList<>(cpcMap.keySet().parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
+        List<String> allAssets = new ArrayList<>(cpcMap.keySet().stream().sorted().collect(Collectors.toList()));
 
         System.out.println("Splitting test and train");
         Random rand = new Random(69);

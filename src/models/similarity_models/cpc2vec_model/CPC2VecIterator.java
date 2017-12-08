@@ -1,36 +1,54 @@
 package models.similarity_models.cpc2vec_model;
 
+import cpc_normalization.CPC;
+import cpc_normalization.CPCHierarchy;
+import lombok.Setter;
 import models.text_streaming.FileTextDataSetIterator;
+import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
+import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
+import seeding.Database;
+import tools.ClassCodeHandler;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 11/21/17.
  */
-public class FileSequenceIterator implements SentenceIterator {
-    private ArrayBlockingQueue<String> queue;
+public class CPC2VecIterator implements SequenceIterator<VocabWord> {
+    private ArrayBlockingQueue<Sequence<VocabWord>> queue;
     private RecursiveAction task;
     private boolean vocabPass;
     private int numEpochs;
+    @Setter
     private Function<Void,Void> afterEpochFunction;
-    private FileTextDataSetIterator iterator;
-    public FileSequenceIterator(FileTextDataSetIterator iterator, int numEpochs) {
-        this(iterator,numEpochs,null);
+    private List<String> assets;
+    private Iterator<String> iterator;
+    protected Map<String,Collection<CPC>> cpcMap;
+    public CPC2VecIterator(List<String> assets, int numEpochs, Map<String,Collection<CPC>> cpcMap) {
+        this(assets,numEpochs,cpcMap,null);
     }
 
-    public FileSequenceIterator(FileTextDataSetIterator iterator, int numEpochs, Function<Void,Void> afterEpochFunction) {
+    public CPC2VecIterator(List<String> assets, int numEpochs,Map<String,Collection<CPC>> cpcMap, Function<Void,Void> afterEpochFunction) {
         this.numEpochs=numEpochs;
-        this.iterator=iterator;
+        this.cpcMap=cpcMap;
+        this.assets=new ArrayList<>(assets);
+        this.iterator=assets.iterator();
         this.queue = new ArrayBlockingQueue<>(5000);
         this.vocabPass=true;
         this.afterEpochFunction=afterEpochFunction;
     }
+
+
 
     public void setRunVocab(boolean vocab) {
         this.vocabPass=vocab;
@@ -42,17 +60,7 @@ public class FileSequenceIterator implements SentenceIterator {
     }
 
     @Override
-    public SentencePreProcessor getPreProcessor() {
-        return null;
-    }
-
-    @Override
-    public void setPreProcessor(SentencePreProcessor sentencePreProcessor) {
-
-    }
-
-    @Override
-    public String nextSentence() {
+    public Sequence<VocabWord> nextSequence() {
         while (!task.isDone() && queue.isEmpty()) {
             try {
                 TimeUnit.MILLISECONDS.sleep(5);
@@ -76,14 +84,20 @@ public class FileSequenceIterator implements SentenceIterator {
                 System.out.println("Running "+finalNumEpochs+" epochs: "+finalNumEpochs);
                 for(int i = 0; i < finalNumEpochs; i++) {
                     while(iterator.hasNext()) {
-                        LabelledDocument document = iterator.next();
+                        String asset = iterator.next();
+                        List<VocabWord> cpcs = cpcMap.getOrDefault(asset,Collections.emptyList()).stream()
+                                .map(cpc->new VocabWord(1d,cpc.getName()))
+                                .collect(Collectors.toCollection(ArrayList::new));
+                        Collections.shuffle(cpcs, new Random());
+                        Sequence<VocabWord> sequence = new Sequence<>(cpcs);
                         try {
-                            queue.put(document.getContent());
+                            queue.put(sequence);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
-                    iterator.reset();
+                    Collections.shuffle(assets, new Random());
+                    iterator = assets.iterator();
                     System.out.println("Finished epoch: "+(i+1));
                     // Evaluate model
                     if(afterEpochFunction!=null)afterEpochFunction.apply(null);
@@ -94,13 +108,9 @@ public class FileSequenceIterator implements SentenceIterator {
         vocabPass=false;
     }
 
-    @Override
-    public void finish() {
-        iterator.shutdown();
-    }
 
     @Override
-    public boolean hasNext() {
+    public boolean hasMoreSequences() {
         return hasNextDocument();
     }
 
