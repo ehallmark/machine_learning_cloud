@@ -55,8 +55,10 @@ public class CPC2VecIterator implements SentenceIterator {
 
 
     public boolean hasNextDocument() {
-        synchronized (this) {
-            if(task==null) reset();
+        if(task==null) {
+            synchronized (this) {
+                if (task == null) reset();
+            }
         }
         return queue.size()>0 || !task.isDone();
     }
