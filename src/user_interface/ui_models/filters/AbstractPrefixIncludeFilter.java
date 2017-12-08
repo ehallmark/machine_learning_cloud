@@ -25,7 +25,7 @@ public class AbstractPrefixIncludeFilter extends AbstractIncludeFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        BoolQueryBuilder query = QueryBuilders.boolQuery().minimumShouldMatch(1);
+        BoolQueryBuilder query = QueryBuilders.boolQuery().minimumShouldMatch(minimumShouldMatch);
         for(String label : labels) {
             query = query.should(QueryBuilders.prefixQuery(getFullPrerequisite(), label));
         }

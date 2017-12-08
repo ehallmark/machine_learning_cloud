@@ -7,7 +7,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import user_interface.ui_models.attributes.AbstractAttribute;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**

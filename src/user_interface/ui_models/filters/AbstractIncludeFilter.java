@@ -1,5 +1,6 @@
 package user_interface.ui_models.filters;
 
+import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
 import lombok.NonNull;
@@ -7,6 +8,7 @@ import lombok.Setter;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -17,16 +19,18 @@ import java.util.Collection;
 import java.util.function.Function;
 
 import static j2html.TagCreator.*;
+import static user_interface.server.SimilarPatentServer.extractInt;
 import static user_interface.server.SimilarPatentServer.preProcess;
 
 /**
  * Created by Evan on 6/17/2017.
  */
 public class AbstractIncludeFilter extends AbstractFilter {
+    private static final int DEFAULT_MINIMUM_SHOULD_MATCH = 1;
     @Getter @Setter
     protected Collection<String> labels;
     protected FieldType fieldType;
-
+    protected int minimumShouldMatch;
     public AbstractIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
         super(attribute, filterType);
         this.fieldType=fieldType;
@@ -60,21 +64,24 @@ public class AbstractIncludeFilter extends AbstractFilter {
             termQuery = true;
         }
 
-        if(termQuery) {
-            return QueryBuilders.termsQuery(preReq, labels);
-        } else {
-            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-            for (String label : labels) {
+
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().minimumShouldMatch(minimumShouldMatch);
+        for (String label : labels) {
+            if(termQuery) {
+                boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.termQuery(preReq, label));
+            } else {
                 boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.matchPhraseQuery(preReq, label));
             }
-            return boolQueryBuilder;
         }
+        return boolQueryBuilder;
     }
 
     public boolean isActive() { return labels!=null && labels.size() > 0; }
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
+        this.minimumShouldMatch = extractInt(req, getName()+ Constants.MINIMUM_SHOULD_MATCH_SUFFIX, DEFAULT_MINIMUM_SHOULD_MATCH);
+
         if (!fieldType.equals(FieldType.Multiselect)||filterType.equals(FilterType.PrefixExclude)||filterType.equals(FilterType.PrefixInclude)) {
             System.out.println("Params for "+getName()+": "+String.join("",SimilarPatentServer.extractArray(req, getName())));
             labels = preProcess(String.join("",SimilarPatentServer.extractArray(req, getName())), "\n", null);
@@ -86,21 +93,29 @@ public class AbstractIncludeFilter extends AbstractFilter {
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+        ContainerTag tag;
         if (!fieldType.equals(FieldType.Multiselect)||filterType.equals(FilterType.PrefixExclude)||filterType.equals(FilterType.PrefixInclude)) {
-            return div().with(
+            tag= div().with(
                     textarea().attr("data-attribute",attribute.getName()).attr("data-filtertype",filterType.toString()).withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
             );
         } else {
             if(attribute instanceof AjaxMultiselect) {
-                return div().with(
+                tag= div().with(
                         ajaxMultiSelect(getName(), ((AjaxMultiselect) attribute).ajaxUrl(), ("multiselect-multiselect-"+getName()).replaceAll("[\\[\\] ]",""))
                 );
             } else {
-                return div().with(
+                tag= div().with(
                         SimilarPatentServer.technologySelect(getName(), getAllValues())
                 );
             }
         }
+        // check if include
+        if(filterType.equals(FilterType.Include)||filterType.equals(FilterType.PrefixInclude)) {
+            // add minimum should match parameter
+            String id = getName().replaceAll("[\\[\\]]","")+filterType.toString()+Constants.MINIMUM_SHOULD_MATCH_SUFFIX;
+            tag = tag.with(label("Minimum Should Match").with(input().withId(id).withName(getName()+Constants.MINIMUM_SHOULD_MATCH_SUFFIX)).withValue("1").withType("number"));
+        }
+        return tag;
     }
 
     public static Tag ajaxMultiSelect(String name, String url, String id) {
