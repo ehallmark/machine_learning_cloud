@@ -86,7 +86,12 @@ public class AbstractIncludeFilter extends AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        this.minimumShouldMatch = extractInt(req, getName()+ Constants.MINIMUM_SHOULD_MATCH_SUFFIX, DEFAULT_MINIMUM_SHOULD_MATCH);
+        if(minShouldMatchId==null) {
+            this.minimumShouldMatch = DEFAULT_MINIMUM_SHOULD_MATCH;
+        } else {
+            this.minimumShouldMatch = extractInt(req, minShouldMatchId, DEFAULT_MINIMUM_SHOULD_MATCH);
+        }
+
         System.out.println("Minimum should match for "+getName()+": "+minimumShouldMatch);
 
         if (!fieldType.equals(FieldType.Multiselect)||filterType.equals(FilterType.PrefixExclude)||filterType.equals(FilterType.PrefixInclude)) {
