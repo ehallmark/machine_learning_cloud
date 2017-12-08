@@ -75,7 +75,7 @@ public class CPC2VecModel extends WordVectorPredictionModel<INDArray> {
         int windowSize = 3;
         int minWordFrequency = 3;
         double negativeSampling = -1;
-        double sampling = 0;
+        double sampling = 0.0001;
         //double learningRate = 0.1;
         //double minLearningRate = 0.001;
         double learningRate = 0.01;
