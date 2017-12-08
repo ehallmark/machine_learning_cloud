@@ -1,29 +1,16 @@
 package seeding.ai_db_updater;
 
-import elasticsearch.DataIngester;
-import elasticsearch.MyClient;
-import net.lingala.zip4j.core.ZipFile;
-import seeding.Constants;
-import seeding.Database;
 import seeding.ai_db_updater.handlers.AppCPCHandler;
 import seeding.ai_db_updater.handlers.LineHandler;
 import seeding.ai_db_updater.handlers.PatentCPCHandler;
-import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 import seeding.data_downloader.AppCPCDataDownloader;
 import seeding.data_downloader.PatentCPCDataDownloader;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 
-import java.io.*;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.time.LocalDate;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -34,6 +21,8 @@ public class UpdateClassificationHash {
     public static void main(String[] args) throws Exception {
         AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
         assetToCPCMap.initMaps();
+        assetToCPCMap.getApplicationDataMap().clear(); // repulling everything anyway...
+        assetToCPCMap.getPatentDataMap().clear(); // repulling everything anyway...
         {
             AppCPCDataDownloader downloader = new AppCPCDataDownloader();
             downloader.pullMostRecentData();
