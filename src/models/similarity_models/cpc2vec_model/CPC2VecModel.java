@@ -56,12 +56,14 @@ public class CPC2VecModel extends WordVectorPredictionModel<INDArray> {
                 predictions.put(cpc, vec);
             }
             if(total.getAndIncrement()%10000==9999) {
-                System.out.println("Finished "+found.get()+" from "+total.get()+" / "+classCodes.size());
+                System.out.println("Finished "+found.get()+" cpcs from "+total.get()+" / "+classCodes.size());
             }
         });
 
         Map<String,Collection<CPC>> cpcMap = pipelineManager.getCPCMap();
 
+        total.set(0);
+        found.set(0);
         assets.forEach(asset->{
             Collection<CPC> cpcs = cpcMap.get(asset);
             if(cpcs!=null) {
@@ -75,14 +77,20 @@ public class CPC2VecModel extends WordVectorPredictionModel<INDArray> {
                     return pair.getFirst().mul(pair.getSecond());
                 }).collect(Collectors.toList());
                 if(sum.get()>0d) {
-                    INDArray vec = Nd4j.vstack(weightedVectors).divi(sum.get());
+                    INDArray vec = Nd4j.vstack(weightedVectors).sum(0).divi(sum.get());
                     predictions.put(asset,vec);
+                    found.getAndIncrement();
+                }
+                if(total.getAndIncrement()%10000==9999) {
+                    System.out.println("Finished "+found.get()+" assets from "+total.get()+" / "+assets.size());
                 }
             }
         });
 
         Random rand = new Random(352);
         int maxSample = 500;
+        found.set(0);
+        total.set(0);
         assignees.forEach(assignee->{
             List<String> assigneeAssets = Stream.of(
                     Database.selectPatentNumbersFromExactAssignee(assignee),
@@ -96,8 +104,12 @@ public class CPC2VecModel extends WordVectorPredictionModel<INDArray> {
                 INDArray vec = Nd4j.vstack(IntStream.range(0, nSamples).mapToObj(i -> {
                     String asset = assigneeAssets.remove(rand.nextInt(assigneeAssets.size()));
                     return predictions.get(asset);
-                }).collect(Collectors.toList())).div(nSamples);
+                }).collect(Collectors.toList())).sum(0).div(nSamples);
                 predictions.put(assignee,vec);
+                found.getAndIncrement();
+            }
+            if(total.getAndIncrement()%10000==9999) {
+                System.out.println("Finished "+found.get()+"assignees from "+total.get()+" / "+assignees.size());
             }
         });
 

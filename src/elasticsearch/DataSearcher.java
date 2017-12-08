@@ -168,7 +168,7 @@ public class DataSearcher {
 
             // special case to handle similarity greater than filter without sorting by similarity
             if(!isOverallScore && similarityThreshold > 0f) {
-                throw new RuntimeException("Unable to filter apply filter: Similarity Greater Than "+similarityThreshold+". Reason: Must sort by Similarity.");
+                throw new RuntimeException("Unable to apply filter: Similarity Greater Than "+similarityThreshold+". Reason: Must sort by Similarity.");
             } // end of special case
 
             System.out.println("Combining Query...");
