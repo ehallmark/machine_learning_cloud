@@ -130,6 +130,10 @@ public class CPC2VecPipelineManager extends DefaultPipelineManager<CPC2VecIterat
         if(datasetManager==null) {
             getCPCMap();
 
+            if(trainAssets==null) {
+                splitData();
+            }
+            
             datasetManager = new NoSaveDataSetManager<>(
                     new CPC2VecIterator(trainAssets,numEpochs,cpcMap),
                     new CPC2VecIterator(testAssets,1,cpcMap),
