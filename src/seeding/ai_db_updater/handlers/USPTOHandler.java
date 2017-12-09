@@ -120,7 +120,12 @@ public class USPTOHandler extends NestedHandler {
                             System.out.println(cnt.get());
                         }
                         if(testing) {
-                            System.out.println("Data: "+new Gson().toJson(toIngest));
+                            //System.out.println("Data: "+new Gson().toJson(toIngest));
+                            if(toIngest.containsKey(Constants.CITATIONS)) {
+                                System.out.println("FOUND CITATIONS!!!");
+                            } else {
+                                System.out.println("No cites...");
+                            }
                         }
                         if(!testing) {
                             saveElasticSearch(name.toString(), toIngest);
@@ -164,6 +169,7 @@ public class USPTOHandler extends NestedHandler {
             @Override
             public void save() {
                 dataQueue.add(getTransform(attrsToIngest));
+                if(testing)System.out.println(new Gson().toJson(dataQueue.get(dataQueue.size()-1)));
             }
         };
         citationFlag.compareFunction = Flag.endsWithCompareFunction;
