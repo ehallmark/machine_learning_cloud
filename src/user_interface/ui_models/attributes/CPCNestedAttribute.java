@@ -17,10 +17,5 @@ public class CPCNestedAttribute extends NestedAttribute {
     public String getName() {
         return Constants.NESTED_CPC_CODES;
     }
-
-    @Override
-    public boolean isNotYetImplemented() {
-        return true;
-    }
-
+    
 }
