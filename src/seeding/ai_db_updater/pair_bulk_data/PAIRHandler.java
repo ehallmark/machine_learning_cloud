@@ -102,8 +102,8 @@ public class PAIRHandler extends NestedHandler {
         applicationEndFlag.addChild(grantNumber);
         applicationEndFlag.addChild(publicationNumber);
         applicationEndFlag.addChild(applicationNumber);
-        applicationEndFlag.addChild(Flag.dateFlag("FilingDate",Constants.FILING_DATE,applicationEndFlag));
-        applicationEndFlag.addChild(Flag.simpleFlag("ApplicationTypeCategory",Constants.APPLICATION_TYPE,applicationEndFlag));
+        if(updatePostgres)applicationEndFlag.addChild(Flag.dateFlag("FilingDate",Constants.FILING_DATE,applicationEndFlag));
+        if(updatePostgres)applicationEndFlag.addChild(Flag.simpleFlag("ApplicationTypeCategory",Constants.APPLICATION_TYPE,applicationEndFlag));
         applicationEndFlag.addChild(Flag.customFlag("PartyIdentifier",Constants.CORRESPONDENT_ADDRESS_ID,"text", (str)->!str.equalsIgnoreCase("null"),applicationEndFlag));
         if(updatePostgres) applicationEndFlag.addChild(Flag.simpleFlag("GroupArtUnitNumber","groupArtUnitNumber",applicationEndFlag));
         applicationEndFlag.addChild(Flag.simpleFlag("ApplicationConfirmationNumber",Constants.APPLICATION_CONFIRMATION_NUM,applicationEndFlag));
