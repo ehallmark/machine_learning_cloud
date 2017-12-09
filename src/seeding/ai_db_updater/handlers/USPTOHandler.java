@@ -4,6 +4,7 @@ package seeding.ai_db_updater.handlers;
  * Created by ehallmark on 1/3/17.
  */
 
+import com.google.gson.Gson;
 import elasticsearch.DataIngester;
 import lombok.Setter;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -31,8 +32,10 @@ public class USPTOHandler extends NestedHandler {
     @Setter
     protected static Collection<ComputableAttribute> computableAttributes;
     protected boolean applications;
-    public USPTOHandler(String topLevelTag, boolean applications) {
+    private boolean testing;
+    public USPTOHandler(String topLevelTag, boolean applications, boolean testing) {
         this.topLevelTag=topLevelTag;
+        this.testing=testing;
         this.applications=applications;
     }
 
@@ -116,7 +119,12 @@ public class USPTOHandler extends NestedHandler {
                         if(cnt.getAndIncrement() % batchSize == batchSize-1) {
                             System.out.println(cnt.get());
                         }
-                        saveElasticSearch(name.toString(),toIngest);
+                        if(testing) {
+                            System.out.println("Data: "+new Gson().toJson(toIngest));
+                        }
+                        if(!testing) {
+                            saveElasticSearch(name.toString(), toIngest);
+                        }
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
                 } finally {
@@ -337,17 +345,19 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     public CustomHandler newInstance() {
-        USPTOHandler handler = new USPTOHandler(topLevelTag, applications);
+        USPTOHandler handler = new USPTOHandler(topLevelTag, applications, testing);
         handler.init();
         return handler;
     }
 
     @Override
     public void save() {
-        if (computableAttributes != null) {
-            computableAttributes.forEach(attr -> {
-                attr.save();
-            });
+        if(!testing) {
+            if (computableAttributes != null) {
+                computableAttributes.forEach(attr -> {
+                    attr.save();
+                });
+            }
         }
     }
 

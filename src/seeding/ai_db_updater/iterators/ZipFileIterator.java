@@ -27,24 +27,28 @@ public class ZipFileIterator implements WebIterator {
     private boolean parallel;
     private boolean perDocument;
     private final Function<File,Boolean> orFunction;
-    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean parallel, boolean perDocument, @NonNull Function<File,Boolean> orFunction) {
+    private boolean testing;
+    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean parallel, boolean perDocument, @NonNull Function<File,Boolean> orFunction, boolean testing) {
         this.cnt=new AtomicInteger(0);
         this.dataDownloader=dataDownloader;
         this.destinationPrefix=destinationPrefix;
         this.parallel=parallel;
         this.perDocument=perDocument;
+        this.testing=testing;
         this.orFunction=orFunction;
     }
 
-    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix) {
-        this(dataDownloader,destinationPrefix,true, true,file->false);
+    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean testing) {
+        this(dataDownloader,destinationPrefix,true, true,file->false,testing);
     }
 
     @Override
     public void applyHandlers(CustomHandler... handlers) {
         // pull latest data
-        dataDownloader.pullMostRecentData();
-        dataDownloader.save();
+        if(!testing) {
+            dataDownloader.pullMostRecentData();
+            dataDownloader.save();
+        }
         List<File> fileStream = dataDownloader.zipFileStream(orFunction).sorted(Comparator.comparing(e->e.getName())).collect(Collectors.toList());
         (parallel ? fileStream.parallelStream() : fileStream.stream()).forEach(zipFile->{
             final String destinationFilename = destinationPrefix + zipFile.getName();
@@ -127,7 +131,9 @@ public class ZipFileIterator implements WebIterator {
 
                     if(!failed.get()) {
                         System.out.println(" Parsed successfully!");
-                        dataDownloader.finishedIngestingFile(zipFile);
+                        if(!testing) {
+                            dataDownloader.finishedIngestingFile(zipFile);
+                        }
                     }
                 } else {
                     failed.set(true);
@@ -139,7 +145,9 @@ public class ZipFileIterator implements WebIterator {
             } finally {
                 // cleanup
                 if(failed.get()) {
-                    dataDownloader.errorOnFile(zipFile);
+                    if(!testing) {
+                        dataDownloader.errorOnFile(zipFile);
+                    }
                 }
 
                 File xmlFile = new File(destinationFilename);
@@ -149,10 +157,12 @@ public class ZipFileIterator implements WebIterator {
         });
 
         // save
-        for(CustomHandler handler : handlers) {
-            handler.save();
+        if(!testing) {
+            for (CustomHandler handler : handlers) {
+                handler.save();
+            }
+            dataDownloader.save();
         }
-        dataDownloader.save();
     }
 
 }

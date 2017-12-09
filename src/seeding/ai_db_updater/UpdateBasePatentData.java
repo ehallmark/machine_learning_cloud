@@ -30,8 +30,8 @@ public class UpdateBasePatentData {
         } else {
             topLevelTag = "us-patent-grant";
         }
-        WebIterator iterator = new ZipFileIterator(seedApplications ? new AppDataDownloader() : new PatentDataDownloader(), seedApplications ? "applications_temp" : "patents_temp");
-        NestedHandler handler = new USPTOHandler(topLevelTag, seedApplications);
+        WebIterator iterator = new ZipFileIterator(seedApplications ? new AppDataDownloader() : new PatentDataDownloader(), seedApplications ? "applications_temp" : "patents_temp", false);
+        NestedHandler handler = new USPTOHandler(topLevelTag, seedApplications, false);
         handler.init();
         iterator.applyHandlers(handler);
     }

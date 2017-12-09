@@ -30,7 +30,7 @@ public class UpdateAssignmentData {
             }
             return false;
         };
-        WebIterator iterator = new ZipFileIterator(downloader, "assignments_temp", true, false, orFunction);
+        WebIterator iterator = new ZipFileIterator(downloader, "assignments_temp", true, false, orFunction, false);
         NestedHandler handler = new USPTOAssignmentHandler();
         handler.init();
         iterator.applyHandlers(handler);
