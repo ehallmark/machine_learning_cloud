@@ -1,11 +1,11 @@
 package seeding.ai_db_updater.handlers.flags;
 
+import assignee_normalization.name_correction.AssigneeTrimmer;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import seeding.Constants;
 import seeding.ai_db_updater.tools.Helper;
-import assignee_normalization.name_correction.AssigneeTrimmer;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -149,9 +148,7 @@ public class Flag {
     public final Function<String,Boolean> validValueFunction;
     @Getter
     public EndFlag endFlag;
-    private final int id;
     protected boolean isForeign = false;
-    private static final AtomicInteger idCounter = new AtomicInteger(0);
     protected Flag(String localName, String dbName, String type, Function<String,Boolean> validValueFunction, Function<Flag,Function<String,Boolean>> compareFunction, Function<Flag,Function<String,?>> transformationFunction, EndFlag endFlag) {
         this.dbName=dbName;
         this.validValueFunction=validValueFunction;
@@ -162,7 +159,6 @@ public class Flag {
         this.compareFunction=compareFunction;
         this.transformationFunction = transformationFunction;
         this.setEndFlag(endFlag);
-        this.id=idCounter.getAndIncrement();
     }
 
     public void setEndFlag(EndFlag endFlag) {
