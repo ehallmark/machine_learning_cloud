@@ -5,6 +5,8 @@ import assignee_normalization.human_name_prediction.HumanNamePredictionPipelineM
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
+import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
+import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharSequenceNodeFactory;
 import info.debatty.java.stringsimilarity.JaroWinkler;
 import info.debatty.java.stringsimilarity.interfaces.StringDistance;
 import seeding.Constants;
@@ -218,7 +220,7 @@ public class NormalizeAssignees {
     }
 
     private static void mergeAssignees(Collection<String> allAssignees, Collection<String> largeAssignees, Map<String,Pair<String,Double>> rawToNormalizedMap, Map<String,Integer> assigneeToPortfolioSizeMap, StringDistance distance) {
-        RadixTree<String> radix = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+        RadixTree<String> radix = new ConcurrentRadixTree<>(new DefaultCharSequenceNodeFactory());
         allAssignees.forEach(assignee->radix.put(assignee,assignee));
         prefixSearchHelper(largeAssignees, radix, distance, rawToNormalizedMap, assigneeToPortfolioSizeMap);
         // check if any large assignees have been normalized

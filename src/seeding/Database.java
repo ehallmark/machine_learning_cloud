@@ -4,6 +4,7 @@ import assignee_normalization.name_correction.AssigneeTrimmer;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
+import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
 import elasticsearch.DataSearcher;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.ai_db_updater.handlers.flags.Flag;
@@ -371,7 +372,7 @@ public class Database {
 		// prefix trie for assignees
 		if(assigneePrefixTrie==null) {
 			System.out.println("Building assignee trie...");
-			assigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+			assigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultCharArrayNodeFactory());
 			getAssignees().forEach(assignee -> {
 				if(assignee!=null&&assignee.length() > 0) {
 					assigneePrefixTrie.put(assignee, assignee);
@@ -385,7 +386,7 @@ public class Database {
 		// prefix trie for assignees
 		if(normalizedAssigneePrefixTrie==null) {
 			System.out.println("Building assignee trie...");
-			normalizedAssigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+			normalizedAssigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultCharArrayNodeFactory());
 			getNormalizedAssignees().forEach(assignee -> {
 				if(assignee!=null&&assignee.length() > 0) {
 					normalizedAssigneePrefixTrie.put(assignee, assignee);
