@@ -1,19 +1,15 @@
-package user_interface.ui_models.attributes.computable_attributes;
+package user_interface.ui_models.attributes;
 
-import lombok.NonNull;
 import seeding.Constants;
 import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 import user_interface.ui_models.filters.AbstractFilter;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class CPCAttribute extends ComputableCPCAttribute<List<String>> implements AjaxMultiselect {
+public class CPCAttribute extends AbstractAttribute implements AjaxMultiselect {
     public CPCAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.PrefixExclude,AbstractFilter.FilterType.PrefixInclude, AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }
@@ -39,8 +35,4 @@ public class CPCAttribute extends ComputableCPCAttribute<List<String>> implement
         return Constants.CPC_CODE_AJAX_URL;
     }
 
-    @Override
-    protected List<String> attributesforCPCsHelper(@NonNull Collection<String> cpcs) {
-        return new ArrayList<>(cpcs);
-    }
 }

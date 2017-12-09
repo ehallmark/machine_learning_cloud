@@ -476,7 +476,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyAttribute());
             attributesMap.put(Constants.AI_VALUE, new OverallEvaluator(false));
             attributesMap.put(Constants.REMAINING_LIFE, new RemainingLifeAttribute());
-            attributesMap.put(Constants.CPC_CODES, new CPCAttribute());
+            attributesMap.put(Constants.CPC_CODES, new CPCComputedAttribute());
             attributesMap.put(Constants.EXPIRATION_DATE, new ExpirationDateAttribute());
             attributesMap.put(Constants.ESTIMATED_EXPIRATION_DATE, new CalculatedExpirationDateAttribute());
             attributesMap.put(Constants.ESTIMATED_PRIORITY_DATE, new CalculatedPriorityDateAttribute());
