@@ -56,7 +56,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
         // only predicts with assignees
         int batchSize = 1000;
         String[] assigneeArray = assignees.toArray(new String[assignees.size()]);
-        Map<String,Boolean> predictionsMap = new HashMap<>();
+        Map<String,Boolean> predictionsMap = Collections.synchronizedMap(new HashMap<>());
         for(int i = 0; i < assigneeArray.length; i+=batchSize) {
             int r = Math.min(assigneeArray.length,i+batchSize);
             Map<String,Boolean> partial = isHuman(net,Arrays.copyOfRange(assigneeArray,i,r));
@@ -93,7 +93,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
         INDArray output = net.output(false,features)[0];
         net.clearLayerMaskArrays();
         INDArray predictions = output.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(output.shape()[2]-1));
-        Map<String,Boolean> predictionMap = new HashMap<>();
+        Map<String,Boolean> predictionMap = Collections.synchronizedMap(new HashMap<>());
         float[] probCompany = predictions.getColumn(0).data().asFloat();
         float[] probHuman = predictions.getColumn(1).data().asFloat();
         for(int i = 0; i < names.length; i++) {

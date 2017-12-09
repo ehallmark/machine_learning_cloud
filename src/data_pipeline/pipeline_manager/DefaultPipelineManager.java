@@ -8,9 +8,7 @@ import seeding.Database;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -103,9 +101,12 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
     }
 
     @Override
-    public Map<String,T> loadPredictions() {
+    public synchronized Map<String,T> loadPredictions() {
         if(predictions==null) {
             predictions = (Map<String, T>) Database.tryLoadObject(predictionsFile);
+            if(predictions==null) {
+                predictions = Collections.synchronizedMap(new HashMap<>());
+            }
         }
         return predictions;
     }
