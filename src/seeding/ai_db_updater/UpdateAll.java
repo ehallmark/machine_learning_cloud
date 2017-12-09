@@ -25,14 +25,32 @@ public class UpdateAll {
                     // pg_restore
                     RestoreGatherAndCompDB.main(args);
                 } else if(arg.equals("0")) {
+                    if(AssetToAssigneeMap.getAssigneeToHumanMap()==null) {
+                        AssetToAssigneeMap.setAssigneeToHumanMap(HumanNamePredictionPipelineManager.loadPipelineManager().loadPredictions());
+                    }
                     UpdatePre2005DataFromPatentDB.main(args);
                     DataIngester.finishCurrentMongoBatch();
+                    if(AssetToAssigneeMap.getAssigneeToHumanMap()!=null) {
+                        HumanNamePredictionPipelineManager.loadPipelineManager().savePredictions(AssetToAssigneeMap.getAssigneeToHumanMap());
+                    }
                 } else if (arg.equals("1")) {
+                    if(AssetToAssigneeMap.getAssigneeToHumanMap()==null) {
+                        AssetToAssigneeMap.setAssigneeToHumanMap(HumanNamePredictionPipelineManager.loadPipelineManager().loadPredictions());
+                    }
                     UpdateBaseApplicationData.main(args);
                     DataIngester.finishCurrentMongoBatch();
+                    if(AssetToAssigneeMap.getAssigneeToHumanMap()!=null) {
+                        HumanNamePredictionPipelineManager.loadPipelineManager().savePredictions(AssetToAssigneeMap.getAssigneeToHumanMap());
+                    }
                 } else if (arg.equals("2")) {
+                    if(AssetToAssigneeMap.getAssigneeToHumanMap()==null) {
+                        AssetToAssigneeMap.setAssigneeToHumanMap(HumanNamePredictionPipelineManager.loadPipelineManager().loadPredictions());
+                    }
                     UpdateBasePatentData.main(args);
                     DataIngester.finishCurrentMongoBatch();
+                    if(AssetToAssigneeMap.getAssigneeToHumanMap()!=null) {
+                        HumanNamePredictionPipelineManager.loadPipelineManager().savePredictions(AssetToAssigneeMap.getAssigneeToHumanMap());
+                    }
                 } else if (arg.equals("3")) {
                     // update compdb
                     Database.main(args);

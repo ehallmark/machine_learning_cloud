@@ -1,5 +1,7 @@
 package user_interface.ui_models.attributes.hidden_attributes;
 
+import lombok.Getter;
+import lombok.Setter;
 import seeding.Constants;
 import user_interface.ui_models.attributes.computable_attributes.LatestExecutionDateAttribute;
 
@@ -12,6 +14,8 @@ import java.util.*;
  */
 public class AssetToAssigneeMap extends HiddenAttribute<String> {
     private LatestExecutionDateAttribute latestExecutionDateAttribute;
+    @Getter @Setter
+    private static Map<String,Boolean> assigneeToHumanMap;
     public AssetToAssigneeMap() {
         this.latestExecutionDateAttribute=new LatestExecutionDateAttribute();
         this.latestExecutionDateAttribute.initMaps();
@@ -27,6 +31,15 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
                 assignee = ((List)assignee).get(0);
             }
             ret = ((Map<String,Object>)assignee).get(Constants.ASSIGNEE);
+
+            Boolean isHuman = (Boolean)((Map<String,Object>)assignee).get(Constants.IS_HUMAN);
+            if(isHuman!=null) {
+                if(ret!=null) {
+                    if(assigneeToHumanMap!=null) {
+                        assigneeToHumanMap.put(ret.toString(),isHuman);
+                    }
+                }
+            }
             //System.out.println("FOUND ASSIGNEE: "+ret);
             // check execution date
             Object executionDate = ((Map<String,Object>)allData.getOrDefault(Constants.ASSIGNMENTS,new HashMap<>())).get(Constants.EXECUTION_DATE);
