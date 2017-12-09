@@ -26,6 +26,7 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
     protected File predictionsFile;
     @Getter
     protected TrainablePredictionModel<T,?> model;
+    private Map<String,T> predictions;
 
     protected DefaultPipelineManager(File dataFolder, File finalPredictionsFile) {
         this.dataFolder=dataFolder;
@@ -93,6 +94,7 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
 
     @Override
     public void savePredictions(Map<String,T> predictions) {
+        this.predictions=predictions;
         System.out.println("Saving predictions...");
         File predictionsDir = predictionsFile.getParentFile();
         if(!predictionsDir.exists()) predictionsDir.mkdirs();
@@ -102,7 +104,10 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
 
     @Override
     public Map<String,T> loadPredictions() {
-        return (Map<String,T>)Database.tryLoadObject(predictionsFile);
+        if(predictions==null) {
+            predictions = (Map<String, T>) Database.tryLoadObject(predictionsFile);
+        }
+        return predictions;
     }
 
     @Override

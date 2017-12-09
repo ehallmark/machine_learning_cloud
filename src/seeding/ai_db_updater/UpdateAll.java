@@ -51,7 +51,7 @@ public class UpdateAll {
                     Database.main(args);
                 } else if (arg.equals("9")) {
                     // Update human map
-                    System.out.println("Updating is human model map...");
+                    System.out.println("Updating human model map...");
                     HumanNamePredictionPipelineManager pipelineManager = HumanNamePredictionPipelineManager.loadPipelineManager();
                     System.out.println("Predicting results...");
                     List<String> allAssets = new ArrayList<>(Database.getAllPatentsAndApplications());
