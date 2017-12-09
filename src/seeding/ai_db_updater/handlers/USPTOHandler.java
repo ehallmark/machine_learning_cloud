@@ -120,7 +120,7 @@ public class USPTOHandler extends NestedHandler {
                             System.out.println(cnt.get());
                         }
                         if(testing) {
-                            //System.out.println("Data: "+new Gson().toJson(toIngest));
+                            System.out.println("Data: "+new Gson().toJson(toIngest));
                             if(toIngest.containsKey(Constants.CITATIONS)) {
                                 System.out.println("FOUND CITATIONS!!!");
                             } else {

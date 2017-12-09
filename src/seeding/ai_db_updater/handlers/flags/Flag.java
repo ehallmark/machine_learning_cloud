@@ -59,7 +59,7 @@ public class Flag {
     }
 
     public static final Function<Flag,Function<String,Boolean>> endsWithCompareFunction = (flag) -> (str) ->{
-        return flag.localName.endsWith(str);
+        return str.endsWith(flag.localName);
     };
 
     private static Function<String,Boolean> validDateFunction = (str) -> {
