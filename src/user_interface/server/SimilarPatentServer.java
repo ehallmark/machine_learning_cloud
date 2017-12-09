@@ -603,26 +603,24 @@ public class SimilarPatentServer {
                 attributes.forEach(model -> {
                     Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1);
                     AbstractAttribute parent = model.getParent();
+                    boolean isAttrOfObject = parent!=null && parent.isObject();
                     if(obj!=null) {
                         if(obj instanceof LocalDate) {
                             obj = ((LocalDate)obj).format(DateTimeFormatter.ISO_DATE);
                         }
-                        boolean update = true;
-                        if(parent!=null) {
-                            if(parent.isObject()) {
-                                update = false;
-                                // group results to override other values
-                                if(item.getDataMap().containsKey(parent.getName())) {
-                                    ((Map<String,Object>)item.getDataMap().get(parent.getName())).put(model.getName(),obj);
-                                } else {
-                                    Map<String,Object> map = new HashMap<>();
-                                    map.put(model.getName(),obj);
-                                    item.addData(parent.getName(),map);
-                                }
+                        if(isAttrOfObject) {
+                            // group results to override other values
+                            if(item.getDataMap().containsKey(parent.getName())) {
+                                ((Map<String,Object>)item.getDataMap().get(parent.getName())).put(model.getName(),obj);
+                            } else {
+                                Map<String,Object> map = new HashMap<>();
+                                map.put(model.getName(),obj);
+                                item.addData(parent.getName(),map);
                             }
+                        } else {
+                            item.addData(model.getMongoDBName(), obj);
                         }
-                        if(update) item.addData(model.getMongoDBName(),obj);
-                    } else {
+                    } else if(!isAttrOfObject) {
                         attributesToRemove.add(model.getMongoDBName());
                     }
                 });
