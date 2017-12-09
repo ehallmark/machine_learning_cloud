@@ -604,19 +604,17 @@ public class SimilarPatentServer {
                     Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1);
                     AbstractAttribute parent = model.getParent();
                     boolean isAttrOfObject = parent!=null && parent.isObject();
+                    if(isAttrOfObject) {
+                        item.addData(parent.getName(), new HashMap<String,Object>());
+                    }
                     if(obj!=null) {
                         if(obj instanceof LocalDate) {
                             obj = ((LocalDate)obj).format(DateTimeFormatter.ISO_DATE);
                         }
                         if(isAttrOfObject) {
                             // group results to override other values
-                            if(item.getDataMap().containsKey(parent.getName())) {
-                                ((Map<String,Object>)item.getDataMap().get(parent.getName())).put(model.getName(),obj);
-                            } else {
-                                Map<String,Object> map = new HashMap<>();
-                                map.put(model.getName(),obj);
-                                item.addData(parent.getName(),map);
-                            }
+                            ((Map<String,Object>)item.getDataMap().get(parent.getName())).put(model.getName(),obj);
+
                         } else {
                             item.addData(model.getMongoDBName(), obj);
                         }
