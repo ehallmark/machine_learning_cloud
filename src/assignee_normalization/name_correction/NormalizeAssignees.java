@@ -374,9 +374,10 @@ public class NormalizeAssignees {
         // find most common suffixes
         Collection<String> allCompanies = Collections.synchronizedList(HumanNamePredictionPipelineManager.loadPipelineManager().loadPredictions().entrySet().parallelStream().filter(e->!e.getValue()).map(e->e.getKey()).collect(Collectors.toList()));
 
-        Map<String,Integer> assigneeToPortfolioSizeMap = new HashMap<>(allCompanies
+        Map<String,Integer> assigneeToPortfolioSizeMap = Collections.synchronizedMap(new HashMap<>(allCompanies
                 .parallelStream()
-                .collect(Collectors.toMap(a->a,a->Database.getAssetCountFor(a))));
+                .collect(Collectors.toMap(a->a,a->Database.getAssetCountFor(a)))));
+        System.out.println("Num assignees with portfolio size: "+assigneeToPortfolioSizeMap.size());
 
         int numEpochs = 3;
         Map<String,String> rawToNormalizedAssigneeNameMap = Collections.synchronizedMap(new HashMap<>());
@@ -403,6 +404,7 @@ public class NormalizeAssignees {
                 }
                 rawToNormalizedAssigneeNameMap.put(newEntry.getKey(),newEntry.getValue()._1);
             });
+            System.out.println("Num assignees with portfolio size: "+assigneeToPortfolioSizeMap.size());
             save(rawToNormalizedAssigneeNameMap,assigneeToPortfolioSizeMap);
         }
 
