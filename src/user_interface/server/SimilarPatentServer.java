@@ -604,7 +604,7 @@ public class SimilarPatentServer {
                     Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1);
                     AbstractAttribute parent = model.getParent();
                     boolean isAttrOfObject = parent!=null && parent.isObject();
-                    if(isAttrOfObject) {
+                    if(isAttrOfObject&&!item.getDataMap().containsKey(parent.getName())) {
                         item.addData(parent.getName(), new HashMap<String,Object>());
                     }
                     if(obj!=null) {
