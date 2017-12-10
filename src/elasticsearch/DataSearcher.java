@@ -89,7 +89,7 @@ public class DataSearcher {
             } else if(comparator.equals(Constants.RANDOM_SORT)) {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
             } else if(comparator.equals(Constants.NO_SORT)) {
-                sortBuilder = null;
+                sortBuilder = SortBuilders.scoreSort().order(sortOrder);
             } else {
                 sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
             }
