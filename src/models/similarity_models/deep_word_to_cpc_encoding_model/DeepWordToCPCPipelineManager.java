@@ -6,7 +6,7 @@ import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
-import models.similarity_models.word_to_cpc_encoding_model.WordToCPCIterator;
+import models.similarity_models.word_to_cpc.WordToCPCIterator;
 import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.nd4j.linalg.api.buffer.DataBuffer;

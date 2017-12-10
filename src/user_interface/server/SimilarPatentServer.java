@@ -15,7 +15,7 @@ import models.keyphrase_prediction.models.NewestModel;
 import models.similarity_models.AbstractSimilarityModel;
 import models.similarity_models.DefaultSimilarityModel;
 import models.similarity_models.Vectorizer;
-import models.similarity_models.word_to_cpc_encoding_model.WordToCPCIterator;
+import models.similarity_models.word_to_cpc.WordToCPCIterator;
 import models.text_streaming.BOWVectorFromTextTransformer;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;

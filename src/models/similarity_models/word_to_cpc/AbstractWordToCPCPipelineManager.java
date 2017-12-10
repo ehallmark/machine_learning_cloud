@@ -1,18 +1,13 @@
-package models.similarity_models.word_to_cpc_encoding_model;
+package models.similarity_models.word_to_cpc;
 
-import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
-import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
-import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
-import org.nd4j.linalg.factory.Nd4j;
-import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
@@ -21,33 +16,20 @@ import java.util.Map;
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class WordToCPCPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
-    public static final String MODEL_NAME = "word_to_cpc_encoder";
-    public static final File currentVocabMapFile = new File(Constants.DATA_FOLDER+"word_to_cpc_encoding_word_idx_map.jobj");
-    private static final int BATCH_SIZE = 128;
-    private static final File INPUT_DATA_FOLDER = new File("word_to_cpc_encoding_data");
-    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"word_to_cpc_encoding_predictions/predictions_map.jobj");
+public abstract class AbstractWordToCPCPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
     @Getter
     private Map<String,Integer> wordToIdxMap;
-    private String modelName;
+    protected String modelName;
     private Map<String,INDArray> assetToEncodingMap;
-    private CPCVAEPipelineManager previousManager;
-    public WordToCPCPipelineManager(String modelName, CPCVAEPipelineManager previousManager) {
-        super(INPUT_DATA_FOLDER,PREDICTION_DATA_FILE);
+    private DefaultPipelineManager<?,INDArray> previousManager;
+    private final File currentVocabMapFile;
+    private int batchSize;
+    public AbstractWordToCPCPipelineManager(String modelName, File currentVocabMapFile, File inputData, File predictionsFile, int batchSize, DefaultPipelineManager<?,INDArray> previousManager) {
+        super(inputData,predictionsFile);
+        this.currentVocabMapFile=currentVocabMapFile;
         this.modelName=modelName;
         this.previousManager=previousManager;
-    }
-
-    protected void initModel(boolean forceRecreateModels) {
-        model = new WordToCPCEncodingNN(this, modelName);
-        if(!forceRecreateModels) {
-            System.out.println("Warning: Loading previous model.");
-            try {
-                model.loadBestModel();
-            } catch(Exception e) {
-                System.out.println("Error loading previous model: "+e.getMessage());
-            }
-        }
+        this.batchSize=batchSize;
     }
 
     @Override
@@ -58,7 +40,7 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<DataSetIter
         LabelAwareIterator iterator = new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN);
         final int minDocCount = 10;
         final int maxDocCount = Math.round(0.2f*totalDocCount);
-        WordToCPCIterator vocabIter = new WordToCPCIterator(iterator,BATCH_SIZE);
+        WordToCPCIterator vocabIter = new WordToCPCIterator(iterator,batchSize);
         vocabIter.buildVocabMap(minDocCount,maxDocCount);
         wordToIdxMap = vocabIter.getWordToIdxMap();
         System.out.println("Vocab size: "+wordToIdxMap.size());
@@ -83,7 +65,7 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<DataSetIter
     }
 
     public int getBatchSize() {
-        return BATCH_SIZE;
+        return batchSize;
     }
 
     @Override
@@ -110,27 +92,8 @@ public class WordToCPCPipelineManager extends DefaultPipelineManager<DataSetIter
 
 
     protected DataSetIterator getRawIterator(LabelAwareIterator iterator) {
-        return new WordToCPCIterator(iterator,getAssetToEncodingMap(),getWordToIdxMap(),BATCH_SIZE,false,false,false);
+        return new WordToCPCIterator(iterator,getAssetToEncodingMap(),getWordToIdxMap(),getBatchSize(),false,false,false);
     }
 
-    public static void main(String[] args) throws Exception {
-        Nd4j.setDataType(DataBuffer.Type.FLOAT);
-        boolean rebuildDatasets = false;
-        boolean runModels = true;
-        boolean forceRecreateModels = false;
-        boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
-        boolean rebuildPrerequisites = false;
-
-        int nEpochs = 5;
-        String modelName = MODEL_NAME;
-        String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
-
-        setLoggingLevel(Level.INFO);
-        WordToCPCPipelineManager pipelineManager = new WordToCPCPipelineManager(modelName, new CPCVAEPipelineManager(cpcEncodingModel));
-
-        rebuildPrerequisites = rebuildPrerequisites || pipelineManager.loadVocabMap()==null; // Check if vocab map exists
-
-        pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
-    }
 
 }

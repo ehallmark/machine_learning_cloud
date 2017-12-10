@@ -2,28 +2,19 @@ package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
 import lombok.Getter;
-import models.similarity_models.AbstractSimilarityModel;
-import models.similarity_models.DefaultSimilarityModel;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
-import models.similarity_models.word_to_cpc_encoding_model.WordToCPCEncodingNN;
-import models.similarity_models.word_to_cpc_encoding_model.WordToCPCIterator;
-import models.similarity_models.word_to_cpc_encoding_model.WordToCPCPipelineManager;
-import models.text_streaming.WordVectorizerToCPCVectorIterator;
+import models.similarity_models.word_to_cpc.word_to_cpc_encoding_model.WordToCPCEncodingNN;
+import models.similarity_models.word_to_cpc.word_to_cpc_encoding_model.WordToCPCPipelineManager;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Constants;
 import spark.Request;
-import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.filters.AbstractFilter;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.textarea;

@@ -1,4 +1,4 @@
-package models.similarity_models.word_to_cpc_encoding_model;
+package models.similarity_models.word_to_cpc;
 
 import lombok.Getter;
 import models.text_streaming.WordVectorizerToCPCVectorIterator;
@@ -8,7 +8,6 @@ import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.nd4j.linalg.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import tools.Stemmer;
 

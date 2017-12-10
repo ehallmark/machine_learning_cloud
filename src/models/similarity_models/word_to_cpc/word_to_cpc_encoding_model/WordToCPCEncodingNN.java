@@ -1,4 +1,4 @@
-package models.similarity_models.word_to_cpc_encoding_model;
+package models.similarity_models.word_to_cpc.word_to_cpc_encoding_model;
 
 import data_pipeline.helpers.Function3;
 import data_pipeline.models.NeuralNetworkPredictionModel;
