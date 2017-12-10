@@ -1832,7 +1832,7 @@ public class SimilarPatentServer {
                                 div().withClass("col-12 attributeElement").with(
                                         label("Sort By").attr("style","width: 100%;").with(
                                                 br(),select().withId("main-options-"+COMPARATOR_FIELD).withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
-                                                        Stream.of(Stream.of(Constants.SIMILARITY, Constants.AI_VALUE, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
+                                                        Stream.of(Stream.of(Constants.SIMILARITY, Constants.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
                                                                 getAllTopLevelAttributes().stream().filter(attr->attr.getFullName().endsWith(Constants.COUNT_SUFFIX)||attr.getFieldType().equals(AbstractFilter.FieldType.Date)).map(AbstractAttribute::getFullName)).flatMap(stream->stream)
                                                                 .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
                                                 )

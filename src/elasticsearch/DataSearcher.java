@@ -86,6 +86,10 @@ public class DataSearcher {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
             } else if (Constants.FILING_ATTRIBUTES_SET.contains(comparator)||(comparator.contains(".")&&Constants.FILING_ATTRIBUTES_SET.contains(comparator.substring(0,comparator.indexOf("."))))) {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
+            } else if(comparator.equals(Constants.RANDOM_SORT)) {
+                sortBuilder = SortBuilders.scoreSort().order(sortOrder);
+            } else if(comparator.equals(Constants.NO_SORT)) {
+                sortBuilder = null;
             } else {
                 sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
             }
@@ -112,7 +116,7 @@ public class DataSearcher {
                     .setMinScore(isOverallScore&&similarityThreshold>0f?similarityThreshold:0f)
                     .setFrom(0));
 
-            if(!comparator.isEmpty()) {
+            if(!comparator.isEmpty() && sortBuilder!=null) {
                 request.set(request.get().addSort(sortBuilder));
             }
             AtomicReference<BoolQueryBuilder> filterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
@@ -183,6 +187,10 @@ public class DataSearcher {
                     new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,parentQueryBuilder.get(),true)
                             .innerHit(innerHitBuilder.get())
             ));
+
+            if(comparator.equals(Constants.RANDOM_SORT)) {
+                queryBuilder.set(queryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.randomFunction(System.currentTimeMillis()))));
+            }
 
            if(highlight) {
                // possible highlighting

@@ -82,7 +82,7 @@ public class SimilarityEngineController {
         System.out.println("Beginning extract relevant info...");
         // init
         int limit = extractInt(req, LIMIT_FIELD, 10);
-        int maxResultLimit = 100000;
+        int maxResultLimit = 500000;
         if(limit > maxResultLimit) {
             throw new RuntimeException("Error: Maximum result limit is "+maxResultLimit+ " which is less than "+limit);
         }

@@ -121,6 +121,8 @@ public class Constants {
 	public static final String COUNTRY = "country";
 	public static final String CITATION_CATEGORY = "citationCategory";
 	public static final String DOC_KIND = "docKind";
+	public static final String NO_SORT = "noSort";
+	public static final String RANDOM_SORT = "randomSort";
 	public static final String PRIORITY_DATE = "priorityDate";
 	public static final String PUBLICATION_DATE = "publicationDate";
 	public static final String FILING_DATE = "filingDate";
