@@ -4,15 +4,12 @@ import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
 import data_pipeline.models.WordVectorPredictionModel;
 import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
-import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.CBOW;
-import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.embeddings.learning.impl.sequence.DBOW;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -20,8 +17,6 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
-import tools.ClassCodeHandler;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -36,7 +31,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 11/21/17.
  */
 public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
-    public static final int VECTOR_SIZE = 128;
+    public static final int VECTOR_SIZE = 32;
     private static final int BATCH_SIZE = 512;
     private static Type MODEL_TYPE = Type.ParagraphVector;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"wordcpc2vec_model_data");
@@ -190,8 +185,12 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
 
         Function<Void,Void> afterEpochFunction = (v) -> {
             for (String word : words) {
-                Collection<String> lst = getNet().wordsNearest(word, 10);
-                System.out.println("10 Words closest to '" + word + "': " + lst);
+                ParagraphVectors pv = (ParagraphVectors)getNet();
+                INDArray vec = pv.lookupTable().vector(word);
+                Collection<String> topLabels = pv.nearestLabels(vec,10);
+                Collection<String> topWords = getNet().wordsNearest(vec, 10);
+                System.out.println("10 Words closest to '" + word + "': " + topWords);
+                System.out.println("10 Labels closest to '" + word + "': " + topLabels);
             }
             saveFunction.apply(getNet());
             return null;

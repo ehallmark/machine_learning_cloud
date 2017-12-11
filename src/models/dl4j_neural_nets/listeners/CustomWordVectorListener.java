@@ -1,20 +1,14 @@
 package models.dl4j_neural_nets.listeners;
 
-import edu.stanford.nlp.util.Triple;
-import models.dl4j_neural_nets.tests.ModelEvaluator;
-import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
-import org.deeplearning4j.models.glove.Glove;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.sequencevectors.enums.ListenerEvent;
 import org.deeplearning4j.models.sequencevectors.interfaces.VectorsListener;
 import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.models.word2vec.Word2Vec;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -72,6 +66,13 @@ public class CustomWordVectorListener implements VectorsListener<VocabWord> {
                 for (String word : words) {
                     Collection<String> lst = sequenceVectors.wordsNearest(word, 10);
                     System.out.println("10 Words closest to '" + word + "': " + lst);
+
+                    if(sequenceVectors instanceof ParagraphVectors) {
+                        ParagraphVectors pv = (ParagraphVectors) sequenceVectors;
+                        INDArray vec = pv.lookupTable().vector(word);
+                        Collection<String> topLabels = pv.nearestLabels(vec, 10);
+                        System.out.println("10 Labels closest to '" + word + "': " + topLabels);
+                    }
                 }
                 if(saveFunction!=null) saveFunction.apply(sequenceVectors);
             }
