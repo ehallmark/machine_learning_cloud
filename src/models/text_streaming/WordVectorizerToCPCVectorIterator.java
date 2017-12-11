@@ -78,7 +78,6 @@ public abstract class WordVectorizerToCPCVectorIterator implements DataSetIterat
             mat = mat.get(NDArrayIndex.interval(0,i),NDArrayIndex.all());
             lab = lab.get(NDArrayIndex.interval(0,i),NDArrayIndex.all());
         }
-        System.gc();
         return new DataSet(mat,lab);
     }
 
