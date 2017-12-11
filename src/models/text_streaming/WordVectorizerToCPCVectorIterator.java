@@ -11,7 +11,6 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -79,6 +78,7 @@ public abstract class WordVectorizerToCPCVectorIterator implements DataSetIterat
             mat = mat.get(NDArrayIndex.interval(0,i),NDArrayIndex.all());
             lab = lab.get(NDArrayIndex.interval(0,i),NDArrayIndex.all());
         }
+        System.gc();
         return new DataSet(mat,lab);
     }
 
