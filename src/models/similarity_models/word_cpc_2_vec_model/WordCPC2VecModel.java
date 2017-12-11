@@ -7,8 +7,8 @@ import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.CBOW;
 import org.deeplearning4j.models.embeddings.learning.impl.sequence.DBOW;
-import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
+import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
@@ -140,6 +140,22 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         double learningRate = 0.01;
         double minLearningRate = 0.0001;
 
+
+        AtomicInteger nTestsCounter = new AtomicInteger(0);
+        final int saveEveryNTests = 5;
+        Function<SequenceVectors<VocabWord>,Void> saveFunction = sequenceVectors->{
+            if(nTestsCounter.getAndIncrement()%saveEveryNTests==saveEveryNTests-1) {
+                System.out.println("Saving...");
+                double score = 0d;
+                try {
+                    save(LocalDateTime.now(), score, sequenceVectors);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        };
+
         boolean newModel = net == null;
         ParagraphVectors.Builder builder = new ParagraphVectors.Builder()
                 .seed(41)
@@ -158,7 +174,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
                 .tokenizerFactory(tf)
                 .workers(Math.max(1,Runtime.getRuntime().availableProcessors()/2))
                 .iterations(1)
-                .setVectorsListeners(Collections.singleton(new CustomWordVectorListener(null,modelName,1000000,words.toArray(new String[]{}))))
+                .setVectorsListeners(Collections.singleton(new CustomWordVectorListener(saveFunction,modelName,1000000,words.toArray(new String[]{}))))
                 .useHierarchicSoftmax(true)
                 .elementsLearningAlgorithm(new CBOW<>())
                 .sequenceLearningAlgorithm(new DBOW<>())
@@ -172,33 +188,17 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
 
         net = builder.build();
 
-        Function<WordVectors,Void> saveFunction = sequenceVectors->{
-            System.out.println("Saving...");
-            double score = 0d;
-            try {
-                save(LocalDateTime.now(), score, sequenceVectors);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        };
-
-        Function<Void,Void> afterEpochFunction = (v) -> {
-            for (String word : words) {
-                ParagraphVectors pv = (ParagraphVectors)getNet();
-                INDArray vec = pv.lookupTable().vector(word);
-                Collection<String> topLabels = pv.nearestLabels(vec,10);
-                Collection<String> topWords = getNet().wordsNearest(vec, 10);
-                System.out.println("10 Words closest to '" + word + "': " + topWords);
-                System.out.println("10 Labels closest to '" + word + "': " + topLabels);
-            }
-            saveFunction.apply(getNet());
-            return null;
-        };
 
         ((ParagraphVectors)net).fit();
 
-        afterEpochFunction.apply(null);
+        System.out.println("Saving...");
+        double score = 0d;
+        try {
+            save(LocalDateTime.now(), score, net);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         synchronized (CustomWordVectorListener.class) {
             System.out.println("Everything should be saved.");
         }

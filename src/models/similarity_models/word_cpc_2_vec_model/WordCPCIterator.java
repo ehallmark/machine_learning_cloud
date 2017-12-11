@@ -37,7 +37,7 @@ public class WordCPCIterator implements LabelAwareIterator {
         this.numEpochs=numEpochs;
         this.iterator=iterator;
         this.cpcMap=cpcMap;
-        this.queue = new ArrayBlockingQueue<>(5000);
+        this.queue = new ArrayBlockingQueue<>(100);
         this.vocabPass=true;
         this.afterEpochFunction=afterEpochFunction;
     }
