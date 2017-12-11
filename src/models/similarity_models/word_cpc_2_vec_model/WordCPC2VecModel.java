@@ -132,7 +132,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         });
 
         int windowSize = 6;
-        int minWordFrequency = 5;
+        int minWordFrequency = 10;
         double negativeSampling = -1;
         double sampling = 0.0001;
         //double learningRate = 0.1;
@@ -142,7 +142,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
 
 
         AtomicInteger nTestsCounter = new AtomicInteger(0);
-        final int saveEveryNTests = 5;
+        final int saveEveryNTests = 3;
         Function<SequenceVectors<VocabWord>,Void> saveFunction = sequenceVectors->{
             if(nTestsCounter.getAndIncrement()%saveEveryNTests==saveEveryNTests-1) {
                 System.out.println("Saving...");

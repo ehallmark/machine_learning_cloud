@@ -64,14 +64,16 @@ public class CustomWordVectorListener implements VectorsListener<VocabWord> {
                 System.out.println(currentName);
 
                 for (String word : words) {
-                    Collection<String> lst = sequenceVectors.wordsNearest(word, 10);
-                    System.out.println("10 Words closest to '" + word + "': " + lst);
+                    INDArray vec = sequenceVectors.lookupTable().vector(word);
+                    if(vec!=null) {
+                        Collection<String> lst = sequenceVectors.wordsNearest(vec, 10);
+                        System.out.println("10 Words closest to '" + word + "': " + lst);
 
-                    if(sequenceVectors instanceof ParagraphVectors) {
-                        ParagraphVectors pv = (ParagraphVectors) sequenceVectors;
-                        INDArray vec = pv.lookupTable().vector(word);
-                        Collection<String> topLabels = pv.nearestLabels(vec, 10);
-                        System.out.println("10 Labels closest to '" + word + "': " + topLabels);
+                        if (sequenceVectors instanceof ParagraphVectors) {
+                            ParagraphVectors pv = (ParagraphVectors) sequenceVectors;
+                            Collection<String> topLabels = pv.nearestLabels(vec, 10);
+                            System.out.println("10 Labels closest to '" + word + "': " + topLabels);
+                        }
                     }
                 }
                 if(saveFunction!=null) saveFunction.apply(sequenceVectors);

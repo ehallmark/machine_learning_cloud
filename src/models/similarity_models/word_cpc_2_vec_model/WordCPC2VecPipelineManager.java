@@ -114,7 +114,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
 
 
     public static void main(String[] args) throws Exception {
-        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
+        Nd4j.setDataType(DataBuffer.Type.FLOAT);
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;
