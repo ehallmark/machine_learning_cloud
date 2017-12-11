@@ -51,6 +51,19 @@ public class WordCPCIterator implements LabelAwareIterator {
             synchronized (this) {
                 if (task == null) {
                     reset();
+                    long maxTime = 60 * 3 * 1000;
+                    long t = 0;
+                    while(queue.size()==0) {
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(50);
+                        } catch(Exception e) {
+
+                        }
+                        t+=50;
+                        if(t>maxTime) {
+                            throw new RuntimeException("Waited over 3 minutes for next document...");
+                        }
+                    }
                 }
             }
         }
