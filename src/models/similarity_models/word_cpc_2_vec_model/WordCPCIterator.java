@@ -47,6 +47,13 @@ public class WordCPCIterator implements LabelAwareIterator {
     }
 
     public boolean hasNextDocument() {
+        if (task == null) {
+            synchronized (this) {
+                if (task == null) {
+                    reset();
+                }
+            }
+        }
         return queue.size()>0 || !task.isDone();
     }
 
@@ -64,7 +71,7 @@ public class WordCPCIterator implements LabelAwareIterator {
 
 
     @Override
-    public void reset() {
+    public synchronized void reset() {
         if(task!=null && !task.isDone()) return;
         queue.clear();
         final boolean singleEpoch = vocabPass;
