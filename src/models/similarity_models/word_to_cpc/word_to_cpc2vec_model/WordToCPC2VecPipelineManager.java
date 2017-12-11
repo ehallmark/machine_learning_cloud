@@ -1,9 +1,14 @@
 package models.similarity_models.word_to_cpc.word_to_cpc2vec_model;
 
 import ch.qos.logback.classic.Level;
+import data_pipeline.vectorize.DataSetManager;
+import data_pipeline.vectorize.NoSaveDataSetManager;
+import data_pipeline.vectorize.PreSaveDataSetManager;
 import models.similarity_models.cpc2vec_model.CPC2VecPipelineManager;
 import models.similarity_models.word_to_cpc.AbstractWordToCPCPipelineManager;
+import models.text_streaming.FileTextDataSetIterator;
 import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 
@@ -33,6 +38,24 @@ public class WordToCPC2VecPipelineManager extends AbstractWordToCPCPipelineManag
                 System.out.println("Error loading previous model: "+e.getMessage());
             }
         }
+    }
+
+    @Override
+    public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
+        if(datasetManager==null) {
+            setDatasetManager();
+        }
+        return datasetManager;
+    }
+
+
+    @Override
+    protected void setDatasetManager() {
+        datasetManager = new NoSaveDataSetManager<>(
+                getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN)),
+                getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.DEV1)),
+                getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TEST))
+        );
     }
 
     public static void main(String[] args) throws Exception {
