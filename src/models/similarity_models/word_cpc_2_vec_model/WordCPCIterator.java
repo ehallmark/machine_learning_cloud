@@ -147,8 +147,9 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
             label.setSequencesCount(1);
             sequence.setSequenceLabel(label);
         }
-        return sequence;
 
+        System.out.print("-");
+        return sequence;
     }
 
     @Override
