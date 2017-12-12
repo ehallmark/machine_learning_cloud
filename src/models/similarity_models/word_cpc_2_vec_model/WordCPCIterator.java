@@ -63,7 +63,6 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public boolean hasMoreSequences() {
-        System.out.println("calling has more sequences");
         if(task == null) return true;
         return queue.size()>0 || !task.isDone();
     }
@@ -78,7 +77,13 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                 e.printStackTrace();
             }
         }
-        return queue.poll();
+        Sequence<VocabWord> sequence = queue.poll();
+        System.out.println("Found sequence.");
+        if(sequence==null) {
+            System.out.println("SEQUENCE IS NULL!");
+            return nextSequence();
+        }
+        return sequence;
     }
 
     private static Sequence<VocabWord> extractSequenceFromDocumentAndTokens(LabelledDocument document, List<String> tokens, Set<String> onlyWords, Random random, int maxSamples) {
@@ -142,6 +147,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
             label.setElementFrequency(1);
             label.setSequencesCount(1);
             sequence.setSequenceLabel(label);
+        } else {
+            System.out.println("No assignee");
         }
 
         System.out.print("-");
