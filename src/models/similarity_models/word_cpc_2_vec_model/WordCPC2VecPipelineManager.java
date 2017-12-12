@@ -6,9 +6,10 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
 import lombok.Getter;
+import models.keyphrase_prediction.models.TimeDensityModel;
 import models.keyphrase_prediction.stages.Stage1;
+import models.keyphrase_prediction.stages.ValidWordStage;
 import models.text_streaming.FileTextDataSetIterator;
-import models.text_streaming.WordVectorizerAutoEncoderIterator;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -19,7 +20,6 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 
 import java.io.File;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -36,10 +36,14 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     private int numEpochs;
     @Getter
     private List<String> testWords;
-    public WordCPC2VecPipelineManager(String modelName, int numEpochs) {
+    private Set<String> onlyWords;
+    private int maxSamples;
+    public WordCPC2VecPipelineManager(String modelName, int numEpochs, Set<String> onlyWords, int maxSamples) {
         super(INPUT_DATA_FOLDER, PREDICTION_DATA_FILE);
         this.numEpochs=numEpochs;
+        this.maxSamples=maxSamples;
         this.modelName=modelName;
+        this.onlyWords=onlyWords;
         this.testWords = Arrays.asList("A","B","C","D","E","F","G","A02","BO3Q","Y","C07F","A02A1/00","semiconductor","computer","internet","virtual","intelligence","artificial","chemistry","biology","electricity","agriculture","automobile","robot");
     }
 
@@ -115,9 +119,9 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
             FileTextDataSetIterator devIter = new FileTextDataSetIterator(devFile);
 
             datasetManager = new NoSaveDataSetManager<>(
-                    new WordCPCIterator(trainIter,numEpochs,getCPCMap()),
-                    new WordCPCIterator(testIter,1,getCPCMap()),
-                    new WordCPCIterator(devIter,1,getCPCMap())
+                    new WordCPCIterator(trainIter,numEpochs,getCPCMap(), onlyWords, maxSamples),
+                    new WordCPCIterator(testIter,1,getCPCMap(), onlyWords, maxSamples),
+                    new WordCPCIterator(devIter,1,getCPCMap(), onlyWords, maxSamples)
             );
         }
     }
@@ -125,6 +129,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
 
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
+        final int maxSamples = 100;
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;
@@ -133,7 +138,12 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         int nEpochs = 10;
         String modelName = MODEL_NAME;
 
-        WordCPC2VecPipelineManager pipelineManager = new WordCPC2VecPipelineManager(modelName,nEpochs);
+        ValidWordStage stage5 = new ValidWordStage(null,new TimeDensityModel());
+        stage5.run(false);
+
+        Set<String> onlyWords = stage5.get().stream().map(stem->stem.toString()).collect(Collectors.toSet());
+
+        WordCPC2VecPipelineManager pipelineManager = new WordCPC2VecPipelineManager(modelName,nEpochs,onlyWords,maxSamples);
 
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }
