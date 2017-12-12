@@ -102,7 +102,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
             total.getAndAdd(count);
         });
 
-        final int N = Math.min((total.get()+tokens.size())*2,maxSamples);
+        final int N = Math.min((total.get()+tokens.size()),maxSamples);
 
         if(N<=0) return null;
 
@@ -115,8 +115,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         for(int i = 0; i < N; i++) {
 
             VocabWord word = null;
-            int type = rand.nextInt(3);
-            if(type==0 || tokens.size()==0) {
+            boolean randBool = rand.nextBoolean();
+            if(randBool || tokens.size()==0) {
                 int r = rand.nextInt(total.get());
                 int s = 0;
                 for(int j = 0; j < contentCounts.length; j++) {
@@ -127,7 +127,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                     }
                 }
             }
-            if(type==1 || contentCounts.length==0) {
+            if(!randBool || contentCounts.length==0) {
                 if(tokens.size()>0) {
                     word = new VocabWord(1, tokens.get(random.nextInt(tokens.size())));
                 }
@@ -142,6 +142,9 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         Sequence<VocabWord> sequence = new Sequence<>(words);
         if(assignee!=null) {
             VocabWord label = new VocabWord(1, assignee);
+            label.setSpecial(true);
+            label.setElementFrequency(1);
+            label.setSequencesCount(1);
             sequence.setSequenceLabel(label);
         }
         return sequence;
