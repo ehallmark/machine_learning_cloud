@@ -63,18 +63,14 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public boolean hasMoreSequences() {
-        if (task == null) {
-            synchronized (this) {
-                if (task == null) {
-                    reset();
-                }
-            }
-        }
+        System.out.println("calling has more sequences");
+        if(task == null) return true;
         return queue.size()>0 || !task.isDone();
     }
 
     @Override
-    public Sequence<VocabWord> nextSequence() {
+    public synchronized Sequence<VocabWord> nextSequence() {
+        System.out.println(" next sequence");
         while (task==null || (!task.isDone() && queue.isEmpty())) {
             try {
                 TimeUnit.MILLISECONDS.sleep(5);

@@ -166,6 +166,9 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
                 .iterations(1)
                 .setVectorsListeners(Collections.singleton(new CustomWordVectorListener(saveFunction,modelName,1000000,words.toArray(new String[]{}))))
                 .useHierarchicSoftmax(true)
+                .stopWords(new HashSet<>())
+                .trainElementsRepresentation(true)
+                .trainSequencesRepresentation(true)
                 .sequenceLearningAlgorithm(new DBOW<>())
                 .elementsLearningAlgorithm(new CBOW<>())
                 .iterate(iterator);
@@ -178,7 +181,6 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         }
 
         net = builder.build();
-
 
         if(net instanceof ParagraphVectors) {
             ((ParagraphVectors)net).fit();
