@@ -2,26 +2,19 @@ package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
-import org.elasticsearch.common.lucene.search.function.CombineFunction;
-import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.script.Script;
 import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
-import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Function;
 
-import static j2html.TagCreator.div;
-import static j2html.TagCreator.p;
 import static j2html.TagCreator.span;
 
 /**
@@ -30,7 +23,7 @@ import static j2html.TagCreator.span;
 public abstract class AbstractFilter extends AbstractAttribute implements DependentAttribute<AbstractFilter> {
 
     public enum FilterType {
-        Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword, PrefixExclude, PrefixInclude, Regexp
+        Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword, PrefixExclude, PrefixInclude, Regexp, Exists, DoesNotExist
     }
 
     public static boolean isPrefix(FilterType type) {
@@ -177,6 +170,14 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
             }
             case BoolFalse: {
                 description = "This filter excludes "+scope+" that are";
+                break;
+            }
+            case Exists: {
+                description = "This filter removes "+scope+" without a value for";
+                break;
+            }
+            case DoesNotExist: {
+                description = "This filter removes "+scope+" with a value for";
                 break;
             }
             default: {
