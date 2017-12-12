@@ -435,26 +435,28 @@ var showTemplateFunction = function(data,tree,node){
         }
     } else if(node!==null && data.hasOwnProperty('file')) {
         // need to get data
-         var nodeData = node;
-         var parents = [];
-         while(typeof nodeData.text !== 'undefined') {
-             parents.unshift(nodeData.text);
-             var currId = nodeData.parent;
-             nodeData = tree.get_node(currId);
-         }
-         var shared = parents.length > 0 && parents[0].startsWith("Shared");
-         $.ajax({
-             type: "POST",
-             url: '/secure/get_template',
-             data: {
-                 file: data.file,
-                 shared: shared
-             },
-             success: function(data) {
-                 showTemplateFunction(data,null,null);
-             },
-             dataType: "json"
-         });
+        var nodeData = node;
+        var parents = [];
+        while(typeof nodeData.text !== 'undefined') {
+            if(nodeData.type==='folder') {
+                preData["parentDirs"].unshift(nodeData.text);
+            }
+            var currId = nodeData.parent;
+            nodeData = tree.get_node(currId);
+        }
+        var shared = parents.length > 0 && parents[0].startsWith("Shared");
+        $.ajax({
+            type: "POST",
+            url: '/secure/get_template',
+            data: {
+                file: data.file,
+                shared: shared
+            },
+            success: function(data) {
+                showTemplateFunction(data,null,null);
+            },
+            dataType: "json"
+        });
     }
     return false;
 };
@@ -464,7 +466,9 @@ var showDatasetFunction = function(data,tree,node){
     var nodeData = node;
     var parents = [];
     while(typeof nodeData.text !== 'undefined') {
-        parents.unshift(nodeData.text);
+        if(nodeData.type==='folder') {
+            parents.unshift(nodeData.text);
+        }
         var currId = nodeData.parent;
         nodeData = tree.get_node(currId);
     }
@@ -488,7 +492,9 @@ var renameJSNodeFunction = function(tree,node,newName,file,node_type){
      var nodeData = tree.get_node(node.parent);
      var parents = [];
      while(typeof nodeData.text !== 'undefined') {
-         parents.unshift(nodeData.text);
+         if(nodeData.type==='folder') {
+            parents.unshift(nodeData.text);
+         }
          var currId = nodeData.parent;
          nodeData = tree.get_node(currId);
      }
@@ -512,7 +518,9 @@ var removeJSNodeFunction = function(tree,node,file,node_type){
      var nodeData = node;
      var parents = [];
      while(typeof nodeData.text !== 'undefined') {
-         parents.unshift(nodeData.text);
+         if(nodeData.type==='folder') {
+             parents.unshift(nodeData.text);
+         }
          var currId = nodeData.parent;
          nodeData = tree.get_node(currId);
      }
@@ -560,7 +568,9 @@ var templateDataFunction = function(tree,node,name,deletable,callback) {
     preData["deletable"] = deletable;
     var nodeData = node;
     while(typeof nodeData.text !== 'undefined') {
-        preData["parentDirs"].unshift(nodeData.text);
+        if(nodeData.type==='folder') {
+            preData["parentDirs"].unshift(nodeData.text);
+        }
         var currId = nodeData.parent;
         nodeData = tree.get_node(currId);
     }
@@ -612,7 +622,9 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
         }
         var nodeData = node;
         while(typeof nodeData.text !== 'undefined') {
-            preData["parentDirs"].unshift(nodeData.text);
+            if(nodeData.type==='folder') {
+                preData["parentDirs"].unshift(nodeData.text);
+            }
             var currId = nodeData.parent;
             nodeData = tree.get_node(currId);
         }
