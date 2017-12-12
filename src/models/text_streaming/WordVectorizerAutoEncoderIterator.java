@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  */
 public class WordVectorizerAutoEncoderIterator implements DataSetIterator {
 
-    private static Function<String,Map<String,Integer>> defaultBOWFunction = content -> {
+    public static final Function<String,Map<String,Integer>> defaultBOWFunction = content -> {
         return Stream.of(content.split(",")).map(str->{
             String[] pair = str.split(":");
             if(pair.length==1) return null;

@@ -1,12 +1,11 @@
 package models.similarity_models.keyword_encoding_model;
 
-import cpc_normalization.CPCHierarchy;
 import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
-import java.util.*;
-import java.util.concurrent.RecursiveTask;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -27,7 +26,7 @@ public class WordIndexMap {
             if(cache==null) {
                 AtomicInteger idx = new AtomicInteger(0);
                 System.out.println("Could not find cpc idx map... creating new one now.");
-                cache = words.stream().sorted().sequential().collect(Collectors.toMap(word -> word, e -> idx.getAndIncrement()));
+                cache = words.stream().sorted().collect(Collectors.toMap(word -> word, e -> idx.getAndIncrement()));
                 System.out.println("Input size: " + cache.size());
                 System.out.println("Saving idx map...");
                 Database.trySaveObject(cache,new File(WORD_TO_INDEX_FILENAME));

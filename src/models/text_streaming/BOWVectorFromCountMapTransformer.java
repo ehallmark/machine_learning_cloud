@@ -3,11 +3,9 @@ package models.text_streaming;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 11/19/2017.
@@ -27,8 +25,8 @@ public class BOWVectorFromCountMapTransformer implements Function<Map<String,Int
         tokenCounts.entrySet().forEach(e->{
                     Integer idx = wordToIdxMap.get(e.getKey());
                     if(idx!=null) {
-                        cnt.getAndAdd(e.getValue());
-                        vec.putScalar(idx, e.getValue());
+                        if(!binary) cnt.getAndAdd(e.getValue());
+                        vec.putScalar(idx, binary ? 1 : e.getValue());
                     }
                 });
         if(cnt.get()>0) vec.divi(cnt);

@@ -6,7 +6,9 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
 import lombok.Getter;
+import models.keyphrase_prediction.stages.Stage1;
 import models.text_streaming.FileTextDataSetIterator;
+import models.text_streaming.WordVectorizerAutoEncoderIterator;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -17,6 +19,7 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -26,7 +29,6 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     public static final String MODEL_NAME = "wordcpc2vec_model";
     private static final File INPUT_DATA_FOLDER = new File("wordcpc2vec_input_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"wordcpc2vec_predictions/predictions_map.jobj");
-
     protected Map<String,Collection<CPC>> cpcMap;
     private CPCHierarchy hierarchy;
     private String modelName;
@@ -104,10 +106,18 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     @Override
     protected void setDatasetManager() {
         if(datasetManager==null) {
+            File trainFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.trainFile.getName());
+            File testFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.testFile.getName());
+            File devFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.devFile2.getName());
+
+            FileTextDataSetIterator trainIter = new FileTextDataSetIterator(trainFile);
+            FileTextDataSetIterator testIter = new FileTextDataSetIterator(testFile);
+            FileTextDataSetIterator devIter = new FileTextDataSetIterator(devFile);
+
             datasetManager = new NoSaveDataSetManager<>(
-                    new WordCPCIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN),numEpochs,getCPCMap()),
-                    new WordCPCIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TEST),1,getCPCMap()),
-                    new WordCPCIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.DEV1),1,getCPCMap())
+                    new WordCPCIterator(trainIter,numEpochs,getCPCMap()),
+                    new WordCPCIterator(testIter,1,getCPCMap()),
+                    new WordCPCIterator(devIter,1,getCPCMap())
             );
         }
     }
