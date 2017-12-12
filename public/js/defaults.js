@@ -810,7 +810,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                             "separator_after": false,
                             "label": "Update",
                             "title": "Update this "+ node_type + ".",
-                            "submenu" = {
+                            "submenu": {
                                 "From Current Form": {
                                     "separator_before": false,
                                     "separator_after": false,
