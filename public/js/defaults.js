@@ -691,8 +691,8 @@ var removeDescendantsHelper = function(tree,node,node_type) {
         // get all children
         var children = node.children;
         for(var i = 0; i < children.length; i++) {
-            var child = tree.get_node(node.children[i]);
-            removeDescendantsHelper(tree,child,child.data.file,node_type);
+            var child = tree.get_node(children[i]);
+            removeDescendantsHelper(tree,child,node_type);
         }
         tree.delete_node(node);
     } else {
