@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -43,6 +44,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     private Set<String> onlyWords;
     private int maxSamples;
     private int resetCounter = 0;
+    private AtomicBoolean started = new AtomicBoolean(false);
     public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, Set<String> onlyWords, int maxSamples) {
         this(iterator,numEpochs,cpcMap,onlyWords,null,maxSamples);
     }
@@ -64,7 +66,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public boolean hasMoreSequences() {
-        return task == null || queue.size()>0 || !task.isDone();
+        return !started.get() || task == null || queue.size()>0 || !task.isDone();
     }
 
     @Override
@@ -73,7 +75,12 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         while (true) {
             sequence = queue.poll();
             if(sequence!=null) break;
-            if(task!=null && task.isDone() && queue.isEmpty()) break;
+            if(started.get()) {
+                if (task != null && task.isDone() && queue.isEmpty()) {
+                    System.out.println("TASK IS NOT NULL; TASK IS DONE; QUEUE IS EMPTY; BREAKING NOW!!!!!!");
+                    break;
+                }
+            }
             try {
                 TimeUnit.MILLISECONDS.sleep(2);
             } catch (Exception e) {
@@ -161,6 +168,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         resetCounter++;
         System.out.println("RESET CALLED: "+resetCounter);
         if(task!=null && !task.isDone()) return;
+        this.iterator.reset();
+        started.set(false);
         queue.clear();
         final boolean singleEpoch = vocabPass;
         task = new RecursiveAction() {
@@ -178,11 +187,13 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
 
                         // extract sequence
                         Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document,cpcs,onlyWords,rand,maxSamples);
-                        if(sequence==null) continue;
-                        try {
-                            queue.put(sequence);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                        if(sequence!=null) {
+                            started.set(true);
+                            try {
+                                queue.put(sequence);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                     iterator.reset();
