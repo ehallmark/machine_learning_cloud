@@ -167,7 +167,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                         if(document.getLabels()==null||document.getContent()==null) continue;
 
                         List<String> cpcs = document.getLabels().stream().flatMap(asset->cpcMap.getOrDefault(asset, Collections.emptyList()).stream()).map(cpc->cpc.getName()).collect(Collectors.toList());
-                        if(cpcs.size()==0) continue;
+
                         // extract sequence
                         Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document,cpcs,onlyWords,rand,maxSamples);
                         if(sequence==null) continue;

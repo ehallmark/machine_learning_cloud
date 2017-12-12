@@ -181,6 +181,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Relation Type", Constants.RELATION_TYPE);
             humanAttrToJavaAttrMap.put("Filing Number", Constants.FILING_NAME);
             humanAttrToJavaAttrMap.put("CompDB", Constants.COMPDB);
+            humanAttrToJavaAttrMap.put("Random Sort", Constants.RANDOM_SORT);
+            humanAttrToJavaAttrMap.put("No Sort", Constants.NO_SORT);
             humanAttrToJavaAttrMap.put("CPC Section", Constants.CPC_SECTION);
             humanAttrToJavaAttrMap.put("CPC Class", Constants.CPC_CLASS);
             humanAttrToJavaAttrMap.put("CPC Subclass", Constants.CPC_SUBCLASS);

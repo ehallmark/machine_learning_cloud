@@ -149,7 +149,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         };
 
         boolean newModel = net == null;
-        ParagraphVectors.Builder builder = new ParagraphVectors.Builder()
+        SequenceVectors.Builder<VocabWord> builder = new SequenceVectors.Builder<VocabWord>()
                 .seed(41)
                 .batchSize(BATCH_SIZE)
                 .epochs(1) // hard coded to avoid learning rate from resetting
@@ -159,7 +159,6 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
                 .negativeSample(negativeSampling)
                 .learningRate(learningRate)
                 .minLearningRate(minLearningRate)
-                .allowParallelTokenization(true)
                 .useAdaGrad(true)
                 .resetModel(newModel)
                 .minWordFrequency(minWordFrequency)
@@ -183,8 +182,10 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
 
         if(net instanceof ParagraphVectors) {
             ((ParagraphVectors)net).fit();
-        } else {
+        } else if(net instanceof Word2Vec) {
             ((Word2Vec) net).fit();
+        } else if(net instanceof SequenceVectors) {
+            ((SequenceVectors) net).fit();
         }
 
         System.out.println("Saving...");
