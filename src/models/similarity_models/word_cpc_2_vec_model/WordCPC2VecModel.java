@@ -182,6 +182,8 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
 
         net = builder.build();
 
+        iterator.reset();
+        
         if(net instanceof ParagraphVectors) {
             ((ParagraphVectors)net).fit();
         } else if(net instanceof Word2Vec) {

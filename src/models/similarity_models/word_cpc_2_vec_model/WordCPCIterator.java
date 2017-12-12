@@ -42,6 +42,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     private Map<String,Collection<CPC>> cpcMap;
     private Set<String> onlyWords;
     private int maxSamples;
+    private int resetCounter = 0;
     public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, Set<String> onlyWords, int maxSamples) {
         this(iterator,numEpochs,cpcMap,onlyWords,null,maxSamples);
     }
@@ -157,6 +158,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public synchronized void reset() {
+        resetCounter++;
+        System.out.println("RESET CALLED: "+resetCounter);
         if(task!=null && !task.isDone()) return;
         queue.clear();
         final boolean singleEpoch = vocabPass;
@@ -167,6 +170,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                 System.out.println("Running "+finalNumEpochs+" epochs: "+finalNumEpochs);
                 for(int i = 0; i < finalNumEpochs; i++) {
                     while(iterator.hasNext()) {
+                        System.out.println("Looking for next document...");
                         LabelledDocument document = iterator.next();
                         if(document.getLabels()==null||document.getContent()==null) continue;
 
