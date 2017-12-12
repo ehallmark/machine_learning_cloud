@@ -95,7 +95,10 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     }
 
     private static Sequence<VocabWord> extractSequenceFromDocumentAndTokens(LabelledDocument document, List<String> tokens, Set<String> onlyWords, Random random, int maxSamples) {
-        if(document.getContent()==null||document.getLabels()==null||document.getContent().isEmpty() || document.getLabels().isEmpty()) return null;
+        if(document.getContent()==null||document.getLabels()==null||document.getContent().isEmpty() || document.getLabels().isEmpty()) {
+            System.out.println("Returning NULL because content or labels are null");
+            return null;
+        }
 
         Map<String,Integer> wordCountMap = defaultBOWFunction.apply(document.getContent(),onlyWords);
 
@@ -113,7 +116,10 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
 
         final int N = Math.min((total.get()+tokens.size()),maxSamples);
 
-        if(N<=0) return null;
+        if(N<=0) {
+            System.out.println("Returning NULL because N <= 0");
+            return null;
+        }
 
         String assignee = document.getLabels().stream()
                 .map(asset-> Database.assigneeFor(asset))
@@ -124,8 +130,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         for(int i = 0; i < N; i++) {
 
             VocabWord word = null;
-            boolean randBool = rand.nextBoolean();
-            if(randBool || tokens.size()==0) {
+            int randInt = rand.nextInt(tokens.size()+total.get());
+            if(randInt < total.get()) {
                 int r = rand.nextInt(total.get());
                 int s = 0;
                 for(int j = 0; j < contentCounts.length; j++) {
@@ -135,8 +141,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                         break;
                     }
                 }
-            }
-            if(!randBool || contentCounts.length==0) {
+            } else {
                 if(tokens.size()>0) {
                     word = new VocabWord(1, tokens.get(random.nextInt(tokens.size())));
                 }
@@ -194,6 +199,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+                        } else {
+                            System.out.println("NULL!");
                         }
                     }
                     iterator.reset();
