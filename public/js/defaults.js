@@ -553,7 +553,7 @@ var templateDataFunction = function(tree,node,name,deletable,callback) {
     saveTemplateFormHelper("#filtersForm",".attributeElement",preData,"filtersMap");
     saveTemplateFormHelper("#chartsForm",".attributeElement",preData,"chartsMap");
     saveTemplateFormHelper("#highlightForm",".attributeElement",preData,"highlightMap");
-    if(node.data.hasOwnProperty('file')) {
+    if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
         preData["file"] = node.data.file;
     }
     preData["parentDirs"] = [];
@@ -573,6 +573,9 @@ var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable,callbac
     preData["createDataset"]= true;
     preData["parentDirs"] = [];
     preData["deletable"] = deletable;
+    if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
+        preData["file"] = node.data.file;
+    }
     var nodeData = node;
     while(typeof nodeData.text !== 'undefined') {
         preData["parentDirs"].unshift(nodeData.text);
@@ -604,6 +607,9 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
         preData["assets"] = $input.val().split(/\s+/);
         preData["parentDirs"] = [];
         preData["deletable"] = deletable;
+        if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
+            preData["file"] = node.data.file;
+        }
         var nodeData = node;
         while(typeof nodeData.text !== 'undefined') {
             preData["parentDirs"].unshift(nodeData.text);
@@ -805,27 +811,34 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         }
                     };
                     if(!isFolder) {
-                        items["Update"] = {
-                            "separator_before": false,
-                            "separator_after": false,
-                            "label": "Update",
-                            "title": "Update this "+ node_type + ".",
-                            "submenu": {
-                                "From Current Form": {
-                                    "separator_before": false,
-                                    "separator_after": false,
-                                    "label": "From Current Form",
-                                    "title": "Update "+node_type+" from current form.",
-                                    "action": function(obj) {
-                                        var name = obj.name;
-                                        var callback = function(data) {
-                                            saveJSNodeFunction(tree,node,name,deletable,data,node_type,false);
-                                        };
-                                        labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
-                                        return true;
-                                    }
+                        var subMenu = {};
+                        var labelToFunctions = {};
+                        for(var i = 0; i < jsNodeDataFunctions.length; i++) {
+                            var jsNodeDataFunction = jsNodeDataFunctions[i];
+                            var newItemSubLabel = newItemSubLabels[i];
+                            labelToFunctions[newItemSubLabel]=jsNodeDataFunction;
+                            subMenu[newItemSubLabel] = {
+                                "separator_before": false,
+                                "separator_after": false,
+                                "label": newItemSubLabel,
+                                "title": "Update this "+node_type+" "+newItemSubLabel.toLowerCase()+".",
+                                "action": function(obj) {
+                                    var name = node.text;
+                                    var callback = function(data) {
+                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,false);
+                                    };
+                                    labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
+                                    return true;
                                 }
                             }
+                        }
+                        var menuName = "Update "+capitalize(node_type);
+                        items[menuName] = {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": menuName,
+                            "title": "Update this "+node_type+".",
+                            "submenu": subMenu
                         };
                     }
                 }
