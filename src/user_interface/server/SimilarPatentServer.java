@@ -1141,6 +1141,11 @@ public class SimilarPatentServer {
                 formMap.put("filtersMap", filtersMap);
                 formMap.put("chartsMap", chartsMap);
                 formMap.put("highlightMap", highlightMap);
+                // check file
+                String file = req.queryParams("file");
+                if(file!=null) {
+                    formMap.put("file",file);
+                }
                 return formMap;
             } else return null;
         };
@@ -1155,6 +1160,11 @@ public class SimilarPatentServer {
                 Map<String, Object> formMap = new HashMap<>();
                 formMap.put("name", name);
                 formMap.put("assets", assets);
+                // check file
+                String file = req.queryParams("file");
+                if(file!=null) {
+                    formMap.put("file",file);
+                }
                 return formMap;
             } else return null;
         };
@@ -1172,6 +1182,7 @@ public class SimilarPatentServer {
         Random random = new Random(System.currentTimeMillis());
         Map<String,Object> responseMap = new HashMap<>();
         Map<String,Object> formMap = formMapFunction.apply(req);
+        Object prevFilename = formMap.get("file");
         if(formMap!=null) {
             if(debug) System.out.println("Form "+name+" attributes: "+new Gson().toJson(formMap));
 
@@ -1186,10 +1197,27 @@ public class SimilarPatentServer {
                 File templateFolder = new File(templateFolderStr);
                 if(!templateFolder.exists()) templateFolder.mkdirs();
                 File file = null;
-                while(file == null || file.exists()) {
-                    file = new File(templateFolderStr+Math.abs(random.nextInt()));
-                    File updatesFile = new File(file.getAbsolutePath()+"_updates"); // clear any updates
-                    if(updatesFile.exists()) updatesFile.delete();
+                if(prevFilename==null) {
+                    while (file == null || file.exists()) {
+                        file = new File(templateFolderStr + Math.abs(random.nextInt()));
+                        File updatesFile = new File(file.getAbsolutePath() + "_updates"); // clear any updates
+                        if (updatesFile.exists()) updatesFile.delete();
+                    }
+                } else {
+                    System.out.println("Saving to previous file: "+prevFilename.toString());
+                    file = new File(templateFolderStr+prevFilename);
+                }
+                // save updates
+                File updatesFile = new File(file.getAbsolutePath()+"_updates");
+                Map<String, Object> updateMap = new HashMap<>();
+                if(formMap.containsKey("name")) {
+                    updateMap.put("name", formMap.get("name"));
+                }
+                if(formMap.containsKey("parentDirs")) {
+                    updateMap.put("parentDirs", formMap.get("parentDirs"));
+                }
+                if(updateMap.size()>0) {
+                    Database.trySaveObject(updateMap, updatesFile);
                 }
                 Database.trySaveObject(formMap,file);
                 message = "Saved sucessfully.";

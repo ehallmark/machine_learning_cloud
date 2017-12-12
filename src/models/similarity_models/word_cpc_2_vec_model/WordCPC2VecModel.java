@@ -189,7 +189,11 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         net = builder.build();
 
 
-        ((ParagraphVectors)net).fit();
+        if(net instanceof ParagraphVectors) {
+            ((ParagraphVectors)net).fit();
+        } else {
+            ((Word2Vec) net).fit();
+        }
 
         System.out.println("Saving...");
         double score = 0d;

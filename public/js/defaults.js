@@ -553,7 +553,9 @@ var templateDataFunction = function(tree,node,name,deletable,callback) {
     saveTemplateFormHelper("#filtersForm",".attributeElement",preData,"filtersMap");
     saveTemplateFormHelper("#chartsForm",".attributeElement",preData,"chartsMap");
     saveTemplateFormHelper("#highlightForm",".attributeElement",preData,"highlightMap");
-
+    if(node.data.hasOwnProperty('file')) {
+        preData["file"] = node.data.file;
+    }
     preData["parentDirs"] = [];
     preData["deletable"] = deletable;
     var nodeData = node;
@@ -620,7 +622,7 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     });
 };
 
-var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type){
+var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,create){
     if(preData!==null) {
         $.ajax({
             type: "POST",
@@ -638,21 +640,25 @@ var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type){
                         'jstree': {'type': 'file'},
                     };
                     $.each(preData, function(k,v) { newData[k] = v; });
-                    node = tree.create_node(
-                        node,
-                        { 'data' : newData},
-                        'first',
-                        function(newNode) {
-                            setTimeout(function() {
-                                newNode.data = newData;
-                                tree.edit(newNode,name,function(n,status,cancelled) {
-                                    if(status && ! cancelled) {
-                                        renameJSNodeFunction(tree,n,n.text,data['file'],node_type);
-                                    }
-                                });
-                            },0);
-                        }
-                    );
+                    if(create) {
+                        node = tree.create_node(
+                            node,
+                            { 'data' : newData},
+                            'first',
+                            function(newNode) {
+                                setTimeout(function() {
+                                    newNode.data = newData;
+                                    tree.edit(newNode,name,function(n,status,cancelled) {
+                                        if(status && ! cancelled) {
+                                            renameJSNodeFunction(tree,n,n.text,data['file'],node_type);
+                                        }
+                                    });
+                                },0);
+                            }
+                        );
+                    } else {
+                        node.data = newData;
+                    }
                 }
             },
             dataType: "json"
@@ -750,7 +756,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 "action": function(obj) {
                                     var name = 'New '+capitalize(node_type);
                                     var callback = function(data) {
-                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type);
+                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,true);
                                     };
                                     labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
                                     return true;
@@ -798,6 +804,30 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                             return true;
                         }
                     };
+                    if(!isFolder) {
+                        items["Update"] = {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Update",
+                            "title": "Update this "+ node_type + ".",
+                            "submenu" = {
+                                "From Current Form": {
+                                    "separator_before": false,
+                                    "separator_after": false,
+                                    "label": "From Current Form",
+                                    "title": "Update "+node_type+" from current form.",
+                                    "action": function(obj) {
+                                        var name = obj.name;
+                                        var callback = function(data) {
+                                            saveJSNodeFunction(tree,node,name,deletable,data,node_type,false);
+                                        };
+                                        labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
+                                        return true;
+                                    }
+                                }
+                            }
+                        };
+                    }
                 }
                 if((node_type==='dataset') && !isFolder) {
                     items["Apply Current Form"] = {
