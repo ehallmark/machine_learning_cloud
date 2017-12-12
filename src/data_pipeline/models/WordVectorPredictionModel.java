@@ -4,19 +4,20 @@ import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.models.glove.Glove;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
+import org.deeplearning4j.models.sequencevectors.SequenceVectors;
+import org.deeplearning4j.models.sequencevectors.serialization.VocabWordFactory;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by ehallmark on 11/8/17.
  */
 public abstract class WordVectorPredictionModel<T> extends BaseTrainablePredictionModel<T,WordVectors> {
 
-    public enum Type { Word2Vec, Glove, ParagraphVector }
+    public enum Type { Word2Vec, Glove, ParagraphVector, SequenceVector }
 
     private Type type;
     protected WordVectorPredictionModel(String modelName, Type type) {
@@ -35,6 +36,8 @@ public abstract class WordVectorPredictionModel<T> extends BaseTrainablePredicti
             WordVectorSerializer.writeWordVectors((Glove) net, file);
         } else if(net instanceof Word2Vec) {
             WordVectorSerializer.writeWord2VecModel((Word2Vec)net, file);
+        } else if(net instanceof SequenceVectors) {
+            WordVectorSerializer.writeSequenceVectors((SequenceVectors<VocabWord>)net, new VocabWordFactory(), file);
         }
     }
 
@@ -50,6 +53,10 @@ public abstract class WordVectorPredictionModel<T> extends BaseTrainablePredicti
                     break;
                 } case Word2Vec: {
                     this.net = WordVectorSerializer.readWord2VecModel(modelFile);
+                    break;
+                } case SequenceVector: {
+                    this.net = WordVectorSerializer.readSequenceVectors(new VocabWordFactory(), modelFile);
+                    break;
                 }
             }
             this.isSaved.set(true);

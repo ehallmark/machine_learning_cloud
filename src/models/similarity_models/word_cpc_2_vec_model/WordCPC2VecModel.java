@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
     public static final int VECTOR_SIZE = 32;
     private static final int BATCH_SIZE = 512;
-    private static Type MODEL_TYPE = Type.Word2Vec;
+    private static Type MODEL_TYPE = Type.SequenceVector;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"wordcpc2vec_model_data");
 
     private WordCPC2VecPipelineManager pipelineManager;
