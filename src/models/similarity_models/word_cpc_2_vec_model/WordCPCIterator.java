@@ -51,7 +51,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         this.iterator=iterator;
         this.maxSamples=maxSamples;
         this.cpcMap=cpcMap;
-        this.queue = new ArrayBlockingQueue<>(100);
+        this.queue = new ArrayBlockingQueue<>(1000);
         this.vocabPass=true;
         this.afterEpochFunction=afterEpochFunction;
         this.onlyWords=onlyWords;
@@ -63,25 +63,25 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public boolean hasMoreSequences() {
-        if(task == null) return true;
-        return queue.size()>0 || !task.isDone();
+        return task == null || queue.size()>0 || !task.isDone();
     }
 
     @Override
     public synchronized Sequence<VocabWord> nextSequence() {
-        System.out.println(" next sequence");
-        while (task==null || (!task.isDone() && queue.isEmpty())) {
+        Sequence<VocabWord> sequence;
+        while (true) {
+            sequence = queue.poll();
+            if(sequence!=null) break;
+            if(task!=null && task.isDone() && queue.isEmpty()) break;
             try {
-                TimeUnit.MILLISECONDS.sleep(5);
+                TimeUnit.MILLISECONDS.sleep(2);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        Sequence<VocabWord> sequence = queue.poll();
         System.out.println("Found sequence.");
         if(sequence==null) {
             System.out.println("SEQUENCE IS NULL!");
-            return nextSequence();
         }
         return sequence;
     }
