@@ -439,7 +439,7 @@ var showTemplateFunction = function(data,tree,node){
         var parents = [];
         while(typeof nodeData.text !== 'undefined') {
             if(nodeData.type==='folder') {
-                preData["parentDirs"].unshift(nodeData.text);
+                parents.unshift(nodeData.text);
             }
             var currId = nodeData.parent;
             nodeData = tree.get_node(currId);
