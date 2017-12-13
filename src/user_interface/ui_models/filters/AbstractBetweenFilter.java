@@ -5,24 +5,18 @@ import lombok.NonNull;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
-import scala.tools.nsc.Global;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.StringJoiner;
 import java.util.function.Function;
 
-import static j2html.TagCreator.div;
-import static j2html.TagCreator.input;
-import static j2html.TagCreator.label;
+import static j2html.TagCreator.*;
 
 /**
  * Created by Evan on 6/17/2017.

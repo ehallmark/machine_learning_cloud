@@ -1,37 +1,20 @@
 package models.keyphrase_prediction.stages;
 
-import elasticsearch.DataIngester;
-import model.edges.Edge;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.scorers.TermhoodScorer;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.SparseRealMatrix;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
-import seeding.Constants;
 import seeding.Database;
-import spire.math.algebraic.Mul;
 import tools.OpenMapBigRealMatrix;
-import tools.Stemmer;
-import user_interface.ui_models.portfolios.items.Item;
-import util.Pair;
 
 import java.io.File;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 9/12/17.
