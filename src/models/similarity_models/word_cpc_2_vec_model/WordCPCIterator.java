@@ -87,9 +87,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                 e.printStackTrace();
             }
         }
-        System.out.println("Found sequence.");
         if(sequence==null) {
-            System.out.println("SEQUENCE IS NULL!");
+            throw new RuntimeException("SEQUENCE IS NULL!");
         }
         return sequence;
     }
@@ -160,11 +159,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
             label.setElementFrequency(1);
             label.setSequencesCount(1);
             sequence.setSequenceLabel(label);
-        } else {
-            System.out.println("No assignee");
         }
 
-        System.out.print("-");
         return sequence;
     }
 
@@ -184,7 +180,6 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                 System.out.println("Running "+finalNumEpochs+" epochs: "+finalNumEpochs);
                 for(int i = 0; i < finalNumEpochs; i++) {
                     while(iterator.hasNext()) {
-                        System.out.println("Looking for next document...");
                         LabelledDocument document = iterator.next();
                         if(document.getLabels()==null||document.getContent()==null) continue;
 
@@ -193,14 +188,13 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                         // extract sequence
                         Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document,cpcs,onlyWords,rand,maxSamples);
                         if(sequence!=null) {
+                            System.out.println("FOUND VALID SEQUENCE!!!");
                             started.set(true);
                             try {
                                 queue.put(sequence);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                        } else {
-                            System.out.println("NULL!");
                         }
                     }
                     iterator.reset();
