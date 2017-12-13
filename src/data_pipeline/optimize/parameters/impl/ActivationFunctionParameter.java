@@ -4,9 +4,7 @@ import data_pipeline.optimize.parameters.HyperParameter;
 import data_pipeline.optimize.parameters.SimpleDiscreteHyperParameter;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.Layer;
-import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.nd4j.linalg.activations.Activation;
-import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 import java.util.List;
 
@@ -27,7 +25,7 @@ public class ActivationFunctionParameter extends SimpleDiscreteHyperParameter<Ac
 
     @Override
     public Layer.Builder applyToLayer(Layer.Builder layerBuilder) {
-        return layerBuilder.activation(get());
+        return layerBuilder;//.activation(get());
     }
 
     @Override

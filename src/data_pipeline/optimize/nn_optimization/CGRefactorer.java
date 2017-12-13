@@ -20,8 +20,8 @@ public class CGRefactorer {
         Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier = builder -> builder.learningRate(learningRate).biasLearningRate(learningRate);
         Function<ComputationGraphConfiguration.GraphBuilder,ComputationGraphConfiguration.GraphBuilder> cgApplier = builder -> builder;
         Function<Layer,Void> layerApplier = layer -> {
-            layer.setLearningRate(learningRate);
-            layer.setBiasLearningRate(learningRate);
+            //layer.setLearningRate(learningRate);
+            //layer.setBiasLearningRate(learningRate);
             return null;
         };
         return updateNetwork(orig,cgApplier,netApplier,layerApplier,false,true,dup);
@@ -39,7 +39,7 @@ public class CGRefactorer {
         Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier = builder -> builder.updater(updater);
         Function<ComputationGraphConfiguration.GraphBuilder,ComputationGraphConfiguration.GraphBuilder> cgApplier = builder -> builder;
         Function<Layer,Void> layerApplier = layer -> {
-            layer.setUpdater(updater);
+            //layer.setUpdater(updater);
             return null;
         };
         return updateNetwork(orig,cgApplier,netApplier,layerApplier,false,true,dup);
@@ -49,7 +49,7 @@ public class CGRefactorer {
         Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier = builder -> builder.regularization(regularize).l2(l2);
         Function<ComputationGraphConfiguration.GraphBuilder,ComputationGraphConfiguration.GraphBuilder> cgApplier = builder -> builder;
         Function<Layer,Void> layerApplier = layer -> {
-            layer.setL2(l2);
+            //layer.setL2(l2);
             return null;
         };
         return updateNetwork(orig,cgApplier,netApplier,layerApplier,false,true,dup);

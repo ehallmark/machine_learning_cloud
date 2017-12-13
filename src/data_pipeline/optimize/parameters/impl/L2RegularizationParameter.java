@@ -32,6 +32,6 @@ public class L2RegularizationParameter extends AveragingDoubleHyperParameter {
 
     @Override
     public Layer.Builder applyToLayer(Layer.Builder layerBuilder) {
-        return layerBuilder.l2(get());
+        return layerBuilder;//.l2(get());
     }
 }

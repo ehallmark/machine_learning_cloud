@@ -25,7 +25,7 @@ public class LearningRatePolicyParameter extends SimpleDiscreteHyperParameter<Le
 
     @Override
     public Layer.Builder applyToLayer(Layer.Builder layerBuilder) {
-        return layerBuilder.learningRateDecayPolicy(get());
+        return layerBuilder;//.learningRateDecayPolicy(get());
     }
 
     @Override

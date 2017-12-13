@@ -1,7 +1,6 @@
 package models.similarity_models.word_cpc_2_vec_model;
 
 import cpc_normalization.CPC;
-import data_pipeline.helpers.Function2;
 import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
@@ -23,11 +22,10 @@ import java.util.stream.Stream;
  * Created by ehallmark on 11/21/17.
  */
 public class WordCPCIterator implements SequenceIterator<VocabWord> {
-    public static final Function2<String,Set<String>,Map<String,Integer>> defaultBOWFunction = (content,onlyWords) -> {
+    public static final Function<String,Map<String,Integer>> defaultBOWFunction = (content) -> {
         return Stream.of(content.split(",")).map(str->{
             String[] pair = str.split(":");
             if(pair.length==1) return null;
-            if(!onlyWords.contains(pair[0])) return null;
             return new Pair<>(pair[0],Integer.valueOf(pair[1]));
         }).filter(p->p!=null).collect(Collectors.toMap(p->p.getFirst(), p->p.getSecond()));
     };
@@ -40,22 +38,20 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     private Function<Void,Void> afterEpochFunction;
     private FileTextDataSetIterator iterator;
     private Map<String,Collection<CPC>> cpcMap;
-    private Set<String> onlyWords;
     private int maxSamples;
     private int resetCounter = 0;
-    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, Set<String> onlyWords, int maxSamples) {
-        this(iterator,numEpochs,cpcMap,onlyWords,null,maxSamples);
+    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, int maxSamples) {
+        this(iterator,numEpochs,cpcMap,null,maxSamples);
     }
 
-    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, Set<String> onlyWords, Function<Void,Void> afterEpochFunction, int maxSamples) {
+    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, Function<Void,Void> afterEpochFunction, int maxSamples) {
         this.numEpochs=numEpochs;
         this.iterator=iterator;
         this.maxSamples=maxSamples;
         this.cpcMap=cpcMap;
-        this.queue = new ArrayBlockingQueue<>(1000);
+        this.queue = new ArrayBlockingQueue<>(500);
         this.vocabPass=true;
         this.afterEpochFunction=afterEpochFunction;
-        this.onlyWords=onlyWords;
     }
 
     public void setRunVocab(boolean vocab) {
@@ -89,13 +85,13 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         return sequence;
     }
 
-    private static Sequence<VocabWord> extractSequenceFromDocumentAndTokens(LabelledDocument document, List<String> tokens, Set<String> onlyWords, Random random, int maxSamples) {
+    private static Sequence<VocabWord> extractSequenceFromDocumentAndTokens(LabelledDocument document, List<String> tokens, Random random, int maxSamples) {
         if(document.getContent()==null||document.getLabels()==null||document.getContent().isEmpty() || document.getLabels().isEmpty()) {
             //System.out.println("Returning NULL because content or labels are null");
             return null;
         }
 
-        Map<String,Integer> wordCountMap = defaultBOWFunction.apply(document.getContent(),onlyWords);
+        Map<String,Integer> wordCountMap = defaultBOWFunction.apply(document.getContent());
 
         String[] contentWords = new String[wordCountMap.size()];
         int[] contentCounts = new int[wordCountMap.size()];
@@ -179,7 +175,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                         List<String> cpcs = document.getLabels().stream().flatMap(asset->cpcMap.getOrDefault(asset, Collections.emptyList()).stream()).map(cpc->cpc.getName()).collect(Collectors.toList());
 
                         // extract sequence
-                        Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document,cpcs,onlyWords,rand,maxSamples);
+                        Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document,cpcs,rand,maxSamples);
                         if(sequence!=null) {
                             //System.out.print("-");
                             try {

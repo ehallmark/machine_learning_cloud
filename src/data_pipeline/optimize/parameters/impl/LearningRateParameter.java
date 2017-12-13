@@ -32,6 +32,6 @@ public class LearningRateParameter extends AveragingDoubleHyperParameter {
 
     @Override
     public Layer.Builder applyToLayer(Layer.Builder layerBuilder) {
-        return layerBuilder.learningRate(get());
+        return layerBuilder;//.learningRate(get());
     }
 }

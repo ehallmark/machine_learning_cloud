@@ -6,9 +6,7 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
 import lombok.Getter;
-import models.keyphrase_prediction.models.TimeDensityModel;
 import models.keyphrase_prediction.stages.Stage1;
-import models.keyphrase_prediction.stages.ValidWordStage;
 import models.text_streaming.FileTextDataSetIterator;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -36,14 +34,12 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     private int numEpochs;
     @Getter
     private List<String> testWords;
-    private Set<String> onlyWords;
     private int maxSamples;
-    public WordCPC2VecPipelineManager(String modelName, int numEpochs, Set<String> onlyWords, int maxSamples) {
+    public WordCPC2VecPipelineManager(String modelName, int numEpochs, int maxSamples) {
         super(INPUT_DATA_FOLDER, PREDICTION_DATA_FILE);
         this.numEpochs=numEpochs;
         this.maxSamples=maxSamples;
         this.modelName=modelName;
-        this.onlyWords=onlyWords;
         this.testWords = Arrays.asList("A","B","C","D","E","F","G","A02","BO3Q","Y","C07F","A02A1/00","semiconductor","computer","internet","virtual","intelligence","artificial","chemistry","biology","electricity","agriculture","automobile","robot");
     }
 
@@ -119,9 +115,9 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
             FileTextDataSetIterator devIter = new FileTextDataSetIterator(devFile);
 
             datasetManager = new NoSaveDataSetManager<>(
-                    new WordCPCIterator(trainIter,numEpochs,getCPCMap(), onlyWords, maxSamples),
-                    new WordCPCIterator(testIter,1,getCPCMap(), onlyWords, maxSamples),
-                    new WordCPCIterator(devIter,1,getCPCMap(), onlyWords, maxSamples)
+                    new WordCPCIterator(trainIter,numEpochs,getCPCMap(), maxSamples),
+                    new WordCPCIterator(testIter,1,getCPCMap(), maxSamples),
+                    new WordCPCIterator(devIter,1,getCPCMap(), maxSamples)
             );
         }
     }
@@ -137,13 +133,8 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         boolean runPredictions = false;
         int nEpochs = 10;
         String modelName = MODEL_NAME;
-
-        ValidWordStage stage5 = new ValidWordStage(null,new TimeDensityModel());
-        stage5.run(false);
-
-        Set<String> onlyWords = stage5.get().stream().map(stem->stem.toString()).collect(Collectors.toSet());
-
-        WordCPC2VecPipelineManager pipelineManager = new WordCPC2VecPipelineManager(modelName,nEpochs,onlyWords,maxSamples);
+        
+        WordCPC2VecPipelineManager pipelineManager = new WordCPC2VecPipelineManager(modelName,nEpochs,maxSamples);
 
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }

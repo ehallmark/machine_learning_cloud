@@ -1,13 +1,10 @@
 package models.similarity_models.deep_cpc_encoding_model;
 
-import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.helpers.Function2;
-import data_pipeline.models.NeuralNetworkPredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
-import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.NDArrayHelper;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -21,21 +18,18 @@ import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
-import seeding.Database;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 10/26/17.
@@ -123,7 +117,9 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             net = NNRefactorer.updatePretrainAndBackprop(net,true,false,false);
             System.out.println("new learning rates: ");
             net.getLayerWiseConfigurations().getConfs().forEach((conf)->{
-                System.out.println("  "+conf.getLayer().getLearningRate());
+                conf.getLearningRateByParam().entrySet().forEach(e->{
+                    System.out.println("  "+e.getKey()+": "+e.getValue());
+                });
             });
         }
 
