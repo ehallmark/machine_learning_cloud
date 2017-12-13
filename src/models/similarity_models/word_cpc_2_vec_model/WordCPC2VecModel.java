@@ -5,8 +5,7 @@ import cpc_normalization.CPC;
 import data_pipeline.models.WordVectorPredictionModel;
 import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
-import org.deeplearning4j.models.embeddings.learning.impl.elements.CBOW;
-import org.deeplearning4j.models.embeddings.learning.impl.sequence.DBOW;
+import org.deeplearning4j.models.embeddings.loader.VectorsConfiguration;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
@@ -32,7 +31,7 @@ import java.util.stream.Stream;
 public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
     public static final int VECTOR_SIZE = 32;
     private static final int BATCH_SIZE = 512;
-    private static Type MODEL_TYPE = Type.SequenceVector;
+    private static Type MODEL_TYPE = Type.ParagraphVector;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"wordcpc2vec_model_data");
 
     private WordCPC2VecPipelineManager pipelineManager;
@@ -124,7 +123,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         WordCPCIterator iterator = pipelineManager.getDatasetManager().getTrainingIterator();
 
         int windowSize = 6;
-        int minWordFrequency = 3;
+        int minWordFrequency = 5;
         double negativeSampling = -1;
         double sampling = 0.0001;
         //double learningRate = 0.1;
@@ -149,10 +148,13 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         };
 
         boolean newModel = net == null;
-        SequenceVectors.Builder<VocabWord> builder = new SequenceVectors.Builder<VocabWord>()
+        VectorsConfiguration config = new VectorsConfiguration();
+        config.setElementsLearningAlgorithm("CBOW");
+        config.setSequenceLearningAlgorithm("DBOW");
+        ParagraphVectors.Builder builder = new ParagraphVectors.Builder(config)
                 .seed(41)
                 .batchSize(BATCH_SIZE)
-                .epochs(1) // hard coded to avoid learning rate from resetting
+                .epochs(3) // hard coded to avoid learning rate from resetting
                 .windowSize(windowSize)
                 .layerSize(VECTOR_SIZE)
                 .sampling(sampling)
@@ -169,8 +171,10 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
                 .stopWords(new HashSet<>())
                 .trainElementsRepresentation(true)
                 .trainSequencesRepresentation(true)
-                .sequenceLearningAlgorithm(new DBOW<>())
-                .elementsLearningAlgorithm(new CBOW<>())
+                //.sequenceLearningAlgorithm(new DBOW<>())
+                //.elementsLearningAlgorithm(new CBOW<>())
+                .sequenceLearningAlgorithm("DBOW")
+                .elementsLearningAlgorithm("CBOW")
                 .iterate(iterator);
 
         if(!newModel) {
@@ -190,6 +194,21 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
             ((Word2Vec) net).fit();
         } else if(net instanceof SequenceVectors) {
             ((SequenceVectors) net).fit();
+        }
+
+        System.out.println("Testing...");
+        for (String word : words) {
+            INDArray vec = net.lookupTable().vector(word);
+            if(vec!=null) {
+                Collection<String> lst = net.wordsNearest(vec, 10);
+                System.out.println("10 Words closest to '" + word + "': " + lst);
+
+                if (net instanceof ParagraphVectors) {
+                    ParagraphVectors pv = (ParagraphVectors) net;
+                    Collection<String> topLabels = pv.nearestLabels(vec, 10);
+                    System.out.println("10 Labels closest to '" + word + "': " + topLabels);
+                }
+            }
         }
 
         System.out.println("Saving...");
