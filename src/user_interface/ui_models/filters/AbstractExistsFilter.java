@@ -1,6 +1,9 @@
 package user_interface.ui_models.filters;
 
+import elasticsearch.DataSearcher;
 import lombok.NonNull;
+import org.apache.lucene.search.join.ScoreMode;
+import org.elasticsearch.index.query.InnerHitBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -28,6 +31,9 @@ public class AbstractExistsFilter extends AbstractBooleanIncludeFilter {
             query = getScriptFilter();
         } else {
             query = QueryBuilders.existsQuery(getFullPrerequisite());
+            if(!attribute.isObject()) {
+                query = QueryBuilders.nestedQuery(getFullPrerequisite(), query, ScoreMode.Max);
+            }
         }
         return query;
     }

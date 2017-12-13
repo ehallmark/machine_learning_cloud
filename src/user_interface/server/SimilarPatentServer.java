@@ -1657,7 +1657,7 @@ public class SimilarPatentServer {
                 body().with(
                         div().withClass("container-fluid text-center").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
-                                        nav().withClass("sidebar").attr("style","overflow-y: auto; width: 25%; height: 100%; position: fixed; padding-top: 75px;").with(
+                                        nav().withClass("sidebar col-3").attr("style","overflow-y: auto; height: 100%; position: fixed; padding-top: 75px;").with(
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").with(authorized ? div().withText("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : div().withText("Not signed in.")),
                                                         div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
@@ -1699,7 +1699,7 @@ public class SimilarPatentServer {
                                                                 )
                                                         )
                                                 )
-                                        ),div().attr("style","padding-top: 58px; padding-left:0px; padding-right:0px; margin-left: 25%; width: 100%;").with(
+                                        ),div().withClass("col-9 offset-3").attr("style","padding-top: 58px; padding-left:0px; padding-right:0px;").with(
                                                 customFormHeader(),
                                                 (message==null ? span() : div().withText(message)),
                                                 form,
