@@ -5,7 +5,8 @@ import cpc_normalization.CPC;
 import data_pipeline.models.WordVectorPredictionModel;
 import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
-import org.deeplearning4j.models.embeddings.loader.VectorsConfiguration;
+import org.deeplearning4j.models.embeddings.learning.impl.elements.CBOW;
+import org.deeplearning4j.models.embeddings.learning.impl.sequence.DBOW;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
@@ -148,10 +149,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         };
 
         boolean newModel = net == null;
-        VectorsConfiguration config = new VectorsConfiguration();
-        config.setElementsLearningAlgorithm("CBOW");
-        config.setSequenceLearningAlgorithm("DBOW");
-        ParagraphVectors.Builder builder = new ParagraphVectors.Builder(config)
+        ParagraphVectors.Builder builder = new ParagraphVectors.Builder()
                 .seed(41)
                 .batchSize(BATCH_SIZE)
                 .epochs(3) // hard coded to avoid learning rate from resetting
@@ -171,10 +169,8 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
                 .stopWords(new HashSet<>())
                 .trainElementsRepresentation(true)
                 .trainSequencesRepresentation(true)
-                //.sequenceLearningAlgorithm(new DBOW<>())
-                //.elementsLearningAlgorithm(new CBOW<>())
-                .sequenceLearningAlgorithm("DBOW")
-                .elementsLearningAlgorithm("CBOW")
+                .sequenceLearningAlgorithm(new DBOW<>())
+                .elementsLearningAlgorithm(new CBOW<>())
                 .iterate(iterator);
 
         if(!newModel) {
