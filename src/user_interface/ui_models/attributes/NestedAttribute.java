@@ -21,10 +21,12 @@ public abstract class NestedAttribute extends AbstractAttribute {
     @Getter
     protected Collection<AbstractAttribute> attributes;
     protected boolean setParent;
-    public NestedAttribute(Collection<AbstractAttribute> attributes, boolean setParent) {
-        super(Arrays.asList(AbstractFilter.FilterType.Nested, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist, AbstractFilter.FilterType.CountBetween));
+    private boolean isObject;
+    public NestedAttribute(Collection<AbstractAttribute> attributes, boolean setParent, boolean isObject) {
+        super(Stream.of(AbstractFilter.FilterType.Nested, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist, isObject ? null : AbstractFilter.FilterType.CountBetween).filter(t->t!=null).collect(Collectors.toList()));
         this.attributes = new ArrayList<>(attributes == null ? Collections.emptyList() : attributes);
         this.setParent=setParent;
+        this.isObject=isObject;
         if(setParent){
             this.attributes.forEach(attr->{
                 attr.setParent(this);
@@ -32,8 +34,17 @@ public abstract class NestedAttribute extends AbstractAttribute {
         }
     }
 
+    public NestedAttribute(Collection<AbstractAttribute> attributes, boolean isObject) {
+        this(attributes,true, isObject);
+    }
+
     public NestedAttribute(Collection<AbstractAttribute> attributes) {
-        this(attributes,true);
+        this(attributes,false);
+    }
+
+    @Override
+    public boolean isObject() {
+        return isObject;
     }
 
     @Override

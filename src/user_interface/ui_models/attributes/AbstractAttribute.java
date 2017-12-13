@@ -24,8 +24,7 @@ import static j2html.TagCreator.span;
  */
 public abstract class AbstractAttribute {
     protected Collection<AbstractFilter.FilterType> filterTypes;
-    @Getter @Setter
-    protected boolean isObject = false;
+
     @Getter @Setter
     protected AbstractAttribute parent;
     public AbstractAttribute(Collection<AbstractFilter.FilterType> filterTypes) {
@@ -48,6 +47,10 @@ public abstract class AbstractAttribute {
 
     public String getFullName() {
         return parent==null? getName() : (parent.getName().replaceAll("[\\[\\]]","") + "." + getName()).trim();
+    }
+
+    public boolean isObject() {
+        return false;
     }
 
     public QueryBuilder getQueryScope() {

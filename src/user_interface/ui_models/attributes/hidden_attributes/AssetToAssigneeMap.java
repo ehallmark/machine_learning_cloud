@@ -18,7 +18,6 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
     private static Map<String,Boolean> assigneeToHumanMap;
     public AssetToAssigneeMap() {
         this.latestExecutionDateAttribute=new LatestExecutionDateAttribute();
-        this.latestExecutionDateAttribute.initMaps();
     }
 
     @Override

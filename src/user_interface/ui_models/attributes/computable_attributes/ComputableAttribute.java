@@ -36,22 +36,48 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
         return false;
     }
 
-    public void cleanse() {
+    public synchronized void cleanse() {
         initMaps();
         System.out.println("Cleansing: "+getFullName());
         applicationDataMap.clear();
         patentDataMap.clear();
     }
 
+    public void clearApplicationDataFromMemory() {
+        if(applicationDataMap!=null) {
+            if(allApplicationDataMaps.containsKey(getName())) {
+                allApplicationDataMaps.remove(getName());
+            }
+            applicationDataMap.clear();
+            applicationDataMap=null;
+        }
+    }
+
+    public void clearPatentDataFromMemory() {
+        if(patentDataMap!=null) {
+            if (allPatentDataMaps.containsKey(getName())) {
+                allPatentDataMaps.remove(getName());
+            }
+            patentDataMap.clear();
+            patentDataMap=null;
+        }
+    }
+
     public T attributesFor(Collection<String> portfolio, int limit) {
         if(applicationDataMap==null||patentDataMap==null) initMaps();
+        return this.attributesFor(portfolio,limit,null);
+    }
+
+    public T attributesFor(Collection<String> portfolio, int limit, Boolean isApplication) {
         String item = portfolio.stream().filter(i->i!=null).findAny().orElse(null);
         if(item==null) return null;
-        boolean probablyApplication = Database.isApplication(item);
+        boolean probablyApplication = isApplication==null ? Database.isApplication(item) : isApplication;
         if(probablyApplication) {
-            return applicationDataMap.getOrDefault(item, patentDataMap.get(item));
+            if(applicationDataMap==null) getApplicationDataMap();
+            return applicationDataMap.getOrDefault(item, isApplication==null?null:patentDataMap.get(item));
         } else {
-            return patentDataMap.getOrDefault(item, applicationDataMap.get(item));
+            if(patentDataMap==null) getPatentDataMap();
+            return patentDataMap.getOrDefault(item, isApplication==null?null:applicationDataMap.get(item));
         }
     }
 
@@ -109,7 +135,7 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
 
     public T handleIncomingData(String item, Map<String, Object> data, Map<String,T> myData, boolean isApplication) {
         if(item==null)return null;
-        return attributesFor(Arrays.asList(item),1);
+        return attributesFor(Arrays.asList(item),1, isApplication);
     }
 
     public void handlePatentData(String item, Map<String,Object> allData) {
