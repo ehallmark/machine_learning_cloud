@@ -1,6 +1,7 @@
 package user_interface.ui_models.filters;
 
 import lombok.NonNull;
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -30,6 +31,9 @@ public class AbstractDoesNotExistFilter extends AbstractExistsFilter {
             query = QueryBuilders.boolQuery().mustNot(
                     QueryBuilders.existsQuery(getFullPrerequisite())
             );
+            if(!attribute.isObject()) {
+                query = QueryBuilders.nestedQuery(getFullPrerequisite(), query, ScoreMode.Max);
+            }
         }
         return query;
     }
