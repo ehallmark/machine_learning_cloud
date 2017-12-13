@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -40,6 +41,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     private Map<String,Collection<CPC>> cpcMap;
     private int maxSamples;
     private int resetCounter = 0;
+    private AtomicBoolean finished = new AtomicBoolean(true);
     public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, int maxSamples) {
         this(iterator,numEpochs,cpcMap,null,maxSamples);
     }
@@ -60,7 +62,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public synchronized boolean hasMoreSequences() {
-        return task == null || queue.size()>0 || !task.isDone();
+        return queue.size()>0 || !finished.get();
     }
 
     @Override
@@ -160,7 +162,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     public synchronized void reset() {
         resetCounter++;
         System.out.println("RESET CALLED: "+resetCounter);
-        if(task!=null && !task.isDone()) return;
+        if(!finished.get()) return;
+        finished.set(false);
         queue.clear();
         final int finalNumEpochs = vocabPass ? 1 : numEpochs;
         task = new RecursiveAction() {
@@ -189,6 +192,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                     System.out.println("Finished epoch: "+(i+1));
                     // Evaluate model
                     if(afterEpochFunction!=null)afterEpochFunction.apply(null);
+
+                    finished.set(true);
                 }
             }
         };

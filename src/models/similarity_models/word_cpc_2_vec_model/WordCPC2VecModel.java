@@ -152,7 +152,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         ParagraphVectors.Builder builder = new ParagraphVectors.Builder()
                 .seed(41)
                 .batchSize(BATCH_SIZE)
-                .epochs(3) // hard coded to avoid learning rate from resetting
+                .epochs(1) // hard coded to avoid learning rate from resetting
                 .windowSize(windowSize)
                 .layerSize(VECTOR_SIZE)
                 .sampling(sampling)
@@ -182,8 +182,6 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         }
 
         net = builder.build();
-
-        iterator.reset();
 
         if(net instanceof ParagraphVectors) {
             ((ParagraphVectors)net).fit();
