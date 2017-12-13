@@ -188,7 +188,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                         // extract sequence
                         Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document,cpcs,onlyWords,rand,maxSamples);
                         if(sequence!=null) {
-                            System.out.print("-");
+                            //System.out.print("-");
                             started.set(true);
                             try {
                                 queue.put(sequence);
