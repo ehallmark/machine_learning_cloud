@@ -166,7 +166,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         task = new RecursiveAction() {
             @Override
             protected void compute() {
-                System.out.println("Running "+finalNumEpochs+" epochs: "+finalNumEpochs);
+                System.out.println("Running "+finalNumEpochs+" epochs");
                 for(int i = 0; i < finalNumEpochs; i++) {
                     while(iterator.hasNext()) {
                         LabelledDocument document = iterator.next();
