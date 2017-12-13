@@ -134,7 +134,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = false;
-        boolean runPredictions = true;
+        boolean runPredictions = false;
         int nEpochs = 10;
         String modelName = MODEL_NAME;
 
