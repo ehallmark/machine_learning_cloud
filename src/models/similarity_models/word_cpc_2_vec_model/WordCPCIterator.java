@@ -193,8 +193,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                     // Evaluate model
                     if(afterEpochFunction!=null)afterEpochFunction.apply(null);
 
-                    finished.set(true);
                 }
+                finished.set(true);
             }
         };
         task.fork();
