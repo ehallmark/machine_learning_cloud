@@ -77,7 +77,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
             if(sequence!=null) break;
             if(started.get()) {
                 if (task != null && task.isDone() && queue.isEmpty()) {
-                    System.out.println("TASK IS NOT NULL; TASK IS DONE; QUEUE IS EMPTY; BREAKING NOW!!!!!!");
+                    System.out.println("TASK IS NOT NULL; TASK IS DONE; QUEUE IS EMPTY; BREAKING FROM WHILE LOOP NOW!!!!!!");
                     break;
                 }
             }
@@ -88,14 +88,14 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
             }
         }
         if(sequence==null) {
-            throw new RuntimeException("SEQUENCE IS NULL!");
+            System.out.println("SEQUENCE IS NULL!");
         }
         return sequence;
     }
 
     private static Sequence<VocabWord> extractSequenceFromDocumentAndTokens(LabelledDocument document, List<String> tokens, Set<String> onlyWords, Random random, int maxSamples) {
         if(document.getContent()==null||document.getLabels()==null||document.getContent().isEmpty() || document.getLabels().isEmpty()) {
-            System.out.println("Returning NULL because content or labels are null");
+            //System.out.println("Returning NULL because content or labels are null");
             return null;
         }
 
@@ -116,7 +116,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         final int N = Math.min((total.get()+tokens.size()),maxSamples);
 
         if(N<=0) {
-            System.out.println("Returning NULL because N <= 0");
+            //System.out.println("Returning NULL because N <= 0");
             return null;
         }
 
@@ -188,7 +188,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                         // extract sequence
                         Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document,cpcs,onlyWords,rand,maxSamples);
                         if(sequence!=null) {
-                            System.out.println("FOUND VALID SEQUENCE!!!");
+                            System.out.print("-");
                             started.set(true);
                             try {
                                 queue.put(sequence);
