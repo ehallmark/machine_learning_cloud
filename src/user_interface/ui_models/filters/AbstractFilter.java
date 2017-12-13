@@ -116,7 +116,11 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     }
 
     public String getOptionGroup() {
-        return getFullPrerequisite();
+        String optGroup = getFullPrerequisite();
+        if(optGroup.endsWith(Constants.COUNT_SUFFIX)) {
+            optGroup = optGroup.substring(0,optGroup.length()-Constants.COUNT_SUFFIX.length());
+        }
+        return optGroup;
     }
 
 
