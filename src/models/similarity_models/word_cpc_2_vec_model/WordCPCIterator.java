@@ -163,7 +163,13 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     public synchronized void reset() {
         resetCounter++;
         System.out.println("RESET CALLED: "+resetCounter);
-        if(!finished.get()) return;
+        while(!finished.get()) {
+            try {
+                TimeUnit.MILLISECONDS.sleep(2l);
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
         finished.set(false);
         queue.clear();
         final int finalNumEpochs = vocabPass ? 1 : numEpochs;
@@ -171,31 +177,37 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
             @Override
             protected void compute() {
                 System.out.println("Running "+finalNumEpochs+" epochs");
-                for(int i = 0; i < finalNumEpochs; i++) {
-                    while(iterator.hasNext()) {
-                        LabelledDocument document = iterator.next();
-                        if(document.getLabels()==null||document.getContent()==null) continue;
+                try {
+                    for (int i = 0; i < finalNumEpochs; i++) {
+                        System.out.println("Starting epoch: " + (i + 1));
+                        while (iterator.hasNext()) {
+                            LabelledDocument document = iterator.next();
+                            if (document.getLabels() == null || document.getContent() == null) continue;
 
-                        List<String> cpcs = document.getLabels().stream().flatMap(asset->cpcMap.getOrDefault(asset, Collections.emptyList()).stream()).map(cpc->cpc.getName()).collect(Collectors.toList());
+                            List<String> cpcs = document.getLabels().stream().flatMap(asset -> cpcMap.getOrDefault(asset, Collections.emptyList()).stream()).map(cpc -> cpc.getName()).collect(Collectors.toList());
 
-                        // extract sequence
-                        Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document,cpcs,rand,maxSamples);
-                        if(sequence!=null) {
-                            //System.out.print("-");
-                            try {
-                                queue.put(sequence);
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                            // extract sequence
+                            Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document, cpcs, rand, maxSamples);
+                            if (sequence != null) {
+                                //System.out.print("-");
+                                try {
+                                    queue.put(sequence);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
-                    }
-                    iterator.reset();
-                    System.out.println("Finished epoch: "+(i+1));
-                    // Evaluate model
-                    if(afterEpochFunction!=null)afterEpochFunction.apply(null);
+                        System.out.println("Finished epoch: " + (i + 1));
+                        // Evaluate model
+                        if (afterEpochFunction != null) afterEpochFunction.apply(null);
+                        iterator.reset();
 
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    finished.set(true);
                 }
-                finished.set(true);
             }
         };
         task.fork();

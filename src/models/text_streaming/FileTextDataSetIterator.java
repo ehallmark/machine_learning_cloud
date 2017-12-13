@@ -1,11 +1,7 @@
 package models.text_streaming;
 
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import models.keyphrase_prediction.stages.Stage;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
-import org.deeplearning4j.text.documentiterator.FileLabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.deeplearning4j.text.documentiterator.LabelsSource;
@@ -14,7 +10,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.*;
-import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -82,6 +77,7 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
 
     @Override
     public void reset() {
+        System.out.println("Resetting file text dataset iterator...");
         if(this.lineIterator!=null) {
             shutdown();
         }
