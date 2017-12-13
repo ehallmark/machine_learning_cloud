@@ -71,7 +71,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         while (true) {
             sequence = queue.poll();
             if(sequence!=null) break;
-            if (task != null && task.isDone() && queue.isEmpty()) {
+            if (task != null && task.isDone() && queue.isEmpty() && finished.get()) {
                 System.out.println("TASK IS NOT NULL; TASK IS DONE; QUEUE IS EMPTY; BREAKING FROM WHILE LOOP NOW!!!!!!");
                 break;
             }
@@ -83,6 +83,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         }
         if(sequence==null) {
             System.out.println("SEQUENCE IS NULL!");
+            return new Sequence<>(); // empty
         }
         return sequence;
     }
