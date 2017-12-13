@@ -2,6 +2,7 @@ package models.value_models.regression;
 
 import seeding.Constants;
 import user_interface.ui_models.attributes.*;
+import user_interface.ui_models.attributes.script_attributes.CountAttribute;
 
 import java.util.Arrays;
 import java.util.List;

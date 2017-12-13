@@ -1,10 +1,7 @@
 package user_interface.ui_models.attributes;
 
-import lombok.Getter;
 import seeding.Constants;
-import user_interface.ui_models.filters.AbstractFilter;
-
-import java.util.Arrays;
+import user_interface.ui_models.attributes.script_attributes.CountAttribute;
 
 /**
  * Created by ehallmark on 6/15/17.

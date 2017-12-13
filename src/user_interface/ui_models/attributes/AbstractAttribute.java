@@ -180,6 +180,14 @@ public abstract class AbstractAttribute {
                     filter = new AbstractPrefixIncludeFilter(this, filterType, getFieldType(), null);
                     break;
                 }
+                case DoesNotExist: {
+                    filter = new AbstractDoesNotExistFilter(this,filterType);
+                    break;
+                }
+                case Exists: {
+                    filter = new AbstractExistsFilter(this,filterType);
+                    break;
+                }
                 case Nested: {
                     if(!(this instanceof NestedAttribute)) throw new RuntimeException("Only nested attributes support nested filterType");
                     filter = new AbstractNestedFilter((NestedAttribute)this);

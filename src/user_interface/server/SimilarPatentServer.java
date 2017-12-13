@@ -1626,7 +1626,7 @@ public class SimilarPatentServer {
         req.session().removeAttribute("message");
         return html().with(
                 head().with(
-                        title("AI Platform"),
+                        title("AI Search Platform"),
                         script().withSrc("/js/jquery-3.1.0.min.js"),
                         script().withSrc("/js/jquery-ui-1.12.1.min.js"),
                         script().withSrc("/js/highstock.js"),
@@ -1809,7 +1809,7 @@ public class SimilarPatentServer {
                 ),div().withClass("col-9").attr("style","padding-top: 30px; background-color: #c4c4c4;").with(
                         div().withClass("row").with(
                                  div().withClass("col-12").with(
-                                        h3("Artificial Intelligence Platform").withClass("collapsible-header")
+                                        h3("AI Search Platform").withClass("collapsible-header")
                                                 .attr("data-target","#main-content-id")
                                                 .attr("style","margin-top: -10px;")
                                 )
