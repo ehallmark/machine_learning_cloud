@@ -22,7 +22,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
     protected Collection<AbstractAttribute> attributes;
     protected boolean setParent;
     public NestedAttribute(Collection<AbstractAttribute> attributes, boolean setParent) {
-        super(Arrays.asList(AbstractFilter.FilterType.Nested));
+        super(Arrays.asList(AbstractFilter.FilterType.Nested, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist, AbstractFilter.FilterType.CountBetween));
         this.attributes = new ArrayList<>(attributes == null ? Collections.emptyList() : attributes);
         this.setParent=setParent;
         if(setParent){

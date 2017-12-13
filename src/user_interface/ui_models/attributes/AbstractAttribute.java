@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.script_attributes.CountAttribute;
 import user_interface.ui_models.filters.*;
 
 import java.util.Arrays;
@@ -178,6 +179,10 @@ public abstract class AbstractAttribute {
                 }
                 case PrefixInclude: {
                     filter = new AbstractPrefixIncludeFilter(this, filterType, getFieldType(), null);
+                    break;
+                }
+                case CountBetween: {
+                    filter = new AbstractBetweenFilter(new CountAttribute(getName()+Constants.COUNT_SUFFIX),filterType);
                     break;
                 }
                 case DoesNotExist: {

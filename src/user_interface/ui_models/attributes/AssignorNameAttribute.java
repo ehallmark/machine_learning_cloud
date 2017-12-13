@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class AssignorNameAttribute extends AbstractAttribute {
     public AssignorNameAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp,AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude));
+        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp,AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
     @Override
     public String getType() {

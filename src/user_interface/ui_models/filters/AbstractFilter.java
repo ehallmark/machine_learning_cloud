@@ -23,7 +23,7 @@ import static j2html.TagCreator.span;
 public abstract class AbstractFilter extends AbstractAttribute implements DependentAttribute<AbstractFilter> {
 
     public enum FilterType {
-        Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword, PrefixExclude, PrefixInclude, Regexp, Exists, DoesNotExist
+        Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword, PrefixExclude, PrefixInclude, Regexp, Exists, DoesNotExist, CountBetween
     }
 
     public static boolean isPrefix(FilterType type) {
@@ -178,6 +178,10 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
             }
             case DoesNotExist: {
                 description = "This filter removes "+scope+" with a value for";
+                break;
+            }
+            case CountBetween: {
+                description = "This filter only includes "+scope+" with between counts for";
                 break;
             }
             default: {
