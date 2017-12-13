@@ -159,6 +159,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
                 .negativeSample(negativeSampling)
                 .learningRate(learningRate)
                 .minLearningRate(minLearningRate)
+                .allowParallelTokenization(true)
                 .useAdaGrad(true)
                 .resetModel(newModel)
                 .minWordFrequency(minWordFrequency)
