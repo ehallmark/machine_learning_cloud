@@ -133,7 +133,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         boolean runPredictions = false;
         int nEpochs = 10;
         String modelName = MODEL_NAME;
-        
+
         WordCPC2VecPipelineManager pipelineManager = new WordCPC2VecPipelineManager(modelName,nEpochs,maxSamples);
 
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);

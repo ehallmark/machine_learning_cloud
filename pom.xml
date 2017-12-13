@@ -88,11 +88,6 @@
         <!-- https://mvnrepository.com/artifact/org.apache.shiro/shiro-core -->
         <dependency>
             <groupId>org.deeplearning4j</groupId>
-            <artifactId>dl4j-spark_${scala.binary.version}</artifactId>
-            <version>${dl4j.version}_spark_2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.deeplearning4j</groupId>
             <artifactId>deeplearning4j-nlp</artifactId>
             <version>${dl4j.version}</version>
         </dependency>
