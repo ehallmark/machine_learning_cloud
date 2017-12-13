@@ -518,6 +518,16 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.COMPDB, new CompDBNestedAttribute());
             attributesMap.put(Constants.NESTED_CPC_CODES, new CPCNestedAttribute());
 
+            // include count
+            Constants.NESTED_ATTRIBUTES.forEach(attr->{
+                AbstractAttribute countAttr = new CountAttribute(attr + Constants.COUNT_SUFFIX);
+                AbstractAttribute parentAttr = attributesMap.get(attr);
+                if(parentAttr!=null && parentAttr instanceof NestedAttribute) {
+                    ((NestedAttribute) parentAttr).getAttributes().add(countAttr);
+                } else {
+                    attributesMap.put(attr + Constants.COUNT_SUFFIX, countAttr);
+                }
+            });
 
             if(loadHidden) {
                 // hidden attrs
@@ -529,7 +539,6 @@ public class SimilarPatentServer {
                         new AssetToCitedAssetsMap()
                 ).forEach(attr -> attributesMap.put(attr.getName(), attr));
             }
-
 
             // nested attribute names
             buildJavaToHumanAttrMap();

@@ -184,10 +184,6 @@ public abstract class AbstractAttribute {
                     filter = new AbstractPrefixIncludeFilter(this, filterType, getFieldType(), null);
                     break;
                 }
-                case CountBetween: {
-                    filter = new AbstractBetweenFilter(new CountAttribute(getName()+Constants.COUNT_SUFFIX),filterType);
-                    break;
-                }
                 case DoesNotExist: {
                     filter = new AbstractDoesNotExistFilter(this,filterType);
                     break;

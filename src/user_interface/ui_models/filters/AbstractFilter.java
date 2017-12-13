@@ -180,10 +180,6 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
                 description = "This filter removes "+scope+" with a value for";
                 break;
             }
-            case CountBetween: {
-                description = "This filter only includes "+scope+" with between counts for";
-                break;
-            }
             default: {
                 description = "";
                 break;

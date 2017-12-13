@@ -23,7 +23,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
     protected boolean setParent;
     private boolean isObject;
     public NestedAttribute(Collection<AbstractAttribute> attributes, boolean setParent, boolean isObject) {
-        super(Stream.of(AbstractFilter.FilterType.Nested, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist, isObject ? null : AbstractFilter.FilterType.CountBetween).filter(t->t!=null).collect(Collectors.toList()));
+        super(Arrays.asList(AbstractFilter.FilterType.Nested, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
         this.attributes = new ArrayList<>(attributes == null ? Collections.emptyList() : attributes);
         this.setParent=setParent;
         this.isObject=isObject;
