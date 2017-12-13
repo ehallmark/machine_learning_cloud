@@ -148,7 +148,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         }
 
         Sequence<VocabWord> sequence = new Sequence<>(words);
-        if(assignee!=null) {
+        if(assignee!=null && assignee.length()>0) {
             VocabWord label = new VocabWord(1, assignee);
             label.setSpecial(true);
             label.setElementFrequency(1);
