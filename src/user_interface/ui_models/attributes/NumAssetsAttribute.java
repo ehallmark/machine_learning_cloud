@@ -8,6 +8,11 @@ import user_interface.ui_models.attributes.script_attributes.CountAttribute;
  */
 public class NumAssetsAttribute extends CountAttribute {
     public NumAssetsAttribute() {
-        super(Constants.NUM_ASSETS);
+        super(Constants.COMPDB+"."+Constants.NUM_ASSETS);
+    }
+
+    @Override
+    public String getName() {
+        return Constants.NUM_ASSETS;
     }
 }

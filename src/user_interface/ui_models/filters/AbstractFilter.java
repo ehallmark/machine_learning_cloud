@@ -23,7 +23,7 @@ import static j2html.TagCreator.span;
 public abstract class AbstractFilter extends AbstractAttribute implements DependentAttribute<AbstractFilter> {
 
     public enum FilterType {
-        Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword, PrefixExclude, PrefixInclude, Regexp, Exists, DoesNotExist, CountBetween
+        Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword, PrefixExclude, PrefixInclude, Regexp, Exists, DoesNotExist
     }
 
     public static boolean isPrefix(FilterType type) {
