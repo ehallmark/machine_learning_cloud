@@ -165,6 +165,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Assignee Entity Type", Constants.ASSIGNEE_ENTITY_TYPE);
             humanAttrToJavaAttrMap.put("Assignee Divestments (CompDB)", Constants.COMPDB_ASSETS_SOLD);
             humanAttrToJavaAttrMap.put("Assignee Acquisitions (CompDB)", Constants.COMPDB_ASSETS_PURCHASED);
+            humanAttrToJavaAttrMap.put("Acquisition Deal", Constants.ACQUISITION_DEAL);
+            humanAttrToJavaAttrMap.put("Inactive Deal", Constants.INACTIVE_DEAL);
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Patents",PortfolioList.Type.patents.toString());
             humanAttrToJavaAttrMap.put("(Normalized) Assignee",Constants.NORMALIZED_LATEST_ASSIGNEE);
@@ -219,6 +221,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Greater Than Filter", AbstractFilter.FilterType.GreaterThan.toString());
             humanAttrToJavaAttrMap.put("Less Than Filter", AbstractFilter.FilterType.LessThan.toString());
             humanAttrToJavaAttrMap.put("Filters", AbstractFilter.FilterType.Nested.toString());
+            humanAttrToJavaAttrMap.put("Exists Filter", AbstractFilter.FilterType.Exists.toString());
+            humanAttrToJavaAttrMap.put("Does Not Exist Filter", AbstractFilter.FilterType.DoesNotExist.toString());
             humanAttrToJavaAttrMap.put("Latest Execution Date", Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("Execution Date", Constants.ASSIGNMENTS+"."+Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("First Name", Constants.FIRST_NAME);

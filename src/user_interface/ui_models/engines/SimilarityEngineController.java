@@ -7,10 +7,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.AssetNumberAttribute;
-import user_interface.ui_models.attributes.DependentAttribute;
-import user_interface.ui_models.attributes.LatestAssigneeNestedAttribute;
+import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
@@ -104,24 +101,24 @@ public class SimilarityEngineController {
             attributesRequired.addAll(chartPrerequisites);
         }
 
-        Set<String> allParentAttrs = new HashSet<>();
-        attributesRequired.forEach(attr->{
-            if(attr.contains(".")) {
-                allParentAttrs.add(attr.substring(0,attr.indexOf(".")));
-            } else {
-                allParentAttrs.add(attr);
-            }
-        });
-
         SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
-        Collection<AbstractAttribute> topLevelAttributes = SimilarPatentServer.getAllTopLevelAttributes().stream().filter(attr->allParentAttrs.contains(attr.getName())).map(attr->{
-            if(attr instanceof DependentAttribute) {
-                System.out.println("Extracting info for dependent attribute: "+attr.getName());
-                AbstractAttribute attrDup =  ((DependentAttribute) attr).dup();
-                ((DependentAttribute)attrDup).extractRelevantInformationFromParams(req);
-                return attrDup;
-            } else return attr;
-        }).collect(Collectors.toList());
+        Collection<AbstractAttribute> topLevelAttributes = SimilarPatentServer.getAllTopLevelAttributes()
+                .stream()
+                .filter(attr->{
+                    if(attr instanceof NestedAttribute) {
+                        Collection<AbstractAttribute> children = ((NestedAttribute) attr).getAttributes();
+                        return children.stream().anyMatch(child->attributesRequired.contains(child.getFullName()));
+                    } else {
+                        return attributesRequired.contains(attr.getName());
+                    }
+                }).map(attr->{
+                    if(attr instanceof DependentAttribute) {
+                        System.out.println("Extracting info for dependent attribute: "+attr.getName());
+                        AbstractAttribute attrDup =  ((DependentAttribute) attr).dup();
+                        ((DependentAttribute)attrDup).extractRelevantInformationFromParams(req);
+                        return attrDup;
+                    } else return attr;
+                }).collect(Collectors.toList());
 
         boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
         boolean filterNestedObjects = extractBool(req, FILTER_NESTED_OBJECTS_FIELD);
