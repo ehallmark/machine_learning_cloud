@@ -13,7 +13,8 @@ import java.util.Arrays;
 public class GatherNestedAttribute extends NestedAttribute {
 
     public GatherNestedAttribute() {
-        super(Arrays.asList(new GatherValueAttribute(), new GatherStageAttribute(), new GatherTechnologyAttribute()),true);
+        super(Arrays.asList(new GatherValueAttribute(), new GatherStageAttribute(), new GatherTechnologyAttribute()));
+        this.isObject=true;
     }
 
     @Override

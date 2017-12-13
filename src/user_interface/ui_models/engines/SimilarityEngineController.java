@@ -2,6 +2,7 @@ package user_interface.ui_models.engines;
 
 import elasticsearch.DataSearcher;
 import lombok.Getter;
+import lombok.Setter;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import spark.Request;
@@ -28,6 +29,8 @@ public class SimilarityEngineController {
     private Collection<AbstractFilter> preFilters;
     @Getter
     protected PortfolioList portfolioList;
+    @Setter
+    private Set<String> chartPrerequisites;
     @Getter
     private static List<AbstractSimilarityEngine> engines;
     public SimilarityEngineController(List<AbstractSimilarityEngine> engines) {
@@ -90,8 +93,28 @@ public class SimilarityEngineController {
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
         setPrefilters(req);
 
+        Set<String> attributesRequired = new HashSet<>();
+        attributesRequired.add(comparator);
+
+        List<String> attributesFromUser = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
+        attributesRequired.addAll(attributesFromUser);
+
+        // add chart prerequisites
+        if(chartPrerequisites!=null) {
+            attributesRequired.addAll(chartPrerequisites);
+        }
+
+        Set<String> allParentAttrs = new HashSet<>();
+        attributesRequired.forEach(attr->{
+            if(attr.contains(".")) {
+                allParentAttrs.add(attr.substring(0,attr.indexOf(".")));
+            } else {
+                allParentAttrs.add(attr);
+            }
+        });
+
         SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
-        Collection<AbstractAttribute> topLevelAttributes = SimilarPatentServer.getAllTopLevelAttributes().stream().map(attr->{
+        Collection<AbstractAttribute> topLevelAttributes = SimilarPatentServer.getAllTopLevelAttributes().stream().filter(attr->allParentAttrs.contains(attr.getName())).map(attr->{
             if(attr instanceof DependentAttribute) {
                 System.out.println("Extracting info for dependent attribute: "+attr.getName());
                 AbstractAttribute attrDup =  ((DependentAttribute) attr).dup();

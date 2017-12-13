@@ -1308,6 +1308,11 @@ public class SimilarPatentServer {
                     System.out.println("FOUND NESTED ATTRIBUTES: " + String.join("; ", nestedAttributes));
                     List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
 
+                    List<ChartAttribute> charts = chartModels.stream().map(chart -> chartModelMap.get(chart).dup()).collect(Collectors.toList());
+                    charts.forEach(chart -> chart.extractRelevantInformationFromParams(req));
+
+                    Set<String> chartPreReqs = charts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toSet());
+                    similarityEngine.join().setChartPrerequisites(chartPreReqs);
                     similarityEngine.join().extractRelevantInformationFromParams(req);
                     PortfolioList portfolioList = similarityEngine.join().getPortfolioList();
 
@@ -1357,9 +1362,6 @@ public class SimilarPatentServer {
                         html = new Gson().toJson(results);
                     } else {
                         // add chart futures
-                        List<ChartAttribute> charts = chartModels.stream().map(chart -> chartModelMap.get(chart).dup()).collect(Collectors.toList());
-                        charts.forEach(chart -> chart.extractRelevantInformationFromParams(req));
-
                         AtomicInteger totalChartCnt = new AtomicInteger(0);
                         charts.forEach(chart -> {
                             for (int i = 0; i < chart.getAttrNames().size(); i++) {
