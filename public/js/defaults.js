@@ -151,7 +151,17 @@ $(document).ready(function() {
             var id = $(option).val();
             var $draggable = $('.attributeElement[data-model="'+id+'"]');
             $draggable.find('input, select, textarea').prop('disabled', false).filter('.nested-filter-select').trigger('change');
-            $draggable.find("div.attribute").removeClass("disabled");
+            var $attrs = $draggable.find('div.attribute');
+            var $newlyShowingAttrs = $attrs.filter('.disabled'); // previously disabled
+            $newlyShowingAttrs.addClass('highlight');
+            $newlyShowingAttrs.click(function() { // highlight until clicked
+                $(this).removeClass('highlight');
+            });
+            $newlyShowingAttrs.each(function() {
+                $(this).parent().prepend($(this));
+            });
+            $newlyShowingAttrs
+            $attrs.removeClass("disabled");
             $draggable.parent().show();
         });
         return true;
