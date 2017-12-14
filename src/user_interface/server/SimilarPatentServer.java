@@ -1226,33 +1226,29 @@ public class SimilarPatentServer {
                     sync = fileSynchronizationMap.get(file.getAbsolutePath());
                 }
 
-                if(sync.tryLock()) {
-                    try {
-                        // save updates
-                        File updatesFile = new File(file.getAbsolutePath() + "_updates");
-                        if (updatesFile.exists()) updatesFile.delete();
+                sync.lock();
+                try {
+                    // save updates
+                    File updatesFile = new File(file.getAbsolutePath() + "_updates");
+                    if (updatesFile.exists()) updatesFile.delete();
 
-                        Map<String, Object> updateMap = new HashMap<>();
-                        if (formMap.containsKey("name")) {
-                            updateMap.put("name", formMap.get("name"));
-                        }
-                        if (formMap.containsKey("parentDirs")) {
-                            updateMap.put("parentDirs", formMap.get("parentDirs"));
-                        }
-                        if (updateMap.size() > 0) {
-                            Database.trySaveObject(updateMap, updatesFile);
-                        }
-                        Database.trySaveObject(formMap, file);
-
-                    } finally {
-                        sync.unlock();
+                    Map<String, Object> updateMap = new HashMap<>();
+                    if (formMap.containsKey("name")) {
+                        updateMap.put("name", formMap.get("name"));
                     }
-                    message = "Saved sucessfully.";
-                    responseMap.put("file",file.getName());
+                    if (formMap.containsKey("parentDirs")) {
+                        updateMap.put("parentDirs", formMap.get("parentDirs"));
+                    }
+                    if (updateMap.size() > 0) {
+                        Database.trySaveObject(updateMap, updatesFile);
+                    }
+                    Database.trySaveObject(formMap, file);
 
-                } else {
-                    throw new RuntimeException("File is being updated by another process.");
+                } finally {
+                    sync.unlock();
                 }
+                message = "Saved sucessfully.";
+                responseMap.put("file",file.getName());
 
             } else {
                 message = "Unable to find user.";
