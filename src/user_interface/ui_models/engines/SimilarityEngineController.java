@@ -28,10 +28,14 @@ public class SimilarityEngineController {
     protected PortfolioList portfolioList;
     @Setter
     private Set<String> chartPrerequisites;
-    @Getter
-    private static List<AbstractSimilarityEngine> engines;
-    public SimilarityEngineController(List<AbstractSimilarityEngine> engines) {
-        this.engines=engines;
+    @Getter @Setter
+    private static List<AbstractSimilarityEngine> allEngines;
+    public SimilarityEngineController() {
+        if(allEngines==null) throw new NullPointerException("allEngines list (static)");
+    }
+
+    public SimilarityEngineController dup() {
+        return new SimilarityEngineController();
     }
 
     private void setPrefilters(Request req) {
@@ -130,6 +134,6 @@ public class SimilarityEngineController {
     }
 
     public Map<String,AbstractSimilarityEngine> getEngineMap() {
-        return engines.stream().collect(Collectors.toMap(e->e.getName(),e->e));
+        return allEngines.stream().collect(Collectors.toMap(e->e.getName(),e->e));
     }
 }

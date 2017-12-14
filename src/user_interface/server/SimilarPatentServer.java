@@ -564,7 +564,8 @@ public class SimilarPatentServer {
                     boolean binary = true;
                     Function<String,Collection<String>> tokenizer = WordToCPCIterator.getDefaultTokenizer();
                     Function<String,INDArray> wordVectorizer = tokenizer.andThen(new BOWVectorFromTextTransformer(TextSimilarityEngine.getWordIdxMap().join(),binary));
-                    return new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(wordVectorizer), new CPCSimilarityEngine()));
+                    SimilarityEngineController.setAllEngines(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(wordVectorizer), new CPCSimilarityEngine()));
+                    return new SimilarityEngineController();
                 }
             };
             similarityEngine.fork();
@@ -1316,9 +1317,11 @@ public class SimilarPatentServer {
                     charts.forEach(chart -> chart.extractRelevantInformationFromParams(req));
 
                     Set<String> chartPreReqs = charts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toSet());
-                    similarityEngine.join().setChartPrerequisites(chartPreReqs);
-                    similarityEngine.join().extractRelevantInformationFromParams(req);
-                    PortfolioList portfolioList = similarityEngine.join().getPortfolioList();
+
+                    SimilarityEngineController engine = similarityEngine.join().dup();
+                    engine.setChartPrerequisites(chartPreReqs);
+                    engine.extractRelevantInformationFromParams(req);
+                    PortfolioList portfolioList = engine.getPortfolioList();
 
 
                     res.type("application/json");
