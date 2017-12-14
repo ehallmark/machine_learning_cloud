@@ -1,26 +1,16 @@
 package user_interface.ui_models.attributes.computable_attributes;
 
-import j2html.tags.Tag;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptType;
 import seeding.Constants;
 import seeding.Database;
-import spark.Request;
-import user_interface.ui_models.attributes.AssetNumberAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
-import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
-
-import static j2html.TagCreator.div;
 
 /**
  * Created by ehallmark on 7/20/17.
@@ -46,7 +36,7 @@ public class IsGrantedApplicationAttribute extends ComputableAttribute<Boolean> 
     @Override
     public Boolean attributesFor(Collection<String> items, int limit) {
         String item = items.stream().findAny().get();
-        if(assetToFilingMap.getPatentDataMap().containsKey(item)) return true; // is already a grant
+        if(assetToFilingMap.getPatentDataMap().containsKey(item) || !Database.isApplication(item)) return true; // is already a grant
         String filing = assetToFilingMap.getApplicationDataMap().get(item);
         if(filing == null) return null; // no info
         if(filingToAssetMap.getPatentDataMap().containsKey(filing)) return true; // has a grant
