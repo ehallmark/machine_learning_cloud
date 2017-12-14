@@ -62,6 +62,8 @@ import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -76,6 +78,7 @@ import static spark.Spark.*;
  */
 public class SimilarPatentServer {
     private static final boolean debug = false;
+    private static final Map<String,Lock> fileSynchronizationMap = Collections.synchronizedMap(new HashMap<>());
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static final String PROTECTED_URL_PREFIX = "/secure";
     public static final String EXCEL_SESSION = "excel_data";
@@ -1210,28 +1213,47 @@ public class SimilarPatentServer {
                 if(prevFilename==null) {
                     while (file == null || file.exists()) {
                         file = new File(templateFolderStr + Math.abs(random.nextInt()));
-                        File updatesFile = new File(file.getAbsolutePath() + "_updates"); // clear any updates
-                        if (updatesFile.exists()) updatesFile.delete();
                     }
                 } else {
                     System.out.println("Saving to previous file: "+prevFilename.toString());
                     file = new File(templateFolderStr+prevFilename);
+
                 }
-                // save updates
-                File updatesFile = new File(file.getAbsolutePath()+"_updates");
-                Map<String, Object> updateMap = new HashMap<>();
-                if(formMap.containsKey("name")) {
-                    updateMap.put("name", formMap.get("name"));
+
+                Lock sync;
+                synchronized (fileSynchronizationMap) {
+                    fileSynchronizationMap.putIfAbsent(file.getAbsolutePath(),new ReentrantLock());
+                    sync = fileSynchronizationMap.get(file.getAbsolutePath());
                 }
-                if(formMap.containsKey("parentDirs")) {
-                    updateMap.put("parentDirs", formMap.get("parentDirs"));
+
+                if(sync.tryLock()) {
+                    try {
+                        // save updates
+                        File updatesFile = new File(file.getAbsolutePath() + "_updates");
+                        if (updatesFile.exists()) updatesFile.delete();
+
+                        Map<String, Object> updateMap = new HashMap<>();
+                        if (formMap.containsKey("name")) {
+                            updateMap.put("name", formMap.get("name"));
+                        }
+                        if (formMap.containsKey("parentDirs")) {
+                            updateMap.put("parentDirs", formMap.get("parentDirs"));
+                        }
+                        if (updateMap.size() > 0) {
+                            Database.trySaveObject(updateMap, updatesFile);
+                        }
+                        Database.trySaveObject(formMap, file);
+
+                    } finally {
+                        sync.unlock();
+                    }
+                    message = "Saved sucessfully.";
+                    responseMap.put("file",file.getName());
+
+                } else {
+                    throw new RuntimeException("File is being updated by another process.");
                 }
-                if(updateMap.size()>0) {
-                    Database.trySaveObject(updateMap, updatesFile);
-                }
-                Database.trySaveObject(formMap,file);
-                message = "Saved sucessfully.";
-                responseMap.put("file",file.getName());
+
             } else {
                 message = "Unable to find user.";
             }
