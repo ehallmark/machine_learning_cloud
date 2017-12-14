@@ -62,12 +62,11 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
     private String modelName;
     private Function<String,INDArray> featuresFunc;
     private int nInputs;
+    DefaultPipelineManager<?,INDArray> cpcModel;
     public WIPOPredictionPipelineManager(String modelName, DefaultPipelineManager<?,INDArray> cpcModel) {
         super(INPUT_DATA_FOLDER, PREDICTION_DATA_FILE);
         this.modelName=modelName;
-        Map<String,INDArray> assetCPCVectors = cpcModel.loadPredictions();
-        this.nInputs = assetCPCVectors.entrySet().stream().findAny().get().getValue().length();
-        this.featuresFunc = assetCPCVectors::get;
+        this.cpcModel=cpcModel;
     }
 
     @Override
@@ -134,6 +133,9 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
     @Override
     protected void setDatasetManager() {
         if(datasetManager==null) {
+            Map<String,INDArray> assetCPCVectors = cpcModel.loadPredictions();
+            this.nInputs = assetCPCVectors.entrySet().stream().findAny().get().getValue().length();
+            this.featuresFunc = assetCPCVectors::get;
             datasetManager = new NoSaveDataSetManager<>(
                     getIterator(trainAssets,BATCH_SIZE,true),
                     getIterator(testAssets,TEST_BATCH_SIZE,false),
