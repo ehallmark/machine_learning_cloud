@@ -1,6 +1,5 @@
 package models.wipo_technology_prediction;
 
-import assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
 import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
@@ -9,6 +8,7 @@ import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import models.classification_models.WIPOHelper;
 import models.iterators.AbstractAssetDataSetIterator;
+import models.similarity_models.cpc2vec_model.CPC2VecPipelineManager;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
@@ -195,8 +195,10 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
         int nEpochs = 5;
         String modelName = MODEL_NAME;
 
+        DefaultPipelineManager<?,INDArray> cpcModel = new CPC2VecPipelineManager(CPC2VecPipelineManager.MODEL_NAME,-1);
+
         setLoggingLevel(Level.INFO);
-        HumanNamePredictionPipelineManager pipelineManager = new HumanNamePredictionPipelineManager(modelName);
+        WIPOPredictionPipelineManager pipelineManager = new WIPOPredictionPipelineManager(modelName,cpcModel);
 
         rebuildPrerequisites = rebuildPrerequisites || !wipoCPCTechnologyMapFile.exists() ; // Check if wipoCPCTechnologyMapFile exists
 

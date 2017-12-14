@@ -1,11 +1,8 @@
-package assignee_normalization.name_correction;
+package models.assignee_normalization.name_correction;
 
-import assignee_normalization.human_name_prediction.HumanNamePredictionModel;
-import assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
+import models.assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
-import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
-import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharSequenceNodeFactory;
 import info.debatty.java.stringsimilarity.JaroWinkler;
 import info.debatty.java.stringsimilarity.interfaces.StringDistance;

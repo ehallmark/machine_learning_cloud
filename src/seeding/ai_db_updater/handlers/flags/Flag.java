@@ -1,6 +1,6 @@
 package seeding.ai_db_updater.handlers.flags;
 
-import assignee_normalization.name_correction.AssigneeTrimmer;
+import models.assignee_normalization.name_correction.AssigneeTrimmer;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;

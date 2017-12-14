@@ -1,6 +1,6 @@
-package assignee_normalization.human_name_prediction;
+package models.assignee_normalization.human_name_prediction;
 
-import assignee_normalization.name_correction.NormalizeAssignees;
+import models.assignee_normalization.name_correction.NormalizeAssignees;
 import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;

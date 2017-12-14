@@ -1,7 +1,7 @@
 package seeding.ai_db_updater;
 
-import assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
-import assignee_normalization.name_correction.NormalizeAssignees;
+import models.assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
+import models.assignee_normalization.name_correction.NormalizeAssignees;
 import elasticsearch.DataIngester;
 import seeding.CleanseAttributesAndMongoBeforeReseed;
 import seeding.Database;

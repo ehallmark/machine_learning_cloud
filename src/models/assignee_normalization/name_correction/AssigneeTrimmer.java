@@ -1,6 +1,4 @@
-package assignee_normalization.name_correction;
-
-import seeding.Database;
+package models.assignee_normalization.name_correction;
 
 import java.util.*;
 

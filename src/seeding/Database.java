@@ -1,6 +1,6 @@
 package seeding;
 
-import assignee_normalization.name_correction.AssigneeTrimmer;
+import models.assignee_normalization.name_correction.AssigneeTrimmer;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;

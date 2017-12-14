@@ -1,11 +1,9 @@
 package models.similarity_models;
 
-import assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
 import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
