@@ -154,14 +154,12 @@ $(document).ready(function() {
 
             var $attrs = $draggable.find('div.attribute');
             if($draggable.parent().is(':hidden')) {
-                var $newlyAdded = $draggable.parent();
-                $newlyAdded.addClass('highlight');
-                $newlyAdded.click(function() { // highlight until clicked
+                $draggable.addClass('highlight');
+                $draggable.click(function() { // highlight until clicked
                     $(this).removeClass('highlight');
                 });
-                $newlyAdded.each(function() {
-                    $(this).parent().prepend($(this));
-                });
+                var $parent = $draggable.parent();
+                $parent.parent().prepend($parent);
             }
             $attrs.removeClass("disabled");
             $draggable.parent().show();
