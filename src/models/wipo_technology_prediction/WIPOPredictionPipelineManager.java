@@ -17,6 +17,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortBuilders;
+import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
@@ -186,6 +187,7 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
     }
 
     public static void main(String[] args) throws Exception {
+        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildDatasets = false;
         boolean runModels = false;
         boolean forceRecreateModels = false;
