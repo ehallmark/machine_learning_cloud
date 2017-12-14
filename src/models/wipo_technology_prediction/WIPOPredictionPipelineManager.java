@@ -24,7 +24,6 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -40,17 +39,17 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
     public static final String MODEL_NAME = "wipo_prediction_model";
     private static final File INPUT_DATA_FOLDER = new File("wipo_prediction_input_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"wipo_predictions/predictions_map.jobj");
-    private static Map<String,Pair<String,Set<String>>> wipoCPCTechnologyMap;
-    private static final File wipoCPCTechnologyMapFile = new File(Constants.DATA_FOLDER+"wipo_prediction_model_asset_to_technology_map.jobj");
+    private static Map<String,String> wipoTechnologyMap;
+    private static final File wipoTechnologyMapFile = new File(Constants.DATA_FOLDER+"wipo_prediction_model_asset_to_technology_map.jobj");
     private static List<String> wipoTechnologyList;
     private static final int BATCH_SIZE = 128;
     private static final int TEST_BATCH_SIZE = 512;
 
     // default label function
     private static Function<String,INDArray> labelsFunc = asset -> {
-        if(getWipoCPCTechnologyMap().containsKey(asset)) {
+        if(getWipoTechnologyMap().containsKey(asset)) {
             INDArray label = Nd4j.zeros(wipoTechnologyList.size());
-            String wipo = getWipoCPCTechnologyMap().get(asset).getFirst();
+            String wipo = getWipoTechnologyMap().get(asset);
             int wipoIdx = getWipoTechnologyList().indexOf(wipo);
             if(wipoIdx>=0) {
                 label.putScalar(wipoIdx,1);
@@ -80,11 +79,11 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
         return datasetManager;
     }
 
-    public static synchronized Map<String,Pair<String,Set<String>>> getWipoCPCTechnologyMap() {
-        if(wipoCPCTechnologyMap==null) {
-            wipoCPCTechnologyMap = (Map<String,Pair<String,Set<String>>>) Database.tryLoadObject(wipoCPCTechnologyMapFile);
+    public static synchronized Map<String,String> getWipoTechnologyMap() {
+        if(wipoTechnologyMap==null) {
+            wipoTechnologyMap = (Map<String,String>) Database.tryLoadObject(wipoTechnologyMapFile);
         }
-        return wipoCPCTechnologyMap;
+        return wipoTechnologyMap;
     }
 
     public static synchronized List<String> getWipoTechnologyList() {
@@ -96,20 +95,15 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
     @Override
     public void rebuildPrerequisiteData() {
         System.out.println("Rebuilding prerequisite data... this may take awhile");
-        wipoCPCTechnologyMap = Collections.synchronizedMap(new HashMap<>());
-        Map<String,Set<String>> assetToCPCMap = new AssetToCPCMap().getPatentDataMap();
+        wipoTechnologyMap = Collections.synchronizedMap(new HashMap<>());
 
         Consumer<Pair<String,String>> assetWipoConsumer = pair -> {
-            String asset = pair.getFirst();
-            Set<String> cpcs = assetToCPCMap.get(asset);
-            if(cpcs!=null&&cpcs.size()>0) {
-                wipoCPCTechnologyMap.put(asset, new Pair<>(pair.getSecond(),cpcs));
-            }
+            wipoTechnologyMap.put(pair.getFirst(), pair.getSecond());
         };
 
         iterateOverDocuments(assetWipoConsumer,null);
 
-        Database.trySaveObject(wipoCPCTechnologyMap,wipoCPCTechnologyMapFile);
+        Database.trySaveObject(wipoTechnologyMap,wipoTechnologyMapFile);
     }
 
     protected void initModel(boolean forceRecreateModels) {
@@ -202,7 +196,7 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
         setLoggingLevel(Level.INFO);
         WIPOPredictionPipelineManager pipelineManager = new WIPOPredictionPipelineManager(modelName,cpcModel);
 
-        rebuildPrerequisites = rebuildPrerequisites || !wipoCPCTechnologyMapFile.exists() ; // Check if wipoCPCTechnologyMapFile exists
+        rebuildPrerequisites = rebuildPrerequisites || !wipoTechnologyMapFile.exists() ; // Check if wipoCPCTechnologyMapFile exists
 
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
 
