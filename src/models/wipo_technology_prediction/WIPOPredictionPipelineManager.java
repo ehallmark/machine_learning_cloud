@@ -1,8 +1,10 @@
 package models.wipo_technology_prediction;
 
+import assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
+import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
-import data_pipeline.vectorize.PreSaveDataSetManager;
+import data_pipeline.vectorize.NoSaveDataSetManager;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import models.classification_models.WIPOHelper;
@@ -34,10 +36,11 @@ import java.util.function.Function;
  * Created by ehallmark on 12/13/17.
  */
 public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSetIterator,String> {
+    public static final String MODEL_NAME = "wipo_prediction_model";
     private static final File INPUT_DATA_FOLDER = new File("wipo_prediction_input_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"wipo_predictions/predictions_map.jobj");
     private static Map<String,Pair<String,Set<String>>> wipoCPCTechnologyMap;
-    private static final File wipoCPCTechnologyMapFile = new File("wipo_prediction_model_asset_to_technology_map.jobj");
+    private static final File wipoCPCTechnologyMapFile = new File(Constants.DATA_FOLDER+"wipo_prediction_model_asset_to_technology_map.jobj");
     private static List<String> wipoTechnologyList;
     private static final int BATCH_SIZE = 128;
     private static final int TEST_BATCH_SIZE = 512;
@@ -70,7 +73,8 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
     @Override
     public DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder);
+            //datasetManager = new PreSaveDataSetManager(dataFolder);
+            setDatasetManager();
         }
         return datasetManager;
     }
@@ -135,8 +139,7 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
     @Override
     protected void setDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(
-                    dataFolder,
+            datasetManager = new NoSaveDataSetManager<>(
                     getIterator(trainAssets,BATCH_SIZE,true),
                     getIterator(testAssets,TEST_BATCH_SIZE,false),
                     getIterator(validationAssets,TEST_BATCH_SIZE,false)
@@ -180,5 +183,24 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
         DataSearcher.iterateOverSearchResults(response, transformer, -1, false);
         System.out.println("Finished iterating ES.");
         if(finallyDo!=null)finallyDo.apply(null);
+    }
+
+    public static void main(String[] args) throws Exception {
+        boolean rebuildDatasets = false;
+        boolean runModels = false;
+        boolean forceRecreateModels = false;
+        boolean runPredictions = false;
+        boolean rebuildPrerequisites = false;
+
+        int nEpochs = 5;
+        String modelName = MODEL_NAME;
+
+        setLoggingLevel(Level.INFO);
+        HumanNamePredictionPipelineManager pipelineManager = new HumanNamePredictionPipelineManager(modelName);
+
+        rebuildPrerequisites = rebuildPrerequisites || !wipoCPCTechnologyMapFile.exists() ; // Check if wipoCPCTechnologyMapFile exists
+
+        pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
+
     }
 }
