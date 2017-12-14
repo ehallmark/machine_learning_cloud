@@ -151,16 +151,18 @@ $(document).ready(function() {
             var id = $(option).val();
             var $draggable = $('.attributeElement[data-model="'+id+'"]');
             $draggable.find('input, select, textarea').prop('disabled', false).filter('.nested-filter-select').trigger('change');
+
             var $attrs = $draggable.find('div.attribute');
-            var $newlyShowingAttrs = $attrs.filter('.disabled'); // previously disabled
-            $newlyShowingAttrs.addClass('highlight');
-            $newlyShowingAttrs.click(function() { // highlight until clicked
-                $(this).removeClass('highlight');
-            });
-            $newlyShowingAttrs.each(function() {
-                $(this).parent().prepend($(this));
-            });
-            $newlyShowingAttrs
+            if($draggable.parent().is(':hidden')) {
+                var $newlyAdded = $draggable.parent();
+                $newlyAdded.addClass('highlight');
+                $newlyAdded.click(function() { // highlight until clicked
+                    $(this).removeClass('highlight');
+                });
+                $newlyAdded.each(function() {
+                    $(this).parent().prepend($(this));
+                });
+            }
             $attrs.removeClass("disabled");
             $draggable.parent().show();
         });
