@@ -30,15 +30,16 @@ import java.util.stream.Stream;
  * Created by ehallmark on 11/21/17.
  */
 public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
-    public static final int VECTOR_SIZE = 32;
     private static final int BATCH_SIZE = 512;
     private static Type MODEL_TYPE = Type.ParagraphVector;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"wordcpc2vec_model_data");
 
     private WordCPC2VecPipelineManager pipelineManager;
-    public WordCPC2VecModel(WordCPC2VecPipelineManager pipelineManager, String modelName) {
-        super(modelName+MODEL_TYPE,MODEL_TYPE);
+    private final int vectorSize;
+    public WordCPC2VecModel(WordCPC2VecPipelineManager pipelineManager, String modelName, int vectorSize) {
+        super(modelName+MODEL_TYPE+vectorSize,MODEL_TYPE);
         this.pipelineManager=pipelineManager;
+        this.vectorSize=vectorSize;
     }
 
     @Override
@@ -154,7 +155,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
                 .batchSize(BATCH_SIZE)
                 .epochs(1) // hard coded to avoid learning rate from resetting
                 .windowSize(windowSize)
-                .layerSize(VECTOR_SIZE)
+                .layerSize(vectorSize)
                 .sampling(sampling)
                 .negativeSample(negativeSampling)
                 .learningRate(learningRate)

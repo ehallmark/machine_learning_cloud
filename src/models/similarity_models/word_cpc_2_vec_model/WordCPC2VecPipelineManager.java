@@ -24,7 +24,15 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 11/21/17.
  */
 public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIterator,INDArray> {
-    public static final String MODEL_NAME = "wordcpc2vec_model";
+    public static final String SMALL_MODEL_NAME = "wordcpc2vec_model";
+    public static final String LARGE_MODEL_NAME = "wordcpc2vec_model_large";
+    public static final int SMALL_VECTOR_SIZE = 32;
+    public static final int LARGE_VECTOR_SIZE = 128;
+    public static final Map<String,Integer> modelNameToVectorSizeMap = Collections.synchronizedMap(new HashMap<>());
+    static {
+        modelNameToVectorSizeMap.put(SMALL_MODEL_NAME,SMALL_VECTOR_SIZE);
+        modelNameToVectorSizeMap.put(LARGE_MODEL_NAME,LARGE_VECTOR_SIZE);
+    }
     private static final File INPUT_DATA_FOLDER = new File("wordcpc2vec_input_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"wordcpc2vec_predictions/predictions_map.jobj");
     protected Map<String,Collection<CPC>> cpcMap;
@@ -49,7 +57,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     }
 
     protected void initModel(boolean forceRecreateModels) {
-        model = new WordCPC2VecModel(this, modelName);
+        model = new WordCPC2VecModel(this, modelName, modelNameToVectorSizeMap.get(modelName));
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
@@ -132,7 +140,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
         int nEpochs = 10;
-        String modelName = MODEL_NAME;
+        String modelName = LARGE_MODEL_NAME;
 
         WordCPC2VecPipelineManager pipelineManager = new WordCPC2VecPipelineManager(modelName,nEpochs,maxSamples);
 
