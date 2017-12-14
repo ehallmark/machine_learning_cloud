@@ -99,11 +99,16 @@ public class SimilarityEngineController {
 
         List<String> attributesFromUser = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
         attributesRequired.addAll(attributesFromUser);
+        attributesFromUser.forEach(attr->{
+            attributesRequired.addAll(extractArray(req, attr+"[]"));
+        });
 
         // add chart prerequisites
         if(chartPrerequisites!=null) {
             attributesRequired.addAll(chartPrerequisites);
         }
+
+        System.out.println("Required attributes: "+String.join("; ",attributesRequired));
 
         SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
         Collection<AbstractAttribute> topLevelAttributes = SimilarPatentServer.getAllTopLevelAttributes()
