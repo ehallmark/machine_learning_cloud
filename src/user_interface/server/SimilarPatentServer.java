@@ -98,6 +98,7 @@ public class SimilarPatentServer {
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = PROTECTED_URL_PREFIX+"/patent_recommendation_engine";
     public static final String HOME_URL = PROTECTED_URL_PREFIX+"/home";
+    public static final String UPDATE_DEFAULT_ATTRIBUTES_URL = PROTECTED_URL_PREFIX+"/update_default_attributes";
     public static final String SAVE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/save_template";
     public static final String GET_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/get_template";
     public static final String DELETE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/delete_template";
@@ -816,6 +817,11 @@ public class SimilarPatentServer {
             } else {
                 return null;
             }
+        });
+
+        get(UPDATE_DEFAULT_ATTRIBUTES_URL, (req,res) -> {
+            authorize(req,res);
+            return templateWrapper(true,req,res, defaultAttributesModelForm(req.session().attribute("username"),req.session().attribute("role")));
         });
 
         post(REPORT_URL, (req, res) -> {
@@ -1686,7 +1692,8 @@ public class SimilarPatentServer {
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").with(authorized ? div().withText("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : div().withText("Not signed in.")),
                                                         div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
-                                                        div().withClass("col-12").with(authorized ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com"))
+                                                        div().withClass("col-12").with(authorized ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com")),
+                                                        div().withClass("col-12").with(authorized ? a("Update Default Attributes").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span())
                                                 ), hr(),
                                                 (!authorized) ? div() : div().with(
                                                         ul().withClass("nav nav-tabs nav-fill").attr("role","tablist").with(
@@ -1762,6 +1769,24 @@ public class SimilarPatentServer {
                             }).collect(Collectors.toList())
                     );
                 }).collect(Collectors.toList())
+        );
+    }
+
+    private static Tag defaultAttributesModelForm(String user, String role) {
+        if(role==null) return null;
+        System.out.println("Loading default attributes page for user "+user+" with role "+role+".");
+        Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
+        return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
+                span().withId("main-content-id").withClass("collapse").with(
+                        form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
+                                div().withClass("col-12").withId("attributesForm").with(
+                                        customFormRow("attributes", allAttributes, userRoleFunction)
+                                ),
+                                div().withClass("btn-group").attr("style","margin-left: 35%; margin-right: 35%;").with(
+                                        div().withText("Update").withClass("btn btn-secondary div-button").withId("update-default-attributes-button")
+                                )
+                        )
+                )
         );
     }
 

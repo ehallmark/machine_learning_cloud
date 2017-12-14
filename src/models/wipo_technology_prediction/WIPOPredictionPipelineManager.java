@@ -185,7 +185,7 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildDatasets = false;
-        boolean runModels = false;
+        boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
