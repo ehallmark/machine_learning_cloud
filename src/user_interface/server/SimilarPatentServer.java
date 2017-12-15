@@ -1816,7 +1816,7 @@ public class SimilarPatentServer {
         System.out.println("Loading default attributes page for user "+user+" with role "+role+".");
         Set<String> defaultAttributes = loadDefaultAttributesForUser(user);
         Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
-        return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px; margin-top: 30px;").with(
+        return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px; margin-top: 20px;").with(
                 span().withId("main-content-id").withClass("collapse").with(
                         div().withClass("col-12").withId("attributesForm").with(
                                 h4("Update default attributes for "+user+".")
@@ -1825,7 +1825,8 @@ public class SimilarPatentServer {
                                 div().withClass("col-12").withId("attributesForm").with(
                                         customFormRow("attributes", allAttributes, userRoleFunction,defaultAttributes)
                                 ),
-                                div().withClass("btn-group").attr("style","margin-left: 35%; margin-right: 35%;").with(
+                                div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
+                                        div().withText("Go Back").withClass("btn btn-secondary div-button").withId("go-back-default-attributes-button"),
                                         div().withText("Update").withClass("btn btn-secondary div-button").withId("update-default-attributes-button")
                                 )
                         )
