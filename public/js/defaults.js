@@ -55,8 +55,8 @@ $(document).ready(function() {
          $button.prop('disabled',true).text(buttonTextWhileSearching);
          $form.find('#only-excel-hidden-input').val(onlyExcel);
 
-         $("#attributesForm .attributeElement").each(function() {
-            var name = $(this).attr('data-model');
+         $("#attributesForm .attributeElement .attribute").not('.disabled').each(function() {
+            var name = $(this).closest('.attributeElement').attr('data-model');
             if(typeof name === 'undefined') return;
             var index = $(this).parent().index();
             var $hiddenOrder = $('<input class="hidden-remove" type="hidden" name="order_'+ name +'" value="'+ index+'" />');

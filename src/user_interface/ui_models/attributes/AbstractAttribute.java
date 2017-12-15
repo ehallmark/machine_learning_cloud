@@ -58,8 +58,7 @@ public abstract class AbstractAttribute {
     }
 
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, List<String> defaultAttributes) {
-        String hide = defaultAttributes.contains(getFullName()) ? "" : " hide";
-        return div().with(div().withClass("attribute"+hide).withId("attribute_"+getFullName().replace(".","_"))); }
+        return div().with(div().withClass("attribute").withId("attribute_"+getFullName().replace(".","_"))); }
 
     public abstract String getType();
 

@@ -58,10 +58,11 @@ public abstract class NestedAttribute extends AbstractAttribute {
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
                             int idx = defaultAttributes.indexOf(filter.getFullName());
                             String display = idx>=0 ? "block" : "none";
+                            String[] additionalClasses = idx >= 0 ? new String[]{"default"} : new String[]{};
                             String styleString = baseStyleString+" display: "+display+";";
                             if(idx<0) idx = Integer.MAX_VALUE;
                             return new Pair<>(idx,div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(userRoleFunction,defaultAttributes), filter.isNotYetImplemented(), filter.getDescription().render())
+                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(userRoleFunction,defaultAttributes), filter.isNotYetImplemented(), filter.getDescription().render(), additionalClasses)
                             ));
                         }).sorted(Comparator.comparingInt(p->p.getFirst())).map(p->p.getSecond()).collect(Collectors.toList())
                 )
