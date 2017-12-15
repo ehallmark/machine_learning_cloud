@@ -1937,9 +1937,10 @@ public class SimilarPatentServer {
         );
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px; margin-top: 20px;").with(
                 span().withId("main-content-id").withClass("collapse").with(
+                        br(),
                         div().withClass("col-12").withId("attributesForm").with(
                                 h4("Update defaults for "+user+".")
-                        ), br(),
+                        ),
                         form().withAction(UPDATE_DEFAULT_ATTRIBUTES_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId("update-default-attributes-form").with(
                                 input().withType("hidden").withName("name").withValue("default"),
                                 innerModelsFormAttributes(userRoleFunction,buttons)
