@@ -133,6 +133,7 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
     @Override
     protected void setDatasetManager() {
         if(datasetManager==null) {
+            if(trainAssets==null) splitData();
             Map<String,INDArray> assetCPCVectors = cpcModel.loadPredictions();
             this.nInputs = assetCPCVectors.entrySet().stream().findAny().get().getValue().length();
             this.featuresFunc = assetCPCVectors::get;
