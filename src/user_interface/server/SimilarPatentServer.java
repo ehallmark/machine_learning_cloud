@@ -1803,7 +1803,7 @@ public class SimilarPatentServer {
                                                         div().withClass("tab-content").withId("sidebar-jstree-wrapper").attr("style","max-height: 75%; overflow-y: auto; text-align: left; display: none;").with(
                                                                 div().withClass("tab-pane active").attr("role","tabpanel").withId("templates-tree").with(
                                                                         ul().with(
-                                                                                getTemplatesForUser(SUPER_USER,false,"Default Templates",true),
+                                                                                getTemplatesForUser(SUPER_USER,false,"Preset Templates",true),
                                                                                 getTemplatesForUser(req.session().attribute("username"),true,"My Templates",false),
                                                                                 getTemplatesForUser(SHARED_USER,true, "Shared Templates",false)
                                                                         )

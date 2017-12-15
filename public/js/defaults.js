@@ -119,10 +119,6 @@ $(document).ready(function() {
        }
     };
 
-    var successUpdateDefaults = function(data) {
-        alert("Successfully updated");
-    };
-
     $('#generate-reports-form').submit(function(e) {
         $(this).find('#only-excel-hidden-input').val(false);
         var buttonClass = "generate-reports-form-button";
@@ -148,8 +144,11 @@ $(document).ready(function() {
     $('#update-default-attributes-form').submit(function(e) {
         e.preventDefault();
         var name = 'default';
+        var postSaveCallback = function() {
+            window.location.href = '/secure/home'
+        };
         var callback = function(data) {
-            saveJSNodeFunction(null,null,name,true,data,'template',true,true);
+            saveJSNodeFunction(null,null,name,true,data,'template',true,true,postSaveCallback);
         };
         return templateDataFunction(null,null,name,true,callback);
     });
@@ -705,7 +704,7 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     });
 };
 
-var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,create,skipSuccessFunction){
+var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,create,skipSuccessFunction,callback){
     if(preData!==null) {
         preData['defaultFile'] = skipSuccessFunction;
         $.ajax({
@@ -713,6 +712,9 @@ var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,cre
             url: '/secure/save_'+node_type,
             data: preData,
             success: function(data) {
+                if(callback!==null) {
+                    callback();
+                }
                 if(skipSuccessFunction) return;
 
                 if(!data.hasOwnProperty('file')) {
@@ -842,7 +844,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 "action": function(obj) {
                                     var name = 'New '+capitalize(node_type);
                                     var callback = function(data) {
-                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,true,false);
+                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,true,false,null);
                                     };
                                     labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
                                     return true;
@@ -905,7 +907,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 "action": function(obj) {
                                     var name = node.text;
                                     var callback = function(data) {
-                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false);
+                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false,null);
                                     };
                                     labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
                                     return true;
