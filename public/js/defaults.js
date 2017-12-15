@@ -183,12 +183,15 @@ $(document).ready(function() {
         });
 
         if(addedDraggables.length == 1) { // added by human
-            $draggable.addClass('highlight');
-            $draggable.click(function() { // highlight until clicked
-                $(this).removeClass('highlight');
+            $.each(addedDraggables, function() {
+                var $draggable = $(this);
+                $draggable.addClass('highlight');
+                $draggable.click(function() { // highlight until clicked
+                    $(this).removeClass('highlight');
+                });
+                var $parent = $draggable.parent();
+                $parent.parent().prepend($parent);
             });
-            var $parent = $draggable.parent();
-            $parent.parent().prepend($parent);
         }
         return true;
     });
