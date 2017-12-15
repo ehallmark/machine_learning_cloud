@@ -1864,20 +1864,78 @@ public class SimilarPatentServer {
         );
     }
 
+    private static Tag innerModelsFormAttributes(Function<String,Boolean> userRoleFunction, String user) {
+        return div().withClass("col-12").with(
+                div().withClass("row").with(
+                        div().withClass("col-12").withId("searchOptionsForm").with(
+                                mainOptionsRow()
+                        ), hr(),
+                        div().withClass("col-12 form-top").with(
+                                ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
+                                        li().withClass("nav-item").with(
+                                                a("Filters").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
+                                        ),li().withClass("nav-item").with(
+                                                a("Attributes").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
+                                        ),li().withClass("nav-item").with(
+                                                a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#tab3").attr("role","tab")
+                                        ),li().withClass("nav-item").with(
+                                                a("Settings").withClass("nav-link").attr("data-toggle","tab").withHref("#tab4").attr("role","tab")
+                                        )
+                                )
+                        ),
+                        div().withClass("col-12").with(
+                                div().withClass("row tab-content").with(
+                                        div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("tab1").with(
+                                                div().withClass("row").with(
+                                                        div().withClass("col-12").withId("filtersForm").with(
+                                                                customFormRow("filters", allFilters, userRoleFunction,Collections.emptyList())
+                                                        )
+                                                )
+                                        ),
+                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
+                                                div().withClass("row").with(
+                                                        div().withClass("col-12").withId("chartsForm").with(
+                                                                customFormRow("charts",allCharts, userRoleFunction,Collections.emptyList())
+                                                        )
+                                                )
+                                        ),
+                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab3").with(
+                                                div().withClass("row").with(
+                                                        div().withClass("col-12").withId("attributesForm").with(
+                                                                customFormRow("attributes", allAttributes, userRoleFunction, loadDefaultAttributesForUser(user))
+                                                        )
+                                                )
+                                        ),
+                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab4").with(
+                                                div().withClass("collapsible-form row").withId("highlightForm").with(
+                                                        div().withClass("col-12 attributeElement").with(
+                                                                label("Highlighting").attr("style","width: 100%;").with(
+                                                                        input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
+                                                                )
+                                                        ), div().withClass("col-12 attributeElement").with(
+                                                                label("Filter Nested Attributes").attr("style","width: 100%;").with(
+                                                                        input().withId("main-options-"+FILTER_NESTED_OBJECTS_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(FILTER_NESTED_OBJECTS_FIELD)
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        )
+                )
+        );
+    }
+
     private static Tag defaultAttributesModelForm(String user, String role) {
         if(user==null || role==null) return null;
         System.out.println("Loading default attributes page for user "+user+" with role "+role+".");
-        List<String> defaultAttributes = loadDefaultAttributesForUser(user);
         Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px; margin-top: 20px;").with(
                 span().withId("main-content-id").withClass("collapse").with(
                         div().withClass("col-12").withId("attributesForm").with(
-                                h4("Update default attributes for "+user+".")
+                                h4("Update defaults for "+user+".")
                         ), br(),
                         form().withAction(UPDATE_DEFAULT_ATTRIBUTES_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId("update-default-attributes-form").with(
-                                div().withClass("col-12").withId("attributesForm").with(
-                                        customFormRow("attributes", allAttributes, userRoleFunction,defaultAttributes)
-                                ),
+                                innerModelsFormAttributes(userRoleFunction,user),
                                 div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
                                         a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-secondary div-button").withId("go-back-default-attributes-button"),
                                         button().withType("submit").withText("Update").withClass("btn btn-secondary div-button").withId("update-default-attributes-button")
@@ -1894,60 +1952,7 @@ public class SimilarPatentServer {
                 span().withId("main-content-id").withClass("collapse").with(
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
-                                div().withClass("col-12").withId("searchOptionsForm").with(
-                                        mainOptionsRow()
-                                ), hr(),
-                                div().withClass("col-12 form-top").with(
-                                        ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
-                                                li().withClass("nav-item").with(
-                                                        a("Filters").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
-                                                ),li().withClass("nav-item").with(
-                                                        a("Attributes").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
-                                                ),li().withClass("nav-item").with(
-                                                        a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#tab3").attr("role","tab")
-                                                ),li().withClass("nav-item").with(
-                                                        a("Settings").withClass("nav-link").attr("data-toggle","tab").withHref("#tab4").attr("role","tab")
-                                                )
-                                        )
-                                ),
-                                div().withClass("col-12").with(
-                                        div().withClass("row tab-content").with(
-                                                div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("tab1").with(
-                                                        div().withClass("row").with(
-                                                                div().withClass("col-12").withId("filtersForm").with(
-                                                                        customFormRow("filters", allFilters, userRoleFunction,Collections.emptyList())
-                                                                )
-                                                        )
-                                                ),
-                                                div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
-                                                        div().withClass("row").with(
-                                                                div().withClass("col-12").withId("chartsForm").with(
-                                                                        customFormRow("charts",allCharts, userRoleFunction,Collections.emptyList())
-                                                                )
-                                                        )
-                                                ),
-                                                div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab3").with(
-                                                        div().withClass("row").with(
-                                                                div().withClass("col-12").withId("attributesForm").with(
-                                                                        customFormRow("attributes", allAttributes, userRoleFunction, loadDefaultAttributesForUser(user))
-                                                                )
-                                                        )
-                                                ),
-                                                div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab4").with(
-                                                        div().withClass("collapsible-form row").withId("highlightForm").with(
-                                                                div().withClass("col-12 attributeElement").with(
-                                                                        label("Highlighting").attr("style","width: 100%;").with(
-                                                                                input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
-                                                                        )
-                                                                ), div().withClass("col-12 attributeElement").with(
-                                                                        label("Filter Nested Attributes").attr("style","width: 100%;").with(
-                                                                                input().withId("main-options-"+FILTER_NESTED_OBJECTS_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(FILTER_NESTED_OBJECTS_FIELD)
-                                                                        )
-                                                                )
-                                                        )
-                                                )
-                                        )
-                                ),
+                                innerModelsFormAttributes(userRoleFunction,user),
                                 div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
                                         div().withText("Generate Report").withClass("btn btn-secondary div-button").withId(GENERATE_REPORTS_FORM_ID+"-button"),
                                         div().withText("Download to Excel").withClass("btn btn-secondary div-button").withId("download-to-excel-button")
