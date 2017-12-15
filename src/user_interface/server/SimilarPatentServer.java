@@ -100,7 +100,7 @@ public class SimilarPatentServer {
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = PROTECTED_URL_PREFIX+"/patent_recommendation_engine";
     public static final String HOME_URL = PROTECTED_URL_PREFIX+"/home";
-    public static final String UPDATE_DEFAULT_ATTRIBUTES_URL = PROTECTED_URL_PREFIX+"/update_default_attributes";
+    public static final String UPDATE_DEFAULT_ATTRIBUTES_URL = PROTECTED_URL_PREFIX+"/update_defaults";
     public static final String SAVE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/save_template";
     public static final String GET_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/get_template";
     public static final String DELETE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/delete_template";
@@ -1162,10 +1162,10 @@ public class SimilarPatentServer {
 
         String filename;
         if(defaultFile) {
-            filename = Constants.DATA_FOLDER+Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+user;
+            filename = Constants.DATA_FOLDER+Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+user+"/"+user;
             // may not exist
             if(! new File(filename).exists()) {
-                filename = Constants.DATA_FOLDER+Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+SUPER_USER;
+                filename = Constants.DATA_FOLDER+Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+SUPER_USER+"/"+SUPER_USER;
             }
         } else {
             filename = Constants.DATA_FOLDER+ baseFolder + (shared ? SHARED_USER : user) + "/" + file;
