@@ -197,10 +197,9 @@ input.form-control {
 }
 
 .div-button {
-    margin-top: 15px;
     cursor: pointer;
     font-weight: 500;
-    width: 30%;
+    width: 50%;
 }
 
 
