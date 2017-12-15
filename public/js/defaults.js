@@ -57,9 +57,10 @@ $(document).ready(function() {
 
          $("#attributesForm .attributeElement .attribute").not('.disabled').each(function() {
             var $this = $(this);
-            while(name.contains(".")) {
+            var name = null;
+            while(name===null||name.contains(".")) {
                 var $attributeElement = $this.closest('.attributeElement');
-                var name = $attributeElement.attr('data-model');
+                name = $attributeElement.attr('data-model');
                 if(typeof name === 'undefined') return;
                 var index = $attributeElement.parent().index();
                 var $hiddenOrder = $('<input class="hidden-remove" type="hidden" name="order_'+ name +'" value="'+ index+'" />');
