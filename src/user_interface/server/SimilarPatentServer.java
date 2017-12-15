@@ -1212,23 +1212,12 @@ public class SimilarPatentServer {
 
     private static Object handleUpdateDefaultAttributes(Request req, Response res) {
         String username = req.session().attribute("username");
-        if(username==null) return null;
-
-        File defaultFile = new File(Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+username);
-        List<String> topLevelAttrs = extractArray(req,ATTRIBUTES_ARRAY_FIELD);
-        // check nested
-
-        List<String> defaultAttributes = new ArrayList<>();
-        topLevelAttrs.forEach(attr->{
-            defaultAttributes.add(attr);
-            defaultAttributes.addAll(extractArray(req,attr+"[]"));
-        });
-
-        Database.trySaveObject(defaultAttributes,defaultFile);
-
-        Map<String,Object> responseMap = new HashMap<>();
-        responseMap.put("message","success");
-        return new Gson().toJson(responseMap);
+        if(username == null) return null;
+        Function<Map<String,Object>,Map<String,Object>> afterFunction = map -> {
+            map.put("file", username);
+            return map;
+        };
+        return handleSaveForm(req,res,Constants.USER_DEFAULT_ATTRIBUTES_FOLDER,templateFormMapFunction().andThen(afterFunction));
     }
 
     private static List<String> loadDefaultAttributesForUser(String username) {
