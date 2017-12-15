@@ -1610,13 +1610,13 @@ public class SimilarPatentServer {
 
             if (loadData && templateMap == null) {
                 templateMap = (Map<String, Object>) Database.tryLoadObject(file);
-                fileCache.putWithLimit(file.getAbsolutePath(),templateMap);
-            } else {
+                if(templateMap!=null) fileCache.putWithLimit(file.getAbsolutePath(),templateMap);
+            } else if(!loadData) {
                 if(updates!=null) {
                     templateMap = updates;
                 } else {
                     templateMap = (Map<String, Object>) Database.tryLoadObject(updatesFile);
-                    fileCache.put(updatesFile.getAbsolutePath(),templateMap);
+                    if(templateMap!=null) fileCache.put(updatesFile.getAbsolutePath(),templateMap);
                 }
             }
 
@@ -1625,7 +1625,7 @@ public class SimilarPatentServer {
                 if (updatesFile.exists() || updates!=null) {
                     if(updates==null) {
                         updates = (Map<String, Object>) Database.tryLoadObject(updatesFile);
-                        fileCache.put(updatesFile.getAbsolutePath(), updates);
+                        if(updates!=null) fileCache.put(updatesFile.getAbsolutePath(), updates);
                     }
                     if (updates != null) {
                         templateMap.put("name", updates.get("name"));
