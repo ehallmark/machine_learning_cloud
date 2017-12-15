@@ -65,7 +65,6 @@ $(document).ready(function() {
                 var index = $attributeElement.parent().index();
                 var $hiddenOrder = $('<input class="hidden-remove" type="hidden" name="order_'+ name +'" value="'+ index+'" />');
                 $form.append($hiddenOrder);
-                name = name.substring(0,name.indexOf("."));
                 $this = $attributeElement;
             }
          });
