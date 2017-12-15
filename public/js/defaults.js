@@ -146,6 +146,7 @@ $(document).ready(function() {
     });
 
     $('#update-default-attributes-form').submit(function(e) {
+        e.preventDefault();
         var name = 'default';
         var callback = function(data) {
             saveJSNodeFunction(null,null,name,true,data,'template',true,true);
