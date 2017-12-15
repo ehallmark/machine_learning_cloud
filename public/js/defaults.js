@@ -165,23 +165,30 @@ $(document).ready(function() {
             $draggable.parent().hide();
             return true;
         });
+        var addedDraggables = [];
         $options.each(function(i,option){
             var id = $(option).val();
             var $draggable = $('.attributeElement[data-model="'+id+'"]');
             $draggable.find('input, select, textarea').prop('disabled', false).filter('.nested-filter-select').trigger('change');
 
             var $attrs = $draggable.find('div.attribute');
-            if($draggable.parent().is(':hidden')) {
-                $draggable.addClass('highlight');
-                $draggable.click(function() { // highlight until clicked
-                    $(this).removeClass('highlight');
-                });
-                var $parent = $draggable.parent();
-                $parent.parent().prepend($parent);
+            if($options.length>1) {
+                if($draggable.parent().is(':hidden')) {
+                    addedDraggables.push($draggable);
+                }
             }
             $attrs.removeClass("disabled");
             $draggable.parent().show();
         });
+
+        if(addedDraggables.length == 1) { // added by human
+            $draggable.addClass('highlight');
+            $draggable.click(function() { // highlight until clicked
+                $(this).removeClass('highlight');
+            });
+            var $parent = $draggable.parent();
+            $parent.parent().prepend($parent);
+        }
         return true;
     });
 
@@ -282,7 +289,7 @@ $(document).ready(function() {
     $('.nested-form-list').sortable();
     $('.nested-form-list').disableSelection();
 
-    //resetSearchForm();
+    resetSearchForm(false);
 
     $('#main-content-id').addClass('show');
 
@@ -306,10 +313,17 @@ $(document).ready(function() {
     $('#sidebar-jstree-wrapper').show();
 });
 
-var resetSearchForm = function() {
-    $('.target .collapsible-header .remove-button').click();
-    $('.draggable').find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
-    $('div.attribute').addClass("disabled");
+var resetSearchForm = function(resetDefaults) {
+    if(resetDefaults) {
+        $('.target .draggable .collapsible-header .remove-button').click();
+        $('.draggable').find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
+        $('div.attribute').addClass("disabled");
+    } else {
+        $('.target .draggable').not('.default').find('.collapsible-header .remove-button').click();
+        var $nonDefaults = $('.draggable').not(".default");
+        $nonDefaults.find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
+        $nonDefaults.find('div.attribute').addClass("disabled");
+    }
     $('#results').html('');
 };
 
@@ -440,7 +454,7 @@ var showTemplateFormHelper = function(formSelector,dataMap) {
 };
 
 var showTemplateFunction = function(data,tree,node){
-    if(node!==null){ resetSearchForm(); }
+    if(node!==null){ resetSearchForm(true); }
     if(data===null) {
         alert("Error finding template.");
     } else if(data.hasOwnProperty('searchoptionsmap')) { // data came from li node
