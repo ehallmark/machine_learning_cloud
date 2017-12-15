@@ -15,11 +15,11 @@ $(document).ready(function() {
                  "<p>~N after a phrase signifies slop amount</p>"
     });
 
-    var submitFormFunction = function(e,buttonId,buttonText,buttonTextWhileSearching,formId,successFunction) {
+    var submitFormFunction = function(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successFunction) {
          e.preventDefault();
 
          var $form = $('#'+formId);
-         var $button = $('#'+buttonId);
+         var $button = $('.'+buttonClass);
          var url = $form.attr('action');
          var tempScrollTop = $(window).scrollTop();
 
@@ -125,24 +125,24 @@ $(document).ready(function() {
 
     $('#generate-reports-form').submit(function(e) {
         $(this).find('#only-excel-hidden-input').val(false);
-        var buttonId = "generate-reports-form-button";
+        var buttonClass = "generate-reports-form-button";
         var buttonText = "Generate Report";
         var buttonTextWhileSearching = "Generating...";
         var formId = $(this).attr('id');
         $('#results').html(''); // clears results div
-        return submitFormFunction(e,buttonId,buttonText,buttonTextWhileSearching,formId,successReportFrom);
+        return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFrom);
     });
-    $('#generate-reports-form-button').click(function(e) {
+    $('.generate-reports-form-button').click(function(e) {
         e.preventDefault();
         $('#generate-reports-form').submit();
     });
-    $('#download-to-excel-button').click(function(e) {
+    $('.download-to-excel-button').click(function(e) {
         $('#generate-reports-form').find('#only-excel-hidden-input').val(true);
-        var buttonId = "download-to-excel-button";
+        var buttonClass = "download-to-excel-button";
         var buttonText = "Download to Excel";
         var buttonTextWhileSearching = "Downloading...";
         var formId = 'generate-reports-form';
-        return submitFormFunction(e,buttonId,buttonText,buttonTextWhileSearching,formId,successReportFromExcelOnly);
+        return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFromExcelOnly);
     });
 
     $('#update-default-attributes-form').submit(function(e) {
@@ -154,7 +154,7 @@ $(document).ready(function() {
         return templateDataFunction(null,null,name,true,callback);
     });
 
-    $('#update-default-attributes-button').click(function(e) {
+    $('.update-default-attributes-button').click(function(e) {
         e.preventDefault();
         $('#update-default-attributes-form').submit();
     });

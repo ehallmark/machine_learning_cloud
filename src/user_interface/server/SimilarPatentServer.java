@@ -1935,11 +1935,15 @@ public class SimilarPatentServer {
                                 h4("Update defaults for "+user+".")
                         ), br(),
                         form().withAction(UPDATE_DEFAULT_ATTRIBUTES_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId("update-default-attributes-form").with(
+                                div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
+                                        a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-secondary div-button go-back-default-attributes-button"),
+                                        div().withText("Update Defaults").withClass("btn btn-secondary div-button update-default-attributes-button")
+                                ),
                                 input().withType("hidden").withName("name").withValue("default"),
                                 innerModelsFormAttributes(userRoleFunction,user),
                                 div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
-                                        a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-secondary div-button").withId("go-back-default-attributes-button"),
-                                        div().withText("Update Defaults").withClass("btn btn-secondary div-button").withId("update-default-attributes-button")
+                                        a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-secondary div-button go-back-default-attributes-button"),
+                                        div().withText("Update Defaults").withClass("btn btn-secondary div-button update-default-attributes-button")
                                 )
                         )
                 )
@@ -1952,11 +1956,15 @@ public class SimilarPatentServer {
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse").with(
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
+                                div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
+                                        div().withText("Generate Report").withClass("btn btn-secondary div-button "+GENERATE_REPORTS_FORM_ID+"-button"),
+                                        div().withText("Download to Excel").withClass("btn btn-secondary div-button download-to-excel-button")
+                                ),
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
                                 innerModelsFormAttributes(userRoleFunction,user),
                                 div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
-                                        div().withText("Generate Report").withClass("btn btn-secondary div-button").withId(GENERATE_REPORTS_FORM_ID+"-button"),
-                                        div().withText("Download to Excel").withClass("btn btn-secondary div-button").withId("download-to-excel-button")
+                                        div().withText("Generate Report").withClass("btn btn-secondary div-button "+GENERATE_REPORTS_FORM_ID+"-button"),
+                                        div().withText("Download to Excel").withClass("btn btn-secondary div-button download-to-excel-button")
                                 )
                         )
                 ),
