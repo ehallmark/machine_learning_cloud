@@ -58,7 +58,7 @@ $(document).ready(function() {
          $("#attributesForm .attributeElement .attribute").not('.disabled').each(function() {
             var $this = $(this);
             var name = ".";
-            while(name.contains(".")) {
+            while(name.includes(".")) {
                 var $attributeElement = $this.closest('.attributeElement');
                 name = $attributeElement.attr('data-model');
                 if(typeof name === 'undefined') return;
