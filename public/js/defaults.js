@@ -348,7 +348,7 @@ var resetSearchForm = function(resetDefaults) {
         });
         var $attributesSelect = $('#multiselect-nested-filter-select-attributes');
         var attributesShown = $attributesSelect.parent().next().children().children().filter('.draggable.default').map(function() { return $(this).attr('data-model'); });
-        $attributesSelect.val(attributesShown).trigger('change');
+        $attributesSelect.val(attributesShown).trigger('change.select2');
     }
     $('#results').html('');
 };
@@ -614,9 +614,12 @@ var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dat
         var tmpData = {};
         $(containerSelector+" "+itemSelector).find('textarea,input,select,div.attribute').each(function(i,e) {
             var $elem = $(this);
-            if($elem.attr('id') && ! ($elem.prop('disabled') || $elem.hasClass('disabled'))) {
-                tmpData[$elem.attr("id")]=$elem.val();
-                tmpData["order_"+$elem.attr("id")]=i;
+            var id = $elem.attr('id');
+            if(id && ! ($elem.prop('disabled') || $elem.hasClass('disabled'))) {
+                if(!tmpData.hasOwnProperty(id)) {
+                    tmpData[id]=$elem.val();
+                    tmpData["order_"+$elem.attr("id")]=i;
+                }
             }
         });
         var json = JSON.stringify(tmpData);
