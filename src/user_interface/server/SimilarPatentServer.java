@@ -815,7 +815,7 @@ public class SimilarPatentServer {
 
         get(HOME_URL, (req, res) -> {
             if(softAuthorize(req,res)) {
-                return templateWrapper(true, req, res, candidateSetModelsForm(req.session().attribute("username"),req.session().attribute("role")));
+                return templateWrapper(true, req, res, candidateSetModelsForm(req.session().attribute("role")));
             } else {
                 return null;
             }
@@ -1864,12 +1864,12 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag innerModelsFormAttributes(Function<String,Boolean> userRoleFunction, String user) {
+    private static Tag innerModelsFormAttributes(Function<String,Boolean> userRoleFunction, Tag buttons) {
         return div().withClass("col-12").with(
                 div().withClass("row").with(
                         div().withClass("col-12").withId("searchOptionsForm").with(
                                 mainOptionsRow()
-                        ), hr(),
+                        ), buttons, hr(),
                         div().withClass("col-12 form-top").with(
                                 ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
                                         li().withClass("nav-item").with(
@@ -1929,43 +1929,35 @@ public class SimilarPatentServer {
         if(user==null || role==null) return null;
         System.out.println("Loading default attributes page for user "+user+" with role "+role+".");
         Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
+        Tag buttons = div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
+                a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-secondary div-button go-back-default-attributes-button"),
+                div().withText("Update Defaults").withClass("btn btn-secondary div-button update-default-attributes-button")
+        );
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px; margin-top: 20px;").with(
                 span().withId("main-content-id").withClass("collapse").with(
                         div().withClass("col-12").withId("attributesForm").with(
                                 h4("Update defaults for "+user+".")
                         ), br(),
                         form().withAction(UPDATE_DEFAULT_ATTRIBUTES_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId("update-default-attributes-form").with(
-                                div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
-                                        a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-secondary div-button go-back-default-attributes-button"),
-                                        div().withText("Update Defaults").withClass("btn btn-secondary div-button update-default-attributes-button")
-                                ),
                                 input().withType("hidden").withName("name").withValue("default"),
-                                innerModelsFormAttributes(userRoleFunction,user),
-                                div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
-                                        a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-secondary div-button go-back-default-attributes-button"),
-                                        div().withText("Update Defaults").withClass("btn btn-secondary div-button update-default-attributes-button")
-                                )
+                                innerModelsFormAttributes(userRoleFunction,buttons)
                         )
                 )
         );
     }
 
-    private static Tag candidateSetModelsForm(String user, String role) {
-        if(user==null || role==null) return null;
+    private static Tag candidateSetModelsForm(String role) {
+        if(role==null) return null;
         Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
+        Tag buttons =  div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
+                div().withText("Generate Report").withClass("btn btn-secondary div-button "+GENERATE_REPORTS_FORM_ID+"-button"),
+                div().withText("Download to Excel").withClass("btn btn-secondary div-button download-to-excel-button")
+        );
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse").with(
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
-                                div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
-                                        div().withText("Generate Report").withClass("btn btn-secondary div-button "+GENERATE_REPORTS_FORM_ID+"-button"),
-                                        div().withText("Download to Excel").withClass("btn btn-secondary div-button download-to-excel-button")
-                                ),
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
-                                innerModelsFormAttributes(userRoleFunction,user),
-                                div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
-                                        div().withText("Generate Report").withClass("btn btn-secondary div-button "+GENERATE_REPORTS_FORM_ID+"-button"),
-                                        div().withText("Download to Excel").withClass("btn btn-secondary div-button download-to-excel-button")
-                                )
+                                innerModelsFormAttributes(userRoleFunction,buttons)
                         )
                 ),
                 div().withClass("col-12").withId("results").attr("style","padding-top: 20px;")
