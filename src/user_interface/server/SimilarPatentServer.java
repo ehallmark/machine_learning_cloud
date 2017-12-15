@@ -1163,6 +1163,10 @@ public class SimilarPatentServer {
         String filename;
         if(defaultFile) {
             filename = Constants.DATA_FOLDER+Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+user;
+            // may not exist
+            if(! new File(filename).exists()) {
+                filename = Constants.DATA_FOLDER+Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+SUPER_USER;
+            }
         } else {
             filename = Constants.DATA_FOLDER+ baseFolder + (shared ? SHARED_USER : user) + "/" + file;
         }
