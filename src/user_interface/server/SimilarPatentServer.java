@@ -1894,12 +1894,19 @@ public class SimilarPatentServer {
                 span().withId("main-content-id").withClass("collapse").with(
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
+                                div().withClass("col-12").withId("searchOptionsForm").with(
+                                        mainOptionsRow()
+                                ), hr(),
                                 div().withClass("col-12 form-top").with(
                                         ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
                                                 li().withClass("nav-item").with(
-                                                        a("1. Search Options").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
+                                                        a("Filters").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
                                                 ),li().withClass("nav-item").with(
-                                                        a("2. Data Options").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
+                                                        a("Attributes").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
+                                                ),li().withClass("nav-item").with(
+                                                        a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#tab3").attr("role","tab")
+                                                ),li().withClass("nav-item").with(
+                                                        a("Settings").withClass("nav-link").attr("data-toggle","tab").withHref("#tab4").attr("role","tab")
                                                 )
                                         )
                                 ),
@@ -1907,34 +1914,35 @@ public class SimilarPatentServer {
                                         div().withClass("row tab-content").with(
                                                 div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("tab1").with(
                                                         div().withClass("row").with(
-                                                                div().withClass("col-12").withId("searchOptionsForm").with(
-                                                                        mainOptionsRow()
-                                                                )
-                                                        ),div().withClass("row").with(
                                                                 div().withClass("col-12").withId("filtersForm").with(
                                                                         customFormRow("filters", allFilters, userRoleFunction,Collections.emptyList())
                                                                 )
                                                         )
                                                 ),
                                                 div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
-                                                        div().withClass("collapsible-form row").withId("highlightForm").with(
-                                                                div().withClass("col-6 attributeElement").with(
-                                                                        h5("Highlighting").attr("style","width: 100%;").with(
-                                                                                input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
-                                                                        )
-                                                                ), div().withClass("col-6 attributeElement").with(
-                                                                        h5("Filter Nested Attributes").attr("style","width: 100%;").with(
-                                                                                input().withId("main-options-"+FILTER_NESTED_OBJECTS_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(FILTER_NESTED_OBJECTS_FIELD)
-                                                                        )
-                                                                )
-                                                        ),
                                                         div().withClass("row").with(
                                                                 div().withClass("col-12").withId("chartsForm").with(
                                                                         customFormRow("charts",allCharts, userRoleFunction,Collections.emptyList())
                                                                 )
-                                                        ), div().withClass("row").with(
+                                                        )
+                                                ),
+                                                div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab3").with(
+                                                        div().withClass("row").with(
                                                                 div().withClass("col-12").withId("attributesForm").with(
                                                                         customFormRow("attributes", allAttributes, userRoleFunction, loadDefaultAttributesForUser(user))
+                                                                )
+                                                        )
+                                                ),
+                                                div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab4").with(
+                                                        div().withClass("collapsible-form row").withId("highlightForm").with(
+                                                                div().withClass("col-12 attributeElement").with(
+                                                                        label("Highlighting").attr("style","width: 100%;").with(
+                                                                                input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
+                                                                        )
+                                                                ), div().withClass("col-12 attributeElement").with(
+                                                                        label("Filter Nested Attributes").attr("style","width: 100%;").with(
+                                                                                input().withId("main-options-"+FILTER_NESTED_OBJECTS_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(FILTER_NESTED_OBJECTS_FIELD)
+                                                                        )
                                                                 )
                                                         )
                                                 )
