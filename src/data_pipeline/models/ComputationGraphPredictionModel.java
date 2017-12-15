@@ -68,7 +68,7 @@ public abstract class ComputationGraphPredictionModel<T> extends BaseTrainablePr
     protected double test(List<DataSet> dataSets, ComputationGraph net, boolean timeseries) {
         Iterator<DataSet> iterator = dataSets.iterator();
         System.out.println("Train score: "+net.score());
-        Evaluation eval = new Evaluation(2);
+        Evaluation eval = new Evaluation(pipelineManager.getDatasetManager().getTrainingIterator().totalOutcomes());
         while(iterator.hasNext()) {
             DataSet ds = iterator.next();
             if(timeseries) {
