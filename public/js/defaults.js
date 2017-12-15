@@ -338,7 +338,12 @@ var resetSearchForm = function(resetDefaults) {
         var $nestedAttrs = $defaults.find('select.nested-filter-select');
         $nestedAttrs.each(function() {
             var $select = $(this);
-            var children = $select.parent().next().find('.draggable.default').map(function(){ return $(this).attr('data-model'); });
+            var $childDraggables = $select.parent().next().find(".draggable");
+            var $nonChildDefaults = $draggables.not(".default");
+            $nonChildDefaults.find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
+            $nonChildDefaults.find('div.attribute').addClass("disabled");
+
+            var children = $childDraggables.filter('.default').map(function(){ return $(this).attr('data-model'); });
             $select.val(children).trigger('change');
         });
         var $attributesSelect = $('#multiselect-nested-filter-select-attributes');
