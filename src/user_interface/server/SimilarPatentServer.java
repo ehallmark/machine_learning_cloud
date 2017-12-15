@@ -1826,7 +1826,7 @@ public class SimilarPatentServer {
                                         customFormRow("attributes", allAttributes, userRoleFunction,defaultAttributes)
                                 ),
                                 div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
-                                        div().withText("Go Back").withClass("btn btn-secondary div-button").withId("go-back-default-attributes-button"),
+                                        a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-secondary div-button").withId("go-back-default-attributes-button"),
                                         div().withText("Update").withClass("btn btn-secondary div-button").withId("update-default-attributes-button")
                                 )
                         )
