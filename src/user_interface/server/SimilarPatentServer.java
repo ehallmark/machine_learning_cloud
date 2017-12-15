@@ -1935,6 +1935,7 @@ public class SimilarPatentServer {
                                 h4("Update defaults for "+user+".")
                         ), br(),
                         form().withAction(UPDATE_DEFAULT_ATTRIBUTES_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId("update-default-attributes-form").with(
+                                input().withType("hidden").withName("name").withValue("default"),
                                 innerModelsFormAttributes(userRoleFunction,user),
                                 div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
                                         a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-secondary div-button").withId("go-back-default-attributes-button"),
