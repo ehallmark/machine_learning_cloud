@@ -341,6 +341,9 @@ var resetSearchForm = function(resetDefaults) {
             var children = $select.parent().next().find('.draggable.default').map(function(){ return $(this).attr('data-model'); });
             $select.val(children).trigger('change');
         });
+        var $attributesSelect = $('#multiselect-nested-filter-select-attributes');
+        var attributesShown = $attributesSelect.parent().next().children().children().filter('.draggable.default').map(function() { return $(this).attr('data-model'); });
+        $attributesSelect.val(attributesShown).trigger('change');
     }
     $('#results').html('');
 };
