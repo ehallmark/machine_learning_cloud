@@ -46,7 +46,7 @@ public class AbstractHistogramChart extends ChartAttribute {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Set<String> defaultAttributes) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, List<String> defaultAttributes) {
         return div().with(
                 label("Group By"),br(),select().withId(SimilarPatentServer.CHARTS_GROUPED_BY_FIELD.replaceAll("[\\[\\]]","")).withClass("form-control single-select2").withName(SimilarPatentServer.CHARTS_GROUPED_BY_FIELD).with(
                         option("No Group (default)").attr("selected","selected").withValue(""),

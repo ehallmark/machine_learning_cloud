@@ -57,7 +57,7 @@ public abstract class AbstractAttribute {
         return parent==null? getName() : parent.getRootName();
     }
 
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Set<String> defaultAttributes) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, List<String> defaultAttributes) {
         String hide = defaultAttributes.contains(getFullName()) ? "" : " hide";
         return div().with(div().withClass("attribute"+hide).withId("attribute_"+getFullName().replace(".","_"))); }
 

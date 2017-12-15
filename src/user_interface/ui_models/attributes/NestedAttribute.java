@@ -2,6 +2,7 @@ package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
 import lombok.Getter;
+import org.nd4j.linalg.primitives.Pair;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.filters.*;
 
@@ -46,9 +47,8 @@ public abstract class NestedAttribute extends AbstractAttribute {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Set<String> defaultAttributes) {
-        String display = defaultAttributes.contains(getFullName()) ? "block" : "none";
-        String styleString = "display: "+display+"; margin-left: 5%; margin-right: 5%;";
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, List<String> defaultAttributes) {
+        String baseStyleString = "margin-left: 5%; margin-right: 5%;";
         String name = getFullName().replace(".","");
         return div().with(
                 div().with(
@@ -56,10 +56,14 @@ public abstract class NestedAttribute extends AbstractAttribute {
                 ), div().withClass("nested-form-list").with(
                         attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getRootName())).map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
-                            return div().attr("style", styleString).with(
+                            int idx = defaultAttributes.indexOf(filter.getFullName());
+                            String display = idx>=0 ? "block" : "none";
+                            String styleString = baseStyleString+" display: "+display+";";
+                            if(idx<0) idx = Integer.MAX_VALUE;
+                            return new Pair<>(idx,div().attr("style", styleString).with(
                                     SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(userRoleFunction,defaultAttributes), filter.isNotYetImplemented(), filter.getDescription().render())
-                            );
-                        }).collect(Collectors.toList())
+                            ));
+                        }).sorted(Comparator.comparingInt(p->p.getFirst())).map(p->p.getSecond()).collect(Collectors.toList())
                 )
         );
     }

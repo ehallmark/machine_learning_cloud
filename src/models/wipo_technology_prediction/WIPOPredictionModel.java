@@ -68,7 +68,7 @@ public class WIPOPredictionModel extends ComputationGraphPredictionModel<String>
         return Arrays.asList(
                 new LayerWrapper("l1", newDenseLayer(inputSize,hiddenLayerSize), "x"),
                 new LayerWrapper("l2", newBatchNormLayer(hiddenLayerSize,hiddenLayerSize), "l1"),
-                new LayerWrapper("l3", newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"x","l2"),
+                new LayerWrapper("l3", newDenseLayer(inputSize+hiddenLayerSize,hiddenLayerSize),"x","l2"),
                 new LayerWrapper("l4", newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),"l3"),
                 new LayerWrapper("l5", newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l2","l4"),
                 new LayerWrapper("l6", newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),"l5"),

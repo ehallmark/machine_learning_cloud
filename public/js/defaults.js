@@ -15,6 +15,24 @@ $(document).ready(function() {
                  "<p>~N after a phrase signifies slop amount</p>"
     });
 
+    $('#update-default-attributes-form').submit(function(e) {
+        var $form = $(this);
+        e.preventDefault();
+        $.ajax({
+            type: "GET",
+            url: $elem.attr("data-url"),
+            data: $form.serialize(),
+            success: function(data) {
+
+            },
+            error: function(jqXHR, exception) {
+                alert("Error updating...");
+            },
+            dataType: "json"
+        });
+
+    });
+
 
     var submitFormFunction = function(e,onlyExcel) {
          e.preventDefault();
