@@ -40,7 +40,6 @@ $(document).ready(function() {
             }
          });
 
-         if(!onlyExcel) {  $('#results').html('');  }  // clears results div
          $.ajax({
            type: 'POST',
            dataType: 'json',
@@ -131,6 +130,7 @@ $(document).ready(function() {
         var buttonText = "Generate Report";
         var buttonTextWhileSearching = "Generating...";
         var formId = $(this).attr('id');
+        $('#results').html(''); // clears results div
         return submitFormFunction(e,buttonId,buttonText,buttonTextWhileSearching,formId,successReportFrom);
     });
     $('#generate-reports-form-button').click(function(e) {
