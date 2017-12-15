@@ -282,7 +282,7 @@ $(document).ready(function() {
     $('.nested-form-list').sortable();
     $('.nested-form-list').disableSelection();
 
-    resetSearchForm();
+    //resetSearchForm();
 
     $('#main-content-id').addClass('show');
 
