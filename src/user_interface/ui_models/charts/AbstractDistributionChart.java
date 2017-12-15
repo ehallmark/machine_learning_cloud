@@ -35,7 +35,7 @@ public class AbstractDistributionChart extends ChartAttribute {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Set<String> defaultAttributes) {
         return technologySelect(userRoleFunction);
     }
 

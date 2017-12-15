@@ -46,8 +46,9 @@ public abstract class NestedAttribute extends AbstractAttribute {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        String styleString = "display: none; margin-left: 5%; margin-right: 5%;";
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Set<String> defaultAttributes) {
+        String display = defaultAttributes.contains(getFullName()) ? "block" : "none";
+        String styleString = "display: "+display+"; margin-left: 5%; margin-right: 5%;";
         String name = getFullName().replace(".","");
         return div().with(
                 div().with(
@@ -56,7 +57,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                         attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getRootName())).map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
                             return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(userRoleFunction), filter.isNotYetImplemented(), filter.getDescription().render())
+                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(userRoleFunction,defaultAttributes), filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())
                 )

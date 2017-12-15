@@ -67,12 +67,12 @@ public class WIPOPredictionModel extends ComputationGraphPredictionModel<String>
     protected List<LayerWrapper> getLayerModels(int inputSize, int hiddenLayerSize, int outputSize) {
         return Arrays.asList(
                 new LayerWrapper("l1", newDenseLayer(inputSize,hiddenLayerSize), "x"),
-                new LayerWrapper("l2", newBatchNormLayer(inputSize+hiddenLayerSize,hiddenLayerSize), "x","l1"),
-                new LayerWrapper("l3", newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l1","l2"),
-                new LayerWrapper("l4", newBatchNormLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l2","l3"),
-                new LayerWrapper("l5", newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l3","l4"),
-                new LayerWrapper("l6", newBatchNormLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l4","l5"),
-                new LayerWrapper("y", newOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l5","l6")
+                new LayerWrapper("l2", newBatchNormLayer(hiddenLayerSize,hiddenLayerSize), "l1"),
+                new LayerWrapper("l3", newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"x","l2"),
+                new LayerWrapper("l4", newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),"l3"),
+                new LayerWrapper("l5", newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize),"l2","l4"),
+                new LayerWrapper("l6", newBatchNormLayer(hiddenLayerSize,hiddenLayerSize),"l5"),
+                new LayerWrapper("y", newOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize), "l4","l6")
         );
     }
 

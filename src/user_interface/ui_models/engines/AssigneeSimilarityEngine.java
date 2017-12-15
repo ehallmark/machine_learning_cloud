@@ -1,24 +1,20 @@
 package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
-import models.similarity_models.AbstractSimilarityModel;
 import seeding.Constants;
-import seeding.Database;
-import user_interface.server.SimilarPatentServer;
 import spark.Request;
+import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
-import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.concurrent.Future;
-import java.util.concurrent.RecursiveTask;
+import java.util.Set;
 import java.util.function.Function;
 
-import static j2html.TagCreator.*;
-import static user_interface.server.SimilarPatentServer.*;
+import static j2html.TagCreator.div;
+import static user_interface.server.SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD;
+import static user_interface.server.SimilarPatentServer.extractArray;
 
 /**
  * Created by ehallmark on 2/28/17.
@@ -42,7 +38,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine implement
 
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Set<String> defaultAttributes) {
         return div().with(
                 AbstractIncludeFilter.ajaxMultiSelect(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD, ajaxUrl(), SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD)
         );

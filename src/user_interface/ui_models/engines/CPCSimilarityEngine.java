@@ -8,10 +8,12 @@ import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.function.Function;
 
 import static j2html.TagCreator.div;
-import static user_interface.server.SimilarPatentServer.*;
+import static user_interface.server.SimilarPatentServer.CPCS_TO_SEARCH_FOR_FIELD;
+import static user_interface.server.SimilarPatentServer.extractArray;
 
 /**
  * Created by ehallmark on 2/28/17.
@@ -35,7 +37,7 @@ public class CPCSimilarityEngine extends AbstractSimilarityEngine implements Aja
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Set<String> defaultAttributes) {
         //return div().with(
         //        textarea().withClass("form-control").attr("placeholder","1 patent or application per line (eg. 800000)").withId(CPCS_TO_SEARCH_FOR_FIELD).withName(CPCS_TO_SEARCH_FOR_FIELD)
         //);

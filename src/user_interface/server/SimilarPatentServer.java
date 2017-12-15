@@ -813,7 +813,7 @@ public class SimilarPatentServer {
 
         get(HOME_URL, (req, res) -> {
             if(softAuthorize(req,res)) {
-                return templateWrapper(true, req, res, candidateSetModelsForm(req.session().attribute("role")));
+                return templateWrapper(true, req, res, candidateSetModelsForm(req.session().attribute("username"),req.session().attribute("role")));
             } else {
                 return null;
             }
@@ -822,6 +822,11 @@ public class SimilarPatentServer {
         get(UPDATE_DEFAULT_ATTRIBUTES_URL, (req,res) -> {
             authorize(req,res);
             return templateWrapper(true,req,res, defaultAttributesModelForm(req.session().attribute("username"),req.session().attribute("role")));
+        });
+
+        post(UPDATE_DEFAULT_ATTRIBUTES_URL, (req,res) -> {
+            authorize(req,res);
+            return handleUpdateDefaultAttributes(req,res);
         });
 
         post(REPORT_URL, (req, res) -> {
@@ -1187,6 +1192,40 @@ public class SimilarPatentServer {
                 return formMap;
             } else return null;
         };
+    }
+
+    private static Object handleUpdateDefaultAttributes(Request req, Response res) {
+        String username = req.session().attribute("username");
+        if(username==null) return null;
+
+        File defaultFile = new File(Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+username);
+        List<String> topLevelAttrs = extractArray(req,ATTRIBUTES_ARRAY_FIELD);
+        // check nested
+
+        Set<String> defaultAttributes = new HashSet<>();
+        topLevelAttrs.forEach(attr->{
+            defaultAttributes.add(attr);
+            defaultAttributes.addAll(extractArray(req,attr+"[]"));
+        });
+
+        Database.trySaveObject(defaultAttributes,defaultFile);
+
+        Map<String,Object> responseMap = new HashMap<>();
+        responseMap.put("message","success");
+        return new Gson().toJson(responseMap);
+    }
+
+    private static Set<String> loadDefaultAttributesForUser(String username) {
+        if(username==null) return null;
+
+        File defaultFile = new File(Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+username);
+        if(defaultFile.exists()) {
+            Set<String> defaultAttributes = (Set<String>)Database.tryLoadObject(defaultFile);
+            if(defaultAttributes!=null) {
+                return defaultAttributes;
+            }
+        }
+        return Collections.emptySet();
     }
 
     private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction) {
@@ -1708,7 +1747,7 @@ public class SimilarPatentServer {
                                                                                 .withHref("#datasets-tree")
                                                                 )
                                                         ), br(),
-                                                        div().withClass("tab-content").attr("style","max-height: 75%; overflow-y: auto; text-align: left; ").with(
+                                                        div().withClass("tab-content").withId("sidebar-jstree-wrapper").attr("style","max-height: 75%; overflow-y: auto; text-align: left; display: none;").with(
                                                                 div().withClass("tab-pane active").attr("role","tabpanel").withId("templates-tree").with(
                                                                         ul().with(
                                                                                 getTemplatesForUser(SUPER_USER,false,"Default Templates",true),
@@ -1773,14 +1812,18 @@ public class SimilarPatentServer {
     }
 
     private static Tag defaultAttributesModelForm(String user, String role) {
-        if(role==null) return null;
+        if(user==null || role==null) return null;
         System.out.println("Loading default attributes page for user "+user+" with role "+role+".");
+        Set<String> defaultAttributes = loadDefaultAttributesForUser(user);
         Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
-        return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
+        return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px; margin-top: 30px;").with(
                 span().withId("main-content-id").withClass("collapse").with(
-                        form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
+                        div().withClass("col-12").withId("attributesForm").with(
+                                h4("Update default attributes for "+user+".")
+                        ), br(),
+                        form().withAction(UPDATE_DEFAULT_ATTRIBUTES_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId("update-default-attributes-form").with(
                                 div().withClass("col-12").withId("attributesForm").with(
-                                        customFormRow("attributes", allAttributes, userRoleFunction)
+                                        customFormRow("attributes", allAttributes, userRoleFunction,defaultAttributes)
                                 ),
                                 div().withClass("btn-group").attr("style","margin-left: 35%; margin-right: 35%;").with(
                                         div().withText("Update").withClass("btn btn-secondary div-button").withId("update-default-attributes-button")
@@ -1790,8 +1833,8 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag candidateSetModelsForm(String role) {
-        if(role==null) return null;
+    private static Tag candidateSetModelsForm(String user, String role) {
+        if(user==null || role==null) return null;
         Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse").with(
@@ -1815,7 +1858,7 @@ public class SimilarPatentServer {
                                                                 )
                                                         ),div().withClass("row").with(
                                                                 div().withClass("col-12").withId("filtersForm").with(
-                                                                        customFormRow("filters", allFilters, userRoleFunction)
+                                                                        customFormRow("filters", allFilters, userRoleFunction,Collections.emptySet())
                                                                 )
                                                         )
                                                 ),
@@ -1833,11 +1876,11 @@ public class SimilarPatentServer {
                                                         ),
                                                         div().withClass("row").with(
                                                                 div().withClass("col-12").withId("chartsForm").with(
-                                                                        customFormRow("charts",allCharts, userRoleFunction)
+                                                                        customFormRow("charts",allCharts, userRoleFunction,Collections.emptySet())
                                                                 )
                                                         ), div().withClass("row").with(
                                                                 div().withClass("col-12").withId("attributesForm").with(
-                                                                        customFormRow("attributes", allAttributes, userRoleFunction)
+                                                                        customFormRow("attributes", allAttributes, userRoleFunction, loadDefaultAttributesForUser(user))
                                                                 )
                                                         )
                                                 )
@@ -1882,7 +1925,7 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag customFormRow(String type, AbstractAttribute attribute, Function<String,Boolean> userRoleFunction) {
+    private static Tag customFormRow(String type, AbstractAttribute attribute, Function<String,Boolean> userRoleFunction, Set<String> defaultAttributes) {
         String shortTitle = type.substring(0,1).toUpperCase()+type.substring(1);
         String groupID = type+"-row";
         return span().with(
@@ -1891,7 +1934,7 @@ public class SimilarPatentServer {
                         div().withClass("collapsible-form row").with(
                                 div().withClass("col-12").with(
                                         div().withClass("attributeElement").with(
-                                                attribute.getOptionsTag(userRoleFunction)
+                                                attribute.getOptionsTag(userRoleFunction,defaultAttributes)
                                         )
                                 )
                         )

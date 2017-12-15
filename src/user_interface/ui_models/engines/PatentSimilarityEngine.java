@@ -1,21 +1,18 @@
 package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
-import models.similarity_models.AbstractSimilarityModel;
 import seeding.Constants;
-import seeding.Database;
-import user_interface.server.SimilarPatentServer;
 import spark.Request;
+import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.portfolios.PortfolioList;
 
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.concurrent.RecursiveTask;
+import java.util.Collection;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static j2html.TagCreator.*;
+import static j2html.TagCreator.div;
+import static j2html.TagCreator.textarea;
 import static user_interface.server.SimilarPatentServer.*;
 
 /**
@@ -40,7 +37,7 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Set<String> defaultAttributes) {
         return div().with(
                 textarea().withClass("form-control").attr("placeholder","1 patent or application per line (eg. 800000)").withId(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD).withName(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD)
         );

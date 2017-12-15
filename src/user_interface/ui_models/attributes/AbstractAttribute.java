@@ -6,13 +6,9 @@ import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.attributes.script_attributes.CountAttribute;
 import user_interface.ui_models.filters.*;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -61,7 +57,9 @@ public abstract class AbstractAttribute {
         return parent==null? getName() : parent.getRootName();
     }
 
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) { return div().with(div().withClass("attribute hide").withId("attribute_"+getFullName().replace(".","_"))); }
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Set<String> defaultAttributes) {
+        String hide = defaultAttributes.contains(getFullName()) ? "" : " hide";
+        return div().with(div().withClass("attribute"+hide).withId("attribute_"+getFullName().replace(".","_"))); }
 
     public abstract String getType();
 

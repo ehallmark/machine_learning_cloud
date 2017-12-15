@@ -13,6 +13,7 @@ import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttri
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Set;
 import java.util.function.Function;
 
 import static j2html.TagCreator.span;
@@ -64,6 +65,10 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     }
 
     @Override
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Set<String> defaultAttributes) {
+        return getOptionsTag(userRoleFunction);
+    }
+
     public abstract Tag getOptionsTag(Function<String,Boolean> userRoleFunction);
 
     @Override

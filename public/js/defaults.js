@@ -284,6 +284,8 @@ $(document).ready(function() {
        changeYear: true,
        dateFormat: 'yy-mm-dd'
     });
+
+    $('#sidebar-jstree-wrapper').show();
 });
 
 var resetSearchForm = function() {
