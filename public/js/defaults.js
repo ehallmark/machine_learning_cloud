@@ -59,7 +59,7 @@ $(document).ready(function() {
             var $this = $(this);
             var name = ".";
             while(name.includes(".")) {
-                var $attributeElement = $this.closest('.attributeElement');
+                var $attributeElement = $this.parent().closest('.attributeElement');
                 name = $attributeElement.attr('data-model');
                 if(typeof name === 'undefined') return;
                 var index = $attributeElement.parent().index();
