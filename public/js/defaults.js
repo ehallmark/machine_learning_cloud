@@ -15,37 +15,9 @@ $(document).ready(function() {
                  "<p>~N after a phrase signifies slop amount</p>"
     });
 
-    $('#update-default-attributes-form').submit(function(e) {
-        var $form = $(this);
-        e.preventDefault();
-        $.ajax({
-            type: "GET",
-            url: $form.attr("data-url"),
-            data: $form.serialize(),
-            success: function(data) {
-
-            },
-            error: function(jqXHR, exception) {
-                alert("Error updating...");
-            },
-            dataType: "json"
-        });
-
-    });
-
-
-    var submitFormFunction = function(e,onlyExcel) {
+    var submitFormFunction = function(e,buttonId,buttonText,buttonTextWhileSearching,formId,successFunction) {
          e.preventDefault();
-         var buttonId, buttonTextWhileSearching,buttonText;
-         if(onlyExcel) {
-            buttonId = "download-to-excel-button";
-            buttonText = "Download to Excel";
-            buttonTextWhileSearching = "Downloading...";
-         } else {
-            buttonId = "generate-reports-form-button";
-            buttonText = "Generate Report";
-            buttonTextWhileSearching = "Generating...";
-         }
+
          var formId = "generate-reports-form";
          var $form = $('#'+formId);
          var $button = $('#'+buttonId);
@@ -53,7 +25,6 @@ $(document).ready(function() {
          var tempScrollTop = $(window).scrollTop();
 
          $button.prop('disabled',true).text(buttonTextWhileSearching);
-         $form.find('#only-excel-hidden-input').val(onlyExcel);
 
          $("#attributesForm .attributeElement .attribute").not('.disabled').each(function() {
             var $this = $(this);
@@ -82,77 +53,109 @@ $(document).ready(function() {
            error: function(jqxhr,status,error) {
              $('#results').html('<div style="color: red;">Server error during ajax request:'+error+'</div>');
            },
-           success: function(data) {
-             if(onlyExcel) {
-                var $downloadForm = $('<form method="post" action="/secure/excel_generation"></form>');
-                $downloadForm.appendTo('body').submit().remove();
-             } else {
-               $('#results').html(data.message);
-               if($('#results #data-table table thead th').length > 0) {
-                   $('#results #data-table table').dynatable({
-                     dataset: {
-                       ajax: true,
-                       ajaxUrl: 'dataTable.json',
-                       ajaxOnLoad: true,
-                       records: []
-                     },
-                     features: {
-                        pushState: false
-                     }
-                   });
-               } //else {
-                   //alert("Please include some attributes in the Attributes section.");
-               //}
-
-               setCollapsibleHeaders('#results .collapsible-header');
-
-               if (data.hasOwnProperty('chartCnt')) {
-                 try {
-                   var chartCnt = data.chartCnt;
-                   if(chartCnt > 0) {
-                     for(var i = 0; i<chartCnt; i++) {
-                       var idx = i;
-                       $.ajax({
-                         type: "POST",
-                         dataType: "json",
-                         url: "charts",
-                         data: { chartNum: idx },
-                         success: function(chartData) {
-                           if(chartData.hasOwnProperty('message')) {
-                            // error
-                              alert(chartData.message);
-                           } else {
-                              var $chartDiv = $('#'+chartData.chartId.toString());
-                              for(var j = 0; j < chartData.charts.length; j++) {
-                                $('<div id="'+ chartData.chartId+"-"+j.toString() +'"></div>').appendTo($chartDiv);
-                                var chartJson = chartData.charts[j];
-                                var chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
-                                chart.redraw();
-                              }
-                           }
-                         }
-                       });
-                     }
-                   }
-                 } catch (err) {
-                   $('#results').html("<div style='color:red;'>JavaScript error occured while rendering charts: " + err.message + '</div>');
-                 }
-               }
-             }
-           }
+           success: successFunction
          });
 
          // remove orderings
          $form.find('.hidden-remove').remove();
 
          return false;
-     };
+    };
 
-    $('#generate-reports-form').submit(function(e) {return submitFormFunction(e,false);});
-    $('#generate-reports-form-button').click(function(e) {return submitFormFunction(e,false);});
-    $('#download-to-excel-button').click(function(e) {return submitFormFunction(e,true);});
-    $('#update-default-attributes-form').submit(function(e) {return submitFormFunction(e,false);});
-    $('#update-default-attributes-button').click(function(e) {return submitFormFunction(e,false);});
+    var successReportFromExcelOnly = function(data) {
+        var $downloadForm = $('<form method="post" action="/secure/excel_generation"></form>');
+        $downloadForm.appendTo('body').submit().remove();
+    };
+
+    var successReportFrom = function(data) {
+       $('#results').html(data.message);
+       if($('#results #data-table table thead th').length > 0) {
+           $('#results #data-table table').dynatable({
+             dataset: {
+               ajax: true,
+               ajaxUrl: 'dataTable.json',
+               ajaxOnLoad: true,
+               records: []
+             },
+             features: {
+                pushState: false
+             }
+           });
+       } //else {
+           //alert("Please include some attributes in the Attributes section.");
+       //}
+
+       setCollapsibleHeaders('#results .collapsible-header');
+
+       if (data.hasOwnProperty('chartCnt')) {
+         try {
+           var chartCnt = data.chartCnt;
+           if(chartCnt > 0) {
+             for(var i = 0; i<chartCnt; i++) {
+               var idx = i;
+               $.ajax({
+                 type: "POST",
+                 dataType: "json",
+                 url: "charts",
+                 data: { chartNum: idx },
+                 success: function(chartData) {
+                   if(chartData.hasOwnProperty('message')) {
+                    // error
+                      alert(chartData.message);
+                   } else {
+                      var $chartDiv = $('#'+chartData.chartId.toString());
+                      for(var j = 0; j < chartData.charts.length; j++) {
+                        $('<div id="'+ chartData.chartId+"-"+j.toString() +'"></div>').appendTo($chartDiv);
+                        var chartJson = chartData.charts[j];
+                        var chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
+                        chart.redraw();
+                      }
+                   }
+                 }
+               });
+             }
+           }
+         } catch (err) {
+           $('#results').html("<div style='color:red;'>JavaScript error occured while rendering charts: " + err.message + '</div>');
+         }
+       }
+    };
+
+    var successUpdateDefaults = function(data) {
+        alert("Successfully updated");
+    };
+
+    $('#generate-reports-form').submit(function(e) {
+        $(this).find('#only-excel-hidden-input').val(false);
+        var buttonId = "generate-reports-form-button";
+        var buttonText = "Generate Report";
+        var buttonTextWhileSearching = "Generating...";
+        var formId = $(this).attr('id');
+        return submitFormFunction(e,buttonId,buttonText,buttonTextWhileSearching,formId,successReportFrom);
+    });
+    $('#generate-reports-form-button').click(function(e) {
+        e.preventDefault();
+        $('#generate-reports-form').submit();
+    });
+    $('#download-to-excel-button').click(function(e) {
+        $('#generate-reports-form').find('#only-excel-hidden-input').val(true);
+        var buttonId = "download-to-excel-button";
+        var buttonText = "Download to Excel";
+        var buttonTextWhileSearching = "Downloading...";
+        var formId = 'generate-reports-form';
+        return submitFormFunction(e,buttonId,buttonText,buttonTextWhileSearching,formId,successReportFromExcelOnly);
+    });
+    $('#update-default-attributes-form').submit(function(e) {
+        var buttonId = "update-default-attributes-button";
+        var buttonText = "Update Defaults";
+        var buttonTextWhileSearching = "Updating...";
+        var formId = $(this).attr('id');
+        return submitFormFunction(e,buttonId,buttonText,buttonTextWhileSearching,formId,successUpdateDefaults);
+    });
+    $('#update-default-attributes-button').click(function(e) {
+        e.preventDefault();
+        $('#update-default-attributes-form').submit();
+    });
 
     // nested forms
     $('select.nested-filter-select').each(function() {

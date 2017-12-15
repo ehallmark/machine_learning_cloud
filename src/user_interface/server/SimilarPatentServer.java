@@ -1799,7 +1799,7 @@ public class SimilarPatentServer {
                                                         div().withClass("col-12").with(authorized ? div().withText("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : div().withText("Not signed in.")),
                                                         div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
                                                         div().withClass("col-12").with(authorized ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com")),
-                                                        div().withClass("col-12").with(authorized ? a("Update Default Attributes").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span())
+                                                        div().withClass("col-12").with(authorized ? a("Update Defaults").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span())
                                                 ), hr(),
                                                 (!authorized) ? div() : div().with(
                                                         ul().withClass("nav nav-tabs nav-fill").attr("role","tablist").with(
@@ -1908,15 +1908,15 @@ public class SimilarPatentServer {
                                         ),
                                         div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
                                                 div().withClass("row").with(
-                                                        div().withClass("col-12").withId("chartsForm").with(
-                                                                customFormRow("charts",allCharts, userRoleFunction,Collections.emptyList())
+                                                        div().withClass("col-12").withId("attributesForm").with(
+                                                                customFormRow("attributes", allAttributes, userRoleFunction, loadDefaultAttributesForUser(user))
                                                         )
                                                 )
                                         ),
                                         div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab3").with(
                                                 div().withClass("row").with(
-                                                        div().withClass("col-12").withId("attributesForm").with(
-                                                                customFormRow("attributes", allAttributes, userRoleFunction, loadDefaultAttributesForUser(user))
+                                                        div().withClass("col-12").withId("chartsForm").with(
+                                                                customFormRow("charts",allCharts, userRoleFunction,Collections.emptyList())
                                                         )
                                                 )
                                         ),
@@ -1952,7 +1952,7 @@ public class SimilarPatentServer {
                                 innerModelsFormAttributes(userRoleFunction,user),
                                 div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
                                         a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-secondary div-button").withId("go-back-default-attributes-button"),
-                                        div().withText("Update").withClass("btn btn-secondary div-button").withId("update-default-attributes-button")
+                                        div().withText("Update Defaults").withClass("btn btn-secondary div-button").withId("update-default-attributes-button")
                                 )
                         )
                 )
