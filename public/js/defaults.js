@@ -185,7 +185,7 @@ $(document).ready(function() {
 
             var $attr = $draggable.find('div.attribute').first();
             $attr.removeClass("disabled");
-            
+
             $draggable.parent().show();
         });
 
@@ -618,9 +618,9 @@ var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dat
             var $elem = $(this);
             var id = $elem.attr('id');
             if(id && ! ($elem.prop('disabled') || $elem.hasClass('disabled'))) {
-                if(!tmpData.hasOwnProperty(id)) {
+                if(! (id in tmpData)) {
                     tmpData[id]=$elem.val();
-                    tmpData["order_"+$elem.attr("id")]=i;
+                    tmpData["order_"+id]=i;
                 }
             }
         });
