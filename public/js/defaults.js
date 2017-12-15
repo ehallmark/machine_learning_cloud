@@ -20,7 +20,7 @@ $(document).ready(function() {
         e.preventDefault();
         $.ajax({
             type: "GET",
-            url: $elem.attr("data-url"),
+            url: $form.attr("data-url"),
             data: $form.serialize(),
             success: function(data) {
 
