@@ -18,7 +18,6 @@ $(document).ready(function() {
     var submitFormFunction = function(e,buttonId,buttonText,buttonTextWhileSearching,formId,successFunction) {
          e.preventDefault();
 
-         var formId = "generate-reports-form";
          var $form = $('#'+formId);
          var $button = $('#'+buttonId);
          var url = $form.attr('action');
