@@ -177,13 +177,15 @@ $(document).ready(function() {
             var $draggable = $('.attributeElement[data-model="'+id+'"]');
             $draggable.find('input, select, textarea').prop('disabled', false).filter('.nested-filter-select').trigger('change');
 
-            var $attrs = $draggable.find('div.attribute');
             if($options.length>1) {
                 if($draggable.parent().is(':hidden')) {
                     addedDraggables.push($draggable);
                 }
             }
-            $attrs.removeClass("disabled");
+
+            var $attr = $draggable.find('div.attribute').first();
+            $attr.removeClass("disabled");
+            
             $draggable.parent().show();
         });
 
