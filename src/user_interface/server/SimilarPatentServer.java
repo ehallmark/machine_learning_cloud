@@ -1117,7 +1117,21 @@ public class SimilarPatentServer {
                     Map<String,Object> updates = new HashMap<>();
                     updates.put("name", name);
                     if (parentDirs != null && parentDirs.length > 1) updates.put("parentDirs", Arrays.copyOfRange(parentDirs,1,parentDirs.length));
-                    Database.trySaveObject(updates,updatesFile);
+
+                    Lock sync;
+                    synchronized (fileSynchronizationMap) {
+                        fileSynchronizationMap.putIfAbsent(formFile.getAbsolutePath(),new ReentrantLock());
+                        sync = fileSynchronizationMap.get(formFile.getAbsolutePath());
+                    }
+
+                    sync.lock();
+                    try {
+                        fileCache.put(updatesFile.getAbsolutePath(),updates);
+                        Database.trySaveObject(updates, updatesFile);
+                    } finally {
+                        sync.unlock();
+                    }
+
                     message = "Saved sucessfully.";
                 } else {
                     message = "Unable to find form.";
@@ -1938,7 +1952,7 @@ public class SimilarPatentServer {
                                 innerModelsFormAttributes(userRoleFunction,user),
                                 div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
                                         a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-secondary div-button").withId("go-back-default-attributes-button"),
-                                        button().withType("submit").withText("Update").withClass("btn btn-secondary div-button").withId("update-default-attributes-button")
+                                        div().withText("Update").withClass("btn btn-secondary div-button").withId("update-default-attributes-button")
                                 )
                         )
                 )

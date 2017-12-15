@@ -150,8 +150,9 @@ $(document).ready(function() {
 
     $('#generate-reports-form').submit(function(e) {return submitFormFunction(e,false);});
     $('#generate-reports-form-button').click(function(e) {return submitFormFunction(e,false);});
-
     $('#download-to-excel-button').click(function(e) {return submitFormFunction(e,true);});
+    $('#update-default-attributes-form').submit(function(e) {return submitFormFunction(e,false);});
+    $('#update-default-attributes-button').click(function(e) {return submitFormFunction(e,false);});
 
     // nested forms
     $('select.nested-filter-select').each(function() {
