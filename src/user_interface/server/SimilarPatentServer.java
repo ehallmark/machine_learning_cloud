@@ -1960,6 +1960,7 @@ public class SimilarPatentServer {
         );
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse").with(
+                        br(),
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
                                 innerModelsFormAttributes(userRoleFunction,buttons)
