@@ -298,8 +298,6 @@ $(document).ready(function() {
     $('.nested-form-list').sortable();
     $('.nested-form-list').disableSelection();
 
-    resetSearchForm(false);
-
     $('#main-content-id').addClass('show');
 
     $('#main-options-useHighlighter').click(function(e) {
@@ -319,6 +317,8 @@ $(document).ready(function() {
        dateFormat: 'yy-mm-dd'
     });
 
+    resetSearchForm(false);
+
     $('#sidebar-jstree-wrapper').show();
 });
 
@@ -329,9 +329,18 @@ var resetSearchForm = function(resetDefaults) {
         $('div.attribute').addClass("disabled");
     } else {
         $('.target .draggable').not('.default').find('.collapsible-header .remove-button').click();
-        var $nonDefaults = $('.draggable').not(".default");
+        var $draggables = $('.draggable');
+        var $nonDefaults = $draggables.not(".default");
         $nonDefaults.find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
         $nonDefaults.find('div.attribute').addClass("disabled");
+        // check nested
+        var $defaults = $draggables.filter('.default');
+        var $nestedAttrs = $defaults.find('select.nested-filter-select');
+        $nestedAttrs.each(function() {
+            var $select = $(this);
+            var children = $select.parent().next().find('.draggable.default').map(function(){ return $(this).attr('data-model'); });
+            $select.val(children).trigger('change');
+        });
     }
     $('#results').html('');
 };
