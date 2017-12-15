@@ -144,13 +144,15 @@ $(document).ready(function() {
         var formId = 'generate-reports-form';
         return submitFormFunction(e,buttonId,buttonText,buttonTextWhileSearching,formId,successReportFromExcelOnly);
     });
+
     $('#update-default-attributes-form').submit(function(e) {
-        var buttonId = "update-default-attributes-button";
-        var buttonText = "Update Defaults";
-        var buttonTextWhileSearching = "Updating...";
-        var formId = $(this).attr('id');
-        return submitFormFunction(e,buttonId,buttonText,buttonTextWhileSearching,formId,successUpdateDefaults);
+        var name = 'default';
+        var callback = function(data) {
+            saveJSNodeFunction(null,null,name,true,data,'template',true,true);
+        };
+        return templateDataFunction(null,null,name,true,callback);
     });
+
     $('#update-default-attributes-button').click(function(e) {
         e.preventDefault();
         $('#update-default-attributes-form').submit();
@@ -620,18 +622,21 @@ var templateDataFunction = function(tree,node,name,deletable,callback) {
     saveTemplateFormHelper("#filtersForm",".attributeElement",preData,"filtersMap");
     saveTemplateFormHelper("#chartsForm",".attributeElement",preData,"chartsMap");
     saveTemplateFormHelper("#highlightForm",".attributeElement",preData,"highlightMap");
-    if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
-        preData["file"] = node.data.file;
-    }
-    preData["parentDirs"] = [];
     preData["deletable"] = deletable;
-    var nodeData = node;
-    while(typeof nodeData.text !== 'undefined') {
-        if(nodeData.type==='folder') {
-            preData["parentDirs"].unshift(nodeData.text);
+
+    if(node!==null) {
+        if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
+            preData["file"] = node.data.file;
         }
-        var currId = nodeData.parent;
-        nodeData = tree.get_node(currId);
+        preData["parentDirs"] = [];
+        var nodeData = node;
+        while(typeof nodeData.text !== 'undefined') {
+            if(nodeData.type==='folder') {
+                preData["parentDirs"].unshift(nodeData.text);
+            }
+            var currId = nodeData.parent;
+            nodeData = tree.get_node(currId);
+        }
     }
     callback(preData);
 };
@@ -699,13 +704,15 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     });
 };
 
-var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,create){
+var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,create,skipSuccessFunction){
     if(preData!==null) {
         $.ajax({
             type: "POST",
             url: '/secure/save_'+node_type,
             data: preData,
             success: function(data) {
+                if(skipSuccessFunction) return;
+
                 if(!data.hasOwnProperty('file')) {
                     alert('Error saving template: '+data.message);
                 } else {
@@ -833,7 +840,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 "action": function(obj) {
                                     var name = 'New '+capitalize(node_type);
                                     var callback = function(data) {
-                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,true);
+                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,true,false);
                                     };
                                     labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
                                     return true;
@@ -896,7 +903,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 "action": function(obj) {
                                     var name = node.text;
                                     var callback = function(data) {
-                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,false);
+                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false);
                                     };
                                     labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
                                     return true;
