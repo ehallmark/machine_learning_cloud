@@ -12,7 +12,6 @@ import spark.Request;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
@@ -92,7 +91,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, List<String> defaultAttributes) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
                 textarea().withClass("form-control").attr("placeholder","Enter any text or document").withId(TEXT_TO_SEARCH_FOR).withName(TEXT_TO_SEARCH_FOR)
         );

@@ -322,40 +322,16 @@ $(document).ready(function() {
        changeYear: true,
        dateFormat: 'yy-mm-dd'
     });
-
-    resetSearchForm(false);
-
     $('#sidebar-jstree-wrapper').show();
+
+    resetSearchForm();
+    showTemplateFunction({file: 'default'},null,null);
 });
 
-var resetSearchForm = function(resetDefaults) {
-    if(resetDefaults) {
-        $('.target .draggable .collapsible-header .remove-button').click();
-        $('.draggable').find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
-        $('div.attribute').addClass("disabled");
-    } else {
-        $('.target .draggable').not('.default').find('.collapsible-header .remove-button').click();
-        var $draggables = $('.draggable');
-        var $nonDefaults = $draggables.not(".default");
-        $nonDefaults.find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
-        $nonDefaults.find('div.attribute').addClass("disabled");
-        // check nested
-        var $defaults = $draggables.filter('.default');
-        var $nestedAttrs = $defaults.find('select.nested-filter-select');
-        $nestedAttrs.each(function() {
-            var $select = $(this);
-            var $childDraggables = $select.parent().next().find(".draggable");
-            var $nonChildDefaults = $childDraggables.not(".default");
-            $nonChildDefaults.find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
-            $nonChildDefaults.find('div.attribute').addClass("disabled");
-
-            var children = $childDraggables.filter('.default').map(function(){ return $(this).attr('data-model'); });
-            $select.val(children).trigger('change');
-        });
-        var $attributesSelect = $('#multiselect-nested-filter-select-attributes');
-        var attributesShown = $attributesSelect.parent().next().children().children().filter('.draggable.default').map(function() { return $(this).attr('data-model'); });
-        $attributesSelect.val(attributesShown).trigger('change.select2');
-    }
+var resetSearchForm = function() {
+    $('.target .draggable .collapsible-header .remove-button').click();
+    $('.draggable').find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
+    $('div.attribute').addClass("disabled");
     $('#results').html('');
 };
 
@@ -486,7 +462,7 @@ var showTemplateFormHelper = function(formSelector,dataMap) {
 };
 
 var showTemplateFunction = function(data,tree,node){
-    if(node!==null){ resetSearchForm(true); }
+    if(node!==null){ resetSearchForm(); }
     if(data===null) {
         alert("Error finding template.");
     } else if(data.hasOwnProperty('searchoptionsmap')) { // data came from li node
@@ -509,24 +485,29 @@ var showTemplateFunction = function(data,tree,node){
         } catch(err) {
 
         }
-    } else if(node!==null && data.hasOwnProperty('file')) {
+    } else if(data.hasOwnProperty('file')) {
         // need to get data
-        var nodeData = node;
-        var parents = [];
-        while(typeof nodeData.text !== 'undefined') {
-            if(nodeData.type==='folder') {
-                parents.unshift(nodeData.text);
+        var defaultFile = node === null;
+        var shared = false;
+        if(node!==null) {
+            var nodeData = node;
+            var parents = [];
+            while(typeof nodeData.text !== 'undefined') {
+                if(nodeData.type==='folder') {
+                    parents.unshift(nodeData.text);
+                }
+                var currId = nodeData.parent;
+                nodeData = tree.get_node(currId);
             }
-            var currId = nodeData.parent;
-            nodeData = tree.get_node(currId);
+            shared = parents.length > 0 && parents[0].startsWith("Shared");
         }
-        var shared = parents.length > 0 && parents[0].startsWith("Shared");
         $.ajax({
             type: "POST",
             url: '/secure/get_template',
             data: {
                 file: data.file,
-                shared: shared
+                shared: shared,
+                defaultFile: defaultFile
             },
             success: function(data) {
                 showTemplateFunction(data,null,null);

@@ -50,7 +50,7 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
         return Arrays.asList(new AbstractFilter(this, AbstractFilter.FilterType.Include) {
             @Override
             public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-                return AbstractSimilarityEngine.this.getOptionsTag(userRoleFunction,Collections.emptyList());
+                return AbstractSimilarityEngine.this.getOptionsTag(userRoleFunction);
             }
 
             @Override

@@ -7,7 +7,6 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,7 +36,7 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, List<String> defaultAttributes) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
                 textarea().withClass("form-control").attr("placeholder","1 patent or application per line (eg. 800000)").withId(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD).withName(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD)
         );

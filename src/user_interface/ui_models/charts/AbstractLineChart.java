@@ -39,7 +39,7 @@ public class AbstractLineChart extends ChartAttribute {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, List<String> defaultAttributes) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
                 div().withClass("row").with(
                         div().withClass("col-6").with(

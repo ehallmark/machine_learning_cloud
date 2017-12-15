@@ -1152,6 +1152,7 @@ public class SimilarPatentServer {
 
     private static Object handleGetForm(Request req, Response res, String baseFolder) {
         String file = req.queryParams("file");
+        boolean defaultFile = Boolean.valueOf(req.queryParamOrDefault("defaultFile","false"));
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
 
         String user = req.session().attribute("username");
@@ -1159,9 +1160,14 @@ public class SimilarPatentServer {
             return null;
         }
 
-        String filename = Constants.DATA_FOLDER+ baseFolder + (shared ? SHARED_USER : user) + "/" + file;
-        Map<String,Object> data = getMapFromFile(new File(filename),true);
+        String filename;
+        if(defaultFile) {
+            filename = Constants.DATA_FOLDER+Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+user;
+        } else {
+            filename = Constants.DATA_FOLDER+ baseFolder + (shared ? SHARED_USER : user) + "/" + file;
+        }
 
+        Map<String,Object> data = getMapFromFile(new File(filename),true);
         return new Gson().toJson(data);
     }
 
@@ -1218,19 +1224,6 @@ public class SimilarPatentServer {
             return map;
         };
         return handleSaveForm(req,res,Constants.USER_DEFAULT_ATTRIBUTES_FOLDER,templateFormMapFunction().andThen(afterFunction));
-    }
-
-    private static List<String> loadDefaultAttributesForUser(String username) {
-        if(username==null) return null;
-
-        File defaultFile = new File(Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+username);
-        if(defaultFile.exists()) {
-            List<String> defaultAttributes = (List<String>)Database.tryLoadObject(defaultFile);
-            if(defaultAttributes!=null) {
-                return defaultAttributes;
-            }
-        }
-        return Constants.DEFAULT_ATTRIBUTES;
     }
 
     private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction) {
@@ -1891,21 +1884,21 @@ public class SimilarPatentServer {
                                         div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("tab1").with(
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").withId("filtersForm").with(
-                                                                customFormRow("filters", allFilters, userRoleFunction,Collections.emptyList())
+                                                                customFormRow("filters", allFilters, userRoleFunction)
                                                         )
                                                 )
                                         ),
                                         div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").withId("attributesForm").with(
-                                                                customFormRow("attributes", allAttributes, userRoleFunction, loadDefaultAttributesForUser(user))
+                                                                customFormRow("attributes", allAttributes, userRoleFunction)
                                                         )
                                                 )
                                         ),
                                         div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab3").with(
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").withId("chartsForm").with(
-                                                                customFormRow("charts",allCharts, userRoleFunction,Collections.emptyList())
+                                                                customFormRow("charts",allCharts, userRoleFunction)
                                                         )
                                                 )
                                         ),
@@ -1995,7 +1988,7 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag customFormRow(String type, AbstractAttribute attribute, Function<String,Boolean> userRoleFunction, List<String> defaultAttributes) {
+    private static Tag customFormRow(String type, AbstractAttribute attribute, Function<String,Boolean> userRoleFunction) {
         String shortTitle = type.substring(0,1).toUpperCase()+type.substring(1);
         String groupID = type+"-row";
         return span().with(
@@ -2004,7 +1997,7 @@ public class SimilarPatentServer {
                         div().withClass("collapsible-form row").with(
                                 div().withClass("col-12").with(
                                         div().withClass("attributeElement").with(
-                                                attribute.getOptionsTag(userRoleFunction,defaultAttributes)
+                                                attribute.getOptionsTag(userRoleFunction)
                                         )
                                 )
                         )
@@ -2012,8 +2005,8 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag createAttributeElement(String modelName, String optGroup, String collapseId, Tag optionTag, boolean notImplemented, String description, String... additionalClasses) {
-        return div().attr("data-model",modelName).withClass("attributeElement draggable " + String.join(" ",additionalClasses) + (notImplemented ? " not-implemented" : "")).with(
+    public static Tag createAttributeElement(String modelName, String optGroup, String collapseId, Tag optionTag, boolean notImplemented, String description) {
+        return div().attr("data-model",modelName).withClass("attributeElement draggable " + (notImplemented ? " not-implemented" : "")).with(
                 div().attr("style","width: 100%;").attr("title", notImplemented ? NOT_IMPLEMENTED_STRING : description).withClass("collapsible-header").attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)).attr("opt-group",optGroup),
                         span().withClass("remove-button").withText("x")

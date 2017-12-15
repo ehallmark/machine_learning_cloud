@@ -9,7 +9,6 @@ import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Function;
 
 import static j2html.TagCreator.div;
@@ -38,7 +37,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine implement
 
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, List<String> defaultAttributes) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
                 AbstractIncludeFilter.ajaxMultiSelect(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD, ajaxUrl(), SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD)
         );
