@@ -29,6 +29,7 @@ import spark.Request;
 import spark.Response;
 import spark.Session;
 import user_interface.server.tools.AjaxChartMessage;
+import user_interface.server.tools.FileCacheMap;
 import user_interface.server.tools.PasswordHandler;
 import user_interface.server.tools.SimpleAjaxMessage;
 import user_interface.ui_models.attributes.*;
@@ -79,6 +80,7 @@ import static spark.Spark.*;
 public class SimilarPatentServer {
     private static final boolean debug = false;
     private static final Map<String,Lock> fileSynchronizationMap = Collections.synchronizedMap(new HashMap<>());
+    private static final FileCacheMap fileCache = (FileCacheMap) Collections.synchronizedMap(new FileCacheMap());
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static final String PROTECTED_URL_PREFIX = "/secure";
     public static final String EXCEL_SESSION = "excel_data";
@@ -1265,6 +1267,16 @@ public class SimilarPatentServer {
 
                 }
 
+                Map<String, Object> updateMap = new HashMap<>();
+                if (formMap.containsKey("name")) {
+                    updateMap.put("name", formMap.get("name"));
+                }
+                if (formMap.containsKey("parentDirs")) {
+                    updateMap.put("parentDirs", formMap.get("parentDirs"));
+                }
+
+                File updatesFile = new File(file.getAbsolutePath() + "_updates");
+
                 Lock sync;
                 synchronized (fileSynchronizationMap) {
                     fileSynchronizationMap.putIfAbsent(file.getAbsolutePath(),new ReentrantLock());
@@ -1273,17 +1285,12 @@ public class SimilarPatentServer {
 
                 sync.lock();
                 try {
+                    fileCache.put(updatesFile.getAbsolutePath(),updateMap);
+                    fileCache.putWithLimit(file.getAbsolutePath(),formMap);
+
                     // save updates
-                    File updatesFile = new File(file.getAbsolutePath() + "_updates");
                     if (updatesFile.exists()) updatesFile.delete();
 
-                    Map<String, Object> updateMap = new HashMap<>();
-                    if (formMap.containsKey("name")) {
-                        updateMap.put("name", formMap.get("name"));
-                    }
-                    if (formMap.containsKey("parentDirs")) {
-                        updateMap.put("parentDirs", formMap.get("parentDirs"));
-                    }
                     if (updateMap.size() > 0) {
                         Database.trySaveObject(updateMap, updatesFile);
                     }
@@ -1321,18 +1328,35 @@ public class SimilarPatentServer {
                     message = "Unable to locate user.";
                 } else {
                     File toDelete = new File(Constants.DATA_FOLDER+baseFolder+username+"/"+fileName);
-                    if(toDelete.exists() && toDelete.isFile()) {
-                        boolean success = toDelete.delete();
-                        if(success) {
+                    File updatesFile = new File(toDelete.getAbsolutePath()+"_updates");
+
+                    Lock sync;
+                    synchronized (fileSynchronizationMap) {
+                        sync = fileSynchronizationMap.get(toDelete.getAbsolutePath());
+                        fileSynchronizationMap.remove(toDelete.getAbsolutePath());
+                    }
+
+                    if(sync!=null) {
+                        sync.lock();
+                    }
+                    try {
+                        fileCache.remove(updatesFile.getAbsolutePath());
+                        fileCache.remove(toDelete.getAbsolutePath());
+
+                        if (toDelete.exists() && toDelete.isFile()) {
+                            boolean success = toDelete.delete();
                             // check updates file
-                            File updatesFile = new File(toDelete.getAbsolutePath()+"_updates");
-                            if(updatesFile.exists()) {
+                            if (updatesFile.exists()) {
                                 updatesFile.delete();
                             }
+                            message = "Success: " + success;
+                        } else {
+                            message = "Unable to locate file.";
                         }
-                        message = String.valueOf("Success: " + success);
-                    } else {
-                        message = "Unable to locate file.";
+                    } finally {
+                        if(sync!=null) {
+                            sync.unlock();
+                        }
                     }
                 }
             } catch(Exception e) {
@@ -1553,22 +1577,51 @@ public class SimilarPatentServer {
         File updatesFile = new File(file.getAbsolutePath() + "_updates");
         loadData = loadData || !updatesFile.exists();
 
-        Map<String,Object> templateMap;
-        if(loadData) {
-            templateMap = (Map<String, Object>) Database.tryLoadObject(file);
-        } else {
-            templateMap = (Map<String,Object>) Database.tryLoadObject(updatesFile);
+        Lock sync;
+        Map<String,Object> updates = null;
+        Map<String, Object> templateMap = null;
+        synchronized (fileSynchronizationMap) {
+            fileSynchronizationMap.putIfAbsent(file.getAbsolutePath(),new ReentrantLock());
+            sync = fileSynchronizationMap.get(file.getAbsolutePath());
         }
 
-        if(templateMap!=null && loadData) {
-            // check updates file
-            if (updatesFile.exists()) {
-                Map<String, Object> updates = (Map<String, Object>) Database.tryLoadObject(updatesFile);
-                if (updates != null) {
-                    templateMap.put("name", updates.get("name"));
-                    templateMap.put("parentDirs", (String[]) updates.get("parentDirs"));
+        sync.lock();
+        try {
+            if(fileCache.containsKey(updatesFile.getAbsolutePath())) {
+                updates = (Map<String,Object>) fileCache.get(updatesFile.getAbsolutePath());
+            }
+            if(fileCache.containsKey(file.getAbsolutePath())) {
+                templateMap = (Map<String,Object>) fileCache.get(file.getAbsolutePath());
+            }
+
+            if (loadData && templateMap == null) {
+                templateMap = (Map<String, Object>) Database.tryLoadObject(file);
+                fileCache.putWithLimit(file.getAbsolutePath(),templateMap);
+            } else {
+                if(updates!=null) {
+                    templateMap = updates;
+                } else {
+                    templateMap = (Map<String, Object>) Database.tryLoadObject(updatesFile);
+                    fileCache.put(updatesFile.getAbsolutePath(),templateMap);
                 }
             }
+
+            if(templateMap!=null && loadData) {
+                // check updates file
+                if (updatesFile.exists() || updates!=null) {
+                    if(updates==null) {
+                        updates = (Map<String, Object>) Database.tryLoadObject(updatesFile);
+                        fileCache.put(updatesFile.getAbsolutePath(), updates);
+                    }
+                    if (updates != null) {
+                        templateMap.put("name", updates.get("name"));
+                        templateMap.put("parentDirs", (String[]) updates.get("parentDirs"));
+                    }
+                }
+            }
+
+        } finally {
+            sync.unlock();
         }
         return templateMap;
     }
