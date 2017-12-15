@@ -1949,9 +1949,11 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm(String role) {
         if(role==null) return null;
         Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
-        Tag buttons =  div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
-                div().withText("Generate Report").withClass("btn btn-secondary div-button "+GENERATE_REPORTS_FORM_ID+"-button"),
-                div().withText("Download to Excel").withClass("btn btn-secondary div-button download-to-excel-button")
+        Tag buttons =  div().withClass("col-12").with(
+                div().withClass("btn-group row").with(
+                        div().withText("Generate Report").withClass("col-4 offset-1 btn btn-secondary div-button "+GENERATE_REPORTS_FORM_ID+"-button"),
+                        div().withText("Download to Excel").withClass("col-4 btn btn-secondary div-button download-to-excel-button")
+                )
         );
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse").with(
