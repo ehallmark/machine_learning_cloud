@@ -826,11 +826,6 @@ public class SimilarPatentServer {
             return templateWrapper(true,req,res, defaultAttributesModelForm(req.session().attribute("username"),req.session().attribute("role")));
         });
 
-        post(UPDATE_DEFAULT_ATTRIBUTES_URL, (req,res) -> {
-            authorize(req,res);
-            return handleUpdateDefaultAttributes(req,res);
-        });
-
         post(REPORT_URL, (req, res) -> {
             authorize(req,res);
             return handleReport(req,res);
@@ -843,7 +838,12 @@ public class SimilarPatentServer {
 
         post(SAVE_TEMPLATE_URL, (req, res) -> {
             authorize(req,res);
-            return handleSaveForm(req,res,Constants.USER_TEMPLATE_FOLDER,templateFormMapFunction());
+            boolean defaultFile = Boolean.valueOf(req.queryParamOrDefault("defaultFile","false"));
+            if(defaultFile) {
+                return handleUpdateDefaultAttributes(req,res);
+            } else {
+                return handleSaveForm(req, res, Constants.USER_TEMPLATE_FOLDER, templateFormMapFunction());
+            }
         });
 
         post(GET_TEMPLATE_URL, (req, res) -> {

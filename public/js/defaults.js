@@ -707,6 +707,7 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
 
 var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,create,skipSuccessFunction){
     if(preData!==null) {
+        preData['defaultFile'] = skipSuccessFunction;
         $.ajax({
             type: "POST",
             url: '/secure/save_'+node_type,
