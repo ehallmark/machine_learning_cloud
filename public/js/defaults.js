@@ -339,7 +339,7 @@ var resetSearchForm = function(resetDefaults) {
         $nestedAttrs.each(function() {
             var $select = $(this);
             var $childDraggables = $select.parent().next().find(".draggable");
-            var $nonChildDefaults = $draggables.not(".default");
+            var $nonChildDefaults = $childDraggables.not(".default");
             $nonChildDefaults.find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
             $nonChildDefaults.find('div.attribute').addClass("disabled");
 
