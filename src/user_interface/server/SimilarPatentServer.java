@@ -80,7 +80,7 @@ import static spark.Spark.*;
 public class SimilarPatentServer {
     private static final boolean debug = false;
     private static final Map<String,Lock> fileSynchronizationMap = Collections.synchronizedMap(new HashMap<>());
-    private static final FileCacheMap fileCache = (FileCacheMap) Collections.synchronizedMap(new FileCacheMap());
+    private static final FileCacheMap fileCache = new FileCacheMap();
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static final String PROTECTED_URL_PREFIX = "/secure";
     public static final String EXCEL_SESSION = "excel_data";
@@ -1332,13 +1332,11 @@ public class SimilarPatentServer {
 
                     Lock sync;
                     synchronized (fileSynchronizationMap) {
+                        fileSynchronizationMap.putIfAbsent(toDelete.getAbsolutePath(),new ReentrantLock());
                         sync = fileSynchronizationMap.get(toDelete.getAbsolutePath());
-                        fileSynchronizationMap.remove(toDelete.getAbsolutePath());
                     }
 
-                    if(sync!=null) {
-                        sync.lock();
-                    }
+                    sync.lock();
                     try {
                         fileCache.remove(updatesFile.getAbsolutePath());
                         fileCache.remove(toDelete.getAbsolutePath());
@@ -1354,9 +1352,11 @@ public class SimilarPatentServer {
                             message = "Unable to locate file.";
                         }
                     } finally {
-                        if(sync!=null) {
-                            sync.unlock();
-                        }
+                        sync.unlock();
+                    }
+
+                    synchronized (fileSynchronizationMap) {
+                        fileSynchronizationMap.remove(toDelete.getAbsolutePath());
                     }
                 }
             } catch(Exception e) {
