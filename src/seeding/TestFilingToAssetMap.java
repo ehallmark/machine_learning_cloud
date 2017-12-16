@@ -29,9 +29,30 @@ public class TestFilingToAssetMap {
                 missing.getAndIncrement();
             }
             total.getAndIncrement();
+            if(total.get()%10000==9999) {
+                System.out.print("-");
+            }
+        });
+
+        AtomicLong wrong = new AtomicLong(0);
+        assetToFilingMap.getPatentDataMap().entrySet().forEach(e->{
+            String item = e.getKey();
+            Boolean granted = isGrantedApplicationAttribute.attributesFor(Arrays.asList(item),1);
+            if(granted==null) {
+                System.out.println("missing");
+                missing.getAndIncrement();
+            } else if(!granted) {
+                System.out.println("wrong");
+                wrong.getAndIncrement();
+            }
+            total.getAndIncrement();
+            if(total.get()%10000==9999) {
+                System.out.print("-");
+            }
         });
 
         System.out.println("Total: "+total.get());
         System.out.println("Missing: "+missing.get());
+        System.out.println("Wrong: "+wrong.get());
     }
 }
