@@ -1540,7 +1540,7 @@ public class SimilarPatentServer {
                         Tag results = div().with(
                                 div().withClass("col-12").with(
                                         p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
-                                        ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
+                                        ul().withClass("nav nav-tabs").attr("role","tablist").with(
                                                 li().withClass("nav-item").with(
                                                         a("Data").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
                                                 ),li().withClass("nav-item").with(

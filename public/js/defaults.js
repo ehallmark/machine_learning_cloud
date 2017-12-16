@@ -97,7 +97,7 @@ $(document).ready(function() {
                    $table.find('table').dynatable({
                      dataset: {
                        ajax: true,
-                       ajaxUrl: 'dataTable.json?tableId='i,
+                       ajaxUrl: 'dataTable.json?tableId='.concat(String(i)),
                        ajaxOnLoad: true,
                        records: []
                      },
