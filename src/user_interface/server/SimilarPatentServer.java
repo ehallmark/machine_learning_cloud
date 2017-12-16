@@ -1002,7 +1002,7 @@ public class SimilarPatentServer {
             return raw;
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
-            return new Gson().toJson(new AjaxChartMessage("ERROR "+e.getClass().getName()+": " + e.getMessage(), 0));
+            return new Gson().toJson(new SimpleAjaxMessage("ERROR "+e.getClass().getName()+": " + e.getMessage()));
         }
     }
 
@@ -1557,14 +1557,14 @@ public class SimilarPatentServer {
                                         )
                                 )
                         );
-                        html = new Gson().toJson(new AjaxChartMessage(results.render(), totalChartCnt.get()));
+                        html = new Gson().toJson(new AjaxChartMessage(results.render(), totalChartCnt.get(), totalTableCnt.get()));
                     }
 
                     return html;
                 } catch (Exception e) {
                     System.out.println(e.getClass().getName() + ": " + e.getMessage());
                     e.printStackTrace();
-                    return new Gson().toJson(new AjaxChartMessage("ERROR " + e.getClass().getName() + ": " + e.getMessage(), 0));
+                    return new Gson().toJson(new SimpleAjaxMessage("ERROR " + e.getClass().getName() + ": " + e.getMessage()));
                 }
             }
         };

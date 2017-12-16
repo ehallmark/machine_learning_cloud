@@ -5,9 +5,11 @@ package user_interface.server.tools;
  */
 public class ServerResponse {
     public int chartCnt;
+    public int tableCnt;
     public String message;
-    public ServerResponse(int chartCnt, String message) {
+    public ServerResponse(int chartCnt, int tableCnt, String message) {
         //this.results=results;
+        this.tableCnt=tableCnt;
         this.chartCnt=chartCnt;
         this.message=message;
     }
