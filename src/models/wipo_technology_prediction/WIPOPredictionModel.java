@@ -93,7 +93,7 @@ public class WIPOPredictionModel extends ComputationGraphPredictionModel<String>
     @Override
     protected List<HyperParameter> getModelParameters() {
         return Arrays.asList(
-                new LearningRateParameter(0.1,0.1),
+                new LearningRateParameter(0.01,0.01),
                 //new L2RegularizationParameter(1e-4,1e-4),
                 new UpdaterParameter(Arrays.asList(
                         Updater.RMSPROP//,
@@ -113,7 +113,7 @@ public class WIPOPredictionModel extends ComputationGraphPredictionModel<String>
 
     @Override
     protected int getHiddenLayerSize() {
-        return 256;
+        return 128;
     }
 
     @Override
