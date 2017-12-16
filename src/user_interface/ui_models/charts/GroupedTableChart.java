@@ -124,6 +124,7 @@ public class GroupedTableChart extends TableAttribute {
                     FactorNode factor = new FactorNode(null,attrsArray,rs.stream().mapToInt(r->Math.max(1,r.size())).toArray());
                     factor.assignmentPermutationsStream().forEach(assignment->{
                         IntStream.range(0,assignment.length).forEach(i->{
+                            if(i>=rs.size()) System.out.println("WARNING 1: "+factor.toString());
                             List<?> r = rs.get(i);
                             combos.add(IntStream.of(assignment).mapToObj(j->r.size()>0?r.get(j):"").collect(Collectors.toList()));
                         });
@@ -140,6 +141,7 @@ public class GroupedTableChart extends TableAttribute {
                         .map(e->{
                             Map<String,String> row = Collections.synchronizedMap(new HashMap<>());
                             for(int i = 0; i < attrList.size(); i++) {
+                                if(i>=e.getKey().size()) System.out.println("WARNING 2: "+String.join("; ",e.getKey()+"  ->  "+String.join("; ",attrList)));
                                 row.put(attrList.get(i),e.getKey().get(i).toString());
                             }
                             row.put("count",e.getValue().toString());
