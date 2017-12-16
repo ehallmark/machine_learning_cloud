@@ -38,7 +38,7 @@ $(document).ready(function() {
                 $this = $attributeElement;
             }
          });
-
+         //$('.loader').parent().show();
          $.ajax({
            type: 'POST',
            dataType: 'json',
@@ -47,6 +47,7 @@ $(document).ready(function() {
            complete: function(jqxhr,status) {
              $button.prop('disabled',false).text(buttonText);
              $(window).scrollTop(tempScrollTop);
+            // $('.loader').parent().hide();
            },
            error: function(jqxhr,status,error) {
              $('#results').html('<div style="color: red;">Server error during ajax request:'+error+'</div>');

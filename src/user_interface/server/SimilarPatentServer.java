@@ -1486,23 +1486,38 @@ public class SimilarPatentServer {
 
                         AtomicInteger chartCnt = new AtomicInteger(0);
                         Tag chartTag = totalChartCnt.get() == 0 ? div() : div().withClass("row").attr("style", "margin-bottom: 10px;").with(
-                                h4("Charts").withClass("collapsible-header").attr("data-target", "#data-charts"),
+                               // h4("Charts").withClass("collapsible-header").attr("data-target", "#data-charts"),
                                 span().withId("data-charts").withClass("collapse show").with(
                                         chartTypes.stream().map(type -> div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(type).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 )
                         );
-                        Tag tableTag = portfolioList == null ? div() : div().withClass("row").attr("style", "margin-top: 10px;").with(
-                                h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
+                        Tag tableTag = div().withClass("row").attr("style", "margin-top: 10px;").with(
+                               // h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
                                 tableFromPatentList(tableHeaders)
                         );
                         long timeEnd = System.currentTimeMillis();
                         double timeSeconds = new Double(timeEnd - timeStart) / 1000;
-                        html = new Gson().toJson(new AjaxChartMessage(div().with(
-                                p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
-                                chartTag, br(),
-                                tableTag, br()
-
-                        ).render(), totalChartCnt.get()));
+                        Tag results = div().with(
+                                div().withClass("col-12").with(
+                                        p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
+                                        ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
+                                                li().withClass("nav-item").with(
+                                                        a("Data").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
+                                                ),li().withClass("nav-item").with(
+                                                        a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
+                                                )
+                                        )
+                                ),div().withClass("col-12").with(
+                                        div().withClass("row tab-content").with(
+                                                div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("data-tab").with(
+                                                        tableTag
+                                                ), div().withClass("col-12 tab-pane fade show").attr("role","tabpanel").withId("chart-tab").with(
+                                                        chartTag
+                                                )
+                                        )
+                                )
+                        );
+                        html = new Gson().toJson(new AjaxChartMessage(results.render(), totalChartCnt.get()));
                     }
 
                     return html;
