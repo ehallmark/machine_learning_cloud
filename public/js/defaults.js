@@ -89,8 +89,7 @@ $(document).ready(function() {
        if(data.hasOwnProperty('tableCnt')) {
             var tableCnt = data.tableCnt;
             for(var i = 0; i < tableCnt; i++) {
-                var tableJson = data.table[i];
-                var tableId = data.tableId[i];
+                var tableId = 'table-'.concat(String(i));
                 var $table = $('#'+tableId);
                 $table.html(tableJson);
                 if($table.find('table thead th').length > 0) {

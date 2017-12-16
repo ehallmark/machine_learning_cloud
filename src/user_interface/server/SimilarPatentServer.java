@@ -343,7 +343,7 @@ public class SimilarPatentServer {
 
     public static String fullHumanAttributeFor(String attr) {
         if(attr.contains(".")) {
-            return humanAttributeFor(attr) + "("+fullHumanAttributeFor(attr.substring(0,attr.lastIndexOf(".")))+")";
+            return humanAttributeFor(attr) + " ("+fullHumanAttributeFor(attr.substring(0,attr.lastIndexOf(".")))+")";
         } else return humanAttributeFor(attr);
     }
 
@@ -1511,15 +1511,10 @@ public class SimilarPatentServer {
                         }).collect(Collectors.toList());
 
                         tableResponses.forEach(table -> {
-                            req.session().attribute("table-" + totalTableCnt.getAndIncrement(), table);
+                            String id = "table-" + totalTableCnt.getAndIncrement();
+                            req.session().attribute(id, table);
                         });
 
-                        List<String> tableTypes = new ArrayList<>();
-                        tables.forEach(table -> {
-                            for (int i = 0; i < table.getAttrNames().size(); i++) {
-                                tableTypes.add(table.getType());
-                            }
-                        });
 
                         AtomicInteger tableCnt = new AtomicInteger(0);
                         AtomicInteger chartCnt = new AtomicInteger(0);
