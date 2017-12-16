@@ -132,7 +132,8 @@ $(document).ready(function() {
                         var chartJson = chartData.charts[j];
                         var chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
                         chart.redraw();
-                     }
+                      }
+                   }
                  }
                });
              }
