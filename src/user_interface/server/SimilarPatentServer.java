@@ -1863,19 +1863,19 @@ public class SimilarPatentServer {
     private static Tag innerModelsFormAttributes(Function<String,Boolean> userRoleFunction, Tag buttons) {
         return div().withClass("col-12").with(
                 div().withClass("row").with(
-                        div().withClass("col-12").withId("searchOptionsForm").with(
-                                mainOptionsRow()
-                        ), buttons, hr(),
+                        buttons, hr(),
                         div().withClass("col-12 form-top").with(
                                 ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
                                         li().withClass("nav-item").with(
                                                 a("Filters").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
                                         ),li().withClass("nav-item").with(
-                                                a("Attributes").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
+                                                a("Sort And Limit").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
                                         ),li().withClass("nav-item").with(
-                                                a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#tab3").attr("role","tab")
+                                                a("Attributes").withClass("nav-link").attr("data-toggle","tab").withHref("#tab3").attr("role","tab")
                                         ),li().withClass("nav-item").with(
-                                                a("Settings").withClass("nav-link").attr("data-toggle","tab").withHref("#tab4").attr("role","tab")
+                                                a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#tab4").attr("role","tab")
+                                        ),li().withClass("nav-item").with(
+                                                a("Settings").withClass("nav-link").attr("data-toggle","tab").withHref("#tab5").attr("role","tab")
                                         )
                                 )
                         ),
@@ -1888,22 +1888,30 @@ public class SimilarPatentServer {
                                                         )
                                                 )
                                         ),
-                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
+                                        div().withClass("col-12 tab-pane fade show").attr("role","tabpanel").withId("tab2").with(
+                                                div().withClass("row").with(
+                                                        div().withClass("col-12").withId("searchOptionsForm").with(
+                                                                mainOptionsRow()
+                                                        )
+                                                )
+                                        ),
+                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab3").with(
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").withId("attributesForm").with(
                                                                 customFormRow("attributes", allAttributes, userRoleFunction)
                                                         )
                                                 )
                                         ),
-                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab3").with(
+                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab4").with(
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").withId("chartsForm").with(
                                                                 customFormRow("charts",allCharts, userRoleFunction)
                                                         )
                                                 )
                                         ),
-                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab4").with(
+                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab5").with(
                                                 div().withClass("collapsible-form row").withId("highlightForm").with(
+                                                        h5("Settings"),
                                                         div().withClass("col-12 attributeElement").with(
                                                                 label("Highlighting").attr("style","width: 100%;").with(
                                                                         input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
@@ -1916,7 +1924,7 @@ public class SimilarPatentServer {
                                                 )
                                         )
                                 )
-                        )
+                        ),buttons
                 )
         );
     }
