@@ -133,6 +133,7 @@ public class GroupedTableChart extends TableAttribute {
 
                 if(items.isEmpty()) return Collections.emptyList();
 
+                System.out.println("Starting to group table...");
                 return items.stream()
                         .collect(Collectors.groupingBy(t->t,Collectors.counting()))
                         .entrySet().stream().sorted((e1, e2)->e2.getValue().compareTo(e1.getValue()))
