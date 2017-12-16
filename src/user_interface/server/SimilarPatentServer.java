@@ -1535,7 +1535,7 @@ public class SimilarPatentServer {
     static Tag tableFromPatentList(List<String> attributes) {
         return span().withClass("collapse show").withId("data-table").with(
                 form().withMethod("post").withTarget("_blank").withAction(DOWNLOAD_URL).with(
-                        button("Download to Excel").withType("submit").withClass("btn btn-secondary div-button").attr("style","margin-left: 35%; margin-right: 35%; margin-bottom: 20px;")
+                        button("Download to Excel").withType("submit").withClass("btn btn-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
                 ),
                 dataTableFromHeadersAndData(attributes)
         );
