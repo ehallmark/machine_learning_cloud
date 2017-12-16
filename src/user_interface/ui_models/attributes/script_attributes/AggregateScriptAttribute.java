@@ -16,12 +16,10 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
     private String type;
     private String defaultVal;
     protected String fieldName;
-    protected String aggFieldName;
     private String language;
-    public AggregateScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes, String language, String aggFieldName, String fieldName, String defaultVal, String type) {
+    public AggregateScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes, String language, String fieldName, String defaultVal, String type) {
         super(filterTypes);
         this.type=type;
-        this.aggFieldName=aggFieldName;
         this.defaultVal=defaultVal;
         this.fieldName = fieldName;
         this.language = language;
@@ -29,7 +27,7 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        String script = "("+emptyDocFieldCheck(aggFieldName, language)+" ? ("+emptyDocFieldCheck(fieldName,language)+" ? ("+defaultVal+") : (doc['"+fieldName+"']."+type+")) : doc['"+aggFieldName+"'].value)";
+        String script = "("+emptyDocFieldCheck(fieldName,language)+" ? ("+defaultVal+") : (doc['"+fieldName+"']."+type+"))";
         return new Script(ScriptType.INLINE,language,script, new HashMap<>());
     }
 

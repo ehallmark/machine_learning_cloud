@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Created by Evan on 7/22/2017.
@@ -73,6 +74,17 @@ public class DataSearcher {
         return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true, highlight,filterNestedObjects);
     }
 
+    private static AbstractAttribute findAttribute(Collection<AbstractAttribute> attributes, String comparator) {
+        if(comparator==null) return null;
+        return attributes.stream().filter(attr->comparator.startsWith(attr.getFullName()))
+                .flatMap(attr->{
+                    if(attr instanceof NestedAttribute) {
+                        return ((NestedAttribute) attr).getAttributes().stream();
+                    } else return Stream.of(attr);
+                }).filter(attr->attr.getFullName().equals(comparator))
+                .findAny().orElse(null);
+    }
+
     public synchronized static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
         try {
             String[] attrNames = attributes.stream().filter(attr->!Constants.FILING_ATTRIBUTES_SET.contains(attr.getRootName())).map(attr->(attr instanceof NestedAttribute) ? attr.getName()+".*" : attr.getFullName()).toArray(size->new String[size]);
@@ -91,7 +103,12 @@ public class DataSearcher {
             } else if(comparator.equals(Constants.NO_SORT)) {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
             } else {
-                sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
+                AbstractAttribute comparatorAttr = findAttribute(attributes,comparator);
+                if(comparatorAttr != null && comparatorAttr instanceof AbstractScriptAttribute) {
+                    sortBuilder = SortBuilders.scoreSort().order(sortOrder);
+                } else {
+                    sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
+                }
             }
 
             System.out.println("Filtering by score: "+isOverallScore);
