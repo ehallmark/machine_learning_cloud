@@ -113,8 +113,10 @@ public class AbstractHistogramChart extends ChartAttribute {
         }).filter(d->d!=null).collect(Collectors.toList());
         double step = (max-min)/nBins;
         List<Range> ranges = new ArrayList<>();
+        int i = 0;
         for(double start = min; start < max; start += step) {
-            ranges.add(new Range(start,start+step));
+            ranges.add(new Range(start,start+step, i == nBins-1));
+            i++;
         }
         List<Series<?>> seriesList = new ArrayList<>();
         PointSeries series = new PointSeries();
@@ -133,12 +135,14 @@ public class AbstractHistogramChart extends ChartAttribute {
     class Range {
         private double start;
         private double end;
-        Range(double start, double end) {
+        private boolean inclusive;
+        Range(double start, double end, boolean inclusive) {
             this.start=start;
+            this.inclusive=inclusive;
             this.end=end;
         }
         boolean contains(double score) {
-            return score >= start && score < end;
+            return score >= start && (inclusive ? score <= end : score < end);
         }
     }
 }
