@@ -16,7 +16,7 @@ public class TestFilingToAssetMap {
     public static void main(String[] args) throws Exception {
 
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
-        
+
         IsGrantedApplicationAttribute isGrantedApplicationAttribute = new IsGrantedApplicationAttribute();
 
         AtomicLong missing = new AtomicLong(0);
@@ -24,7 +24,10 @@ public class TestFilingToAssetMap {
         assetToFilingMap.getApplicationDataMap().entrySet().forEach(e->{
             String item = e.getKey();
             Boolean granted = isGrantedApplicationAttribute.attributesFor(Arrays.asList(item),1);
-            if(granted==null) missing.getAndIncrement();
+            if(granted==null) {
+                System.out.println("missing");
+                missing.getAndIncrement();
+            }
             total.getAndIncrement();
         });
 
