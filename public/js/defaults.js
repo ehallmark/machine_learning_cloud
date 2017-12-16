@@ -101,18 +101,6 @@ $(document).ready(function() {
                      },
                      features: {
                         pushState: false
-                     },
-                     params: {
-                        dynatable: 'dynatable'+String(i),
-                        queries: 'queries'+String(i),
-                        sorts: 'sorts'+String(i),
-                        page: 'page'+String(i),
-                        perPage: 'perPage'+String(i),
-                        offset: 'offset'+String(i),
-                        records: 'records'+String(i),
-                        record: 'record'+String(i),
-                        queryRecordCount: 'queryRecordCount'+String(i),
-                        totalRecordCount: 'totalRecordCount'+String(i)
                      }
                    });
                 }

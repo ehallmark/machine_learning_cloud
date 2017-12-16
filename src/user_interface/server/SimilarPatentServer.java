@@ -1018,9 +1018,12 @@ public class SimilarPatentServer {
             if(paramIdx.length()>0) {
                 TableResponse tableResponse = req.session().attribute("table-"+paramIdx);
                 if(tableResponse!=null) {
+                    System.out.println("Found tableResponse...");
                     headers = tableResponse.headers;
                     data = tableResponse.computeAttributesTask.join();
+                    System.out.println("Data size: "+data.size());
                 } else {
+                    System.out.println("WARNING:: Could not find tableResponse...");
                     headers = Collections.emptyList();
                     data = Collections.emptyList();
                 }
@@ -1035,21 +1038,21 @@ public class SimilarPatentServer {
             }
             System.out.println("Number of headers: "+headers.size());
 
-            int perPage = extractInt(req,"perPage"+paramIdx,10);
-            int page = extractInt(req, "page"+paramIdx, 1);
-            int offset = extractInt(req,"offset"+paramIdx,0);
+            int perPage = extractInt(req,"perPage",10);
+            int page = extractInt(req, "page", 1);
+            int offset = extractInt(req,"offset",0);
 
             long totalCount = data.size();
             // check for search
             List<Map<String,String>> queriedData;
             String searchStr;
-            if(req.queryMap("queries"+paramIdx)!=null&&req.queryMap("queries"+paramIdx).hasKey("search")) {
+            if(req.queryMap("queries")!=null&&req.queryMap("queries").hasKey("search")) {
                 String previousSearch = req.session().attribute("previousSearch"+paramIdx);
-                searchStr = req.queryMap("queries"+paramIdx).value("search").toLowerCase();
+                searchStr = req.queryMap("queries").value("search").toLowerCase();
                 if(searchStr==null||searchStr.trim().isEmpty()) {
                     queriedData = data;
                 } else if(previousSearch!=null&&previousSearch.toLowerCase().equals(searchStr.toLowerCase())) {
-                    queriedData = req.session().attribute("queriedData");
+                    queriedData = req.session().attribute("queriedData"+paramIdx);
 
                 } else {
                     queriedData = new ArrayList<>(data.stream().filter(m -> m.values().stream().anyMatch(val -> val.toLowerCase().contains(searchStr))).collect(Collectors.toList()));
@@ -1063,8 +1066,8 @@ public class SimilarPatentServer {
             long queriedCount = queriedData.size();
             // check for sorting
             String previousSort = req.session().attribute("previousSort"+paramIdx);
-            if(req.queryMap("sorts"+paramIdx)!=null) {
-                req.queryMap("sorts"+paramIdx).toMap().forEach((k,v)->{
+            if(req.queryMap("sorts")!=null) {
+                req.queryMap("sorts").toMap().forEach((k,v)->{
                     if(v==null||k==null) return;
                     String sortStr = k+String.join("",v)+searchStr;
                     if(previousSort==null||!sortStr.equals(previousSort)) {
@@ -1089,15 +1092,15 @@ public class SimilarPatentServer {
             } else {
                 dataPage = Collections.emptyList();
             }
-            response.put("totalRecordCount"+paramIdx,totalCount);
-            response.put("queryRecordCount"+paramIdx,queriedCount);
-            response.put("records"+paramIdx, dataPage);
+            response.put("totalRecordCount",totalCount);
+            response.put("queryRecordCount",queriedCount);
+            response.put("records", dataPage);
             return new Gson().toJson(response);
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
-            response.put("totalRecordCount"+paramIdx,0);
-            response.put("queryRecordCount"+paramIdx,0);
-            response.put("records"+paramIdx,Collections.emptyList());
+            response.put("totalRecordCount",0);
+            response.put("queryRecordCount",0);
+            response.put("records",Collections.emptyList());
         }
         return new Gson().toJson(response);
     }
