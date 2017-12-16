@@ -91,7 +91,6 @@ $(document).ready(function() {
             for(var i = 0; i < tableCnt; i++) {
                 var tableId = 'table-'.concat(String(i));
                 var $table = $('#'+tableId);
-                $table.html(tableJson);
                 if($table.find('table thead th').length > 0) {
                    $table.find('table').dynatable({
                      dataset: {
