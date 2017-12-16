@@ -1009,18 +1009,14 @@ public class SimilarPatentServer {
     private static Object handleDataTable(Request req, Response res) {
         System.out.println("Received data table request.....");
         Map<String,Object> response = new HashMap<>();
+        final String paramIdx = req.queryParamOrDefault("tableId","");
         try {
-            int perPage = extractInt(req,"perPage",10);
-            int page = extractInt(req, "page", 1);
-            int offset = extractInt(req,"offset",0);
-            System.out.println("Received datatable request");
-            Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
-            if(map==null) return null;
+
             // try to get custom data
             List<String> headers;
             List<Map<String,String>> data;
-            if(req.queryParams("tableId")!=null) {
-                TableResponse tableResponse = req.session().attribute("table-"+req.queryParams("tableId"));
+            if(paramIdx.length()>0) {
+                TableResponse tableResponse = req.session().attribute("table-"+paramIdx);
                 if(tableResponse!=null) {
                     headers = tableResponse.headers;
                     data = tableResponse.computeAttributesTask.join();
@@ -1029,18 +1025,27 @@ public class SimilarPatentServer {
                     data = Collections.emptyList();
                 }
             } else {
+
+                System.out.println("Received datatable request");
+                Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
+                if(map==null) return null;
+
                 headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
                 data = (List<Map<String,String>>)map.getOrDefault("rows-highlighted",Collections.emptyList());
             }
             System.out.println("Number of headers: "+headers.size());
 
+            int perPage = extractInt(req,"perPage"+paramIdx,10);
+            int page = extractInt(req, "page"+paramIdx, 1);
+            int offset = extractInt(req,"offset"+paramIdx,0);
+
             long totalCount = data.size();
             // check for search
             List<Map<String,String>> queriedData;
             String searchStr;
-            if(req.queryMap("queries")!=null&&req.queryMap("queries").hasKey("search")) {
-                String previousSearch = req.session().attribute("previousSearch");
-                searchStr = req.queryMap("queries").value("search").toLowerCase();
+            if(req.queryMap("queries"+paramIdx)!=null&&req.queryMap("queries"+paramIdx).hasKey("search")) {
+                String previousSearch = req.session().attribute("previousSearch"+paramIdx);
+                searchStr = req.queryMap("queries"+paramIdx).value("search").toLowerCase();
                 if(searchStr==null||searchStr.trim().isEmpty()) {
                     queriedData = data;
                 } else if(previousSearch!=null&&previousSearch.toLowerCase().equals(searchStr.toLowerCase())) {
@@ -1048,8 +1053,8 @@ public class SimilarPatentServer {
 
                 } else {
                     queriedData = new ArrayList<>(data.stream().filter(m -> m.values().stream().anyMatch(val -> val.toLowerCase().contains(searchStr))).collect(Collectors.toList()));
-                    req.session().attribute("previousSearch",searchStr);
-                    req.session().attribute("queriedData", queriedData);
+                    req.session().attribute("previousSearch"+paramIdx,searchStr);
+                    req.session().attribute("queriedData"+paramIdx, queriedData);
                 }
             } else {
                 searchStr = "";
@@ -1057,9 +1062,9 @@ public class SimilarPatentServer {
             }
             long queriedCount = queriedData.size();
             // check for sorting
-            String previousSort = req.session().attribute("previousSort");
-            if(req.queryMap("sorts")!=null) {
-                req.queryMap("sorts").toMap().forEach((k,v)->{
+            String previousSort = req.session().attribute("previousSort"+paramIdx);
+            if(req.queryMap("sorts"+paramIdx)!=null) {
+                req.queryMap("sorts"+paramIdx).toMap().forEach((k,v)->{
                     if(v==null||k==null) return;
                     String sortStr = k+String.join("",v)+searchStr;
                     if(previousSort==null||!sortStr.equals(previousSort)) {
@@ -1075,7 +1080,7 @@ public class SimilarPatentServer {
                         }
                         queriedData.sort(comp);
                     }
-                    req.session().attribute("previousSort",sortStr);
+                    req.session().attribute("previousSort"+paramIdx,sortStr);
                 });
             }
             List<Map<String,String>> dataPage;
@@ -1084,15 +1089,15 @@ public class SimilarPatentServer {
             } else {
                 dataPage = Collections.emptyList();
             }
-            response.put("totalRecordCount",totalCount);
-            response.put("queryRecordCount",queriedCount);
-            response.put("records", dataPage);
+            response.put("totalRecordCount"+paramIdx,totalCount);
+            response.put("queryRecordCount"+paramIdx,queriedCount);
+            response.put("records"+paramIdx, dataPage);
             return new Gson().toJson(response);
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
-            response.put("totalRecordCount",0);
-            response.put("queryRecordCount",0);
-            response.put("records",Collections.emptyList());
+            response.put("totalRecordCount"+paramIdx,0);
+            response.put("queryRecordCount"+paramIdx,0);
+            response.put("records"+paramIdx,Collections.emptyList());
         }
         return new Gson().toJson(response);
     }
@@ -1504,12 +1509,13 @@ public class SimilarPatentServer {
 
 
                         // add table futures
-                        AtomicInteger totalTableCnt = new AtomicInteger(0);
-                        AtomicInteger idx = new AtomicInteger(0);
                         List<TableResponse> tableResponses = tables.stream().flatMap(table->{
-                            return table.createTables(portfolioList,idx.getAndIncrement()).stream();
+                            return IntStream.range(0,table.getAttrNames().size()).mapToObj(i->{
+                                return table.createTables(portfolioList,i).stream();
+                            }).flatMap(stream->stream);
                         }).collect(Collectors.toList());
 
+                        AtomicInteger totalTableCnt = new AtomicInteger(0);
                         tableResponses.forEach(table -> {
                             String id = "table-" + totalTableCnt.getAndIncrement();
                             req.session().attribute(id, table);
