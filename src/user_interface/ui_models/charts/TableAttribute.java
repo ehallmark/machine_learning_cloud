@@ -27,7 +27,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         super(attributes,name);
     }
 
-    public abstract List<TableResponse> createTables(PortfolioList portfolioList, int i);
+    public abstract List<TableResponse> createTables(PortfolioList portfolioList);
 
 
     public static Tag getTable(TableResponse response, String type, int tableIdx) {

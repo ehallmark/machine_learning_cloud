@@ -212,6 +212,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Recorded Date", Constants.RECORDED_DATE);
             humanAttrToJavaAttrMap.put("Publication Date", Constants.PUBLICATION_DATE);
             humanAttrToJavaAttrMap.put("Timeline Chart", Constants.LINE_CHART);
+            humanAttrToJavaAttrMap.put("Aggregate Count Table", Constants.GROUPED_TABLE_CHART);
             humanAttrToJavaAttrMap.put("Reel Frames", Constants.REEL_FRAME);
             humanAttrToJavaAttrMap.put("Include All", AbstractFilter.FilterType.Include.toString());
             humanAttrToJavaAttrMap.put("Include By Prefix", AbstractFilter.FilterType.PrefixInclude.toString());
@@ -1513,9 +1514,7 @@ public class SimilarPatentServer {
 
                         // add table futures
                         List<TableResponse> tableResponses = tables.stream().flatMap(table->{
-                            return IntStream.range(0,table.getAttrNames().size()).mapToObj(i->{
-                                return table.createTables(portfolioList,i).stream();
-                            }).flatMap(stream->stream);
+                            return table.createTables(portfolioList).stream();
                         }).collect(Collectors.toList());
 
                         AtomicInteger totalTableCnt = new AtomicInteger(0);
@@ -1542,18 +1541,10 @@ public class SimilarPatentServer {
                         long timeEnd = System.currentTimeMillis();
                         double timeSeconds = new Double(timeEnd - timeStart) / 1000;
                         Tag results = div().with(
-                                div().withClass("col-12").with(
-                                        p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
-                                        ul().withClass("nav nav-tabs").attr("role","tablist").with(
-                                                li().withClass("nav-item").with(
-                                                        a("Data").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
-                                                ),li().withClass("nav-item").with(
-                                                        a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
-                                                )
-                                        )
-                                ),div().withClass("col-12").with(
+                              div().withClass("col-12").with(
                                         div().withClass("row tab-content").with(
                                                 div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("data-tab").with(
+                                                        p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
                                                         tableTag
                                                 ), div().withClass("col-12 tab-pane fade show").attr("role","tabpanel").withId("chart-tab").with(
                                                         chartTag
@@ -2028,7 +2019,16 @@ public class SimilarPatentServer {
                                 innerModelsFormAttributes(userRoleFunction,buttons)
                         )
                 ),
-                div().withClass("col-12").withId("results").attr("style","padding-top: 20px;")
+                div().withClass("col-12").attr("style","padding-top: 20px;").with(
+                        ul().withClass("nav nav-tabs").attr("role","tablist").with(
+                                li().withClass("nav-item").with(
+                                        a("Data").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
+                                ),li().withClass("nav-item").with(
+                                        a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
+                                )
+                        )
+                ),
+                div().withClass("col-12").withId("results")
         );
     }
 
