@@ -86,6 +86,29 @@ $(document).ready(function() {
 
        setCollapsibleHeaders('#results .collapsible-header');
 
+       if(data.hasOwnProperty('tableCnt')) {
+            var tableCnt = data.tableCnt;
+            for(var i = 0; i < tableCnt; i++) {
+                var tableJson = data.table[i];
+                var tableId = data.tableId[i];
+                var $table = $('#'+tableId);
+                $table.html(tableJson);
+                if($table.find('table thead th').length > 0) {
+                   $table.find('table').dynatable({
+                     dataset: {
+                       ajax: true,
+                       ajaxUrl: 'dataTable.json?tableId='i,
+                       ajaxOnLoad: true,
+                       records: []
+                     },
+                     features: {
+                        pushState: false
+                     },
+                   });
+                }
+            }
+       }
+
        if (data.hasOwnProperty('chartCnt')) {
          try {
            var chartCnt = data.chartCnt;
@@ -104,12 +127,12 @@ $(document).ready(function() {
                    } else {
                       var $chartDiv = $('#'+chartData.chartId.toString());
                       for(var j = 0; j < chartData.charts.length; j++) {
-                        $('<div id="'+ chartData.chartId+"-"+j.toString() +'"></div>').appendTo($chartDiv);
+                        var $currChart = $('<div id="'+ chartData.chartId+"-"+j.toString() +'"></div>');
+                        $currChart.appendTo($chartDiv);
                         var chartJson = chartData.charts[j];
                         var chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
                         chart.redraw();
-                      }
-                   }
+                     }
                  }
                });
              }

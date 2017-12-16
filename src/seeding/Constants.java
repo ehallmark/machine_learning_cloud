@@ -119,6 +119,7 @@ public class Constants {
 	public static final String EXPIRED = "expired";
 	public static final String CITED_DATE = "citedDate";
 	public static final String LINE_CHART = "lineChart[]";
+	public static final String GROUPED_TABLE_CHART = "groupedTableChart[]";
 	public static final String COUNTRY = "country";
 	public static final String CITATION_CATEGORY = "citationCategory";
 	public static final String DOC_KIND = "docKind";
@@ -338,6 +339,7 @@ public class Constants {
 		ATTRIBUTE_DESCRIPTION_MAP.put("pie", "Create a pie chart of");
 		ATTRIBUTE_DESCRIPTION_MAP.put("line", "Create a timeline chart of");
 		ATTRIBUTE_DESCRIPTION_MAP.put("histogram", "Create a histogram of");
+		ATTRIBUTE_DESCRIPTION_MAP.put("groupedTable", "Create a grouped table of");
 	}
 
 	public static final Map<String,String> PG_NAME_MAP = Collections.synchronizedMap(new HashMap<>());

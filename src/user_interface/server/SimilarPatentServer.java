@@ -38,11 +38,9 @@ import user_interface.ui_models.attributes.computable_attributes.asset_graphs.Ba
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.RelatedAssetsAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 import user_interface.ui_models.attributes.script_attributes.*;
-import user_interface.ui_models.charts.AbstractDistributionChart;
-import user_interface.ui_models.charts.AbstractHistogramChart;
-import user_interface.ui_models.charts.AbstractLineChart;
-import user_interface.ui_models.charts.ChartAttribute;
+import user_interface.ui_models.charts.*;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
+import user_interface.ui_models.charts.tables.TableResponse;
 import user_interface.ui_models.engines.*;
 import user_interface.ui_models.excel.ExcelHandler;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -127,7 +125,7 @@ public class SimilarPatentServer {
     public static RecursiveTask<SimilarityEngineController> similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
-    private static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
+    private static Map<String,AbstractChartAttribute> chartModelMap = new HashMap<>();
     private static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
     private static final Function<String,Boolean> DEFAULT_ROLE_TO_ATTR_FUNCTION = (str) -> false;
     private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
@@ -397,6 +395,7 @@ public class SimilarPatentServer {
         chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart(discreteAttrs));
         chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart(rangeAttrs));
         chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart(dateAttrs));
+        chartModelMap.put(Constants.GROUPED_TABLE_CHART, new GroupedTableChart(discreteAttrs));
 
         allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
             @Override
@@ -1017,9 +1016,24 @@ public class SimilarPatentServer {
             System.out.println("Received datatable request");
             Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
             if(map==null) return null;
-            List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
+            // try to get custom data
+            List<String> headers;
+            List<Map<String,String>> data;
+            if(req.queryParams("tableId")!=null) {
+                TableResponse tableResponse = req.session().attribute("table-"+req.queryParams("tableId"));
+                if(tableResponse!=null) {
+                    headers = tableResponse.headers;
+                    data = tableResponse.computeAttributesTask.join();
+                } else {
+                    headers = Collections.emptyList();
+                    data = Collections.emptyList();
+                }
+            } else {
+                headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
+                data = (List<Map<String,String>>)map.getOrDefault("rows-highlighted",Collections.emptyList());
+            }
             System.out.println("Number of headers: "+headers.size());
-            List<Map<String,String>> data = (List<Map<String,String>>)map.getOrDefault("rows-highlighted",Collections.emptyList());
+
             long totalCount = data.size();
             // check for search
             List<Map<String,String>> queriedData;
@@ -1406,8 +1420,12 @@ public class SimilarPatentServer {
                     System.out.println("FOUND NESTED ATTRIBUTES: " + String.join("; ", nestedAttributes));
                     List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
 
-                    List<ChartAttribute> charts = chartModels.stream().map(chart -> chartModelMap.get(chart).dup()).collect(Collectors.toList());
+                    List<AbstractChartAttribute> abstractCharts = chartModels.stream().map(chart -> chartModelMap.get(chart).dup()).collect(Collectors.toList());
+                    List<ChartAttribute> charts = abstractCharts.stream().filter(chart->chart instanceof ChartAttribute).map(attr->(ChartAttribute)(attr)).collect(Collectors.toList());
+                    List<TableAttribute> tables = abstractCharts.stream().filter(chart->chart instanceof TableAttribute).map(attr->(TableAttribute)(attr)).collect(Collectors.toList());
+
                     charts.forEach(chart -> chart.extractRelevantInformationFromParams(req));
+                    tables.forEach(table->table.extractRelevantInformationFromParams(req));
 
                     Set<String> chartPreReqs = charts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toSet());
 
@@ -1484,11 +1502,33 @@ public class SimilarPatentServer {
                             }
                         });
 
+
+                        // add table futures
+                        AtomicInteger totalTableCnt = new AtomicInteger(0);
+                        AtomicInteger idx = new AtomicInteger(0);
+                        List<TableResponse> tableResponses = tables.stream().flatMap(table->{
+                            return table.createTables(portfolioList,idx.getAndIncrement()).stream();
+                        }).collect(Collectors.toList());
+
+                        tableResponses.forEach(table -> {
+                            req.session().attribute("table-" + totalTableCnt.getAndIncrement(), table);
+                        });
+
+                        List<String> tableTypes = new ArrayList<>();
+                        tables.forEach(table -> {
+                            for (int i = 0; i < table.getAttrNames().size(); i++) {
+                                tableTypes.add(table.getType());
+                            }
+                        });
+
+                        AtomicInteger tableCnt = new AtomicInteger(0);
                         AtomicInteger chartCnt = new AtomicInteger(0);
                         Tag chartTag = totalChartCnt.get() == 0 ? div() : div().withClass("row").attr("style", "margin-bottom: 10px;").with(
-                               // h4("Charts").withClass("collapsible-header").attr("data-target", "#data-charts"),
+                                // h4("Charts").withClass("collapsible-header").attr("data-target", "#data-charts"),
                                 span().withId("data-charts").withClass("collapse show").with(
                                         chartTypes.stream().map(type -> div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(type).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                ).with(
+                                        tableResponses.stream().map(table -> TableAttribute.getTable(table,table.type,tableCnt.getAndIncrement())).collect(Collectors.toList())
                                 )
                         );
                         Tag tableTag = div().withClass("row").attr("style", "margin-top: 10px;").with(

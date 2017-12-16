@@ -13,7 +13,7 @@ import java.util.List;
 public abstract class AbstractChart {
     protected Options options;
 
-    public Options getOptions() { return options; }
+    public Object getOptions() { return options; }
 
     public abstract String getType();
 

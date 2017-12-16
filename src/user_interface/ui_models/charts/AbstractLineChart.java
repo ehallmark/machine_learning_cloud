@@ -74,7 +74,7 @@ public class AbstractLineChart extends ChartAttribute {
     @Override
     public List<? extends AbstractChart> create(PortfolioList portfolioList, int i) {
         return Stream.of(attrNames.get(i)).map(attribute->{
-            String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
+            String humanAttr = SimilarPatentServer.fullHumanAttributeFor(attribute);
             String humanSearchType = combineTypesToString(searchTypes);
             String title = humanAttr + " Timeline";
             String xAxisSuffix = "";
