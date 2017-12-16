@@ -30,7 +30,7 @@ public class RemainingLifeAttribute extends AbstractScriptAttribute implements R
 
     @Override
     public Script getScript() {
-        String script = "doc['"+Constants.LAPSED+"'].value > 0.5 ? 0 : "+getRemainingLifeQuery();
+        String script = "doc['"+Constants.LAPSED+"'].value > 0.5 ? 0 : ("+getRemainingLifeQuery()+") > 0 ? "+getRemainingLifeQuery()+" : 0";
         return new Script(ScriptType.INLINE,"expression",script, new HashMap<>());
     }
 

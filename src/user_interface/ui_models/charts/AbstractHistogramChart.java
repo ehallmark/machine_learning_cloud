@@ -138,7 +138,7 @@ public class AbstractHistogramChart extends ChartAttribute {
             this.end=end;
         }
         boolean contains(double score) {
-            return score > start && score <= end;
+            return score >= start && score < end;
         }
     }
 }
