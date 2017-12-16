@@ -110,7 +110,7 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
-                model.loadMostRecentModel();
+                model.loadBestModel();
             } catch(Exception e) {
                 System.out.println("Error loading previous model: "+e.getMessage());
             }
