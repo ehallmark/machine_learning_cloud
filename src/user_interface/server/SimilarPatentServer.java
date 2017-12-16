@@ -343,6 +343,12 @@ public class SimilarPatentServer {
         }
     }
 
+    public static String fullHumanAttributeFor(String attr) {
+        if(attr.contains(".")) {
+            return humanAttributeFor(attr) + "("+fullHumanAttributeFor(attr.substring(0,attr.lastIndexOf(".")))+")";
+        } else return humanAttributeFor(attr);
+    }
+
     public static String humanAttributeFor(String attr) {
         String human = attr;
         if(javaAttrToHumanAttrMap.containsKey(human))  {
@@ -1487,7 +1493,7 @@ public class SimilarPatentServer {
                         );
                         Tag tableTag = portfolioList == null ? div() : div().withClass("row").attr("style", "margin-top: 10px;").with(
                                 h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
-                                tableFromPatentList(Collections.emptyList(), tableHeaders)
+                                tableFromPatentList(tableHeaders)
                         );
                         long timeEnd = System.currentTimeMillis();
                         double timeSeconds = new Double(timeEnd - timeStart) / 1000;
@@ -1526,33 +1532,23 @@ public class SimilarPatentServer {
     }
 
 
-    static Tag tableFromPatentList(List<List<String>> data, List<String> attributes) {
+    static Tag tableFromPatentList(List<String> attributes) {
         return span().withClass("collapse show").withId("data-table").with(
                 form().withMethod("post").withTarget("_blank").withAction(DOWNLOAD_URL).with(
                         button("Download to Excel").withType("submit").withClass("btn btn-secondary div-button").attr("style","margin-left: 35%; margin-right: 35%; margin-bottom: 20px;")
                 ),
-                dataTableFromHeadersAndData(data,attributes)
+                dataTableFromHeadersAndData(attributes)
         );
     }
 
-    static Tag dataTableFromHeadersAndData(List<List<String>> data, List<String> attributes) {
+    static Tag dataTableFromHeadersAndData(List<String> attributes) {
         return table().withClass("table table-striped").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                 thead().with(
                         tr().with(
-                                attributes.stream().map(attr -> th(humanAttributeFor(attr)).attr("data-dynatable-column", attr)).collect(Collectors.toList())
+                                attributes.stream().map(attr -> th(fullHumanAttributeFor(attr)).attr("data-dynatable-column", attr)).collect(Collectors.toList())
                         )
-                ), tbody().with(
-                        dataTableBodyFromData(data,attributes)
-                )
+                ), tbody()
         );
-    }
-
-    static List<Tag> dataTableBodyFromData(List<List<String>> data, List<String> attributes) {
-        return data.stream().map(results -> {
-            return addAttributesToRow(tr().with(
-                    results.stream().map(value -> td(value)).collect(Collectors.toList())
-            ), results, attributes);
-        }).collect(Collectors.toList());
     }
 
     static List<Map<String,String>> getTableRowData(List<Item> items, List<String> attributes, boolean useHighlighter) {
@@ -2035,7 +2031,14 @@ public class SimilarPatentServer {
                                         label("Sort By").attr("style","width: 100%;").with(
                                                 br(),select().withId("main-options-"+COMPARATOR_FIELD).withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
                                                         Stream.of(Stream.of(Constants.SIMILARITY, Constants.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
-                                                                getAllTopLevelAttributes().stream().filter(attr->attr.getFullName().endsWith(Constants.COUNT_SUFFIX)||attr.getFieldType().equals(AbstractFilter.FieldType.Date)).map(AbstractAttribute::getFullName)).flatMap(stream->stream)
+                                                                getAllTopLevelAttributes().stream()
+                                                                        .flatMap(attr->{
+                                                                            if(attr instanceof NestedAttribute) {
+                                                                                return ((NestedAttribute) attr).getAttributes().stream().filter(child->child.getName().endsWith(Constants.COUNT_SUFFIX));
+                                                                            } else return Stream.of(attr);
+                                                                        })
+                                                                        .filter(attr->attr.getName().endsWith(Constants.COUNT_SUFFIX)||attr.getFieldType().equals(AbstractFilter.FieldType.Date))
+                                                                        .map(AbstractAttribute::getFullName)).flatMap(stream->stream)
                                                                 .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
                                                 )
                                         )
