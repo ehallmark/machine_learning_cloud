@@ -1,8 +1,13 @@
 package seeding;
 
 import seeding.ai_db_updater.UpdateAssetGraphs;
+import user_interface.ui_models.attributes.computable_attributes.IsGrantedApplicationAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
+
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by Evan on 12/16/2017.
@@ -11,14 +16,19 @@ public class TestFilingToAssetMap {
     public static void main(String[] args) throws Exception {
 
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
-
-        System.out.println("Num patents to filings: "+assetToFilingMap.getPatentDataMap().size());
-        System.out.println("Num applications to filings: "+assetToFilingMap.getApplicationDataMap().size());
-
-        FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
-        System.out.println("Num filings to patents: "+filingToAssetMap.getPatentDataMap().size());
-        System.out.println("Num filings to applications: "+filingToAssetMap.getApplicationDataMap().size());
-
         
+        IsGrantedApplicationAttribute isGrantedApplicationAttribute = new IsGrantedApplicationAttribute();
+
+        AtomicLong missing = new AtomicLong(0);
+        AtomicLong total = new AtomicLong(0);
+        assetToFilingMap.getApplicationDataMap().entrySet().forEach(e->{
+            String item = e.getKey();
+            Boolean granted = isGrantedApplicationAttribute.attributesFor(Arrays.asList(item),1);
+            if(granted==null) missing.getAndIncrement();
+            total.getAndIncrement();
+        });
+
+        System.out.println("Total: "+total.get());
+        System.out.println("Missing: "+missing.get());
     }
 }
