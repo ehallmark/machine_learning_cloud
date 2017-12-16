@@ -189,6 +189,10 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
         return 0.0005;
     }
 
+    @Override
+    public int getPrintIterations() {
+        return 100;
+    }
 
     @Override
     protected double test(List<DataSet> dataSets, ComputationGraph net, boolean timeseries) {

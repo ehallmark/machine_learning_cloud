@@ -27,6 +27,11 @@ import static data_pipeline.optimize.nn_optimization.NNOptimizer.*;
 public class WIPOPredictionModel extends ComputationGraphPredictionModel<String> {
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"wipo_prediction_model_data");
 
+    @Override
+    protected int getPrintIterations() {
+        return 500;
+    }
+
     public WIPOPredictionModel(WIPOPredictionPipelineManager pipelineManager, String modelName) {
         super(modelName,pipelineManager);
     }
@@ -88,7 +93,7 @@ public class WIPOPredictionModel extends ComputationGraphPredictionModel<String>
     @Override
     protected List<HyperParameter> getModelParameters() {
         return Arrays.asList(
-                new LearningRateParameter(0.005,0.25),
+                new LearningRateParameter(0.1,0.1),
                 //new L2RegularizationParameter(1e-4,1e-4),
                 new UpdaterParameter(Arrays.asList(
                         Updater.RMSPROP//,
@@ -103,12 +108,12 @@ public class WIPOPredictionModel extends ComputationGraphPredictionModel<String>
 
     @Override
     protected int getNumNetworks() {
-        return 3;
+        return 1;
     }
 
     @Override
     protected int getHiddenLayerSize() {
-        return 96;
+        return 256;
     }
 
     @Override

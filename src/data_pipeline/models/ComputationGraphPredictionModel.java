@@ -64,6 +64,7 @@ public abstract class ComputationGraphPredictionModel<T> extends BaseTrainablePr
     protected abstract int getNumNetworks();
     protected abstract int getHiddenLayerSize();
     protected abstract double getNewLearningRate();
+    protected abstract int getPrintIterations();
 
     protected double test(List<DataSet> dataSets, ComputationGraph net, boolean timeseries) {
         Iterator<DataSet> iterator = dataSets.iterator();
@@ -93,7 +94,7 @@ public abstract class ComputationGraphPredictionModel<T> extends BaseTrainablePr
     }
 
     protected void train(int nEpochs, int numNetworks, int hiddenLayerSize, double newLearningRate) {
-        final int printIterations = 100;
+        final int printIterations = getPrintIterations();
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
 
