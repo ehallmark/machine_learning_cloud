@@ -259,7 +259,7 @@ public class DataSearcher {
 
     private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, @NonNull String comparator, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request, AtomicReference<InnerHitBuilder> innerHitBuilder) {
         boolean isParentAttr = Constants.FILING_ATTRIBUTES_SET.contains(attribute.getRootName());
-        boolean componentOfScore = (usingScore && Constants.OVERALL_SCORE_ATTRIBUTES.contains(attribute.getFullName()))
+        boolean componentOfScore = (usingScore && Constants.SIMILARITY.equals(attribute.getFullName()))
                 || (attribute.getFullName().equals(comparator) && (isParentAttr || attribute instanceof AbstractScriptAttribute));
         if (attribute instanceof AbstractScriptAttribute) {
             System.out.println("  Script Component... " + attribute.getFullName());

@@ -317,13 +317,6 @@ public class Constants {
 			GATHER_QC
 	);
 
-	public static final Collection<String> OVERALL_SCORE_ATTRIBUTES = Stream.of(
-			//AI_VALUE,
-			SIMILARITY
-
-	).collect(Collectors.toSet());
-
-
 	public static final String DOC_TYPE_INCLUDE_FILTER_STR = DOC_TYPE + AbstractFilter.FilterType.Include.toString() + FILTER_SUFFIX;
 
 	public static final Map<String,String> ATTRIBUTE_DESCRIPTION_MAP = Collections.synchronizedMap(new HashMap<>());
