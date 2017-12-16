@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class CorrespondentAddressAttribute extends AbstractAttribute {
     public CorrespondentAddressAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
+        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
     @Override
     public String getType() {

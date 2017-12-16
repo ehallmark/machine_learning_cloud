@@ -11,7 +11,7 @@ import java.util.Collections;
  */
 public class ParentClaimNumAttribute extends AbstractAttribute {
     public ParentClaimNumAttribute() {
-        super(Collections.emptyList());
+        super(Arrays.asList(AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
     @Override
     public String getType() {

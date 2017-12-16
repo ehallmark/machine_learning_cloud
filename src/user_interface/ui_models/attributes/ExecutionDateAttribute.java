@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public class ExecutionDateAttribute extends AbstractAttribute {
     public ExecutionDateAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Between));
+        super(Arrays.asList(AbstractFilter.FilterType.Between, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
 
 

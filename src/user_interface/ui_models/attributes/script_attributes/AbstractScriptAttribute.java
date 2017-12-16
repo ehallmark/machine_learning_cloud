@@ -58,7 +58,7 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute  {
         if(searchScript==null) return null;
         System.out.println("Getting "+getName()+" sort script");
         return  QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(searchScript).setWeight(getWeight()))
-                .boostMode(CombineFunction.MAX)
+                .boostMode(CombineFunction.REPLACE)
                 .scoreMode(FiltersFunctionScoreQuery.ScoreMode.MAX);
     }
 

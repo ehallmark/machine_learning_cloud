@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class BuyerAttribute extends AbstractAttribute {
     public BuyerAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
+        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
     @Override
     public String getType() {

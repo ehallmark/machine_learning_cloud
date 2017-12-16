@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public class CountryAttribute extends AbstractAttribute {
     public CountryAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
     @Override
     public String getType() {

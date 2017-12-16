@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public class CPCMainGroupAttribute extends AbstractAttribute {
     public CPCMainGroupAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
     @Override
     public String getType() {

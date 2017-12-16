@@ -16,7 +16,7 @@ import static j2html.TagCreator.div;
  */
 public class EntityTypeAttribute extends AbstractAttribute {
     public EntityTypeAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include));
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
 
     @Override

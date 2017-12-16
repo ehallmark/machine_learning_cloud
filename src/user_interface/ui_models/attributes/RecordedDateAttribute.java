@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public class RecordedDateAttribute extends AbstractAttribute {
     public RecordedDateAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Between));
+        super(Arrays.asList(AbstractFilter.FilterType.Between, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
 
     @Override

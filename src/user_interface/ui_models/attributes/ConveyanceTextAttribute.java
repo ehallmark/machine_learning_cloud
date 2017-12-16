@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public class ConveyanceTextAttribute extends AbstractAttribute {
     public ConveyanceTextAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
+        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
 
     @Override
