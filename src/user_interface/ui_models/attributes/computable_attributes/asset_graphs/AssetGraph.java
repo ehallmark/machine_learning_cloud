@@ -84,7 +84,7 @@ public abstract class AssetGraph extends ComputableAttribute<List<String>> {
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Text;
+        return dependentAttribute.getFieldType();
     }
 
 
