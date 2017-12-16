@@ -41,7 +41,12 @@ public abstract class AssetGraph extends ComputableAttribute<List<String>> {
         return (directed ? node.getInBound() : node.getNeighbors()).stream().map(n->n.getLabel()).collect(Collectors.toList());
     }
 
-    public void initAndSave() {
+    public void initAndSave(boolean testing) {
+        if(testing) {
+            System.out.println("Testing: "+getFullName());
+            System.out.println("  Num patents: "+dependentAttribute.getPatentDataMap().size());
+            System.out.println("  Num applications: "+dependentAttribute.getApplicationDataMap().size());
+        }
         graph = (directed) ? new BayesianNet() : new MarkovNet();
         Map<String,Collection<String>> combinedMap = Stream.of(dependentAttribute.getPatentDataMap().entrySet(),dependentAttribute.getApplicationDataMap().entrySet())
                 .parallel()
@@ -54,7 +59,16 @@ public abstract class AssetGraph extends ComputableAttribute<List<String>> {
 
         addToMap(dependentAttribute.getPatentDataMap().keySet(),patentDataMap);
         addToMap(dependentAttribute.getApplicationDataMap().keySet(),applicationDataMap);
-        super.save();
+
+        if(testing) {
+            System.out.println("  Num patents before: " + dependentAttribute.getPatentDataMap().size());
+            System.out.println("  Num applications before: " + dependentAttribute.getApplicationDataMap().size());
+            System.out.println("  Num patents after: " + patentDataMap.size());
+            System.out.println("  Num applications after: " + applicationDataMap.size());
+        }
+        if(!testing) {
+            super.save();
+        }
     }
 
     @Override

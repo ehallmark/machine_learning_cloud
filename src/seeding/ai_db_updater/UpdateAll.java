@@ -81,7 +81,7 @@ public class UpdateAll {
                     new AssetToAssigneeMap().save();
                     Database.main(args);
                 } else if (arg.equals("10")) {
-                    UpdateAssetGraphs.main(args);
+                    UpdateAssetGraphs.update(false);
                 } else if (arg.equals("11")) {
                     UpdateExtraneousComputableAttributeData.main(args);
                 }
