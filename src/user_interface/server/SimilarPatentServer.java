@@ -1601,7 +1601,7 @@ public class SimilarPatentServer {
     }
 
     static Tag dataTableFromHeadersAndData(List<String> attributes) {
-        return table().withClass("table table-striped").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
+        return table().withClass("table table-striped").withId("main-data-table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                 thead().with(
                         tr().with(
                                 attributes.stream().map(attr -> th(fullHumanAttributeFor(attr)).attr("data-dynatable-column", attr)).collect(Collectors.toList())
