@@ -51,9 +51,9 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         attrNames = attrNames.stream().flatMap(name->{
             List<String> children = SimilarPatentServer.extractArray(params, name.replace(".","")+"[]");
             if(children.size()>0) {
-                return children.stream().map(child->child.substring(0));
+                return children.stream().map(child->child.substring(child.indexOf(".")+1));
             } else {
-                return Stream.of(name.substring(name.indexOf(".")));
+                return Stream.of(name.substring(name.indexOf(".")+1));
             }
         }).collect(Collectors.toList());
         System.out.println("Search attrs for "+getName()+": "+attrNames);
