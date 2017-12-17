@@ -25,7 +25,7 @@ $(document).ready(function() {
 
          $button.prop('disabled',true).text(buttonTextWhileSearching);
 
-         $("#attributesForm .attributeElement .attribute").not('.disabled').each(function() {
+         $(".attributeElement .attribute").not('.disabled').each(function() {
             var $this = $(this);
             var name = ".";
             while(name.includes(".")) {
@@ -38,6 +38,7 @@ $(document).ready(function() {
                 $this = $attributeElement;
             }
          });
+
          //$('.loader').parent().show();
          $.ajax({
            type: 'POST',
