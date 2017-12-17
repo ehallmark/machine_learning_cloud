@@ -66,8 +66,8 @@ $(document).ready(function() {
         $downloadForm.appendTo('body').submit().remove();
     };
 
-    var successReportFrom = function($activePanes) {
-    return function(data) {
+    var successReportFrom = function() {
+       var $activePanes = $('#results').find('.tab-pane.active');
        $('#results').html(data.message);
        if($activePanes.length>0) {
            $('#results').find('.tab-pane').removeClass('active');
@@ -147,7 +147,7 @@ $(document).ready(function() {
            $('#results').html("<div style='color:red;'>JavaScript error occured while rendering charts: " + err.message + '</div>');
          }
        }
-    }};
+    };
 
     $('#generate-reports-form').submit(function(e) {
         $(this).find('#only-excel-hidden-input').val(false);
@@ -155,9 +155,8 @@ $(document).ready(function() {
         var buttonText = "Generate Report";
         var buttonTextWhileSearching = "Generating...";
         var formId = $(this).attr('id');
-        var $activePanes = $('#results').find('.tab-pane.active');
         $('#results').html(''); // clears results div
-        return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFrom($activePanes));
+        return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFrom);
     });
     $('.generate-reports-form-button').click(function(e) {
         e.preventDefault();
