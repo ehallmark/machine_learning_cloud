@@ -46,11 +46,12 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
+        System.out.println("Starting params for: "+getName());
         attrNames = SimilarPatentServer.extractArray(params, getName());
         attrNames = attrNames.stream().flatMap(name->{
             List<String> children = SimilarPatentServer.extractArray(params, name.replace(".","")+"[]");
             if(children.size()>0) {
-                return children.stream().map(child->child.substring(child.indexOf(".")));
+                return children.stream().map(child->child.substring(0));
             } else {
                 return Stream.of(name.substring(name.indexOf(".")));
             }
