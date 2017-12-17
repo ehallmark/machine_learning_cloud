@@ -4,6 +4,7 @@ import models.value_models.ValueModelCombination;
 import models.value_models.graphical.WIPOValueModel;
 import models.value_models.regression.AIValueModel;
 import seeding.Constants;
+import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
 
 /**
@@ -13,6 +14,11 @@ public class OverallEvaluator extends ValueModelCombination implements RangeAttr
 
     public OverallEvaluator(boolean train) {
         super(Constants.AI_VALUE, new AIValueModel(),new WIPOValueModel(), train);
+    }
+
+    @Override
+    public AbstractAttribute clone() {
+        return new OverallEvaluator(train);
     }
 
     @Override

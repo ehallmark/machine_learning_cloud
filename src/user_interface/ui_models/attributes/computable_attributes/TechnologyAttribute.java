@@ -5,6 +5,7 @@ import models.keyphrase_prediction.models.Model;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
@@ -21,6 +22,11 @@ public class TechnologyAttribute extends ComputableAttribute<List<String>> {
     private TechnologyAttribute(Model model) {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
         this.model=model;
+    }
+
+    @Override
+    public AbstractAttribute clone() {
+        return new TechnologyAttribute(model);
     }
 
     public static TechnologyAttribute getOrCreate(Model model) {
