@@ -1184,7 +1184,7 @@ public class SimilarPatentServer {
             }
             String username = isShared ? SHARED_USER : req.session().attribute("username");
             if(username!=null&&username.length()>0) {
-                String templateFolderStr = Constants.DATA_FOLDER+baseFolder+username+"/";
+                String templateFolderStr = baseFolder+username+"/";
                 File formFile = new File(templateFolderStr+filename);
                 File updatesFile = new File(formFile.getAbsolutePath()+"_updates");
                 if(formFile.exists()) {
@@ -1236,13 +1236,13 @@ public class SimilarPatentServer {
 
         String filename;
         if(defaultFile) {
-            filename = Constants.DATA_FOLDER+Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+user+"/"+user;
+            filename = Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+user+"/"+user;
             // may not exist
             if(! new File(filename).exists()) {
-                filename = Constants.DATA_FOLDER+Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+SUPER_USER+"/"+SUPER_USER;
+                filename = Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+SUPER_USER+"/"+SUPER_USER;
             }
         } else {
-            filename = Constants.DATA_FOLDER+ baseFolder + (shared ? SHARED_USER : user) + "/" + file;
+            filename = baseFolder + (shared ? SHARED_USER : user) + "/" + file;
         }
 
         Map<String,Object> data = getMapFromFile(new File(filename),true);
@@ -1327,7 +1327,7 @@ public class SimilarPatentServer {
             }
             String username = isShared ? SHARED_USER : req.session().attribute("username");
             if(username!=null&&username.length()>0) {
-                String templateFolderStr = Constants.DATA_FOLDER+baseFolder+username+"/";
+                String templateFolderStr = baseFolder+username+"/";
                 File templateFolder = new File(templateFolderStr);
                 if(!templateFolder.exists()) templateFolder.mkdirs();
                 File file = null;
@@ -1401,7 +1401,7 @@ public class SimilarPatentServer {
                 if(username==null||username.isEmpty()) {
                     message = "Unable to locate user.";
                 } else {
-                    File toDelete = new File(Constants.DATA_FOLDER+baseFolder+username+"/"+fileName);
+                    File toDelete = new File(baseFolder+username+"/"+fileName);
                     File updatesFile = new File(toDelete.getAbsolutePath()+"_updates");
 
                     Lock sync;
@@ -1775,7 +1775,7 @@ public class SimilarPatentServer {
 
     public static Tag getDataForUser(String username, boolean deletable, String rootName, String baseFolder, boolean loadData, Function2<Map<String,Object>,File,FormTemplate> formTemplateFunction) {
         if(username!=null && username.length()>0) {
-            File folder = new File(Constants.DATA_FOLDER+baseFolder+username+"/");
+            File folder = new File(baseFolder+username+"/");
             if(!folder.exists()) folder.mkdirs();
             Pair<Map<String,Object>,List<FormTemplate>> directoryStructure = new Pair<>(new HashMap<>(),new ArrayList<>());
             Arrays.stream(folder.listFiles(file->!file.getName().endsWith("_updates"))).forEach(file->{
