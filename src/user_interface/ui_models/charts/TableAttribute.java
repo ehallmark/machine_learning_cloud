@@ -23,7 +23,7 @@ import static j2html.TagCreator.*;
  */
 public abstract class TableAttribute extends AbstractChartAttribute {
 
-    public TableAttribute(List<AbstractAttribute> attributes, String name) {
+    public TableAttribute(Collection<AbstractAttribute> attributes, String name) {
         super(attributes,name);
     }
 

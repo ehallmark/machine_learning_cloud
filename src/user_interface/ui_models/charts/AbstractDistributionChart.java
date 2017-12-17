@@ -33,7 +33,7 @@ public class AbstractDistributionChart extends ChartAttribute {
     public ChartAttribute dup() {
         return new AbstractDistributionChart(attributes);
     }
-    
+
     @Override
     public String getType() {
         return "pie";

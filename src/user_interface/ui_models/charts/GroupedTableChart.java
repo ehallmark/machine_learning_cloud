@@ -31,7 +31,7 @@ import static j2html.TagCreator.span;
  */
 public class GroupedTableChart extends TableAttribute {
     protected Collection<String> searchTypes;
-    public GroupedTableChart(List<AbstractAttribute> attributes) {
+    public GroupedTableChart(Collection<AbstractAttribute> attributes) {
         super(attributes, Constants.GROUPED_TABLE_CHART);
     }
 
@@ -49,13 +49,6 @@ public class GroupedTableChart extends TableAttribute {
         if(searchTypes.isEmpty()) {
             searchTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
         }
-    }
-
-
-
-    @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return technologySelect(userRoleFunction);
     }
 
     @Override
