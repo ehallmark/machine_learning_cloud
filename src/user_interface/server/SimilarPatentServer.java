@@ -2028,7 +2028,8 @@ public class SimilarPatentServer {
                                 )
                         )
                 ),
-                div().withClass("col-12").withId("results")
+                div().withClass("col-12").withId("results").with(
+                )
         );
     }
 

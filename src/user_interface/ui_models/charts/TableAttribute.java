@@ -32,7 +32,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
 
     public static Tag getTable(TableResponse response, String type, int tableIdx) {
         return div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(type).withId("table-" + tableIdx).with(
-                h5(response.title),
+                h5(response.title),br(),
                 table().withClass("table table-striped").withId(type+"-table-"+tableIdx+"table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                         thead().with(
                                 tr().with(

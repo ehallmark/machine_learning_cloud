@@ -66,8 +66,13 @@ $(document).ready(function() {
         $downloadForm.appendTo('body').submit().remove();
     };
 
-    var successReportFrom = function(data) {
+    var successReportFrom = function($activePanes) {
+    return function(data) {
        $('#results').html(data.message);
+       $('#results').find('tab-pane').removeClass('active');
+       $activePanes.each(function() {
+           $('#'+$(this).attr('id')).addClass('active');
+       });
        if($('#results #data-table table thead th').length > 0) {
            $('#results #data-table table').dynatable({
              dataset: {
@@ -140,7 +145,7 @@ $(document).ready(function() {
            $('#results').html("<div style='color:red;'>JavaScript error occured while rendering charts: " + err.message + '</div>');
          }
        }
-    };
+    }};
 
     $('#generate-reports-form').submit(function(e) {
         $(this).find('#only-excel-hidden-input').val(false);
@@ -148,8 +153,9 @@ $(document).ready(function() {
         var buttonText = "Generate Report";
         var buttonTextWhileSearching = "Generating...";
         var formId = $(this).attr('id');
+        var $activePanes = $('#results').find('.tab-pane.active');
         $('#results').html(''); // clears results div
-        return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFrom);
+        return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFrom($activePanes));
     });
     $('.generate-reports-form-button').click(function(e) {
         e.preventDefault();

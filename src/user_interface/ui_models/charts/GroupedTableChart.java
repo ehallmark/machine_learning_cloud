@@ -123,11 +123,10 @@ public class GroupedTableChart extends TableAttribute {
                     DeepList<Object> combos = new DeepList<>();
                     FactorNode factor = new FactorNode(null,attrsArray,rs.stream().mapToInt(r->Math.max(1,r.size())).toArray());
                     factor.assignmentPermutationsStream().forEach(assignment->{
-                        IntStream.range(0,assignment.length).forEach(i->{
-                            if(i>=rs.size()) System.out.println("WARNING 1: "+factor.toString());
+                        combos.add(IntStream.range(0,assignment.length).mapToObj(i->{
                             List<?> r = rs.get(i);
-                            combos.add(IntStream.of(assignment).mapToObj(j->r.size()>0?r.get(j):"").collect(Collectors.toList()));
-                        });
+                            return r.size()>0?r.get(assignment[i]):"";
+                        }).collect(Collectors.toList()));
                     });
                     return combos;
                 }).collect(Collectors.toList());
