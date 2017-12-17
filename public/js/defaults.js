@@ -69,7 +69,7 @@ $(document).ready(function() {
     var successReportFrom = function($activePanes) {
     return function(data) {
        $('#results').html(data.message);
-       $('#results').find('tab-pane').removeClass('active');
+       $('#results').find('.tab-pane').removeClass('active'));
        $activePanes.each(function() {
            $('#'+$(this).attr('id')).addClass('active');
        });
