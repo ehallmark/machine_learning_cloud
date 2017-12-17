@@ -1547,6 +1547,7 @@ public class SimilarPatentServer {
                                                         p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
                                                         tableTag
                                                 ), div().withClass("col-12 tab-pane fade show").attr("role","tabpanel").withId("chart-tab").with(
+                                                        p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
                                                         chartTag
                                                 )
                                         )
