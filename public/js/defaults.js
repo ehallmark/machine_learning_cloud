@@ -203,7 +203,7 @@ $(document).ready(function() {
         $hiddenOptions.each(function(i,option){
             var id = $(option).val();
             var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
-            $draggable.find('input, select, textarea').prop('disabled', true).val(null).filter('.nested-filter-select').trigger('change');
+            $draggable.find('input, select, textarea').prop('disabled', true).val(null).filter('select').trigger('change');
             $draggable.find("div.attribute").addClass("disabled");
             $draggable.parent().hide();
             return true;
@@ -212,7 +212,7 @@ $(document).ready(function() {
         $options.each(function(i,option){
             var id = $(option).val();
             var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
-            $draggable.find('input, select, textarea').prop('disabled', false).filter('.nested-filter-select').trigger('change');
+            $draggable.find('input, select, textarea').prop('disabled', false).filter('select').trigger('change');
 
             if($options.length>1) {
                 if($draggable.parent().is(':hidden')) {
