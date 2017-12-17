@@ -28,7 +28,6 @@ import static j2html.TagCreator.*;
  */
 public class AbstractHistogramChart extends ChartAttribute {
     protected String groupedBy;
-    protected Collection<String> searchTypes;
     Map<String,RangeAttribute> nameToRangeMap;
     public AbstractHistogramChart(Collection<AbstractAttribute> attributes) {
         this(attributes, attributes.stream().collect(Collectors.toMap(attr->attr.getFullName(),attr->(RangeAttribute)attr)));
@@ -65,12 +64,7 @@ public class AbstractHistogramChart extends ChartAttribute {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        attrNames = SimilarPatentServer.extractArray(params, Constants.HISTOGRAM);
-        searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE_INCLUDE_FILTER_STR);
-        // what to do if not present?
-        if(searchTypes.isEmpty()) {
-            searchTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
-        }
+        super.extractRelevantInformationFromParams(params);
         groupedBy = SimilarPatentServer.extractString(params, SimilarPatentServer.CHARTS_GROUPED_BY_FIELD, null);
     }
 

@@ -23,7 +23,6 @@ import java.util.stream.Stream;
  * Created by Evan on 6/17/2017.
  */
 public class AbstractDistributionChart extends ChartAttribute {
-    protected Collection<String> searchTypes;
 
     public AbstractDistributionChart(Collection<AbstractAttribute> attributes) {
         super(attributes, Constants.PIE_CHART);
@@ -39,15 +38,6 @@ public class AbstractDistributionChart extends ChartAttribute {
         return "pie";
     }
 
-    @Override
-    public void extractRelevantInformationFromParams(Request params) {
-        attrNames = SimilarPatentServer.extractArray(params, Constants.PIE_CHART);
-        searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE_INCLUDE_FILTER_STR);
-        // what to do if not present?
-        if(searchTypes.isEmpty()) {
-            searchTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
-        }
-    }
 
     @Override
     public List<? extends AbstractChart> create(PortfolioList portfolioList, int i) {

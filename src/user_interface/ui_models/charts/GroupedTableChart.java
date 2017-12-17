@@ -30,25 +30,8 @@ import static j2html.TagCreator.span;
  * Created by Evan on 12/16/2017.
  */
 public class GroupedTableChart extends TableAttribute {
-    protected Collection<String> searchTypes;
     public GroupedTableChart(Collection<AbstractAttribute> attributes) {
         super(attributes, Constants.GROUPED_TABLE_CHART);
-    }
-
-    @Override
-    public void extractRelevantInformationFromParams(Request params) {
-        attrNames = SimilarPatentServer.extractArray(params, Constants.GROUPED_TABLE_CHART);
-        attrNames = attrNames.stream().flatMap(attr->{
-            List<String> children = SimilarPatentServer.extractArray(params, attr+"[]");
-            if(children.size()>0) return children.stream();
-            else return Stream.of(attr);
-        }).collect(Collectors.toList());
-
-        searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE_INCLUDE_FILTER_STR);
-        // what to do if not present?
-        if(searchTypes.isEmpty()) {
-            searchTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
-        }
     }
 
     @Override

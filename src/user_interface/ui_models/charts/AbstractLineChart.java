@@ -25,7 +25,6 @@ import static j2html.TagCreator.*;
  * Created by Evan on 6/18/2017.
  */
 public class AbstractLineChart extends ChartAttribute {
-    protected Collection<String> searchTypes;
     protected Integer max;
     protected Integer min;
 
@@ -60,12 +59,7 @@ public class AbstractLineChart extends ChartAttribute {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        attrNames = SimilarPatentServer.extractArray(params, Constants.LINE_CHART);
-        searchTypes = SimilarPatentServer.extractArray(params,  Constants.DOC_TYPE_INCLUDE_FILTER_STR);
-        // what to do if not present?
-        if(searchTypes.isEmpty()) {
-            searchTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
-        }
+        super.extractRelevantInformationFromParams(params);
 
         min = SimilarPatentServer.extractInt(params, SimilarPatentServer.LINE_CHART_MIN, null);
         max = SimilarPatentServer.extractInt(params, SimilarPatentServer.LINE_CHART_MAX, null);
