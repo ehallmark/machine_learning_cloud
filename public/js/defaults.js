@@ -371,7 +371,7 @@ var resetAllDraggables = function() {
 
 var resetSearchForm = function() {
     //resetAllDraggables();
-    $('.draggable').find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
+    $('.draggable').find('select,textarea,input').prop("disabled",true).val(null).filter('select').trigger('change');
     $('div.attribute').addClass("disabled");
     $('#results').html('');
 };
