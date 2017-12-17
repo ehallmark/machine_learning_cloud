@@ -365,14 +365,8 @@ $(document).ready(function() {
 });
 
 
-var resetAllDraggables = function() {
-    var $filters = $('select.nested-filter-select');
-    $filters.val(null).trigger('change');
-};
-
 var resetSearchForm = function() {
-    //resetAllDraggables();
-    $('.draggable').find('select,textarea,input').prop("disabled",true).val(null).filter('select').trigger('change');
+    $('.attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[false]); });
     $('div.attribute').addClass("disabled");
     $('#results').html('');
 };
