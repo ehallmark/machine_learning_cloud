@@ -215,7 +215,7 @@ $(document).ready(function() {
              var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
              if(!child) { $draggable.find('input, select, textarea').prop('disabled', false).filter('select').trigger('change', [true]); }
 
-             if(child && $draggable.parent().is(':hidden')) {
+             if(!child && $draggable.parent().is(':hidden')) {
                  addedDraggables.push($draggable);
              }
 
