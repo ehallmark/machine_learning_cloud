@@ -199,9 +199,10 @@ $(document).ready(function() {
     $('select.nested-filter-select').on("change", function(e) {
         var $options = $(e.currentTarget.selectedOptions);
         var $hiddenOptions = $(e.currentTarget).find("option").not($options);
+        var $selectWrapper = $(this).parent().parent();
         $hiddenOptions.each(function(i,option){
             var id = $(option).val();
-            var $draggable = $('.attributeElement[data-model="'+id+'"]');
+            var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
             $draggable.find('input, select, textarea').prop('disabled', true).val(null).filter('.nested-filter-select').trigger('change');
             $draggable.find("div.attribute").addClass("disabled");
             $draggable.parent().hide();
@@ -210,7 +211,7 @@ $(document).ready(function() {
         var addedDraggables = [];
         $options.each(function(i,option){
             var id = $(option).val();
-            var $draggable = $('.attributeElement[data-model="'+id+'"]');
+            var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
             $draggable.find('input, select, textarea').prop('disabled', false).filter('.nested-filter-select').trigger('change');
 
             if($options.length>1) {
@@ -219,7 +220,7 @@ $(document).ready(function() {
                 }
             }
 
-            var $attr = $draggable.find('div.attribute').first();
+            var $attr = $draggable.find('div.attribute').filter(':first');
             $attr.removeClass("disabled");
 
             $draggable.parent().show();
