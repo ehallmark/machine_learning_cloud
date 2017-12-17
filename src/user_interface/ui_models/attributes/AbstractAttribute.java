@@ -21,6 +21,16 @@ import static j2html.TagCreator.span;
 public abstract class AbstractAttribute {
     protected Collection<AbstractFilter.FilterType> filterTypes;
 
+    public AbstractAttribute clone() {
+        try {
+            return this.getClass().newInstance();
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("For class: "+this.getClass().getName());
+        }
+        return null;
+    }
+
     @Getter @Setter
     protected AbstractAttribute parent;
     public AbstractAttribute(Collection<AbstractFilter.FilterType> filterTypes) {

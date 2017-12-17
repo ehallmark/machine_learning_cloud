@@ -6,6 +6,7 @@ import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
+import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -23,14 +24,15 @@ import static j2html.TagCreator.span;
 public abstract class AbstractChartAttribute extends AbstractAttribute implements DependentAttribute<AbstractChartAttribute> {
     @Getter
     protected List<AbstractAttribute> attributes;
+    ;
     @Getter
     protected List<String> attrNames;
     @Getter
     protected String name;
     public AbstractChartAttribute(List<AbstractAttribute> attributes, String name) {
         super(Collections.emptyList());
-        this.name=name;
         this.attributes=attributes;
+        this.name=name;
     }
 
     protected static String combineTypesToString(Collection<String> types) {
@@ -42,14 +44,23 @@ public abstract class AbstractChartAttribute extends AbstractAttribute implement
         }
     }
 
-    public SortedMap<String,List<String>> getOptgroups(Function<String,Boolean> userRoleFunction) {
-        return new TreeMap<>(attributes.stream().filter(attr->userRoleFunction.apply(attr.getRootName())).collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
-                .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
-
-    }
 
     public Tag technologySelect(Function<String,Boolean> userRoleFunction) {
-        return SimilarPatentServer.technologySelectWithCustomClass(getName(),"multiselect", getOptgroups(userRoleFunction));
+        String styleString = "margin-left: 5%; margin-right: 5%; display: none;";
+        String name = getFullName().replace(".","");
+        List<AbstractAttribute> applicableAttributes = attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getRootName())).collect(Collectors.toList());
+        return div().with(
+                div().with(
+                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", applicableAttributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
+                ), div().withClass("nested-form-list").with(
+                        applicableAttributes.stream().map(filter->{
+                            String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
+                            return div().attr("style", styleString).with(
+                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(userRoleFunction), filter.isNotYetImplemented(), filter.getDescription().render())
+                            );
+                        }).collect(Collectors.toList())
+                )
+        );
     }
 
 
@@ -60,12 +71,7 @@ public abstract class AbstractChartAttribute extends AbstractAttribute implement
         String text = Constants.ATTRIBUTE_DESCRIPTION_MAP.get(getType());
         if(text==null) return span();
         return div().with(
-                div().withText(text),
-                div().with(
-                        getAttributes().stream().map(attr->{
-                            return div().withText("The "+SimilarPatentServer.humanAttributeFor(attr.getFullName()).toLowerCase());
-                        }).collect(Collectors.toList())
-                )
+                div().withText(text)
         );
     }
 

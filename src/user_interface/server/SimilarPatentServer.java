@@ -990,14 +990,40 @@ public class SimilarPatentServer {
             System.out.println("Received excel request");
             long t0 = System.currentTimeMillis();
             HttpServletResponse raw = res.raw();
-            Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
-            if(map==null) return null;
-            List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
+            final String paramIdx = req.queryParamOrDefault("tableId","");
+            // try to get custom data
+            List<String> headers;
+            List<Map<String,String>> data;
+            String title;
+            if(paramIdx.length()>0) {
+                TableResponse tableResponse = req.session().attribute("table-"+paramIdx);
+                if(tableResponse!=null) {
+                    System.out.println("Found tableResponse...");
+                    headers = tableResponse.headers;
+                    data = tableResponse.computeAttributesTask.join();
+                    title = tableResponse.title;
+                    System.out.println("Data size: "+data.size());
+                } else {
+                    System.out.println("WARNING:: Could not find tableResponse...");
+                    headers = Collections.emptyList();
+                    data = Collections.emptyList();
+                    title = "Data";
+                }
+            } else {
+
+                System.out.println("Received datatable request");
+                Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
+                if(map==null) return null;
+
+                headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
+                data = (List<Map<String,String>>)map.getOrDefault("rows",Collections.emptyList());
+                title = "Data";
+            }
+
             System.out.println("Number of excel headers: "+headers.size());
-            List<Map<String,String>> data = (List<Map<String,String>>)map.getOrDefault("rows",Collections.emptyList());
             res.header("Content-Disposition", "attachment; filename=download.xls");
             res.type("application/force-download");
-            ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "Data", "Data", data,  headers);
+            ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "Data", title, data,  headers);
             long t1 = System.currentTimeMillis();
             System.out.println("Time to create excel sheet: "+(t1-t0)/1000+ " seconds");
             return raw;

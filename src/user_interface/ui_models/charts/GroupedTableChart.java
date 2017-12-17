@@ -55,20 +55,7 @@ public class GroupedTableChart extends TableAttribute {
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        String styleString = "margin-left: 5%; margin-right: 5%; display: none;";
-        String name = getFullName().replace(".","");
-        return div().with(
-                div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", getOptgroups(userRoleFunction))
-                ), div().withClass("nested-form-list").with(
-                        attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getRootName())).map(filter->{
-                            String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
-                            return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),filter.getRootName(),collapseId,filter.getOptionsTag(userRoleFunction), filter.isNotYetImplemented(), filter.getDescription().render())
-                            );
-                        }).collect(Collectors.toList())
-                )
-        );
+        return technologySelect(userRoleFunction);
     }
 
     @Override
@@ -98,7 +85,7 @@ public class GroupedTableChart extends TableAttribute {
         response.title=yTitle;
         response.headers = new ArrayList<>();
         response.headers.addAll(attrList);
-        response.headers.add("count");
+        response.headers.add("Count");
         response.computeAttributesTask = new RecursiveTask<List<Map<String,String>>>() {
             @Override
             protected List<Map<String,String>> compute() {
@@ -142,7 +129,7 @@ public class GroupedTableChart extends TableAttribute {
                                 if(i>=e.getKey().size()) System.out.println("WARNING 2: "+e.getKey()+"  ->  "+attrList);
                                 row.put(attrList.get(i),e.getKey().get(i).toString());
                             }
-                            row.put("count",e.getValue().toString());
+                            row.put("Count",e.getValue().toString());
                             return row;
                         }).collect(Collectors.toList());
 

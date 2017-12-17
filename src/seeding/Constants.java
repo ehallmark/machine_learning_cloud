@@ -336,10 +336,10 @@ public class Constants {
 		ATTRIBUTE_DESCRIPTION_MAP.put(PUBLICATION_DATE, "publication date of the asset.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(FILING_DATE, "date of the patent filing.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(ESTIMATED_EXPIRATION_DATE, "expiration date computed from the original expiration date and any term adjustment information.");
-		ATTRIBUTE_DESCRIPTION_MAP.put("pie", "Create a pie chart of");
-		ATTRIBUTE_DESCRIPTION_MAP.put("line", "Create a timeline chart of");
-		ATTRIBUTE_DESCRIPTION_MAP.put("histogram", "Create a histogram of");
-		ATTRIBUTE_DESCRIPTION_MAP.put("groupedTable", "Create a grouped table of");
+		ATTRIBUTE_DESCRIPTION_MAP.put("pie", "Create a pie chart.");
+		ATTRIBUTE_DESCRIPTION_MAP.put("line", "Create a timeline chart.");
+		ATTRIBUTE_DESCRIPTION_MAP.put("histogram", "Create a histogram.");
+		ATTRIBUTE_DESCRIPTION_MAP.put("groupedTable", "Create an aggregated counts table.");
 	}
 
 	public static final Map<String,String> PG_NAME_MAP = Collections.synchronizedMap(new HashMap<>());
