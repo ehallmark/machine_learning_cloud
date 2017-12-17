@@ -9,6 +9,13 @@ import java.util.List;
  */
 public class DeepList<T> extends ArrayList<T> {
 
+    public DeepList(List<T> list) {
+        super(list);
+    }
+
+    public DeepList() {
+        super();
+    }
 
     @Override
     public int hashCode() {

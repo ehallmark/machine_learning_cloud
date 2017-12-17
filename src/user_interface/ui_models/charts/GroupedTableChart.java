@@ -106,7 +106,7 @@ public class GroupedTableChart extends TableAttribute {
             protected List<Map<String,String>> compute() {
                 if(data.size()==0) return Collections.emptyList();
                 String[] attrsArray = attrList.toArray(new String[]{});
-                List<DeepList<Object>> items = (List<DeepList<Object>>)data.stream().map(item-> {
+                List<DeepList<Object>> items = (List<DeepList<Object>>)data.stream().flatMap(item-> {
                     List<List<?>> rs = attrList.stream().map(attribute-> {
                         Object r = item.getData(attribute);
                         if (r != null) {
@@ -120,16 +120,16 @@ public class GroupedTableChart extends TableAttribute {
                         }
                         return Collections.emptyList();
                     }).collect(Collectors.toList());
-                    DeepList<Object> combos = new DeepList<>();
                     FactorNode factor = new FactorNode(null,attrsArray,rs.stream().mapToInt(r->Math.max(1,r.size())).toArray());
-                    factor.assignmentPermutationsStream().forEach(assignment->{
-                        combos.add(IntStream.range(0,assignment.length).mapToObj(i->{
-                            if(i>=rs.size()) System.out.println("WARNING 1: "+factor.toString());
-                            List<?> r = rs.get(i);
-                            return r.size()>0?r.get(assignment[i]):"";
-                        }).collect(Collectors.toList()));
+                    return factor.assignmentPermutationsStream().map(assignment->{
+                         return new DeepList<>(
+                                IntStream.range(0,assignment.length).mapToObj(i->{
+                                    if(i>=rs.size()) System.out.println("WARNING 1: "+factor.toString());
+                                    List<?> r = rs.get(i);
+                                    return r.size()>0?r.get(assignment[i]):"";
+                                }).collect(Collectors.toList())
+                        );
                     });
-                    return combos;
                 }).collect(Collectors.toList());
 
                 if(items.isEmpty()) return Collections.emptyList();
@@ -141,7 +141,7 @@ public class GroupedTableChart extends TableAttribute {
                         .map(e->{
                             Map<String,String> row = Collections.synchronizedMap(new HashMap<>());
                             for(int i = 0; i < attrList.size(); i++) {
-                                if(i>=e.getKey().size()) System.out.println("WARNING 2: "+String.join("; ",e.getKey()+"  ->  "+String.join("; ",attrList)));
+                                if(i>=e.getKey().size()) System.out.println("WARNING 2: "+e.getKey()+"  ->  "+attrList);
                                 row.put(attrList.get(i),e.getKey().get(i).toString());
                             }
                             row.put("count",e.getValue().toString());
