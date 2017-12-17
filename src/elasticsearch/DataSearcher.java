@@ -277,9 +277,11 @@ public class DataSearcher {
                 }
             }
             while (response != null && response.getHits().getHits().length != 0 && (maxLimit < 0 || count < maxLimit)); // Zero hits mark the end of the scroll and the while loop.
-            ClearScrollResponse clearScrollResponse = client.prepareClearScroll().addScrollId(response.getScrollId()).get();
+            if(scroll) {
+                ClearScrollResponse clearScrollResponse = client.prepareClearScroll().addScrollId(response.getScrollId()).get();
+                System.out.println("Sucessfully cleared scroll: " + clearScrollResponse.isSucceeded());
+            }
             System.out.println();
-            System.out.println("Sucessfully cleared scroll: " + clearScrollResponse.isSucceeded());
             return items;
         } finally {
             if(scroll) {
