@@ -196,49 +196,49 @@ $(document).ready(function() {
         $this.select2(displayItemSelectOptions);
     });
 
-    $('select.nested-filter-select').on("change", function(e) {
-        var $options = $(e.currentTarget.selectedOptions);
-        var $hiddenOptions = $(e.currentTarget).find("option").not($options);
-        var $selectWrapper = $(this).parent().parent();
-        $hiddenOptions.each(function(i,option){
-            var id = $(option).val();
-            var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
-            $draggable.find('input, select, textarea').prop('disabled', true).val(null).filter('select').trigger('change');
-            $draggable.find("div.attribute").addClass("disabled");
-            $draggable.parent().hide();
-            return true;
-        });
-        var addedDraggables = [];
-        $options.each(function(i,option){
-            var id = $(option).val();
-            var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
-            $draggable.find('input, select, textarea').prop('disabled', false).filter('select').trigger('change');
 
-            if($options.length>1) {
-                if($draggable.parent().is(':hidden')) {
-                    addedDraggables.push($draggable);
-                }
-            }
+    var nestedFilterSelectFunction = function(e,child) {
+         var $options = $(e.currentTarget.selectedOptions);
+         var $hiddenOptions = $(e.currentTarget).find("option").not($options);
+         var $selectWrapper = $(this).parent().parent();
+         $hiddenOptions.each(function(i,option){
+             var id = $(option).val();
+             var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
+             if(!child) { $draggable.find('input, select, textarea').prop('disabled', true).val(null).filter('select').trigger('change', [true]); }
+             if(!child) { $draggable.find("div.attribute").addClass("disabled"); }
+             $draggable.parent().hide();
+             return true;
+         });
+         var addedDraggables = [];
+         $options.each(function(i,option){
+             var id = $(option).val();
+             var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
+             if(!child) { $draggable.find('input, select, textarea').prop('disabled', false).filter('select').trigger('change', [true]); }
 
-            var $attr = $draggable.find('div.attribute').filter(':first');
-            $attr.removeClass("disabled");
+             if(!child && $draggable.parent().is(':hidden')) {
+                 addedDraggables.push($draggable);
+             }
 
-            $draggable.parent().show();
-        });
+             if(!child) { $draggable.find('div.attribute').removeClass("disabled"); }
 
-        if(addedDraggables.length == 1) { // added by human
-            $.each(addedDraggables, function() {
-                var $draggable = $(this);
-                $draggable.addClass('highlight');
-                $draggable.click(function() { // highlight until clicked
-                    $(this).removeClass('highlight');
-                });
-                var $parent = $draggable.parent();
-                $parent.parent().prepend($parent);
-            });
-        }
-        return true;
-    });
+             $draggable.parent().show();
+         });
+
+         if(addedDraggables.length == 1) { // added by human
+             $.each(addedDraggables, function() {
+                 var $draggable = $(this);
+                 $draggable.addClass('highlight');
+                 $draggable.click(function() { // highlight until clicked
+                     $(this).removeClass('highlight');
+                 });
+                 var $parent = $draggable.parent();
+                 $parent.parent().prepend($parent);
+             });
+         }
+         return true;
+    }
+
+    $('select.nested-filter-select').on("change", nestedFilterSelectFunction);
 
     var $attrSelect = $('#multiselect-nested-filter-select-attributes');
     $('#filters-row select.nested-filter-select').on("select2:select", function(e) {
