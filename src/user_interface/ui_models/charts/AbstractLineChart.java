@@ -29,7 +29,7 @@ public class AbstractLineChart extends ChartAttribute {
     protected Integer max;
     protected Integer min;
 
-    public AbstractLineChart(List<AbstractAttribute> attributes) {
+    public AbstractLineChart(Collection<AbstractAttribute> attributes) {
         super(attributes,Constants.LINE_CHART);
     }
 
@@ -48,7 +48,7 @@ public class AbstractLineChart extends ChartAttribute {
                                 label("Max"),br(),input().withId(SimilarPatentServer.LINE_CHART_MAX).withName(SimilarPatentServer.LINE_CHART_MAX).withType("number").withClass("form-control")
                         )
                 ),
-                technologySelect(userRoleFunction)
+                super.getOptionsTag(userRoleFunction)
         );
     }
 

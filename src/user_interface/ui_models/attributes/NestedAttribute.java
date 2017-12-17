@@ -49,11 +49,12 @@ public abstract class NestedAttribute extends AbstractAttribute {
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         String styleString = "margin-left: 5%; margin-right: 5%; display: none;";
         String name = getFullName().replace(".","");
+        List<AbstractAttribute> applicableAttributes = attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
         return div().with(
                 div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", attributes.stream().filter(attr->userRoleFunction.apply(attr.getRootName())).map(attr->attr.getFullName()).collect(Collectors.toList()))
+                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", applicableAttributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(
-                        attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getRootName())).map(filter->{
+                        applicableAttributes.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
                             return div().attr("style", styleString).with(
                                     SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(userRoleFunction), filter.isNotYetImplemented(), filter.getDescription().render())

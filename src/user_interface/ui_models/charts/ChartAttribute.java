@@ -22,7 +22,7 @@ import static j2html.TagCreator.span;
  */
 public abstract class ChartAttribute extends AbstractChartAttribute {
 
-    public ChartAttribute(List<AbstractAttribute> attributes, String name) {
+    public ChartAttribute(Collection<AbstractAttribute> attributes, String name) {
         super(attributes,name);
     }
 

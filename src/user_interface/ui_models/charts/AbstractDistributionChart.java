@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 public class AbstractDistributionChart extends ChartAttribute {
     protected Collection<String> searchTypes;
 
-    public AbstractDistributionChart(List<AbstractAttribute> attributes) {
+    public AbstractDistributionChart(Collection<AbstractAttribute> attributes) {
         super(attributes, Constants.PIE_CHART);
     }
 
@@ -33,12 +33,7 @@ public class AbstractDistributionChart extends ChartAttribute {
     public ChartAttribute dup() {
         return new AbstractDistributionChart(attributes);
     }
-
-    @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return technologySelect(userRoleFunction);
-    }
-
+    
     @Override
     public String getType() {
         return "pie";

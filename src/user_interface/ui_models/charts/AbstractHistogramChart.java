@@ -30,11 +30,11 @@ public class AbstractHistogramChart extends ChartAttribute {
     protected String groupedBy;
     protected Collection<String> searchTypes;
     Map<String,RangeAttribute> nameToRangeMap;
-    public AbstractHistogramChart(List<AbstractAttribute> attributes) {
+    public AbstractHistogramChart(Collection<AbstractAttribute> attributes) {
         this(attributes, attributes.stream().collect(Collectors.toMap(attr->attr.getFullName(),attr->(RangeAttribute)attr)));
     }
 
-    private AbstractHistogramChart(List<AbstractAttribute> attributes, Map<String,RangeAttribute> nameToRangeMap) {
+    private AbstractHistogramChart(Collection<AbstractAttribute> attributes, Map<String,RangeAttribute> nameToRangeMap) {
         super(attributes,Constants.HISTOGRAM);
         this.nameToRangeMap=nameToRangeMap;
     }
@@ -54,7 +54,7 @@ public class AbstractHistogramChart extends ChartAttribute {
                                 Stream.of(Constants.ASSIGNMENTS+"."+Constants.ASSIGNOR, Constants.ASSIGNMENTS+"."+Constants.ASSIGNEE, Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE, Constants.LATEST_ASSIGNEE+"."+Constants.NORMALIZED_LATEST_ASSIGNEE, Constants.TECHNOLOGY, Constants.WIPO_TECHNOLOGY)
                                         .map(key->option(SimilarPatentServer.humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
                         )
-                ), technologySelect(userRoleFunction)
+                ), super.getOptionsTag(userRoleFunction)
         );
     }
 

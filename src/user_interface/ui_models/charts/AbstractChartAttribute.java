@@ -14,25 +14,23 @@ import user_interface.ui_models.portfolios.PortfolioList;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static j2html.TagCreator.div;
-import static j2html.TagCreator.span;
+import static j2html.TagCreator.*;
+import static j2html.TagCreator.option;
+import static j2html.TagCreator.select;
 
 /*
  * Created by Evan on 6/17/2017.
  */
-public abstract class AbstractChartAttribute extends AbstractAttribute implements DependentAttribute<AbstractChartAttribute> {
-    @Getter
-    protected List<AbstractAttribute> attributes;
-    ;
+public abstract class AbstractChartAttribute extends NestedAttribute implements DependentAttribute<AbstractChartAttribute> {
+
     @Getter
     protected List<String> attrNames;
     @Getter
     protected String name;
-    public AbstractChartAttribute(List<AbstractAttribute> attributes, String name) {
-        super(Collections.emptyList());
-        this.attributes=attributes;
-        attributes.forEach(attr->attr.setParent(this));
+    public AbstractChartAttribute(Collection<AbstractAttribute> attributes, String name) {
+        super(attributes);
         this.name=name;
     }
 
@@ -43,25 +41,6 @@ public abstract class AbstractChartAttribute extends AbstractAttribute implement
         } else {
             return "Assets";
         }
-    }
-
-
-    public Tag technologySelect(Function<String,Boolean> userRoleFunction) {
-        String styleString = "margin-left: 5%; margin-right: 5%; display: none;";
-        String name = getFullName().replace(".","");
-        List<AbstractAttribute> applicableAttributes = attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
-        return div().with(
-                div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", applicableAttributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
-                ), div().withClass("nested-form-list").with(
-                        applicableAttributes.stream().map(filter->{
-                            String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
-                            return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(userRoleFunction), filter.isNotYetImplemented(), filter.getDescription().render())
-                            );
-                        }).collect(Collectors.toList())
-                )
-        );
     }
 
 
