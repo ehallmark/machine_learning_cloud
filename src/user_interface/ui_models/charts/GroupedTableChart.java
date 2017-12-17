@@ -31,7 +31,6 @@ import static j2html.TagCreator.span;
  */
 public class GroupedTableChart extends TableAttribute {
     protected Collection<String> searchTypes;
-    protected List<List<String>> attrMatrix;
     public GroupedTableChart(List<AbstractAttribute> attributes) {
         super(attributes, Constants.GROUPED_TABLE_CHART);
     }
@@ -45,7 +44,6 @@ public class GroupedTableChart extends TableAttribute {
             else return Stream.of(attr);
         }).collect(Collectors.toList());
 
-        attrMatrix = Collections.singletonList(attrNames);
         searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE_INCLUDE_FILTER_STR);
         // what to do if not present?
         if(searchTypes.isEmpty()) {
@@ -75,7 +73,7 @@ public class GroupedTableChart extends TableAttribute {
 
     @Override
     public List<TableResponse> createTables(PortfolioList portfolioList) {
-        return attrMatrix.stream().map(attrList->{
+        return Stream.of(attrNames).map(attrList->{
             List<String> humanAttrs =  attrList.stream().map(attribute->SimilarPatentServer.fullHumanAttributeFor(attribute)).collect(Collectors.toList());
             String humanSearchType = combineTypesToString(searchTypes);
             String title = humanSearchType+" Counts by "+String.join(", ",humanAttrs);

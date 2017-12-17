@@ -1436,7 +1436,7 @@ public class SimilarPatentServer {
                     charts.forEach(chart -> chart.extractRelevantInformationFromParams(req));
                     tables.forEach(table->table.extractRelevantInformationFromParams(req));
 
-                    Set<String> chartPreReqs = charts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toSet());
+                    Set<String> chartPreReqs = abstractCharts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toSet());
 
                     SimilarityEngineController engine = similarityEngine.join().dup();
                     engine.setChartPrerequisites(chartPreReqs);
