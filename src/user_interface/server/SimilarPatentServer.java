@@ -385,13 +385,29 @@ public class SimilarPatentServer {
         }
     }
 
+    private static List<AbstractAttribute> groupAttributesToNewParents(List<AbstractAttribute> attributes) {
+        List<AbstractAttribute> nonNested = attributes.stream().filter(attr->attr.getParent()==null).collect(Collectors.toList());
+        List<AbstractAttribute> nested = attributes.stream().filter(attr->attr.getParent()!=null).collect(Collectors.toList());
+        Map<String,Set<AbstractAttribute>> nestedMap = nested.stream().collect(Collectors.groupingBy(attr->attr.getRootName(),Collectors.toSet()));
+        nestedMap.entrySet().forEach(e->{
+            nonNested.add(new NestedAttribute(e.getValue().stream().map(attr->attr.clone()).collect(Collectors.toList())) {
+                @Override
+                public String getName() {
+                    return e.getKey();
+                }
+            });
+        });
+        Collections.sort(nonNested, Comparator.comparing(attr->attr.getFullName()));
+        return nonNested;
+    }
+
     public static void loadChartModels() {
         List<AbstractAttribute> attributes = new ArrayList<>();
         getAttributesHelper(allAttributes,attributes);
 
-        List<AbstractAttribute> dateAttrs = attributes.stream().filter(attr->attr.getType().equals("date")).collect(Collectors.toList());
-        List<AbstractAttribute> discreteAttrs = attributes.stream().filter(attr->attr.getType().equals("keyword")||(attr.getType().equals("text") && attr.getNestedFields()!=null)).collect(Collectors.toList());
-        List<AbstractAttribute> rangeAttrs = attributes.stream().filter(attr->attr instanceof RangeAttribute).collect(Collectors.toList());
+        List<AbstractAttribute> dateAttrs = groupAttributesToNewParents(attributes.stream().filter(attr->attr.getType().equals("date")).collect(Collectors.toList()));
+        List<AbstractAttribute> discreteAttrs = groupAttributesToNewParents(attributes.stream().filter(attr->attr.getType().equals("keyword")||(attr.getType().equals("text") && attr.getNestedFields()!=null)).collect(Collectors.toList()));
+        List<AbstractAttribute> rangeAttrs = groupAttributesToNewParents(attributes.stream().filter(attr->attr instanceof RangeAttribute).collect(Collectors.toList()));
 
         chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart(discreteAttrs));
         chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart(rangeAttrs));
