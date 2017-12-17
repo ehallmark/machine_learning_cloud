@@ -135,7 +135,7 @@ public class DataSearcher {
                     .setFrom(0));
 
             boolean scroll;
-            if(maxLimit > 50000) {
+            if(maxLimit > PAGE_LIMIT) {
                 scroll = true;
                 request.set(request.get()
                         .setSize(Math.min(PAGE_LIMIT,maxLimit))
