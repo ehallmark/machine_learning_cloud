@@ -486,15 +486,17 @@ var showTemplateFormHelper = function(formSelector,dataMap) {
     $(formSelector+' .nested-form-list').each(function() {
         var list = $(this);
         var elems = list.children().filter('[sort-order]').detach();
-        elems.sort(function(a,b) {
-            var i = parseInt($(a).attr("sort-order"));
-            var j = parseInt($(b).attr("sort-order"));
-            return (i > j) ? 1 : (i < j) ? -1 : 0;
-        });
-        list.append(elems);
+        if(elems.length>0) {
+            elems.sort(function(a,b) {
+                var i = parseInt($(a).attr("sort-order"));
+                var j = parseInt($(b).attr("sort-order"));
+                return (i > j) ? 1 : (i < j) ? -1 : 0;
+            });
+            list.append(elems);
+            list.sortable('refreshPositions');
+        }
     });
-    $(formSelector+' .nested-form-list').sortable('refreshPositions');
-    $(formSelector+' select.nested-filter-select').trigger('change');
+    $(formSelector+' select.nested-filter-select').filter(':first').trigger('change');
 };
 
 var showTemplateFunction = function(data,tree,node){
