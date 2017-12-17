@@ -42,6 +42,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -69,8 +71,9 @@ public class DataSearcher {
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
     private static final int PAGE_LIMIT = 10000;
     private static final boolean debug = false;
+    private static final Lock lock = new ReentrantLock();
 
-    public synchronized static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, boolean highlight, boolean filterNestedObjects) {
+    public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, boolean highlight, boolean filterNestedObjects) {
         return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true, highlight,filterNestedObjects);
     }
 
@@ -85,7 +88,7 @@ public class DataSearcher {
                 .findAny().orElse(null);
     }
 
-    public synchronized static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
+    public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
         try {
             String[] attrNames = attributes.stream().filter(attr->!Constants.FILING_ATTRIBUTES_SET.contains(attr.getRootName())).map(attr->(attr instanceof NestedAttribute) ? attr.getName()+".*" : attr.getFullName()).toArray(size->new String[size]);
             String[] filingAttrNames = attributes.stream().filter(attr->Constants.FILING_ATTRIBUTES_SET.contains(attr.getRootName())).map(attr->(attr instanceof NestedAttribute) ? attr.getName()+".*" : attr.getFullName()).toArray(size->new String[size]);
@@ -126,12 +129,24 @@ public class DataSearcher {
 
             //String[] attrArray = attributes.stream().flatMap(attr->SimilarPatentServer.attributeNameHelper(attr,"").stream()).toArray(size -> new String[size]);
             AtomicReference<SearchRequestBuilder> request = new AtomicReference<>(client.prepareSearch(INDEX_NAME)
-                    .setScroll(new TimeValue(120000))
                     .setTypes(TYPE_NAME)
                     .setFetchSource(attrNames,new String[]{})
-                    .setSize(Math.min(PAGE_LIMIT,maxLimit))
                     .setMinScore(isOverallScore&&similarityThreshold>0f?similarityThreshold:0f)
                     .setFrom(0));
+
+            boolean scroll;
+            if(maxLimit > 50000) {
+                scroll = true;
+                request.set(request.get()
+                        .setSize(Math.min(PAGE_LIMIT,maxLimit))
+                        .setScroll(new TimeValue(120000))
+                );
+            } else {
+                scroll = false;
+                request.set(request.get()
+                        .setSize(maxLimit)
+                );
+            }
 
             if(!comparator.isEmpty() && sortBuilder!=null) {
                 request.set(request.get().addSort(sortBuilder));
@@ -223,7 +238,7 @@ public class DataSearcher {
             request.set(request.get().setQuery(queryBuilder.get()));
 
             SearchResponse response = request.get().get();
-            return iterateOverSearchResults(response, hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore, filterNestedObjects)), maxLimit, merge);
+            return iterateOverSearchResults(response, hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore, filterNestedObjects)), maxLimit, merge, scroll);
 
         } catch(Exception e) {
             e.printStackTrace();
@@ -232,29 +247,45 @@ public class DataSearcher {
     }
 
     public static List<Item> iterateOverSearchResults(SearchResponse response, Function<SearchHit,Item> hitTransformer, int maxLimit, boolean merge) {
+        return iterateOverSearchResults(response,hitTransformer,maxLimit,merge,true);
+    }
+
+    public static List<Item> iterateOverSearchResults(SearchResponse response, Function<SearchHit,Item> hitTransformer, int maxLimit, boolean merge, final boolean scroll) {
         //Scroll until no hits are returned
         List<Item> items = Collections.synchronizedList(new ArrayList<>());
-        long count = 0;
-        do {
-            System.out.print("-");
-            SearchHit[] searchHits = response.getHits().getHits();
-            Item[] newItems = new Item[searchHits.length];
-            IntStream.range(0,newItems.length).parallel().forEach(i->{
-                Item transformation = hitTransformer.apply(searchHits[i]);
-                if(transformation!=null) {
-                    newItems[i]=transformation;
+        if(scroll) lock.lock();
+        try {
+            long count = 0;
+            do {
+                System.out.print("-");
+                SearchHit[] searchHits = response.getHits().getHits();
+                Item[] newItems = new Item[searchHits.length];
+                IntStream.range(0, newItems.length).parallel().forEach(i -> {
+                    Item transformation = hitTransformer.apply(searchHits[i]);
+                    if (transformation != null) {
+                        newItems[i] = transformation;
+                    }
+                });
+                count += searchHits.length;
+                if (merge) {
+                    items.addAll(Arrays.asList(newItems));
                 }
-            });
-            count+=searchHits.length;
-            if(merge) {
-                items.addAll(Arrays.asList(newItems));
+                if (scroll) {
+                    response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(120000)).execute().actionGet();
+                } else {
+                    response = null;
+                }
             }
-            response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(120000)).execute().actionGet();
-        } while(response.getHits().getHits().length != 0 && (maxLimit < 0 || count < maxLimit)); // Zero hits mark the end of the scroll and the while loop.
-        ClearScrollResponse clearScrollResponse = client.prepareClearScroll().addScrollId(response.getScrollId()).get();
-        System.out.println();
-        System.out.println("Sucessfully cleared scroll: "+clearScrollResponse.isSucceeded());
-        return items;
+            while (response != null && response.getHits().getHits().length != 0 && (maxLimit < 0 || count < maxLimit)); // Zero hits mark the end of the scroll and the while loop.
+            ClearScrollResponse clearScrollResponse = client.prepareClearScroll().addScrollId(response.getScrollId()).get();
+            System.out.println();
+            System.out.println("Sucessfully cleared scroll: " + clearScrollResponse.isSucceeded());
+            return items;
+        } finally {
+            if(scroll) {
+                lock.unlock();
+            }
+        }
     }
 
     private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, @NonNull String comparator, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request, AtomicReference<InnerHitBuilder> innerHitBuilder) {

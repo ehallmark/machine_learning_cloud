@@ -405,14 +405,17 @@ public class SimilarPatentServer {
         List<AbstractAttribute> attributes = new ArrayList<>();
         getAttributesHelper(allAttributes,attributes);
 
+        List<AbstractAttribute> discreteAttrsTemp = attributes.stream().filter(attr->attr.getType().equals("keyword")||(attr.getType().equals("text") && attr.getNestedFields()!=null)).collect(Collectors.toList());
+
         List<AbstractAttribute> dateAttrs = groupAttributesToNewParents(attributes.stream().filter(attr->attr.getType().equals("date")).collect(Collectors.toList()));
-        List<AbstractAttribute> discreteAttrs = groupAttributesToNewParents(attributes.stream().filter(attr->attr.getType().equals("keyword")||(attr.getType().equals("text") && attr.getNestedFields()!=null)).collect(Collectors.toList()));
         List<AbstractAttribute> rangeAttrs = groupAttributesToNewParents(attributes.stream().filter(attr->attr instanceof RangeAttribute).collect(Collectors.toList()));
+        List<AbstractAttribute> discreteAttrs = groupAttributesToNewParents(discreteAttrsTemp);
+        List<AbstractAttribute> discreteAttrsCopy = groupAttributesToNewParents(discreteAttrsTemp);
 
         chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart(discreteAttrs));
         chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart(rangeAttrs));
         chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart(dateAttrs));
-        chartModelMap.put(Constants.GROUPED_TABLE_CHART, new GroupedTableChart(discreteAttrs));
+        chartModelMap.put(Constants.GROUPED_TABLE_CHART, new GroupedTableChart(discreteAttrsCopy));
 
         allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
             @Override
