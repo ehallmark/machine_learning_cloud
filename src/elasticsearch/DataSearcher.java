@@ -260,7 +260,8 @@ public class DataSearcher {
                 System.out.print("-");
                 SearchHit[] searchHits = response.getHits().getHits();
                 Item[] newItems = new Item[searchHits.length];
-                IntStream.range(0, newItems.length).parallel().forEach(i -> {
+
+                IntStream.range(0, Math.min(newItems.length,(int) (maxLimit-count))).parallel().forEach(i -> {
                     Item transformation = hitTransformer.apply(searchHits[i]);
                     if (transformation != null) {
                         newItems[i] = transformation;
