@@ -32,6 +32,7 @@ public abstract class AbstractChartAttribute extends AbstractAttribute implement
     public AbstractChartAttribute(List<AbstractAttribute> attributes, String name) {
         super(Collections.emptyList());
         this.attributes=attributes;
+        attributes.forEach(attr->attr.setParent(this));
         this.name=name;
     }
 
@@ -48,7 +49,7 @@ public abstract class AbstractChartAttribute extends AbstractAttribute implement
     public Tag technologySelect(Function<String,Boolean> userRoleFunction) {
         String styleString = "margin-left: 5%; margin-right: 5%; display: none;";
         String name = getFullName().replace(".","");
-        List<AbstractAttribute> applicableAttributes = attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getRootName())).collect(Collectors.toList());
+        List<AbstractAttribute> applicableAttributes = attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
         return div().with(
                 div().with(
                         SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", applicableAttributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))

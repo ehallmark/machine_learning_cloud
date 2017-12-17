@@ -386,7 +386,7 @@ public class SimilarPatentServer {
     }
 
     private static List<AbstractAttribute> groupAttributesToNewParents(List<AbstractAttribute> attributes) {
-        List<AbstractAttribute> nonNested = attributes.stream().filter(attr->attr.getParent()==null).collect(Collectors.toList());
+        List<AbstractAttribute> nonNested = attributes.stream().filter(attr->attr.getParent()==null).map(attr->attr.clone()).collect(Collectors.toList());
         List<AbstractAttribute> nested = attributes.stream().filter(attr->attr.getParent()!=null).collect(Collectors.toList());
         Map<String,Set<AbstractAttribute>> nestedMap = nested.stream().collect(Collectors.groupingBy(attr->attr.getRootName(),Collectors.toSet()));
         nestedMap.entrySet().forEach(e->{
