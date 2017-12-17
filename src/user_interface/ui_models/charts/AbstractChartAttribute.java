@@ -42,11 +42,14 @@ public abstract class AbstractChartAttribute extends AbstractAttribute implement
         }
     }
 
-    public Tag technologySelect(Function<String,Boolean> userRoleFunction) {
-        Map<String,List<String>> optGroups = new TreeMap<>(attributes.stream().filter(attr->userRoleFunction.apply(attr.getRootName())).collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
+    public SortedMap<String,List<String>> getOptgroups(Function<String,Boolean> userRoleFunction) {
+        return new TreeMap<>(attributes.stream().filter(attr->userRoleFunction.apply(attr.getRootName())).collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
 
-        return SimilarPatentServer.technologySelectWithCustomClass(getName(),"multiselect", optGroups);
+    }
+
+    public Tag technologySelect(Function<String,Boolean> userRoleFunction) {
+        return SimilarPatentServer.technologySelectWithCustomClass(getName(),"multiselect", getOptgroups(userRoleFunction));
     }
 
 

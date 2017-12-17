@@ -61,12 +61,12 @@ public class GroupedTableChart extends TableAttribute {
         String name = getFullName().replace(".","");
         return div().with(
                 div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", attributes.stream().filter(attr->userRoleFunction.apply(attr.getRootName())).map(attr->attr.getFullName()).collect(Collectors.toList()))
+                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", getOptgroups(userRoleFunction))
                 ), div().withClass("nested-form-list").with(
                         attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getRootName())).map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
                             return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(userRoleFunction), filter.isNotYetImplemented(), filter.getDescription().render())
+                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),filter.getRootName(),collapseId,filter.getOptionsTag(userRoleFunction), filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())
                 )
