@@ -52,7 +52,7 @@ public abstract class AbstractAttribute {
     }
 
     public String getFullName() {
-        return parent==null? getName() : (parent.getName().replaceAll("[\\[\\]]","") + "." + getName()).trim();
+        return parent==null? getName() : (parent.getFullName().replaceAll("[\\[\\]]","") + "." + getName()).trim();
     }
 
     public boolean isObject() {
