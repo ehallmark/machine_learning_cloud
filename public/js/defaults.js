@@ -66,7 +66,7 @@ $(document).ready(function() {
         $downloadForm.appendTo('body').submit().remove();
     };
 
-    var successReportFrom = function() {
+    var successReportFrom = function(data) {
        var $activePanes = $('#results').find('.tab-pane.active');
        $('#results').html(data.message);
        if($activePanes.length>0) {
