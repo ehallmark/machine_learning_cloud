@@ -1931,20 +1931,16 @@ public class SimilarPatentServer {
 
 
 
-    public static Tag technologySelect(String name, Collection<String> orderedClassifications) {
-        return technologySelectWithCustomClass(name, "multiselect", orderedClassifications);
-    }
-
-    public static Tag technologySelectWithCustomClass(String name, String clazz, Collection<String> orderedClassifications) {
-        return select().attr("style","width:100%;").withName(name).withId(("multiselect-"+clazz+"-"+name).replaceAll("[\\[\\] ]","")).withClass(clazz).attr("multiple","multiple").with(
+    public static Tag technologySelectWithCustomClass(String name, String id, String clazz, Collection<String> orderedClassifications) {
+        return select().attr("style","width:100%;").withName(name).withId(id).withClass(clazz).attr("multiple","multiple").with(
                 orderedClassifications.stream().map(technology->{
                     return div().with(option(humanAttributeFor(technology)).withValue(technology));
                 }).collect(Collectors.toList())
         );
     }
 
-    public static Tag technologySelectWithCustomClass(String name, String clazz, Map<String,List<String>> orderedClassifications) {
-        return select().attr("style","width:100%;").withName(name).withId(("multiselect-"+clazz+"-"+name).replaceAll("[\\[\\] ]","")).withClass(clazz).attr("multiple","multiple").with(
+    public static Tag technologySelectWithCustomClass(String name, String id, String clazz, Map<String,List<String>> orderedClassifications) {
+        return select().attr("style","width:100%;").withName(name).withId(id).withClass(clazz).attr("multiple","multiple").with(
                 orderedClassifications.entrySet().stream().map(e-> {
                     String optGroup = e.getKey();
                     return optgroup().attr("label",humanAttributeFor(optGroup)).attr("name",optGroup).with(
@@ -2125,11 +2121,11 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag createAttributeElement(String modelName, String optGroup, String collapseId, Tag optionTag, boolean notImplemented, String description) {
+    public static Tag createAttributeElement(String modelName, String optGroup, String collapseId, Tag optionTag, String selectId, boolean notImplemented, String description) {
         return div().attr("data-model",modelName).withClass("attributeElement draggable " + (notImplemented ? " not-implemented" : "")).with(
                 div().attr("style","width: 100%;").attr("title", notImplemented ? NOT_IMPLEMENTED_STRING : description).withClass("collapsible-header").attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)).attr("opt-group",optGroup),
-                        span().withClass("remove-button").withText("x")
+                        span().withClass("remove-button").attr("data-model",modelName).attr("data-select","#"+selectId).withText("x")
                 ), span().withClass("collapse show").withId(collapseId).with(optionTag)
         );
     }

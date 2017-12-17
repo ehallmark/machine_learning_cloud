@@ -116,8 +116,10 @@ public class AbstractIncludeFilter extends AbstractFilter {
                         ajaxMultiSelect(getName(), ((AjaxMultiselect) attribute).ajaxUrl(), ("multiselect-multiselect-"+getName()).replaceAll("[\\[\\] ]",""))
                 );
             } else {
+                String clazz = "multiselect";
+                String id = ("multiselect-"+clazz+"-"+getName()).replaceAll("[\\[\\] ]","");
                 tag= div().with(
-                        SimilarPatentServer.technologySelect(getName(), getAllValues())
+                        SimilarPatentServer.technologySelectWithCustomClass(getName(), id, clazz, getAllValues())
                 );
             }
         }

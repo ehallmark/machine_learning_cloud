@@ -283,10 +283,9 @@ $(document).ready(function() {
 
     $('.draggable .collapsible-header .remove-button').click(function(e) {
         e.stopPropagation();
-        var $draggable = $(this).closest('.draggable');
         // get name
-        var label = $draggable.attr('data-model');
-        var $select = $draggable.closest('.nested-form-list').prev().find('select.nested-filter-select');
+        var label = $(this).attr('data-model');
+        var $select = $($(this).attr('data-select'));
         var values = $select.val();
         var idx = $.inArray(label,values);
         if(idx >= 0) {
@@ -294,6 +293,10 @@ $(document).ready(function() {
             $select.val(values).trigger('change');
         }
     });
+
+
+
+
 
     $('.multiselect').select2({
         minimumResultsForSearch: 5,
@@ -360,8 +363,14 @@ $(document).ready(function() {
     showTemplateFunction({file: 'default'},null,null);
 });
 
+
+var resetAllDraggables = function() {
+    var $filters = $('select.nested-filter-select');
+    $filters.val(null).trigger('change');
+};
+
 var resetSearchForm = function() {
-    $('.target .draggable .collapsible-header .remove-button').click();
+    //resetAllDraggables();
     $('.draggable').find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
     $('div.attribute').addClass("disabled");
     $('#results').html('');
