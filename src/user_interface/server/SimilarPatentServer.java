@@ -308,6 +308,16 @@ public class SimilarPatentServer {
         return allAttrNames;
     }
 
+    private static Set<String> numericAttributes;
+    private static synchronized Set<String> getNumericAttributes() {
+        if(numericAttributes==null) {
+            List<AbstractAttribute> allAttrs = new ArrayList<>();
+            getAttributesHelper(allAttributes,allAttrs);
+            numericAttributes = allAttrs.stream().filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Integer)||attr.getFieldType().equals(AbstractFilter.FieldType.Double)).map(attr->attr.getFullName()).collect(Collectors.toSet());
+        }
+        return numericAttributes;
+    }
+
 
     private static Collection<String> allStreamingAttrNames;
     public static Collection<String> getAllStreamingAttributeNames() {
@@ -1061,17 +1071,20 @@ public class SimilarPatentServer {
             // try to get custom data
             List<String> headers;
             List<Map<String,String>> data;
+            Set<String> numericAttrNames;
             if(paramIdx.length()>0) {
                 TableResponse tableResponse = req.session().attribute("table-"+paramIdx);
                 if(tableResponse!=null) {
                     System.out.println("Found tableResponse...");
                     headers = tableResponse.headers;
                     data = tableResponse.computeAttributesTask.join();
+                    numericAttrNames = tableResponse.numericAttrNames;
                     System.out.println("Data size: "+data.size());
                 } else {
                     System.out.println("WARNING:: Could not find tableResponse...");
                     headers = Collections.emptyList();
                     data = Collections.emptyList();
+                    numericAttrNames = Collections.emptySet();
                 }
             } else {
 
@@ -1081,6 +1094,7 @@ public class SimilarPatentServer {
 
                 headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
                 data = (List<Map<String,String>>)map.getOrDefault("rows-highlighted",Collections.emptyList());
+                numericAttrNames = (Set<String>)map.getOrDefault("numericAttrNames",Collections.emptySet());
             }
             System.out.println("Number of headers: "+headers.size());
 
@@ -1115,17 +1129,18 @@ public class SimilarPatentServer {
             if(req.queryMap("sorts")!=null) {
                 req.queryMap("sorts").toMap().forEach((k,v)->{
                     if(v==null||k==null) return;
+                    boolean isNumericField = numericAttrNames.contains(k);
                     String sortStr = k+String.join("",v)+searchStr;
                     if(previousSort==null||!sortStr.equals(previousSort)) {
                         Comparator<Map<String, String>> comp = (d1, d2) -> {
-                            try {
-                                return Double.valueOf(d1.get(k)).compareTo(Double.valueOf(d2.get(k)));
-                            } catch (Exception nfe) {
+                            if(isNumericField) {
                                 try {
-                                    return d1.get(k).compareTo(d2.get(k));
-                                } catch(Exception e) {
-                                    return 0;
+                                    return Double.valueOf(d1.get(k)).compareTo(Double.valueOf(d2.get(k)));
+                                } catch (Exception nfe) {
+                                    return 1;
                                 }
+                            } else {
+                                return d1.get(k).compareTo(d2.get(k));
                             }
                         };
                         if (v.length > 0 && v[0].equals("-1")) {
@@ -1529,6 +1544,7 @@ public class SimilarPatentServer {
                     excelRequestMap.put("headers", tableHeaders);
                     excelRequestMap.put("rows", tableData);
                     excelRequestMap.put("rows-highlighted", tableDataHighlighted);
+                    excelRequestMap.put("numericAttrNames", getNumericAttributes());
                     req.session().attribute(EXCEL_SESSION, excelRequestMap);
                     req.session().attribute("assets", portfolioList.getIds());
 

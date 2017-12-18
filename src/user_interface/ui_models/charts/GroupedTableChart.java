@@ -62,6 +62,7 @@ public class GroupedTableChart extends TableAttribute {
         response.headers = new ArrayList<>();
         response.headers.addAll(attrList);
         response.headers.add("Count");
+        response.numericAttrNames = Collections.synchronizedSet(new HashSet<>(Collections.singletonList("Count")));
         response.computeAttributesTask = new RecursiveTask<List<Map<String,String>>>() {
             @Override
             protected List<Map<String,String>> compute() {
