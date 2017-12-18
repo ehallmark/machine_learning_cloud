@@ -352,7 +352,8 @@ $(document).ready(function() {
 
     $('#main-content-id').tooltip({
         content: function() { return $(this).attr('title'); },
-        delay: {show: 500, hide: 100}
+        show: 500,
+        hide: 100
     });
 
     $('.nested-form-list').sortable();
