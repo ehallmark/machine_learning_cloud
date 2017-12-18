@@ -25,29 +25,33 @@ import static j2html.TagCreator.*;
  * Created by Evan on 6/18/2017.
  */
 public class AbstractLineChart extends ChartAttribute {
-    protected Integer max;
-    protected Integer min;
-
-    public AbstractLineChart(Collection<AbstractAttribute> attributes) {
-        super(attributes,Constants.LINE_CHART);
+    protected Map<String,Number> attrToMinMap;
+    protected Map<String,Number> attrToMaxMap;
+    public AbstractLineChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupedByAttributes) {
+        super(attributes,groupedByAttributes,Constants.LINE_CHART);
+        this.attrToMaxMap = Collections.synchronizedMap(new HashMap<>());
+        this.attrToMinMap = Collections.synchronizedMap(new HashMap<>());
     }
 
     @Override
     public ChartAttribute dup() {
-        return new AbstractLineChart(attributes);
+        return new AbstractLineChart(attributes,groupByAttributes);
     }
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return div().with(
-                div().withClass("row").with(
-                        div().withClass("col-6").with(
-                                label("Min"),br(),input().withId(SimilarPatentServer.LINE_CHART_MIN).withName(SimilarPatentServer.LINE_CHART_MIN).withType("number").withClass("form-control")
-                        ), div().withClass("col-6").with(
-                                label("Max"),br(),input().withId(SimilarPatentServer.LINE_CHART_MAX).withName(SimilarPatentServer.LINE_CHART_MAX).withType("number").withClass("form-control")
-                        )
-                ),
-                super.getOptionsTag(userRoleFunction)
+        Function<String,Tag> additionalTagFunction = this::getAdditionalTagPerAttr;
+        return super.getOptionsTag(userRoleFunction,additionalTagFunction,true);
+    }
+
+    private Tag getAdditionalTagPerAttr(String attrName) {
+        attrName = attrName.replace(getName().replace("[","").replace("]","")+".","");
+        return div().withClass("row").with(
+                div().withClass("col-6").with(
+                        label("Min"),br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MIN).withName(attrName+SimilarPatentServer.LINE_CHART_MIN).withType("number").withClass("form-control")
+                ), div().withClass("col-6").with(
+                        label("Max"),br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MAX).withName(attrName+SimilarPatentServer.LINE_CHART_MAX).withType("number").withClass("form-control")
+                )
         );
     }
 
@@ -60,9 +64,14 @@ public class AbstractLineChart extends ChartAttribute {
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         super.extractRelevantInformationFromParams(params);
-
-        min = SimilarPatentServer.extractInt(params, SimilarPatentServer.LINE_CHART_MIN, null);
-        max = SimilarPatentServer.extractInt(params, SimilarPatentServer.LINE_CHART_MAX, null);
+        if(this.attrNames!=null) {
+            this.attrNames.forEach(attr -> {
+                Number min = SimilarPatentServer.extractInt(params, attr+SimilarPatentServer.LINE_CHART_MIN, null);
+                Number max = SimilarPatentServer.extractInt(params, attr+SimilarPatentServer.LINE_CHART_MAX, null);
+                if(min!=null) attrToMinMap.put(attr,min);
+                if(max!=null) attrToMaxMap.put(attr,max);
+            });
+        }
     }
     
     @Override
@@ -73,7 +82,7 @@ public class AbstractLineChart extends ChartAttribute {
             String title = humanAttr + " Timeline";
             String xAxisSuffix = "";
             String yAxisSuffix = "";
-            return new LineChart(title, collectTimelineData(portfolioList.getItemList(), attribute, humanSearchType),xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType,  0, min, max);
+            return new LineChart(title, collectTimelineData(portfolioList.getItemList(), attribute, humanSearchType),xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType,  0, attrToMinMap.get(attribute), attrToMaxMap.get(attribute));
         }).collect(Collectors.toList());
     }
 

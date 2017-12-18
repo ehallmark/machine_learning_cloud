@@ -30,8 +30,8 @@ import static j2html.TagCreator.span;
  * Created by Evan on 12/16/2017.
  */
 public class GroupedTableChart extends TableAttribute {
-    public GroupedTableChart(Collection<AbstractAttribute> attributes) {
-        super(attributes, Constants.GROUPED_TABLE_CHART);
+    public GroupedTableChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupedByAttrs) {
+        super(attributes, groupedByAttrs, Constants.GROUPED_TABLE_CHART);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class GroupedTableChart extends TableAttribute {
 
     @Override
     public TableAttribute dup() {
-        return new GroupedTableChart(attributes);
+        return new GroupedTableChart(attributes, groupByAttributes);
     }
 
     @Override

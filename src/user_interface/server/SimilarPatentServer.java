@@ -411,21 +411,22 @@ public class SimilarPatentServer {
         return nonNested;
     }
 
+    public static List<AbstractAttribute> duplicateAttributes(List<AbstractAttribute> attributes) {
+        return attributes.stream().map(attr->attr.clone()).collect(Collectors.toList());
+    }
+
     public static void loadChartModels() {
         List<AbstractAttribute> attributes = new ArrayList<>();
         getAttributesHelper(allAttributes,attributes);
 
-        List<AbstractAttribute> discreteAttrsTemp = attributes.stream().filter(attr->attr.getType().equals("keyword")||(attr.getType().equals("text") && attr.getNestedFields()!=null)).collect(Collectors.toList());
+        List<AbstractAttribute> discreteAttrs = attributes.stream().filter(attr->attr.getType().equals("keyword")||(attr.getType().equals("text") && attr.getNestedFields()!=null)).collect(Collectors.toList());
+        List<AbstractAttribute> dateAttrs = attributes.stream().filter(attr->attr.getType().equals("date")).collect(Collectors.toList());
+        List<AbstractAttribute> rangeAttrs = attributes.stream().filter(attr->attr instanceof RangeAttribute).collect(Collectors.toList());
 
-        List<AbstractAttribute> dateAttrs = groupAttributesToNewParents(attributes.stream().filter(attr->attr.getType().equals("date")).collect(Collectors.toList()));
-        List<AbstractAttribute> rangeAttrs = groupAttributesToNewParents(attributes.stream().filter(attr->attr instanceof RangeAttribute).collect(Collectors.toList()));
-        List<AbstractAttribute> discreteAttrs = groupAttributesToNewParents(discreteAttrsTemp);
-        List<AbstractAttribute> discreteAttrsCopy = groupAttributesToNewParents(discreteAttrsTemp);
-
-        chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart(discreteAttrs));
-        chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart(rangeAttrs));
-        chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart(dateAttrs));
-        chartModelMap.put(Constants.GROUPED_TABLE_CHART, new GroupedTableChart(discreteAttrsCopy));
+        chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs)));
+        chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart(groupAttributesToNewParents(rangeAttrs),duplicateAttributes(discreteAttrs)));
+        chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart(groupAttributesToNewParents(dateAttrs),duplicateAttributes(discreteAttrs)));
+        chartModelMap.put(Constants.GROUPED_TABLE_CHART, new GroupedTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs)));
 
         allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
             @Override
@@ -1509,7 +1510,7 @@ public class SimilarPatentServer {
                     tables.forEach(table->table.extractRelevantInformationFromParams(req));
 
                     Set<String> chartPreReqs = abstractCharts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toSet());
-                   // TODO add grouped by attrs chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getGroupedByNames))
+                   chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrNameToGroupByAttrNameMap().values().stream()).collect(Collectors.toList()));
 
                     SimilarityEngineController engine = similarityEngine.join().dup();
                     engine.setChartPrerequisites(chartPreReqs);
@@ -1968,8 +1969,10 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag technologySelectWithCustomClass(String name, String id, String clazz, Map<String,List<String>> orderedClassifications) {
-        return select().attr("style","width:100%;").withName(name).withId(id).withClass(clazz).attr("multiple","multiple").with(
+    public static Tag technologySelectWithCustomClass(String name, String id, String clazz, Map<String,List<String>> orderedClassifications, boolean multiple) {
+        ContainerTag select = select().attr("style","width:100%;").withName(name).withId(id).withClass(clazz);
+        if(multiple) select = select.attr("multiple","multiple");
+        return select.with(
                 orderedClassifications.entrySet().stream().map(e-> {
                     String optGroup = e.getKey();
                     return optgroup().attr("label",humanAttributeFor(optGroup)).attr("name",optGroup).with(

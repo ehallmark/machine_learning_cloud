@@ -1,5 +1,6 @@
 package user_interface.ui_models.attributes;
 
+import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
 import user_interface.server.SimilarPatentServer;
@@ -47,20 +48,30 @@ public abstract class NestedAttribute extends AbstractAttribute {
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+        return getOptionsTag(userRoleFunction, null, false);
+    }
+
+
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, boolean perAttr) {
         String styleString = "margin-left: 5%; margin-right: 5%; display: none;";
         String name = getFullName().replace(".","");
         String clazz = "nested-filter-select";
         String id = ("multiselect-"+clazz+"-"+name).replaceAll("[\\[\\] ]","");
+        Tag groupbyTag = additionalTagFunction!=null&&!perAttr ? additionalTagFunction.apply(null) : null;
         List<AbstractAttribute> applicableAttributes = attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
         return div().with(
                 div().with(
+                        groupbyTag==null?span():groupbyTag,
                         SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),id,clazz, applicableAttributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(
                         applicableAttributes.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
-                            return div().attr("style", styleString).with(
+                            Tag additionalTag = additionalTagFunction!=null&&perAttr ? additionalTagFunction.apply(filter.getFullName()) : null;
+                            ContainerTag attrTag = div().attr("style", styleString).with(
                                     SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(userRoleFunction), id, filter.isNotYetImplemented(), filter.getDescription().render())
                             );
+                            if(additionalTag!=null) attrTag = attrTag.with(additionalTag);
+                            return attrTag;
                         }).collect(Collectors.toList())
                 )
         );

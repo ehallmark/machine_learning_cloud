@@ -120,7 +120,7 @@ public class AbstractNestedFilter extends AbstractFilter {
         String id = ("multiselect-"+clazz+"-"+getName()).replaceAll("[\\[\\] ]","");
         return div().with(
                 div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(getName(),id,clazz, filterGroups)
+                        SimilarPatentServer.technologySelectWithCustomClass(getName(),id,clazz, filterGroups, true)
                 ), div().withClass("nested-form-list").with(
                         availableFilters.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");

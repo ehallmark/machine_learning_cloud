@@ -22,8 +22,8 @@ import static j2html.TagCreator.span;
  */
 public abstract class ChartAttribute extends AbstractChartAttribute {
 
-    public ChartAttribute(Collection<AbstractAttribute> attributes, String name) {
-        super(attributes,name);
+    public ChartAttribute(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, String name) {
+        super(attributes,groupByAttrs,name,true);
     }
 
     public abstract List<? extends AbstractChart> create(PortfolioList portfolioList, int i);

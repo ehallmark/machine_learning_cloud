@@ -15,7 +15,7 @@ public class LineChart extends AbstractChart {
         return "line";
     }
 
-    public LineChart(String title, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, Integer min, Integer max) {
+    public LineChart(String title, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, Number min, Number max) {
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = "{point.key}"+xAxisSuffix;
         options=new Options()

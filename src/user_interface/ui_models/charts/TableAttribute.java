@@ -23,8 +23,8 @@ import static j2html.TagCreator.*;
  */
 public abstract class TableAttribute extends AbstractChartAttribute {
 
-    public TableAttribute(Collection<AbstractAttribute> attributes, String name) {
-        super(attributes,name);
+    public TableAttribute(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupedByAttributes, String name) {
+        super(attributes,groupedByAttributes,name,false);
     }
 
     public abstract List<TableResponse> createTables(PortfolioList portfolioList);

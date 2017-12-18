@@ -24,13 +24,13 @@ import java.util.stream.Stream;
  */
 public class AbstractDistributionChart extends ChartAttribute {
 
-    public AbstractDistributionChart(Collection<AbstractAttribute> attributes) {
-        super(attributes, Constants.PIE_CHART);
+    public AbstractDistributionChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
+        super(attributes, groupByAttrs, Constants.PIE_CHART);
     }
 
     @Override
     public ChartAttribute dup() {
-        return new AbstractDistributionChart(attributes);
+        return new AbstractDistributionChart(attributes,groupByAttributes);
     }
 
     @Override

@@ -27,46 +27,28 @@ import static j2html.TagCreator.*;
  * Created by Evan on 6/18/2017.
  */
 public class AbstractHistogramChart extends ChartAttribute {
-    protected String groupedBy;
     Map<String,RangeAttribute> nameToRangeMap;
-    public AbstractHistogramChart(Collection<AbstractAttribute> attributes) {
-        this(attributes, attributes.stream().collect(Collectors.toMap(attr->attr.getFullName(),attr->(RangeAttribute)attr)));
+    public AbstractHistogramChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
+        this(attributes, groupByAttrs, attributes.stream().collect(Collectors.toMap(attr->attr.getFullName(),attr->(RangeAttribute)attr)));
     }
 
-    private AbstractHistogramChart(Collection<AbstractAttribute> attributes, Map<String,RangeAttribute> nameToRangeMap) {
-        super(attributes,Constants.HISTOGRAM);
+    private AbstractHistogramChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Map<String,RangeAttribute> nameToRangeMap) {
+        super(attributes,groupByAttrs,Constants.HISTOGRAM);
         this.nameToRangeMap=nameToRangeMap;
     }
 
 
     @Override
     public ChartAttribute dup() {
-        return new AbstractHistogramChart(attributes,nameToRangeMap);
+        return new AbstractHistogramChart(attributes,groupByAttributes,nameToRangeMap);
     }
 
-    @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return div().with(
-                label("Group By"),br(),select().withId(SimilarPatentServer.CHARTS_GROUPED_BY_FIELD.replaceAll("[\\[\\]]","")).withClass("form-control single-select2").withName(SimilarPatentServer.CHARTS_GROUPED_BY_FIELD).with(
-                        option("No Group (default)").attr("selected","selected").withValue(""),
-                        span().with(
-                                Stream.of(Constants.ASSIGNMENTS+"."+Constants.ASSIGNOR, Constants.ASSIGNMENTS+"."+Constants.ASSIGNEE, Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE, Constants.LATEST_ASSIGNEE+"."+Constants.NORMALIZED_LATEST_ASSIGNEE, Constants.TECHNOLOGY, Constants.WIPO_TECHNOLOGY)
-                                        .map(key->option(SimilarPatentServer.humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
-                        )
-                ), super.getOptionsTag(userRoleFunction)
-        );
-    }
 
     @Override
     public String getType() {
         return "histogram";
     }
 
-    @Override
-    public void extractRelevantInformationFromParams(Request params) {
-        super.extractRelevantInformationFromParams(params);
-        groupedBy = SimilarPatentServer.extractString(params, SimilarPatentServer.CHARTS_GROUPED_BY_FIELD, null);
-    }
 
     @Override
     public List<? extends AbstractChart> create(PortfolioList portfolioList, int i) {
@@ -74,6 +56,7 @@ public class AbstractHistogramChart extends ChartAttribute {
             String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
             String humanSearchType = combineTypesToString(searchTypes);
             String title = humanAttr + " Histogram";
+            String groupedBy = attrNameToGroupByAttrNameMap.get(attribute);
 
             RangeAttribute rangeAttribute = nameToRangeMap.get(attribute);
             double min = rangeAttribute.min().doubleValue();
