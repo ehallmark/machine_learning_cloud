@@ -240,26 +240,20 @@ $(document).ready(function() {
          });
 
 
-         var $hiddenOptions = $(e.currentTarget).find("option");
-         if($options.length>0) { $hiddenOptions = $hiddenOptions.not($options); }
-         $hiddenOptions.each(function(i,option){
-             var id = $(option).val();
-             var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
-             // update attributes
-             var $divAttribute = $draggable.attr('data-attribute');
-             if($divAttribute) {
-                $draggable.find('#'+$divAttribute).addClass("disabled");
-             }
-             var inputs = $draggable.data('inputs');
-             if(inputs && inputs.length > 0) {
-                $.each(inputs,function() {
-                    $('#'+this).prop('disabled', true).val(null).filter('select').trigger('change', [true,preventHighlight]);
-                });
-             }
+         if(!child) { // disable full subtree tree
+             var $hiddenOptions = $(e.currentTarget).find("option");
+             if($options.length>0) { $hiddenOptions = $hiddenOptions.not($options); }
+             $hiddenOptions.each(function(i,option){
+                 var id = $(option).val();
+                 var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
+                 // update attributes
+                 $draggable.find('div.attribute').addClass("disabled");
+                 $draggable.find('select, input, textarea').prop('disabled', true).val(null).filter('select').trigger('change', [true,preventHighlight]);
 
-             $draggable.parent().hide();
-             return true;
-         });
+                 $draggable.parent().hide();
+                 return true;
+             });
+         }
 
          if(addedDraggables.length == 1) { // added by human
              $.each(addedDraggables, function() {

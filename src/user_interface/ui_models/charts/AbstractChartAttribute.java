@@ -67,7 +67,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         if(groupByAttributes!=null) {
             groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
             if(groupByPerAttribute) {
-                additionalInputIdsFunction = attrName -> Collections.singletonList(idFromName(attrName));
+                additionalInputIdsFunction = attrName -> Collections.singletonList(getGroupByChartFieldName(idFromName(attrName)));
             }
         }
 
