@@ -66,12 +66,12 @@ public abstract class NestedAttribute extends AbstractAttribute {
                 ), div().withClass("nested-form-list").with(
                         applicableAttributes.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
+                            Tag childTag = filter.getOptionsTag(userRoleFunction);
                             Tag additionalTag = additionalTagFunction!=null&&perAttr ? additionalTagFunction.apply(filter.getFullName()) : null;
-                            ContainerTag attrTag = div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(userRoleFunction), id, filter.isNotYetImplemented(), filter.getDescription().render())
+                            if(additionalTag!=null) childTag = div().withClass("row").with(div().withClass("col-7").with(childTag),div().withClass("col-5").with(additionalTag));
+                            return div().attr("style", styleString).with(
+                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,childTag, id, filter.isNotYetImplemented(), filter.getDescription().render())
                             );
-                            if(additionalTag!=null) attrTag = div().with(additionalTag,attrTag);
-                            return attrTag;
                         }).collect(Collectors.toList())
                 )
         );
