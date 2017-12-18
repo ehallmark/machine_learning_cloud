@@ -209,8 +209,8 @@ $(document).ready(function() {
                  addedDraggables.push($draggable);
              }
 
-             var $attributeRegion = $draggable.find('input :not(.attributeElement input), select :not(.attributeElement select), textarea :not(.attributeElement textarea)');
-             $draggable.find('div.attribute :not(.attributeElement div.attribute)').removeClass("disabled");
+             var $attributeRegion = $draggable.find('input :not(.attributeElement .attributeElement input), select :not(.attributeElement .attributeElement select), textarea :not(.attributeElement .attributeElement textarea)');
+             $draggable.find('div.attribute :not(.attributeElement .attributeElement div.attribute)').removeClass("disabled");
              $attributeRegion.prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
 
              $draggable.parent().show();
@@ -311,9 +311,6 @@ $(document).ready(function() {
             $select.val(values).trigger('change');
         }
     });
-
-
-
 
 
     $('.multiselect').select2({
