@@ -60,20 +60,24 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         Function<String, Tag> groupByFunction = null;
         if(groupByAttributes!=null) {
-            groupByFunction = attrName -> {
-                String id = getGroupByChartFieldName(attrName);
-                List<AbstractAttribute> availableGroups = groupByAttributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
-                Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
-                        .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
-                String clazz = "form-control single-select2";
-                return div().with(
-                        label("Group By"), br(),
-                        SimilarPatentServer.technologySelectWithCustomClass(id,id,clazz, groupedGroupAttrs,false)
-                );
-            };
+            groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
         }
 
         return super.getOptionsTag(userRoleFunction,groupByFunction,groupByPerAttribute);
+    }
+
+
+    protected Tag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
+        attrName = attrName.replace(getName().replace("[","").replace("]","")+".","").replace(".","");
+        String id = getGroupByChartFieldName(attrName);
+        List<AbstractAttribute> availableGroups = groupByAttributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
+        Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
+                .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
+        String clazz = "form-control single-select2";
+        return div().with(
+                label("Group By"), br(),
+                SimilarPatentServer.technologySelectWithCustomClass(id,id,clazz, groupedGroupAttrs,false)
+        );
     }
 
     @Override

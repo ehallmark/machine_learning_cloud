@@ -202,34 +202,33 @@ $(document).ready(function() {
          var $selectWrapper = $(this).parent().parent();
 
          var addedDraggables = [];
-         if(!child) {
-             $options.each(function(i,option){
-                 var id = $(option).val();
-                 var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
-                 if(!child) { $draggable.find('input, select, textarea').prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]); }
+         $options.each(function(i,option){
+             var id = $(option).val();
+             var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
+             $draggable.find('input, select, textarea').prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
 
-                 if(!preventHighlight && $draggable.parent().is(':hidden')) {
-                     addedDraggables.push($draggable);
+             if(!preventHighlight && $draggable.parent().is(':hidden')) {
+                 addedDraggables.push($draggable);
+             }
+
+             if(!child) { $draggable.find('div.attribute').removeClass("disabled"); }
+
+             $draggable.parent().show();
+             $draggable.parent().find('.nested-form-list').filter(':first').each(function() {
+                 var list = $(this);
+                 var elems = list.children().filter('[sort-order]').detach();
+                 if(elems.length>0) {
+                     elems.sort(function(a,b) {
+                         var i = parseInt($(a).attr("sort-order"));
+                         var j = parseInt($(b).attr("sort-order"));
+                         return (i > j) ? 1 : (i < j) ? -1 : 0;
+                     });
+                     list.append(elems);
+                     list.sortable('refreshPositions');
                  }
-
-                 if(!child) { $draggable.find('div.attribute').removeClass("disabled"); }
-
-                 $draggable.parent().show();
-                 $draggable.parent().find('.nested-form-list').filter(':first').each(function() {
-                     var list = $(this);
-                     var elems = list.children().filter('[sort-order]').detach();
-                     if(elems.length>0) {
-                         elems.sort(function(a,b) {
-                             var i = parseInt($(a).attr("sort-order"));
-                             var j = parseInt($(b).attr("sort-order"));
-                             return (i > j) ? 1 : (i < j) ? -1 : 0;
-                         });
-                         list.append(elems);
-                         list.sortable('refreshPositions');
-                     }
-                 });
              });
-         }
+         });
+
 
          var $hiddenOptions = $(e.currentTarget).find("option");
          if($options.length>0) { $hiddenOptions = $hiddenOptions.not($options); }
