@@ -73,7 +73,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             };
         }
 
-        return super.getOptionsTag(userRoleFunction,groupByFunction,true);
+        return super.getOptionsTag(userRoleFunction,groupByFunction,groupByPerAttribute);
     }
 
     @Override
