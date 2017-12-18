@@ -88,13 +88,17 @@ public abstract class NestedAttribute extends AbstractAttribute {
                                 Tag additionalTag = additionalTagFunction!=null&&perAttr ? additionalTagFunction.apply(filter.getFullName()) : null;
                                 if(additionalTag!=null) childTag = div().with(additionalTag,childTag);
                             }
-                            List<String> inputIds = new ArrayList<>(filter.getInputIds());
+                            List<String> inputIds = new ArrayList<>();
+                            if(filter.getInputIds()!=null) {
+                                inputIds.addAll(filter.getInputIds());
+                            }
                             if(additionalInputIdsFunction!=null) {
                                 List<String> additional = additionalInputIdsFunction.apply(filter.getFullName());
                                 if(additional!=null) {
                                     inputIds.addAll(additional);
                                 }
                             }
+                            if(inputIds.isEmpty()) inputIds = null;
                             return div().attr("style", styleString).with(
                                     SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,childTag, id, filter.getAttributeId(), inputIds, filter.isNotYetImplemented(), filter.getDescription().render())
                             );
