@@ -205,13 +205,13 @@ $(document).ready(function() {
          $options.each(function(i,option){
              var id = $(option).val();
              var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
-             $draggable.find('input, select, textarea').prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
-
              if(!preventHighlight && $draggable.parent().is(':hidden')) {
                  addedDraggables.push($draggable);
              }
 
              if(!child) { $draggable.find('div.attribute').removeClass("disabled"); }
+
+             $draggable.find('input, select, textarea').prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
 
              $draggable.parent().show();
              $draggable.parent().find('.nested-form-list').filter(':first').each(function() {
