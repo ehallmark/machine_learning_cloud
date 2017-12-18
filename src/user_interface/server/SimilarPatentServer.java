@@ -1976,16 +1976,20 @@ public class SimilarPatentServer {
     public static Tag technologySelectWithCustomClass(String name, String id, String clazz, Map<String,List<String>> orderedClassifications, boolean multiple) {
         ContainerTag select = select().attr("style","width:100%;").withName(name).withId(id).withClass(clazz);
         if(multiple) select = select.attr("multiple","multiple");
-        return select.with(
-                orderedClassifications.entrySet().stream().map(e-> {
-                    String optGroup = e.getKey();
-                    return optgroup().attr("label",humanAttributeFor(optGroup)).attr("name",optGroup).with(
-                            e.getValue().stream().map(technology->{
-                                return div().with(option(humanAttributeFor(technology)).withValue(technology));
-                            }).collect(Collectors.toList())
-                    );
-                }).collect(Collectors.toList())
-        );
+        else {
+            select = select.with(option("No Group (Default)").withValue(""));
+        }
+        return select
+                .with(
+                        orderedClassifications.entrySet().stream().map(e-> {
+                            String optGroup = e.getKey();
+                            return optgroup().attr("label",humanAttributeFor(optGroup)).attr("name",optGroup).with(
+                                    e.getValue().stream().map(technology->{
+                                        return div().with(option(humanAttributeFor(technology)).withValue(technology));
+                                    }).collect(Collectors.toList())
+                            );
+                        }).collect(Collectors.toList())
+                );
     }
 
     private static Tag innerModelsFormAttributes(Function<String,Boolean> userRoleFunction, Tag buttons) {
