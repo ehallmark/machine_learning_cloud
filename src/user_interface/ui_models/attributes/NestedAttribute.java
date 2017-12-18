@@ -4,6 +4,7 @@ import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
@@ -67,7 +68,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                         applicableAttributes.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
                             Tag childTag;
-                            if(filter instanceof NestedAttribute) {
+                            if(filter instanceof NestedAttribute && ! (filter instanceof AbstractChartAttribute)) {
                                 childTag = ((NestedAttribute) filter).getOptionsTag(userRoleFunction,additionalTagFunction,perAttr);
                             } else {
                                 childTag = filter.getOptionsTag(userRoleFunction);
