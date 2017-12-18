@@ -53,21 +53,29 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         return (getName().replace("[","").replace("]","")+SimilarPatentServer.CHARTS_GROUPED_BY_FIELD+(attrName==null?"":attrName)).replace(".","");
     }
 
-    @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        Function<String, Tag> groupByFunction = null;
-        if(groupByAttributes!=null) {
-            groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
-        }
-
-        return super.getOptionsTag(userRoleFunction,groupByFunction,groupByPerAttribute);
-    }
-
-    protected Tag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
+    private String idFromName(String attrName) {
         if(attrName!=null) {
             attrName = attrName.replace(getName().replace("[", "").replace("]", "") + ".", "").replace(".", "");
         }
-        String id = getGroupByChartFieldName(attrName);
+        return attrName;
+    }
+
+    @Override
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+        Function<String, Tag> groupByFunction = null;
+        Function<String,List<String>> additionalInputIdsFunction = null;
+        if(groupByAttributes!=null) {
+            groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
+            if(groupByPerAttribute) {
+                additionalInputIdsFunction = attrName -> Collections.singletonList(idFromName(attrName));
+            }
+        }
+
+        return super.getOptionsTag(userRoleFunction,groupByFunction,additionalInputIdsFunction,groupByPerAttribute);
+    }
+
+    protected Tag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
+        String id = getGroupByChartFieldName(idFromName(attrName));
         List<AbstractAttribute> availableGroups = groupByAttributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
         Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));

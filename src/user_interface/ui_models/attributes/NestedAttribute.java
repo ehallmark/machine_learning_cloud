@@ -62,11 +62,11 @@ public abstract class NestedAttribute extends AbstractAttribute {
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return getOptionsTag(userRoleFunction, null, false);
+        return getOptionsTag(userRoleFunction, null, null, false);
     }
 
 
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, boolean perAttr) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, boolean perAttr) {
         String styleString = "margin-left: 5%; margin-right: 5%; display: none;";
         String name = getFullName().replace(".","");
         String clazz = CLAZZ;
@@ -82,14 +82,21 @@ public abstract class NestedAttribute extends AbstractAttribute {
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
                             Tag childTag;
                             if(filter instanceof NestedAttribute && ! (filter instanceof AbstractChartAttribute)) {
-                                childTag = ((NestedAttribute) filter).getOptionsTag(userRoleFunction,additionalTagFunction,perAttr);
+                                childTag = ((NestedAttribute) filter).getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction, perAttr);
                             } else {
                                 childTag = filter.getOptionsTag(userRoleFunction);
                                 Tag additionalTag = additionalTagFunction!=null&&perAttr ? additionalTagFunction.apply(filter.getFullName()) : null;
                                 if(additionalTag!=null) childTag = div().with(additionalTag,childTag);
                             }
+                            List<String> inputIds = new ArrayList<>(filter.getInputIds());
+                            if(additionalInputIdsFunction!=null) {
+                                List<String> additional = additionalInputIdsFunction.apply(filter.getFullName());
+                                if(additional!=null) {
+                                    inputIds.addAll(additional);
+                                }
+                            }
                             return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,childTag, id, filter.getAttributeId(), filter.getInputIds(), filter.isNotYetImplemented(), filter.getDescription().render())
+                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,childTag, id, filter.getAttributeId(), inputIds, filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())
                 )
