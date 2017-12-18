@@ -70,7 +70,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                             ContainerTag attrTag = div().attr("style", styleString).with(
                                     SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(userRoleFunction), id, filter.isNotYetImplemented(), filter.getDescription().render())
                             );
-                            if(additionalTag!=null) attrTag = div().withClass("row").with(attrTag.withClass("col-8"),div().withClass("col-4").with(additionalTag));
+                            if(additionalTag!=null) attrTag = div().with(additionalTag,attrTag);
                             return attrTag;
                         }).collect(Collectors.toList())
                 )

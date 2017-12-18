@@ -37,7 +37,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     public AbstractChartAttribute(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttributes, String name, boolean groupByPerAttribute) {
         super(attributes);
         this.groupByAttributes=groupByAttributes;
-        if(groupByAttributes!=null)groupByAttributes.forEach(attr->attr.setParent(this));
+        //if(groupByAttributes!=null)groupByAttributes.forEach(attr->attr.setParent(this));
         this.name=name;
         this.attrNameToGroupByAttrNameMap = Collections.synchronizedMap(new HashMap<>());
         this.groupByPerAttribute = groupByPerAttribute;
