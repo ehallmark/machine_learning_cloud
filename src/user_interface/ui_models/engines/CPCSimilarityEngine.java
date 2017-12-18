@@ -8,11 +8,12 @@ import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 import static j2html.TagCreator.div;
-import static user_interface.server.SimilarPatentServer.CPCS_TO_SEARCH_FOR_FIELD;
-import static user_interface.server.SimilarPatentServer.extractArray;
+import static user_interface.server.SimilarPatentServer.*;
 
 /**
  * Created by ehallmark on 2/28/17.
@@ -29,6 +30,10 @@ public class CPCSimilarityEngine extends AbstractSimilarityEngine implements Aja
         return inputsToSearchFor;
     }
 
+    @Override
+    public List<String> getInputIds() {
+        return Collections.singletonList(CPCS_TO_SEARCH_FOR_FIELD);
+    }
 
     @Override
     public String getName() {

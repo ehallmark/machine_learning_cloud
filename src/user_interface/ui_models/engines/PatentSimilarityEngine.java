@@ -7,6 +7,8 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,6 +31,10 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
         return patents;
     }
 
+    @Override
+    public List<String> getInputIds() {
+        return Collections.singletonList(PATENTS_TO_SEARCH_FOR_FIELD);
+    }
 
     @Override
     public String getName() {

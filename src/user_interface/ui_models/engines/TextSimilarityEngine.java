@@ -12,6 +12,8 @@ import spark.Request;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
@@ -82,6 +84,11 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
                 avg.divi(avg.norm2Number());
             }
         }
+    }
+
+    @Override
+    public List<String> getInputIds() {
+        return Collections.singletonList(TEXT_TO_SEARCH_FOR);
     }
 
 
