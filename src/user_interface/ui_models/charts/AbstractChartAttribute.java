@@ -8,7 +8,6 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
-import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
@@ -18,8 +17,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static j2html.TagCreator.*;
-import static j2html.TagCreator.option;
-import static j2html.TagCreator.select;
 
 /*
  * Created by Evan on 6/17/2017.
@@ -65,7 +62,6 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
         return super.getOptionsTag(userRoleFunction,groupByFunction,groupByPerAttribute);
     }
-
 
     protected Tag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
         if(attrName!=null) {

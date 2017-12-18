@@ -2162,7 +2162,7 @@ public class SimilarPatentServer {
     }
 
     public static Tag createAttributeElement(String modelName, String optGroup, String collapseId, Tag optionTag, String selectId, String attributeId, Collection<String> inputIds, boolean notImplemented, String description) {
-        return div().attr("data-model",modelName).attr("data-attribute",attributeId).attr("data-inputs", new Gson().toJson(inputIds)).withClass("attributeElement draggable " + (notImplemented ? " not-implemented" : "")).with(
+        return div().attr("data-model",modelName).attr("data-attribute",attributeId).attr("data-inputs",  inputIds == null ? null : new Gson().toJson(inputIds)).withClass("attributeElement draggable " + (notImplemented ? " not-implemented" : "")).with(
                 div().attr("style","width: 100%;").attr("title", notImplemented ? NOT_IMPLEMENTED_STRING : description).withClass("collapsible-header").attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)).attr("opt-group",optGroup),
                         span().withClass("remove-button").attr("data-model",modelName).attr("data-select","#"+selectId).withText("x")

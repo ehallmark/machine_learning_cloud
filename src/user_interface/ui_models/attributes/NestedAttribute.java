@@ -44,6 +44,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
         return null;
     }
 
+    @Override
     public List<String> getInputIds() {
         return Collections.singletonList(getId());
     }
