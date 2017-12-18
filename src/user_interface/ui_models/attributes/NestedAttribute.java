@@ -68,7 +68,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
                             Tag childTag = filter.getOptionsTag(userRoleFunction);
                             Tag additionalTag = additionalTagFunction!=null&&perAttr ? additionalTagFunction.apply(filter.getFullName()) : null;
-                            if(additionalTag!=null) childTag = div().withClass("row").with(div().withClass("col-7").with(childTag),div().withClass("col-5").with(additionalTag));
+                            if(additionalTag!=null) childTag = div().with(additionalTag,childTag);
                             return div().attr("style", styleString).with(
                                     SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,childTag, id, filter.isNotYetImplemented(), filter.getDescription().render())
                             );
