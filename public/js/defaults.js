@@ -225,9 +225,9 @@ $(document).ready(function() {
              });
 
              // update attributes
-             var $divAttribute = $draggable.attr('data-attribute');
-             if($divAttribute) {
-                $draggable.find('#'+$divAttribute).removeClass("disabled");
+             var divAttribute = $draggable.attr('data-attribute');
+             if(divAttribute) {
+                $draggable.find('#'+divAttribute).removeClass("disabled");
              }
              var inputs = $draggable.data('inputs');
              if(inputs && inputs.length > 0) {

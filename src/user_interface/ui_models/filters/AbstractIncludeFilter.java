@@ -39,7 +39,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
         this.fieldType=fieldType;
         this.labels = labels;
         if(filterType.equals(FilterType.PrefixInclude)||filterType.equals(FilterType.Include)) {
-            minShouldMatchId = getFullName().replaceAll("[\\[\\]]","")+filterType.toString()+Constants.MINIMUM_SHOULD_MATCH_SUFFIX;
+            minShouldMatchId = getId()+Constants.MINIMUM_SHOULD_MATCH_SUFFIX;
         }else {
             minShouldMatchId = null;
         }
