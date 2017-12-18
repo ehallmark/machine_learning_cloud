@@ -232,7 +232,12 @@ $(document).ready(function() {
              var inputs = $draggable.data('inputs');
              if(inputs && inputs.length > 0) {
                 $.each(inputs,function() {
-                    $('#'+this).prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
+                    var $this = $('#'+this);
+                    if($this.length == 0) {
+                        alert('Missing: '+this);
+                    } else {
+                        $('#'+this).prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
+                    }
                 });
              }
 
