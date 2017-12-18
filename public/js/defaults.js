@@ -208,9 +208,23 @@ $(document).ready(function() {
              $hiddenOptions.each(function(i,option){
                  var id = $(option).val();
                  var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
+
                  // update attributes
-                 $draggable.find('div.attribute').addClass("disabled");
-                 $draggable.find('select, input, textarea').prop('disabled', true).val(null).filter('select').trigger('change', [true,preventHighlight]);
+                 var divAttribute = $draggable.attr('data-attribute');
+                 if(divAttribute) {
+                    $draggable.find('#'+divAttribute).addClass("disabled");
+                 }
+                 var inputs = $draggable.data('inputs');
+                 if(inputs && inputs.length > 0) {
+                    $.each(inputs,function() {
+                        var $this = $('#'+this);
+                        if($this.length == 0) {
+                            alert('Missing: '+this);
+                        } else {
+                            $('#'+this).prop('disabled', true).val(null).filter('select').trigger('change', [true,preventHighlight]);
+                        }
+                    });
+                 }
 
                  $draggable.parent().hide();
                  return true;
