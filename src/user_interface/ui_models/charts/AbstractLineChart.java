@@ -48,9 +48,9 @@ public class AbstractLineChart extends ChartAttribute {
         attrName = attrName.replace(getName().replace("[","").replace("]","")+".","");
         return div().withClass("row").with(
                 div().withClass("col-6").with(
-                        label("Min"),br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MIN).withName(attrName+SimilarPatentServer.LINE_CHART_MIN).withType("number").withClass("form-control")
+                        label("Min Year"),br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MIN).withName(attrName+SimilarPatentServer.LINE_CHART_MIN).withType("number").withClass("form-control")
                 ), div().withClass("col-6").with(
-                        label("Max"),br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MAX).withName(attrName+SimilarPatentServer.LINE_CHART_MAX).withType("number").withClass("form-control")
+                        label("Max Year"),br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MAX).withName(attrName+SimilarPatentServer.LINE_CHART_MAX).withType("number").withClass("form-control")
                 )
         );
     }
