@@ -68,7 +68,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 String clazz = "form-control single-select2";
                 return div().with(
                         label("Group By"), br(),
-                        SimilarPatentServer.technologySelectWithCustomClass(getName(),id,clazz, groupedGroupAttrs,false)
+                        SimilarPatentServer.technologySelectWithCustomClass(id,id,clazz, groupedGroupAttrs,false)
                 );
             };
         }

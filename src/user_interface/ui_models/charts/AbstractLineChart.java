@@ -45,7 +45,7 @@ public class AbstractLineChart extends ChartAttribute {
     }
 
     private Tag getAdditionalTagPerAttr(String attrName) {
-        attrName = attrName.replace(getName().replace("[","").replace("]","")+".","");
+        attrName = attrName.replace(getName().replace("[","").replace("]","")+".","").replace(".","");
         return div().withClass("row").with(
                 div().withClass("col-6").with(
                         label("Min Year"),br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MIN).withName(attrName+SimilarPatentServer.LINE_CHART_MIN).withType("number").withClass("form-control")
@@ -66,8 +66,8 @@ public class AbstractLineChart extends ChartAttribute {
         super.extractRelevantInformationFromParams(params);
         if(this.attrNames!=null) {
             this.attrNames.forEach(attr -> {
-                Number min = SimilarPatentServer.extractInt(params, attr+SimilarPatentServer.LINE_CHART_MIN, null);
-                Number max = SimilarPatentServer.extractInt(params, attr+SimilarPatentServer.LINE_CHART_MAX, null);
+                Number min = SimilarPatentServer.extractInt(params, attr.replace(".","")+SimilarPatentServer.LINE_CHART_MIN, null);
+                Number max = SimilarPatentServer.extractInt(params, attr.replace(".","")+SimilarPatentServer.LINE_CHART_MAX, null);
                 if(min!=null) attrToMinMap.put(attr,min);
                 if(max!=null) attrToMaxMap.put(attr,max);
             });

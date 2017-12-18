@@ -199,16 +199,8 @@ $(document).ready(function() {
 
     var nestedFilterSelectFunction = function(e,child,preventHighlight) {
          var $options = $(e.currentTarget.selectedOptions);
-         var $hiddenOptions = $(e.currentTarget).find("option").not($options);
          var $selectWrapper = $(this).parent().parent();
-         $hiddenOptions.each(function(i,option){
-             var id = $(option).val();
-             var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
-             if(!child) { $draggable.find('input, select, textarea').prop('disabled', true).val(null).filter('select').trigger('change', [true,preventHighlight]); }
-             if(!child) { $draggable.find("div.attribute").addClass("disabled"); }
-             $draggable.parent().hide();
-             return true;
-         });
+
          var addedDraggables = [];
          $options.each(function(i,option){
              var id = $(option).val();
@@ -235,6 +227,16 @@ $(document).ready(function() {
                      list.sortable('refreshPositions');
                  }
              });
+         });
+
+         var $hiddenOptions = $(e.currentTarget).find("option").not($options);
+         $hiddenOptions.each(function(i,option){
+             var id = $(option).val();
+             var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
+             if(!child) { $draggable.find('input, select, textarea').prop('disabled', true).val(null).filter('select').trigger('change', [true,preventHighlight]); }
+             if(!child) { $draggable.find("div.attribute").addClass("disabled"); }
+             $draggable.parent().hide();
+             return true;
          });
 
          if(addedDraggables.length == 1) { // added by human
