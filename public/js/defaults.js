@@ -209,9 +209,12 @@ $(document).ready(function() {
                  addedDraggables.push($draggable);
              }
 
-             var $attributeRegion = $draggable.find('input :not(.attributeElement .attributeElement input), select :not(.attributeElement .attributeElement select), textarea :not(.attributeElement .attributeElement textarea)');
-             $draggable.find('div.attribute :not(.attributeElement .attributeElement div.attribute)').removeClass("disabled");
-             $attributeRegion.prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
+             $draggable.find('div.attribute').filter(':first').removeClass("disabled");
+
+             if(!child) {
+                 var $attributeRegion = $draggable.find('input, select, textarea');
+                 $attributeRegion.prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
+             }
 
              $draggable.parent().show();
              $draggable.parent().find('.nested-form-list').filter(':first').each(function() {
