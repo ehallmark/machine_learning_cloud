@@ -3,18 +3,16 @@ package user_interface.ui_models.engines;
 import j2html.tags.Tag;
 import seeding.Constants;
 import spark.Request;
-import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Function;
 
 import static j2html.TagCreator.div;
-import static user_interface.server.SimilarPatentServer.*;
+import static user_interface.server.SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD;
+import static user_interface.server.SimilarPatentServer.extractArray;
 
 /**
  * Created by ehallmark on 2/28/17.
@@ -37,18 +35,16 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine implement
     }
 
     @Override
-    public List<String> getInputIds() {
-        return Collections.singletonList(ASSIGNEES_TO_SEARCH_FOR_FIELD);
+    public String getId() {
+        return ASSIGNEES_TO_SEARCH_FOR_FIELD;
     }
+
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
-                AbstractIncludeFilter.ajaxMultiSelect(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD, ajaxUrl(), SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD)
+                AbstractIncludeFilter.ajaxMultiSelect(getId(), ajaxUrl(), getId())
         );
-        //return div().with(
-        //        textarea().withClass("form-control").attr("placeholder","1 assignee per line").withId(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD).withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD)
-        //);
     }
 
     @Override

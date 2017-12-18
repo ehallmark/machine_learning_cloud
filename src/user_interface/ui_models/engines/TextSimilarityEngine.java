@@ -12,8 +12,6 @@ import spark.Request;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
@@ -85,12 +83,10 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
             }
         }
     }
-
     @Override
-    public List<String> getInputIds() {
-        return Collections.singletonList(TEXT_TO_SEARCH_FOR);
+    public String getId() {
+        return TEXT_TO_SEARCH_FOR;
     }
-
 
     @Override
     public String getName() {
@@ -100,7 +96,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
-                textarea().withClass("form-control").attr("placeholder","Enter any text or document").withId(TEXT_TO_SEARCH_FOR).withName(TEXT_TO_SEARCH_FOR)
+                textarea().withClass("form-control").attr("placeholder","Enter any text or document").withId(getId()).withName(getId())
         );
     }
 

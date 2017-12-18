@@ -8,8 +8,6 @@ import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Function;
 
 import static j2html.TagCreator.div;
@@ -31,8 +29,8 @@ public class CPCSimilarityEngine extends AbstractSimilarityEngine implements Aja
     }
 
     @Override
-    public List<String> getInputIds() {
-        return Collections.singletonList(CPCS_TO_SEARCH_FOR_FIELD);
+    public String getId() {
+        return CPCS_TO_SEARCH_FOR_FIELD;
     }
 
     @Override
@@ -42,11 +40,8 @@ public class CPCSimilarityEngine extends AbstractSimilarityEngine implements Aja
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        //return div().with(
-        //        textarea().withClass("form-control").attr("placeholder","1 patent or application per line (eg. 800000)").withId(CPCS_TO_SEARCH_FOR_FIELD).withName(CPCS_TO_SEARCH_FOR_FIELD)
-        //);
         return div().with(
-                AbstractIncludeFilter.ajaxMultiSelect(CPCS_TO_SEARCH_FOR_FIELD, ajaxUrl(), CPCS_TO_SEARCH_FOR_FIELD)
+                AbstractIncludeFilter.ajaxMultiSelect(getId(), ajaxUrl(), getId())
         );
     }
 

@@ -96,12 +96,12 @@ public class AbstractIncludeFilter extends AbstractFilter {
 
     @Override
     public String getId() {
-        if (!fieldType.equals(FieldType.Multiselect) || filterType.equals(FilterType.PrefixExclude) || filterType.equals(FilterType.PrefixInclude)) {
+        //if (!fieldType.equals(FieldType.Multiselect) || filterType.equals(FilterType.PrefixExclude) || filterType.equals(FilterType.PrefixInclude)) {
             return super.getId();
-        } else {
-            String clazz = "multiselect";
-            return ("multiselect-"+clazz+"-"+getName()).replaceAll("[\\[\\] ]","");
-        }
+        //} else {
+        //    String clazz = "multiselect";
+        //    return ("multiselect-"+clazz+"-"+getName()).replaceAll("[\\[\\] ]","");
+        //}
     }
 
     @Override

@@ -44,6 +44,7 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
         }
     }
 
+    public abstract String getId();
 
     @Override
     public Collection<AbstractFilter> createFilters() {
@@ -51,6 +52,11 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
             @Override
             public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
                 return AbstractSimilarityEngine.this.getOptionsTag(userRoleFunction);
+            }
+
+            @Override
+            public String getId() {
+                return AbstractSimilarityEngine.this.getId();
             }
 
             @Override
