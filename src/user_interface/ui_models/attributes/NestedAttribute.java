@@ -81,7 +81,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                         applicableAttributes.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
                             Tag childTag;
-                            if(filter instanceof NestedAttribute && ! (filter instanceof AbstractChartAttribute)) {
+                            if(filter instanceof NestedAttribute && ! (filter instanceof AbstractChartAttribute) && perAttr) {
                                 childTag = ((NestedAttribute) filter).getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction, perAttr);
                             } else {
                                 childTag = filter.getOptionsTag(userRoleFunction);
