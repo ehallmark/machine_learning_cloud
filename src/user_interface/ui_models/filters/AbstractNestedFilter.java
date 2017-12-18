@@ -114,7 +114,7 @@ public class AbstractNestedFilter extends AbstractFilter {
         String clazz = NestedAttribute.CLAZZ;
         return ("multiselect-"+clazz+"-"+getName()).replaceAll("[\\[\\] ]","");
     }
-
+    
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return getOptionsTag(userRoleFunction, null, null);

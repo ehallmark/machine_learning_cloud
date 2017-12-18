@@ -30,8 +30,8 @@ public class AbstractBetweenFilter extends AbstractFilter {
     protected String maxName;
     public AbstractBetweenFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
-        this.minName = attribute.getName().replace(".","_")+"_min"+ Constants.FILTER_SUFFIX;
-        this.maxName = attribute.getName().replace(".","_")+"_max"+ Constants.FILTER_SUFFIX;
+        this.minName = attribute.getFullName().replace(".","_")+"_min"+ Constants.FILTER_SUFFIX;
+        this.maxName = attribute.getFullName().replace(".","_")+"_max"+ Constants.FILTER_SUFFIX;
     }
 
     @Override
