@@ -117,6 +117,11 @@ public class AbstractNestedFilter extends AbstractFilter {
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+        return getOptionsTag(userRoleFunction, null, null);
+    }
+
+
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction) {
         String styleString = "display: none; margin-left: 5%; margin-right: 5%;";
         List<AbstractFilter> availableFilters = filters.stream().filter(filter->filter.getAttribute().isDisplayable()&&userRoleFunction.apply(filter.getAttribute().getRootName())).collect(Collectors.toList());
         Map<String,List<String>> filterGroups = new TreeMap<>(availableFilters.stream().collect(Collectors.groupingBy(filter->filter.getFullPrerequisite())).entrySet()
@@ -130,8 +135,27 @@ public class AbstractNestedFilter extends AbstractFilter {
                 ), div().withClass("nested-form-list").with(
                         availableFilters.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");
+                            Tag childTag;
+                            if(filter instanceof AbstractNestedFilter) {
+                                childTag = ((AbstractNestedFilter) filter).getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction);
+                            } else {
+                                childTag = filter.getOptionsTag(userRoleFunction);
+                                Tag additionalTag = additionalTagFunction!=null ? additionalTagFunction.apply(filter.getName()) : null;
+                                if(additionalTag!=null) childTag = div().with(additionalTag,childTag);
+                            }
+                            List<String> inputIds = new ArrayList<>();
+                            if(filter.getInputIds()!=null) {
+                                inputIds.addAll(filter.getInputIds());
+                            }
+                            if(additionalInputIdsFunction!=null) {
+                                List<String> additional = additionalInputIdsFunction.apply(filter.getName());
+                                if(additional!=null) {
+                                    inputIds.addAll(additional);
+                                }
+                            }
+                            if(inputIds.isEmpty()) inputIds = null;
                             return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getName(),filter.getOptionGroup(),collapseId,filter.getOptionsTag(userRoleFunction),id, filter.getAttributeId(), filter.getInputIds(), filter.isNotYetImplemented(), filter.getDescription().render())
+                                    SimilarPatentServer.createAttributeElement(filter.getName(),filter.getOptionGroup(),collapseId,childTag,id, filter.getAttributeId(), inputIds, filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())
                 )
