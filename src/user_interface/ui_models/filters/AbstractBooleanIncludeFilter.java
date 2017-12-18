@@ -23,6 +23,11 @@ public class AbstractBooleanIncludeFilter extends AbstractFilter {
     }
 
     @Override
+    public List<String> getInputIds() {
+        return null;
+    }
+
+    @Override
     public AbstractFilter dup() {
         return new AbstractBooleanIncludeFilter(attribute,filterType);
     }

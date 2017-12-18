@@ -13,6 +13,8 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.Function;
 
@@ -28,8 +30,8 @@ public class AbstractBetweenFilter extends AbstractFilter {
     protected String maxName;
     public AbstractBetweenFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
-        this.minName = attribute.getName()+"_min"+ Constants.FILTER_SUFFIX;
-        this.maxName = attribute.getName()+"_max"+ Constants.FILTER_SUFFIX;
+        this.minName = attribute.getName().replace(".","_")+"_min"+ Constants.FILTER_SUFFIX;
+        this.maxName = attribute.getName().replace(".","_")+"_max"+ Constants.FILTER_SUFFIX;
     }
 
     @Override
@@ -55,6 +57,11 @@ public class AbstractBetweenFilter extends AbstractFilter {
                 return query;
             }
         }
+    }
+
+    @Override
+    public List<String> getInputIds() {
+        return Arrays.asList(getMinId(),getMaxId());
     }
 
     @Override
@@ -110,6 +117,14 @@ public class AbstractBetweenFilter extends AbstractFilter {
 
     }
 
+    private String getMaxId() {
+        return getName().replaceAll("[\\[\\]]","")+filterType.toString()+maxName.replaceAll("[\\[\\]]","");
+    }
+
+    private String getMinId() {
+        return getName().replaceAll("[\\[\\]]","")+filterType.toString()+minName.replaceAll("[\\[\\]]","");
+    }
+
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         String type = getFieldType().equals(FieldType.Date) ? "text" : "number";
@@ -117,10 +132,10 @@ public class AbstractBetweenFilter extends AbstractFilter {
         return div().withClass("row").with(
                 div().withClass("col-6").with(
                         label("Min"),
-                        input().withClass("form-control "+additionalClasses).withType(type).withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()+minName.replaceAll("[\\[\\]]","")).withName(minName)
+                        input().withClass("form-control "+additionalClasses).withType(type).withId(getMinId()).withName(minName)
                 ), div().withClass("col-6").with(
                         label("Max"),
-                        input().withClass("form-control "+additionalClasses).withType(type).withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()+maxName.replaceAll("[\\[\\]]","")).withName(maxName)
+                        input().withClass("form-control "+additionalClasses).withType(type).withId(getMaxId()).withName(maxName)
                 )
         );
     }

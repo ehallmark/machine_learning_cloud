@@ -18,6 +18,11 @@ public class AbstractDoesNotExistFilter extends AbstractExistsFilter {
     }
 
     @Override
+    public List<String> getInputIds() {
+        return null;
+    }
+
+    @Override
     public AbstractFilter dup() {
         return new AbstractDoesNotExistFilter(attribute,filterType);
     }

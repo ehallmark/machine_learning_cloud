@@ -1,9 +1,7 @@
 package user_interface.ui_models.filters;
 
-import elasticsearch.DataSearcher;
 import lombok.NonNull;
 import org.apache.lucene.search.join.ScoreMode;
-import org.elasticsearch.index.query.InnerHitBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -17,6 +15,11 @@ public class AbstractExistsFilter extends AbstractBooleanIncludeFilter {
     protected List<String> filters;
     public AbstractExistsFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
+    }
+
+    @Override
+    public List<String> getInputIds() {
+        return null;
     }
 
     @Override

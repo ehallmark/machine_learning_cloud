@@ -209,12 +209,7 @@ $(document).ready(function() {
                  addedDraggables.push($draggable);
              }
 
-             $draggable.find('div.attribute').removeClass("disabled");
-             var $attributeRegion = $draggable.find('input, select, textarea');
-             $attributeRegion.prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
-
-
-             $draggable.parent().show();
+             // sort
              $draggable.parent().find('.nested-form-list').filter(':first').each(function() {
                  var list = $(this);
                  var elems = list.children().filter('[sort-order]').detach();
@@ -228,6 +223,20 @@ $(document).ready(function() {
                      list.sortable('refreshPositions');
                  }
              });
+
+             // update attributes
+             var $divAttribute = $draggable.attr('data-attribute');
+             if($divAttribute) {
+                $draggable.find('#'+$divAttribute).removeClass("disabled");
+             }
+             var inputs = $draggable.data('inputs');
+             if($inputs && inputs.length > 0) {
+                $.each(inputs,function() {
+                    $('#'+this).prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
+                });
+             }
+
+             $draggable.parent().show();
          });
 
 
@@ -236,8 +245,18 @@ $(document).ready(function() {
          $hiddenOptions.each(function(i,option){
              var id = $(option).val();
              var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
-             if(!child) { $draggable.find('input, select, textarea').prop('disabled', true).val(null).filter('select').trigger('change', [true,preventHighlight]); }
-             if(!child) { $draggable.find("div.attribute").addClass("disabled"); }
+             // update attributes
+             var $divAttribute = $draggable.attr('data-attribute');
+             if($divAttribute) {
+                $draggable.find('#'+$divAttribute).addClass("disabled");
+             }
+             var inputs = $draggable.data('inputs');
+             if($inputs && inputs.length > 0) {
+                $.each(inputs,function() {
+                    $('#'+this).prop('disabled', true).val(null).filter('select').trigger('change', [true,preventHighlight]);
+                });
+             }
+
              $draggable.parent().hide();
              return true;
          });

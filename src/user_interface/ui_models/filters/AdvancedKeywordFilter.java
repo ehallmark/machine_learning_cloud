@@ -10,16 +10,10 @@ import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.ClaimTextAttribute;
-import user_interface.ui_models.portfolios.items.Item;
 
-import java.util.Arrays;
 import java.util.function.Function;
 
-import static j2html.TagCreator.button;
-import static j2html.TagCreator.div;
-import static j2html.TagCreator.textarea;
-import static user_interface.server.SimilarPatentServer.extractString;
+import static j2html.TagCreator.*;
 
 /**
  * Created by Evan on 7/9/2017.
@@ -65,7 +59,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
                 button("Syntax").withClass("miniTip btn btn-sm btn-secondary"),
-                textarea().withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withClass("form-control").attr("placeholder","Example: (\"find this phrase\" | \"or this one\")").withName(getName())
+                textarea().withId(getId()).withClass("form-control").attr("placeholder","Example: (\"find this phrase\" | \"or this one\")").withName(getName())
         );
     }
 

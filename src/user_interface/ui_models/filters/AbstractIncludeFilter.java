@@ -16,6 +16,8 @@ import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 import static j2html.TagCreator.*;
@@ -85,6 +87,24 @@ public class AbstractIncludeFilter extends AbstractFilter {
     public boolean isActive() { return labels!=null && labels.size() > 0; }
 
     @Override
+    public List<String> getInputIds() {
+        List<String> list = Collections.synchronizedList(new ArrayList<>());
+        if(minShouldMatchId!=null) list.add(minShouldMatchId);
+        list.add(getId());
+        return list;
+    }
+
+    @Override
+    public String getId() {
+        if (!fieldType.equals(FieldType.Multiselect) || filterType.equals(FilterType.PrefixExclude) || filterType.equals(FilterType.PrefixInclude)) {
+            String clazz = "multiselect";
+            return ("multiselect-"+clazz+"-"+getName()).replaceAll("[\\[\\] ]","");
+        } else {
+            return super.getId();
+        }
+    }
+
+    @Override
     public void extractRelevantInformationFromParams(Request req) {
         if(minShouldMatchId==null) {
             this.minimumShouldMatch = DEFAULT_MINIMUM_SHOULD_MATCH;
@@ -108,18 +128,17 @@ public class AbstractIncludeFilter extends AbstractFilter {
         ContainerTag tag;
         if (!fieldType.equals(FieldType.Multiselect)||filterType.equals(FilterType.PrefixExclude)||filterType.equals(FilterType.PrefixInclude)) {
             tag= div().with(
-                    textarea().attr("data-attribute",attribute.getName()).attr("data-filtertype",filterType.toString()).withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
+                    textarea().attr("data-attribute",attribute.getName()).attr("data-filtertype",filterType.toString()).withId(getId()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
             );
         } else {
+            String clazz = "multiselect";
             if(attribute instanceof AjaxMultiselect) {
                 tag= div().with(
-                        ajaxMultiSelect(getName(), ((AjaxMultiselect) attribute).ajaxUrl(), ("multiselect-multiselect-"+getName()).replaceAll("[\\[\\] ]",""))
+                        ajaxMultiSelect(getName(), ((AjaxMultiselect) attribute).ajaxUrl(), getId())
                 );
             } else {
-                String clazz = "multiselect";
-                String id = ("multiselect-"+clazz+"-"+getName()).replaceAll("[\\[\\] ]","");
                 tag= div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(getName(), id, clazz, getAllValues())
+                        SimilarPatentServer.technologySelectWithCustomClass(getName(), getId(), clazz, getAllValues())
                 );
             }
         }

@@ -1,18 +1,11 @@
 package user_interface.ui_models.filters;
 
-import j2html.tags.Tag;
 import lombok.NonNull;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import spark.Request;
-import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.List;
-import java.util.function.Function;
-
-import static j2html.TagCreator.div;
 
 /**
  * Created by Evan on 6/13/2017.
@@ -20,6 +13,11 @@ import static j2html.TagCreator.div;
 public class AbstractBooleanExcludeFilter extends AbstractBooleanIncludeFilter {
     public AbstractBooleanExcludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
+    }
+
+    @Override
+    public List<String> getInputIds() {
+        return null;
     }
 
     @Override

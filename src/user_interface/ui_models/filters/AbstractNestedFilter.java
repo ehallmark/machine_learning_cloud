@@ -109,6 +109,11 @@ public class AbstractNestedFilter extends AbstractFilter {
         });
     }
 
+    @Override
+    public String getId() {
+        String clazz = NestedAttribute.CLAZZ;
+        return ("multiselect-"+clazz+"-"+getName()).replaceAll("[\\[\\] ]","");
+    }
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
@@ -116,8 +121,9 @@ public class AbstractNestedFilter extends AbstractFilter {
         List<AbstractFilter> availableFilters = filters.stream().filter(filter->filter.getAttribute().isDisplayable()&&userRoleFunction.apply(filter.getAttribute().getRootName())).collect(Collectors.toList());
         Map<String,List<String>> filterGroups = new TreeMap<>(availableFilters.stream().collect(Collectors.groupingBy(filter->filter.getFullPrerequisite())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
-        String clazz = "nested-filter-select";
-        String id = ("multiselect-"+clazz+"-"+getName()).replaceAll("[\\[\\] ]","");
+
+        String clazz = NestedAttribute.CLAZZ;
+        String id = getId();
         return div().with(
                 div().with(
                         SimilarPatentServer.technologySelectWithCustomClass(getName(),id,clazz, filterGroups, true)
@@ -125,7 +131,7 @@ public class AbstractNestedFilter extends AbstractFilter {
                         availableFilters.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");
                             return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getName(),filter.getOptionGroup(),collapseId,filter.getOptionsTag(userRoleFunction),id,filter.isNotYetImplemented(), filter.getDescription().render())
+                                    SimilarPatentServer.createAttributeElement(filter.getName(),filter.getOptionGroup(),collapseId,filter.getOptionsTag(userRoleFunction),id, filter.getAttributeId(), filter.getInputIds(), filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())
                 )

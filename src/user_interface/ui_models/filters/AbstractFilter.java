@@ -13,6 +13,8 @@ import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttri
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 import static j2html.TagCreator.span;
@@ -49,6 +51,10 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
         this.isScriptFilter = attribute instanceof AbstractScriptAttribute;
     }
 
+    public String getAttributeId() {
+        return null;
+    }
+
     public String getPrerequisite() {
         return attribute.getName();
     }
@@ -74,6 +80,10 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     @Override
     public String getType() {
         return attribute.getType();
+    }
+
+    public String getId() {
+        return getName().replaceAll("[\\[\\]]","")+filterType.toString();
     }
 
     @Override
@@ -123,6 +133,10 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
         return optGroup;
     }
 
+    @Override
+    public List<String> getInputIds() {
+        return Collections.singletonList(getId());
+    }
 
     protected Tag getDescriptionFor(FilterType filterType) {
         String description;

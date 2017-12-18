@@ -7,7 +7,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.portfolios.items.Item;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -77,7 +76,7 @@ public class AbstractLessThanFilter extends AbstractFilter {
         String type = getFieldType().equals(FieldType.Date) ? "text" : "number";
         String additionalClasses = getFieldType().equals(FieldType.Date) ? "datepicker" : "";
         return div().with(
-                input().withClass("form-control "+additionalClasses).withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withType(type).withValue("0").withName(getName())
+                input().withClass("form-control "+additionalClasses).withId(getId()).withType(type).withValue("0").withName(getName())
         );
     }
 }

@@ -43,6 +43,14 @@ public abstract class AbstractAttribute {
 
     public abstract String getName();
 
+    public String getAttributeId() {
+        return "attribute_"+getFullName().replace(".","_");
+    }
+
+    public List<String> getInputIds() {
+        return null;
+    }
+
     public String getScope() {
         return null;
     }
@@ -68,7 +76,7 @@ public abstract class AbstractAttribute {
     }
 
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return div().with(div().withClass("attribute").withId("attribute_"+getFullName().replace(".","_"))); }
+        return div().with(div().withClass("attribute").withId(getAttributeId())); }
 
     public abstract String getType();
 
