@@ -202,7 +202,7 @@ $(document).ready(function() {
          var $selectWrapper = $(this).parent().parent();
          var addedDraggables = [];
 
-         if(!child) { // disable full subtree tree
+         //if(!child) { // disable full subtree tree
              var $hiddenOptions = $(e.currentTarget).find("option");
              if($options.length>0) { $hiddenOptions = $hiddenOptions.not($options); }
              $hiddenOptions.each(function(i,option){
@@ -215,7 +215,7 @@ $(document).ready(function() {
                  $draggable.parent().hide();
                  return true;
              });
-         }
+         //}
 
          $options.each(function(i,option){
              var id = $(option).val();
