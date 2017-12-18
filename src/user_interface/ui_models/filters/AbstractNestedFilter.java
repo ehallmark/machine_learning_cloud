@@ -136,23 +136,26 @@ public class AbstractNestedFilter extends AbstractFilter {
                         availableFilters.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");
                             Tag childTag;
+                            List<String> inputIds = new ArrayList<>();
+                            if(filter.getInputIds()!=null) {
+                                inputIds.addAll(filter.getInputIds());
+                            }
                             if(filter instanceof AbstractNestedFilter) {
                                 childTag = ((AbstractNestedFilter) filter).getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction);
                             } else {
                                 childTag = filter.getOptionsTag(userRoleFunction);
                                 Tag additionalTag = additionalTagFunction!=null ? additionalTagFunction.apply(filter.getName()) : null;
-                                if(additionalTag!=null) childTag = div().with(additionalTag,childTag);
-                            }
-                            List<String> inputIds = new ArrayList<>();
-                            if(filter.getInputIds()!=null) {
-                                inputIds.addAll(filter.getInputIds());
-                            }
-                            if(additionalInputIdsFunction!=null) {
-                                List<String> additional = additionalInputIdsFunction.apply(filter.getName());
-                                if(additional!=null) {
-                                    inputIds.addAll(additional);
+                                if(additionalTag!=null) {
+                                    childTag = div().with(additionalTag,childTag);
+                                }
+                                if(additionalInputIdsFunction!=null) {
+                                    List<String> additional = additionalInputIdsFunction.apply(filter.getName());
+                                    if(additional!=null) {
+                                        inputIds.addAll(additional);
+                                    }
                                 }
                             }
+
                             if(inputIds.isEmpty()) inputIds = null;
                             return div().attr("style", styleString).with(
                                     SimilarPatentServer.createAttributeElement(filter.getName(),filter.getOptionGroup(),collapseId,childTag,id, filter.getAttributeId(), inputIds, filter.isNotYetImplemented(), filter.getDescription().render())

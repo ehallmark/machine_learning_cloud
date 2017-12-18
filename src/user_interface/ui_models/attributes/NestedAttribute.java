@@ -81,21 +81,23 @@ public abstract class NestedAttribute extends AbstractAttribute {
                         applicableAttributes.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
                             Tag childTag;
+                            List<String> inputIds = new ArrayList<>();
+                            if(filter.getInputIds()!=null) {
+                                inputIds.addAll(filter.getInputIds());
+                            }
                             if(filter instanceof NestedAttribute && ! (filter instanceof AbstractChartAttribute) && perAttr) {
                                 childTag = ((NestedAttribute) filter).getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction, perAttr);
                             } else {
                                 childTag = filter.getOptionsTag(userRoleFunction);
                                 Tag additionalTag = additionalTagFunction!=null&&perAttr ? additionalTagFunction.apply(filter.getFullName()) : null;
-                                if(additionalTag!=null) childTag = div().with(additionalTag,childTag);
-                            }
-                            List<String> inputIds = new ArrayList<>();
-                            if(filter.getInputIds()!=null) {
-                                inputIds.addAll(filter.getInputIds());
-                            }
-                            if(additionalInputIdsFunction!=null) {
-                                List<String> additional = additionalInputIdsFunction.apply(filter.getFullName());
-                                if(additional!=null) {
-                                    inputIds.addAll(additional);
+                                if(additionalTag!=null) {
+                                    childTag = div().with(additionalTag,childTag);
+                                }
+                                if(additionalInputIdsFunction!=null) {
+                                    List<String> additional = additionalInputIdsFunction.apply(filter.getFullName());
+                                    if(additional!=null) {
+                                        inputIds.addAll(additional);
+                                    }
                                 }
                             }
                             if(inputIds.isEmpty()) inputIds = null;
