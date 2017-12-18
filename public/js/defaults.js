@@ -209,8 +209,7 @@ $(document).ready(function() {
                  addedDraggables.push($draggable);
              }
 
-             if(!child) { $draggable.find('div.attribute').removeClass("disabled"); }
-
+             $draggable.find('div.attribute').removeClass("disabled");
              $draggable.find('input, select, textarea').prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
 
              $draggable.parent().show();
