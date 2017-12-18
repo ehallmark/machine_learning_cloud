@@ -200,8 +200,23 @@ $(document).ready(function() {
     var nestedFilterSelectFunction = function(e,child,preventHighlight) {
          var $options = $(e.currentTarget.selectedOptions);
          var $selectWrapper = $(this).parent().parent();
-
          var addedDraggables = [];
+
+         if(!child) { // disable full subtree tree
+             var $hiddenOptions = $(e.currentTarget).find("option");
+             if($options.length>0) { $hiddenOptions = $hiddenOptions.not($options); }
+             $hiddenOptions.each(function(i,option){
+                 var id = $(option).val();
+                 var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
+                 // update attributes
+                 $draggable.find('div.attribute').addClass("disabled");
+                 $draggable.find('select, input, textarea').prop('disabled', true).val(null).filter('select').trigger('change', [true,preventHighlight]);
+
+                 $draggable.parent().hide();
+                 return true;
+             });
+         }
+
          $options.each(function(i,option){
              var id = $(option).val();
              var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
@@ -243,22 +258,6 @@ $(document).ready(function() {
 
              $draggable.parent().show();
          });
-
-
-         if(!child) { // disable full subtree tree
-             var $hiddenOptions = $(e.currentTarget).find("option");
-             if($options.length>0) { $hiddenOptions = $hiddenOptions.not($options); }
-             $hiddenOptions.each(function(i,option){
-                 var id = $(option).val();
-                 var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
-                 // update attributes
-                 $draggable.find('div.attribute').addClass("disabled");
-                 $draggable.find('select, input, textarea').prop('disabled', true).val(null).filter('select').trigger('change', [true,preventHighlight]);
-
-                 $draggable.parent().hide();
-                 return true;
-             });
-         }
 
          if(addedDraggables.length == 1) { // added by human
              $.each(addedDraggables, function() {
