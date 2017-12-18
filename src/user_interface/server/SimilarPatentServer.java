@@ -412,7 +412,11 @@ public class SimilarPatentServer {
     }
 
     public static List<AbstractAttribute> duplicateAttributes(List<AbstractAttribute> attributes) {
-        return attributes.stream().map(attr->attr.clone()).collect(Collectors.toList());
+        return attributes.stream().map(attr-> {
+                AbstractAttribute clone = attr.clone();
+                clone.setParent(attr.getParent());
+                return clone;
+            }).collect(Collectors.toList());
     }
 
     public static void loadChartModels() {
