@@ -1130,22 +1130,30 @@ public class SimilarPatentServer {
                 req.queryMap("sorts").toMap().forEach((k,v)->{
                     if(v==null||k==null) return;
                     boolean isNumericField = numericAttrNames.contains(k);
+                    boolean reversed = (v.length > 0 && v[0].equals("-1"));
+
                     String sortStr = k+String.join("",v)+searchStr;
                     if(previousSort==null||!sortStr.equals(previousSort)) {
                         Comparator<Map<String, String>> comp = (d1, d2) -> {
                             if(isNumericField) {
+                                Double v1 = null;
+                                Double v2 = null;
                                 try {
-                                    return Double.valueOf(d1.get(k)).compareTo(Double.valueOf(d2.get(k)));
+                                    v1 = Double.valueOf(d1.get(k));
                                 } catch (Exception nfe) {
-                                    return 1;
                                 }
+                                try {
+                                    v2 = Double.valueOf(d2.get(k));
+                                } catch(Exception e) {
+                                }
+                                if(v1==null&&v2==null) return 0;
+                                if(v1==null) return 1;
+                                if(v2==null) return -1;
+                                return v1.compareTo(v2) * (reversed ? -1 : 1);
                             } else {
-                                return d1.get(k).compareTo(d2.get(k));
+                                return d1.get(k).compareTo(d2.get(k)) * (reversed ? -1 : 1);
                             }
                         };
-                        if (v.length > 0 && v[0].equals("-1")) {
-                            comp = comp.reversed();
-                        }
                         queriedData.sort(comp);
                     }
                     req.session().attribute("previousSort"+paramIdx,sortStr);
