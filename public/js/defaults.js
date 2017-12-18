@@ -230,7 +230,7 @@ $(document).ready(function() {
                 $draggable.find('#'+$divAttribute).removeClass("disabled");
              }
              var inputs = $draggable.data('inputs');
-             if($inputs && inputs.length > 0) {
+             if(inputs && inputs.length > 0) {
                 $.each(inputs,function() {
                     $('#'+this).prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
                 });
@@ -251,7 +251,7 @@ $(document).ready(function() {
                 $draggable.find('#'+$divAttribute).addClass("disabled");
              }
              var inputs = $draggable.data('inputs');
-             if($inputs && inputs.length > 0) {
+             if(inputs && inputs.length > 0) {
                 $.each(inputs,function() {
                     $('#'+this).prop('disabled', true).val(null).filter('select').trigger('change', [true,preventHighlight]);
                 });
