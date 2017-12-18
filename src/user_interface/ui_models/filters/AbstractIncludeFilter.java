@@ -97,10 +97,10 @@ public class AbstractIncludeFilter extends AbstractFilter {
     @Override
     public String getId() {
         if (!fieldType.equals(FieldType.Multiselect) || filterType.equals(FilterType.PrefixExclude) || filterType.equals(FilterType.PrefixInclude)) {
+            return super.getId();
+        } else {
             String clazz = "multiselect";
             return ("multiselect-"+clazz+"-"+getName()).replaceAll("[\\[\\] ]","");
-        } else {
-            return super.getId();
         }
     }
 
@@ -132,14 +132,13 @@ public class AbstractIncludeFilter extends AbstractFilter {
             );
         } else {
             String clazz = "multiselect";
-            String id = ("multiselect-"+clazz+"-"+getName()).replaceAll("[\\[\\] ]","");
             if(attribute instanceof AjaxMultiselect) {
                 tag= div().with(
                         ajaxMultiSelect(getName(), ((AjaxMultiselect) attribute).ajaxUrl(), getId())
                 );
             } else {
                 tag= div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(getName(), id, clazz, getAllValues())
+                        SimilarPatentServer.technologySelectWithCustomClass(getName(), getId(), clazz, getAllValues())
                 );
             }
         }
