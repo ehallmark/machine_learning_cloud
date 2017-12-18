@@ -41,11 +41,16 @@ public class AbstractLineChart extends ChartAttribute {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         Function<String,Tag> additionalTagFunction = this::getAdditionalTagPerAttr;
-        return super.getOptionsTag(userRoleFunction,additionalTagFunction,true);
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Collections.singletonList(idFromName(attrName));
+        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,true);
+    }
+
+    public String idFromName(String attrName) {
+        return attrName.replace(getName().replace("[","").replace("]","")+".","").replace(".","");
     }
 
     private Tag getAdditionalTagPerAttr(String attrName) {
-        attrName = attrName.replace(getName().replace("[","").replace("]","")+".","").replace(".","");
+        attrName = idFromName(attrName);
         return div().withClass("row").with(
                 div().withClass("col-6").with(
                         label("Min Year"),br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MIN).withName(attrName+SimilarPatentServer.LINE_CHART_MIN).withType("number").withClass("form-control")
