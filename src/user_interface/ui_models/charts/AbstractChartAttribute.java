@@ -53,7 +53,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     }
 
     protected String getGroupByChartFieldName(String attrName) {
-        return (getName().replace("[","").replace("]","")+SimilarPatentServer.CHARTS_GROUPED_BY_FIELD+attrName).replace(".","");
+        return (getName().replace("[","").replace("]","")+SimilarPatentServer.CHARTS_GROUPED_BY_FIELD+(attrName==null?"":attrName)).replace(".","");
     }
 
     @Override
@@ -68,7 +68,9 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
 
     protected Tag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
-        attrName = attrName.replace(getName().replace("[","").replace("]","")+".","").replace(".","");
+        if(attrName!=null) {
+            attrName = attrName.replace(getName().replace("[", "").replace("]", "") + ".", "").replace(".", "");
+        }
         String id = getGroupByChartFieldName(attrName);
         List<AbstractAttribute> availableGroups = groupByAttributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
         Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
