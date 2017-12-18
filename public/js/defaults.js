@@ -209,12 +209,10 @@ $(document).ready(function() {
                  addedDraggables.push($draggable);
              }
 
-             $draggable.find('div.attribute').filter(':first').removeClass("disabled");
+             $draggable.find('div.attribute').removeClass("disabled");
+             var $attributeRegion = $draggable.find('input, select, textarea');
+             $attributeRegion.prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
 
-             if(!child) {
-                 var $attributeRegion = $draggable.find('input, select, textarea');
-                 $attributeRegion.prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
-             }
 
              $draggable.parent().show();
              $draggable.parent().find('.nested-form-list').filter(':first').each(function() {
