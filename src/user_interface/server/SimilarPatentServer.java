@@ -1121,7 +1121,11 @@ public class SimilarPatentServer {
                             try {
                                 return Double.valueOf(d1.get(k)).compareTo(Double.valueOf(d2.get(k)));
                             } catch (Exception nfe) {
-                                return d1.get(k).compareTo(d2.get(k));
+                                try {
+                                    return d1.get(k).compareTo(d2.get(k));
+                                } catch(Exception e) {
+                                    return 0;
+                                }
                             }
                         };
                         if (v.length > 0 && v[0].equals("-1")) {
@@ -1482,6 +1486,7 @@ public class SimilarPatentServer {
                     tables.forEach(table->table.extractRelevantInformationFromParams(req));
 
                     Set<String> chartPreReqs = abstractCharts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toSet());
+                   // TODO add grouped by attrs chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getGroupedByNames))
 
                     SimilarityEngineController engine = similarityEngine.join().dup();
                     engine.setChartPrerequisites(chartPreReqs);
