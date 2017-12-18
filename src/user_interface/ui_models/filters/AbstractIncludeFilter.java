@@ -128,7 +128,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
         ContainerTag tag;
         if (!fieldType.equals(FieldType.Multiselect)||filterType.equals(FilterType.PrefixExclude)||filterType.equals(FilterType.PrefixInclude)) {
             tag= div().with(
-                    textarea().attr("data-attribute",attribute.getName()).attr("data-filtertype",filterType.toString()).withId(getId()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
+                    textarea().withId(getId()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
             );
         } else {
             String clazz = "multiselect";

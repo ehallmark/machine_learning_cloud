@@ -94,6 +94,7 @@ h5 {
 
 .collapsible-header label {
     cursor: pointer;
+    font-weight: 600;
 }
 
 body {
