@@ -22,12 +22,15 @@ import static j2html.TagCreator.*;
  * Created by Evan on 6/17/2017.
  */
 public abstract class AbstractChartAttribute extends NestedAttribute implements DependentAttribute<AbstractChartAttribute> {
+    public static final String MAX_GROUP_FIELD = "maxGroupSizeField";
     protected Collection<String> searchTypes;
     @Getter
     protected List<String> attrNames;
     protected Collection<AbstractAttribute> groupByAttributes;
     @Getter
     protected Map<String,String> attrNameToGroupByAttrNameMap;
+    @Getter
+    protected Map<String,Integer> attrNameToMaxGroupSizeMap;
     @Getter
     protected String name;
     protected boolean groupByPerAttribute;
@@ -62,16 +65,29 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        Function<String, Tag> groupByFunction = null;
-        Function<String,List<String>> additionalInputIdsFunction = null;
-        if(groupByAttributes!=null) {
-            groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
-            if(groupByPerAttribute) {
-                additionalInputIdsFunction = attrName -> Collections.singletonList(getGroupByChartFieldName(idFromName(attrName)));
-            }
-        }
+        return this.getOptionsTag(userRoleFunction,null,null,groupByPerAttribute);
+    }
 
-        return super.getOptionsTag(userRoleFunction,groupByFunction,additionalInputIdsFunction,groupByPerAttribute);
+    @Override
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, boolean perAttr) {
+        Function<String,Tag> newTagFunction;
+        Function<String,List<String>> newAdditionalIdsFunction;
+        if(groupByAttributes!=null) {
+            Function<String,Tag> groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
+            newTagFunction = additionalTagFunction == null ? groupByFunction : attrName -> div().with(groupByFunction.apply(attrName),additionalTagFunction.apply(attrName));
+            if(groupByPerAttribute) {
+                Function<String,List<String>> groupedByInputIdsFunction = attrName -> Collections.singletonList(getGroupByChartFieldName(idFromName(attrName)));
+                newAdditionalIdsFunction = additionalInputIdsFunction == null ? groupedByInputIdsFunction : attrName -> {
+                    return Stream.of(groupedByInputIdsFunction.apply(attrName),additionalInputIdsFunction.apply(attrName)).flatMap(list->list.stream()).collect(Collectors.toList());
+                };
+            } else {
+                newAdditionalIdsFunction = additionalInputIdsFunction;
+            }
+        } else {
+            newTagFunction = additionalTagFunction;
+            newAdditionalIdsFunction = additionalInputIdsFunction;
+        }
+        return super.getOptionsTag(userRoleFunction,newTagFunction,newAdditionalIdsFunction,groupByPerAttribute);
     }
 
     protected Tag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
@@ -80,9 +96,14 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
         String clazz = "form-control single-select2";
-        return div().with(
-                label("Group By"), br(),
-                SimilarPatentServer.technologySelectWithCustomClass(id,id,clazz, groupedGroupAttrs,false)
+        return div().withClass("row").with(
+                div().withClass("col-9").with(
+                        label("Group By"), br(),
+                        SimilarPatentServer.technologySelectWithCustomClass(id,id,clazz, groupedGroupAttrs,false)
+                ),div().withClass("col-3").with(
+                        label("Max Group Size"), br(),
+                        input().withClass("form-control").withType("number").attr("min","0").withId(id+MAX_GROUP_FIELD).withName(id+MAX_GROUP_FIELD).withValue("10")
+                )
         );
     }
 
@@ -106,6 +127,10 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 String group = SimilarPatentServer.extractString(params, getGroupByChartFieldName(getName()+attrName),"");
                 if(group.length()>0) {
                     attrNameToGroupByAttrNameMap.put(attrName, group);
+                }
+                String groupSize = SimilarPatentServer.extractString(params, getGroupByChartFieldName(getName()+attrName) + MAX_GROUP_FIELD,"10");
+                if(groupSize.length()>0) {
+                    attrNameToMaxGroupSizeMap.put(attrName, Integer.valueOf(groupSize));
                 }
             });
         }

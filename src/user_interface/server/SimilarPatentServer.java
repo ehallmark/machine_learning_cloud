@@ -1912,12 +1912,12 @@ public class SimilarPatentServer {
                                                                         a("Templates").withClass("nav-link active").attr("data-toggle", "tab")
                                                                                 .attr("role","tab")
                                                                                 .withHref("#templates-tree")
-                                                                ),
-                                                                li().withClass("nav-item").with(
-                                                                        a("Datasets").withClass("nav-link").attr("data-toggle", "tab")
-                                                                                .attr("role","tab")
-                                                                                .withHref("#datasets-tree")
-                                                                )
+                                                                )//,
+                                                                //li().withClass("nav-item").with(
+                                                                //        a("Datasets").withClass("nav-link").attr("data-toggle", "tab")
+                                                                //                .attr("role","tab")
+                                                                //                .withHref("#datasets-tree")
+                                                                //)
                                                         ), br(),
                                                         div().withClass("tab-content").withId("sidebar-jstree-wrapper").attr("style","max-height: 75%; overflow-y: auto; text-align: left; display: none;").with(
                                                                 div().withClass("tab-pane active").attr("role","tabpanel").withId("templates-tree").with(
@@ -1929,9 +1929,9 @@ public class SimilarPatentServer {
 
                                                                 ),div().withClass("tab-pane").attr("role","tabpanel").withId("datasets-tree").with(
                                                                         ul().with(
-                                                                                getDatasetsForUser(SUPER_USER,false,"Default Datasets",true),
-                                                                                getDatasetsForUser(req.session().attribute("username"),true,"My Datasets",false),
-                                                                                getDatasetsForUser(SHARED_USER,true, "Shared Datasets",false)
+                                                                                //getDatasetsForUser(SUPER_USER,false,"Default Datasets",true),
+                                                                                //getDatasetsForUser(req.session().attribute("username"),true,"My Datasets",false),
+                                                                                //getDatasetsForUser(SHARED_USER,true, "Shared Datasets",false)
                                                                         )
                                                                 ),div().withId("new-dataset-from-asset-list-overlay").with(
                                                                         div().withId("new-dataset-from-asset-list-inside").with(
