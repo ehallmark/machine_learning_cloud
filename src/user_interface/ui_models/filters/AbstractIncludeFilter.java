@@ -48,6 +48,14 @@ public class AbstractIncludeFilter extends AbstractFilter {
         }
     }
 
+    @Override public String getId() {
+        if(!fieldType.equals(FieldType.Multiselect)||filterType.equals(FilterType.PrefixExclude)||filterType.equals(FilterType.PrefixInclude)) {
+            return super.getId();
+        } else {
+            return ("multiselect-multiselect-" + getName()).replaceAll("[\\[\\] ]", "");
+        }
+    }
+
     @Override
     public AbstractFilter dup() {
         return new AbstractIncludeFilter(attribute,filterType,fieldType, labels==null?null:new ArrayList<>(labels));
