@@ -197,7 +197,7 @@ $(document).ready(function() {
     });
 
 
-    var nestedFilterSelectFunction = function(e,child,preventHighlight) {
+    var nestedFilterSelectFunction = function(e,preventHighlight) {
          var $options = $(e.currentTarget.selectedOptions);
          var $selectWrapper = $(this).parent().parent();
          var addedDraggables = [];
@@ -221,7 +221,7 @@ $(document).ready(function() {
                         if($this.length == 0) {
                             alert('Missing: '+this);
                         } else {
-                            $('#'+this).prop('disabled', true).val(null).filter('select').trigger('change', [true,preventHighlight]);
+                            $('#'+this).prop('disabled', true).val(null).filter('select').trigger('change', [preventHighlight]);
                         }
                     });
                  }
@@ -265,7 +265,7 @@ $(document).ready(function() {
                     if($this.length == 0) {
                         alert('Missing: '+this);
                     } else {
-                        $('#'+this).prop('disabled', false).filter('select').trigger('change', [true,preventHighlight]);
+                        $('#'+this).prop('disabled', false).filter('select').trigger('change', [preventHighlight]);
                     }
                 });
              }
@@ -309,7 +309,7 @@ $(document).ready(function() {
             var values = $attrSelect.val();
             if(!values.includes(parentName)) {
                 values.push(parentName);
-                $attrSelect.val(values).trigger('change');
+                $attrSelect.val(values).trigger('change', [true]);
             }
 
             // handle any children
@@ -320,7 +320,7 @@ $(document).ready(function() {
                     var childValues = $childAttrSelect.val();
                     if(!childValues.includes(attrName)) {
                         childValues.push(attrName);
-                        $childAttrSelect.val(childValues).trigger('change');
+                        $childAttrSelect.val(childValues).trigger('change', [true]);
                     }
                 }
             }
@@ -341,7 +341,7 @@ $(document).ready(function() {
         var idx = $.inArray(label,values);
         if(idx >= 0) {
             values.splice(idx,1);
-            $select.val(values).trigger('change');
+            $select.val(values).trigger('change',[true]);
         }
     });
 
@@ -415,7 +415,7 @@ $(document).ready(function() {
 
 
 var resetSearchForm = function() {
-    $('.attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[false]); });
+    $('.attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
     $('div.attribute').addClass("disabled");
     $('#results').html('');
 };
@@ -532,7 +532,7 @@ var showTemplateFormHelper = function(formSelector,dataMap) {
             $elem.not('select.nested-filter-select').trigger('change');
         }
     });
-    $(formSelector+' select.nested-filter-select').filter(':first').trigger('change', [false, true]);
+    $(formSelector+' select.nested-filter-select').filter(':first').trigger('change', [true]);
 };
 
 var showTemplateFunction = function(data,tree,node){
