@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts;
 
+import com.google.gson.Gson;
 import data_pipeline.helpers.Function2;
 import j2html.tags.Tag;
 import lombok.Getter;
@@ -155,6 +156,9 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 }
             });
         }
+
+        System.out.println("Group by params for "+getName()+": "+new Gson().toJson(attrNameToGroupByAttrNameMap));
+        System.out.println("    Group Sizes for "+getName()+": "+new Gson().toJson(attrNameToMaxGroupSizeMap));
 
         // what to do if not present?
         if(searchTypes.isEmpty()) {
