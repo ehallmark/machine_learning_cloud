@@ -114,7 +114,7 @@ public class AbstractNestedFilter extends AbstractFilter {
         String clazz = NestedAttribute.CLAZZ;
         return ("multiselect-"+clazz+"-"+getName()).replaceAll("[\\[\\] ]","");
     }
-    
+
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return getOptionsTag(userRoleFunction, null, null);
@@ -140,7 +140,7 @@ public class AbstractNestedFilter extends AbstractFilter {
                             if(filter.getInputIds()!=null) {
                                 inputIds.addAll(filter.getInputIds());
                             }
-                            if(filter instanceof AbstractNestedFilter) {
+                            if(filter instanceof AbstractNestedFilter && filterType.equals(FilterType.Nested)) {
                                 childTag = ((AbstractNestedFilter) filter).getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction);
                             } else {
                                 childTag = filter.getOptionsTag(userRoleFunction);
