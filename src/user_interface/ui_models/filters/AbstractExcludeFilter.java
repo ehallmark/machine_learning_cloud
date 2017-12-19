@@ -16,12 +16,7 @@ public class AbstractExcludeFilter extends AbstractIncludeFilter {
     public AbstractExcludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, List<String> labels) {
         super(attribute,filterType,fieldType,labels);
     }
-
-    @Override
-    public List<String> getInputIds() {
-        return null;
-    }
-
+    
     @Override
     public AbstractFilter dup() {
         return new AbstractExcludeFilter(attribute,filterType,fieldType, labels==null?null:new ArrayList<>(labels));
