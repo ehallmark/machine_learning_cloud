@@ -142,12 +142,16 @@ public class Database {
 	}
 
 	public static Object tryLoadObject(File file) {
-		System.out.println("Starting to load file: "+file.getName()+"...");
+		return tryLoadObject(file,true);
+	}
+
+	public static Object tryLoadObject(File file, boolean print) {
+		if(print)System.out.println("Starting to load file: "+file.getName()+"...");
 		try {
 			ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
 			Object toReturn = ois.readObject();
 			ois.close();
-			System.out.println("Successfully loaded "+file.getName()+".");
+			if(print)System.out.println("Successfully loaded "+file.getName()+".");
 			return toReturn;
 		} catch(Exception e) {
 			e.printStackTrace();
