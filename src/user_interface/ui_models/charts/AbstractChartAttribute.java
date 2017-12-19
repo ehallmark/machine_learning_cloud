@@ -79,18 +79,15 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         if(groupByAttributes!=null) {
             Function<String,Tag> groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
             newTagFunction = additionalTagFunction == null ? groupByFunction : attrName -> combineTagFunction.apply(groupByFunction.apply(attrName),additionalTagFunction.apply(attrName));
-            if(groupByPerAttribute) {
-                Function<String,List<String>> groupedByInputIdsFunction = attrName -> {
-                    String groupById = getGroupByChartFieldName(idFromName(attrName));
-                    String groupByMaxLimit = groupById + MAX_GROUP_FIELD;
-                    return Arrays.asList(groupById,groupByMaxLimit);
-                };
-                newAdditionalIdsFunction = additionalInputIdsFunction == null ? groupedByInputIdsFunction : attrName -> {
-                    return Stream.of(groupedByInputIdsFunction.apply(attrName),additionalInputIdsFunction.apply(attrName)).flatMap(list->list.stream()).collect(Collectors.toList());
-                };
-            } else {
-                newAdditionalIdsFunction = additionalInputIdsFunction;
-            }
+            Function<String,List<String>> groupedByInputIdsFunction = attrName -> {
+                String groupById = getGroupByChartFieldName(idFromName(attrName));
+                String groupByMaxLimit = groupById + MAX_GROUP_FIELD;
+                return Arrays.asList(groupById,groupByMaxLimit);
+            };
+            newAdditionalIdsFunction = additionalInputIdsFunction == null ? groupedByInputIdsFunction : attrName -> {
+                return Stream.of(groupedByInputIdsFunction.apply(attrName),additionalInputIdsFunction.apply(attrName)).flatMap(list->list.stream()).collect(Collectors.toList());
+            };
+
         } else {
             newTagFunction = additionalTagFunction;
             newAdditionalIdsFunction = additionalInputIdsFunction;
