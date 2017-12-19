@@ -150,10 +150,14 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 if(group.length()>0) {
                     attrNameToGroupByAttrNameMap.put(attrName, group);
                 }
-                String groupSize = SimilarPatentServer.extractString(params, groupId + MAX_GROUP_FIELD,"10");
+                String groupSizeId = groupId + MAX_GROUP_FIELD;
+                String groupSize = SimilarPatentServer.extractString(params, groupSizeId,"10");
                 if(groupSize.length()>0) {
                     attrNameToMaxGroupSizeMap.put(attrName, Integer.valueOf(groupSize));
                 }
+
+                System.out.println("Group id: "+groupId);
+                System.out.println("Group size id: "+groupSizeId);
             });
         }
 
