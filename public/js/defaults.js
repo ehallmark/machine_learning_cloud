@@ -274,7 +274,7 @@ $(document).ready(function() {
          });
 
          if(addedDraggables.length == 1) { // added by human
-             $selectWrapper.find('.highlight').removeClass('.highlight');
+             $selectWrapper.find('.highlight').removeClass('highlight');
              $.each(addedDraggables, function() {
                  var $draggable = $(this);
                  $draggable.addClass('highlight');
