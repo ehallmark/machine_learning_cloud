@@ -138,9 +138,15 @@ $(document).ready(function() {
                       var $chartDiv = $('#'+chartData.chartId.toString());
                       for(var j = 0; j < chartData.charts.length; j++) {
                         var $currChart = $('<div id="'+ chartData.chartId+"-"+j.toString() +'"></div>');
+                        var isStockChart = chartData.isStockCharts[j];
                         $currChart.appendTo($chartDiv);
                         var chartJson = chartData.charts[j];
-                        var chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
+                        var chart;
+                        if(isStockChart) {
+                            chart = Highcharts.stockChart(chartData.chartId+"-"+j.toString(), chartJson);
+                        } else {
+                            chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
+                        }
                         chart.redraw();
                       }
                    }

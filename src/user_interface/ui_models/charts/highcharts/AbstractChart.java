@@ -1,17 +1,15 @@
 package user_interface.ui_models.charts.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
-import com.googlecode.wickedcharts.highcharts.options.*;
-import com.googlecode.wickedcharts.highcharts.options.series.Series;
-
-import java.awt.*;
-import java.util.List;
+import com.googlecode.wickedcharts.highcharts.options.Options;
 
 /**
  * Created by ehallmark on 2/14/17.
  */
 public abstract class AbstractChart {
     protected Options options;
+
+    public boolean isStockChart() { return false; }
 
     public Object getOptions() { return options; }
 

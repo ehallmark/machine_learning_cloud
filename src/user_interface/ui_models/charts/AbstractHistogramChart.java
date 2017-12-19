@@ -3,10 +3,8 @@ package user_interface.ui_models.charts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import j2html.tags.Tag;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
-import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
@@ -15,13 +13,13 @@ import user_interface.ui_models.charts.highcharts.ColumnChart;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static j2html.TagCreator.*;
 
 /**
  * Created by Evan on 6/18/2017.
@@ -33,7 +31,7 @@ public class AbstractHistogramChart extends ChartAttribute {
     }
 
     private AbstractHistogramChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Map<String,RangeAttribute> nameToRangeMap) {
-        super(attributes,groupByAttrs,Constants.HISTOGRAM);
+        super(attributes,groupByAttrs,Constants.HISTOGRAM, true);
         this.nameToRangeMap=nameToRangeMap;
     }
 

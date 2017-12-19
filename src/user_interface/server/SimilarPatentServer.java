@@ -1185,6 +1185,7 @@ public class SimilarPatentServer {
                 List<? extends AbstractChart> charts = task.get();
                 Map<String,Object> ret = new HashMap<>();
                 ret.put("charts", charts.stream().map(chart->chart.getOptions()).collect(Collectors.toList()));
+                ret.put("isStockCharts", charts.stream().map(chart->chart.isStockChart()).collect(Collectors.toList()));
                 ret.put("chartId", "chart-"+chartNum);
                 return new JsonRenderer().toJson(ret);
             } else {
@@ -1507,7 +1508,7 @@ public class SimilarPatentServer {
                     tables.forEach(table->table.extractRelevantInformationFromParams(req));
 
                     Set<String> chartPreReqs = abstractCharts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toSet());
-                   chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrNameToGroupByAttrNameMap().values().stream()).collect(Collectors.toList()));
+                    chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrNameToGroupByAttrNameMap().values().stream()).collect(Collectors.toList()));
 
                     SimilarityEngineController engine = similarityEngine.join().dup();
                     engine.setChartPrerequisites(chartPreReqs);
@@ -1519,16 +1520,18 @@ public class SimilarPatentServer {
 
                     // build ordering
 
-                    Map<String, Integer> baseOrderMap = new HashMap<>();
+                    Map<String, Double> baseOrderMap = new HashMap<>();
                     attributes.forEach(attr -> {
-                        baseOrderMap.put(attr, extractInt(req, "order_" + attr, 0) * itemAttributes.size());
+                        baseOrderMap.put(attr, (double) extractInt(req, "order_" + attr, 0));
                     });
                     nestedAttributeParentMap.entrySet().forEach(e -> {
-                        int baseOrder = baseOrderMap.get(e.getKey());
+                        double baseOrder = baseOrderMap.get(e.getKey());
                         e.getValue().forEach(nested -> {
-                            baseOrderMap.put(nested, baseOrder + extractInt(req, "order_" + nested, 0));
+                            baseOrderMap.put(nested, baseOrder + ((double)extractInt(req, "order_" + nested, 0))/10);
                         });
                     });
+
+                    System.out.println("Base order map: "+new Gson().toJson(baseOrderMap));
 
                     List<String> tableHeaders = new ArrayList<>(itemAttributes);
                     tableHeaders.sort(Comparator.comparing(h -> baseOrderMap.get(h)));

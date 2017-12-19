@@ -30,7 +30,7 @@ public class AbstractDistributionChart extends ChartAttribute {
     private static final String MAX_SLICES = "maxSlices";
     protected Map<String,Integer> attrToLimitMap;
     public AbstractDistributionChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
-        super(attributes, groupByAttrs, Constants.PIE_CHART);
+        super(attributes, groupByAttrs, Constants.PIE_CHART, false);
         this.attrToLimitMap = Collections.synchronizedMap(new HashMap<>());
     }
 

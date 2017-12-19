@@ -15,7 +15,10 @@ public class LineChart extends AbstractChart {
         return "line";
     }
 
-    public LineChart(String title, String subTitle, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, Number min, Number max) {
+    @Override
+    public boolean isStockChart() { return true; }
+
+    public LineChart(String title, String subTitle, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals) {
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = "{point.key}"+xAxisSuffix;
         options=new Options()
@@ -28,8 +31,6 @@ public class LineChart extends AbstractChart {
                 .setSeries(data);
         options.setxAxis(new Axis().setType(AxisType.LINEAR).setTickInterval(1f).setTitle(new Title(xLabel)));
         options.setyAxis(new Axis().setType(AxisType.LINEAR).setMin(0).setTitle(new Title(ColumnChart.capitalize(yLabel)+" Count")));
-        if(min!=null) options.getSingleXAxis().setMin(min);
-        if(max!=null) options.getSingleXAxis().setMax(max);
         for(Series<?> series : options.getSeries()) {
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)
