@@ -33,15 +33,18 @@ public class AbstractIncludeFilter extends AbstractFilter {
     protected Collection<String> labels;
     protected FieldType fieldType;
     protected int minimumShouldMatch;
-    protected final String minShouldMatchId;
     public AbstractIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
         super(attribute, filterType);
         this.fieldType=fieldType;
         this.labels = labels;
+
+    }
+
+    public String getMinShouldMatchId() {
         if(filterType.equals(FilterType.PrefixInclude)||filterType.equals(FilterType.Include)) {
-            minShouldMatchId = attribute.getFullName().replace(".","_")+getId()+Constants.MINIMUM_SHOULD_MATCH_SUFFIX;
+            return attribute.getFullName().replace(".","_")+getId()+Constants.MINIMUM_SHOULD_MATCH_SUFFIX;
         }else {
-            minShouldMatchId = null;
+            return null;
         }
     }
 
@@ -73,7 +76,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
         }
 
 
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().minimumShouldMatch(minimumShouldMatch);
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().minimumShouldMatch(getMinShouldMatchId());
         for (String label : labels) {
             if(termQuery) {
                 boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.termQuery(preReq, label));
@@ -89,27 +92,18 @@ public class AbstractIncludeFilter extends AbstractFilter {
     @Override
     public List<String> getInputIds() {
         List<String> list = Collections.synchronizedList(new ArrayList<>());
-        if(minShouldMatchId!=null) list.add(minShouldMatchId);
+        if(getMinShouldMatchId()!=null) list.add(getMinShouldMatchId());
         list.add(getId());
         return list;
     }
 
-    @Override
-    public String getId() {
-        //if (!fieldType.equals(FieldType.Multiselect) || filterType.equals(FilterType.PrefixExclude) || filterType.equals(FilterType.PrefixInclude)) {
-            return super.getId();
-        //} else {
-        //    String clazz = "multiselect";
-        //    return ("multiselect-"+clazz+"-"+getName()).replaceAll("[\\[\\] ]","");
-        //}
-    }
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        if(minShouldMatchId==null) {
+        if(getMinShouldMatchId()==null) {
             this.minimumShouldMatch = DEFAULT_MINIMUM_SHOULD_MATCH;
         } else {
-            this.minimumShouldMatch = extractInt(req, minShouldMatchId, DEFAULT_MINIMUM_SHOULD_MATCH);
+            this.minimumShouldMatch = extractInt(req, getMinShouldMatchId(), DEFAULT_MINIMUM_SHOULD_MATCH);
         }
 
         System.out.println("Minimum should match for "+getName()+": "+minimumShouldMatch);
@@ -143,6 +137,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
             }
         }
         // check if include
+        String minShouldMatchId = getMinShouldMatchId();
         if(minShouldMatchId!=null) {
             // add minimum should match parameter
             tag = tag.with(label("Minimum Should Match").with(input().attr("min","1").withClass("form-control").attr("style","margin-top: 5px; margin-bottom: 5px; margin-left: 10px; width: 65px; height: 30px; display: inline;").withId(minShouldMatchId).withName(minShouldMatchId).withValue("1").withType("number")));
