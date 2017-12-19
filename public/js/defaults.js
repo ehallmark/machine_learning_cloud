@@ -288,7 +288,7 @@ $(document).ready(function() {
     }
 
     // THIS FUNCTION HANDLES "POP-OVER" OF SELECTED FILTERS INTO ATTRIBUTES
-    //   Should be able to disable with a user defined setting?
+    /*
     $('select.nested-filter-select').on("change", nestedFilterSelectFunction);
     var $attrSelect = $('#multiselect-nested-filter-select-attributes');
     $('#filters-row select.nested-filter-select').on("select2:select", function(e) {
@@ -325,7 +325,7 @@ $(document).ready(function() {
                 }
             }
         }
-    });
+    });*/
 
     $('.sidebar .nav-item .btn').click(function(e){
         $('.sidebar .nav-item .btn').removeClass('active');
