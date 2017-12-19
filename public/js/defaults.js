@@ -288,9 +288,10 @@ $(document).ready(function() {
          return true;
     }
 
+    $('select.nested-filter-select').on("change", nestedFilterSelectFunction);
+
     // THIS FUNCTION HANDLES "POP-OVER" OF SELECTED FILTERS INTO ATTRIBUTES
     /*
-    $('select.nested-filter-select').on("change", nestedFilterSelectFunction);
     var $attrSelect = $('#multiselect-nested-filter-select-attributes');
     $('#filters-row select.nested-filter-select').on("select2:select", function(e) {
         var $elem = $(e.params.data.element);
