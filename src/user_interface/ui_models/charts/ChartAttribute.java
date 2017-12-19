@@ -54,7 +54,10 @@ public abstract class ChartAttribute extends AbstractChartAttribute {
         attrName = idFromName(attrName);
         return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        label("Min Date"),br(),input().withId(attrName+ PLOT_GROUPS_ON_SAME_CHART_FIELD).withName(attrName+PLOT_GROUPS_ON_SAME_CHART_FIELD).withType("checkbox").withClass("form-control")
+                        label("Plot Groups Together").attr("title","Plot groups together on the same chart.").with(
+                                br(),
+                                input().withId(attrName+ PLOT_GROUPS_ON_SAME_CHART_FIELD).withName(attrName+PLOT_GROUPS_ON_SAME_CHART_FIELD).withType("checkbox").withClass("form-control")
+                        )
                 )
         );
     }

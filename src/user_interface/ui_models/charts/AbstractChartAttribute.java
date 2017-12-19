@@ -1,6 +1,5 @@
 package user_interface.ui_models.charts;
 
-import com.google.gson.Gson;
 import data_pipeline.helpers.Function2;
 import j2html.tags.Tag;
 import lombok.Getter;
@@ -106,11 +105,14 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         String clazz = "form-control single-select2";
         return div().withClass("row").with(
                 div().withClass("col-9").with(
-                        label("Group By"), br(),
-                        SimilarPatentServer.technologySelectWithCustomClass(id,id,clazz, groupedGroupAttrs,false)
+                        label("Group By").with(
+                                br(),
+                                SimilarPatentServer.technologySelectWithCustomClass(id,id,clazz, groupedGroupAttrs,false)
+                        )
                 ),div().withClass("col-3").with(
-                        label("Max Groups"), br(),
-                        input().withClass("form-control").withType("number").attr("style","height: 28px;").attr("min","0").withId(id+MAX_GROUP_FIELD).withName(id+MAX_GROUP_FIELD).withValue("10")
+                        label("Max Groups").with(
+                                br(), input().withClass("form-control").withType("number").attr("style","height: 28px;").attr("min","0").withId(id+MAX_GROUP_FIELD).withName(id+MAX_GROUP_FIELD).withValue("10")
+                        )
                 )
         );
     }
@@ -134,7 +136,6 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 return Stream.of(name.substring(name.indexOf(".")+1));
             }
         }).collect(Collectors.toList());
-        System.out.println("Search attrs for "+getName()+": "+attrNames);
         searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE_INCLUDE_FILTER_STR);
 
         if(groupByAttributes!=null) {
@@ -156,13 +157,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                     attrNameToMaxGroupSizeMap.put(attrName, Integer.valueOf(groupSize));
                 }
 
-                System.out.println("Group id: "+groupId);
-                System.out.println("Group size id: "+groupSizeId);
             });
         }
-
-        System.out.println("Group by params for "+getName()+": "+new Gson().toJson(attrNameToGroupByAttrNameMap));
-        System.out.println("    Group Sizes for "+getName()+": "+new Gson().toJson(attrNameToMaxGroupSizeMap));
 
         // what to do if not present?
         if(searchTypes.isEmpty()) {

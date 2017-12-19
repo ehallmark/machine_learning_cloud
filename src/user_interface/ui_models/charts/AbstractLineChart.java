@@ -58,9 +58,14 @@ public class AbstractLineChart extends ChartAttribute {
         attrName = idFromName(attrName);
         return div().withClass("row").with(
                 div().withClass("col-6").with(
-                        label("Min Date"),br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MIN).withName(attrName+SimilarPatentServer.LINE_CHART_MIN).withType("text").withClass("datepicker form-control")
+                        label("Min Date").with(
+                                br(),
+                                input().withId(attrName+SimilarPatentServer.LINE_CHART_MIN).withName(attrName+SimilarPatentServer.LINE_CHART_MIN).withType("text").withClass("datepicker form-control")
+                        )
                 ), div().withClass("col-6").with(
-                        label("Max Date"),br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MAX).withName(attrName+SimilarPatentServer.LINE_CHART_MAX).withType("text").withClass("datepicker form-control")
+                        label("Max Date").with(
+                                br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MAX).withName(attrName+SimilarPatentServer.LINE_CHART_MAX).withType("text").withClass("datepicker form-control")
+                        )
                 )
         );
     }
