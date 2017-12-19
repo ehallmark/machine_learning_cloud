@@ -145,7 +145,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 attrsToCheck.add("");
             }
             attrsToCheck.forEach(attrName->{
-                String groupId = getGroupByChartFieldName(getName()+attrName);
+                String groupId = getGroupByChartFieldName(attrName);
                 String group = SimilarPatentServer.extractString(params, groupId,"");
                 if(group.length()>0) {
                     attrNameToGroupByAttrNameMap.put(attrName, group);
