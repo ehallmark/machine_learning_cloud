@@ -45,9 +45,6 @@ public class AbstractLineChart extends ChartAttribute {
         return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,true);
     }
 
-    public String idFromName(String attrName) {
-        return attrName.replace(getName().replace("[","").replace("]","")+".","").replace(".","");
-    }
 
     private Tag getAdditionalTagPerAttr(String attrName) {
         attrName = idFromName(attrName);

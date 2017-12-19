@@ -57,7 +57,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         return (getName().replace("[","").replace("]","")+SimilarPatentServer.CHARTS_GROUPED_BY_FIELD+(attrName==null?"":attrName)).replace(".","");
     }
 
-    private String idFromName(String attrName) {
+    protected String idFromName(String attrName) {
         if(attrName!=null) {
             attrName = attrName.replace(getName().replace("[", "").replace("]", "") + ".", "").replace(".", "");
         }
