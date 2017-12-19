@@ -24,6 +24,7 @@ import static j2html.TagCreator.*;
  * Created by Evan on 6/17/2017.
  */
 public abstract class AbstractChartAttribute extends NestedAttribute implements DependentAttribute<AbstractChartAttribute> {
+    public static final String PLOT_GROUPS_ON_SAME_CHART_FIELD = "plotGroupsSameChart";
     public static final String MAX_GROUP_FIELD = "maxGroupSizeField";
     protected Collection<String> searchTypes;
     @Getter
@@ -36,9 +37,11 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     @Getter
     protected String name;
     protected boolean groupByPerAttribute;
-    public AbstractChartAttribute(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttributes, String name, boolean groupByPerAttribute) {
+    protected boolean groupsPlottableOnSameChart;
+    public AbstractChartAttribute(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttributes, String name, boolean groupByPerAttribute, boolean groupsPlottableOnSameChart) {
         super(attributes);
         this.groupByAttributes=groupByAttributes;
+        this.groupsPlottableOnSameChart=groupsPlottableOnSameChart;
         //if(groupByAttributes!=null)groupByAttributes.forEach(attr->attr.setParent(this));
         this.name=name;
         this.attrNameToGroupByAttrNameMap = Collections.synchronizedMap(new HashMap<>());
@@ -70,22 +73,54 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         return this.getOptionsTag(userRoleFunction,null,null,combineTagFunction,groupByPerAttribute);
     }
 
+    private Tag getPlotGroupsTogetherTag(String attrName) {
+        attrName = getGroupByChartFieldName(idFromName(attrName));
+        return div().withClass("row").with(
+                div().withClass("col-12").with(
+                        label("Plot Groups Together").attr("title","Plot groups together on the same chart.").with(
+                                input().attr("style","float: left;").withId(attrName+ PLOT_GROUPS_ON_SAME_CHART_FIELD).withName(attrName+PLOT_GROUPS_ON_SAME_CHART_FIELD).withType("checkbox")
+                        )
+                )
+        );
+    }
+
     @Override
     protected Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<Tag,Tag,Tag> combineTagFunction, boolean perAttr) {
         Function<String,Tag> newTagFunction;
         Function<String,List<String>> newAdditionalIdsFunction;
         if(groupByAttributes!=null) {
             Function<String,Tag> groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
-            newTagFunction = additionalTagFunction == null ? groupByFunction : attrName -> combineTagFunction.apply(groupByFunction.apply(attrName),additionalTagFunction.apply(attrName));
+            Function<String,Tag> _newTagFunction = additionalTagFunction == null ? groupByFunction : attrName -> combineTagFunction.apply(groupByFunction.apply(attrName),additionalTagFunction.apply(attrName));
+            if(groupsPlottableOnSameChart) {
+                newTagFunction = attrName -> div().withClass("row").with(
+                        div().withClass("col-10").with(_newTagFunction.apply(attrName)),
+                        div().withClass("col-2").with(getPlotGroupsTogetherTag(attrName))
+                );
+            } else {
+                newTagFunction = _newTagFunction;
+            }
             if(groupByPerAttribute) {
                 Function<String, List<String>> groupedByInputIdsFunction = attrName -> {
                     String groupById = getGroupByChartFieldName(idFromName(attrName));
                     String groupByMaxLimit = groupById + MAX_GROUP_FIELD;
                     return Arrays.asList(groupById, groupByMaxLimit);
                 };
-                newAdditionalIdsFunction = additionalInputIdsFunction == null ? groupedByInputIdsFunction : attrName -> {
-                    return Stream.of(groupedByInputIdsFunction.apply(attrName), additionalInputIdsFunction.apply(attrName)).flatMap(list -> list.stream()).collect(Collectors.toList());
+                Function<String,List<String>> _newAdditionalIdsFunction = additionalInputIdsFunction == null ? groupedByInputIdsFunction : attrName -> {
+                    return Stream.of(
+                            groupedByInputIdsFunction.apply(attrName),
+                            additionalInputIdsFunction.apply(attrName)
+                    ).flatMap(list -> list.stream()).collect(Collectors.toList());
                 };
+                if(groupsPlottableOnSameChart) {
+                    newAdditionalIdsFunction = attrName->{
+                        return Stream.of(
+                                _newAdditionalIdsFunction.apply(attrName),
+                                Collections.singletonList(getGroupByChartFieldName(idFromName(attrName)) + PLOT_GROUPS_ON_SAME_CHART_FIELD)
+                        ).flatMap(list -> list.stream()).collect(Collectors.toList());
+                    };
+                } else {
+                    newAdditionalIdsFunction = _newAdditionalIdsFunction;
+                }
             } else {
                 newAdditionalIdsFunction = additionalInputIdsFunction;
             }
