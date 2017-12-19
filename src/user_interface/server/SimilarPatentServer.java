@@ -2094,7 +2094,7 @@ public class SimilarPatentServer {
                                 innerModelsFormAttributes(userRoleFunction,buttons)
                         )
                 ),
-                div().withClass("col-12").attr("style","padding-top: 20px;").with(
+                div().withClass("col-12").attr("style","padding-top: 20px;").withId("results-wrapper").with(
                         ul().withClass("nav nav-tabs").attr("role","tablist").with(
                                 li().withClass("nav-item").with(
                                         a("Data").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")

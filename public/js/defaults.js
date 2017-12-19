@@ -68,10 +68,10 @@ $(document).ready(function() {
     };
 
     var successReportFrom = function(data) {
-       var $activePanes = $('#results').find('.tab-pane.active');
+       var $activePanes = $('#results-wrapper').find('.tab-pane.active');
        $('#results').html(data.message);
        if($activePanes.length>0) {
-           $('#results').find('.tab-pane').removeClass('active');
+           $('#results-wrapper').find('.tab-pane').removeClass('active');
        }
        $activePanes.each(function() {
            $('#'+$(this).attr('id')).addClass('active');
@@ -385,7 +385,8 @@ $(document).ready(function() {
     $('#main-content-id').tooltip({
         content: function() { return $(this).attr('title'); },
         show: 500,
-        hide: 100
+        hide: 100,
+        delay: 500
     });
 
     $('.nested-form-list').sortable();
