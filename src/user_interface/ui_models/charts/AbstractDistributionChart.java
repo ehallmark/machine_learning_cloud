@@ -41,9 +41,11 @@ public class AbstractDistributionChart extends ChartAttribute {
 
     @Override
     public List<? extends AbstractChart> create(PortfolioList portfolioList, int i) {
-        return Stream.of(attrNames.get(i)).map(attribute-> {
+        return Stream.of(attrNames.get(i)).flatMap(attribute-> {
             String title = SimilarPatentServer.humanAttributeFor(attribute) + " Distribution";
-            return new PieChart(title, collectDistributionData(portfolioList, attribute, title), combineTypesToString(searchTypes));
+            return groupPortfolioListForGivenAttribute(portfolioList,attribute).map(groupPair->{
+                    return new PieChart(title,  groupPair.getFirst(), collectDistributionData(groupPair.getSecond(), attribute, title), combineTypesToString(searchTypes));
+            });
         }).collect(Collectors.toList());
     }
 

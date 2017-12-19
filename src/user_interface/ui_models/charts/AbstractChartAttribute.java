@@ -2,6 +2,7 @@ package user_interface.ui_models.charts;
 
 import j2html.tags.Tag;
 import lombok.Getter;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
@@ -105,6 +106,13 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                         input().withClass("form-control").withType("number").attr("min","0").withId(id+MAX_GROUP_FIELD).withName(id+MAX_GROUP_FIELD).withValue("10")
                 )
         );
+    }
+
+    protected Stream<Pair<String,PortfolioList>> groupPortfolioListForGivenAttribute(PortfolioList portfolioList, String attribute) {
+        String groupedBy = attrNameToGroupByAttrNameMap.get(attribute);
+        Integer maxLimit = attrNameToMaxGroupSizeMap.get(attribute);
+        if(maxLimit==null) maxLimit = 1;
+        return portfolioList.groupedBy(groupedBy).sorted((p1,p2)->Integer.compare(p2.getSecond().getItemList().size(),p1.getSecond().getItemList().size())).limit(maxLimit);
     }
 
     @Override

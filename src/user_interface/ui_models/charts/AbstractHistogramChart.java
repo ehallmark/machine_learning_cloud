@@ -56,7 +56,7 @@ public class AbstractHistogramChart extends ChartAttribute {
             String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
             String humanSearchType = combineTypesToString(searchTypes);
             String title = humanAttr + " Histogram";
-            String groupedBy = attrNameToGroupByAttrNameMap.get(attribute);
+
 
             RangeAttribute rangeAttribute = nameToRangeMap.get(attribute);
             double min = rangeAttribute.min().doubleValue();
@@ -74,7 +74,7 @@ public class AbstractHistogramChart extends ChartAttribute {
             final double _max = max;
             final int _nBins = nBins;
             final String _xAxisSuffix = xAxisSuffix;
-            return portfolioList.groupedBy(groupedBy).sorted((p1,p2)->Integer.compare(p2.getSecond().getItemList().size(),p1.getSecond().getItemList().size())).limit(10).map(groupPair->{
+            return groupPortfolioListForGivenAttribute(portfolioList,attribute).map(groupPair->{
                 String name = groupPair.getFirst();
                 PortfolioList group = groupPair.getSecond();
                 return new ColumnChart(title, collectDistributionData(group.getItemList(),_min,_max,_nBins, attribute, title, categories), 0d, null, _xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, name,  0,categories);

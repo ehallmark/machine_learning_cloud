@@ -81,13 +81,15 @@ public class AbstractLineChart extends ChartAttribute {
     
     @Override
     public List<? extends AbstractChart> create(PortfolioList portfolioList, int i) {
-        return Stream.of(attrNames.get(i)).map(attribute->{
+        return Stream.of(attrNames.get(i)).flatMap(attribute->{
             String humanAttr = SimilarPatentServer.fullHumanAttributeFor(attribute);
             String humanSearchType = combineTypesToString(searchTypes);
             String title = humanAttr + " Timeline";
             String xAxisSuffix = "";
             String yAxisSuffix = "";
-            return new LineChart(title, collectTimelineData(portfolioList.getItemList(), attribute, humanSearchType),xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType,  0, attrToMinMap.get(attribute), attrToMaxMap.get(attribute));
+            return groupPortfolioListForGivenAttribute(portfolioList,attribute).map(groupPair-> {
+                return new LineChart(title, groupPair.getFirst(), collectTimelineData(groupPair.getSecond().getItemList(), attribute, humanSearchType), xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0, attrToMinMap.get(attribute), attrToMaxMap.get(attribute));
+            });
         }).collect(Collectors.toList());
     }
 
