@@ -1,5 +1,6 @@
 package user_interface.ui_models.attributes;
 
+import data_pipeline.helpers.Function2;
 import j2html.tags.Tag;
 import lombok.Getter;
 import user_interface.server.SimilarPatentServer;
@@ -62,11 +63,11 @@ public abstract class NestedAttribute extends AbstractAttribute {
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return getOptionsTag(userRoleFunction, null, null, false);
+        return getOptionsTag(userRoleFunction, null, null, (tag1,tag2)->div().with(tag1,tag2), false);
     }
 
 
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, boolean perAttr) {
+    protected Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<Tag,Tag,Tag> combineTagFunction, boolean perAttr) {
         String styleString = "margin-left: 5%; margin-right: 5%; display: none;";
         String name = getFullName().replace(".","");
         String clazz = CLAZZ;
@@ -86,12 +87,12 @@ public abstract class NestedAttribute extends AbstractAttribute {
                                 inputIds.addAll(filter.getInputIds());
                             }
                             if(filter instanceof NestedAttribute && ! (filter instanceof AbstractChartAttribute) && perAttr) {
-                                childTag = ((NestedAttribute) filter).getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction, perAttr);
+                                childTag = ((NestedAttribute) filter).getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineTagFunction, perAttr);
                             } else {
                                 childTag = filter.getOptionsTag(userRoleFunction);
                                 Tag additionalTag = additionalTagFunction!=null&&perAttr ? additionalTagFunction.apply(filter.getFullName()) : null;
                                 if(additionalTag!=null) {
-                                    childTag = div().with(additionalTag,childTag);
+                                    childTag = combineTagFunction.apply(additionalTag,childTag);
                                 }
                                 if(additionalInputIdsFunction!=null) {
                                     List<String> additional = additionalInputIdsFunction.apply(filter.getFullName());

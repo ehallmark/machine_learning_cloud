@@ -42,7 +42,7 @@ public class AbstractLineChart extends ChartAttribute {
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         Function<String,Tag> additionalTagFunction = this::getAdditionalTagPerAttr;
         Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(idFromName(attrName)+SimilarPatentServer.LINE_CHART_MIN,idFromName(attrName)+SimilarPatentServer.LINE_CHART_MAX);
-        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,true);
+        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,(tag1,tag2)->div().with(tag1,tag2),true);
     }
 
 

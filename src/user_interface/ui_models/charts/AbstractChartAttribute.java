@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts;
 
+import data_pipeline.helpers.Function2;
 import j2html.tags.Tag;
 import lombok.Getter;
 import org.nd4j.linalg.primitives.Pair;
@@ -66,11 +67,12 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return this.getOptionsTag(userRoleFunction,null,null,groupByPerAttribute);
+        Function2<Tag,Tag,Tag> combineTagFunction = (tag1,tag2) -> div().with(tag1,tag2);
+        return this.getOptionsTag(userRoleFunction,null,null,combineTagFunction,groupByPerAttribute);
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, boolean perAttr) {
+    protected Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<Tag,Tag,Tag> combineTagFunction, boolean perAttr) {
         Function<String,Tag> newTagFunction;
         Function<String,List<String>> newAdditionalIdsFunction;
         if(groupByAttributes!=null) {
@@ -88,7 +90,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             newTagFunction = additionalTagFunction;
             newAdditionalIdsFunction = additionalInputIdsFunction;
         }
-        return super.getOptionsTag(userRoleFunction,newTagFunction,newAdditionalIdsFunction,groupByPerAttribute);
+        return super.getOptionsTag(userRoleFunction,newTagFunction,newAdditionalIdsFunction,(tag1,tag2)->div().with(tag1,tag2),groupByPerAttribute);
     }
 
     protected Tag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {

@@ -3,6 +3,7 @@ package user_interface.ui_models.charts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
+import data_pipeline.helpers.Function2;
 import elasticsearch.DataSearcher;
 import j2html.tags.Tag;
 import org.nd4j.linalg.primitives.Pair;
@@ -57,7 +58,7 @@ public class AbstractDistributionChart extends ChartAttribute {
     private Tag getAdditionalTagPerAttr(String attrName) {
         attrName = idFromName(attrName);
         return div().withClass("row").with(
-                div().withClass("col-6 offset-3").with(
+                div().withClass("col-12").with(
                         label("Max Slices"),br(),input().withId(attrName+MAX_SLICES).withName(attrName+MAX_SLICES).withType("number").withClass("form-control")
                 )
         );
@@ -67,7 +68,14 @@ public class AbstractDistributionChart extends ChartAttribute {
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         Function<String,Tag> additionalTagFunction = this::getAdditionalTagPerAttr;
         Function<String,List<String>> additionalInputIdsFunction = attrName -> Collections.singletonList(idFromName(attrName)+MAX_SLICES);
-        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,true);
+        Function2<Tag,Tag,Tag> combineFunction = (tag1,tag2) -> div().withClass("row").with(
+                div().withClass("col-10").with(
+                        tag1
+                ),div().withClass("col-2").with(
+                        tag2
+                )
+        );
+        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineFunction,true);
     }
 
     @Override
