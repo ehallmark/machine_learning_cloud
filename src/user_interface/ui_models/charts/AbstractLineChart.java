@@ -141,11 +141,11 @@ public class AbstractLineChart extends ChartAttribute {
         }).map(item->{
             //System.out.println("timeline date attr: "+item);
             try {
-                return LocalDate.parse(item.toString(), DateTimeFormatter.ISO_DATE);
+                return (LocalDate)LocalDate.parse(item.toString(), DateTimeFormatter.ISO_DATE);
             } catch(Exception e) {
-                return null;
+                return (LocalDate)null;
             }
-        }).filter(date->date!=null&&(min==null||!date.isBefore(min))&&(max==null||date.isBefore(max))).collect(Collectors.groupingBy(Function.identity(),Collectors.counting()));
+        }).filter(date->date!=null&&(min==null||!((LocalDate)date).isBefore(min))&&(max==null||((LocalDate)date).isBefore(max))).collect(Collectors.groupingBy(Function.identity(),Collectors.counting()));
 
         SortedMap<LocalDate,Long> sortedData = new TreeMap<>(dataMap);
 
