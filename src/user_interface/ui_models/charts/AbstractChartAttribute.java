@@ -103,7 +103,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                         SimilarPatentServer.technologySelectWithCustomClass(id,id,clazz, groupedGroupAttrs,false)
                 ),div().withClass("col-3").with(
                         label("Max Group Size"), br(),
-                        input().withClass("form-control").withType("number").attr("min","0").withId(id+MAX_GROUP_FIELD).withName(id+MAX_GROUP_FIELD).withValue("10")
+                        input().withClass("form-control").withType("number").attr("style","height: 28px;").attr("min","0").withId(id+MAX_GROUP_FIELD).withName(id+MAX_GROUP_FIELD).withValue("10")
                 )
         );
     }
