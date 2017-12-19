@@ -59,7 +59,7 @@ public class AbstractDistributionChart extends ChartAttribute {
         attrName = idFromName(attrName);
         return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        label("Max Slices"),br(),input().withId(attrName+MAX_SLICES).attr("style","height: 28px;").withName(attrName+MAX_SLICES).withType("number").withClass("form-control")
+                        label("Max Slices"),br(),input().withId(attrName+MAX_SLICES).attr("style","height: 28px;").withName(attrName+MAX_SLICES).withType("number").withClass("form-control").withValue("20")
                 )
         );
     }
