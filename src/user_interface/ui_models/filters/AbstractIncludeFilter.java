@@ -42,7 +42,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
 
     public String getMinShouldMatchId() {
         if(filterType.equals(FilterType.PrefixInclude)||filterType.equals(FilterType.Include)) {
-            return attribute.getFullName().replace(".","_")+getId()+Constants.MINIMUM_SHOULD_MATCH_SUFFIX;
+            return getId()+Constants.MINIMUM_SHOULD_MATCH_SUFFIX;
         }else {
             return null;
         }
