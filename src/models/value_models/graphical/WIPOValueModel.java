@@ -9,9 +9,8 @@ import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.*;
-import user_interface.ui_models.attributes.computable_attributes.ExistsInGatherFilter;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
-import user_interface.ui_models.attributes.WIPOTechnologyAttribute;
+import user_interface.ui_models.filters.AbstractExistsFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 import user_interface.ui_models.portfolios.items.Item;
@@ -65,7 +64,7 @@ public class WIPOValueModel extends ValueAttr {
                 wipo
         );
         Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
-        AbstractIncludeFilter gatherFilter = new ExistsInGatherFilter();
+        AbstractExistsFilter gatherFilter = new AbstractExistsFilter(new GatherNestedAttribute(), AbstractFilter.FilterType.Exists);
         Collection<AbstractFilter> filters = Arrays.asList(gatherFilter, new AbstractIncludeFilter(new ResultTypeAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, Arrays.asList("patents")));
         Map<String,NestedAttribute> nestedMap = new HashMap<>();
         nestedMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());

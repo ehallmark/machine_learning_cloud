@@ -252,10 +252,6 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Lapsed", Constants.LAPSED);
             humanAttrToJavaAttrMap.put("Priority Date (estimated)", Constants.ESTIMATED_PRIORITY_DATE);
             humanAttrToJavaAttrMap.put("Expiration Date (estimated)", Constants.ESTIMATED_EXPIRATION_DATE);
-            humanAttrToJavaAttrMap.put("Exists in CompDB Filter", Constants.EXISTS_IN_COMPDB_FILTER);
-            humanAttrToJavaAttrMap.put("Exists in Gather Filter", Constants.EXISTS_IN_GATHER_FILTER);
-            humanAttrToJavaAttrMap.put("Does not exist in CompDB Filter", Constants.DOES_NOT_EXIST_IN_COMPDB_FILTER);
-            humanAttrToJavaAttrMap.put("Does not exist in Gather Filter", Constants.DOES_NOT_EXIST_IN_GATHER_FILTER);
             humanAttrToJavaAttrMap.put("Assignor Name", Constants.ASSIGNOR);
             humanAttrToJavaAttrMap.put("Conveyance Text", Constants.CONVEYANCE_TEXT);
             humanAttrToJavaAttrMap.put("Is Human", Constants.IS_HUMAN);
@@ -455,10 +451,7 @@ public class SimilarPatentServer {
                         filterNameHelper(filter);
                     });
                 });
-                preFilterModelMap.put(Constants.EXISTS_IN_COMPDB_FILTER, new ExistsInCompDBFilter());
-                preFilterModelMap.put(Constants.EXISTS_IN_GATHER_FILTER, new ExistsInGatherFilter());
-                preFilterModelMap.put(Constants.DOES_NOT_EXIST_IN_COMPDB_FILTER, new DoesNotExistInCompDBFilter());
-                preFilterModelMap.put(Constants.DOES_NOT_EXIST_IN_GATHER_FILTER, new DoesNotExistInGatherFilter());
+
                 buildJavaToHumanAttrMap();
                 List<AbstractAttribute> nestedAttributes = new ArrayList<>(allAttributes.getAttributes());
                 nestedAttributes.addAll(similarityEngine.join().getEngineMap().values().stream().map(engine->(AbstractAttribute)engine).collect(Collectors.toList()));
@@ -468,7 +461,7 @@ public class SimilarPatentServer {
                         return allAttributes.getName();
                     }
                 };
-                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false, new DoesNotExistInCompDBFilter(), new DoesNotExistInGatherFilter(), new ExistsInCompDBFilter(), new ExistsInGatherFilter());
+                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false);
             } catch(Exception e) {
                 e.printStackTrace();
             }
