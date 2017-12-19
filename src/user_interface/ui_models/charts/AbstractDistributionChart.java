@@ -57,10 +57,8 @@ public class AbstractDistributionChart extends ChartAttribute {
 
     private Tag getAdditionalTagPerAttr(String attrName) {
         attrName = idFromName(attrName);
-        return div().withClass("row").with(
-                div().withClass("col-12").with(
-                        label("Max Slices"),br(),input().withId(attrName+MAX_SLICES).attr("style","height: 28px;").withName(attrName+MAX_SLICES).withType("number").withClass("form-control")
-                )
+        return div().withClass("col-12").with(
+                label("Max Slices"),br(),input().withId(attrName+MAX_SLICES).attr("style","height: 28px;").withName(attrName+MAX_SLICES).withType("number").withClass("form-control")
         );
     }
 
