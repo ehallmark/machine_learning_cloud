@@ -131,11 +131,13 @@ public class AbstractBetweenFilter extends AbstractFilter {
         String additionalClasses = getFieldType().equals(FieldType.Date) ? "datepicker" : "";
         return div().withClass("row").with(
                 div().withClass("col-6").with(
-                        label("Min"),
-                        input().withClass("form-control "+additionalClasses).withType(type).withId(getMinId()).withName(minName)
+                        label("Min").attr("style","width: 100%;").with(
+                                input().withClass("form-control "+additionalClasses).withType(type).withId(getMinId()).withName(minName)
+                        )
                 ), div().withClass("col-6").with(
-                        label("Max"),
-                        input().withClass("form-control "+additionalClasses).withType(type).withId(getMaxId()).withName(maxName)
+                        label("Max").attr("style","width: 100%;").with(
+                                input().withClass("form-control "+additionalClasses).withType(type).withId(getMaxId()).withName(maxName)
+                        )
                 )
         );
     }

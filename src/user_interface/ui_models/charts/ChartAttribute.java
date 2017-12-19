@@ -53,7 +53,6 @@ public abstract class ChartAttribute extends AbstractChartAttribute {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
                         label("Plot Groups Together").attr("title","Plot groups together on the same chart.").with(
-                                br(),
                                 input().withId(attrName+ PLOT_GROUPS_ON_SAME_CHART_FIELD).withName(attrName+PLOT_GROUPS_ON_SAME_CHART_FIELD).withType("checkbox").withClass("form-control")
                         )
                 )

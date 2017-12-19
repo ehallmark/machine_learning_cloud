@@ -58,12 +58,12 @@ public class AbstractLineChart extends ChartAttribute {
         attrName = idFromName(attrName);
         return div().withClass("row").with(
                 div().withClass("col-6").with(
-                        label("Min Date").with(
+                        label("Min Date").attr("style","width: 100%;").with(
                                 br(),
                                 input().withId(attrName+SimilarPatentServer.LINE_CHART_MIN).withName(attrName+SimilarPatentServer.LINE_CHART_MIN).withType("text").withClass("datepicker form-control")
                         )
                 ), div().withClass("col-6").with(
-                        label("Max Date").with(
+                        label("Max Date").attr("style","width: 100%;").with(
                                 br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MAX).withName(attrName+SimilarPatentServer.LINE_CHART_MAX).withType("text").withClass("datepicker form-control")
                         )
                 )
@@ -124,7 +124,7 @@ public class AbstractLineChart extends ChartAttribute {
     }
 
     private static long millisecondsFromDate(LocalDate date) {
-        ZonedDateTime zdt = LocalDateTime.from(date).atZone(ZoneId.of("America/Los_Angeles"));
+        ZonedDateTime zdt = LocalDateTime.of(date.getYear(),date.getMonth(),date.getDayOfMonth(),0,0,0).atZone(ZoneId.of("America/Los_Angeles"));
         return zdt.toInstant().toEpochMilli();
     }
 

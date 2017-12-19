@@ -105,12 +105,12 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         String clazz = "form-control single-select2";
         return div().withClass("row").with(
                 div().withClass("col-9").with(
-                        label("Group By").with(
+                        label("Group By").attr("style","width: 100%;").with(
                                 br(),
                                 SimilarPatentServer.technologySelectWithCustomClass(id,id,clazz, groupedGroupAttrs,false)
                         )
                 ),div().withClass("col-3").with(
-                        label("Max Groups").with(
+                        label("Max Groups").attr("style","width: 100%;").with(
                                 br(), input().withClass("form-control").withType("number").attr("style","height: 28px;").attr("min","0").withId(id+MAX_GROUP_FIELD).withName(id+MAX_GROUP_FIELD).withValue("10")
                         )
                 )
