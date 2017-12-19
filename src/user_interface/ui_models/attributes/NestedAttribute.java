@@ -79,7 +79,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                         SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),id,clazz, applicableAttributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(
                         applicableAttributes.stream().map(filter->{
-                            String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
+                            String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\].]","");
                             Tag childTag;
                             List<String> inputIds = new ArrayList<>();
                             if(filter.getInputIds()!=null) {
