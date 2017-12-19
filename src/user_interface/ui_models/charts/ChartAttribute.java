@@ -36,7 +36,7 @@ public abstract class ChartAttribute extends AbstractChartAttribute {
             Function<String,Tag> plottableByGroupsFunction = this::getAdditionalTagPerAttr;
             newTagFunction = additionalTagFunction == null ? plottableByGroupsFunction : attrName -> combineTagFunction.apply(plottableByGroupsFunction.apply(attrName),additionalTagFunction.apply(attrName));
             Function<String, List<String>> additionalIdsFunction = attrName -> {
-                return Collections.singletonList(attrName + PLOT_GROUPS_ON_SAME_CHART_FIELD);
+                return Collections.singletonList(getGroupByChartFieldName(idFromName(attrName)) + PLOT_GROUPS_ON_SAME_CHART_FIELD);
             };
             newAdditionalIdsFunction = additionalInputIdsFunction == null ? additionalIdsFunction : attrName -> {
                 return Stream.of(additionalIdsFunction.apply(attrName), additionalInputIdsFunction.apply(attrName)).flatMap(list -> list.stream()).collect(Collectors.toList());
@@ -49,7 +49,7 @@ public abstract class ChartAttribute extends AbstractChartAttribute {
     }
 
     private Tag getAdditionalTagPerAttr(String attrName) {
-        attrName = idFromName(attrName);
+        attrName = getGroupByChartFieldName(idFromName(attrName));
         return div().withClass("row").with(
                 div().withClass("col-12").with(
                         label("Plot Groups Together").attr("title","Plot groups together on the same chart.").with(
