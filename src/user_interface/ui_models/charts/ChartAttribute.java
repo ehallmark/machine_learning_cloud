@@ -32,6 +32,7 @@ public abstract class ChartAttribute extends AbstractChartAttribute {
     protected Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<Tag,Tag,Tag> combineTagFunction, boolean perAttr) {
         Function<String,Tag> newTagFunction;
         Function<String,List<String>> newAdditionalIdsFunction;
+        Function2<Tag,Tag,Tag> newCombineByFunction;
         if(groupsPlottableOnSameChart) {
             Function<String,Tag> plottableByGroupsFunction = this::getAdditionalTagPerAttr;
             newTagFunction = additionalTagFunction == null ? plottableByGroupsFunction : attrName -> combineTagFunction.apply(plottableByGroupsFunction.apply(attrName),additionalTagFunction.apply(attrName));
@@ -41,11 +42,16 @@ public abstract class ChartAttribute extends AbstractChartAttribute {
             newAdditionalIdsFunction = additionalInputIdsFunction == null ? additionalIdsFunction : attrName -> {
                 return Stream.of(additionalIdsFunction.apply(attrName), additionalInputIdsFunction.apply(attrName)).flatMap(list -> list.stream()).collect(Collectors.toList());
             };
+            newCombineByFunction = (tag1,tag2)-> div().withClass("row").with(
+                    div().withClass("col-10").with(tag1),
+                    div().withClass("col-2").with(tag2)
+            );
         } else {
             newTagFunction = additionalTagFunction;
             newAdditionalIdsFunction = additionalInputIdsFunction;
+            newCombineByFunction = combineTagFunction;
         }
-        return super.getOptionsTag(userRoleFunction,newTagFunction,newAdditionalIdsFunction,combineTagFunction,perAttr);
+        return super.getOptionsTag(userRoleFunction,newTagFunction,newAdditionalIdsFunction,newCombineByFunction,perAttr);
     }
 
     private Tag getAdditionalTagPerAttr(String attrName) {

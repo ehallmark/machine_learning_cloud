@@ -148,7 +148,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
         String minShouldMatchId = getMinShouldMatchId();
         if(minShouldMatchId!=null) {
             // add minimum should match parameter
-            tag = tag.with(label("Minimum Should Match").with(input().attr("min","1").withClass("form-control").attr("style","margin-top: 5px; margin-bottom: 5px; margin-left: 10px; width: 65px; height: 30px; display: inline;").withId(minShouldMatchId).withName(minShouldMatchId).withValue("1").withType("number")));
+            tag = tag.with(label("Minimum Should Match").with(input().attr("min","1").withClass("form-control").attr("style","height: 28px; margin-top: 5px; margin-bottom: 5px; margin-left: 10px; width: 65px; height: 30px; display: inline;").withId(minShouldMatchId).withName(minShouldMatchId).withValue("1").withType("number")));
         }
         return tag;
     }

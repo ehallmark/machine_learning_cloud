@@ -132,11 +132,11 @@ public class AbstractBetweenFilter extends AbstractFilter {
         return div().withClass("row").with(
                 div().withClass("col-6").with(
                         label("Min").attr("style","width: 100%;").with(
-                                input().withClass("form-control "+additionalClasses).withType(type).withId(getMinId()).withName(minName)
+                                input().attr("style","height: 28px;").withClass("form-control "+additionalClasses).withType(type).withId(getMinId()).withName(minName)
                         )
                 ), div().withClass("col-6").with(
                         label("Max").attr("style","width: 100%;").with(
-                                input().withClass("form-control "+additionalClasses).withType(type).withId(getMaxId()).withName(maxName)
+                                input().attr("style","height: 28px;").withClass("form-control "+additionalClasses).withType(type).withId(getMaxId()).withName(maxName)
                         )
                 )
         );
