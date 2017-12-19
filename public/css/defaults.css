@@ -94,20 +94,20 @@ h5 {
 
 .collapsible-header label {
     cursor: pointer;
-    font-size: 17;
-    font-weight: 600;
+    font-size: 16;
+    font-weight: 500;
 }
 
 .draggable {
-    font-size: 16 !important;
+    font-size: 15 !important;
 }
 
 .draggable .draggable {
-    font-size: 15 !important;
+    font-size: 14 !important;
 }
 
 .draggable .draggable .draggable  {
-    font-size: 15 !important;
+    font-size: 14 !important;
 }
 
 body {
