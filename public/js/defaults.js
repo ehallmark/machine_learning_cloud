@@ -68,14 +68,19 @@ $(document).ready(function() {
     };
 
     var successReportFrom = function(data) {
-       var $activePanes = $('#results-wrapper').find('.tab-pane.active');
-       $('#results').html(data.message);
+       var $activePanes = $('#results').find('.tab-pane.active');
+       var activePaneId = null;
        if($activePanes.length>0) {
-           $('#results-wrapper').find('.tab-pane').removeClass('active');
+           activePaneId = $activePanes.filter(':first').attr('id');
        }
-       $activePanes.each(function() {
-           $('#'+$(this).attr('id')).addClass('active');
-       });
+       $('#results').html(data.message);
+       if(activePaneId!==null) {
+           $('#results').find('.tab-pane.active').removeClass('active show');
+           $('#results-wrapper li a.nav-link.active').removeClass('active');
+           var activePaneSelector = '#'+activePaneId;
+           $('#results-wrapper li a.nav-link[href="'+activePaneSelector+'"]').addClass('active');
+           $('#'+activePaneId).addClass('active').addClass('show');
+       }
        if($('#results #data-table table thead th').length > 0) {
            $('#results #data-table table').dynatable({
              dataset: {
