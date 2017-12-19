@@ -1,15 +1,10 @@
 package user_interface.ui_models.charts;
 
 import elasticsearch.DataSearcher;
-import j2html.tags.Tag;
 import model.nodes.FactorNode;
-import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
-import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.charts.highcharts.AbstractChart;
-import user_interface.ui_models.charts.highcharts.LineChart;
 import user_interface.ui_models.charts.tables.DeepList;
 import user_interface.ui_models.charts.tables.TableResponse;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -17,14 +12,9 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import static j2html.TagCreator.*;
-import static j2html.TagCreator.option;
-import static j2html.TagCreator.span;
 
 /**
  * Created by Evan on 12/16/2017.
@@ -56,6 +46,14 @@ public class GroupedTableChart extends TableAttribute {
         return "groupedTable";
     }
 
+    @Override
+    public List<String> getInputIds() {
+        List<String> prev = super.getInputIds();
+        if(prev==null) prev = new ArrayList<>();
+        else prev = new ArrayList<>(prev);
+        prev.add(getGroupByChartFieldName("")+MAX_GROUP_FIELD);
+        return prev;
+    }
 
     private TableResponse createHelper(List<Item> data, List<String> attrList, String yTitle, String subTitle) {
         TableResponse response = new TableResponse();

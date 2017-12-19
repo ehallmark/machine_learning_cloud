@@ -60,10 +60,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     }
 
     protected String idFromName(String attrName) {
-        if(attrName!=null) {
-            attrName = attrName.replace(getName().replace("[", "").replace("]", "") + ".", "").replace(".", "");
-        }
-        return attrName;
+        if(attrName==null) return "";
+        return attrName.replace(getName().replace("[", "").replace("]", "") + ".", "").replace(".", "");
     }
 
     @Override
@@ -79,14 +77,18 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         if(groupByAttributes!=null) {
             Function<String,Tag> groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
             newTagFunction = additionalTagFunction == null ? groupByFunction : attrName -> combineTagFunction.apply(groupByFunction.apply(attrName),additionalTagFunction.apply(attrName));
-            Function<String,List<String>> groupedByInputIdsFunction = attrName -> {
-                String groupById = getGroupByChartFieldName(idFromName(attrName));
-                String groupByMaxLimit = groupById + MAX_GROUP_FIELD;
-                return Arrays.asList(groupById,groupByMaxLimit);
-            };
-            newAdditionalIdsFunction = additionalInputIdsFunction == null ? groupedByInputIdsFunction : attrName -> {
-                return Stream.of(groupedByInputIdsFunction.apply(attrName),additionalInputIdsFunction.apply(attrName)).flatMap(list->list.stream()).collect(Collectors.toList());
-            };
+            if(groupByPerAttribute) {
+                Function<String, List<String>> groupedByInputIdsFunction = attrName -> {
+                    String groupById = getGroupByChartFieldName(idFromName(attrName));
+                    String groupByMaxLimit = groupById + MAX_GROUP_FIELD;
+                    return Arrays.asList(groupById, groupByMaxLimit);
+                };
+                newAdditionalIdsFunction = additionalInputIdsFunction == null ? groupedByInputIdsFunction : attrName -> {
+                    return Stream.of(groupedByInputIdsFunction.apply(attrName), additionalInputIdsFunction.apply(attrName)).flatMap(list -> list.stream()).collect(Collectors.toList());
+                };
+            } else {
+                newAdditionalIdsFunction = additionalInputIdsFunction;
+            }
 
         } else {
             newTagFunction = additionalTagFunction;
