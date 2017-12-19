@@ -2,7 +2,6 @@ package user_interface.ui_models.charts;
 
 import data_pipeline.helpers.Function2;
 import j2html.tags.Tag;
-import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -54,10 +53,8 @@ public abstract class ChartAttribute extends AbstractChartAttribute {
     private Tag getAdditionalTagPerAttr(String attrName) {
         attrName = idFromName(attrName);
         return div().withClass("row").with(
-                div().withClass("col-6").with(
-                        label("Min Date"),br(),input().withId(attrName+ SimilarPatentServer.LINE_CHART_MIN).withName(attrName+SimilarPatentServer.LINE_CHART_MIN).withType("text").withClass("datepicker form-control")
-                ), div().withClass("col-6").with(
-                        label("Max Date"),br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MAX).withName(attrName+SimilarPatentServer.LINE_CHART_MAX).withType("text").withClass("datepicker form-control")
+                div().withClass("col-12").with(
+                        label("Min Date"),br(),input().withId(attrName+ PLOT_GROUPS_ON_SAME_CHART_FIELD).withName(attrName+PLOT_GROUPS_ON_SAME_CHART_FIELD).withType("checkbox").withClass("form-control")
                 )
         );
     }
