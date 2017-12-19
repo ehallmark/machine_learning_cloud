@@ -32,26 +32,24 @@ public abstract class ChartAttribute extends AbstractChartAttribute {
     protected Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<Tag,Tag,Tag> combineTagFunction, boolean perAttr) {
         Function<String,Tag> newTagFunction;
         Function<String,List<String>> newAdditionalIdsFunction;
-        Function2<Tag,Tag,Tag> newCombineByFunction;
         if(groupsPlottableOnSameChart) {
             Function<String,Tag> plottableByGroupsFunction = this::getAdditionalTagPerAttr;
-            newTagFunction = additionalTagFunction == null ? plottableByGroupsFunction : attrName -> combineTagFunction.apply(plottableByGroupsFunction.apply(attrName),additionalTagFunction.apply(attrName));
+            Function2<Tag,Tag,Tag> newCombineByFunction = (tag1,tag2)-> div().withClass("row").with(
+                    div().withClass("col-10").with(tag1),
+                    div().withClass("col-2").with(tag2)
+            );
+            newTagFunction = additionalTagFunction == null ? plottableByGroupsFunction : attrName -> newCombineByFunction.apply(plottableByGroupsFunction.apply(attrName),additionalTagFunction.apply(attrName));
             Function<String, List<String>> additionalIdsFunction = attrName -> {
                 return Collections.singletonList(getGroupByChartFieldName(idFromName(attrName)) + PLOT_GROUPS_ON_SAME_CHART_FIELD);
             };
             newAdditionalIdsFunction = additionalInputIdsFunction == null ? additionalIdsFunction : attrName -> {
                 return Stream.of(additionalIdsFunction.apply(attrName), additionalInputIdsFunction.apply(attrName)).flatMap(list -> list.stream()).collect(Collectors.toList());
             };
-            newCombineByFunction = (tag1,tag2)-> div().withClass("row").with(
-                    div().withClass("col-10").with(tag1),
-                    div().withClass("col-2").with(tag2)
-            );
         } else {
             newTagFunction = additionalTagFunction;
             newAdditionalIdsFunction = additionalInputIdsFunction;
-            newCombineByFunction = combineTagFunction;
         }
-        return super.getOptionsTag(userRoleFunction,newTagFunction,newAdditionalIdsFunction,newCombineByFunction,perAttr);
+        return super.getOptionsTag(userRoleFunction,newTagFunction,newAdditionalIdsFunction,combineTagFunction,perAttr);
     }
 
     private Tag getAdditionalTagPerAttr(String attrName) {
@@ -59,7 +57,7 @@ public abstract class ChartAttribute extends AbstractChartAttribute {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
                         label("Plot Groups Together").attr("title","Plot groups together on the same chart.").with(
-                                input().withId(attrName+ PLOT_GROUPS_ON_SAME_CHART_FIELD).withName(attrName+PLOT_GROUPS_ON_SAME_CHART_FIELD).withType("checkbox").withClass("form-control")
+                                input().attr("style","float: left;").withId(attrName+ PLOT_GROUPS_ON_SAME_CHART_FIELD).withName(attrName+PLOT_GROUPS_ON_SAME_CHART_FIELD).withType("checkbox")
                         )
                 )
         );
