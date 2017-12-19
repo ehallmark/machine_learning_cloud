@@ -131,12 +131,19 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE_INCLUDE_FILTER_STR);
 
         if(groupByAttributes!=null) {
-            attrNames.forEach(attrName->{
-                String group = SimilarPatentServer.extractString(params, getGroupByChartFieldName(getName()+attrName),"");
+            List<String> attrsToCheck = new ArrayList<>();
+            if(groupByPerAttribute) {
+                attrsToCheck.addAll(attrNames);
+            } else {
+                attrsToCheck.add("");
+            }
+            attrsToCheck.forEach(attrName->{
+                String groupId = getGroupByChartFieldName(getName()+attrName);
+                String group = SimilarPatentServer.extractString(params, groupId,"");
                 if(group.length()>0) {
                     attrNameToGroupByAttrNameMap.put(attrName, group);
                 }
-                String groupSize = SimilarPatentServer.extractString(params, getGroupByChartFieldName(getName()+attrName) + MAX_GROUP_FIELD,"10");
+                String groupSize = SimilarPatentServer.extractString(params, groupId + MAX_GROUP_FIELD,"10");
                 if(groupSize.length()>0) {
                     attrNameToMaxGroupSizeMap.put(attrName, Integer.valueOf(groupSize));
                 }

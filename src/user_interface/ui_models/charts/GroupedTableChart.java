@@ -36,11 +36,13 @@ public class GroupedTableChart extends TableAttribute {
 
     @Override
     public List<TableResponse> createTables(PortfolioList portfolioList) {
-        return Stream.of(attrNames).map(attrList->{
+        return Stream.of(attrNames).flatMap(attrList->{
             List<String> humanAttrs =  attrList.stream().map(attribute->SimilarPatentServer.fullHumanAttributeFor(attribute)).collect(Collectors.toList());
             String humanSearchType = combineTypesToString(searchTypes);
             String title = humanSearchType+" Counts by "+String.join(", ",humanAttrs);
-            return createHelper(portfolioList.getItemList(),attrList,title);
+            return groupPortfolioListForGivenAttribute(portfolioList,"").map(groupPair-> {
+                return createHelper(groupPair.getSecond().getItemList(), attrList, title, groupPair.getFirst());
+            });
         }).collect(Collectors.toList());
     }
 
@@ -55,10 +57,10 @@ public class GroupedTableChart extends TableAttribute {
     }
 
 
-    private TableResponse createHelper(List<Item> data, List<String> attrList, String yTitle) {
+    private TableResponse createHelper(List<Item> data, List<String> attrList, String yTitle, String subTitle) {
         TableResponse response = new TableResponse();
         response.type=getType();
-        response.title=yTitle;
+        response.title=yTitle + (subTitle!=null&&subTitle.length()>0 ? (" (Grouped by "+subTitle+")") : "");
         response.headers = new ArrayList<>();
         response.headers.addAll(attrList);
         response.headers.add("Count");
