@@ -36,9 +36,7 @@ public abstract class ChartAttribute extends AbstractChartAttribute {
             Function<String,Tag> plottableByGroupsFunction = this::getAdditionalTagPerAttr;
             newTagFunction = additionalTagFunction == null ? plottableByGroupsFunction : attrName -> combineTagFunction.apply(plottableByGroupsFunction.apply(attrName),additionalTagFunction.apply(attrName));
             Function<String, List<String>> additionalIdsFunction = attrName -> {
-                String groupById = getGroupByChartFieldName(idFromName(attrName));
-                String id = groupById + PLOT_GROUPS_ON_SAME_CHART_FIELD;
-                return Collections.singletonList(id);
+                return Collections.singletonList(attrName + PLOT_GROUPS_ON_SAME_CHART_FIELD);
             };
             newAdditionalIdsFunction = additionalInputIdsFunction == null ? additionalIdsFunction : attrName -> {
                 return Stream.of(additionalIdsFunction.apply(attrName), additionalInputIdsFunction.apply(attrName)).flatMap(list -> list.stream()).collect(Collectors.toList());
