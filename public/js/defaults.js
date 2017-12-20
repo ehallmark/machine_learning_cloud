@@ -151,6 +151,7 @@ $(document).ready(function() {
 
                             var updateDatagroupingByIndex = function(j,chartJson,originalSeriesData) {
                                 var currentChart;
+                                var currentBtnGroup = "year";
                                 originalSeriesData = JSON.parse(JSON.stringify(originalSeriesData));
                                 var updateDatagrouping = function(chartJson,units) {
                                     chartJson['plotOptions']['series']['dataGrouping'] = {
@@ -181,15 +182,16 @@ $(document).ready(function() {
                                         var $btnGroup = $('<div class="btn-group" style="margin-bottom: 5px;" role="group"></div>');
                                         $btns.append($btnGroup);
 
-                                        var $dailyBtn = $('<button class="btn btn-sm btn-secondary" type="button">Daily</button>');
-                                        var $weeklyBtn = $('<button class="btn btn-sm btn-secondary" type="button">Weekly</button>');
-                                        var $monthlyBtn = $('<button class="btn btn-sm btn-secondary" type="button">Monthly</button>');
-                                        var $quarterlyBtn = $('<button class="btn btn-sm btn-secondary" type="button">Quarterly</button>');
-                                        var $yearlyBtn = $('<button class="btn btn-sm btn-secondary active" type="button">Yearly</button>');
+                                        var previous = chartJson['plotOptions']['series']['dataGrouping']['units'];
+
+                                        var $dailyBtn = $('<button data-group="day" class="btn btn-sm btn-secondary" type="button">Daily</button>');
+                                        var $weeklyBtn = $('<button data-group="week" class="btn btn-sm btn-secondary" type="button">Weekly</button>');
+                                        var $monthlyBtn = $('<button data-group="month" class="btn btn-sm btn-secondary" type="button">Monthly</button>');
+                                        var $quarterlyBtn = $('<button data-group="quarter" class="btn btn-sm btn-secondary" type="button">Quarterly</button>');
+                                        var $yearlyBtn = $('<button data-group="year" class="btn btn-sm btn-secondary" type="button">Yearly</button>');
 
                                         var updateFunction = function(btn,units) {
-                                            $(btn).parent().find('button.active').removeClass('active');
-                                            $(btn).addClass('active');
+                                            currentBtnGroup = $(btn).attr("data-group");
                                             updateDatagrouping(chartJson,units);
                                         }
 
@@ -215,6 +217,7 @@ $(document).ready(function() {
                                         $btnGroup.append($quarterlyBtn);
                                         $btnGroup.append($yearlyBtn);
 
+                                        $btnGroup.find('[data-group="'+currentBtnGroup+'"]').addClass('active');
                                         $(this.container).parent().prepend($btns)
                                     }
                                 };
