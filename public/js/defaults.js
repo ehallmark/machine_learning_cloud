@@ -182,22 +182,7 @@ $(document).ready(function() {
                                     text: '3m',
                                     dataGrouping: {
                                         forced: true,
-                                        units: [['week',[1]],['day',[1]]]
-                                    }
-                                }, {
-                                    type: 'month',
-                                    count: 6,
-                                    text: '6m',
-                                    dataGrouping: {
-                                        forced: true,
-                                        units: [['month',[1]],['week'],[1]]
-                                    }
-                                }, {
-                                    type: 'ytd',
-                                    text: 'YTD',
-                                    dataGrouping: {
-                                        forced: true,
-                                        units: [['week',[1]],['month',[1]]]
+                                        units: [['week',[1]]]
                                     }
                                 }, {
                                     type: 'year',
@@ -208,27 +193,39 @@ $(document).ready(function() {
                                         units: [['month',[1]]]
                                     }
                                 }, {
-                                    type: 'year',
-                                    count: 5,
-                                    text: '5y',
+                                    type: 'all',
+                                    text: 'All (Daily)',
                                     dataGrouping: {
                                         forced: true,
-                                        units: [['month',[3,6]],['year',[1]]]
-                                    }
-                                }, {
-                                    type: 'year',
-                                    count: 10,
-                                    text: '10y',
-                                    dataGrouping: {
-                                        forced: true,
-                                        units: [['year',[1]],['month',[6]]]
+                                        units: [['day',[1]]]
                                     }
                                 }, {
                                     type: 'all',
-                                    text: 'All',
+                                    text: 'All (Weekly)',
                                     dataGrouping: {
                                         forced: true,
-                                        units: [['year',[1]],['month',[1,3,6]]]
+                                        units: [['week',[1]]]
+                                    }
+                                }, {
+                                    type: 'all',
+                                    text: 'All (Monthly)',
+                                    dataGrouping: {
+                                        forced: true,
+                                        units: [['month',[1]]]
+                                    }
+                                }, {
+                                    type: 'all',
+                                    text: 'All (Quarterly)',
+                                    dataGrouping: {
+                                        forced: true,
+                                        units: [['month',[3]]]
+                                    }
+                                }, {
+                                    type: 'all',
+                                    text: 'All (Yearly)',
+                                    dataGrouping: {
+                                        forced: true,
+                                        units: [['year',[1]]]
                                     }
                                 }]
                             };
