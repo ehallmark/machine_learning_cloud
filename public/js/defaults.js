@@ -168,61 +168,38 @@ $(document).ready(function() {
                                 ]
                             };
                             chartJson['rangeSelector'] = {
+                                buttonSpacing: 5,
                                 buttons: [{
-                                    type: 'month',
-                                    count: 1,
-                                    text: '1m',
-                                    dataGrouping: {
-                                        forced: true,
-                                        units: [['day',[1]]]
-                                    }
-                                }, {
-                                    type: 'month',
-                                    count: 3,
-                                    text: '3m',
-                                    dataGrouping: {
-                                        forced: true,
-                                        units: [['week',[1]]]
-                                    }
-                                }, {
-                                    type: 'year',
-                                    count: 1,
-                                    text: '1y',
-                                    dataGrouping: {
-                                        forced: true,
-                                        units: [['month',[1]]]
-                                    }
-                                }, {
                                     type: 'all',
-                                    text: 'All (Daily)',
+                                    text: 'Daily',
                                     dataGrouping: {
                                         forced: true,
                                         units: [['day',[1]]]
                                     }
                                 }, {
                                     type: 'all',
-                                    text: 'All (Weekly)',
+                                    text: 'Weekly',
                                     dataGrouping: {
                                         forced: true,
                                         units: [['week',[1]]]
                                     }
                                 }, {
                                     type: 'all',
-                                    text: 'All (Monthly)',
+                                    text: 'Monthly',
                                     dataGrouping: {
                                         forced: true,
                                         units: [['month',[1]]]
                                     }
                                 }, {
                                     type: 'all',
-                                    text: 'All (Quarterly)',
+                                    text: 'Quarterly',
                                     dataGrouping: {
                                         forced: true,
                                         units: [['month',[3]]]
                                     }
                                 }, {
                                     type: 'all',
-                                    text: 'All (Yearly)',
+                                    text: 'Yearly',
                                     dataGrouping: {
                                         forced: true,
                                         units: [['year',[1]]]
