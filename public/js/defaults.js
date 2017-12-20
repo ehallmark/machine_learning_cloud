@@ -163,7 +163,7 @@ $(document).ready(function() {
                                     currentChart = buildStockChartCallback(chartData,j,chartJson);
                                     return currentChart;
                                 };
-                                chartJson['rangeSelector'] = {
+                                /*chartJson['rangeSelector'] = {
                                     buttonSpacing: 2,
                                     buttonTheme: {
                                         width: 50
@@ -213,7 +213,7 @@ $(document).ready(function() {
                                             units: [['year',[1]]]
                                         }
                                     }]
-                                };
+                                }; */
                                 currentChart = buildStockChartCallback(chartData,j,chartJson);
                                 var $btn = $('<button>Click</button>');
                                 $btn.click(function() { updateDatagrouping(chartJson,[['week',[1]]])});
