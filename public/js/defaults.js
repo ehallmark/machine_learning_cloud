@@ -231,7 +231,12 @@ $(document).ready(function() {
                         if($this.length == 0) {
                             alert('Missing: '+this);
                         } else {
-                            $('#'+this).prop('disabled', true).val(null).filter('select').trigger('change', [preventHighlight]);
+                            $this.prop('disabled',true);
+                            if($this.attr('type')==='checkbox') {
+                                $this.prop('checked', false);
+                            } else {
+                                $this.val(null).filter('select').trigger('change', [preventHighlight]);
+                            }
                         }
                     });
                  }
