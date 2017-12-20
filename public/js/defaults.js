@@ -158,6 +158,7 @@ $(document).ready(function() {
                                         units: units,
                                         groupPixelWidth: 10
                                     };
+                                    Highcharts.stockChart(chartData.chartId+"-"+j.toString()).destroy();
                                     buildStockChartCallback(chartData,j,chartJson);
                                 };
                                 chartJson['rangeSelector'] = {
