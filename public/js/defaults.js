@@ -170,15 +170,15 @@ $(document).ready(function() {
                                 chartJson['chart']['events'] = {
                                     load: function() {
                                         var $btns = $('<div></div>');
-                                        $btns.append('<label>Group Dates By</label>');
-                                        var $btnGroup = $('<div class="btn-group" role="group"></div>');
+                                        $btns.append('<label style="float: left; margin-bottom: 5px;">Group Dates By</label>');
+                                        var $btnGroup = $('<div class="btn-group" style="margin-bottom: 5px;" role="group"></div>');
                                         $btns.append($btnGroup);
 
-                                        var $dailyBtn = $('<button class="btn btn-secondary" type="button">Daily</button>');
-                                        var $weeklyBtn = $('<button class="btn btn-secondary" type="button">Weekly</button>');
-                                        var $monthlyBtn = $('<button class="btn btn-secondary" type="button">Monthly</button>');
-                                        var $quarterlyBtn = $('<button class="btn btn-secondary" type="button">Quarterly</button>');
-                                        var $yearlyBtn = $('<button class="btn btn-secondary" type="button">Yearly</button>');
+                                        var $dailyBtn = $('<button class="btn btn-sm btn-secondary" type="button">Daily</button>');
+                                        var $weeklyBtn = $('<button class="btn btn-sm btn-secondary" type="button">Weekly</button>');
+                                        var $monthlyBtn = $('<button class="btn btn-sm btn-secondary" type="button">Monthly</button>');
+                                        var $quarterlyBtn = $('<button class="btn btn-sm btn-secondary" type="button">Quarterly</button>');
+                                        var $yearlyBtn = $('<button class="btn btn-sm btn-secondary" type="button">Yearly</button>');
 
                                         $dailyBtn.click(function() {
                                             updateDatagrouping(chartJson,[['day',[1]]]);
