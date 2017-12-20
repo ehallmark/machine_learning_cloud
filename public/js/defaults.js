@@ -176,6 +176,7 @@ $(document).ready(function() {
                                     events: {
                                         click: function(e) {
                                             updateDatagrouping(chartJson,[['day',[1]]]);
+                                            return false;
                                         }
                                     }
                                 }, {
@@ -184,6 +185,7 @@ $(document).ready(function() {
                                     events: {
                                         click: function(e) {
                                             updateDatagrouping(chartJson,[['week',[1]]]);
+                                            return false;
                                         }
                                     }
                                 }, {
