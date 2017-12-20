@@ -166,6 +166,7 @@ $(document).ready(function() {
                                     currentChart.redraw();
                                     return currentChart;
                                 };
+                                chartJson['rangeSelector'] = { enabled: false };
                                 chartJson['chart']['events'] = {
                                     load: function() {
                                         var $btns = $('<div></div>');
