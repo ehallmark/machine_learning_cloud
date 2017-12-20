@@ -150,6 +150,7 @@ $(document).ready(function() {
                             };
 
                             var updateDatagroupingByIndex = function(j) {
+                                var currentChart;
                                 var updateDatagrouping = function(chartJson,units) {
                                     chartJson['plotOptions']['series']['dataGrouping'] = {
                                         enabled: true,
@@ -158,7 +159,7 @@ $(document).ready(function() {
                                         units: units,
                                         groupPixelWidth: 10
                                     };
-                                    Highcharts.stockChart(chartData.chartId+"-"+j.toString()).destroy();
+                                    currentChart.destroy();
                                     buildStockChartCallback(chartData,j,chartJson);
                                 };
                                 chartJson['rangeSelector'] = {
@@ -212,7 +213,7 @@ $(document).ready(function() {
                                         }
                                     }]
                                 };
-                                return buildStockChartCallback(chartData,j,chartJson);
+                                currentChart = buildStockChartCallback(chartData,j,chartJson);
                             };
                             chart = updateDatagroupingByIndex(j);
                         } else {
