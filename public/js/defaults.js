@@ -159,8 +159,9 @@ $(document).ready(function() {
                                         units: units,
                                         groupPixelWidth: 10
                                     };
-                                    currentChart.destroy();
-                                    buildStockChartCallback(chartData,j,chartJson);
+                                    //currentChart.destroy();
+                                    currentChart = buildStockChartCallback(chartData,j,chartJson);
+                                    return currentChart;
                                 };
                                 chartJson['rangeSelector'] = {
                                     buttonSpacing: 2,
