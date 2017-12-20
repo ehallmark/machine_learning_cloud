@@ -166,7 +166,7 @@ $(document).ready(function() {
                                     currentChart.redraw();
                                     return currentChart;
                                 };
-                                /*chartJson['rangeSelector'] = {
+                                chartJson['rangeSelector'] = {
                                     buttonSpacing: 2,
                                     buttonTheme: {
                                         width: 50
@@ -218,9 +218,9 @@ $(document).ready(function() {
                                     }]
                                 }; */
                                 currentChart = buildStockChartCallback(chartData,j,chartJson);
-                                var $btn = $('<button>Click</button>');
-                                $btn.click(function() { updateDatagrouping(chartJson,[['week',[1]]])});
-                                $(currentChart.container).parent().prepend($btn);
+                                //var $btn = $('<button>Click</button>');
+                                //$btn.click(function() { updateDatagrouping(chartJson,[['week',[1]]])});
+                                //$(currentChart.container).parent().prepend($btn);
                                 return currentChart;
                             };
                             chart = updateDatagroupingByIndex(j,chartJson,chartJson.series);
