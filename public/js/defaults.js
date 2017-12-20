@@ -143,6 +143,63 @@ $(document).ready(function() {
                         var chartJson = chartData.charts[j];
                         var chart;
                         if(isStockChart) {
+                            // append data with data groupings
+                            chartJson['plotOptions']['series']['dataGrouping'] = {
+                                enabled: true,
+                                force: true,
+                                approximation: 'sum',
+                                units: [
+                                    [
+                                        'day',
+                                        [1]
+                                    ],
+                                    [
+                                        'week',
+                                        [1]
+                                    ],
+                                    [
+                                        'month',
+                                        [1,3,6]
+                                    ],
+                                    [
+                                        'year',
+                                        [1]
+                                    ]
+                                ]
+                            };
+                            chartJson['rangeSelector'] = {
+                                buttons: [{
+                                    type: 'month',
+                                    count: 1,
+                                    text: '1m'
+                                }, {
+                                    type: 'month',
+                                    count: 3,
+                                    text: '3m'
+                                }, {
+                                    type: 'month',
+                                    count: 6,
+                                    text: '6m'
+                                }, {
+                                    type: 'ytd',
+                                    text: 'YTD'
+                                }, {
+                                    type: 'year',
+                                    count: 1,
+                                    text: '1y'
+                                }, {
+                                    type: 'year',
+                                    count: 5,
+                                    text: '5y'
+                                }, {
+                                    type: 'year',
+                                    count: 10,
+                                    text: '10y'
+                                }, {
+                                    type: 'all',
+                                    text: 'All'
+                                }]
+                            };
                             chart = Highcharts.stockChart(chartData.chartId+"-"+j.toString(), chartJson);
                         } else {
                             chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
