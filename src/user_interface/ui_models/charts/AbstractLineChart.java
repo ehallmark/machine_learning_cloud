@@ -80,8 +80,8 @@ public class AbstractLineChart extends ChartAttribute {
         super.extractRelevantInformationFromParams(params);
         if(this.attrNames!=null) {
             this.attrNames.forEach(attr -> {
-                Object min = SimilarPatentServer.extractInt(params, attr.replace(".","")+SimilarPatentServer.LINE_CHART_MIN, null);
-                Object max = SimilarPatentServer.extractInt(params, attr.replace(".","")+SimilarPatentServer.LINE_CHART_MAX, null);
+                Object min = SimilarPatentServer.extractString(params, attr.replace(".","")+SimilarPatentServer.LINE_CHART_MIN, null);
+                Object max = SimilarPatentServer.extractString(params, attr.replace(".","")+SimilarPatentServer.LINE_CHART_MAX, null);
                 if(min != null && min.toString().length()>0) {
                     try {
                         min = LocalDate.parse(min.toString()).format(DateTimeFormatter.ISO_DATE);
@@ -124,6 +124,7 @@ public class AbstractLineChart extends ChartAttribute {
                 List<Series<?>> seriesList = groupPortfolioListForGivenAttribute(portfolioList, attribute).flatMap(groupPair -> {
                     return collectTimelineData(groupPair.getSecond().getItemList(), attribute, SimilarPatentServer.humanAttributeFor(groupPair.getFirst()), min, max).stream();
                 }).collect(Collectors.toList());
+                // get actual min and max
                 return Stream.of(new LineChart(title,null, seriesList, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
 
             } else {
