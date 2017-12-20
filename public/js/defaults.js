@@ -158,7 +158,7 @@ $(document).ready(function() {
                                         force: true,
                                         approximation: 'sum',
                                         units: units,
-                                        groupPixelWidth: 10
+                                        groupPixelWidth: 2
                                     };
                                     currentChart.destroy();
                                     chartJson['series'] = originalSeriesData;
@@ -167,6 +167,13 @@ $(document).ready(function() {
                                     return currentChart;
                                 };
                                 chartJson['rangeSelector'] = { enabled: false };
+                                chartJson['plotOptions']['series']['dataGrouping'] = {
+                                    enabled: true,
+                                    force: true,
+                                    approximation: 'sum',
+                                    units: [['year',[1]]],
+                                    groupPixelWidth: 10
+                                };
                                 chartJson['chart']['events'] = {
                                     load: function() {
                                         var $btns = $('<div></div>');
@@ -178,22 +185,28 @@ $(document).ready(function() {
                                         var $weeklyBtn = $('<button class="btn btn-sm btn-secondary" type="button">Weekly</button>');
                                         var $monthlyBtn = $('<button class="btn btn-sm btn-secondary" type="button">Monthly</button>');
                                         var $quarterlyBtn = $('<button class="btn btn-sm btn-secondary" type="button">Quarterly</button>');
-                                        var $yearlyBtn = $('<button class="btn btn-sm btn-secondary" type="button">Yearly</button>');
+                                        var $yearlyBtn = $('<button class="btn btn-sm btn-secondary active" type="button">Yearly</button>');
+
+                                        var updateFunction = function(btn,units) {
+                                            $(btn).parent().find('button.active').removeClass('active');
+                                            $(btn).addClass('active');
+                                            updateDatagrouping(chartJson,units);
+                                        }
 
                                         $dailyBtn.click(function() {
-                                            updateDatagrouping(chartJson,[['day',[1]]]);
+                                            updateFunction(this,[['day',[1]]]);
                                         });
                                         $weeklyBtn.click(function() {
-                                            updateDatagrouping(chartJson,[['week',[1]]]);
+                                            updateFunction(this,[['week',[1]]]);
                                         });
                                         $monthlyBtn.click(function() {
-                                            updateDatagrouping(chartJson,[['month',[1]]]);
+                                            updateFunction(this,[['month',[1]]]);
                                         });
                                         $quarterlyBtn.click(function() {
-                                            updateDatagrouping(chartJson,[['month',[3]]]);
+                                            updateFunction(this,[['month',[3]]]);
                                         });
                                         $yearlyBtn.click(function() {
-                                            updateDatagrouping(chartJson,[['year',[1]]]);
+                                            updateFunction(this,[['year',[1]]]);
                                         });
 
                                         $btnGroup.append($dailyBtn);
