@@ -174,20 +174,20 @@ $(document).ready(function() {
                                     allButtonsEnabled: true,
                                     selected: 4,
                                     buttons: [{
-                                        type: 'all',
+                                        //type: 'all',
                                         text: 'Day',
                                         events: {
                                             click: function(e) {
-                                                updateDatagrouping(chartJson,[['day',[1]]]);
+                                                setTimeout(updateDatagrouping(chartJson,[['day',[1]]]),1);
                                                 return false;
                                             }
                                         }
                                     }, {
-                                        type: 'all',
+                                        //type: 'all',
                                         text: 'Week',
                                         events: {
                                             click: function(e) {
-                                                updateDatagrouping(chartJson,[['week',[1]]]);
+                                                setTimeout(updateDatagrouping(chartJson,[['week',[1]]]),1);
                                                 return false;
                                             }
                                         }
@@ -216,7 +216,7 @@ $(document).ready(function() {
                                             units: [['year',[1]]]
                                         }
                                     }]
-                                }; 
+                                };
                                 currentChart = buildStockChartCallback(chartData,j,chartJson);
                                 //var $btn = $('<button>Click</button>');
                                 //$btn.click(function() { updateDatagrouping(chartJson,[['week',[1]]])});
