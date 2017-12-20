@@ -166,7 +166,7 @@ $(document).ready(function() {
                                     currentChart.redraw();
                                     return currentChart;
                                 };
-                                chartJson['events'] = {
+                                chartJson['chart']['events'] = {
                                     load: function() {
                                         var $btns = $('<div></div>');
                                         $btns.append('<label>Group Dates By</label>');
