@@ -149,8 +149,9 @@ $(document).ready(function() {
                                 return Highcharts.stockChart(chartData.chartId+"-"+j.toString(), chartJson);
                             };
 
-                            var updateDatagroupingByIndex = function(j,chartJson) {
+                            var updateDatagroupingByIndex = function(j,chartJson,originalSeriesData) {
                                 var currentChart;
+                                originalSeriesData = JSON.parse(JSON.stringify(originalSeriesData));
                                 var updateDatagrouping = function(chartJson,units) {
                                     chartJson['plotOptions']['series']['dataGrouping'] = {
                                         enabled: true,
@@ -159,7 +160,8 @@ $(document).ready(function() {
                                         units: units,
                                         groupPixelWidth: 10
                                     };
-                                    //currentChart.destroy();
+                                    currentChart.destroy();
+                                    chartJson['series'] = originalSeriesData;
                                     currentChart = buildStockChartCallback(chartData,j,chartJson);
                                     currentChart.redraw();
                                     return currentChart;
@@ -221,7 +223,7 @@ $(document).ready(function() {
                                 $(currentChart.container).parent().prepend($btn);
                                 return currentChart;
                             };
-                            chart = updateDatagroupingByIndex(j,chartJson);
+                            chart = updateDatagroupingByIndex(j,chartJson,chartJson.series);
                         } else {
                             chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
                         }
