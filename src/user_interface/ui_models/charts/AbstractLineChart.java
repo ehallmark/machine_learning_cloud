@@ -84,7 +84,7 @@ public class AbstractLineChart extends ChartAttribute {
                 Object max = SimilarPatentServer.extractString(params, attr.replace(".","")+SimilarPatentServer.LINE_CHART_MAX, null);
                 if(min != null && min.toString().length()>0) {
                     try {
-                        min = LocalDate.parse(min.toString()).format(DateTimeFormatter.ISO_DATE);
+                        min = LocalDate.parse(min.toString());
                     } catch(Exception e) {
                         throw new RuntimeException("Error parsing date: "+min);
                     }
@@ -94,7 +94,7 @@ public class AbstractLineChart extends ChartAttribute {
                 }
                 if(max != null && max.toString().length()>0) {
                     try {
-                        max = LocalDate.parse(max.toString()).format(DateTimeFormatter.ISO_DATE);
+                        max = LocalDate.parse(max.toString());
                     } catch(Exception e) {
                         throw new RuntimeException("Error parsing date: "+max);
                     }
