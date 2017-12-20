@@ -179,9 +179,15 @@ public class AbstractLineChart extends ChartAttribute {
             LocalDate date = e.getKey();
             Long count = e.getValue();
             List<Number> points = new ArrayList<>();
+            boolean first = true;
             while(lastDate.get().isBefore(date)) {
                 lastDate.set(lastDate.get().plusDays(1));
-                points.add(0);
+                if(first || lastDate.get().equals(date)) {
+                    points.add(0);
+                    first = false;
+                } else {
+                    points.add(null);
+                }
             }
             // add date
             points.add(count);
