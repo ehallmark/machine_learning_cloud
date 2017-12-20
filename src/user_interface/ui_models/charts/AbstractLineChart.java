@@ -1,6 +1,5 @@
 package user_interface.ui_models.charts;
 
-import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import elasticsearch.DataSearcher;
@@ -175,15 +174,20 @@ public class AbstractLineChart extends ChartAttribute {
         series.setPointInterval(pointInterval);
 
         AtomicReference<LocalDate> lastDate = new AtomicReference<>(firstDate);
-        sortedData.forEach((date,count)->{
+        List<Number> dataPoints = sortedData.entrySet().stream().flatMap(e->{
             // catch up dates
+            LocalDate date = e.getKey();
+            Long count = e.getValue();
+            List<Number> points = new ArrayList<>();
             while(lastDate.get().isBefore(date)) {
                 lastDate.set(lastDate.get().plusDays(1));
-                series.addPoint(new Point(0));
+                points.add(0);
             }
             // add date
-            series.addPoint(new Point(count));
-        });
+            points.add(count);
+            return points.stream();
+        }).collect(Collectors.toList());
+        series.setNumberData(dataPoints);
         return Arrays.asList(
             series
         );
