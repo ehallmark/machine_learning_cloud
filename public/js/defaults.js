@@ -166,61 +166,46 @@ $(document).ready(function() {
                                     currentChart.redraw();
                                     return currentChart;
                                 };
-                                chartJson['rangeSelector'] = {
-                                    buttonSpacing: 2,
-                                    buttonTheme: {
-                                        width: 50
-                                    },
-                                    allButtonsEnabled: true,
-                                    selected: 4,
-                                    buttons: [{
-                                        //type: 'all',
-                                        text: 'Day',
-                                        events: {
-                                            click: function(e) {
-                                                setTimeout(updateDatagrouping(chartJson,[['day',[1]]]),1);
-                                                return false;
-                                            }
-                                        }
-                                    }, {
-                                        //type: 'all',
-                                        text: 'Week',
-                                        events: {
-                                            click: function(e) {
-                                                setTimeout(updateDatagrouping(chartJson,[['week',[1]]]),1);
-                                                return false;
-                                            }
-                                        }
-                                    }, {
-                                        type: 'all',
-                                        text: 'Month',
-                                        dataGrouping: {
-                                            approximation: 'sum',
-                                            forced: true,
-                                            units: [['month',[1]]]
-                                        }
-                                    }, {
-                                        type: 'all',
-                                        text: 'Quarter',
-                                        dataGrouping: {
-                                            approximation: 'sum',
-                                            forced: true,
-                                            units: [['month',[3]]]
-                                        }
-                                    }, {
-                                        type: 'all',
-                                        text: 'Year',
-                                        dataGrouping: {
-                                            approximation: 'sum',
-                                            forced: true,
-                                            units: [['year',[1]]]
-                                        }
-                                    }]
+                                chartJson['events'] = {
+                                    load: function() {
+                                        var $btns = $('<div></div>');
+                                        $btns.append('<label>Group Dates By</label>');
+                                        var $btnGroup = $('<div class="btn-group" role="group"></div>');
+                                        $btns.add($btnGroup);
+
+                                        var $dailyBtn = $('<button class="btn btn-secondary" type="button">Daily</button>');
+                                        var $weeklyBtn = $('<button class="btn btn-secondary" type="button">Weekly</button>');
+                                        var $monthlyBtn = $('<button class="btn btn-secondary" type="button">Monthly</button>');
+                                        var $quarterlyBtn = $('<button class="btn btn-secondary" type="button">Quarterly</button>');
+                                        var $yearlyBtn = $('<button class="btn btn-secondary" type="button">Yearly</button>');
+
+                                        $dailyBtn.click(function() {
+                                            updateDatagrouping(chartJson,[['day',[1]]]);
+                                        });
+                                        $weeklyBtn.click(function() {
+                                            updateDatagrouping(chartJson,[['week',[1]]]);
+                                        });
+                                        $monthlyBtn.click(function() {
+                                            updateDatagrouping(chartJson,[['month',[1]]]);
+                                        });
+                                        $quarterlyBtn.click(function() {
+                                            updateDatagrouping(chartJson,[['month',[3]]]);
+                                        });
+                                        $yearlyBtn.click(function() {
+                                            updateDatagrouping(chartJson,[['year',[1]]]);
+                                        });
+
+                                        $btnGroup.append($dailyBtn);
+                                        $btnGroup.append($weeklyBtn);
+                                        $btnGroup.append($monthlyBtn);
+                                        $btnGroup.append($quarterlyBtn);
+                                        $btnGroup.append($yearlyBtn);
+
+                                        $(this.container).prepend($btns)
+                                    }
                                 };
+
                                 currentChart = buildStockChartCallback(chartData,j,chartJson);
-                                //var $btn = $('<button>Click</button>');
-                                //$btn.click(function() { updateDatagrouping(chartJson,[['week',[1]]])});
-                                //$(currentChart.container).parent().prepend($btn);
                                 return currentChart;
                             };
                             chart = updateDatagroupingByIndex(j,chartJson,chartJson.series);
