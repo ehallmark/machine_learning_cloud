@@ -1,7 +1,7 @@
 package user_interface.ui_models.charts;
 
-import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
+import com.googlecode.wickedcharts.highcharts.options.series.SimpleSeries;
 import elasticsearch.DataSearcher;
 import j2html.tags.Tag;
 import seeding.Constants;
@@ -140,7 +140,7 @@ public class AbstractLineChart extends ChartAttribute {
     }
 
     private List<Series<?>> collectTimelineData(Collection<Item> data, String attribute, String seriesName, LocalDate min, LocalDate max) {
-        PointSeries series = new PointSeries();
+        SimpleSeries series = new SimpleSeries();
         series.setName(seriesName);
         Map<LocalDate,Long> dataMap = (Map<LocalDate,Long>) data.stream().flatMap(item-> {
             Object r = item.getData(attribute);
@@ -187,7 +187,7 @@ public class AbstractLineChart extends ChartAttribute {
             points.add(count);
             return points.stream();
         }).collect(Collectors.toList());
-        series.setNumberData(dataPoints);
+        series.setData(dataPoints);
         return Arrays.asList(
             series
         );
