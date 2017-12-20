@@ -90,14 +90,16 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         Function<String,List<String>> newAdditionalIdsFunction;
         if(groupByAttributes!=null) {
             Function<String,Tag> groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
-            Function<String,Tag> _newTagFunction = additionalTagFunction == null ? groupByFunction : attrName -> combineTagFunction.apply(groupByFunction.apply(attrName),additionalTagFunction.apply(attrName));
             if(groupsPlottableOnSameChart) {
-                newTagFunction = attrName -> div().withClass("row").with(
-                        div().withClass("col-10").with(_newTagFunction.apply(attrName)),
-                        div().withClass("col-2").with(getPlotGroupsTogetherTag(attrName))
+                newTagFunction = attrName -> combineTagFunction.apply(
+                        div().withClass("row").with(
+                                div().withClass("col-10").with(groupByFunction.apply(attrName)),
+                                div().withClass("col-2").with(getPlotGroupsTogetherTag(attrName))
+                        ),
+                        additionalTagFunction==null?div():additionalTagFunction.apply(attrName)
                 );
             } else {
-                newTagFunction = _newTagFunction;
+                newTagFunction = additionalTagFunction == null ? groupByFunction : attrName -> combineTagFunction.apply(groupByFunction.apply(attrName),additionalTagFunction.apply(attrName));
             }
             if(groupByPerAttribute) {
                 Function<String, List<String>> groupedByInputIdsFunction = attrName -> {
