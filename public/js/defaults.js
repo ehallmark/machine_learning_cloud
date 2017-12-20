@@ -149,7 +149,7 @@ $(document).ready(function() {
                                 return Highcharts.stockChart(chartData.chartId+"-"+j.toString(), chartJson);
                             };
 
-                            var updateDatagroupingByIndex = function(j) {
+                            var updateDatagroupingByIndex = function(j,chartJson) {
                                 var currentChart;
                                 var updateDatagrouping = function(chartJson,units) {
                                     chartJson['plotOptions']['series']['dataGrouping'] = {
@@ -214,9 +214,12 @@ $(document).ready(function() {
                                     }]
                                 };
                                 currentChart = buildStockChartCallback(chartData,j,chartJson);
+                                var $btn = $('<button>Click</button>');
+                                $btn.click(function() { updateDatagrouping(chartJson,[['week',[1]]])});
+                                $(currentChart.container).parent().prepend($btn);
                                 return currentChart;
                             };
-                            chart = updateDatagroupingByIndex(j);
+                            chart = updateDatagroupingByIndex(j,chartJson);
                         } else {
                             chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
                         }
