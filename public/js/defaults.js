@@ -148,48 +148,48 @@ $(document).ready(function() {
                                 enabled: true,
                                 force: true,
                                 approximation: 'sum',
-                                units: [
-                                    [
-                                        'year',
-                                        [1]
-                                    ]
-                                ]
                             };
                             chartJson['rangeSelector'] = {
-                                buttonSpacing: 5,
+                                buttonSpacing: 20,
                                 allButtonsEnabled: true,
+                                selected: 4,
                                 buttons: [{
-                                    type: 'all',
+                                    //type: 'all',
                                     text: 'Daily',
                                     dataGrouping: {
+                                        approximation: 'sum',
                                         forced: true,
                                         units: [['day',[1]]]
                                     }
                                 }, {
-                                    type: 'all',
+                                    //type: 'all',
                                     text: 'Weekly',
                                     dataGrouping: {
+                                        approximation: 'sum',
                                         forced: true,
                                         units: [['week',[1]]]
                                     }
                                 }, {
-                                    type: 'all',
+                                    //type: 'all',
                                     text: 'Monthly',
                                     dataGrouping: {
+                                        approximation: 'sum',
                                         forced: true,
                                         units: [['month',[1]]]
                                     }
                                 }, {
-                                    type: 'all',
+                                    //type: 'all',
                                     text: 'Quarterly',
                                     dataGrouping: {
+                                        approximation: 'sum',
                                         forced: true,
                                         units: [['month',[3]]]
                                     }
                                 }, {
-                                    type: 'all',
+                                    //type: 'all',
                                     text: 'Yearly',
                                     dataGrouping: {
+                                        approximation: 'sum',
                                         forced: true,
                                         units: [['year',[1]]]
                                     }
