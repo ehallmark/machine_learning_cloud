@@ -172,7 +172,7 @@ $(document).ready(function() {
                                         var $btns = $('<div></div>');
                                         $btns.append('<label>Group Dates By</label>');
                                         var $btnGroup = $('<div class="btn-group" role="group"></div>');
-                                        $btns.add($btnGroup);
+                                        $btns.append($btnGroup);
 
                                         var $dailyBtn = $('<button class="btn btn-secondary" type="button">Daily</button>');
                                         var $weeklyBtn = $('<button class="btn btn-secondary" type="button">Weekly</button>');
@@ -202,7 +202,7 @@ $(document).ready(function() {
                                         $btnGroup.append($quarterlyBtn);
                                         $btnGroup.append($yearlyBtn);
 
-                                        $(this.container).prepend($btns)
+                                        $(this.container).parent().prepend($btns)
                                     }
                                 };
 
