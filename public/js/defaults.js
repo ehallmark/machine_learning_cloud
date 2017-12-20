@@ -171,33 +171,63 @@ $(document).ready(function() {
                                 buttons: [{
                                     type: 'month',
                                     count: 1,
-                                    text: '1m'
+                                    text: '1m',
+                                    dataGrouping: {
+                                        forced: true,
+                                        units: [['day',[1]]]
+                                    }
                                 }, {
                                     type: 'month',
                                     count: 3,
-                                    text: '3m'
+                                    text: '3m',
+                                    dataGrouping: {
+                                        forced: true,
+                                        units: [['week',[1]],['day',[1]]]
+                                    }
                                 }, {
                                     type: 'month',
                                     count: 6,
-                                    text: '6m'
+                                    text: '6m',
+                                    dataGrouping: {
+                                        forced: true,
+                                        units: [['month',[1]],['week'],[1]]
+                                    }
                                 }, {
                                     type: 'ytd',
-                                    text: 'YTD'
+                                    text: 'YTD',
+                                    dataGrouping: {
+                                        forced: true
+                                    }
                                 }, {
                                     type: 'year',
                                     count: 1,
-                                    text: '1y'
+                                    text: '1y',
+                                    dataGrouping: {
+                                        forced: true,
+                                        units: [['month',[1]]]
+                                    }
                                 }, {
                                     type: 'year',
                                     count: 5,
-                                    text: '5y'
+                                    text: '5y',
+                                    dataGrouping: {
+                                        forced: true,
+                                        units: [['month',[3,6]],['year',[1]]]
+                                    }
                                 }, {
                                     type: 'year',
                                     count: 10,
-                                    text: '10y'
+                                    text: '10y',
+                                    dataGrouping: {
+                                        forced: true,
+                                        units: [['year',[1]],['month',[6]]]
+                                    }
                                 }, {
                                     type: 'all',
-                                    text: 'All'
+                                    text: 'All',
+                                    dataGrouping: {
+                                        forced: true
+                                    }
                                 }]
                             };
                             chart = Highcharts.stockChart(chartData.chartId+"-"+j.toString(), chartJson);
