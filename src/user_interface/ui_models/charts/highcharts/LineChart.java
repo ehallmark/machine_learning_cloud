@@ -1,6 +1,7 @@
 package user_interface.ui_models.charts.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.options.*;
+import com.googlecode.wickedcharts.highcharts.options.functions.DefaultFormatter;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 
 import java.awt.*;
@@ -21,10 +22,11 @@ public class LineChart extends AbstractChart {
     public LineChart(String title, String subTitle, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals) {
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = "{point.key}"+xAxisSuffix;
+        String yFormatFuncStr = "this.y.toFixed("+yDecimals+")"+yAxisSuffix;
         options=new Options()
                 .setChartOptions(new ChartOptions().setHeight(450).setType(SeriesType.LINE))
                 .setTitle(new Title(title))
-                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setConnectNulls(true)))
+                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()))
                 .setExporting(new ExportingOptions().setEnabled(true))
                 .setTooltip(new Tooltip().setEnabled(true).setHeaderFormat(xFormatStr+"<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> <b> Count: "+yFormatStr+" "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
@@ -37,7 +39,7 @@ public class LineChart extends AbstractChart {
                     .setRotation(0)
                     .setColor(Color.black)
                     .setAlign(HorizontalAlignment.CENTER)
-                    .setFormat(yFormatStr)
+                    .setFormatter(new DefaultFormatter().setFunction("if(this.y!=0){return "+yFormatFuncStr+";}"))
                     .setY(-5)
             );
         }
