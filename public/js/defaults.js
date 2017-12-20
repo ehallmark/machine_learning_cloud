@@ -158,7 +158,7 @@ $(document).ready(function() {
                                 allButtonsEnabled: true,
                                 selected: 4,
                                 buttons: [{
-                                    type: 'all',
+                                    //type: 'all',
                                     text: 'Daily',
                                     dataGrouping: {
                                         approximation: 'sum',
@@ -166,7 +166,7 @@ $(document).ready(function() {
                                         units: [['day',[1]]]
                                     }
                                 }, {
-                                    type: 'all',
+                                    //type: 'all',
                                     text: 'Weekly',
                                     dataGrouping: {
                                         approximation: 'sum',
@@ -174,7 +174,7 @@ $(document).ready(function() {
                                         units: [['week',[1]]]
                                     }
                                 }, {
-                                    type: 'all',
+                                    //type: 'all',
                                     text: 'Monthly',
                                     dataGrouping: {
                                         approximation: 'sum',
@@ -182,7 +182,7 @@ $(document).ready(function() {
                                         units: [['month',[1]]]
                                     }
                                 }, {
-                                    type: 'all',
+                                    //type: 'all',
                                     text: 'Quarterly',
                                     dataGrouping: {
                                         approximation: 'sum',
@@ -190,7 +190,7 @@ $(document).ready(function() {
                                         units: [['month',[3]]]
                                     }
                                 }, {
-                                    type: 'all',
+                                    //type: 'all',
                                     text: 'Yearly',
                                     dataGrouping: {
                                         approximation: 'sum',
