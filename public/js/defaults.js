@@ -228,7 +228,7 @@ $(document).ready(function() {
                                     text: 'All',
                                     dataGrouping: {
                                         forced: true,
-                                        units: [['year',[1]],['month',[1,3,6]]]]
+                                        units: [['year',[1]],['month',[1,3,6]]]
                                     }
                                 }]
                             };
