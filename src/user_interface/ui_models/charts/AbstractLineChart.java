@@ -187,6 +187,10 @@ public class AbstractLineChart extends ChartAttribute {
             points.add(count);
             return points.stream();
         }).collect(Collectors.toList());
+        while(max!=null && lastDate.get().isBefore(max)) {
+            dataPoints.add(0);
+            lastDate.set(lastDate.get().plusDays(1));
+        }
         series.setData(dataPoints);
         return Arrays.asList(
             series
