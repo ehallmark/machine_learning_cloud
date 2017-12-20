@@ -141,6 +141,7 @@ $(document).ready(function() {
                         var isStockChart = chartData.isStockCharts[j];
                         $currChart.appendTo($chartDiv);
                         var chartJson = chartData.charts[j];
+                        chartJson['index']=j;
                         var chart;
                         if(isStockChart) {
                             // append data with data groupings
@@ -149,7 +150,7 @@ $(document).ready(function() {
                             };
 
                             var updateDatagroupingByIndex = function(j) {
-                                return function(chartJson,units) {
+                                var updateDatagrouping = function(chartJson,units) {
                                     chartJson['plotOptions']['series']['dataGrouping'] = {
                                         enabled: true,
                                         force: true,
@@ -157,64 +158,61 @@ $(document).ready(function() {
                                         units: units,
                                         groupPixelWidth: 10
                                     };
-                                    buildStockChartCallback(chartData,j,chartJson);
+                                    chartJson['rangeSelector'] = {
+                                        buttonSpacing: 2,
+                                        buttonTheme: {
+                                            width: 50
+                                        },
+                                        allButtonsEnabled: true,
+                                        selected: 4,
+                                        buttons: [{
+                                            type: 'all',
+                                            text: 'Day',
+                                            events: {
+                                                click: function(e) {
+                                                    updateDatagrouping(chartJson,[['day',[1]]]);
+                                                    return false;
+                                                }
+                                            }
+                                        }, {
+                                            type: 'all',
+                                            text: 'Week',
+                                            events: {
+                                                click: function(e) {
+                                                    updateDatagrouping(chartJson,[['week',[1]]]);
+                                                    return false;
+                                                }
+                                            }
+                                        }, {
+                                            type: 'all',
+                                            text: 'Month',
+                                            dataGrouping: {
+                                                approximation: 'sum',
+                                                forced: true,
+                                                units: [['month',[1]]]
+                                            }
+                                        }, {
+                                            type: 'all',
+                                            text: 'Quarter',
+                                            dataGrouping: {
+                                                approximation: 'sum',
+                                                forced: true,
+                                                units: [['month',[3]]]
+                                            }
+                                        }, {
+                                            type: 'all',
+                                            text: 'Year',
+                                            dataGrouping: {
+                                                approximation: 'sum',
+                                                forced: true,
+                                                units: [['year',[1]]]
+                                            }
+                                        }]
+                                    };
                                 };
+                                return buildStockChartCallback(chartData,j,chartJson);
                             };
-
-                            var updateDatagrouping = updateDatagroupingByIndex(j);
-
-                            chartJson['rangeSelector'] = {
-                                buttonSpacing: 2,
-                                buttonTheme: {
-                                    width: 50
-                                },
-                                allButtonsEnabled: true,
-                                selected: 4,
-                                buttons: [{
-                                    type: 'all',
-                                    text: 'Day',
-                                    events: {
-                                        click: function(e) {
-                                            updateDatagrouping(chartJson,[['day',[1]]]);
-                                            return false;
-                                        }
-                                    }
-                                }, {
-                                    type: 'all',
-                                    text: 'Week',
-                                    events: {
-                                        click: function(e) {
-                                            updateDatagrouping(chartJson,[['week',[1]]]);
-                                            return false;
-                                        }
-                                    }
-                                }, {
-                                    type: 'all',
-                                    text: 'Month',
-                                    dataGrouping: {
-                                        approximation: 'sum',
-                                        forced: true,
-                                        units: [['month',[1]]]
-                                    }
-                                }, {
-                                    type: 'all',
-                                    text: 'Quarter',
-                                    dataGrouping: {
-                                        approximation: 'sum',
-                                        forced: true,
-                                        units: [['month',[3]]]
-                                    }
-                                }, {
-                                    type: 'all',
-                                    text: 'Year',
-                                    dataGrouping: {
-                                        approximation: 'sum',
-                                        forced: true,
-                                        units: [['year',[1]]]
-                                    }
-                                }]
-                            };
-                            chart = buildStockChartCallback(chartData,j,chartJson);
+                            chart = updateDatagroupingByIndex(j);
                         } else {
                             chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
                         }
