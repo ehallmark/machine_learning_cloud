@@ -117,9 +117,21 @@ public class AbstractLineChart extends ChartAttribute {
             String title = humanAttr + " Timeline";
             String xAxisSuffix = "";
             String yAxisSuffix = "";
-            return groupPortfolioListForGivenAttribute(portfolioList,attribute).map(groupPair-> {
-                return new LineChart(title, groupPair.getFirst(), collectTimelineData(groupPair.getSecond().getItemList(), attribute, humanSearchType, attrToMinMap.get(attribute), attrToMaxMap.get(attribute)), xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0);
-            });
+            LocalDate min = attrToMinMap.get(attribute);
+            LocalDate max = attrToMaxMap.get(attribute);
+            boolean plotGroupsOnSameChart = groupsPlottableOnSameChart && attrToPlotOnSameChartMap.getOrDefault(attribute, false);
+            System.out.println("Plotting "+attribute+" groups on same chart: "+plotGroupsOnSameChart);
+            if(plotGroupsOnSameChart) {
+                List<Series<?>> seriesList = groupPortfolioListForGivenAttribute(portfolioList, attribute).flatMap(groupPair -> {
+                    return collectTimelineData(groupPair.getSecond().getItemList(), attribute, SimilarPatentServer.humanAttributeFor(groupPair.getFirst()), min, max).stream();
+                }).collect(Collectors.toList());
+                return Stream.of(new LineChart(title,null, seriesList, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
+
+            } else {
+                return groupPortfolioListForGivenAttribute(portfolioList, attribute).map(groupPair -> {
+                    return new LineChart(title, groupPair.getFirst(), collectTimelineData(groupPair.getSecond().getItemList(), attribute, singularize(humanSearchType) + " Count", min, max), xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0);
+                });
+            }
         }).collect(Collectors.toList());
     }
 
@@ -128,9 +140,9 @@ public class AbstractLineChart extends ChartAttribute {
         return zdt.toInstant().toEpochMilli();
     }
 
-    private List<Series<?>> collectTimelineData(Collection<Item> data, String attribute, String humanSearchType, LocalDate min, LocalDate max) {
+    private List<Series<?>> collectTimelineData(Collection<Item> data, String attribute, String seriesName, LocalDate min, LocalDate max) {
         PointSeries series = new PointSeries();
-        series.setName(singularize(humanSearchType)+ " Count");
+        series.setName(seriesName);
         Map<LocalDate,Long> dataMap = (Map<LocalDate,Long>) data.stream().flatMap(item-> {
             Object r = item.getData(attribute);
             if (r != null) {

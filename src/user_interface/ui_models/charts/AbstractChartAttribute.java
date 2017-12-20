@@ -35,6 +35,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     @Getter
     protected Map<String,Integer> attrNameToMaxGroupSizeMap;
     @Getter
+    protected Map<String,Boolean> attrToPlotOnSameChartMap;
+    @Getter
     protected String name;
     protected boolean groupByPerAttribute;
     protected boolean groupsPlottableOnSameChart;
@@ -46,6 +48,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         this.name=name;
         this.attrNameToGroupByAttrNameMap = Collections.synchronizedMap(new HashMap<>());
         this.attrNameToMaxGroupSizeMap = Collections.synchronizedMap(new HashMap<>());
+        this.attrToPlotOnSameChartMap= Collections.synchronizedMap(new HashMap<>());
         this.groupByPerAttribute = groupByPerAttribute;
     }
 
@@ -192,6 +195,12 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 String groupSize = SimilarPatentServer.extractString(params, groupSizeId,"10");
                 if(groupSize.length()>0) {
                     attrNameToMaxGroupSizeMap.put(attrName, Integer.valueOf(groupSize));
+                }
+
+                if(groupsPlottableOnSameChart) {
+                    String plotOnSameChartId = groupId+PLOT_GROUPS_ON_SAME_CHART_FIELD;
+                    boolean plotOnSameChart = SimilarPatentServer.extractBool(params, plotOnSameChartId);
+                    attrToPlotOnSameChartMap.put(attrName,plotOnSameChart);
                 }
 
             });

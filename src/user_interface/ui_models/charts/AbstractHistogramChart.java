@@ -72,11 +72,21 @@ public class AbstractHistogramChart extends ChartAttribute {
             final double _max = max;
             final int _nBins = nBins;
             final String _xAxisSuffix = xAxisSuffix;
-            return groupPortfolioListForGivenAttribute(portfolioList,attribute).map(groupPair->{
-                String name = groupPair.getFirst();
-                PortfolioList group = groupPair.getSecond();
-                return new ColumnChart(title, collectDistributionData(group.getItemList(),_min,_max,_nBins, attribute, title, categories), 0d, null, _xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, name,  0,categories);
-            });
+
+            boolean plotGroupsOnSameChart = groupsPlottableOnSameChart && attrToPlotOnSameChartMap.getOrDefault(attribute, false);
+            System.out.println("Plotting "+attribute+" groups on same chart: "+plotGroupsOnSameChart);
+            if(plotGroupsOnSameChart) {
+                List<Series<?>> seriesList = groupPortfolioListForGivenAttribute(portfolioList, attribute).flatMap(groupPair -> {
+                    return collectDistributionData(groupPair.getSecond().getItemList(), _min, _max, _nBins, attribute, SimilarPatentServer.humanAttributeFor(groupPair.getFirst()), categories).stream();
+                }).collect(Collectors.toList());
+                return Stream.of(new ColumnChart(title, seriesList, 0d, null, _xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, null, 0, categories));
+            } else {
+                return groupPortfolioListForGivenAttribute(portfolioList, attribute).map(groupPair -> {
+                    String name = groupPair.getFirst();
+                    PortfolioList group = groupPair.getSecond();
+                    return new ColumnChart(title, collectDistributionData(group.getItemList(), _min, _max, _nBins, attribute, title, categories), 0d, null, _xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, name, 0, categories);
+                });
+            }
         }).collect(Collectors.toList());
     }
 
