@@ -214,6 +214,7 @@ $(document).ready(function() {
                                     }]
                                 };
                                 currentChart = buildStockChartCallback(chartData,j,chartJson);
+                                return currentChart;
                             };
                             chart = updateDatagroupingByIndex(j);
                         } else {
