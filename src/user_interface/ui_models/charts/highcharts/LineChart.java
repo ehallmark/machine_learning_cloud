@@ -1,10 +1,8 @@
 package user_interface.ui_models.charts.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.options.*;
-import com.googlecode.wickedcharts.highcharts.options.functions.DefaultFormatter;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 
-import java.awt.*;
 import java.util.List;
 
 /**
@@ -26,6 +24,7 @@ public class LineChart extends AbstractChart {
         options=new Options()
                 .setChartOptions(new ChartOptions().setHeight(450).setType(SeriesType.LINE))
                 .setTitle(new Title(title))
+                .setLegend(new Legend(true))
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()))
                 .setExporting(new ExportingOptions().setEnabled(true))
                 .setTooltip(new Tooltip().setEnabled(true).setHeaderFormat(xFormatStr+"<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> <b> Count: "+yFormatStr+" "+yLabel+"</b><br/>"))
@@ -35,13 +34,13 @@ public class LineChart extends AbstractChart {
         options.setxAxis(new Axis().setType(AxisType.LINEAR).setTickInterval(1f).setTitle(new Title(xLabel)));
         options.setyAxis(new Axis().setType(AxisType.LINEAR).setMin(0).setTitle(new Title(ColumnChart.capitalize(yLabel)+" Count")));
         for(Series<?> series : options.getSeries()) {
-            series.setDataLabels(new DataLabels(true)
+           /* series.setDataLabels(new DataLabels(true)
                     .setRotation(0)
                     .setColor(Color.black)
                     .setAlign(HorizontalAlignment.CENTER)
                     .setFormatter(new DefaultFormatter().setFunction("if(this.y!=0){return "+yFormatFuncStr+";}"))
                     .setY(-5)
-            );
+            ); */
         }
     }
     
