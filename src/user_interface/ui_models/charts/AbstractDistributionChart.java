@@ -122,7 +122,7 @@ public class AbstractDistributionChart extends ChartAttribute {
 
         if(itemPairs.size()>limit) {
             Pair<Object,Long> remaining = itemPairs.subList(limit,itemPairs.size()).stream().reduce((p1,p2)->new Pair<>("Remaining",p1.getSecond()+p2.getSecond())).get();
-            itemPairs = itemPairs.subList(0,limit);
+            itemPairs = new ArrayList<>(itemPairs.subList(0,limit));
             itemPairs.add(remaining);
         }
         itemPairs.forEach(e->{
