@@ -158,6 +158,7 @@ $(document).ready(function() {
                                         units: units,
                                         groupPixelWidth: 10
                                     };
+                                    buildStockChartCallback(chartData,j,chartJson);
                                 };
                                 chartJson['rangeSelector'] = {
                                     buttonSpacing: 2,
