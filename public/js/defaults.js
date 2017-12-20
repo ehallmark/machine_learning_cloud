@@ -161,6 +161,7 @@ $(document).ready(function() {
                                     };
                                     //currentChart.destroy();
                                     currentChart = buildStockChartCallback(chartData,j,chartJson);
+                                    currentChart.redraw();
                                     return currentChart;
                                 };
                                 /*chartJson['rangeSelector'] = {
