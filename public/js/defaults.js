@@ -196,7 +196,8 @@ $(document).ready(function() {
                                     type: 'ytd',
                                     text: 'YTD',
                                     dataGrouping: {
-                                        forced: true
+                                        forced: true,
+                                        units: [['week',[1]],['month',[1]]]
                                     }
                                 }, {
                                     type: 'year',
@@ -226,7 +227,8 @@ $(document).ready(function() {
                                     type: 'all',
                                     text: 'All',
                                     dataGrouping: {
-                                        forced: true
+                                        forced: true,
+                                        units: [['year',[1]],['month',[1,3,6]]]]
                                     }
                                 }]
                             };
