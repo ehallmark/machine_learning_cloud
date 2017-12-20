@@ -152,6 +152,9 @@ $(document).ready(function() {
                             };
                             chartJson['rangeSelector'] = {
                                 buttonSpacing: 20,
+                                buttonTheme: {
+                                    width: 35
+                                },
                                 allButtonsEnabled: true,
                                 selected: 4,
                                 buttons: [{
