@@ -216,7 +216,7 @@ $(document).ready(function() {
                                             units: [['year',[1]]]
                                         }
                                     }]
-                                }; */
+                                }; 
                                 currentChart = buildStockChartCallback(chartData,j,chartJson);
                                 //var $btn = $('<button>Click</button>');
                                 //$btn.click(function() { updateDatagrouping(chartJson,[['week',[1]]])});
