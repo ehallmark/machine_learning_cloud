@@ -150,18 +150,6 @@ $(document).ready(function() {
                                 approximation: 'sum',
                                 units: [
                                     [
-                                        'day',
-                                        [1]
-                                    ],
-                                    [
-                                        'week',
-                                        [1]
-                                    ],
-                                    [
-                                        'month',
-                                        [1,3,6]
-                                    ],
-                                    [
                                         'year',
                                         [1]
                                     ]
@@ -169,6 +157,7 @@ $(document).ready(function() {
                             };
                             chartJson['rangeSelector'] = {
                                 buttonSpacing: 5,
+                                allButtonsEnabled: true,
                                 buttons: [{
                                     type: 'all',
                                     text: 'Daily',
