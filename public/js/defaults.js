@@ -144,13 +144,25 @@ $(document).ready(function() {
                         var chart;
                         if(isStockChart) {
                             // append data with data groupings
-                            chartJson['plotOptions']['series']['dataGrouping'] = {
-                                enabled: true,
-                                force: true,
-                                approximation: 'sum',
-                                units: [['day',[1]],['week',[1]],['month',[1,3]],['year',[1]]],
-                                groupPixelWidth: 100
+                            var buildStockChartCallback = function(chartData,j,chartJson) {
+                                return Highcharts.stockChart(chartData.chartId+"-"+j.toString(), chartJson);
                             };
+
+                            var updateDatagroupingByIndex = function(j) {
+                                return function(chartJson,units) {
+                                    chartJson['plotOptions']['series']['dataGrouping'] = {
+                                        enabled: true,
+                                        force: true,
+                                        approximation: 'sum',
+                                        units: units,
+                                        groupPixelWidth: 10
+                                    };
+                                    buildStockChartCallback(chartData,j,chartJson);
+                                };
+                            };
+
+                            var updateDatagrouping = updateDatagroupingByIndex(j);
+
                             chartJson['rangeSelector'] = {
                                 buttonSpacing: 2,
                                 buttonTheme: {
@@ -160,23 +172,23 @@ $(document).ready(function() {
                                 selected: 4,
                                 buttons: [{
                                     type: 'all',
-                                    text: 'Daily',
-                                    dataGrouping: {
-                                        approximation: 'sum',
-                                        forced: true,
-                                        units: [['day',[1]]]
+                                    text: 'Day',
+                                    events: {
+                                        click: function(e) {
+                                            updateDatagrouping(chartJson,[['day',[1]]]);
+                                        }
                                     }
                                 }, {
                                     type: 'all',
-                                    text: 'Weekly',
-                                    dataGrouping: {
-                                        approximation: 'sum',
-                                        forced: true,
-                                        units: [['week',[1]]]
+                                    text: 'Week',
+                                    events: {
+                                        click: function(e) {
+                                            updateDatagrouping(chartJson,[['week',[1]]]);
+                                        }
                                     }
                                 }, {
                                     type: 'all',
-                                    text: 'Monthly',
+                                    text: 'Month',
                                     dataGrouping: {
                                         approximation: 'sum',
                                         forced: true,
@@ -184,7 +196,7 @@ $(document).ready(function() {
                                     }
                                 }, {
                                     type: 'all',
-                                    text: 'Quarterly',
+                                    text: 'Quarter',
                                     dataGrouping: {
                                         approximation: 'sum',
                                         forced: true,
@@ -192,7 +204,7 @@ $(document).ready(function() {
                                     }
                                 }, {
                                     type: 'all',
-                                    text: 'Yearly',
+                                    text: 'Year',
                                     dataGrouping: {
                                         approximation: 'sum',
                                         forced: true,
@@ -200,7 +212,7 @@ $(document).ready(function() {
                                     }
                                 }]
                             };
-                            chart = Highcharts.stockChart(chartData.chartId+"-"+j.toString(), chartJson);
+                            chart = buildStockChartCallback(chartData,j,chartJson);
                         } else {
                             chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
                         }
