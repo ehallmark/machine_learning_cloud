@@ -580,7 +580,7 @@ var showTemplateFormHelper = function(formSelector,dataMap) {
             var $elem = $('#'+id);
             var $draggable = $elem.closest(".attributeElement");
             $draggable.parent().show();
-            if(order!==null&& ($draggable.is('select.nested-filter-select') || $draggable.is('div.attribute'))) {
+            if(order!==null&& ($elem.is('select.nested-filter-select') || $elem.is('div.attribute'))) {
                 $draggable.parent().attr("sort-order",order);
             }
             if($elem.attr('type')==="checkbox") {
