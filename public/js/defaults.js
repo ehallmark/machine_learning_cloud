@@ -783,7 +783,9 @@ var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dat
                         }
                     }
                     tmpData[id]=$elem.val();
-                    tmpData["order_"+id]=i;
+                    if($elem.is('select.nested-filter-select') || $elem.is('div.attribute')) {
+                        tmpData["order_"+id]=i;
+                    }
                 }
             }
         });
