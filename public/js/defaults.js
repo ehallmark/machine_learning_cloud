@@ -289,7 +289,8 @@ $(document).ready(function() {
 
     var nestedFilterSelectFunction = function(e,preventHighlight) {
          var $options = $(e.currentTarget.selectedOptions);
-         var $selectWrapper = $(this).parent().parent();
+         var $select = $(this);
+         var $selectWrapper = $select.parent().parent();
          var addedDraggables = [];
 
          //if(!child) { // disable full subtree tree
@@ -333,21 +334,6 @@ $(document).ready(function() {
                  addedDraggables.push($draggable);
              }
 
-             // sort
-             $draggable.parent().find('.nested-form-list').filter(':first').each(function() {
-                 var list = $(this);
-                 var elems = list.children().filter('[sort-order]').detach();
-                 if(elems.length>0) {
-                     elems.sort(function(a,b) {
-                         var i = parseInt($(a).attr("sort-order"));
-                         var j = parseInt($(b).attr("sort-order"));
-                         return (i > j) ? 1 : (i < j) ? -1 : 0;
-                     });
-                     list.append(elems);
-                     list.sortable('refreshPositions');
-                 }
-             });
-
              // update attributes
              var divAttribute = $draggable.attr('data-attribute');
              if(divAttribute) {
@@ -366,6 +352,21 @@ $(document).ready(function() {
              }
 
              $draggable.parent().show();
+         });
+
+         // sort this
+         $selectWrapper.find('.nested-form-list').filter(':first').each(function() {
+             var list = $(this);
+             var elems = list.children().filter('[sort-order]').detach();
+             if(elems.length>0) {
+                 elems.sort(function(a,b) {
+                     var i = parseInt($(a).attr("sort-order"));
+                     var j = parseInt($(b).attr("sort-order"));
+                     return (i > j) ? 1 : (i < j) ? -1 : 0;
+                 });
+                 list.append(elems);
+                 list.sortable('refreshPositions');
+             }
          });
 
          if(addedDraggables.length == 1) { // added by human
