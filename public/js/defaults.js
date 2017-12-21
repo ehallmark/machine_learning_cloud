@@ -572,7 +572,7 @@ var setCollapsibleHeaders = function(selector) {
 var showTemplateFormHelper = function(formSelector,dataMap) {
     $.each(dataMap,function(id,value) {
         if(!id.startsWith("order_")) {
-            var order = 0;
+            var order = null;
             if(dataMap.hasOwnProperty("order_"+id)) {
                 order = dataMap["order_"+id];
             }
@@ -580,7 +580,9 @@ var showTemplateFormHelper = function(formSelector,dataMap) {
             var $elem = $('#'+id);
             var $draggable = $elem.closest(".attributeElement");
             $draggable.parent().show();
-            $draggable.parent().attr("sort-order",order);
+            if(order!==null&& ($draggable.is('select.nested-filter-select') || $draggable.is('div.attribute'))) {
+                $draggable.parent().attr("sort-order",order);
+            }
             if($elem.attr('type')==="checkbox") {
                 $elem.prop('checked',value==='on');
             }
