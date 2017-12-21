@@ -355,19 +355,21 @@ $(document).ready(function() {
          });
 
          // sort this
-         $selectWrapper.find('.nested-form-list').filter(':first').each(function() {
-             var list = $(this);
-             var elems = list.children().filter('[sort-order]').detach();
-             if(elems.length>0) {
-                 elems.sort(function(a,b) {
-                     var i = parseInt($(a).attr("sort-order"));
-                     var j = parseInt($(b).attr("sort-order"));
-                     return (i > j) ? 1 : (i < j) ? -1 : 0;
-                 });
-                 list.append(elems);
-                 list.sortable('refreshPositions');
-             }
-         });
+         if(preventHighlight) {
+             $selectWrapper.find('.nested-form-list').filter(':first').each(function() {
+                 var list = $(this);
+                 var elems = list.children().filter('[sort-order]').detach();
+                 if(elems.length>0) {
+                     elems.sort(function(a,b) {
+                         var i = parseInt($(a).attr("sort-order"));
+                         var j = parseInt($(b).attr("sort-order"));
+                         return (i > j) ? 1 : (i < j) ? -1 : 0;
+                     });
+                     list.append(elems);
+                     list.sortable('refreshPositions');
+                 }
+             });
+         }
 
          if(addedDraggables.length == 1) { // added by human
              $selectWrapper.find('.highlight').removeClass('highlight');
