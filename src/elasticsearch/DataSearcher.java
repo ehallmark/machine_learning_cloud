@@ -64,7 +64,7 @@ public class DataSearcher {
             .field(Constants.INVENTION_TITLE)
             .field(Constants.ASSIGNMENTS+"."+Constants.CONVEYANCE_TEXT);
 
-    public static final String ARRAY_SEPARATOR = "; ";
+    public static final String ARRAY_SEPARATOR = "})]>>|<<[({";
     @Getter
     private static TransportClient client = MyClient.get();
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;

@@ -1,5 +1,6 @@
 package user_interface.ui_models.portfolios.items;
 
+import elasticsearch.DataSearcher;
 import lombok.Getter;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
@@ -39,7 +40,9 @@ public class Item  {
     public Map<String,String> getDataAsMap(List<String> attributes,boolean useHighlighter) {
         return attributes.stream().map(attr->{
             Object cell = useHighlighter ? dataMap.getOrDefault(attr+Constants.HIGHLIGHTED, dataMap.get(attr)) : dataMap.get(attr);
-            return new Pair<>(attr,cell==null? "": ((cell instanceof Double || cell instanceof Float) ? (((Number)cell).doubleValue()==(double) ((Number)cell).intValue() ? String.valueOf(((Number)cell).intValue()) : String.format("%.1f",cell)) : cell.toString()));
+            String value = cell==null? "": ((cell instanceof Double || cell instanceof Float) ? (((Number)cell).doubleValue()==(double) ((Number)cell).intValue() ? String.valueOf(((Number)cell).intValue()) : String.format("%.1f",cell)) : cell.toString());
+            value = value.replace(DataSearcher.ARRAY_SEPARATOR,"; ");
+            return new Pair<>(attr,value);
         }).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
     }
 
