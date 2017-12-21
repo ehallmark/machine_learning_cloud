@@ -489,7 +489,7 @@ $(document).ready(function() {
 
     $('#main-content-id').addClass('show');
 
-    $('#main-options-useHighlighter').click(function(e) {
+    $('#highlightForm input[type="checkbox"]').click(function(e) {
         if($(this).is(":checked")) {
             $(this).val('on');
             $(this).prop('checked',true);
