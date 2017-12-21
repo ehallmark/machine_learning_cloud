@@ -81,7 +81,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         return div().withClass("row").with(
                 div().withClass("col-12").with(
                         label("Plot Groups Together").attr("title","Plot groups together on the same chart.").with(
-                                input().attr("style","float: left;").withValue("on").withId(attrName+ PLOT_GROUPS_ON_SAME_CHART_FIELD).withName(attrName+PLOT_GROUPS_ON_SAME_CHART_FIELD).withType("checkbox")
+                                input().attr("style","float: left;").withValue("off").withId(attrName+ PLOT_GROUPS_ON_SAME_CHART_FIELD).withName(attrName+PLOT_GROUPS_ON_SAME_CHART_FIELD).withType("checkbox")
                         )
                 )
         );

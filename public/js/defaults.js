@@ -484,18 +484,17 @@ $(document).ready(function() {
         delay: 500
     });
 
-    $('.nested-form-list').sortable();
-    $('.nested-form-list').disableSelection();
+    var $nestedLists = $('.nested-form-list');
+    $nestedLists.sortable();
+    $nestedLists.disableSelection();
 
     $('#main-content-id').addClass('show');
 
-    $('#highlightForm input[type="checkbox"]').click(function(e) {
-        if($(this).is(":checked")) {
+    $('input[type="checkbox"]').click(function(e) {
+        if($(this).prop("checked")==true) {
             $(this).val('on');
-            $(this).prop('checked',true);
         } else {
             $(this).val('off');
-            $(this).prop('checked',false);
         }
         return true;
     });
@@ -776,6 +775,13 @@ var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dat
             var id = $elem.attr('id');
             if(id && ! ($elem.prop('disabled') || $elem.hasClass('disabled'))) {
                 if(! (id in tmpData)) {
+                    if($elem.attr('type')==='checkbox') {
+                        if($elem.prop("checked")==true) {
+                            $elem.val('on');
+                        } else {
+                            $elem.val('off');
+                        }
+                    }
                     tmpData[id]=$elem.val();
                     tmpData["order_"+id]=i;
                 }
