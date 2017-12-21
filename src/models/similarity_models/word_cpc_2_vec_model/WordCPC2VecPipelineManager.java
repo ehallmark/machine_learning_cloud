@@ -147,8 +147,8 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         final int maxSamples = 200;
-        boolean rebuildPrerequisites = true;
-        boolean rebuildDatasets = true;
+        boolean rebuildPrerequisites = false;
+        boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = true;
         boolean runPredictions = false;
