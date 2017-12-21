@@ -1526,9 +1526,16 @@ public class SimilarPatentServer {
                     });
                     nestedAttributeParentMap.entrySet().forEach(e -> {
                         double baseOrder = baseOrderMap.get(e.getKey());
-                        e.getValue().forEach(nested -> {
-                            baseOrderMap.put(nested, baseOrder + ((double)extractInt(req, "order_" + nested, 0))/10);
-                        });
+                        Map<String,Double> valueMap = e.getValue().stream().collect(Collectors.toMap(nested -> nested, nested -> {
+                            return ((double)extractInt(req, "order_" + nested, 0));
+                        }));
+                        if(valueMap.size()>0) {
+                            int size = valueMap.size();
+                            AtomicInteger cnt = new AtomicInteger(0);
+                            valueMap = valueMap.entrySet().stream().sorted(Comparator.comparing(e2->e2.getValue()))
+                                    .collect(Collectors.toMap(e2->e2.getKey(),e2->baseOrder+(((double)cnt.getAndIncrement())/size)));
+                            baseOrderMap.putAll(valueMap);
+                        }
                     });
 
                     System.out.println("Base order map: "+new Gson().toJson(baseOrderMap));
