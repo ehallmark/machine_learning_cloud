@@ -1,10 +1,14 @@
 package models.keyphrase_prediction.models;
 
 /**
- * Created by Evan on 9/15/2017.
+ * Created by ehallmark on 12/21/17.
  */
-public abstract class Model {
-    public abstract String getModelName();
+public class DefaultModel extends Model {
+    @Override
+    public String getModelName() {
+        return "default_model";
+    }
+
     public double getDefaultUpperBound() { return 1d; }
     public double getDefaultLowerBound() { return 0.5d; }
     public double getDefaultMinValue() { return Double.MIN_VALUE; }

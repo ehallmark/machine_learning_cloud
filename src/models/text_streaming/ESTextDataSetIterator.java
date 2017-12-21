@@ -29,9 +29,9 @@ import java.util.stream.Stream;
  */
 public class ESTextDataSetIterator {
     public static void main(String[] args) throws Exception {
-        final int limit = 5000000;
-        final int numTest = 30000;
-        final int minWords = 10;
+        final int limit = -1;
+        final int numTest = 20000;
+        final int minWords = 5;
 
         Map<FileTextDataSetIterator.Type,BufferedWriter> typeToWriterMap = Collections.synchronizedMap(new HashMap<>());
         FileTextDataSetIterator.getTypeMap().forEach((type, file)->{
@@ -75,7 +75,7 @@ public class ESTextDataSetIterator {
                         // train
                         writer = typeToWriterMap.get(FileTextDataSetIterator.Type.TRAIN);
                         if (cnt.getAndIncrement() % 10000 == 9999) {
-                            System.out.println("FInished train: " + cnt.get());
+                            System.out.println("Finished train: " + cnt.get());
                         }
                     }
                     try {
@@ -88,7 +88,7 @@ public class ESTextDataSetIterator {
             }
         };
 
-        iterateOverDocuments(limit,consumer,null);
+        iterateOverSentences(limit,consumer,null);
 
         typeToWriterMap.forEach((type,writer)->{
             try {
@@ -100,15 +100,12 @@ public class ESTextDataSetIterator {
         });
     }
 
-    public static Collection<String> collectWordsFrom(SearchHit hit) {
-        return toList(collectTextFrom(hit));
-    }
-
-    public static String collectTextFrom(SearchHit hit) {
+    public static List<String> collectDocumentsFrom(SearchHit hit) {
         String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString();
         String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString();
-        String text = preProcess(String.join(" ", Stream.of(inventionTitle, abstractText).filter(s->s!=null&&s.length()>0).collect(Collectors.toList())));
-        return text;
+        List claims = ((List)hit.getSourceAsMap().getOrDefault(Constants.CLAIMS, Collections.emptyList()));
+        String firstClaim = claims.isEmpty() ? "" : ((Map<String,Object>) claims.get(0)).getOrDefault(Constants.CLAIM, "").toString();
+        return Stream.of(inventionTitle, abstractText, firstClaim).map(text->preProcess(text)).filter(s->s!=null&&s.length()>0).collect(Collectors.toList());
     }
 
     public static String preProcess(String text) {
@@ -119,20 +116,14 @@ public class ESTextDataSetIterator {
         return Stream.of(text.split("\\s+")).collect(Collectors.toList());
     }
 
-    public static void iterateOverAllDocuments(Consumer<Pair<String,Collection<String>>> consumer) {
-        iterateOverDocuments(-1,consumer,null);
-    }
-
-    public static void iterateOverDocuments(int limit, Consumer<Pair<String,Collection<String>>> consumer, Function<Void,Void> finallyDo) {
+    public static void iterateOverSentences(int limit, Consumer<Pair<String,Collection<String>>> consumer, Function<Void,Void> finallyDo) {
         BoolQueryBuilder query = QueryBuilders.boolQuery()
-                .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(2039852)));
-        if(limit>0) {
-            BoolQueryBuilder innerFilter =  QueryBuilders.boolQuery().must(
-                    QueryBuilders.boolQuery()
-                            .must(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()))
-            );
-            query = query.filter(innerFilter);
-        }
+                .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(2039852)))
+                .filter(QueryBuilders.boolQuery()
+                        .should(QueryBuilders.termQuery(Constants.GRANTED,false))
+                        .should(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()))
+                        .minimumShouldMatch(1)
+                );
 
         SearchRequestBuilder request = DataSearcher.getClient().prepareSearch(DataIngester.INDEX_NAME)
                 .setTypes(DataIngester.TYPE_NAME)
@@ -140,16 +131,20 @@ public class ESTextDataSetIterator {
                 .setExplain(false)
                 .setFrom(0)
                 .setSize(10000)
-                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
-                .setQuery(query);
-        if(limit>0) {
-            request = request.addSort(SortBuilders.scoreSort());
-        }
+                .addStoredField("_parent")
+                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE, Constants.CLAIMS+"."+Constants.CLAIM},new String[]{})
+                .setQuery(query)
+                .addSort(SortBuilders.scoreSort());
 
 
         Function<SearchHit,Item> transformer = hit -> {
-            String asset = hit.getId();
-            consumer.accept(new Pair<>(asset, collectWordsFrom(hit)));
+            //String asset = hit.getId();
+            String filing = hit.getField("_parent").getValue();
+            if(filing != null) {
+                collectDocumentsFrom(hit).forEach(doc->{
+                    consumer.accept(new Pair<>(filing, toList(doc)));
+                });
+            }
             return null;
         };
         SearchResponse response = request.get();

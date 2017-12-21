@@ -1,13 +1,10 @@
 package models.keyphrase_prediction.stages;
 
 
-import lombok.Getter;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
-
 import seeding.Database;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -20,11 +17,14 @@ import java.util.stream.Collectors;
 public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
     private static final boolean debug = false;
     private int minDocFrequency;
+    private double maxDocFrequencyRatio;
     private  Map<String,Map<String,AtomicInteger>> phraseCountMap;
+    private AtomicLong totalDocumentsSeen = new AtomicLong(0);
     public Stage1(Model model) {
         super(model);
         phraseCountMap = Collections.synchronizedMap(new HashMap<>());
         this.minDocFrequency=model.getMinDocFrequency();
+        this.maxDocFrequencyRatio=model.getMaxDocFrequencyRatio();
     }
 
     @Override
@@ -47,6 +47,7 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
     private Map<MultiStem,AtomicLong> truncateBetweenLengths() {
         return data.entrySet().parallelStream()
                 .filter(e->e.getValue().get()>=minDocFrequency)
+                .filter(e->((double)e.getValue().get())/totalDocumentsSeen.get()<=maxDocFrequencyRatio)
                 .collect(Collectors.toMap(e->e.getKey(), e->e.getValue()));
     }
 
@@ -64,6 +65,7 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
         data = Collections.synchronizedMap(new HashMap<>());
         Function<Map<String,Object>,Map<String,Object>> attributesFunction = attributes -> {
             Collection<MultiStem> appeared = (Collection<MultiStem>)attributes.get(APPEARED);
+            totalDocumentsSeen.getAndIncrement();
             appeared.forEach(stem->{
                 AtomicLong docCnt = data.get(stem);
                 if(docCnt==null) {
