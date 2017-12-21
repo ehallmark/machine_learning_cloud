@@ -124,8 +124,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         for(int i = 0; i < N; i++) {
 
             VocabWord word = null;
-            int randInt = rand.nextInt(tokens.size()+total.get());
-            if(randInt < total.get()) {
+            boolean randBool = rand.nextBoolean();
+            if(randBool || tokens.size()==0) {
                 int r = rand.nextInt(total.get());
                 int s = 0;
                 for(int j = 0; j < contentCounts.length; j++) {
@@ -135,7 +135,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                         break;
                     }
                 }
-            } else {
+            }
+            if(!randBool || total.get()==0){
                 if(tokens.size()>0) {
                     word = new VocabWord(1, tokens.get(random.nextInt(tokens.size())));
                 }
@@ -148,14 +149,23 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         }
 
         Sequence<VocabWord> sequence = new Sequence<>(words);
-        if(assignee!=null && assignee.length()>0) {
-            VocabWord label = new VocabWord(1, assignee);
-            label.setSpecial(true);
-            label.setElementFrequency(1);
-            label.setSequencesCount(1);
-            sequence.setSequenceLabel(label);
-        }
 
+        List<VocabWord> labels = new ArrayList<>(2);
+        if(assignee!=null && assignee.length()>0) {
+            VocabWord assigneeLabel = new VocabWord(1, assignee);
+            assigneeLabel.setSpecial(true);
+            assigneeLabel.setElementFrequency(1);
+            assigneeLabel.setSequencesCount(1);
+            labels.add(assigneeLabel);
+        }
+        String asset = document.getLabels().get(0);
+        VocabWord assetLabel = new VocabWord(1,asset);
+        assetLabel.setSpecial(true);
+        assetLabel.setElementFrequency(1);
+        assetLabel.setSequencesCount(1);
+        labels.add(assetLabel);
+
+        sequence.setSequenceLabels(labels);
         return sequence;
     }
 

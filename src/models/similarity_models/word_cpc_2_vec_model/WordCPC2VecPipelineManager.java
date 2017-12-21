@@ -6,15 +6,17 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
 import lombok.Getter;
+import models.keyphrase_prediction.stages.Stage;
 import models.keyphrase_prediction.stages.Stage1;
+import models.text_streaming.ESTextDataSetIterator;
 import models.text_streaming.FileTextDataSetIterator;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
-import seeding.Database;
 import tools.ClassCodeHandler;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
 import java.util.*;
@@ -53,7 +55,13 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
 
     @Override
     public void rebuildPrerequisiteData() {
-
+        try {
+            System.out.println("Starting to pull latest text data from elasticsearch...");
+            ESTextDataSetIterator.main(null);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     protected void initModel(boolean forceRecreateModels) {
@@ -78,13 +86,18 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
 
     public synchronized Map<String,Collection<CPC>> getCPCMap() {
         if(cpcMap==null) {
-            Set<String> allAssets = new HashSet<>(Database.getAllPatentsAndApplications());
+            Map<String,String> patentToFiling = new AssetToFilingMap().getPatentDataMap();
+            Map<String,String> appToFiling = new AssetToFilingMap().getApplicationDataMap();
             getHierarchy();
-            Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
-            patentToCPCStringMap.putAll(new AssetToCPCMap().getApplicationDataMap());
-            patentToCPCStringMap.putAll(new AssetToCPCMap().getPatentDataMap());
-            cpcMap = patentToCPCStringMap.entrySet().parallelStream()
-                    .filter(e->allAssets.contains(e.getKey()))
+            Map<String,Set<String>> assetToCPCStringMap = new HashMap<>();
+            new AssetToCPCMap().getApplicationDataMap().entrySet().forEach(e->{
+                assetToCPCStringMap.put(appToFiling.get(e.getKey()),e.getValue());
+            });
+            new AssetToCPCMap().getPatentDataMap().entrySet().forEach(e->{
+                assetToCPCStringMap.put(patentToFiling.get(e.getKey()),e.getValue());
+            });
+            cpcMap = assetToCPCStringMap.entrySet().parallelStream()
+                    .filter(e->assetToCPCStringMap.containsKey(e.getKey()))
                     .collect(Collectors.toMap(e->e.getKey(), e->e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
                             .filter(cpc->cpc!=null)
                             .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
@@ -132,18 +145,19 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
 
 
     public static void main(String[] args) throws Exception {
-        Nd4j.setDataType(DataBuffer.Type.FLOAT);
-        final int maxSamples = 100;
-        boolean rebuildPrerequisites = false;
-        boolean rebuildDatasets = false;
+        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
+        final int maxSamples = 200;
+        boolean rebuildPrerequisites = true;
+        boolean rebuildDatasets = true;
         boolean runModels = true;
-        boolean forceRecreateModels = false;
+        boolean forceRecreateModels = true;
         boolean runPredictions = false;
+
+        rebuildPrerequisites = rebuildPrerequisites || !Stage.getTransformedDataFolder().exists();
+
         int nEpochs = 10;
         String modelName = LARGE_MODEL_NAME;
-
         WordCPC2VecPipelineManager pipelineManager = new WordCPC2VecPipelineManager(modelName,nEpochs,maxSamples);
-
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }
 

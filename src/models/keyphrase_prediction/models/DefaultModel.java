@@ -6,7 +6,7 @@ package models.keyphrase_prediction.models;
 public class DefaultModel extends Model {
     @Override
     public String getModelName() {
-        return "default_model";
+        return "keyphrase_vec_prediction";
     }
 
     public double getDefaultUpperBound() { return 1d; }
