@@ -125,6 +125,13 @@ public class AbstractLineChart extends ChartAttribute {
                     return collectTimelineData(groupPair.getSecond().getItemList(), attribute, SimilarPatentServer.humanAttributeFor(groupPair.getFirst()), min, max).stream();
                 }).collect(Collectors.toList());
                 // get actual min and max
+                long actualMin = seriesList.stream().mapToLong(series->series.getPointStart().longValue()).min().orElse(0);
+                long actualMax = seriesList.stream().mapToLong(series->series.getPointStart().longValue()+(MILLISECONDS_PER_DAY*series.getData().size())).max().orElse(0);
+                if(actualMin > 0 && actualMax > 0) {
+                    seriesList = seriesList.stream().map(series->{
+                        return updateSeries((SimpleSeries)series,actualMin,actualMax);
+                    }).collect(Collectors.toList());
+                }
                 return Stream.of(new LineChart(title,null, seriesList, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
 
             } else {
@@ -138,6 +145,22 @@ public class AbstractLineChart extends ChartAttribute {
     private static long millisecondsFromDate(LocalDate date) {
         ZonedDateTime zdt = LocalDateTime.of(date.getYear(),date.getMonth(),date.getDayOfMonth(),0,0,0).atZone(ZoneId.of("America/Los_Angeles"));
         return zdt.toInstant().toEpochMilli();
+    }
+
+    private static SimpleSeries updateSeries(SimpleSeries series, long min, long max) {
+        List<Number> data = series.getData();
+        int size = data.size();
+        for(long l = min; l < series.getPointStart().longValue(); l+=MILLISECONDS_PER_DAY) {
+            data.add(0,0);
+        }
+        for(long l = series.getPointStart().longValue() + (size * MILLISECONDS_PER_DAY); l < max; l+=MILLISECONDS_PER_DAY) {
+            data.add(0);
+        }
+        series.setPointStart(min);
+        series.setData(data);
+        System.out.println("Series min: "+series.getPointStart().longValue());
+        System.out.println("Series size: "+series.getData().size());
+        return series;
     }
 
     private List<Series<?>> collectTimelineData(Collection<Item> data, String attribute, String seriesName, LocalDate min, LocalDate max) {
@@ -187,7 +210,7 @@ public class AbstractLineChart extends ChartAttribute {
             // add date
             points.add(count);
             return points.stream();
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toCollection(ArrayList::new));
         while(max!=null && lastDate.get().isBefore(max)) {
             dataPoints.add(0);
             lastDate.set(lastDate.get().plusDays(1));
