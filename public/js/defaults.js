@@ -158,8 +158,7 @@ $(document).ready(function() {
                                         enabled: true,
                                         force: true,
                                         approximation: 'sum',
-                                        units: units,
-                                        groupPixelWidth: 2
+                                        units: units
                                     };
                                     currentChart.destroy();
                                     chartJson['series'] = originalSeriesData;
@@ -172,8 +171,7 @@ $(document).ready(function() {
                                     enabled: true,
                                     force: true,
                                     approximation: 'sum',
-                                    units: [['year',[1]]],
-                                    groupPixelWidth: 10
+                                    units: [['year',[1]]]
                                 };
                                 chartJson['chart']['events'] = {
                                     load: function() {

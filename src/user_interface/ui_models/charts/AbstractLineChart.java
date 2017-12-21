@@ -158,8 +158,6 @@ public class AbstractLineChart extends ChartAttribute {
         }
         series.setPointStart(min);
         series.setData(data);
-        System.out.println("Series min: "+series.getPointStart().longValue());
-        System.out.println("Series size: "+series.getData().size());
         return series;
     }
 
