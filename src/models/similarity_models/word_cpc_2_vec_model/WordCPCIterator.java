@@ -41,13 +41,15 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     private int maxSamples;
     private int resetCounter = 0;
     private AtomicBoolean finished = new AtomicBoolean(true);
-    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, int maxSamples) {
-        this(iterator,numEpochs,cpcMap,null,maxSamples);
+    private int minSequenceLength;
+    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, int minSequenceLength, int maxSamples) {
+        this(iterator,numEpochs,cpcMap,null,minSequenceLength,maxSamples);
     }
 
-    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, Function<Void,Void> afterEpochFunction, int maxSamples) {
+    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, Function<Void,Void> afterEpochFunction, int minSequenceLength, int maxSamples) {
         this.numEpochs=numEpochs;
         this.iterator=iterator;
+        this.minSequenceLength=minSequenceLength;
         this.maxSamples=maxSamples;
         this.cpcMap=cpcMap;
         this.queue = new ArrayBlockingQueue<>(1000);
@@ -87,7 +89,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         return sequence;
     }
 
-    private static Sequence<VocabWord> extractSequenceFromDocumentAndTokens(LabelledDocument document, List<String> tokens, Random random, int maxSamples) {
+    private static Sequence<VocabWord> extractSequenceFromDocumentAndTokens(LabelledDocument document, List<String> tokens, Random random, int minSequenceLength, int maxSamples) {
         if(document.getContent()==null||document.getLabels()==null||document.getContent().isEmpty() || document.getLabels().isEmpty()) {
             //System.out.println("Returning NULL because content or labels are null");
             return null;
@@ -109,7 +111,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
 
         final int N = Math.min((total.get()+tokens.size()),maxSamples);
 
-        if(N<=0) {
+        if(N<minSequenceLength) {
             //System.out.println("Returning NULL because N <= 0");
             return null;
         }
@@ -173,7 +175,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                             List<String> cpcs = document.getLabels().stream().flatMap(asset -> cpcMap.getOrDefault(asset, Collections.emptyList()).stream()).map(cpc -> cpc.getName()).collect(Collectors.toList());
 
                             // extract sequence
-                            Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document, cpcs, rand, maxSamples);
+                            Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document, cpcs, rand, minSequenceLength, maxSamples);
                             if (sequence != null) {
                                 //System.out.print("-");
                                 try {
