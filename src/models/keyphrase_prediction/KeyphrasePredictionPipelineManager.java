@@ -94,7 +94,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         final int maxSamples = 200;
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
-        boolean runModels = true;
+        boolean runModels = false;
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
         int nEpochs = 10;
