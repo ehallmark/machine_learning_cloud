@@ -135,7 +135,7 @@ public class ESTextDataSetIterator {
                 .setExplain(false)
                 .setFrom(0)
                 .setSize(10000)
-                .addStoredField("_parent")
+                //.addStoredField("_parent")
                 .addDocValueField("_parent")
                 .setFetchSource(new String[]{"_parent",Constants.ABSTRACT,Constants.INVENTION_TITLE, Constants.CLAIMS+"."+Constants.CLAIM},new String[]{})
                 .setQuery(query)
