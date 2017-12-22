@@ -84,7 +84,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
         }
 
 
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().minimumShouldMatch(getMinShouldMatchId());
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().minimumShouldMatch(this.minimumShouldMatch);
         for (String label : labels) {
             if(termQuery) {
                 boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.termQuery(preReq, label));
