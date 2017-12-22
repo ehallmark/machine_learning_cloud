@@ -7,7 +7,6 @@ import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.nd4j.linalg.primitives.Pair;
-import seeding.Database;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -51,7 +50,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         this.iterator=iterator;
         this.maxSamples=maxSamples;
         this.cpcMap=cpcMap;
-        this.queue = new ArrayBlockingQueue<>(500);
+        this.queue = new ArrayBlockingQueue<>(1000);
         this.vocabPass=true;
         this.afterEpochFunction=afterEpochFunction;
     }
@@ -115,11 +114,6 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
             return null;
         }
 
-        String assignee = document.getLabels().stream()
-                .map(asset-> Database.assigneeFor(asset))
-                .filter(a->a!=null)
-                .findFirst().orElse(null);
-
         List<VocabWord> words = new ArrayList<>(N);
         for(int i = 0; i < N; i++) {
 
@@ -148,25 +142,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
             }
         }
 
-        Sequence<VocabWord> sequence = new Sequence<>(words);
-
-        List<VocabWord> labels = new ArrayList<>(2);
-        if(assignee!=null && assignee.length()>0) {
-            VocabWord assigneeLabel = new VocabWord(1, assignee);
-            assigneeLabel.setSpecial(true);
-            assigneeLabel.setElementFrequency(1);
-            assigneeLabel.setSequencesCount(1);
-            labels.add(assigneeLabel);
-        }
-        String asset = document.getLabels().get(0);
-        VocabWord assetLabel = new VocabWord(1,asset);
-        assetLabel.setSpecial(true);
-        assetLabel.setElementFrequency(1);
-        assetLabel.setSequencesCount(1);
-        labels.add(assetLabel);
-
-        sequence.setSequenceLabels(labels);
-        return sequence;
+        return new Sequence<>(words);
     }
 
     @Override
