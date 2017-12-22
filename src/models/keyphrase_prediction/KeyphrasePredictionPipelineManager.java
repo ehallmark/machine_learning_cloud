@@ -101,7 +101,8 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         boolean runPredictions = false;
         int nEpochs = 10;
         String modelName = modelParams.getModelName();
-        String CPC2VecModelName = WordCPC2VecPipelineManager.LARGE_MODEL_NAME;
+
+        String CPC2VecModelName = WordCPC2VecPipelineManager.MODEL_NAME;
 
         WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(CPC2VecModelName,nEpochs,maxSamples);
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(wordCPC2VecPipelineManager);

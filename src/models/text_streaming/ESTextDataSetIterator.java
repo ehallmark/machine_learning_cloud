@@ -28,6 +28,7 @@ import java.util.stream.Stream;
  * Created by Evan on 11/19/2017.
  */
 public class ESTextDataSetIterator {
+    private static boolean debug = true;
     public static void main(String[] args) throws Exception {
         final int limit = -1;
         final int numTest = 20000;
@@ -105,6 +106,9 @@ public class ESTextDataSetIterator {
         String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString();
         List claims = ((List)hit.getSourceAsMap().getOrDefault(Constants.CLAIMS, Collections.emptyList()));
         String firstClaim = claims.isEmpty() ? "" : ((Map<String,Object>) claims.get(0)).getOrDefault(Constants.CLAIM, "").toString();
+        if(debug) {
+            System.out.println("Claim: "+firstClaim);
+        }
         return Stream.of(inventionTitle, abstractText, firstClaim).map(text->preProcess(text)).filter(s->s!=null&&s.length()>0).collect(Collectors.toList());
     }
 
@@ -141,6 +145,7 @@ public class ESTextDataSetIterator {
             //String asset = hit.getId();
             String filing = hit.getField("_parent").getValue();
             if(filing != null) {
+                if(debug)System.out.println("Filing: "+filing);
                 collectDocumentsFrom(hit).forEach(doc->{
                     consumer.accept(new Pair<>(filing, toList(doc)));
                 });
