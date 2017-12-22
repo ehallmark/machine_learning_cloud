@@ -136,7 +136,8 @@ public class ESTextDataSetIterator {
                 .setFrom(0)
                 .setSize(10000)
                 .addStoredField("_parent")
-                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE, Constants.CLAIMS+"."+Constants.CLAIM},new String[]{})
+                .addDocValueField("_parent")
+                .setFetchSource(new String[]{"_parent",Constants.ABSTRACT,Constants.INVENTION_TITLE, Constants.CLAIMS+"."+Constants.CLAIM},new String[]{})
                 .setQuery(query)
                 .addSort(SortBuilders.scoreSort());
 
@@ -144,8 +145,10 @@ public class ESTextDataSetIterator {
         Function<SearchHit,Item> transformer = hit -> {
             //String asset = hit.getId();
             String filing = hit.getField("_parent").getValue();
+            Object filingSource = hit.getSource().get("_parent");
+            if(debug)System.out.println("Filing field: "+filing);
+            if(debug)System.out.println("Filing source: "+filingSource);
             if(filing != null) {
-                if(debug)System.out.println("Filing: "+filing);
                 collectDocumentsFrom(hit).forEach(doc->{
                     consumer.accept(new Pair<>(filing, toList(doc)));
                 });
