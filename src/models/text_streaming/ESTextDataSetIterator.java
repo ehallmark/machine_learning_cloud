@@ -60,7 +60,6 @@ public class ESTextDataSetIterator {
         Consumer<Pair<String,Collection<String>>> consumer = pair -> {
             if(pair.getSecond().size()>=minWords) {
                 String line = pair.getFirst() + "," + String.join(" ", pair.getSecond())+"\n";
-                if(debug) System.out.println(line);
                 BufferedWriter writer;
                 boolean flush = false;
                 // pick reader
