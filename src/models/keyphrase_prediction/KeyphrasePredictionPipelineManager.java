@@ -19,7 +19,7 @@ import java.util.List;
  * Created by ehallmark on 12/21/17.
  */
 public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<WordCPCIterator,List<String>> {
-    private static final Model modelParams = new DefaultModel();
+    public static final Model modelParams = new DefaultModel();
     private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyphrase_prediction_model_predictions/predictions_map.jobj");

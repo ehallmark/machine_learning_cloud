@@ -6,6 +6,7 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
 import lombok.Getter;
+import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
 import models.keyphrase_prediction.stages.Stage;
 import models.keyphrase_prediction.stages.Stage1;
 import models.text_streaming.ESTextDataSetIterator;
@@ -59,7 +60,11 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     public void rebuildPrerequisiteData() {
         try {
             System.out.println("Starting to pull latest text data from elasticsearch...");
-            ESTextDataSetIterator.main(null);
+            //ESTextDataSetIterator.main(null);
+            System.out.println("Starting to build vocab map...");
+            Stage1 stage1 = new Stage1(KeyphrasePredictionPipelineManager.modelParams);
+            stage1.run(true);
+
         } catch(Exception e) {
             e.printStackTrace();
             System.exit(1);
