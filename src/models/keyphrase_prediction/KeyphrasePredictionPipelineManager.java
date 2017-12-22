@@ -92,6 +92,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         final int maxSamples = 200;
+        final int windowSize = 8;
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = false;
@@ -102,7 +103,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
         String CPC2VecModelName = WordCPC2VecPipelineManager.MODEL_NAME;
 
-        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(CPC2VecModelName,nEpochs,maxSamples);
+        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(CPC2VecModelName,nEpochs,windowSize,maxSamples);
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(wordCPC2VecPipelineManager);
 
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
