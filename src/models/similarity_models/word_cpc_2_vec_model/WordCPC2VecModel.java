@@ -123,7 +123,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
 
         WordCPCIterator iterator = pipelineManager.getDatasetManager().getTrainingIterator();
 
-        int windowSize = 6;
+        int windowSize = 8;
         int minWordFrequency = 30;
         double negativeSampling = -1;
         double sampling = 0.0001;
@@ -131,11 +131,11 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         //double minLearningRate = 0.001;
         double learningRate = 0.05;
         double minLearningRate = 0.001;
-        int testIterations = 1000000;
+        int testIterations = 5000000;
 
 
         AtomicInteger nTestsCounter = new AtomicInteger(0);
-        final int saveEveryNTests = 3;
+        final int saveEveryNTests = 5;
         Function<SequenceVectors<VocabWord>,Void> saveFunction = sequenceVectors->{
             if(nTestsCounter.getAndIncrement()%saveEveryNTests==saveEveryNTests-1) {
                 System.out.println("Saving...");
