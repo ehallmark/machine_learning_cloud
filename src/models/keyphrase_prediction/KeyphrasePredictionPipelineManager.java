@@ -38,9 +38,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     @Override
     public void rebuildPrerequisiteData() {
-        boolean rerunVocab = true;
-        boolean rerunFilters = true;
-        initStages(rerunVocab,rerunFilters);
+        initStages(false,true);
     }
 
     private void initStages(boolean rerunVocab, boolean rerunFilters) {
