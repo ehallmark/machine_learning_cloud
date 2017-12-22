@@ -10,7 +10,7 @@ public class DefaultModel extends Model {
     }
 
     public double getDefaultUpperBound() { return 1d; }
-    public double getDefaultLowerBound() { return 0.5d; }
+    public double getDefaultLowerBound() { return 0.75d; }
     public double getDefaultMinValue() { return Double.MIN_VALUE; }
     public int getMinDocFrequency() { return 3; };
     public double getMaxDocFrequencyRatio() { return 0.15; };
