@@ -284,9 +284,6 @@ public class DataSearcher {
             }
             System.out.println();
             return items;
-        } catch(Exception e) {
-            e.printStackTrace();
-            return null;
         } finally {
             if(scroll) {
                 lock.unlock();

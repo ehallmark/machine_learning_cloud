@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  * Created by Evan on 11/19/2017.
  */
 public class ESTextDataSetIterator {
-    private static boolean debug = true;
+    private static boolean debug = false;
     public static void main(String[] args) throws Exception {
         final int limit = -1;
         final int numTest = 20000;
@@ -54,7 +54,8 @@ public class ESTextDataSetIterator {
                 FileTextDataSetIterator.Type.TEST
         };
 
-        AtomicInteger textIdx = new AtomicInteger(0);
+        Random random = new Random(235);
+
         AtomicInteger cnt = new AtomicInteger(0);
         Consumer<Pair<String,Collection<String>>> consumer = pair -> {
             if(pair.getSecond().size()>=minWords) {
@@ -64,12 +65,13 @@ public class ESTextDataSetIterator {
                 boolean flush = false;
                 // pick reader
                 synchronized (ESTextDataSetIterator.class) {
-                    if (textIdx.get() < nonTrainingTypes.length) {
-                        FileTextDataSetIterator.Type type = nonTrainingTypes[textIdx.get()];
+                    int rand = random.nextInt(nonTrainingTypes.length+1);
+                    if(rand < nonTrainingTypes.length && typeToCountMap.containsKey(nonTrainingTypes[rand])) {
+                        FileTextDataSetIterator.Type type = nonTrainingTypes[rand];
                         AtomicInteger cntOfType = typeToCountMap.get(type);
                         if (cntOfType.getAndIncrement() >= numTest - 1) {
                             System.out.println("Finished dataset: " + type.toString());
-                            textIdx.getAndIncrement();
+                            typeToCountMap.remove(type);
                             flush = true;
                         }
                         writer = typeToWriterMap.get(type);
@@ -136,9 +138,8 @@ public class ESTextDataSetIterator {
                 .setExplain(false)
                 .setFrom(0)
                 .setSize(10000)
-                //.addStoredField("_parent")
                 .addDocValueField("_parent")
-                .setFetchSource(new String[]{"_parent",Constants.ABSTRACT,Constants.INVENTION_TITLE, Constants.CLAIMS+"."+Constants.CLAIM},new String[]{})
+                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE, Constants.CLAIMS+"."+Constants.CLAIM},new String[]{})
                 .setQuery(query)
                 .addSort(SortBuilders.scoreSort());
 
@@ -146,9 +147,6 @@ public class ESTextDataSetIterator {
         Function<SearchHit,Item> transformer = hit -> {
             //String asset = hit.getId();
             String filing = hit.getField("_parent").getValue();
-            Object filingSource = hit.getSource().get("_parent");
-            if(debug)System.out.println("Filing field: "+filing);
-            if(debug)System.out.println("Filing source: "+filingSource);
             if(filing != null) {
                 collectDocumentsFrom(hit).forEach(doc->{
                     consumer.accept(new Pair<>(filing, toList(doc)));
