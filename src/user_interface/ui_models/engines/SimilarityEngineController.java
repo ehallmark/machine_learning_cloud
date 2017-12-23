@@ -147,7 +147,7 @@ public class SimilarityEngineController {
         if(terms.size()>0) {
             scope.parallelStream().forEach(item->{
                 terms.forEach(term->{
-                    item.addData(term.getFullName(),term.termsFor(item.getName()));
+                    item.addData(term.getFullName(),String.join(DataSearcher.ARRAY_SEPARATOR, term.termsFor(item.getName())));
                 });
             });
         }
