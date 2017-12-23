@@ -500,7 +500,8 @@ $(document).ready(function() {
     $('.dataset-multiselect').select2({
         minimumResultsForSearch: 5,
         width: "100%",
-    }).on('select2:opening',function(e) {
+    })
+    $('.dataset-multiselect').on('select2:opening',function(e) {
         createDatasetSelect2(this);
         return true;
     });
@@ -517,10 +518,10 @@ $(document).ready(function() {
         })
         $this.val(previousVal).trigger('change');
         $this.select2('open');
-        $this.on('select2:opening', function(e) {
-            createDatasetSelect2(elem);
-            return true;
-        });
+        //$this.on('select2:opening', function(e) {
+        //    createDatasetSelect2(elem);
+        //    return true;
+        //});
         return $this;
     };
 
