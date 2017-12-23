@@ -12,7 +12,6 @@ import java.util.Map;
  */
 public class CreateDatasetIndex {
     public static void main(String[] args) {
-        SimilarPatentServer.initialize(true,false);
         TransportClient client = MyClient.get();
         CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(DatasetIndex.INDEX);
 
