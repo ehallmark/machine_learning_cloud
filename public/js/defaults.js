@@ -481,9 +481,10 @@ $(document).ready(function() {
         return data.map(function(obj) {
             var node = $tree.get_node(obj.id);
             var preName="";
-            $.each(node.parents,function() {
-                preName+=this.toString()+"/";
-            });
+            for(var i = node.parents.length-2; i>=0; i--) {
+                var parent = $tree.get_node(node.parents.get(i));
+                preName+=parent.text+"/";
+            }
             if(node.type==='file'&&node.data.hasOwnProperty('user')&&node.data.hasOwnProperty('file')) {
                 return {
                     id: node.data.user.concat(node.data.file.toString()),
