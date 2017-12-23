@@ -475,10 +475,10 @@ $(document).ready(function() {
 
     var getDatasetSelectData = function() {
         var $tree = $('#datasets-tree').jstree(true);
-        return $($tree.get_json($tree, {
+        var data = $tree.get_json('#', {
             flat: true
-        }))
-        .map(function(index, value) {
+        });
+        return data.map(function(index, value) {
             var node = $tree.get_node(this.id);
             var lvl = node.parents.length;
             var idx = index;
