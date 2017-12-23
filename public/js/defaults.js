@@ -510,7 +510,7 @@ $(document).ready(function() {
         $(this).on('select2:opening',function(e) {
             createDatasetSelect2(this);
             return false;
-        }
+        });
     });
 
     var createDatasetSelect2 = function(elem) {
