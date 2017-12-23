@@ -502,14 +502,14 @@ $(document).ready(function() {
     })
     $('.dataset-multiselect').on('select2:opening',function(e) {
         createDatasetSelect2(this);
-        return false;
+        return true;
     });
 
     $('.dataset-multiselect').on('select2:open',function(e) {
         $(this).off('select2:opening');
         $(this).on('select2:opening',function(e) {
             createDatasetSelect2(this);
-            return false;
+            return true;
         });
     });
 
@@ -529,7 +529,7 @@ $(document).ready(function() {
         $this.on('select2:opening', function(e) {
             return true;
         });
-        $this.trigger('select2:open');
+        $this.select2('open');
         return $this;
     };
 
