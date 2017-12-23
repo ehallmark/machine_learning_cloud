@@ -482,7 +482,7 @@ $(document).ready(function() {
             var node = $tree.get_node(obj.id);
             var preName="";
             for(var i = node.parents.length-2; i>=0; i--) {
-                var parent = $tree.get_node(node.parents.get(i));
+                var parent = $tree.get_node(node.parents[i]);
                 preName+=parent.text+"/";
             }
             if(node.type==='file'&&node.data.hasOwnProperty('user')&&node.data.hasOwnProperty('file')) {
