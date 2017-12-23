@@ -1273,6 +1273,17 @@ public class SimilarPatentServer {
         return new Gson().toJson(responseMap);
     }
 
+    public static String datasetNameFrom(String user, String file) {
+        try {
+            Integer.valueOf(file);
+        } catch(Exception e) {
+            return "";
+        }
+
+        Map<String,Object> data = getMapFromFile(new File(Constants.USER_DATASET_FOLDER+user+"/"+file),true);
+        return data.getOrDefault("name","").toString();
+    }
+
     private static Object handleGetForm(Request req, Response res, String baseFolder, boolean dataset) {
         String file = req.queryParams("file");
         boolean defaultFile = Boolean.valueOf(req.queryParamOrDefault("defaultFile","false"));

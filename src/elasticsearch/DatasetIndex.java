@@ -24,15 +24,15 @@ public class DatasetIndex {
     public static void index(String user, String id, List<String> data) {
         Map<String,Object> dataMap = new HashMap<>(2);
         dataMap.put(DATA_FIELD,data);
-        client.prepareIndex(INDEX,TYPE,user+id).setSource(dataMap).get();
+        client.prepareIndex(INDEX,TYPE,id+","+user).setSource(dataMap).get();
     }
 
     public static void delete(String user, String id) {
-        client.prepareDelete(INDEX,TYPE,user+id).get();
+        client.prepareDelete(INDEX,TYPE,id+","+user).get();
     }
 
-    public static List<String> get(String user, String id) {
-        SearchResponse res = client.prepareSearch(INDEX).setTypes(TYPE).setFetchSource(new String[]{DATA_FIELD},new String[]{}).setSize(1).setFrom(0).setQuery(QueryBuilders.idsQuery(TYPE).addIds(user+id)).get();
+    public static List<String> get(String label) {
+        SearchResponse res = client.prepareSearch(INDEX).setTypes(TYPE).setFetchSource(new String[]{DATA_FIELD},new String[]{}).setSize(1).setFrom(0).setQuery(QueryBuilders.idsQuery(TYPE).addIds(label)).get();
         if(res!=null) {
             SearchHits searchHits = res.getHits();
             if(searchHits!=null) {
@@ -43,5 +43,8 @@ public class DatasetIndex {
             }
         }
         return Collections.emptyList();
+    }
+    public static List<String> get(String user, String id) {
+        return get(id+","+user);
     }
 }

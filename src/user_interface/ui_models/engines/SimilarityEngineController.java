@@ -8,6 +8,7 @@ import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.*;
+import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
@@ -134,6 +135,23 @@ public class SimilarityEngineController {
         boolean filterNestedObjects = extractBool(req, FILTER_NESTED_OBJECTS_FIELD);
 
         List<Item> scope = DataSearcher.searchForAssets(topLevelAttributes, preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap(), useHighlighter, filterNestedObjects);
+
+        List<TermsLookupAttribute> terms = Collections.synchronizedList(new ArrayList<>());
+        topLevelAttributes.forEach(attr->{
+            if(attr instanceof TermsLookupAttribute) {
+                TermsLookupAttribute termsLookupAttribute = (TermsLookupAttribute)attr;
+                terms.add(termsLookupAttribute);
+            }
+        });
+
+        if(terms.size()>0) {
+            scope.parallelStream().forEach(item->{
+                terms.forEach(term->{
+                    item.addData(term.getFullName(),term.termsFor(item.getName()));
+                });
+            });
+        }
+
         System.out.println("Elasticsearch found: "+scope.size()+ " assets");
 
         portfolioList = new PortfolioList(scope);
