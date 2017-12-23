@@ -534,7 +534,7 @@ $(document).ready(function() {
     };
 
     $('.single-select2').select2({
-        minimumResultsForSearch: 5,
+        minimumResultsForSearch: 10,
         width: "100%"
     });
 
