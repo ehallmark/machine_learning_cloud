@@ -885,7 +885,7 @@ public class SimilarPatentServer {
 
         post(GET_TEMPLATE_URL, (req, res) -> {
             authorize(req,res);
-            return handleGetForm(req,res,Constants.USER_TEMPLATE_FOLDER);
+            return handleGetForm(req,res,Constants.USER_TEMPLATE_FOLDER,false);
         });
 
         post(DELETE_TEMPLATE_URL, (req, res) -> {
@@ -918,7 +918,7 @@ public class SimilarPatentServer {
 
         post(GET_DATASET_URL, (req, res) -> {
             authorize(req,res);
-            return handleGetForm(req,res,Constants.USER_DATASET_FOLDER);
+            return handleGetForm(req,res,Constants.USER_DATASET_FOLDER,true);
         });
 
         post(DELETE_DATASET_URL, (req, res) -> {
@@ -1271,7 +1271,7 @@ public class SimilarPatentServer {
         return new Gson().toJson(responseMap);
     }
 
-    private static Object handleGetForm(Request req, Response res, String baseFolder) {
+    private static Object handleGetForm(Request req, Response res, String baseFolder, boolean dataset) {
         String file = req.queryParams("file");
         boolean defaultFile = Boolean.valueOf(req.queryParamOrDefault("defaultFile","false"));
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
@@ -1293,6 +1293,12 @@ public class SimilarPatentServer {
         }
 
         Map<String,Object> data = getMapFromFile(new File(filename),true);
+
+        if(dataset) {
+            String username = shared ? SHARED_USER : user;
+            data.put("assets", DatasetIndex.get(username,file));
+        }
+
         return new Gson().toJson(data);
     }
 
