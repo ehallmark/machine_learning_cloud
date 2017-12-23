@@ -478,8 +478,8 @@ $(document).ready(function() {
         var data = $tree.get_json('#', {
             flat: true
         });
-        return data.map(function(index, value) {
-            var node = $tree.get_node(this.id);
+        return data.map(function(obj) {
+            var node = $tree.get_node(obj.id);
             var lvl = node.parents.length;
             var idx = index;
             var preName="";
