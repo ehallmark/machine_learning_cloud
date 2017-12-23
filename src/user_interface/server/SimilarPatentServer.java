@@ -1433,6 +1433,7 @@ public class SimilarPatentServer {
                 }
                 message = "Saved sucessfully.";
                 responseMap.put("file",file.getName());
+                responseMap.put("user",username);
 
             } else {
                 message = "Unable to find user.";
@@ -1805,13 +1806,13 @@ public class SimilarPatentServer {
                 if (name != null && searchObjectsMap != null && attributesMap != null && chartsMap != null && filtersMap != null) {
 
                     // create template
-                    template = new FormTemplate(file, name.toString(), searchObjectsMap.toString(), attributesMap.toString(), filtersMap.toString(), chartsMap.toString(), highlightMap.toString());
+                    template = new FormTemplate(file, username, name.toString(), searchObjectsMap.toString(), attributesMap.toString(), filtersMap.toString(), chartsMap.toString(), highlightMap.toString());
 
 
                 } else template = null;
             } else {
                 if (name != null) {
-                    template = new FormTemplate(file, name.toString());
+                    template = new FormTemplate(file, username, name.toString());
                 } else template = null;
             }
             return template;
@@ -1820,29 +1821,16 @@ public class SimilarPatentServer {
         return getDataForUser(username,deletable,rootName,Constants.USER_TEMPLATE_FOLDER,loadData,formTemplateFunction);
     }
 
-    public static Tag getDatasetsForUser(String username, boolean deletable, String rootName, boolean loadData) {
+    public static Tag getDatasetsForUser(String username, boolean deletable, String rootName) {
         Function2<Map<String,Object>,File,FormTemplate> formTemplateFunction = (templateMap,file) -> {
             FormTemplate template;
             Object name = templateMap.get("name");
-            if (loadData) {
-                Object assets = templateMap.get("assets");
-
-                if (name != null && assets != null) {
-
-                    // create template
-                    template = new FormTemplate(file, name.toString(), (String[])assets);
-
-
-                } else template = null;
-            } else {
-                if (name != null) {
-                    template = new FormTemplate(file, name.toString());
-                } else template = null;
-            }
+            if (name != null) {
+                template = new FormTemplate(file, username, name.toString());
+            } else template = null;
             return template;
         };
-
-        return getDataForUser(username,deletable,rootName,Constants.USER_DATASET_FOLDER,loadData,formTemplateFunction);
+        return getDataForUser(username,deletable,rootName,Constants.USER_DATASET_FOLDER,false,formTemplateFunction);
     }
 
     public static Tag getDataForUser(String username, boolean deletable, String rootName, String baseFolder, boolean loadData, Function2<Map<String,Object>,File,FormTemplate> formTemplateFunction) {
@@ -1896,6 +1884,7 @@ public class SimilarPatentServer {
                                             .attr("data-deletable", String.valueOf(deletable))
                                             .attr("data-jstree","{\"type\":\"file\"}")
                                             .attr("data-name",template.getName())
+                                            .attr("data-user",template.getUser())
                                             .attr("data-file", template.getFile().getName());
                                     if(loadData) {
                                         tag = tag
@@ -1974,9 +1963,9 @@ public class SimilarPatentServer {
 
                                                                 ),div().withClass("tab-pane").attr("role","tabpanel").withId("datasets-tree").with(
                                                                         ul().with(
-                                                                                getDatasetsForUser(SUPER_USER,false,"Default Datasets",false),
-                                                                                getDatasetsForUser(req.session().attribute("username"),true,"My Datasets",false),
-                                                                                getDatasetsForUser(SHARED_USER,true, "Shared Datasets",false)
+                                                                                getDatasetsForUser(SUPER_USER,false,"Preset Datasets"),
+                                                                                getDatasetsForUser(req.session().attribute("username"),true,"My Datasets"),
+                                                                                getDatasetsForUser(SHARED_USER,true, "Shared Datasets")
                                                                         )
                                                                 ),div().withId("new-dataset-from-asset-list-overlay").with(
                                                                         div().withId("new-dataset-from-asset-list-inside").with(

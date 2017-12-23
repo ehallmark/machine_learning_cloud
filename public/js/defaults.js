@@ -480,8 +480,6 @@ $(document).ready(function() {
         });
         return data.map(function(obj) {
             var node = $tree.get_node(obj.id);
-            var lvl = node.parents.length;
-            var idx = index;
             var preName="";
             $.each(node.parents,function() {
                 preName+=this.toString()+"/";

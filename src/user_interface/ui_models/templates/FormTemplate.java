@@ -23,9 +23,12 @@ public class FormTemplate {
     @Getter
     protected File file;
     @Getter
+    protected String user;
+    @Getter
     protected String[] assets;
-    public FormTemplate(File file, String name, String searchOptionsMap, String attributesMap, String filtersMap, String chartsMap, String highlightMap) {
+    public FormTemplate(File file, String user, String name, String searchOptionsMap, String attributesMap, String filtersMap, String chartsMap, String highlightMap) {
         this.file=file;
+        this.user=user;
         this.name=name;
         this.searchOptionsMap=searchOptionsMap;
         this.attributesMap=attributesMap;
@@ -34,14 +37,10 @@ public class FormTemplate {
         this.highlightMap=highlightMap;
     }
 
-    public FormTemplate(File file, String name) {
+    public FormTemplate(File file, String user, String name) {
         this.file=file;
+        this.user=user;
         this.name=name;
     }
 
-    public FormTemplate(File file, String name, String[] assets) {
-        this.file=file;
-        this.assets=assets;
-        this.name=name;
-    }
 }
