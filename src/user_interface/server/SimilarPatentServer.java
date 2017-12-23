@@ -428,11 +428,12 @@ public class SimilarPatentServer {
         List<AbstractAttribute> discreteAttrs = attributes.stream().filter(attr->attr.getType().equals("keyword")||(attr.getType().equals("text") && attr.getNestedFields()!=null)).collect(Collectors.toList());
         List<AbstractAttribute> dateAttrs = attributes.stream().filter(attr->attr.getType().equals("date")).collect(Collectors.toList());
         List<AbstractAttribute> rangeAttrs = attributes.stream().filter(attr->attr instanceof RangeAttribute).collect(Collectors.toList());
+        List<AbstractAttribute> numericAttrs = attributes.stream().filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Double)||attr.getFieldType().equals(AbstractFilter.FieldType.Integer)).collect(Collectors.toList());
 
         chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs)));
         chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart(groupAttributesToNewParents(rangeAttrs),duplicateAttributes(discreteAttrs)));
         chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart(groupAttributesToNewParents(dateAttrs),duplicateAttributes(discreteAttrs)));
-        chartModelMap.put(Constants.GROUPED_TABLE_CHART, new GroupedTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs)));
+        chartModelMap.put(Constants.GROUPED_TABLE_CHART, new GroupedTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(numericAttrs)));
 
         allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
             @Override
@@ -2021,11 +2022,11 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag technologySelectWithCustomClass(String name, String id, String clazz, Map<String,List<String>> orderedClassifications, boolean multiple) {
+    public static Tag technologySelectWithCustomClass(String name, String id, String clazz, Map<String,List<String>> orderedClassifications, String defaultOption) {
         ContainerTag select = select().attr("style","width:100%;").withName(name).withId(id).withClass(clazz);
-        if(multiple) select = select.attr("multiple","multiple");
+        if(defaultOption==null) select = select.attr("multiple","multiple");
         else {
-            select = select.with(option("No Group (Default)").withValue(""));
+            select = select.with(option(defaultOption).withValue(""));
         }
         return select
                 .with(

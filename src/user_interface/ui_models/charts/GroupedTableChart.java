@@ -25,6 +25,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static j2html.TagCreator.div;
+import static j2html.TagCreator.option;
 import static j2html.TagCreator.select;
 
 /**
@@ -36,8 +37,10 @@ public class GroupedTableChart extends TableAttribute {
     }
     private String collectByAttrName;
     private CollectorType collectorType;
-    public GroupedTableChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupedByAttrs) {
+    private Collection<AbstractAttribute> numericAttrs;
+    public GroupedTableChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupedByAttrs,  Collection<AbstractAttribute> numericAttrs) {
         super(attributes, groupedByAttrs, Constants.GROUPED_TABLE_CHART);
+        this.numericAttrs=numericAttrs;
     }
 
     @Override
@@ -66,16 +69,22 @@ public class GroupedTableChart extends TableAttribute {
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+        List<AbstractAttribute> availableGroups = numericAttrs.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
+        Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
+                .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
+
         Function2<Tag,Tag,Tag> combineTagFunction = (tag1, tag2) -> div().with(tag1,tag2);
         Function<String,Tag> additionalTagFunction = attrName -> {
             return div().withClass("row").with(
                     div().withClass("col-8").with(
-                            select().withClass("single-select2").withName(getCollectByAttrFieldName(null)).withId(getCollectByAttrFieldName(null)).with(
-
-                            )
+                            SimilarPatentServer.technologySelectWithCustomClass(getCollectByAttrFieldName(null),getCollectByAttrFieldName(null),"single-select2",groupedGroupAttrs,"")
                     ),div().withClass("col-4").with(
                             select().withClass("single-select2").withName(getCollectTypeFieldName(null)).withId(getCollectByAttrFieldName(null)).with(
-
+                                    option(CollectorType.Count.toString()).attr("selected","selected").withValue(CollectorType.Count.toString()),
+                                    option(CollectorType.Sum.toString()).withValue(CollectorType.Sum.toString()),
+                                    option(CollectorType.Average.toString()).withValue(CollectorType.Average.toString()),
+                                    option(CollectorType.Max.toString()).withValue(CollectorType.Max.toString()),
+                                    option(CollectorType.Min.toString()).withValue(CollectorType.Min.toString())
                             )
                     )
             );
@@ -85,7 +94,7 @@ public class GroupedTableChart extends TableAttribute {
 
     @Override
     public TableAttribute dup() {
-        return new GroupedTableChart(attributes, groupByAttributes);
+        return new GroupedTableChart(attributes, groupByAttributes,numericAttrs);
     }
 
     @Override

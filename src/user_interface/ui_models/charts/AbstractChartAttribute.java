@@ -147,7 +147,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 div().withClass("col-9").with(
                         label("Group By").attr("style","width: 100%;").with(
                                 br(),
-                                SimilarPatentServer.technologySelectWithCustomClass(id,id,clazz, groupedGroupAttrs,false)
+                                SimilarPatentServer.technologySelectWithCustomClass(id,id,clazz, groupedGroupAttrs,"No Group (default)")
                         )
                 ),div().withClass("col-3").with(
                         label("Max Groups").attr("style","width: 100%;").with(
