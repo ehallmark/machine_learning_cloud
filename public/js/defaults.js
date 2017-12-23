@@ -516,12 +516,13 @@ $(document).ready(function() {
             width: '100%',
             data: getDatasetSelectData()
         })
+        $this.off('select2:opening');
         $this.val(previousVal).trigger('change');
         $this.select2('open');
-        //$this.on('select2:opening', function(e) {
-        //    createDatasetSelect2(elem);
-        //    return true;
-        //});
+        $this.on('select2:opening', function(e) {
+            createDatasetSelect2(elem);
+            return true;
+        });
         return $this;
     };
 
