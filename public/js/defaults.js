@@ -518,10 +518,11 @@ $(document).ready(function() {
         })
         $this.off('select2:opening');
         $this.val(previousVal).trigger('change');
-        $this.select2('open');
-        $this.on('select2:opening', function(e) {
-            createDatasetSelect2(elem);
-            return false;
+        $this.select2('open').done(function() {
+            $this.on('select2:opening', function(e) {
+                createDatasetSelect2(elem);
+                return false;
+            });
         });
         return $this;
     };
