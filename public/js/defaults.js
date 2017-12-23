@@ -970,10 +970,11 @@ var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,cre
                 }
                 if(skipSuccessFunction) return;
 
-                if(!data.hasOwnProperty('file')) {
+                if(!data.hasOwnProperty('file')&&!data.hasOwnProperty('user')) {
                     alert('Error saving template: '+data.message);
                 } else {
                     preData['file']=data['file'];
+                    preData['user']=data['user'];
                     var newData = {
                         'text': name,
                         'type': 'file',
