@@ -28,7 +28,8 @@ import java.util.stream.Collectors;
 public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIterator,INDArray> {
     public static final String SMALL_MODEL_NAME = "wordcpc2vec_model";
     public static final String LARGE_MODEL_NAME = "wordcpc2vec_model_large";
-    public static final String MODEL_NAME = "wordcpc2vec_filing_model";
+    public static final String MODEL_NAME = "wordcpc2vec2_model";
+    public static final String OLD_MODEL_NAME = "wordcpc2vec_filing_model";
     private static final int SMALL_VECTOR_SIZE = 32;
     private static final int LARGE_VECTOR_SIZE = 128;
     public static final Map<String,Integer> modelNameToVectorSizeMap = Collections.synchronizedMap(new HashMap<>());
@@ -155,8 +156,8 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
 
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
-        final int maxSamples = 200;
-        final int windowSize = 8;
+        final int maxSamples = 300;
+        final int windowSize = 4;
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;
