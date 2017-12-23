@@ -65,7 +65,7 @@ public class DatasetAttribute extends TermsLookupAttribute {
 
     private Pair<String,Set<String>> createDatasetFor(String label) {
         // need to get latest folder name for this dataset and assets
-        String[] tmp = label.split(",",2);
+        String[] tmp = label.split("_",2);
         if(tmp.length==2) {
             List<String> assets = DatasetIndex.get(label);
             if(assets == null) assets = Collections.emptyList();

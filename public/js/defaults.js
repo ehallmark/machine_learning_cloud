@@ -487,7 +487,7 @@ $(document).ready(function() {
             }
             if(node.type==='file'&&node.data.hasOwnProperty('user')&&node.data.hasOwnProperty('file')) {
                 return {
-                    id: node.data.file.toString().concat(",").concat(node.data.user.toString()),
+                    id: node.data.file.toString().concat("_").concat(node.data.user.toString()),
                     text: preName.concat(node.text)
                 };
             } else {

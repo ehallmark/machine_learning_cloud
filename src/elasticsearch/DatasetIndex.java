@@ -24,11 +24,11 @@ public class DatasetIndex {
     public static void index(String user, String id, List<String> data) {
         Map<String,Object> dataMap = new HashMap<>(2);
         dataMap.put(DATA_FIELD,data);
-        client.prepareIndex(INDEX,TYPE,id+","+user).setSource(dataMap).get();
+        client.prepareIndex(INDEX,TYPE,id+"_"+user).setSource(dataMap).get();
     }
 
     public static void delete(String user, String id) {
-        client.prepareDelete(INDEX,TYPE,id+","+user).get();
+        client.prepareDelete(INDEX,TYPE,id+"_"+user).get();
     }
 
     public static List<String> get(String label) {
@@ -45,6 +45,6 @@ public class DatasetIndex {
         return Collections.emptyList();
     }
     public static List<String> get(String user, String id) {
-        return get(id+","+user);
+        return get(id+"_"+user);
     }
 }
