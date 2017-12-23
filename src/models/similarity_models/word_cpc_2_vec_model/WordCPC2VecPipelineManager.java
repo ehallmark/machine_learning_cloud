@@ -165,7 +165,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
 
         rebuildPrerequisites = rebuildPrerequisites || !Stage.getTransformedDataFolder().exists();
 
-        int nEpochs = 2; //10;
+        int nEpochs = 5; //10;
         String modelName = MODEL_NAME;
         WordCPC2VecPipelineManager pipelineManager = new WordCPC2VecPipelineManager(modelName,nEpochs,windowSize,maxSamples);
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
