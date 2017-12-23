@@ -505,6 +505,14 @@ $(document).ready(function() {
         return false;
     });
 
+    $('.dataset-multiselect').on('select2:open',function(e) {
+        $(this).off('select2:opening');
+        $(this).on('select2:opening',function(e) {
+            createDatasetSelect2(this);
+            return false;
+        }
+    });
+
     var createDatasetSelect2 = function(elem) {
         // get datasets
         var $this = $(elem);
@@ -517,6 +525,10 @@ $(document).ready(function() {
             data: getDatasetSelectData()
         })
         $this.val(previousVal).trigger('change');
+        $this.off('select2:opening');
+        $this.on('select2:opening', function(e) {
+            return true;
+        });
         $this.trigger('select2:open');
         return $this;
     };
