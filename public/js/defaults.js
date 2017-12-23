@@ -509,6 +509,7 @@ $(document).ready(function() {
         var $this = $(elem);
         var previousVal = $this.val();
         $this.select2('destroy');
+        $this.empty();
         $this.select2({
             minimumResultsForSearch: 5,
             width: '100%',
