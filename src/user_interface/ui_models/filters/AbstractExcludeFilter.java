@@ -4,7 +4,9 @@ import lombok.NonNull;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.indices.TermsLookup;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +47,12 @@ public class AbstractExcludeFilter extends AbstractIncludeFilter {
         }
 
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        if(attribute instanceof TermsLookupAttribute) {
+            TermsLookupAttribute termsLookupAttribute = (TermsLookupAttribute)attribute;
+            for(String label : labels) {
+                boolQueryBuilder = boolQueryBuilder.mustNot(QueryBuilders.termsLookupQuery(termsLookupAttribute.getTermsName(), new TermsLookup(termsLookupAttribute.getTermsIndex(), termsLookupAttribute.getTermsType(), label, termsLookupAttribute.getTermsPath())));
+            }
+        }
         if(termQuery) {
             boolQueryBuilder = boolQueryBuilder.mustNot(QueryBuilders.termsQuery(preReq, labels));
         } else {

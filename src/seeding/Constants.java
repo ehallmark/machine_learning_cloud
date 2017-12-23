@@ -30,6 +30,7 @@ public class Constants {
 	public static final String COMPDB_DEAL_ID = "compDBDealId";
 	public static final String SMALL = "small";
 	public static final String MICRO = "micro";
+	public static final String DATASET_NAME = "datasetName";
 	public static final String TEXT_SIMILARITY = "textSimilarity";
 	public static final String LARGE = "large";
 	public static final String MINIMUM_SHOULD_MATCH_SUFFIX = "_minShouldMatch";

@@ -1,7 +1,6 @@
 package elasticsearch;
 
 import com.google.gson.Gson;
-import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import seeding.Constants;
@@ -10,6 +9,7 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
 import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
+import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -79,12 +79,16 @@ public class CreatePatentDBIndex {
     private static void recursiveHelper(AbstractAttribute attr, Map<String,Object> mapping) {
         if(attr instanceof NestedAttribute) {
             Map<String,Object> nestedMapping = new HashMap<>();
-            mapping.put(attr.getName(),typeMap(attr.getType(),nestedMapping,attr.getNestedFields()));
+            if(attr.getType()!=null) {
+                mapping.put(attr.getName(), typeMap(attr.getType(), nestedMapping, attr.getNestedFields()));
+            }
             ((NestedAttribute) attr).getAttributes().forEach(nestedAttr->{
                 recursiveHelper(nestedAttr,nestedMapping);
             });
         } else {
-            mapping.put(attr.getName(),typeMap(attr.getType(),null, attr.getNestedFields()));
+            if(attr.getType()!=null && !(attr instanceof TermsLookupAttribute)) {
+                mapping.put(attr.getName(), typeMap(attr.getType(), null, attr.getNestedFields()));
+            }
         }
     }
 }

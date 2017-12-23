@@ -8,10 +8,12 @@ import lombok.Setter;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.indices.TermsLookup;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 
 import java.util.ArrayList;
@@ -86,7 +88,10 @@ public class AbstractIncludeFilter extends AbstractFilter {
 
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().minimumShouldMatch(this.minimumShouldMatch);
         for (String label : labels) {
-            if(termQuery) {
+            if(attribute instanceof TermsLookupAttribute) {
+                TermsLookupAttribute termsLookupAttribute = (TermsLookupAttribute)attribute;
+                boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.termsLookupQuery(termsLookupAttribute.getTermsName(),new TermsLookup(termsLookupAttribute.getTermsIndex(),termsLookupAttribute.getTermsType(),label,termsLookupAttribute.getTermsPath())));
+            } else if(termQuery) {
                 boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.termQuery(preReq, label));
             } else {
                 boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.matchPhraseQuery(preReq, label));
@@ -139,9 +144,16 @@ public class AbstractIncludeFilter extends AbstractFilter {
                         ajaxMultiSelect(getName(), ((AjaxMultiselect) attribute).ajaxUrl(), getId())
                 );
             } else {
-                tag= div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(getName(), getId(), clazz, getAllValues())
-                );
+                if(attribute instanceof TermsLookupAttribute) {
+                    TermsLookupAttribute termsLookupAttribute = (TermsLookupAttribute)attribute;
+                    tag = div().with(
+                            termsLookupAttribute.getFilterTag(getName(),getId())
+                    );
+                } else {
+                    tag = div().with(
+                            SimilarPatentServer.technologySelectWithCustomClass(getName(), getId(), clazz, getAllValues())
+                    );
+                }
             }
         }
         // check if include

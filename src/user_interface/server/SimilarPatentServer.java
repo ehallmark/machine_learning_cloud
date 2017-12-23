@@ -7,6 +7,7 @@ import data_pipeline.helpers.Function2;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
+import elasticsearch.DatasetIndex;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
@@ -36,6 +37,7 @@ import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.BackwardCitationAttribute;
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.RelatedAssetsAttribute;
+import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 import user_interface.ui_models.attributes.script_attributes.*;
 import user_interface.ui_models.charts.*;
@@ -162,6 +164,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("AI Value", Constants.AI_VALUE);
             humanAttrToJavaAttrMap.put("Reinstated", Constants.REINSTATED);
             humanAttrToJavaAttrMap.put("Result Type", Constants.DOC_TYPE);
+            humanAttrToJavaAttrMap.put("Dataset Name", Constants.DATASET_NAME);
             humanAttrToJavaAttrMap.put("Expired", Constants.EXPIRED);
             humanAttrToJavaAttrMap.put("Technology", Constants.COMPDB_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Deal ID", Constants.COMPDB_DEAL_ID);
@@ -513,6 +516,7 @@ public class SimilarPatentServer {
 
     public static void loadAttributes(boolean loadHidden) {
         if(attributesMap.isEmpty()) {
+            attributesMap.put(Constants.DATASET_NAME, new DatasetAttribute());
             attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
             attributesMap.put(Constants.TECHNOLOGY, TechnologyAttribute.getOrCreate(new NewestModel()));
@@ -886,17 +890,30 @@ public class SimilarPatentServer {
 
         post(DELETE_TEMPLATE_URL, (req, res) -> {
             authorize(req,res);
-            return handleDeleteForm(req,res,Constants.USER_TEMPLATE_FOLDER);
+            return handleDeleteForm(req,res,Constants.USER_TEMPLATE_FOLDER,false);
         });
 
         post(RENAME_TEMPLATE_URL, (req, res) -> {
             authorize(req,res);
-            return handleRenameForm(req,res,Constants.USER_TEMPLATE_FOLDER);
+            return handleRenameForm(req,res,Constants.USER_TEMPLATE_FOLDER,true);
         });
 
         post(SAVE_DATASET_URL, (req, res) -> {
             authorize(req,res);
-            return handleSaveForm(req,res,Constants.USER_DATASET_FOLDER,datasetFormMapFunction());
+            String user = req.session().attribute("username");
+            Function2<Map<String,Object>,File,Void> saveFunction = (formMap,file) -> {
+                String[] assets = (String[])formMap.get("assets");
+                if(assets!=null&&file!=null) {
+                    DatasetIndex.index(user,file.getName(),Arrays.asList(assets));
+                }
+                formMap.remove("assets");
+                Database.trySaveObject(formMap,file);
+                return null;
+            };
+            Function2<Map<String,Object>,File,Void> saveUpdatesFunction = (updateMap,updatesFile) -> {
+                return null;
+            };
+            return handleSaveForm(req,res,Constants.USER_DATASET_FOLDER,datasetFormMapFunction(),saveFunction,saveUpdatesFunction);
         });
 
         post(GET_DATASET_URL, (req, res) -> {
@@ -906,12 +923,12 @@ public class SimilarPatentServer {
 
         post(DELETE_DATASET_URL, (req, res) -> {
             authorize(req,res);
-            return handleDeleteForm(req,res,Constants.USER_DATASET_FOLDER);
+            return handleDeleteForm(req,res,Constants.USER_DATASET_FOLDER,true);
         });
 
         post(RENAME_DATASET_URL, (req, res) -> {
             authorize(req,res);
-            return handleRenameForm(req,res,Constants.USER_DATASET_FOLDER);
+            return handleRenameForm(req,res,Constants.USER_DATASET_FOLDER,false);
         });
 
         get(SHOW_DATATABLE_URL, (req, res) -> {
@@ -1197,7 +1214,7 @@ public class SimilarPatentServer {
         }
     }
 
-    private static Object handleRenameForm(Request req, Response res, String baseFolder) {
+    private static Object handleRenameForm(Request req, Response res, String baseFolder, boolean useUpdatesFile) {
         String filename = req.queryParams("file");
         String name = req.queryParams("name");
         String[] parentDirs = req.queryParamsValues("parentDirs[]");
@@ -1226,8 +1243,12 @@ public class SimilarPatentServer {
 
                     sync.lock();
                     try {
-                        fileCache.put(updatesFile.getAbsolutePath(),updates);
-                        Database.trySaveObject(updates, updatesFile);
+                        if(useUpdatesFile) {
+                            fileCache.put(updatesFile.getAbsolutePath(), updates);
+                            Database.trySaveObject(updates, updatesFile);
+                        } else {
+                            Database.trySaveObject(updates,formFile);
+                        }
                     } finally {
                         sync.unlock();
                     }
@@ -1331,6 +1352,25 @@ public class SimilarPatentServer {
     }
 
     private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction) {
+        Function2<Map<String,Object>,File,Void> saveFunction = (formMap,file) -> {
+            Database.trySaveObject(formMap, file);
+            fileCache.putWithLimit(file.getAbsolutePath(),formMap);
+            return null;
+        };
+        Function2<Map<String,Object>,File,Void> saveUpdatesFunction = (updateMap,updatesFile)->{
+            if (updatesFile.exists()) updatesFile.delete();
+            if (updateMap.size() > 0) {
+                fileCache.put(updatesFile.getAbsolutePath(),updateMap);
+                Database.trySaveObject(updateMap, updatesFile);
+            } else {
+                fileCache.remove(updatesFile.getAbsolutePath());
+            }
+            return null;
+        };
+        return handleSaveForm(req,res,baseFolder,formMapFunction,saveFunction,saveUpdatesFunction);
+    }
+
+    private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction, Function2<Map<String,Object>,File,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
         String name = req.queryParams("name");
         String[] parentDirs = req.queryParamsValues("parentDirs[]");
         if(parentDirs==null) {
@@ -1385,16 +1425,8 @@ public class SimilarPatentServer {
 
                 sync.lock();
                 try {
-                    fileCache.put(updatesFile.getAbsolutePath(),updateMap);
-                    fileCache.putWithLimit(file.getAbsolutePath(),formMap);
-
-                    // save updates
-                    if (updatesFile.exists()) updatesFile.delete();
-
-                    if (updateMap.size() > 0) {
-                        Database.trySaveObject(updateMap, updatesFile);
-                    }
-                    Database.trySaveObject(formMap, file);
+                    saveFunction.apply(formMap,file);
+                    saveUpdatesFunction.apply(updateMap,updatesFile);
 
                 } finally {
                     sync.unlock();
@@ -1416,7 +1448,7 @@ public class SimilarPatentServer {
         return new Gson().toJson(responseMap);
     }
 
-    private static Object handleDeleteForm(Request req, Response res, String baseFolder) {
+    private static Object handleDeleteForm(Request req, Response res, String baseFolder, boolean deleteFromES) {
         String fileName = req.queryParams("path_to_remove");
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
         String message;
@@ -1438,6 +1470,9 @@ public class SimilarPatentServer {
 
                     sync.lock();
                     try {
+                        if(deleteFromES) {
+                            DatasetIndex.delete(username,toDelete.getName());
+                        }
                         fileCache.remove(updatesFile.getAbsolutePath());
                         fileCache.remove(toDelete.getAbsolutePath());
 
@@ -1922,12 +1957,12 @@ public class SimilarPatentServer {
                                                                         a("Templates").withClass("nav-link active").attr("data-toggle", "tab")
                                                                                 .attr("role","tab")
                                                                                 .withHref("#templates-tree")
-                                                                )//,
-                                                                //li().withClass("nav-item").with(
-                                                                //        a("Datasets").withClass("nav-link").attr("data-toggle", "tab")
-                                                                //                .attr("role","tab")
-                                                                //                .withHref("#datasets-tree")
-                                                                //)
+                                                                ),
+                                                                li().withClass("nav-item").with(
+                                                                        a("Datasets").withClass("nav-link").attr("data-toggle", "tab")
+                                                                                .attr("role","tab")
+                                                                                .withHref("#datasets-tree")
+                                                                )
                                                         ), br(),
                                                         div().withClass("tab-content").withId("sidebar-jstree-wrapper").attr("style","max-height: 75%; overflow-y: auto; text-align: left; display: none;").with(
                                                                 div().withClass("tab-pane active").attr("role","tabpanel").withId("templates-tree").with(
@@ -1939,9 +1974,9 @@ public class SimilarPatentServer {
 
                                                                 ),div().withClass("tab-pane").attr("role","tabpanel").withId("datasets-tree").with(
                                                                         ul().with(
-                                                                                //getDatasetsForUser(SUPER_USER,false,"Default Datasets",true),
-                                                                                //getDatasetsForUser(req.session().attribute("username"),true,"My Datasets",false),
-                                                                                //getDatasetsForUser(SHARED_USER,true, "Shared Datasets",false)
+                                                                                getDatasetsForUser(SUPER_USER,false,"Default Datasets",false),
+                                                                                getDatasetsForUser(req.session().attribute("username"),true,"My Datasets",false),
+                                                                                getDatasetsForUser(SHARED_USER,true, "Shared Datasets",false)
                                                                         )
                                                                 ),div().withId("new-dataset-from-asset-list-overlay").with(
                                                                         div().withId("new-dataset-from-asset-list-inside").with(

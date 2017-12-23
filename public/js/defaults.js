@@ -473,6 +473,56 @@ $(document).ready(function() {
         });
     });
 
+    var getDatasetSelectData = function() {
+        var $tree = $('#datasets-tree').jstree(true);
+        return $($tree.get_json($tree, {
+            flat: true
+        }))
+        .map(function(index, value) {
+            var node = $tree.get_node(this.id);
+            var lvl = node.parents.length;
+            var idx = index;
+            var preName="";
+            $.each(node.parents,function() {
+                preName+=this.toString()+"/";
+            });
+            if(node.type==='file'&&node.data.hasOwnProperty('user')&&node.data.hasOwnProperty('file')) {
+                return {
+                    id: node.data.user.concat(node.data.file.toString()),
+                    text: preName.concat(node.text)
+                };
+            } else {
+                return null;
+            }
+        }).filter(function() { return this!==null; });
+    };
+
+    $('.dataset-multiselect').select2({
+        minimumResultsForSearch: 5,
+        width: "100%",
+    }).on('select2:opening',function(e) {
+        createDatasetSelect2(this);
+        return true;
+    });
+
+    var createDatasetSelect2 = function(elem) {
+        // get datasets
+        var $this = $(elem);
+        var previousVal = $this.val();
+        $this.select2('destroy');
+        $this.select2({
+            minimumResultsForSearch: 5,
+            width: '100%',
+            data: getDatasetSelectData()
+        })
+        $this.val(previousVal).trigger('change');
+        $this.select2('open');
+        $this.on('select2:opening', function(e) {
+            createDatasetSelect2(elem);
+            return true;
+        });
+        return $this;
+    };
 
     $('.single-select2').select2({
         minimumResultsForSearch: 5,
