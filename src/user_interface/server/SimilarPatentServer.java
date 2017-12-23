@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import data_pipeline.helpers.Function2;
+import data_pipeline.helpers.Function3;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
@@ -901,10 +902,11 @@ public class SimilarPatentServer {
         post(SAVE_DATASET_URL, (req, res) -> {
             authorize(req,res);
             String user = req.session().attribute("username");
-            Function2<Map<String,Object>,File,Void> saveFunction = (formMap,file) -> {
+            Function3<Map<String,Object>,File,Boolean,Void> saveFunction = (formMap, file, shared) -> {
                 String[] assets = (String[])formMap.get("assets");
                 if(assets!=null&&file!=null) {
-                    DatasetIndex.index(user,file.getName(),Arrays.asList(assets));
+                    String username = shared ? SHARED_USER : user;
+                    DatasetIndex.index(username,file.getName(),Arrays.asList(assets));
                 }
                 formMap.remove("assets");
                 Database.trySaveObject(formMap,file);
@@ -1358,7 +1360,7 @@ public class SimilarPatentServer {
     }
 
     private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction) {
-        Function2<Map<String,Object>,File,Void> saveFunction = (formMap,file) -> {
+        Function3<Map<String,Object>,File,Boolean,Void> saveFunction = (formMap,file,shared) -> {
             Database.trySaveObject(formMap, file);
             fileCache.putWithLimit(file.getAbsolutePath(),formMap);
             return null;
@@ -1376,7 +1378,7 @@ public class SimilarPatentServer {
         return handleSaveForm(req,res,baseFolder,formMapFunction,saveFunction,saveUpdatesFunction);
     }
 
-    private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction, Function2<Map<String,Object>,File,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
+    private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction, Function3<Map<String,Object>,File,Boolean,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
         String name = req.queryParams("name");
         String[] parentDirs = req.queryParamsValues("parentDirs[]");
         if(parentDirs==null) {
@@ -1431,7 +1433,7 @@ public class SimilarPatentServer {
 
                 sync.lock();
                 try {
-                    saveFunction.apply(formMap,file);
+                    saveFunction.apply(formMap,file,isShared);
                     saveUpdatesFunction.apply(updateMap,updatesFile);
 
                 } finally {
