@@ -865,6 +865,9 @@ var templateDataFunction = function(tree,node,name,deletable,callback) {
         if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
             preData["file"] = node.data.file;
         }
+        if(node.hasOwnProperty('data') && node.data.hasOwnProperty('user')) {
+            preData["user"] = node.data.user;
+        }
         preData["parentDirs"] = [];
         var nodeData = node;
         while(typeof nodeData.text !== 'undefined') {
@@ -886,6 +889,9 @@ var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable,callbac
     preData["deletable"] = deletable;
     if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
         preData["file"] = node.data.file;
+    }
+    if(node.hasOwnProperty('data') && node.data.hasOwnProperty('user')) {
+        preData["user"] = node.data.user;
     }
     var nodeData = node;
     while(typeof nodeData.text !== 'undefined') {
@@ -920,6 +926,9 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
         preData["deletable"] = deletable;
         if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
             preData["file"] = node.data.file;
+        }
+        if(node.hasOwnProperty('data') && node.data.hasOwnProperty('user')) {
+            preData["user"] = node.data.user;
         }
         var nodeData = node;
         while(typeof nodeData.text !== 'undefined') {
