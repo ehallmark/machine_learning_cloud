@@ -502,7 +502,7 @@ $(document).ready(function() {
     })
     $('.dataset-multiselect').on('select2:opening',function(e) {
         createDatasetSelect2(this);
-        return true;
+        return false;
     });
 
     var createDatasetSelect2 = function(elem) {
@@ -521,7 +521,7 @@ $(document).ready(function() {
         $this.select2('open');
         $this.on('select2:opening', function(e) {
             createDatasetSelect2(elem);
-            return true;
+            return false;
         });
         return $this;
     };
