@@ -117,6 +117,7 @@ public class Constants {
 	public static final String CITED_DATE = "citedDate";
 	public static final String LINE_CHART = "lineChart[]";
 	public static final String GROUPED_TABLE_CHART = "groupedTableChart[]";
+	public static final String GROUPED_FUNCTION_TABLE_CHART = "groupedFunctionTableChart[]";
 	public static final String COUNTRY = "country";
 	public static final String CITATION_CATEGORY = "citationCategory";
 	public static final String DOC_KIND = "docKind";

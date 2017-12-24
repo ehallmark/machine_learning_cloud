@@ -1,17 +1,17 @@
-package models.similarity_models.word2vec_to_cpc_encoding_model;
+package models.similarity_models.combined_similarity_model;
 
 import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
-import models.keyphrase_prediction.models.TimeDensityModel;
 import models.keyphrase_prediction.stages.Stage1;
-import models.keyphrase_prediction.stages.ValidWordStage;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
-import models.similarity_models.word2vec_model.Word2VecModel;
-import models.similarity_models.word2vec_model.Word2VecPipelineManager;
+import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
+import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
 import models.text_streaming.FileTextDataSetIterator;
+import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.nd4j.linalg.api.buffer.DataBuffer;
@@ -21,38 +21,34 @@ import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class Word2VecToCPCPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
-    public static final String MODEL_NAME = "word2vec_to_cpc_encoder";
+public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
+    public static final String MODEL_NAME = "combined_similarity_model";
     private static final int BATCH_SIZE = 128;
-    private static final File INPUT_DATA_FOLDER = new File("word2vec_to_cpc_encoding_data");
-    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"word2vec_to_cpc_encoding_predictions/predictions_map.jobj");
+    private static final File INPUT_DATA_FOLDER = new File("combined_similarity_model_input_data");
+    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"combined_similarity_model_predictions/predictions_map.jobj");
     private String modelName;
     private Map<String,INDArray> assetToEncodingMap;
-    private CPCVAEPipelineManager previousManager;
-    @Getter
-    private Set<String> onlyWords;
+    private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
+    private CPCVAEPipelineManager cpcvaePipelineManager;
     @Getter
     private Word2Vec word2Vec;
-    private Map<String,String> stemToBestPhraseMap;
-    public Word2VecToCPCPipelineManager(String modelName, Set<String> onlyWords, Map<String,String> stemToBestPhraseMap, Word2Vec word2Vec, CPCVAEPipelineManager previousManager) {
+    private int nEpochs;
+    public CombinedSimilarityPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, CPCVAEPipelineManager cpcvaePipelineManager, int nEpochs) {
         super(INPUT_DATA_FOLDER,PREDICTION_DATA_FILE);
         this.word2Vec=word2Vec;
+        this.nEpochs=nEpochs;
         this.modelName=modelName;
-        this.stemToBestPhraseMap=stemToBestPhraseMap;
-        this.onlyWords=onlyWords;
-        this.previousManager=previousManager;
+        this.wordCPC2VecPipelineManager=wordCPC2VecPipelineManager;
+        this.cpcvaePipelineManager=cpcvaePipelineManager;
     }
 
     protected void initModel(boolean forceRecreateModels) {
-        model = new Word2VecToCPCEncodingNN(this, modelName);
+        model = new CombinedSimilarityModel(this,modelName);
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
@@ -93,9 +89,9 @@ public class Word2VecToCPCPipelineManager extends DefaultPipelineManager<DataSet
         File testFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.testFile.getName());
         File devFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.devFile2.getName());
 
-        LabelAwareIterator trainIter = new FileTextDataSetIterator(trainFile);
-        LabelAwareIterator testIter = new FileTextDataSetIterator(testFile);
-        LabelAwareIterator devIter = new FileTextDataSetIterator(devFile);
+        SequenceIterator<VocabWord> trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,200);
+        SequenceIterator<VocabWord> testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,200);
+        SequenceIterator<VocabWord> devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,200);
 
         datasetManager = new PreSaveDataSetManager(dataFolder,
                 getRawIterator(trainIter),
@@ -104,42 +100,39 @@ public class Word2VecToCPCPipelineManager extends DefaultPipelineManager<DataSet
         );
     }
 
-    protected Map<String,INDArray> getAssetToEncodingMap() {
+    protected synchronized Map<String,INDArray> getAssetToEncodingMap() {
         if(assetToEncodingMap==null) {
-            assetToEncodingMap = previousManager.loadPredictions();
+            assetToEncodingMap = cpcvaePipelineManager.loadPredictions();
+            // convert to filing map
         }
         return assetToEncodingMap;
     }
 
 
-    protected DataSetIterator getRawIterator(LabelAwareIterator iterator) {
-        return new Word2VecToCPCIterator(iterator,getAssetToEncodingMap(),onlyWords,stemToBestPhraseMap,word2Vec,BATCH_SIZE,false,false,false);
+    protected DataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator) {
+        return new Word2VecToCPCIterator(iterator,getAssetToEncodingMap(),word2Vec,BATCH_SIZE);
     }
 
     public static void main(String[] args) throws Exception {
-        Nd4j.setDataType(DataBuffer.Type.FLOAT);
+        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
         boolean rebuildPrerequisites = false;
+        int windowSize = 4;
+        int maxSamples = 300;
 
         int nEpochs = 5;
         String modelName = MODEL_NAME;
         String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
-        String word2VecModelName = Word2VecPipelineManager.MODEL_NAME;
+        String wordCpc2VecModel = WordCPC2VecPipelineManager.MODEL_NAME;
 
-        // get latest keywords
-        ValidWordStage stage5 = new ValidWordStage(null,new TimeDensityModel());
-        stage5.run(false);
-        Map<String,String> stemToBestPhraseMap = stage5.get().stream().collect(Collectors.toMap(stem->stem.toString(),stem->stem.getBestPhrase()));
-        Set<String> onlyWords = new HashSet<>(stemToBestPhraseMap.keySet());
-
-        Word2VecModel word2VecModel = new Word2VecModel(new Word2VecPipelineManager(word2VecModelName,-1), word2VecModelName);
-        word2VecModel.loadMostRecentModel();
+        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(wordCpc2VecModel,-1,windowSize,maxSamples);
+        wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
 
         setLoggingLevel(Level.INFO);
-        Word2VecToCPCPipelineManager pipelineManager = new Word2VecToCPCPipelineManager(modelName, onlyWords, stemToBestPhraseMap, (Word2Vec)word2VecModel.getNet(), new CPCVAEPipelineManager(cpcEncodingModel));
+        CombinedSimilarityPipelineManager pipelineManager = new CombinedSimilarityPipelineManager(modelName, (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet(), wordCPC2VecPipelineManager, new CPCVAEPipelineManager(cpcEncodingModel), nEpochs);
 
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }

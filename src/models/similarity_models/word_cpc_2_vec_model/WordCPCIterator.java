@@ -145,7 +145,13 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
             }
         }
 
-        return new Sequence<>(words);
+        Sequence<VocabWord> sequence = new Sequence<>(words);
+        VocabWord label = new VocabWord(1,document.getLabels().get(0));
+        label.setElementFrequency(1);
+        label.setSequencesCount(1);
+        label.setSpecial(true);
+        sequence.setSequenceLabel(label);
+        return sequence;
     }
 
     @Override

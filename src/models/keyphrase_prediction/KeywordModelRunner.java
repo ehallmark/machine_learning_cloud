@@ -10,7 +10,6 @@ import models.keyphrase_prediction.stages.*;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.word2vec_model.Word2VecModel;
 import models.similarity_models.word2vec_model.Word2VecPipelineManager;
-import models.similarity_models.word2vec_to_cpc_encoding_model.Word2VecToCPCPipelineManager;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 
@@ -82,7 +81,7 @@ public class KeywordModelRunner {
         boolean rebuildPrerequisites = false;
 
         int nEpochs = 5;
-        String modelName = Word2VecToCPCPipelineManager.MODEL_NAME;
+       /* String modelName = Word2VecToCPCPipelineManager.MODEL_NAME;
         String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
         String word2VecModelName = Word2VecPipelineManager.MODEL_NAME;
 
@@ -103,7 +102,7 @@ public class KeywordModelRunner {
 
         // K Means Stage
         KMeansStage kMeansStage = new KMeansStage(stage5.get(),stemToBestPhraseMap,stage1.get(),pipelineManager.getWord2Vec(),(MultiLayerNetwork)pipelineManager.getModel().getNet(), model);
-        kMeansStage.run(runModels);
+        kMeansStage.run(runModels); */
 
         if(rerunPredictions) {
             // TODO technology predictions

@@ -10,6 +10,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
+import user_interface.ui_models.charts.tables.DeepList;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
@@ -31,7 +32,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected List<String> attrNames;
     protected Collection<AbstractAttribute> groupByAttributes;
     @Getter
-    protected Map<String,String> attrNameToGroupByAttrNameMap;
+    protected Map<String,List<String>> attrNameToGroupByAttrNameMap;
     @Getter
     protected Map<String,Integer> attrNameToMaxGroupSizeMap;
     @Getter
@@ -142,12 +143,12 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         List<AbstractAttribute> availableGroups = groupByAttributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
         Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
-        String clazz = "form-control single-select2";
+        String clazz = "form-control multiselect";
         return div().withClass("row").with(
                 div().withClass("col-9").with(
                         label("Group By").attr("style","width: 100%;").with(
                                 br(),
-                                SimilarPatentServer.technologySelectWithCustomClass(id,id,clazz, groupedGroupAttrs,"No Group (default)")
+                                SimilarPatentServer.technologySelectWithCustomClass(id+"[]",id,clazz, groupedGroupAttrs,null)
                         )
                 ),div().withClass("col-3").with(
                         label("Max Groups").attr("style","width: 100%;").with(
@@ -158,7 +159,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     }
 
     protected Stream<Pair<String,PortfolioList>> groupPortfolioListForGivenAttribute(PortfolioList portfolioList, String attribute) {
-        String groupedBy = attrNameToGroupByAttrNameMap.get(attribute);
+        List<String> groupedBy = attrNameToGroupByAttrNameMap.get(attribute);
         Integer maxLimit = attrNameToMaxGroupSizeMap.get(attribute);
         if(maxLimit==null) maxLimit = 1;
         return portfolioList.groupedBy(groupedBy).sorted((p1,p2)->Integer.compare(p2.getSecond().getItemList().size(),p1.getSecond().getItemList().size())).limit(maxLimit);
@@ -187,8 +188,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             }
             attrsToCheck.forEach(attrName->{
                 String groupId = getGroupByChartFieldName(attrName);
-                String group = SimilarPatentServer.extractString(params, groupId,"");
-                if(group.length()>0) {
+                List<String> group = SimilarPatentServer.extractArray(params, groupId+"[]");
+                if(group.size()>0) {
                     attrNameToGroupByAttrNameMap.put(attrName, group);
                 }
                 String groupSizeId = groupId + MAX_GROUP_FIELD;

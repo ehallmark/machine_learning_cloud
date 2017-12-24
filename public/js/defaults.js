@@ -449,7 +449,8 @@ $(document).ready(function() {
 
     $('.multiselect').select2({
         minimumResultsForSearch: 5,
-        closeOnSelect: false
+        closeOnSelect: false,
+        templateSelection: select2SelectedFunction
     });
 
     $('.multiselect-ajax').each(function() {
@@ -535,7 +536,8 @@ $(document).ready(function() {
 
     $('.single-select2').select2({
         minimumResultsForSearch: 10,
-        width: "100%"
+        width: "100%",
+        templateSelection: select2SelectedFunction
     });
 
     setCollapsibleHeaders(".collapsible-header");
@@ -780,6 +782,16 @@ var showDatasetFunction = function(data,tree,node){
     });
     return false;
 };
+
+var select2SelectedFunction = function(item) {
+  var $option = $(item.element);
+  var $optGroup = $option.parent();
+  if($optGroup.is("optgroup")) {
+      return item.text + "("+$optgroup.text()+")";
+  } else {
+      return item.text;
+  }
+}
 
 var renameJSNodeFunction = function(tree,node,newName,file,node_type){
      var nodeData = tree.get_node(node.parent);

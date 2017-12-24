@@ -5,16 +5,12 @@ import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
 import models.kmeans.DistanceFunctions;
 import models.kmeans.KMeans;
-import models.similarity_models.word2vec_to_cpc_encoding_model.Word2VecToCPCEncodingNN;
-import models.similarity_models.word2vec_to_cpc_encoding_model.Word2VecToCPCIterator;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.LineIterator;
+import models.similarity_models.combined_similarity_model.Word2VecToCPCIterator;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.primitives.Pair;
-import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
@@ -22,7 +18,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**

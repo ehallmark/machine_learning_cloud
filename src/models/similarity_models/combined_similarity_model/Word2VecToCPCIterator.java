@@ -1,10 +1,13 @@
-package models.similarity_models.word2vec_to_cpc_encoding_model;
+package models.similarity_models.combined_similarity_model;
 
 import lombok.Getter;
 import models.similarity_models.Vectorizer;
 import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.text_streaming.WordVectorizerToCPCVectorIterator;
+import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
+import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
@@ -30,28 +33,19 @@ import java.util.stream.Stream;
  * Created by ehallmark on 10/27/17.
  */
 public class Word2VecToCPCIterator implements DataSetIterator {
-    private static Function<String,Map<String,Integer>> defaultBOWFunction = content -> {
-        return Stream.of(content.split(",")).map(str->{
-            String[] pair = str.split(":");
-            if(pair.length==1) return null;
-            return new Pair<>(pair[0],Integer.valueOf(pair[1]));
-        }).filter(p->p!=null).collect(Collectors.toMap(p->p.getFirst(), p->p.getSecond()));
+    private static Function<List<VocabWord>,Map<String,Integer>> defaultBOWFunction = sequence -> {
+        return sequence.stream().collect(Collectors.groupingBy(word->word.getLabel(),Collectors.collectingAndThen(Collectors.counting(),l->l.intValue())));
     };
 
-    @Getter
-    private Set<String> onlyWords;
-    private LabelAwareIterator documentIterator;
+    private SequenceIterator<VocabWord> documentIterator;
     private Vectorizer vectorizer;
     private Word2Vec word2Vec;
     private int batch;
     private DataSet currentDataSet;
     private int numDimensions;
-    private Map<String,String> stemToBestPhraseMap;
-    public Word2VecToCPCIterator(LabelAwareIterator documentIterator, Map<String, INDArray> cpcEncodings, Set<String> onlyWords, Map<String,String> stemToBestPhraseMap, Word2Vec word2Vec, int batchSize, boolean binarize, boolean normalize, boolean probability) {
-        this.onlyWords=onlyWords;
-        this.stemToBestPhraseMap=stemToBestPhraseMap;
+    public Word2VecToCPCIterator(SequenceIterator<VocabWord> documentIterator, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize) {
         this.documentIterator=documentIterator;
-        this.vectorizer = new CPCSimilarityVectorizer(cpcEncodings,binarize,normalize,probability);
+        this.vectorizer = new CPCSimilarityVectorizer(cpcEncodings,false,false,false);
         this.word2Vec=word2Vec;
         this.batch=batchSize;
         this.numDimensions=cpcEncodings.values().stream().findAny().get().length();
@@ -130,17 +124,16 @@ public class Word2VecToCPCIterator implements DataSetIterator {
         List<INDArray> features = new ArrayList<>();
         AtomicInteger wordsFoundPerBatch = new AtomicInteger(0);
         AtomicInteger totalWordsPerBatch = new AtomicInteger(0);
-        while(documentIterator.hasNext()&&idx<batch) {
-            LabelledDocument document = documentIterator.next();
-            String label = document.getLabels().get(0);
+        while(documentIterator.hasMoreSequences()&&idx<batch) {
+            Sequence<VocabWord> document = documentIterator.nextSequence();
+            String label = document.getSequenceLabel().getLabel();
             INDArray labelVec = vectorizer.vectorFor(label);
             if (labelVec == null) continue;
             AtomicInteger found = new AtomicInteger(0);
-            Map<String, Integer> wordCounts = defaultBOWFunction.apply(document.getContent());
+            Map<String, Integer> wordCounts = defaultBOWFunction.apply(document.getElements());
             totalWordsPerBatch.getAndAdd(wordCounts.size());
-            wordCounts.entrySet().stream().filter(e->onlyWords.contains(e.getKey())).forEach(e -> {
-                String bestPhrase = stemToBestPhraseMap.get(e.getKey());
-                INDArray phraseVec = getPhraseVector(word2Vec, bestPhrase);
+            wordCounts.entrySet().forEach(e -> {
+                INDArray phraseVec = getPhraseVector(word2Vec, e.getKey());
                 if(phraseVec!=null) {
                     wordsFoundPerBatch.getAndIncrement();
                     found.getAndIncrement();
@@ -153,6 +146,10 @@ public class Word2VecToCPCIterator implements DataSetIterator {
             if(found.get()==0) continue;
             idx++;
         }
+        int seed = 10;
+        Collections.shuffle(labels, new Random(seed));
+        Collections.shuffle(features, new Random(seed));
+
         System.out.println("Words found: "+wordsFoundPerBatch.get() + " / "+totalWordsPerBatch.get());
 
         if(idx>0) {
@@ -167,15 +164,6 @@ public class Word2VecToCPCIterator implements DataSetIterator {
     }
 
     public static INDArray getPhraseVector(Word2Vec word2Vec, String phrase) {
-        String[] words = phrase.split("\\s+");
-        List<INDArray> validWords = Stream.of(words).map(word->word2Vec.getLookupTable().vector(word)).filter(vec->vec!=null).collect(Collectors.toList());
-        if(validWords.isEmpty()) return null;
-        if(validWords.size()==1) {
-            return Nd4j.hstack(validWords.get(0),validWords.get(0),validWords.get(0));
-        } else if(validWords.size()==2) {
-            return Nd4j.hstack(validWords.get(0),validWords.get(0).add(validWords.get(1)).divi(2d),validWords.get(1));
-        } else {
-            return Nd4j.hstack(validWords.get(0),validWords.get(1),validWords.get(2));
-        }
+        return word2Vec.getLookupTable().vector(phrase);
     }
 }
