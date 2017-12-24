@@ -3,12 +3,19 @@ package models.similarity_models.combined_similarity_model;
 import data_pipeline.helpers.CombinedModel;
 import data_pipeline.helpers.Function2;
 import data_pipeline.models.CombinedNeuralNetworkPredictionModel;
+import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import models.NDArrayHelper;
+import org.deeplearning4j.nn.api.Layer;
+import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
+import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
+import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 
@@ -19,6 +26,8 @@ import java.util.*;
  * Created by Evan on 12/24/2017.
  */
 public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionModel<INDArray> {
+    public static final String WORD_CPC_2_VEC = "wordCpc2Vec";
+    public static final String CPC_VEC_NET = "cpcVecNet";
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_model_data");
     public static final Function2<INDArray,INDArray,INDArray> DEFAULT_LABEL_FUNCTION = (f1,f2) -> Nd4j.hstack(f1,f2);
 
@@ -35,18 +44,55 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
     @Override
     public void train(int nEpochs) {
+        MultiLayerNetwork wordCpc2Vec;
+        MultiLayerNetwork cpcVecNet;
         if(net==null) {
-            Map<String,MultiLayerNetwork> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
+            int hiddenLayerSize = 64;
+            int input1 = 128;
+            int input2 = 32;
+            int outputSize = input1+input2;
+            int numLayers = 6;
+            int syncLastNLayers = 4;
+            LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
             // build networks
+            NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
+                    .list()
+                    .layer(0, NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build());
 
+            NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
+                    .list()
+                    .layer(0, NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build());
 
+            // hidden layers
+            for(int i = 1; i < numLayers-1; i++) {
+                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize);
+                wordCPC2VecConf = wordCPC2VecConf.layer(i,layer.build());
+                cpcVecNetConf = cpcVecNetConf.layer(i,layer.build());
+            }
+
+            // output layers
+            OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize,outputSize).lossFunction(lossFunction);
+
+            wordCPC2VecConf = wordCPC2VecConf.layer(numLayers-1,outputLayer.build());
+            cpcVecNetConf = cpcVecNetConf.layer(numLayers-1,outputLayer.build());
+
+            wordCpc2Vec = new MultiLayerNetwork(wordCPC2VecConf.build());
+            cpcVecNet = new MultiLayerNetwork(cpcVecNetConf.build());
+
+            wordCpc2Vec.init();
+            cpcVecNet.init();
+
+            syncParams(wordCpc2Vec,cpcVecNet,syncLastNLayers);
+
+            Map<String,MultiLayerNetwork> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
+            nameToNetworkMap.put(WORD_CPC_2_VEC,wordCpc2Vec);
+            nameToNetworkMap.put(CPC_VEC_NET,cpcVecNet);
             this.net = new CombinedModel(nameToNetworkMap);
+        } else {
+            wordCpc2Vec = net.getNameToNetworkMap().get(WORD_CPC_2_VEC);
+            cpcVecNet = net.getNameToNetworkMap().get(CPC_VEC_NET);
         }
-
-
-        MultiLayerNetwork wordCpc2Vec = net.getNameToNetworkMap().get("wordCpc2Vec");
-        MultiLayerNetwork cpcVecNet = net.getNameToNetworkMap().get("cpcVecNet");
 
         DataSetIterator dataSetIterator = pipelineManager.getDatasetManager().getTrainingIterator();
 
@@ -62,6 +108,38 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
     @Override
     public File getModelBaseDirectory() {
         return BASE_DIR;
+    }
+
+    public static void syncParams(MultiLayerNetwork net1, MultiLayerNetwork net2, int lastNLayers) {
+        int paramsNet1Keeps = 0;
+        int paramsNet2Keeps = 0;
+
+        for (int i = 0; i < net1.getnLayers()-lastNLayers; i++) {
+            paramsNet1Keeps += net1.getLayer(i).numParams();
+        }
+        for (int i = 0; i < net2.getnLayers()-lastNLayers; i++) {
+            paramsNet2Keeps += net2.getLayer(i).numParams();
+        }
+
+        Layer[] layers1 = net1.getLayers();
+        Layer[] layers2 = net2.getLayers();
+        for(int i = 0; i < lastNLayers; i++) {
+            int idx1 = net1.getnLayers() - 1 - i;
+            int idx2 = net2.getnLayers() - 1 - i;
+            layers2[idx2] = layers1[idx1];
+        }
+        net2.setLayers(layers2);
+
+        INDArray net1Params = net1.params();
+        INDArray net2Params = net2.params();
+
+        INDArray paramAvg = net1Params.get(NDArrayIndex.interval(paramsNet1Keeps, net1Params.length())).addi(net2Params.get(NDArrayIndex.interval(paramsNet2Keeps, net2Params.length()))).divi(2);
+
+        net1Params.get(NDArrayIndex.interval(paramsNet1Keeps, net1Params.length())).assign(paramAvg);
+        net2Params.get(NDArrayIndex.interval(paramsNet2Keeps, net2Params.length())).assign(paramAvg);
+
+        net1.setParams(net1Params);
+        net2.setParams(net2Params);
     }
 
     public static void train(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2) {

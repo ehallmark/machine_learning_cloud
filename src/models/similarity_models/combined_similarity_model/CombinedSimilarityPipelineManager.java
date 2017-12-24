@@ -3,6 +3,7 @@ package models.similarity_models.combined_similarity_model;
 import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
+import data_pipeline.vectorize.NoSaveDataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.keyphrase_prediction.stages.Stage1;
@@ -19,8 +20,11 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -68,7 +72,8 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder);
+            //datasetManager = new PreSaveDataSetManager(dataFolder);
+            setDatasetManager();
         }
         return datasetManager;
     }
@@ -93,7 +98,7 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
         SequenceIterator<VocabWord> testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,200);
         SequenceIterator<VocabWord> devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,200);
 
-        datasetManager = new PreSaveDataSetManager(dataFolder,
+        datasetManager = new NoSaveDataSetManager<>(
                 getRawIterator(trainIter),
                 getRawIterator(testIter),
                 getRawIterator(devIter)
@@ -102,8 +107,22 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
 
     protected synchronized Map<String,INDArray> getAssetToEncodingMap() {
         if(assetToEncodingMap==null) {
-            assetToEncodingMap = cpcvaePipelineManager.loadPredictions();
             // convert to filing map
+            assetToEncodingMap = Collections.synchronizedMap(new HashMap<>());
+            Map<String,INDArray> cpcVaeEncodings = cpcvaePipelineManager.loadPredictions();
+            AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
+            assetToFilingMap.getApplicationDataMap().entrySet().parallelStream().forEach(e->{
+                INDArray vec = cpcVaeEncodings.get(e.getValue());
+                if(vec!=null) {
+                    assetToEncodingMap.put(e.getKey(), vec);
+                }
+            });
+            assetToFilingMap.getPatentDataMap().entrySet().parallelStream().forEach(e->{
+                INDArray vec = cpcVaeEncodings.get(e.getValue());
+                if(vec!=null) {
+                    assetToEncodingMap.put(e.getKey(), vec);
+                }
+            });
         }
         return assetToEncodingMap;
     }
