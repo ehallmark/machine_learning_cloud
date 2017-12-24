@@ -3,6 +3,7 @@ package user_interface.ui_models.charts;
 import data_pipeline.helpers.Function2;
 import elasticsearch.DataSearcher;
 import j2html.tags.Tag;
+import lombok.Getter;
 import model.nodes.FactorNode;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
@@ -33,7 +34,6 @@ public class GroupedTableChart extends TableAttribute {
     enum CollectorType {
         Count, Max, Min, Sum, Average
     }
-    private String collectByAttrName;
     private CollectorType collectorType;
     private Collection<AbstractAttribute> numericAttrs;
     public GroupedTableChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupedByAttrs,  Collection<AbstractAttribute> numericAttrs) {

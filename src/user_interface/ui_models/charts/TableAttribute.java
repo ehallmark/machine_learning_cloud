@@ -1,6 +1,7 @@
 package user_interface.ui_models.charts;
 
 import j2html.tags.Tag;
+import lombok.Getter;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.charts.tables.TableResponse;
@@ -17,7 +18,8 @@ import static j2html.TagCreator.*;
  * Created by Evan on 6/17/2017.
  */
 public abstract class TableAttribute extends AbstractChartAttribute {
-
+    @Getter
+    protected String collectByAttrName;
     public TableAttribute(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupedByAttributes, String name) {
         super(attributes,groupedByAttributes,name,false, false);
     }

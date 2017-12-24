@@ -183,6 +183,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("(Normalized) Portfolio Size", Constants.NORMALIZED_PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
+            humanAttrToJavaAttrMap.put("Grouped Table Chart", Constants.GROUPED_TABLE_CHART);
             humanAttrToJavaAttrMap.put("Cited Date", Constants.CITED_DATE);
             humanAttrToJavaAttrMap.put("Forward Citation", Constants.BACKWARD_CITATION);
             humanAttrToJavaAttrMap.put("Means Present", Constants.MEANS_PRESENT);
@@ -218,7 +219,6 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Recorded Date", Constants.RECORDED_DATE);
             humanAttrToJavaAttrMap.put("Publication Date", Constants.PUBLICATION_DATE);
             humanAttrToJavaAttrMap.put("Timeline Chart", Constants.LINE_CHART);
-            humanAttrToJavaAttrMap.put("Aggregate Count Table", Constants.GROUPED_TABLE_CHART);
             humanAttrToJavaAttrMap.put("Reel Frames", Constants.REEL_FRAME);
             humanAttrToJavaAttrMap.put("Include All", AbstractFilter.FilterType.Include.toString());
             humanAttrToJavaAttrMap.put("Include By Prefix", AbstractFilter.FilterType.PrefixInclude.toString());
@@ -1562,11 +1562,16 @@ public class SimilarPatentServer {
                     List<ChartAttribute> charts = abstractCharts.stream().filter(chart->chart instanceof ChartAttribute).map(attr->(ChartAttribute)(attr)).collect(Collectors.toList());
                     List<TableAttribute> tables = abstractCharts.stream().filter(chart->chart instanceof TableAttribute).map(attr->(TableAttribute)(attr)).collect(Collectors.toList());
 
-                    charts.forEach(chart -> chart.extractRelevantInformationFromParams(req));
+                    charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
                     tables.forEach(table->table.extractRelevantInformationFromParams(req));
 
                     Set<String> chartPreReqs = abstractCharts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toSet());
                     chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrNameToGroupByAttrNameMap().values().stream()).collect(Collectors.toList()));
+                    tables.forEach(table->{
+                        if(table.getCollectByAttrName()!=null) {
+                            chartPreReqs.add(table.getCollectByAttrName());
+                        }
+                    });
 
                     SimilarityEngineController engine = similarityEngine.join().dup();
                     engine.setChartPrerequisites(chartPreReqs);
