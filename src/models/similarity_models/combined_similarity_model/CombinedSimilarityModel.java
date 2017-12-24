@@ -99,7 +99,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         for(int i = 0; i < nEpochs; i++) {
             while(dataSetIterator.hasNext()) {
                 DataSet ds = dataSetIterator.next();
-                train(cpcVecNet,wordCpc2Vec,ds.getFeatures(),ds.getLabels());
+                train(wordCpc2Vec,cpcVecNet,ds.getFeatures(),ds.getLabels());
             }
             dataSetIterator.reset();
         }
