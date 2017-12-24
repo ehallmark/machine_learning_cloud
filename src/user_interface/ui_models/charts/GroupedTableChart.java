@@ -74,11 +74,11 @@ public class GroupedTableChart extends TableAttribute {
         Function2<Tag,Tag,Tag> combineTagFunction = (tag1, tag2) -> div().with(tag1,tag2);
         Function<String,Tag> additionalTagFunction = attrName -> {
             return div().withClass("row").with(
-                    div().withClass("col-8").with(
+                    div().withClass("col-9").with(
                             label("Collect By").with(
                                     SimilarPatentServer.technologySelectWithCustomClass(getCollectByAttrFieldName(null),getCollectByAttrFieldName(null),"single-select2",groupedGroupAttrs,"Assets (default)")
                             )
-                    ),div().withClass("col-4").with(
+                    ),div().withClass("col-3").with(
                             label("Collecting Function").with(
                                 select().attr("style","width: 100%;").withClass("single-select2").withName(getCollectTypeFieldName(null)).withId(getCollectTypeFieldName(null)).with(
                                         option(CollectorType.Count.toString()).attr("selected","selected").withValue(CollectorType.Count.toString()),
