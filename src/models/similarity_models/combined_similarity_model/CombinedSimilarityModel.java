@@ -100,6 +100,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             while(dataSetIterator.hasNext()) {
                 DataSet ds = dataSetIterator.next();
                 train(wordCpc2Vec,cpcVecNet,ds.getFeatures(),ds.getLabels());
+                System.gc();
             }
             dataSetIterator.reset();
         }
