@@ -1,5 +1,6 @@
 package user_interface.ui_models.attributes.script_attributes;
 
+import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
@@ -20,6 +21,11 @@ public class CountAttribute extends DefaultValueScriptAttribute {
     @Override
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Integer;
+    }
+
+    @Override
+    public AbstractAttribute clone() {
+        return new CountAttribute(fieldName);
     }
 
 }
