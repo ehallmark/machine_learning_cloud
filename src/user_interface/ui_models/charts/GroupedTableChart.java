@@ -75,18 +75,16 @@ public class GroupedTableChart extends TableAttribute {
         Function<String,Tag> additionalTagFunction = attrName -> {
             return div().withClass("row").with(
                     div().withClass("col-9").with(
-                            label("Collect By").with(
-                                    SimilarPatentServer.technologySelectWithCustomClass(getCollectByAttrFieldName(null),getCollectByAttrFieldName(null),"single-select2",groupedGroupAttrs,"Assets (default)")
-                            )
+                            label("Collect By"),br(),
+                            SimilarPatentServer.technologySelectWithCustomClass(getCollectByAttrFieldName(null),getCollectByAttrFieldName(null),"single-select2",groupedGroupAttrs,"Assets (default)")
                     ),div().withClass("col-3").with(
-                            label("Collecting Function").with(
-                                select().attr("style","width: 100%;").withClass("single-select2").withName(getCollectTypeFieldName(null)).withId(getCollectTypeFieldName(null)).with(
-                                        option(CollectorType.Count.toString()).attr("selected","selected").withValue(CollectorType.Count.toString()),
-                                        option(CollectorType.Sum.toString()).withValue(CollectorType.Sum.toString()),
-                                        option(CollectorType.Average.toString()).withValue(CollectorType.Average.toString()),
-                                        option(CollectorType.Max.toString()).withValue(CollectorType.Max.toString()),
-                                        option(CollectorType.Min.toString()).withValue(CollectorType.Min.toString())
-                                )
+                            label("Collecting Function"),br(),
+                            select().withClass("single-select2").withName(getCollectTypeFieldName(null)).withId(getCollectTypeFieldName(null)).with(
+                                    option(CollectorType.Count.toString()).attr("selected","selected").withValue(CollectorType.Count.toString()),
+                                    option(CollectorType.Sum.toString()).withValue(CollectorType.Sum.toString()),
+                                    option(CollectorType.Average.toString()).withValue(CollectorType.Average.toString()),
+                                    option(CollectorType.Max.toString()).withValue(CollectorType.Max.toString()),
+                                    option(CollectorType.Min.toString()).withValue(CollectorType.Min.toString())
                             )
                     )
             );
