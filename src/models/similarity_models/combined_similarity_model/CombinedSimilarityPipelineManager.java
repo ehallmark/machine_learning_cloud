@@ -112,15 +112,15 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
             Map<String,INDArray> cpcVaeEncodings = cpcvaePipelineManager.loadPredictions();
             AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
             assetToFilingMap.getApplicationDataMap().entrySet().parallelStream().forEach(e->{
-                INDArray vec = cpcVaeEncodings.get(e.getValue());
+                INDArray vec = cpcVaeEncodings.get(e.getKey());
                 if(vec!=null) {
-                    assetToEncodingMap.put(e.getKey(), vec);
+                    assetToEncodingMap.put(e.getValue(), vec);
                 }
             });
             assetToFilingMap.getPatentDataMap().entrySet().parallelStream().forEach(e->{
-                INDArray vec = cpcVaeEncodings.get(e.getValue());
+                INDArray vec = cpcVaeEncodings.get(e.getKey());
                 if(vec!=null) {
-                    assetToEncodingMap.put(e.getKey(), vec);
+                    assetToEncodingMap.put(e.getValue(), vec);
                 }
             });
         }
