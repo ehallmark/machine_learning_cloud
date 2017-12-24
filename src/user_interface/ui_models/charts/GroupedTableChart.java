@@ -24,9 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static j2html.TagCreator.div;
-import static j2html.TagCreator.option;
-import static j2html.TagCreator.select;
+import static j2html.TagCreator.*;
 
 /**
  * Created by Evan on 12/16/2017.
@@ -77,14 +75,18 @@ public class GroupedTableChart extends TableAttribute {
         Function<String,Tag> additionalTagFunction = attrName -> {
             return div().withClass("row").with(
                     div().withClass("col-8").with(
-                            SimilarPatentServer.technologySelectWithCustomClass(getCollectByAttrFieldName(null),getCollectByAttrFieldName(null),"single-select2",groupedGroupAttrs,"")
+                            label("Collect By").with(
+                                    SimilarPatentServer.technologySelectWithCustomClass(getCollectByAttrFieldName(null),getCollectByAttrFieldName(null),"single-select2",groupedGroupAttrs,"Assets (default)")
+                            )
                     ),div().withClass("col-4").with(
-                            select().withClass("single-select2").withName(getCollectTypeFieldName(null)).withId(getCollectByAttrFieldName(null)).with(
-                                    option(CollectorType.Count.toString()).attr("selected","selected").withValue(CollectorType.Count.toString()),
-                                    option(CollectorType.Sum.toString()).withValue(CollectorType.Sum.toString()),
-                                    option(CollectorType.Average.toString()).withValue(CollectorType.Average.toString()),
-                                    option(CollectorType.Max.toString()).withValue(CollectorType.Max.toString()),
-                                    option(CollectorType.Min.toString()).withValue(CollectorType.Min.toString())
+                            label("Collecting Function").with(
+                                select().attr("style","width: 100%;").withClass("single-select2").withName(getCollectTypeFieldName(null)).withId(getCollectTypeFieldName(null)).with(
+                                        option(CollectorType.Count.toString()).attr("selected","selected").withValue(CollectorType.Count.toString()),
+                                        option(CollectorType.Sum.toString()).withValue(CollectorType.Sum.toString()),
+                                        option(CollectorType.Average.toString()).withValue(CollectorType.Average.toString()),
+                                        option(CollectorType.Max.toString()).withValue(CollectorType.Max.toString()),
+                                        option(CollectorType.Min.toString()).withValue(CollectorType.Min.toString())
+                                )
                             )
                     )
             );
