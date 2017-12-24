@@ -80,7 +80,7 @@ public class GroupedTableChart extends TableAttribute {
                     ),div().withClass("col-3").with(
                             label("Collecting Function"),br(),
                             select().withClass("single-select2").withName(getCollectTypeFieldName(null)).withId(getCollectTypeFieldName(null)).with(
-                                    option(CollectorType.Count.toString()).attr("selected","selected").withValue(""),
+                                    option(CollectorType.Count.toString()).withValue(""),
                                     option(CollectorType.Sum.toString()).withValue(CollectorType.Sum.toString()),
                                     option(CollectorType.Average.toString()).withValue(CollectorType.Average.toString()),
                                     option(CollectorType.Max.toString()).withValue(CollectorType.Max.toString()),
