@@ -1671,15 +1671,14 @@ public class SimilarPatentServer {
 
                         AtomicInteger tableCnt = new AtomicInteger(0);
                         AtomicInteger chartCnt = new AtomicInteger(0);
-                        Tag chartTag = totalChartCnt.get() == 0 ? div() : div().withClass("row").attr("style", "margin-bottom: 10px;").with(
-                                // h4("Charts").withClass("collapsible-header").attr("data-target", "#data-charts"),
+                        Tag chartTag = div().withClass("row").attr("style", "margin-bottom: 10px;").with(
                                 span().withId("data-charts").withClass("collapse show").with(
-                                        chartTypes.stream().map(type -> div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(type).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                        totalChartCnt.get() == 0 ? Collections.emptyList() : chartTypes.stream().map(type -> div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(type).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 ).with(
-                                        tableResponses.stream().map(table -> TableAttribute.getTable(table,table.type,tableCnt.getAndIncrement())).collect(Collectors.toList())
+                                        totalTableCnt.get() == 0 ? Collections.emptyList() : tableResponses.stream().map(table -> TableAttribute.getTable(table,table.type,tableCnt.getAndIncrement())).collect(Collectors.toList())
                                 )
                         );
-                        Tag tableTag = div().withClass("row").attr("style", "margin-top: 10px;").with(
+                        Tag dataTable = div().withClass("row").attr("style", "margin-top: 10px;").with(
                                // h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
                                 tableFromPatentList(tableHeaders)
                         );
@@ -1690,7 +1689,7 @@ public class SimilarPatentServer {
                                         div().withClass("row tab-content").with(
                                                 div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("data-tab").with(
                                                         p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
-                                                        tableTag
+                                                        dataTable
                                                 ), div().withClass("col-12 tab-pane fade show").attr("role","tabpanel").withId("chart-tab").with(
                                                         p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
                                                         chartTag
