@@ -47,12 +47,12 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         MultiLayerNetwork wordCpc2Vec;
         MultiLayerNetwork cpcVecNet;
         if(net==null) {
-            int hiddenLayerSize = 64;
+            int hiddenLayerSize = 32;
             int input1 = 128;
             int input2 = 32;
             int outputSize = input1+input2;
-            int numLayers = 6;
-            int syncLastNLayers = 4;
+            int numLayers = 3;
+            int syncLastNLayers = 2;
             LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
             // build networks

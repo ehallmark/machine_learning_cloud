@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
     public static final String MODEL_NAME = "combined_similarity_model";
-    private static final int BATCH_SIZE = 128;
+    private static final int BATCH_SIZE = 16;
     private static final File INPUT_DATA_FOLDER = new File("combined_similarity_model_input_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"combined_similarity_model_predictions/predictions_map.jobj");
     private String modelName;
@@ -94,9 +94,9 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
         File testFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.testFile.getName());
         File devFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.devFile2.getName());
 
-        SequenceIterator<VocabWord> trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,200);
-        SequenceIterator<VocabWord> testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,200);
-        SequenceIterator<VocabWord> devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,200);
+        SequenceIterator<VocabWord> trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,-1);
+        SequenceIterator<VocabWord> testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,-1);
+        SequenceIterator<VocabWord> devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,-1);
 
         datasetManager = new NoSaveDataSetManager<>(
                 getRawIterator(trainIter),

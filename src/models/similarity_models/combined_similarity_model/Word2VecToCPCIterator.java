@@ -34,7 +34,7 @@ import java.util.stream.Stream;
  */
 public class Word2VecToCPCIterator implements DataSetIterator {
     private static Function<List<VocabWord>,Map<String,Integer>> defaultBOWFunction = sequence -> {
-        return sequence.stream().collect(Collectors.groupingBy(word->word.getLabel(),Collectors.collectingAndThen(Collectors.counting(),l->l.intValue())));
+        return sequence.stream().collect(Collectors.toMap(word->word.getLabel(),word->(int)word.getElementFrequency()));
     };
 
     private SequenceIterator<VocabWord> documentIterator;
@@ -63,7 +63,7 @@ public class Word2VecToCPCIterator implements DataSetIterator {
 
     @Override
     public int inputColumns() {
-        return word2Vec.getLayerSize() * 3;
+        return word2Vec.getLayerSize();
     }
 
     @Override
@@ -146,9 +146,9 @@ public class Word2VecToCPCIterator implements DataSetIterator {
             if(found.get()==0) continue;
             idx++;
         }
-        int seed = 10;
-        Collections.shuffle(labels, new Random(seed));
-        Collections.shuffle(features, new Random(seed));
+        //int seed = 10;
+        //Collections.shuffle(labels, new Random(seed));
+        //Collections.shuffle(features, new Random(seed));
 
         System.out.println("Words found: "+wordsFoundPerBatch.get() + " / "+totalWordsPerBatch.get());
 

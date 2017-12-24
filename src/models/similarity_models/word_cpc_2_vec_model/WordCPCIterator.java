@@ -97,51 +97,60 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         }
 
         Map<String,Integer> wordCountMap = defaultBOWFunction.apply(document.getContent());
+        List<VocabWord> words;
+        if(maxSamples<=0) {
+            words = new ArrayList<>();
+            wordCountMap.forEach((word,cnt)->{
+                VocabWord vocabWord = new VocabWord(cnt,word);
+                vocabWord.setSequencesCount(1);
+                vocabWord.setElementFrequency(cnt);
+            });
+        } else {
+            String[] contentWords = new String[wordCountMap.size()];
+            int[] contentCounts = new int[wordCountMap.size()];
+            AtomicInteger total = new AtomicInteger(0);
+            AtomicInteger idx = new AtomicInteger(0);
+            wordCountMap.entrySet().forEach(e -> {
+                int i = idx.getAndIncrement();
+                int count = e.getValue();
+                contentCounts[i] = count;
+                contentWords[i] = e.getKey();
+                total.getAndAdd(count);
+            });
 
-        String[] contentWords = new String[wordCountMap.size()];
-        int[] contentCounts = new int[wordCountMap.size()];
-        AtomicInteger total = new AtomicInteger(0);
-        AtomicInteger idx = new AtomicInteger(0);
-        wordCountMap.entrySet().forEach(e->{
-            int i = idx.getAndIncrement();
-            int count = e.getValue();
-            contentCounts[i]=count;
-            contentWords[i]=e.getKey();
-            total.getAndAdd(count);
-        });
+            final int N = Math.min((total.get() + tokens.size()), maxSamples);
 
-        final int N = Math.min((total.get()+tokens.size()),maxSamples);
+            if (N < minSequenceLength) {
+                //System.out.println("Returning NULL because N <= 0");
+                return null;
+            }
 
-        if(N<minSequenceLength) {
-            //System.out.println("Returning NULL because N <= 0");
-            return null;
-        }
+            words = new ArrayList<>(N);
 
-        List<VocabWord> words = new ArrayList<>(N);
-        for(int i = 0; i < N; i++) {
-
-            VocabWord word = null;
-            boolean randBool = rand.nextBoolean();
-            if(randBool || tokens.size()==0) {
-                int r = rand.nextInt(total.get());
-                int s = 0;
-                for(int j = 0; j < contentCounts.length; j++) {
-                    s += contentCounts[j];
-                    if(s >= r) {
-                        word = new VocabWord(1,contentWords[j]);
-                        break;
+            for (int i = 0; i < N; i++) {
+                VocabWord word = null;
+                boolean randBool = rand.nextBoolean();
+                if (randBool || tokens.size() == 0) {
+                    int r = rand.nextInt(total.get());
+                    int s = 0;
+                    for (int j = 0; j < contentCounts.length; j++) {
+                        s += contentCounts[j];
+                        if (s >= r) {
+                            word = new VocabWord(1, contentWords[j]);
+                            break;
+                        }
                     }
                 }
-            }
-            if(!randBool || total.get()==0){
-                if(tokens.size()>0) {
-                    word = new VocabWord(1, tokens.get(random.nextInt(tokens.size())));
+                if (!randBool || total.get() == 0) {
+                    if (tokens.size() > 0) {
+                        word = new VocabWord(1, tokens.get(random.nextInt(tokens.size())));
+                    }
                 }
-            }
-            if(word!=null) {
-                word.setSequencesCount(1);
-                word.setElementFrequency(1);
-                words.add(word);
+                if (word != null) {
+                    word.setSequencesCount(1);
+                    word.setElementFrequency(1);
+                    words.add(word);
+                }
             }
         }
 
