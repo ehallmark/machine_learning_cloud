@@ -41,11 +41,9 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
     private CPCVAEPipelineManager cpcvaePipelineManager;
     @Getter
     private Word2Vec word2Vec;
-    private int nEpochs;
-    public CombinedSimilarityPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, CPCVAEPipelineManager cpcvaePipelineManager, int nEpochs) {
+    public CombinedSimilarityPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, CPCVAEPipelineManager cpcvaePipelineManager) {
         super(INPUT_DATA_FOLDER,PREDICTION_DATA_FILE);
         this.word2Vec=word2Vec;
-        this.nEpochs=nEpochs;
         this.modelName=modelName;
         this.wordCPC2VecPipelineManager=wordCPC2VecPipelineManager;
         this.cpcvaePipelineManager=cpcvaePipelineManager;
@@ -94,9 +92,13 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
         File testFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.testFile.getName());
         File devFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.devFile2.getName());
 
-        SequenceIterator<VocabWord> trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,-1);
-        SequenceIterator<VocabWord> testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,-1);
-        SequenceIterator<VocabWord> devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),nEpochs,wordCPC2VecPipelineManager.getCPCMap(),1,-1);
+        WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,-1);
+        WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,-1);
+        WordCPCIterator devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,-1);
+
+        trainIter.setRunVocab(false);
+        testIter.setRunVocab(false);
+        devIter.setRunVocab(false);
 
         datasetManager = new NoSaveDataSetManager<>(
                 getRawIterator(trainIter),
@@ -151,7 +153,7 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
         wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
 
         setLoggingLevel(Level.INFO);
-        CombinedSimilarityPipelineManager pipelineManager = new CombinedSimilarityPipelineManager(modelName, (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet(), wordCPC2VecPipelineManager, new CPCVAEPipelineManager(cpcEncodingModel), nEpochs);
+        CombinedSimilarityPipelineManager pipelineManager = new CombinedSimilarityPipelineManager(modelName, (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet(), wordCPC2VecPipelineManager, new CPCVAEPipelineManager(cpcEncodingModel));
 
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }

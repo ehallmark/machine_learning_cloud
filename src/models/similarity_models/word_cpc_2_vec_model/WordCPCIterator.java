@@ -104,6 +104,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                 VocabWord vocabWord = new VocabWord(cnt,word);
                 vocabWord.setSequencesCount(1);
                 vocabWord.setElementFrequency(cnt);
+                words.add(vocabWord);
             });
         } else {
             String[] contentWords = new String[wordCountMap.size()];
@@ -153,6 +154,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                 }
             }
         }
+
+        if(words.isEmpty()) return null;
 
         Sequence<VocabWord> sequence = new Sequence<>(words);
         VocabWord label = new VocabWord(1,document.getLabels().get(0));
