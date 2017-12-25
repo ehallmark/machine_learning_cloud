@@ -146,11 +146,8 @@ public class Word2VecToCPCIterator implements DataSetIterator {
             if(found.get()==0) continue;
             idx++;
         }
-        int seed = 10;
-        Collections.shuffle(labels, new Random(seed));
-        Collections.shuffle(features, new Random(seed));
 
-        System.out.println("Words found: "+wordsFoundPerBatch.get() + " / "+totalWordsPerBatch.get());
+        //System.out.println("Words found: "+wordsFoundPerBatch.get() + " / "+totalWordsPerBatch.get());
 
         if(idx>0) {
             currentDataSet = new DataSet(Nd4j.vstack(features),Nd4j.vstack(labels));

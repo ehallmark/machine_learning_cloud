@@ -105,7 +105,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
         Function2<LocalDateTime,Double,Void> saveFunction = (datetime, score) -> {
             try {
-                save(datetime,score);
+                //save(datetime,score);
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -119,7 +119,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             return (results.getFirst()+results.getSecond())/2;
         };
 
-        final int printIterations = 100;
+        final int printIterations = 10;
         final AtomicBoolean stoppingCondition = new AtomicBoolean(false);
 
         IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
