@@ -9,9 +9,11 @@ import models.NDArrayHelper;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.api.IterationListener;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -56,22 +58,28 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             int input1 = 128;
             int input2 = 32;
             int outputSize = input1+input2;
-            int numLayers = 3;
-            int syncLastNLayers = 2;
+            int numLayers = 6;
+            int syncLastNLayers = numLayers/2;
             LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
             // build networks
             NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
+                    .updater(Updater.ADAM)
+                    .learningRate(0.01)
+                    .activation(Activation.TANH)
                     .list()
                     .layer(0, NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build());
 
             NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
+                    .updater(Updater.ADAM)
+                    .learningRate(0.01)
+                    .activation(Activation.TANH)
                     .list()
                     .layer(0, NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build());
 
             // hidden layers
             for(int i = 1; i < numLayers-1; i++) {
-                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize);
+                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize).dropOut(0.5);
                 wordCPC2VecConf = wordCPC2VecConf.layer(i,layer.build());
                 cpcVecNetConf = cpcVecNetConf.layer(i,layer.build());
             }
@@ -130,7 +138,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
         System.gc();
         System.gc();
-        
+
         for(int i = 0; i < nEpochs; i++) {
             while(dataSetIterator.hasNext()) {
                 DataSet ds = dataSetIterator.next();
