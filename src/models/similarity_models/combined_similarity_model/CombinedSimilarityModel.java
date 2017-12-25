@@ -55,14 +55,15 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         MultiLayerNetwork wordCpc2Vec;
         MultiLayerNetwork cpcVecNet;
         if(net==null) {
-            int hiddenLayerSize = 32;
+            int hiddenLayerSize = 64;
             int input1 = 128;
             int input2 = 32;
             int outputSize = input1+input2;
-            int numLayers = 6;
+            int numLayers = 8;
             int syncLastNLayers = numLayers/2;
             LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
+            if(numLayers%2==1) throw new UnsupportedOperationException("Network must have even number of layers for batch norm to work properly...");
             // build networks
             NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(Updater.ADAM)
@@ -79,10 +80,11 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
                     .layer(0, NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build());
 
             // hidden layers
-            for(int i = 1; i < numLayers-1; i++) {
-                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize).dropOut(0.5);
-                wordCPC2VecConf = wordCPC2VecConf.layer(i,layer.build());
-                cpcVecNetConf = cpcVecNetConf.layer(i,layer.build());
+            for(int i = 1; i < (numLayers-1)/2; i++) {
+                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize);
+                org.deeplearning4j.nn.conf.layers.Layer.Builder normLayer = NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
+                wordCPC2VecConf = wordCPC2VecConf.layer(2*i,layer.build()).layer(2*i+1, normLayer.build());
+                cpcVecNetConf = cpcVecNetConf.layer(2*i,layer.build()).layer(2*i+1, normLayer.build());
             }
 
             // output layers
@@ -138,8 +140,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         Function<Void,Double> testErrorFunction = (v) -> {
             System.gc();
             Pair<Double,Double> results = test(wordCpc2Vec, cpcVecNet, validationDataSets.iterator());
-            System.out.println(" Test score Net 1: "+results.getFirst());
-            System.out.println(" Test score Net 2: "+results.getSecond());
+            System.out.println(" Test Net 1: "+results.getFirst()+"\tTest Net 2: "+results.getSecond());
             return (results.getFirst()+results.getSecond())/2;
         };
 
