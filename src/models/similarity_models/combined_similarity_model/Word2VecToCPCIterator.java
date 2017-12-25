@@ -146,9 +146,9 @@ public class Word2VecToCPCIterator implements DataSetIterator {
             if(found.get()==0) continue;
             idx++;
         }
-        //int seed = 10;
-        //Collections.shuffle(labels, new Random(seed));
-        //Collections.shuffle(features, new Random(seed));
+        int seed = 10;
+        Collections.shuffle(labels, new Random(seed));
+        Collections.shuffle(features, new Random(seed));
 
         System.out.println("Words found: "+wordsFoundPerBatch.get() + " / "+totalWordsPerBatch.get());
 
