@@ -3,6 +3,7 @@ package models.similarity_models.combined_similarity_model;
 import data_pipeline.helpers.CombinedModel;
 import data_pipeline.helpers.Function2;
 import data_pipeline.models.CombinedNeuralNetworkPredictionModel;
+import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import models.NDArrayHelper;
 import org.deeplearning4j.nn.api.Layer;
@@ -10,6 +11,7 @@ import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -20,7 +22,10 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 /**
  * Created by Evan on 12/24/2017.
@@ -94,6 +99,32 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             cpcVecNet = net.getNameToNetworkMap().get(CPC_VEC_NET);
         }
 
+        Function<Void,Double> trainErrorFunction = (v) -> {
+            return 0d;
+        };
+
+        Function2<LocalDateTime,Double,Void> saveFunction = (datetime, score) -> {
+            try {
+                save(datetime,score);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        };
+
+        Function<Void,Double> testErrorFunction = (v) -> {
+            Pair<Double,Double> results = test(wordCpc2Vec, cpcVecNet, pipelineManager.getDatasetManager().getValidationIterator());
+            System.out.println(" Test score Net 1: "+results.getFirst());
+            System.out.println(" Test score Net 2: "+results.getSecond());
+            return (results.getFirst()+results.getSecond())/2;
+        };
+
+        final int printIterations = 100;
+        final AtomicBoolean stoppingCondition = new AtomicBoolean(false);
+
+        IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
+        wordCpc2Vec.setListeners(listener);
+
         DataSetIterator dataSetIterator = pipelineManager.getDatasetManager().getTrainingIterator();
 
         for(int i = 0; i < nEpochs; i++) {
@@ -101,8 +132,16 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
                 DataSet ds = dataSetIterator.next();
                 train(wordCpc2Vec,cpcVecNet,ds.getFeatures(),ds.getLabels());
                 System.gc();
+                if(stoppingCondition.get()) break;
             }
+            if(stoppingCondition.get()) break;
             dataSetIterator.reset();
+        }
+        if(stoppingCondition.get()) {
+            System.out.println("Stopping condition reached...");
+        }
+        if(!isSaved()) {
+            saveFunction.apply(LocalDateTime.now(), testErrorFunction.apply(null));
         }
     }
 
@@ -149,8 +188,8 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         net2.fit(new DataSet(features2, labels));
     }
 
-    public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2, Function2<INDArray, INDArray, INDArray> featuresToLabelFunction) {
-        INDArray labels = featuresToLabelFunction.apply(features1, features2);
+    public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2) {
+        INDArray labels = DEFAULT_LABEL_FUNCTION.apply(features1, features2);
         return new Pair<>(test(net1,features1,labels),test(net2,features2,labels));
     }
 
@@ -159,4 +198,22 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         return NDArrayHelper.sumOfCosineSimByRow(predictions,labels);
     }
 
+    public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, DataSetIterator iterator) {
+        double d1 = 0;
+        double d2 = 0;
+        long count = 0;
+        while(iterator.hasNext()) {
+            DataSet ds = iterator.next();
+            Pair<Double,Double> test = test(net1,net2,ds.getFeatures(),ds.getLabels());
+            d1+=test.getFirst();
+            d2+=test.getSecond();
+            count++;
+        }
+        iterator.reset();
+        if(count>0) {
+            d1/=count;
+            d2/=count;
+        }
+        return new Pair<>(d1,d2);
+    }
 }
