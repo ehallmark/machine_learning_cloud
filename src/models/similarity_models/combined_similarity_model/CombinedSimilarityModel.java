@@ -113,13 +113,14 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         };
 
         Function<Void,Double> testErrorFunction = (v) -> {
+            System.gc();
             Pair<Double,Double> results = test(wordCpc2Vec, cpcVecNet, pipelineManager.getDatasetManager().getValidationIterator());
             System.out.println(" Test score Net 1: "+results.getFirst());
             System.out.println(" Test score Net 2: "+results.getSecond());
             return (results.getFirst()+results.getSecond())/2;
         };
 
-        final int printIterations = 10;
+        final int printIterations = 100;
         final AtomicBoolean stoppingCondition = new AtomicBoolean(false);
 
         IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
@@ -127,6 +128,9 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
         DataSetIterator dataSetIterator = pipelineManager.getDatasetManager().getTrainingIterator();
 
+        System.gc();
+        System.gc();
+        
         for(int i = 0; i < nEpochs; i++) {
             while(dataSetIterator.hasNext()) {
                 DataSet ds = dataSetIterator.next();
