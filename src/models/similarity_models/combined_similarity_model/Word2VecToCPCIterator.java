@@ -49,6 +49,7 @@ public class Word2VecToCPCIterator implements DataSetIterator {
         this.word2Vec=word2Vec;
         this.batch=batchSize;
         this.numDimensions=cpcEncodings.values().stream().findAny().get().length();
+        reset();
     }
 
     @Override

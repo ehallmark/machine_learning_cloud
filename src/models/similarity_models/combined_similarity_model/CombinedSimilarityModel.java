@@ -121,21 +121,30 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             return null;
         };
 
+        final int printIterations = 100;
+        final AtomicBoolean stoppingCondition = new AtomicBoolean(false);
+
+        System.gc();
+        System.gc();
+
+        DataSetIterator dataSetIterator = pipelineManager.getDatasetManager().getTrainingIterator();
+        DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
+        List<DataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
+        while(validationIterator.hasNext()) {
+            validationDataSets.add(validationIterator.next());
+        }
+        System.out.println("Num validation datasets: "+validationDataSets.size());
+
         Function<Void,Double> testErrorFunction = (v) -> {
             System.gc();
-            Pair<Double,Double> results = test(wordCpc2Vec, cpcVecNet, pipelineManager.getDatasetManager().getValidationIterator());
+            Pair<Double,Double> results = test(wordCpc2Vec, cpcVecNet, validationDataSets.iterator());
             System.out.println(" Test score Net 1: "+results.getFirst());
             System.out.println(" Test score Net 2: "+results.getSecond());
             return (results.getFirst()+results.getSecond())/2;
         };
 
-        final int printIterations = 100;
-        final AtomicBoolean stoppingCondition = new AtomicBoolean(false);
-
         IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
         wordCpc2Vec.setListeners(listener);
-
-        DataSetIterator dataSetIterator = pipelineManager.getDatasetManager().getTrainingIterator();
 
         System.gc();
         System.gc();
@@ -216,7 +225,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         return 1.0 - NDArrayHelper.sumOfCosineSimByRow(predictions,labels)/features.rows();
     }
 
-    public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, DataSetIterator iterator) {
+    public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, Iterator<DataSet> iterator) {
         double d1 = 0;
         double d2 = 0;
         long count = 0;
@@ -227,7 +236,6 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             d2+=test.getSecond();
             count++;
         }
-        iterator.reset();
         if(count>0) {
             d1/=count;
             d2/=count;
