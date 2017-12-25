@@ -56,42 +56,78 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         MultiLayerNetwork cpcVecNet;
         if(net==null) {
             int hiddenLayerSize = 64;
+            int encodingSize = 32;
             int input1 = 128;
             int input2 = 32;
             int outputSize = input1+input2;
-            int numLayers = 8;
-            int syncLastNLayers = numLayers/2;
+            int numHiddenEncodings = 6;
+            int numHiddenDecodings = 4;
+            int syncLastNLayers = 8;
+
             LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
-            if(numLayers%2==1) throw new UnsupportedOperationException("Network must have even number of layers for batch norm to work properly...");
+            if(numHiddenEncodings%2==1 || numHiddenDecodings%2==1) throw new UnsupportedOperationException("Network must have even number of layers for batch norm to work properly...");
             // build networks
+            int i = 0;
             NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(Updater.ADAM)
                     .learningRate(0.01)
                     .activation(Activation.TANH)
                     .list()
-                    .layer(0, NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build());
+                    .layer(i, NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build());
 
             NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(Updater.ADAM)
                     .learningRate(0.01)
                     .activation(Activation.TANH)
                     .list()
-                    .layer(0, NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build());
+                    .layer(i, NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build());
 
-            // hidden layers
-            for(int i = 1; i < (numLayers-1)/2; i++) {
-                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize);
-                org.deeplearning4j.nn.conf.layers.Layer.Builder normLayer = NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
-                wordCPC2VecConf = wordCPC2VecConf.layer(2*i,layer.build()).layer(2*i+1, normLayer.build());
-                cpcVecNetConf = cpcVecNetConf.layer(2*i,layer.build()).layer(2*i+1, normLayer.build());
+            // encoding hidden layers
+            i++;
+            int t = i;
+            for(; i < t + numHiddenEncodings-2; i++) {
+                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = i % 2 == 0 ?
+                        NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize) : NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
+                wordCPC2VecConf = wordCPC2VecConf.layer(i,layer.build());
+                cpcVecNetConf = cpcVecNetConf.layer(i,layer.build());
+            }
+
+            // encoding
+            org.deeplearning4j.nn.conf.layers.Layer.Builder encoding = NNOptimizer.newDenseLayer(hiddenLayerSize,encodingSize);
+            org.deeplearning4j.nn.conf.layers.Layer.Builder encodingNorm = NNOptimizer.newBatchNormLayer(encodingSize,encodingSize);
+            // decoding
+            org.deeplearning4j.nn.conf.layers.Layer.Builder decoding = NNOptimizer.newDenseLayer(encodingSize,hiddenLayerSize);
+            org.deeplearning4j.nn.conf.layers.Layer.Builder decodingNorm = NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
+
+            wordCPC2VecConf = wordCPC2VecConf
+                    .layer(i,encoding.build())
+                    .layer(i+1,encodingNorm.build())
+                    .layer(i+2, decoding.build())
+                    .layer(i+3, decodingNorm.build());
+            cpcVecNetConf = cpcVecNetConf
+                    .layer(i,encoding.build())
+                    .layer(i+1,encodingNorm.build())
+                    .layer(i+2, decoding.build())
+                    .layer(i+3, decodingNorm.build());
+
+
+            i+=4;
+
+            // decoding hidden layers
+            t = i;
+            for(; i < t + numHiddenDecodings - 2; i++) {
+                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = i % 2 == 0 ?
+                        NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize) : NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
+                wordCPC2VecConf = wordCPC2VecConf.layer(i,layer.build());
+                cpcVecNetConf = cpcVecNetConf.layer(i,layer.build());
             }
 
             // output layers
             OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize,outputSize).lossFunction(lossFunction);
 
-            wordCPC2VecConf = wordCPC2VecConf.layer(numLayers-1,outputLayer.build());
-            cpcVecNetConf = cpcVecNetConf.layer(numLayers-1,outputLayer.build());
+            wordCPC2VecConf = wordCPC2VecConf.layer(i,outputLayer.build());
+            cpcVecNetConf = cpcVecNetConf.layer(i,outputLayer.build());
 
             wordCpc2Vec = new MultiLayerNetwork(wordCPC2VecConf.build());
             cpcVecNet = new MultiLayerNetwork(cpcVecNetConf.build());
