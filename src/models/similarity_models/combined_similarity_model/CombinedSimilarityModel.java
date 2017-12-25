@@ -27,6 +27,7 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -139,12 +140,18 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         System.gc();
         System.gc();
 
+        AtomicInteger totalSeenThisEpoch = new AtomicInteger(0);
+        AtomicInteger totalSeen = new AtomicInteger(0);
         for(int i = 0; i < nEpochs; i++) {
             while(dataSetIterator.hasNext()) {
                 DataSet ds = dataSetIterator.next();
                 train(wordCpc2Vec,cpcVecNet,ds.getFeatures(),ds.getLabels());
+                totalSeenThisEpoch.getAndAdd(ds.getFeatures().rows());
                 if(stoppingCondition.get()) break;
             }
+            totalSeen.getAndAdd(totalSeenThisEpoch.get());
+            System.out.println("Total seen this epoch: "+totalSeenThisEpoch.get());
+            System.out.println("Total seen so far: "+totalSeen.get());
             if(stoppingCondition.get()) break;
             dataSetIterator.reset();
         }
