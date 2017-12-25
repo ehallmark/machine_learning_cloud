@@ -194,7 +194,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
     public static double test(MultiLayerNetwork net, INDArray features, INDArray labels) {
         INDArray predictions = net.activateSelectedLayers(0,net.getnLayers()-1,features);
-        return NDArrayHelper.sumOfCosineSimByRow(predictions,labels);
+        return 1.0 - NDArrayHelper.sumOfCosineSimByRow(predictions,labels)/features.rows();
     }
 
     public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, DataSetIterator iterator) {
