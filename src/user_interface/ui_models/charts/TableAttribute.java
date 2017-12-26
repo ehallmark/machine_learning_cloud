@@ -123,7 +123,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         response.headers = new ArrayList<>();
         response.headers.addAll(attrList);
         response.headers.add(collectorType.toString());
-        response.numericAttrNames = Collections.synchronizedSet(new HashSet<>(response.headers));
+        response.numericAttrNames = Collections.singleton(collectorType.toString());
         response.computeAttributesTask = new RecursiveTask<List<Map<String,String>>>() {
             @Override
             protected List<Map<String,String>> compute() {
