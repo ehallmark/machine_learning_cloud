@@ -431,7 +431,7 @@ $(document).ready(function() {
         $(this).addClass('active');
     });
 
-    $('.draggable .collapsible-header .remove-button').click(function(e) {
+    $('.attributeElement .collapsible-header .remove-button').click(function(e) {
         e.stopPropagation();
         // get name
         var label = $(this).attr('data-model');
