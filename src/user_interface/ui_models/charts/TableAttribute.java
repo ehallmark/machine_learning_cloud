@@ -48,10 +48,11 @@ public abstract class TableAttribute extends AbstractChartAttribute {
 
     public List<TableResponse> createTables(PortfolioList portfolioList) {
         if(attrNames==null||attrNames.isEmpty()) return Collections.emptyList();
+        System.out.println("Table attr list: "+String.join("; ",attrNames));
         return Stream.of(attrNames).flatMap(attrList->{
             List<String> humanAttrs =  attrList.stream().map(attribute->SimilarPatentServer.fullHumanAttributeFor(attribute)).collect(Collectors.toList());
             String humanSearchType = combineTypesToString(searchTypes);
-            String title = singularize(humanSearchType) + " "+ collectorType.toString() + (humanAttrs.isEmpty() ? "" :  " by "+String.join(", ",humanAttrs));
+            String title = collectByAttrName==null?humanSearchType:SimilarPatentServer.fullHumanAttributeFor(collectByAttrName) + " "+ collectorType.toString() + (humanAttrs.isEmpty() ? "" :  " by "+ (humanAttrs.isEmpty() ? "UNKNOWN" : String.join(", ",humanAttrs)));
             return groupPortfolioListForGivenAttribute(portfolioList,"").map(groupPair-> {
                 return createHelper(groupPair.getSecond().getItemList(), attrList, title, groupPair.getFirst());
             });
