@@ -57,7 +57,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         MultiLayerNetwork cpcVecNet;
         if(net==null) {
             int hiddenLayerSize = 256;
-            int encodingSize = 124;
+            int encodingSize = 256;
             int input1 = 128;
             int input2 = 32;
             int outputSize = input1+input2;
