@@ -64,6 +64,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             int numHiddenEncodings = 4;
             int numHiddenDecodings = 4;
             int syncLastNLayers = 7;
+            Updater updater = Updater.RMSPROP;
 
             LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
@@ -71,14 +72,14 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             // build networks
             int i = 0;
             NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
-                    .updater(Updater.ADAM)
+                    .updater(updater)
                     .learningRate(0.1)
                     .activation(Activation.TANH)
                     .list()
                     .layer(i, NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build());
 
             NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
-                    .updater(Updater.ADAM)
+                    .updater(updater)
                     .learningRate(0.1)
                     .activation(Activation.TANH)
                     .list()
