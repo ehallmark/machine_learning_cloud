@@ -183,8 +183,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("(Normalized) Portfolio Size", Constants.NORMALIZED_PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
-            humanAttrToJavaAttrMap.put("Grouped Count Table", Constants.GROUPED_TABLE_CHART);
-            humanAttrToJavaAttrMap.put("Grouped Function Table", Constants.GROUPED_FUNCTION_TABLE_CHART);
+            humanAttrToJavaAttrMap.put("Column Combination Count Table", Constants.GROUPED_TABLE_CHART);
+            humanAttrToJavaAttrMap.put("Column Combination Function Table", Constants.GROUPED_FUNCTION_TABLE_CHART);
             humanAttrToJavaAttrMap.put("Cited Date", Constants.CITED_DATE);
             humanAttrToJavaAttrMap.put("Forward Citation", Constants.BACKWARD_CITATION);
             humanAttrToJavaAttrMap.put("Means Present", Constants.MEANS_PRESENT);

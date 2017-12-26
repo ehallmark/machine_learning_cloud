@@ -78,7 +78,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                 div().with(
                         groupbyTag==null?span():div().with(
                                 groupbyTag,br(),
-                                p("Main Group By")
+                                p("Column Attributes")
                         ),
                         SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),id,clazz, applicableAttributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(
