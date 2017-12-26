@@ -1697,10 +1697,10 @@ public class SimilarPatentServer {
                         Tag results = div().with(
                               div().withClass("col-12").with(
                                         div().withClass("row tab-content").with(
-                                                div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("data-tab").with(
+                                                div().withClass("col-12 tab-pane fade show active data-tab").attr("role","tabpanel").with(
                                                         p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
                                                         dataTable
-                                                ), div().withClass("col-12 tab-pane fade show").attr("role","tabpanel").withId("chart-tab").with(
+                                                ), div().withClass("col-12 tab-pane fade show chart-tab").attr("role","tabpanel").with(
                                                         p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
                                                         chartTag
                                                 )
@@ -2058,7 +2058,6 @@ public class SimilarPatentServer {
     private static Tag innerModelsFormAttributes(Function<String,Boolean> userRoleFunction, Tag buttons) {
         return div().withClass("col-12").with(
                 div().withClass("row").with(
-                        buttons, hr(),
                         div().withClass("col-12 form-top").with(
                                 ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
                                         li().withClass("nav-item").with(
@@ -2066,11 +2065,7 @@ public class SimilarPatentServer {
                                         ),li().withClass("nav-item").with(
                                                 a("Sort And Limit").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
                                         ),li().withClass("nav-item").with(
-                                                a("Attributes").withClass("nav-link").attr("data-toggle","tab").withHref("#tab3").attr("role","tab")
-                                        ),li().withClass("nav-item").with(
-                                                a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#tab4").attr("role","tab")
-                                        ),li().withClass("nav-item").with(
-                                                a("Settings").withClass("nav-link").attr("data-toggle","tab").withHref("#tab5").attr("role","tab")
+                                                a("Settings").withClass("nav-link").attr("data-toggle","tab").withHref("#tab3").attr("role","tab")
                                         )
                                 )
                         ),
@@ -2091,20 +2086,6 @@ public class SimilarPatentServer {
                                                 )
                                         ),
                                         div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab3").with(
-                                                div().withClass("row").with(
-                                                        div().withClass("col-12").withId("attributesForm").with(
-                                                                customFormRow("attributes", allAttributes, userRoleFunction)
-                                                        )
-                                                )
-                                        ),
-                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab4").with(
-                                                div().withClass("row").with(
-                                                        div().withClass("col-12").withId("chartsForm").with(
-                                                                customFormRow("charts",allCharts, userRoleFunction)
-                                                        )
-                                                )
-                                        ),
-                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab5").with(
                                                 div().withClass("collapsible-form row").withId("highlightForm").with(
                                                         h5("Settings"),
                                                         div().withClass("col-12 attributeElement").with(
@@ -2119,7 +2100,26 @@ public class SimilarPatentServer {
                                                 )
                                         )
                                 )
-                        ),buttons
+                        ),
+                        buttons,
+                        div().withClass("col-12").with(
+                                div().withClass("row tab-content").with(
+                                        div().withClass("col-12 tab-pane fade data-tab").attr("role","tabpanel").with(
+                                                div().withClass("row").with(
+                                                        div().withClass("col-12").withId("attributesForm").with(
+                                                                customFormRow("attributes", allAttributes, userRoleFunction)
+                                                        )
+                                                )
+                                        ),
+                                        div().withClass("col-12 tab-pane fade chart-tab").attr("role","tabpanel").with(
+                                                div().withClass("row").with(
+                                                        div().withClass("col-12").withId("chartsForm").with(
+                                                                customFormRow("charts",allCharts, userRoleFunction)
+                                                        )
+                                                )
+                                        )
+                                )
+                        ), buttons
                 )
         );
     }
@@ -2167,9 +2167,9 @@ public class SimilarPatentServer {
                 div().withClass("col-12").attr("style","padding-top: 20px;").withId("results-wrapper").with(
                         ul().withClass("nav nav-tabs").attr("role","tablist").with(
                                 li().withClass("nav-item").with(
-                                        a("Data").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
+                                        a("Data").withClass("nav-link active").attr("data-toggle","tab").withHref(".data-tab").attr("role","tab")
                                 ),li().withClass("nav-item").with(
-                                        a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
+                                        a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref(".chart-tab").attr("role","tab")
                                 )
                         )
                 ),
