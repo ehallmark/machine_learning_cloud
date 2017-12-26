@@ -40,7 +40,7 @@ public class GroupedCountTableChart extends TableAttribute {
     protected Function<String, Tag> getCombineByTagFunction(Map<String, List<String>> groupedGroupAttrs) {
         return attrName -> {
             return div().withClass("row").with(
-                    div().withClass("col-12").with(
+                    div().withClass("col-9").with(
                             label("Collect By"),br(),
                             SimilarPatentServer.technologySelectWithCustomClass(getCollectByAttrFieldName(null),getCollectByAttrFieldName(null),"single-select2",groupedGroupAttrs,"Asset Number (default)")
                     ),div().withClass("col-3").with(
