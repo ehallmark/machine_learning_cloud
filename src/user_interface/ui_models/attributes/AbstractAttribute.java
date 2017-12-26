@@ -145,7 +145,7 @@ public abstract class AbstractAttribute {
         else return "the";
     }
 
-    private static String singularize(String name) {
+    protected static String singularize(String name) {
         if(name.endsWith("es")&&name.length()>2) return name.substring(0,name.length()-2);
         else if(name.endsWith("s")&&name.length()>1) return name.substring(0,name.length()-1);
         return name;

@@ -50,7 +50,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         return Stream.of(attrNames).flatMap(attrList->{
             List<String> humanAttrs =  attrList.stream().map(attribute->SimilarPatentServer.fullHumanAttributeFor(attribute)).collect(Collectors.toList());
             String humanSearchType = combineTypesToString(searchTypes);
-            String title = humanSearchType + collectorType.toString() + " by "+String.join(", ",humanAttrs);
+            String title = singularize(humanSearchType) + " "+ collectorType.toString() + " by "+String.join(", ",humanAttrs);
             return groupPortfolioListForGivenAttribute(portfolioList,"").map(groupPair-> {
                 return createHelper(groupPair.getSecond().getItemList(), attrList, title, groupPair.getFirst());
             });
@@ -121,7 +121,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         response.headers = new ArrayList<>();
         response.headers.addAll(attrList);
         response.headers.add(collectorType.toString());
-        response.numericAttrNames = Collections.synchronizedSet(new HashSet<>(Collections.singletonList("Count")));
+        response.numericAttrNames = Collections.synchronizedSet(new HashSet<>(response.headers));
         response.computeAttributesTask = new RecursiveTask<List<Map<String,String>>>() {
             @Override
             protected List<Map<String,String>> compute() {
