@@ -240,7 +240,7 @@ $(document).ready(function() {
         var buttonText = "Generate Report";
         var buttonTextWhileSearching = "Generating...";
         var formId = $(this).attr('id');
-        $('##results .tab-pane .content').html(''); // clears results div
+        $('#results .tab-pane .content').html(''); // clears results div
         return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFrom);
     });
     $('.generate-reports-form-button').click(function(e) {
