@@ -9,7 +9,6 @@ import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import models.NDArrayHelper;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.conf.LearningRatePolicy;
-import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
@@ -57,8 +56,8 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         MultiLayerNetwork wordCpc2Vec;
         MultiLayerNetwork cpcVecNet;
         if(net==null) {
-            int hiddenLayerSize = 256;
-            int encodingSize = 256;
+            int hiddenLayerSize = 512;
+            int encodingSize = 512;
             int input1 = 128;
             int input2 = 32;
             int outputSize = input1+input2;
@@ -74,7 +73,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             int i = 0;
             NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
-                    .learningRate(0.01)
+                    .learningRate(0.1)
                     .learningRateDecayPolicy(LearningRatePolicy.Inverse)
                     .lrPolicyPower(0.7)
                     .lrPolicyDecayRate(0.001)
@@ -84,7 +83,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
             NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
-                    .learningRate(0.01)
+                    .learningRate(0.1)
                     .learningRateDecayPolicy(LearningRatePolicy.Inverse)
                     .lrPolicyPower(0.7)
                     .lrPolicyDecayRate(0.001)
@@ -95,39 +94,31 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             // encoding hidden layers
             i++;
             int t = i;
-            for(; i < t + numHiddenEncodings-2; i++) {
-                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = i % 2 == 0 ?
-                        NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize) : NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
+            for(; i < t + numHiddenEncodings-1; i++) {
+                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize);
                 wordCPC2VecConf = wordCPC2VecConf.layer(i,layer.build());
                 cpcVecNetConf = cpcVecNetConf.layer(i,layer.build());
             }
 
             // encoding
             org.deeplearning4j.nn.conf.layers.Layer.Builder encoding = NNOptimizer.newDenseLayer(hiddenLayerSize,encodingSize);
-            org.deeplearning4j.nn.conf.layers.Layer.Builder encodingNorm = NNOptimizer.newBatchNormLayer(encodingSize,encodingSize);
             // decoding
             org.deeplearning4j.nn.conf.layers.Layer.Builder decoding = NNOptimizer.newDenseLayer(encodingSize,hiddenLayerSize);
-            org.deeplearning4j.nn.conf.layers.Layer.Builder decodingNorm = NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
 
             wordCPC2VecConf = wordCPC2VecConf
                     .layer(i,encoding.build())
-                    .layer(i+1,encodingNorm.build())
-                    .layer(i+2, decoding.build())
-                    .layer(i+3, decodingNorm.build());
+                    .layer(i+1, decoding.build());
             cpcVecNetConf = cpcVecNetConf
                     .layer(i,encoding.build())
-                    .layer(i+1,encodingNorm.build())
-                    .layer(i+2, decoding.build())
-                    .layer(i+3, decodingNorm.build());
+                    .layer(i+1, decoding.build());
 
 
-            i+=4;
+            i+=2;
 
             // decoding hidden layers
             t = i;
-            for(; i < t + numHiddenDecodings - 2; i++) {
-                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = i % 2 == 0 ?
-                        NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize) : NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
+            for(; i < t + numHiddenDecodings - 1; i++) {
+                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize);
                 wordCPC2VecConf = wordCPC2VecConf.layer(i,layer.build());
                 cpcVecNetConf = cpcVecNetConf.layer(i,layer.build());
             }
