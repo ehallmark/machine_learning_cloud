@@ -786,8 +786,8 @@ var showDatasetFunction = function(data,tree,node){
 var select2SelectedFunction = function(item) {
   var $option = $(item.element);
   var $optGroup = $option.parent();
-  if($optGroup.is("optgroup")) {
-      return item.text + "("+$optGroup.text()+")";
+  if($optGroup.is("optgroup") && $optGroup.get(0).label!==item.text) {
+      return item.text + " ("+$optGroup.get(0).label+")";
   } else {
       return item.text;
   }
