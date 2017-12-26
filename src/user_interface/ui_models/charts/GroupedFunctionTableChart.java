@@ -37,10 +37,10 @@ public class GroupedFunctionTableChart extends TableAttribute {
     protected Function<String, Tag> getCombineByTagFunction(Map<String, List<String>> groupedGroupAttrs) {
         return attrName -> {
             return div().withClass("row").with(
-                    div().withClass("col-9").with(
+                    div().withClass("col-8").with(
                             label("Collect By"),br(),
                             SimilarPatentServer.technologySelectWithCustomClass(getCollectByAttrFieldName(null),getCollectByAttrFieldName(null),"single-select2",groupedGroupAttrs,"")
-                    ),div().withClass("col-3").with(
+                    ),div().withClass("col-4").with(
                             label("Collecting Function"),br(),
                             select().withClass("single-select2").withName(getCollectTypeFieldName(null)).withId(getCollectTypeFieldName(null)).with(
                                     option(GroupedFunctionTableChart.CollectorType.Sum.toString()).withValue(""),

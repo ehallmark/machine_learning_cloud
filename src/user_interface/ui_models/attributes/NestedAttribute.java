@@ -1,6 +1,7 @@
 package user_interface.ui_models.attributes;
 
 import data_pipeline.helpers.Function2;
+import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
 import user_interface.server.SimilarPatentServer;
@@ -67,7 +68,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
     }
 
 
-    protected Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<Tag,Tag,Tag> combineTagFunction, boolean perAttr) {
+    protected ContainerTag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr) {
         String styleString = "margin-left: 5%; margin-right: 5%; display: none;";
         String name = getFullName().replace(".","");
         String clazz = CLAZZ;
@@ -90,9 +91,9 @@ public abstract class NestedAttribute extends AbstractAttribute {
                                 childTag = ((NestedAttribute) filter).getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineTagFunction, perAttr);
                             } else {
                                 childTag = filter.getOptionsTag(userRoleFunction);
-                                Tag additionalTag = additionalTagFunction!=null&&perAttr ? additionalTagFunction.apply(filter.getFullName()) : null;
+                                ContainerTag additionalTag = additionalTagFunction!=null&&perAttr ? additionalTagFunction.apply(filter.getFullName()) : null;
                                 if(additionalTag!=null) {
-                                    childTag = combineTagFunction.apply(additionalTag,childTag);
+                                    childTag = combineTagFunction.apply(additionalTag,(ContainerTag)childTag);
                                 }
                                 if(additionalInputIdsFunction!=null) {
                                     List<String> additional = additionalInputIdsFunction.apply(filter.getFullName());

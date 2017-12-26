@@ -1,6 +1,7 @@
 package user_interface.ui_models.charts;
 
 import data_pipeline.helpers.Function2;
+import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
 import org.nd4j.linalg.primitives.Pair;
@@ -76,11 +77,16 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        Function2<Tag,Tag,Tag> combineTagFunction = (tag1,tag2) -> div().with(tag1,tag2);
+        Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction = (tag1,tag2) -> {
+            if(tag1==null||tag1.children==null) return tag2;
+            if(tag2==null||tag2.children==null) return tag1;
+            tag1.children.addAll(tag2.children);
+            return tag1;
+        };
         return this.getOptionsTag(userRoleFunction,null,null,combineTagFunction,groupByPerAttribute);
     }
 
-    private Tag getPlotGroupsTogetherTag(String attrName) {
+    private ContainerTag getPlotGroupsTogetherTag(String attrName) {
         attrName = getGroupByChartFieldName(idFromName(attrName));
         return div().withClass("row").with(
                 div().withClass("col-12").with(
@@ -92,19 +98,13 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     }
 
     @Override
-    protected Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<Tag,Tag,Tag> combineTagFunction, boolean perAttr) {
-        Function<String,Tag> newTagFunction;
+    protected ContainerTag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr) {
+        Function<String,ContainerTag> newTagFunction;
         Function<String,List<String>> newAdditionalIdsFunction;
         if(groupByAttributes!=null) {
-            Function<String,Tag> groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
+            Function<String,ContainerTag> groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
             if(groupsPlottableOnSameChart) {
-                newTagFunction = attrName -> combineTagFunction.apply(
-                        div().withClass("row").with(
-                                div().withClass("col-10").with(groupByFunction.apply(attrName)),
-                                div().withClass("col-2").with(getPlotGroupsTogetherTag(attrName))
-                        ),
-                        additionalTagFunction==null?div():additionalTagFunction.apply(attrName)
-                );
+                newTagFunction = attrName -> combineTagFunction.apply(combineTagFunction.apply(groupByFunction.apply(attrName),getPlotGroupsTogetherTag(attrName)),additionalTagFunction==null?div():additionalTagFunction.apply(attrName));
             } else {
                 newTagFunction = additionalTagFunction == null ? groupByFunction : attrName -> combineTagFunction.apply(groupByFunction.apply(attrName),additionalTagFunction.apply(attrName));
             }
@@ -139,22 +139,22 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             newTagFunction = additionalTagFunction;
             newAdditionalIdsFunction = additionalInputIdsFunction;
         }
-        return super.getOptionsTag(userRoleFunction,newTagFunction,newAdditionalIdsFunction,(tag1,tag2)->div().with(tag1,tag2),groupByPerAttribute);
+        return super.getOptionsTag(userRoleFunction,newTagFunction,newAdditionalIdsFunction,(tag1,tag2)->{tag1.children.addAll(tag2.children); return tag1;},groupByPerAttribute);
     }
 
-    protected Tag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
+    protected ContainerTag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
         String id = getGroupByChartFieldName(idFromName(attrName));
         List<AbstractAttribute> availableGroups = groupByAttributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
         Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
         String clazz = "form-control multiselect";
         return div().withClass("row").with(
-                div().withClass("col-7").with(
+                div().withClass("col-8").with(
                         label("Group By").attr("style","width: 100%;").with(
                                 br(),
                                 SimilarPatentServer.technologySelectWithCustomClass(id+"[]",id,clazz, groupedGroupAttrs,null)
                         )
-                ),div().withClass("col-3").with(
+                ),div().withClass("col-2").with(
                         label("Max Groups").attr("style","width: 100%;").with(
                                 br(), input().withClass("form-control").withType("number").attr("style","height: 28px;").attr("min","0").withId(id+MAX_GROUP_FIELD).withName(id+MAX_GROUP_FIELD).withValue("10")
                         )
