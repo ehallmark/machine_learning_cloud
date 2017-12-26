@@ -1047,7 +1047,7 @@ public class SimilarPatentServer {
             List<Map<String,String>> data;
             String title;
             if(paramIdx.length()>0) {
-                TableResponse tableResponse = req.session().attribute("table-"+paramIdx);
+                TableResponse tableResponse = req.session(false).attribute("table-"+paramIdx);
                 if(tableResponse!=null) {
                     System.out.println("Found tableResponse...");
                     headers = tableResponse.headers;
@@ -1148,13 +1148,16 @@ public class SimilarPatentServer {
             long queriedCount = queriedData.size();
             // check for sorting
             String previousSort = req.session().attribute("previousSort"+paramIdx);
+            System.out.println("Previous sort: "+previousSort);
             if(req.queryMap("sorts")!=null) {
                 req.queryMap("sorts").toMap().forEach((k,v)->{
+                    System.out.println("Sorting "+k+": "+v);
                     if(v==null||k==null) return;
                     boolean isNumericField = numericAttrNames.contains(k);
                     boolean reversed = (v.length > 0 && v[0].equals("-1"));
 
                     String sortStr = k+String.join("",v)+searchStr;
+                    System.out.println("New sort string: "+sortStr);
                     if(previousSort==null||!sortStr.equals(previousSort)) {
                         Comparator<Map<String, String>> comp = (d1, d2) -> {
                             if(isNumericField) {
@@ -1667,7 +1670,7 @@ public class SimilarPatentServer {
                         AtomicInteger totalTableCnt = new AtomicInteger(0);
                         tableResponses.forEach(table -> {
                             String id = "table-" + totalTableCnt.getAndIncrement();
-                            req.session().attribute(id, table);
+                            req.session(false).attribute(id, table);
                         });
 
 
