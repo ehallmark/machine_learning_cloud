@@ -787,7 +787,7 @@ var select2SelectedFunction = function(item) {
   var $option = $(item.element);
   var $optGroup = $option.parent();
   if($optGroup.is("optgroup") && $optGroup.get(0).label!==item.text) {
-      return item.text + " ("+$optGroup.get(0).label+")";
+      return item.text + " of "+$optGroup.get(0).label;
   } else {
       return item.text;
   }
