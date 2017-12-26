@@ -25,11 +25,19 @@ public class PortfolioList implements Comparable<PortfolioList> {
     public enum Type { patents, applications }
     private boolean init = false;
 
-    public PortfolioList(List<Item> itemList) {
+    @Getter
+    private boolean blankGroup;
+    public PortfolioList(List<Item> itemList, boolean blankGroup) {
         this.itemList=itemList;
+        this.blankGroup = blankGroup;
     }
 
-    @Override
+    public PortfolioList(List<Item> itemList) {
+        this(itemList,false);
+    }
+
+
+        @Override
     public int compareTo(PortfolioList o) {
         return Double.compare(o.avgSimilarity,avgSimilarity);
     }
@@ -77,11 +85,17 @@ public class PortfolioList implements Comparable<PortfolioList> {
                 .entrySet()
                 .stream().map(e->{
                     StringJoiner sj = new StringJoiner("| ");
+                    boolean containsBlank = false;
                     for(int i = 0; i < fields.size(); i++) {
                         if(i>=e.getKey().size()) System.out.println("WARNING 2: "+e.getKey()+"  ->  "+fields);
-                        sj.add(String.join(": ", SimilarPatentServer.fullHumanAttributeFor(fields.get(i)),e.getKey().get(i).toString()));
+                        String val = e.getKey().get(i).toString();
+                        if(val.isEmpty()) {
+                            containsBlank=true;
+                            val = "*BLANK*";
+                        }
+                        sj.add(String.join(": ", SimilarPatentServer.fullHumanAttributeFor(fields.get(i)),val));
                     }
-                    return new Pair<>(sj.toString(),new PortfolioList(e.getValue()));
+                    return new Pair<>(sj.toString(),new PortfolioList(e.getValue(),containsBlank));
                 });
     }
 

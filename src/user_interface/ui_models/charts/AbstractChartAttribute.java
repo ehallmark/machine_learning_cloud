@@ -27,6 +27,7 @@ import static j2html.TagCreator.*;
 public abstract class AbstractChartAttribute extends NestedAttribute implements DependentAttribute<AbstractChartAttribute> {
     public static final String PLOT_GROUPS_ON_SAME_CHART_FIELD = "plotGroupsSameChart";
     public static final String MAX_GROUP_FIELD = "maxGroupSizeField";
+    public static final String INCLUDE_BLANK_FIELD = "includeBlanks";
     protected Collection<String> searchTypes;
     @Getter
     protected List<String> attrNames;
@@ -41,6 +42,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected String name;
     protected boolean groupByPerAttribute;
     protected boolean groupsPlottableOnSameChart;
+    protected Map<String,Boolean> attrNameToIncludeBlanksMap;
     public AbstractChartAttribute(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttributes, String name, boolean groupByPerAttribute, boolean groupsPlottableOnSameChart) {
         super(attributes);
         this.groupByAttributes=groupByAttributes;
@@ -50,6 +52,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         this.attrNameToGroupByAttrNameMap = Collections.synchronizedMap(new HashMap<>());
         this.attrNameToMaxGroupSizeMap = Collections.synchronizedMap(new HashMap<>());
         this.attrToPlotOnSameChartMap= Collections.synchronizedMap(new HashMap<>());
+        this.attrNameToIncludeBlanksMap = Collections.synchronizedMap(new HashMap<>());
         this.groupByPerAttribute = groupByPerAttribute;
     }
 
@@ -109,7 +112,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 Function<String, List<String>> groupedByInputIdsFunction = attrName -> {
                     String groupById = getGroupByChartFieldName(idFromName(attrName));
                     String groupByMaxLimit = groupById + MAX_GROUP_FIELD;
-                    return Arrays.asList(groupById, groupByMaxLimit);
+                    String groupByIncludeBlanks = groupById + INCLUDE_BLANK_FIELD;
+                    return Arrays.asList(groupById, groupByMaxLimit, groupByIncludeBlanks);
                 };
                 Function<String,List<String>> _newAdditionalIdsFunction = additionalInputIdsFunction == null ? groupedByInputIdsFunction : attrName -> {
                     return Stream.of(
@@ -145,7 +149,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
         String clazz = "form-control multiselect";
         return div().withClass("row").with(
-                div().withClass("col-9").with(
+                div().withClass("col-7").with(
                         label("Group By").attr("style","width: 100%;").with(
                                 br(),
                                 SimilarPatentServer.technologySelectWithCustomClass(id+"[]",id,clazz, groupedGroupAttrs,null)
@@ -154,6 +158,10 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                         label("Max Groups").attr("style","width: 100%;").with(
                                 br(), input().withClass("form-control").withType("number").attr("style","height: 28px;").attr("min","0").withId(id+MAX_GROUP_FIELD).withName(id+MAX_GROUP_FIELD).withValue("10")
                         )
+                ),div().withClass("col-2").with(
+                        label("Include Blank Group").attr("style","width: 100%;").with(
+                                br(), input().withType("checkbox").withId(id+INCLUDE_BLANK_FIELD).withName(id+INCLUDE_BLANK_FIELD).withValue("10")
+                        )
                 )
         );
     }
@@ -161,8 +169,9 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected Stream<Pair<String,PortfolioList>> groupPortfolioListForGivenAttribute(PortfolioList portfolioList, String attribute) {
         List<String> groupedBy = attrNameToGroupByAttrNameMap.get(attribute);
         Integer maxLimit = attrNameToMaxGroupSizeMap.get(attribute);
+        Boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attribute,false);
         if(maxLimit==null) maxLimit = 1;
-        return portfolioList.groupedBy(groupedBy).sorted((p1,p2)->Integer.compare(p2.getSecond().getItemList().size(),p1.getSecond().getItemList().size())).limit(maxLimit);
+        return portfolioList.groupedBy(groupedBy).filter(g->includeBlank||!g.getSecond().isBlankGroup()).sorted((p1,p2)->Integer.compare(p2.getSecond().getItemList().size(),p1.getSecond().getItemList().size())).limit(maxLimit);
     }
 
     @Override
@@ -197,6 +206,10 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 if(groupSize.length()>0) {
                     attrNameToMaxGroupSizeMap.put(attrName, Integer.valueOf(groupSize));
                 }
+
+                String groupIncludeBlanksId = groupId + INCLUDE_BLANK_FIELD;
+                boolean groupIncludeBlanks = SimilarPatentServer.extractBool(params, groupIncludeBlanksId);
+                attrNameToIncludeBlanksMap.put(attrName, groupIncludeBlanks);
 
                 if(groupsPlottableOnSameChart) {
                     String plotOnSameChartId = groupId+PLOT_GROUPS_ON_SAME_CHART_FIELD;

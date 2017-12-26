@@ -1156,9 +1156,14 @@ public class SimilarPatentServer {
                     boolean isNumericField = numericAttrNames.contains(k);
                     boolean reversed = (v.length > 0 && v[0].equals("-1"));
 
-                    String sortStr = k+String.join("",v)+searchStr;
+                    String directionStr = reversed ? "-1" : "1";
+
+                    String sortStr = k+directionStr+searchStr;
                     System.out.println("New sort string: "+sortStr);
-                    if(previousSort==null||!sortStr.equals(previousSort)) {
+                    if(previousSort!=null&&sortStr.equals(k + (reversed ? "1" : "-1") + searchStr)) {
+                        Collections.reverse(queriedData);
+                    }
+                    else if(previousSort==null||!sortStr.equals(previousSort)) {
                         Comparator<Map<String, String>> comp = (d1, d2) -> {
                             if(isNumericField) {
                                 Double v1 = null;
