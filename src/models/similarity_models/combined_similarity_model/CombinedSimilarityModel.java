@@ -63,7 +63,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             int outputSize = input1+input2;
             int numHiddenEncodings = 2;
             int numHiddenDecodings = 2;
-            int syncLastNLayers = 5;
+            int syncLastNLayers = 3;
             Updater updater = Updater.RMSPROP;
 
             LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
