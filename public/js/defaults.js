@@ -89,7 +89,7 @@ $(document).ready(function() {
            //alert("Please include some attributes in the Attributes section.");
        //}
 
-       setCollapsibleHeaders('#results .collapsible-header');
+       setCollapsibleHeaders('#results .tab-pane .content .collapsible-header');
 
        if(data.hasOwnProperty('tableCnt')) {
             var tableCnt = data.tableCnt;
