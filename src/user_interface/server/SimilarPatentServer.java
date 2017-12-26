@@ -2068,6 +2068,9 @@ public class SimilarPatentServer {
                                         div().withClass("row").with(
                                                 div().withClass("col-12").withId("attributesForm").with(
                                                         customFormRow("attributes", allAttributes, userRoleFunction)
+                                                ),
+                                                div().withClass("col-12 content").with(
+
                                                 )
                                         )
                                 ),
@@ -2075,6 +2078,9 @@ public class SimilarPatentServer {
                                         div().withClass("row").with(
                                                 div().withClass("col-12").withId("chartsForm").with(
                                                         customFormRow("charts",allCharts, userRoleFunction)
+                                                ),
+                                                div().withClass("col-12 content").with(
+
                                                 )
                                         )
                                 )
@@ -2171,7 +2177,6 @@ public class SimilarPatentServer {
         );
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse").with(
-                        br(),
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
                                 innerFiltersAndSettings(userRoleFunction,buttons),
@@ -2207,7 +2212,7 @@ public class SimilarPatentServer {
     private static Tag toggleButton(String id, String text) {
         return div().withClass("row").with(
                 div().withId(id+"-panel-toggle").withClass("col-12").with(
-                        h5(text).withClass("collapsible-header").attr("style","margin-bottom: 15px;").attr("data-target",id)
+                        h5(text).withClass("collapsible-header").attr("style","margin-bottom: 15px;").attr("data-target","#"+id)
                 )
         );
     }
@@ -2217,7 +2222,7 @@ public class SimilarPatentServer {
         String groupID = type+"-row";
         return span().with(
                 toggleButton(groupID, shortTitle),
-                span().withId(groupID).with(
+                span().withId(groupID).withClass("collapse show").with(
                         div().withClass("collapsible-form row").with(
                                 div().withClass("col-12").with(
                                         div().withClass("attributeElement").with(

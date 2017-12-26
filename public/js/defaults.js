@@ -51,7 +51,7 @@ $(document).ready(function() {
             // $('.loader').parent().hide();
            },
            error: function(jqxhr,status,error) {
-             $('#results .tab-pane').html('<div style="color: red;">Server error during ajax request:'+error+'</div>');
+             $('#results .tab-pane .content').html('<div style="color: red;">Server error during ajax request:'+error+'</div>');
            },
            success: successFunction
          });
@@ -68,7 +68,7 @@ $(document).ready(function() {
     };
 
     var successReportFrom = function(data) {
-       var $tabs = $('#results').find('.tab-pane');
+       var $tabs = $('#results').find('.tab-pane .content');
        var $content = $(data.message).children();
        $tabs.each(function(i,e){
            $(this).html($content.get(i));
@@ -228,7 +228,7 @@ $(document).ready(function() {
              }
            }
          } catch (err) {
-           $('#results .tab-pane').html("<div style='color:red;'>JavaScript error occured while rendering charts: " + err.message + '</div>');
+           $('#results .tab-pane .content').html("<div style='color:red;'>JavaScript error occured while rendering charts: " + err.message + '</div>');
          }
        }
     };
@@ -240,7 +240,7 @@ $(document).ready(function() {
         var buttonText = "Generate Report";
         var buttonTextWhileSearching = "Generating...";
         var formId = $(this).attr('id');
-        $('#results .tab-pane').html(''); // clears results div
+        $('##results .tab-pane .content').html(''); // clears results div
         return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFrom);
     });
     $('.generate-reports-form-button').click(function(e) {
@@ -574,7 +574,7 @@ $(document).ready(function() {
 var resetSearchForm = function() {
     $('.attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
     $('div.attribute').addClass("disabled");
-    $('#results .tab-pane').html('');
+    $('#results .tab-pane .content').html('');
 };
 
 var findByValue = function(inputs, value) {
