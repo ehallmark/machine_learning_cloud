@@ -73,7 +73,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             int i = 0;
             NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
-                    .learningRate(0.1)
+                    .learningRate(0.025)
                     .learningRateDecayPolicy(LearningRatePolicy.Inverse)
                     .lrPolicyPower(0.7)
                     .lrPolicyDecayRate(0.001)
@@ -83,7 +83,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
             NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
-                    .learningRate(0.1)
+                    .learningRate(0.025)
                     .learningRateDecayPolicy(LearningRatePolicy.Inverse)
                     .lrPolicyPower(0.7)
                     .lrPolicyDecayRate(0.001)
