@@ -8,6 +8,7 @@ import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import models.NDArrayHelper;
 import org.deeplearning4j.nn.api.Layer;
+import org.deeplearning4j.nn.conf.LearningRatePolicy;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
@@ -74,6 +75,9 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
                     .learningRate(0.01)
+                    .learningRateDecayPolicy(LearningRatePolicy.Inverse)
+                    .lrPolicyPower(0.7)
+                    .lrPolicyDecayRate(0.001)
                     .activation(Activation.TANH)
                     .list()
                     .layer(i, NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build());
@@ -81,6 +85,9 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
                     .learningRate(0.01)
+                    .learningRateDecayPolicy(LearningRatePolicy.Inverse)
+                    .lrPolicyPower(0.7)
+                    .lrPolicyDecayRate(0.001)
                     .activation(Activation.TANH)
                     .list()
                     .layer(i, NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build());
@@ -137,7 +144,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             wordCpc2Vec.init();
             cpcVecNet.init();
 
-            syncParams(wordCpc2Vec,cpcVecNet,syncLastNLayers);
+            // syncParams(wordCpc2Vec,cpcVecNet,syncLastNLayers);
 
             Map<String,MultiLayerNetwork> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
             nameToNetworkMap.put(WORD_CPC_2_VEC,wordCpc2Vec);
