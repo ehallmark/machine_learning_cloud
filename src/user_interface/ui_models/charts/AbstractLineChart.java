@@ -219,7 +219,7 @@ public class AbstractLineChart extends ChartAttribute {
         );
     }
 
-    private static String singularize(String in) {
+    protected static String singularize(String in) {
         return in.endsWith("s") && in.length()>1 ? in.substring(0,in.length()-1) : in;
     }
 }
