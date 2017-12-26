@@ -5,6 +5,7 @@ import data_pipeline.helpers.Function2;
 import data_pipeline.models.CombinedNeuralNetworkPredictionModel;
 import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
+import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import models.NDArrayHelper;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
@@ -71,14 +72,14 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             int i = 0;
             NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(Updater.ADAM)
-                    .learningRate(0.01)
+                    .learningRate(0.1)
                     .activation(Activation.TANH)
                     .list()
                     .layer(i, NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build());
 
             NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(Updater.ADAM)
-                    .learningRate(0.01)
+                    .learningRate(0.1)
                     .activation(Activation.TANH)
                     .list()
                     .layer(i, NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build());
@@ -142,8 +143,11 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             nameToNetworkMap.put(CPC_VEC_NET,cpcVecNet);
             this.net = new CombinedModel(nameToNetworkMap);
         } else {
-            wordCpc2Vec = net.getNameToNetworkMap().get(WORD_CPC_2_VEC);
-            cpcVecNet = net.getNameToNetworkMap().get(CPC_VEC_NET);
+            double newLearningRate = 0.01;
+            wordCpc2Vec = NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(WORD_CPC_2_VEC),newLearningRate,false);
+            cpcVecNet = NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(CPC_VEC_NET),newLearningRate,false);
+            net.getNameToNetworkMap().put(WORD_CPC_2_VEC,wordCpc2Vec);
+            net.getNameToNetworkMap().put(CPC_VEC_NET,cpcVecNet);
         }
 
         Function<Void,Double> trainErrorFunction = (v) -> {
