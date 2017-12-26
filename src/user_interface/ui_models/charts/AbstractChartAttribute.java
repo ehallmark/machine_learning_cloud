@@ -29,6 +29,9 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     public static final String PLOT_GROUPS_ON_SAME_CHART_FIELD = "plotGroupsSameChart";
     public static final String MAX_GROUP_FIELD = "maxGroupSizeField";
     public static final String INCLUDE_BLANK_FIELD = "includeBlanks";
+    protected static final Function2<ContainerTag,ContainerTag,ContainerTag> DEFAULT_COMBINE_BY_FUNCTION = (tag1,tag2) -> {
+        return div().with(tag1,tag2);
+    };
     protected Collection<String> searchTypes;
     @Getter
     protected List<String> attrNames;
@@ -77,13 +80,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction = (tag1,tag2) -> {
-            if(tag1==null||tag1.children==null) return tag2;
-            if(tag2==null||tag2.children==null) return tag1;
-            tag1.children.addAll(tag2.children);
-            return tag1;
-        };
-        return this.getOptionsTag(userRoleFunction,null,null,combineTagFunction,groupByPerAttribute);
+        return this.getOptionsTag(userRoleFunction,null,null,DEFAULT_COMBINE_BY_FUNCTION,groupByPerAttribute);
     }
 
     private ContainerTag getPlotGroupsTogetherTag(String attrName) {
@@ -104,7 +101,15 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         if(groupByAttributes!=null) {
             Function<String,ContainerTag> groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
             if(groupsPlottableOnSameChart) {
-                newTagFunction = attrName -> combineTagFunction.apply(combineTagFunction.apply(groupByFunction.apply(attrName),getPlotGroupsTogetherTag(attrName)),additionalTagFunction==null?div():additionalTagFunction.apply(attrName));
+                newTagFunction = attrName -> combineTagFunction.apply(
+                        div().withClass("row").with(
+                                div().withClass("col-10").with(
+                                        groupByFunction.apply(attrName)
+                                ),div().withClass("col-2").with(
+                                        getPlotGroupsTogetherTag(attrName)
+                                )
+                        ),additionalTagFunction==null?div():additionalTagFunction.apply(attrName)
+                );
             } else {
                 newTagFunction = additionalTagFunction == null ? groupByFunction : attrName -> combineTagFunction.apply(groupByFunction.apply(attrName),additionalTagFunction.apply(attrName));
             }
@@ -139,7 +144,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             newTagFunction = additionalTagFunction;
             newAdditionalIdsFunction = additionalInputIdsFunction;
         }
-        return super.getOptionsTag(userRoleFunction,newTagFunction,newAdditionalIdsFunction,(tag1,tag2)->{tag1.children.addAll(tag2.children); return tag1;},groupByPerAttribute);
+        return super.getOptionsTag(userRoleFunction,newTagFunction,newAdditionalIdsFunction,DEFAULT_COMBINE_BY_FUNCTION,groupByPerAttribute);
     }
 
     protected ContainerTag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {

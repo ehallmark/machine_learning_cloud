@@ -2,6 +2,7 @@ package user_interface.ui_models.charts;
 
 import data_pipeline.helpers.Function2;
 import elasticsearch.DataSearcher;
+import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
 import model.nodes.FactorNode;
@@ -72,9 +73,9 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
 
-        Function2<Tag,Tag,Tag> combineTagFunction = (tag1, tag2) -> div().with(tag1,tag2);
-        Function<String,Tag> additionalTagFunction = getCombineByTagFunction(groupedGroupAttrs);
-        return this.getOptionsTag(userRoleFunction,additionalTagFunction,null,combineTagFunction,groupByPerAttribute);
+
+        Function<String,ContainerTag> additionalTagFunction = getCombineByTagFunction(groupedGroupAttrs);
+        return this.getOptionsTag(userRoleFunction,additionalTagFunction,null,DEFAULT_COMBINE_BY_FUNCTION,groupByPerAttribute);
     }
 
 
@@ -90,7 +91,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         );
     }
 
-    protected abstract Function<String,Tag> getCombineByTagFunction(Map<String,List<String>> groupedGroupAttrs);
+    protected abstract Function<String,ContainerTag> getCombineByTagFunction(Map<String,List<String>> groupedGroupAttrs);
 
     protected String getCollectByAttrFieldName(String attrName) {
         return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_BY_ATTR_FIELD+(attrName==null?"":attrName)).replace(".","");

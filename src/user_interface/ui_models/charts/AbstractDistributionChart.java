@@ -5,6 +5,7 @@ import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import data_pipeline.helpers.Function2;
 import elasticsearch.DataSearcher;
+import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
@@ -55,7 +56,7 @@ public class AbstractDistributionChart extends ChartAttribute {
         }).collect(Collectors.toList());
     }
 
-    private Tag getAdditionalTagPerAttr(String attrName) {
+    private ContainerTag getAdditionalTagPerAttr(String attrName) {
         attrName = idFromName(attrName);
         return div().withClass("row").with(
                 div().withClass("col-12").with(
@@ -69,9 +70,9 @@ public class AbstractDistributionChart extends ChartAttribute {
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        Function<String,Tag> additionalTagFunction = this::getAdditionalTagPerAttr;
+        Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
         Function<String,List<String>> additionalInputIdsFunction = attrName -> Collections.singletonList(idFromName(attrName)+MAX_SLICES);
-        Function2<Tag,Tag,Tag> combineFunction = (tag1,tag2) -> div().withClass("row").with(
+        Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
                 div().withClass("col-10").with(
                         tag1
                 ),div().withClass("col-2").with(

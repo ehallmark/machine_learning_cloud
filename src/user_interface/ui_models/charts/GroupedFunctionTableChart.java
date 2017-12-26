@@ -2,6 +2,7 @@ package user_interface.ui_models.charts;
 
 import data_pipeline.helpers.Function2;
 import elasticsearch.DataSearcher;
+import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import model.nodes.FactorNode;
 import org.nd4j.linalg.primitives.Pair;
@@ -34,7 +35,7 @@ public class GroupedFunctionTableChart extends TableAttribute {
     }
 
     @Override
-    protected Function<String, Tag> getCombineByTagFunction(Map<String, List<String>> groupedGroupAttrs) {
+    protected Function<String, ContainerTag> getCombineByTagFunction(Map<String, List<String>> groupedGroupAttrs) {
         return attrName -> {
             return div().withClass("row").with(
                     div().withClass("col-8").with(
