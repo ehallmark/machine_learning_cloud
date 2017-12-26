@@ -68,7 +68,7 @@ $(document).ready(function() {
     };
 
     var successReportFrom = function(data) {
-       var $tabs = $'#results').find('.tab-pane');
+       var $tabs = $('#results').find('.tab-pane');
        var $content = $(data.message).children();
        $tabs.each(function(i,e){
            $(this).html($content.get(i));
