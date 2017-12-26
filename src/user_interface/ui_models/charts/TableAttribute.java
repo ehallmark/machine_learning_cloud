@@ -52,7 +52,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         return Stream.of(attrNames).flatMap(attrList->{
             List<String> humanAttrs =  attrList.stream().map(attribute->SimilarPatentServer.fullHumanAttributeFor(attribute)).collect(Collectors.toList());
             String humanSearchType = combineTypesToString(searchTypes);
-            String title = collectByAttrName==null?humanSearchType:SimilarPatentServer.fullHumanAttributeFor(collectByAttrName) + " "+ collectorType.toString() + (humanAttrs.isEmpty() ? "" :  " by "+ (humanAttrs.isEmpty() ? "UNKNOWN" : String.join(", ",humanAttrs)));
+            String title = (collectByAttrName==null?humanSearchType:SimilarPatentServer.fullHumanAttributeFor(collectByAttrName)) + " "+ collectorType.toString() + (humanAttrs.isEmpty() ? "" :  " by "+ (humanAttrs.isEmpty() ? "UNKNOWN" : String.join(", ",humanAttrs)));
             return groupPortfolioListForGivenAttribute(portfolioList,"").map(groupPair-> {
                 return createHelper(groupPair.getSecond().getItemList(), attrList, title, groupPair.getFirst());
             });
