@@ -13,8 +13,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static j2html.TagCreator.div;
-import static j2html.TagCreator.span;
+import static j2html.TagCreator.*;
 
 
 /**
@@ -77,7 +76,10 @@ public abstract class NestedAttribute extends AbstractAttribute {
         List<AbstractAttribute> applicableAttributes = attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
         return div().with(
                 div().with(
-                        groupbyTag==null?span():groupbyTag,
+                        groupbyTag==null?span():div().with(
+                                groupbyTag,br(),
+                                p("Main Group By")
+                        ),
                         SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),id,clazz, applicableAttributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(
                         applicableAttributes.stream().map(filter->{

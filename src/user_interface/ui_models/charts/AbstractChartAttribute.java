@@ -155,7 +155,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         String clazz = "form-control multiselect";
         return div().withClass("row").with(
                 div().withClass("col-8").with(
-                        label("Group By").attr("style","width: 100%;").with(
+                        label("Group By").attr("title","Creates a separate chart for each of the largest groups.").attr("style","width: 100%;").with(
                                 br(),
                                 SimilarPatentServer.technologySelectWithCustomClass(id+"[]",id,clazz, groupedGroupAttrs,null)
                         )
