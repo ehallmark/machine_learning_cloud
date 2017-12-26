@@ -51,7 +51,7 @@ $(document).ready(function() {
             // $('.loader').parent().hide();
            },
            error: function(jqxhr,status,error) {
-             $('#results .tab-panel').html('<div style="color: red;">Server error during ajax request:'+error+'</div>');
+             $('#results .tab-pane').html('<div style="color: red;">Server error during ajax request:'+error+'</div>');
            },
            success: successFunction
          });
@@ -228,12 +228,13 @@ $(document).ready(function() {
              }
            }
          } catch (err) {
-           $('#results').html("<div style='color:red;'>JavaScript error occured while rendering charts: " + err.message + '</div>');
+           $('#results .tab-pane').html("<div style='color:red;'>JavaScript error occured while rendering charts: " + err.message + '</div>');
          }
        }
     };
 
     $('#generate-reports-form').submit(function(e) {
+        e.preventDefault();
         $(this).find('#only-excel-hidden-input').val(false);
         var buttonClass = "generate-reports-form-button";
         var buttonText = "Generate Report";
@@ -247,6 +248,7 @@ $(document).ready(function() {
         $('#generate-reports-form').submit();
     });
     $('.download-to-excel-button').click(function(e) {
+        e.preventDefault();
         $('#generate-reports-form').find('#only-excel-hidden-input').val(true);
         var buttonClass = "download-to-excel-button";
         var buttonText = "Download to Excel";
@@ -572,7 +574,7 @@ $(document).ready(function() {
 var resetSearchForm = function() {
     $('.attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
     $('div.attribute').addClass("disabled");
-    $('#results .tab-panel').html('');
+    $('#results .tab-pane').html('');
 };
 
 var findByValue = function(inputs, value) {

@@ -2056,7 +2056,7 @@ public class SimilarPatentServer {
                 div().withClass("col-12").with(
                         ul().withClass("nav nav-tabs").attr("role","tablist").with(
                                 li().withClass("nav-item").with(
-                                        a("Data").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
+                                        a("Attributes").withClass("nav-link active show").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
                                 ),li().withClass("nav-item").with(
                                         a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
                                 )
@@ -2064,7 +2064,7 @@ public class SimilarPatentServer {
                 ),
                 div().withClass("col-12").with(
                         div().withClass("row tab-content").with(
-                                div().withClass("col-12 tab-pane fade").withId("data-tab").attr("role","tabpanel").with(
+                                div().withClass("col-12 tab-pane fade active show").withId("data-tab").attr("role","tabpanel").with(
                                         div().withClass("row").with(
                                                 div().withClass("col-12").withId("attributesForm").with(
                                                         customFormRow("attributes", allAttributes, userRoleFunction)
@@ -2152,7 +2152,7 @@ public class SimilarPatentServer {
                         form().withAction(UPDATE_DEFAULT_ATTRIBUTES_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId("update-default-attributes-form").with(
                                 input().withType("hidden").withName("name").withValue("default"),
                                 innerFiltersAndSettings(userRoleFunction,buttons),
-                                div().withClass("col-12").with(
+                                div().withClass("col-12").attr("style","margin-top: 20px;").with(
                                         innerAttributesAndCharts(userRoleFunction,buttons)
                                 )
                         )
@@ -2175,7 +2175,7 @@ public class SimilarPatentServer {
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
                                 innerFiltersAndSettings(userRoleFunction,buttons),
-                                div().withClass("col-12").withId("results").with(
+                                div().withClass("col-12").attr("style","margin-top: 20px;").withId("results").with(
                                         innerAttributesAndCharts(userRoleFunction,buttons)
                                 )
                         )
@@ -2207,7 +2207,7 @@ public class SimilarPatentServer {
     private static Tag toggleButton(String id, String text) {
         return div().withClass("row").with(
                 div().withId(id+"-panel-toggle").withClass("col-12").with(
-                        h5(text).attr("style","margin-bottom: 15px;")
+                        h5(text).withClass("collapsible-header").attr("style","margin-bottom: 15px;").attr("data-target",id)
                 )
         );
     }
