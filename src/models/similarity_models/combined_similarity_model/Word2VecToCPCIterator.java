@@ -33,9 +33,13 @@ import java.util.stream.Stream;
  * Created by ehallmark on 10/27/17.
  */
 public class Word2VecToCPCIterator implements DataSetIterator {
-    private static Function<List<VocabWord>,Map<String,Integer>> defaultBOWFunction = sequence -> {
+    private static Function<List<VocabWord>,Map<String,Integer>> groupingBOWFunction = sequence -> {
+        return sequence.stream().collect(Collectors.groupingBy(word->word.getLabel(),Collectors.collectingAndThen(Collectors.counting(),l->l.intValue())));
+    };
+    private static Function<List<VocabWord>,Map<String,Integer>> countBOWFunction = sequence -> {
         return sequence.stream().collect(Collectors.toMap(word->word.getLabel(),word->(int)word.getElementFrequency()));
     };
+
 
     private SequenceIterator<VocabWord> documentIterator;
     private Vectorizer vectorizer;
@@ -131,7 +135,7 @@ public class Word2VecToCPCIterator implements DataSetIterator {
             INDArray labelVec = vectorizer.vectorFor(label);
             if (labelVec == null) continue;
             AtomicInteger found = new AtomicInteger(0);
-            Map<String, Integer> wordCounts = defaultBOWFunction.apply(document.getElements());
+            Map<String, Integer> wordCounts = groupingBOWFunction.apply(document.getElements());
             totalWordsPerBatch.getAndAdd(wordCounts.size());
             wordCounts.entrySet().forEach(e -> {
                 INDArray phraseVec = getPhraseVector(word2Vec, e.getKey());

@@ -106,6 +106,13 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                 vocabWord.setElementFrequency(cnt);
                 words.add(vocabWord);
             });
+            int tokenCnt = wordCountMap.size()/tokens.size();
+            tokens.forEach(token->{
+                VocabWord vocabWord = new VocabWord(tokenCnt,token);
+                vocabWord.setSequencesCount(1);
+                vocabWord.setElementFrequency(tokenCnt);
+                words.add(vocabWord);
+            });
         } else {
             String[] contentWords = new String[wordCountMap.size()];
             int[] contentCounts = new int[wordCountMap.size()];
