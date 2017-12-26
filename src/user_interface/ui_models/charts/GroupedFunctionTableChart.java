@@ -66,6 +66,6 @@ public class GroupedFunctionTableChart extends TableAttribute {
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         super.extractRelevantInformationFromParams(params);
-        if(collectByAttrName==null) throw new RuntimeException("Must select 'Collect By' attribute in "+SimilarPatentServer.humanAttributeFor(getName()));
+        if(attrNames!=null&attrNames.size()>0&&collectByAttrName==null) throw new RuntimeException("Must select 'Collect By' attribute in "+SimilarPatentServer.humanAttributeFor(getName()));
     }
 }
