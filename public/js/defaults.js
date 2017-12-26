@@ -68,18 +68,11 @@ $(document).ready(function() {
     };
 
     var successReportFrom = function(data) {
-       var $activePanes = $('#results-wrapper').find('li a.nav-link.active').filter(":first");
-       var activePaneSelector = null;
-       if($activePanes.length>0) {
-           activePaneSelector = $activePanes.filter(':first').attr('href');
-       }
-       $('#results').html(data.message);
-       if(activePaneSelector!==null) {
-           $('#results').find('.tab-pane.active').removeClass('active show');
-           $('#results-wrapper').find('li a.nav-link.active').removeClass('active');
-           $('#results-wrapper').find('li a.nav-link[href="'+activePaneSelector+'"]').addClass('active');
-           $(activePaneSelector).addClass('active').addClass('show');
-       }
+       var $tabs = $'#results').find('.tab-pane');
+       var $content = $(data.message).children();
+       $tabs.each(function(i,e){
+           $(this).html($content.get(i));
+       });
        if($('#results #data-table table thead th').length > 0) {
            $('#results #data-table table').dynatable({
              dataset: {
@@ -246,7 +239,7 @@ $(document).ready(function() {
         var buttonText = "Generate Report";
         var buttonTextWhileSearching = "Generating...";
         var formId = $(this).attr('id');
-        $('#results').html(''); // clears results div
+        $('#results .tab-panel').html(''); // clears results div
         return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFrom);
     });
     $('.generate-reports-form-button').click(function(e) {

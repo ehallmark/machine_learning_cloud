@@ -1695,16 +1695,12 @@ public class SimilarPatentServer {
                         long timeEnd = System.currentTimeMillis();
                         double timeSeconds = new Double(timeEnd - timeStart) / 1000;
                         Tag results = div().with(
-                              div().withClass("col-12").with(
-                                        div().withClass("row tab-content").with(
-                                                div().withClass("col-12 tab-pane fade show active data-tab").attr("role","tabpanel").with(
-                                                        p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
-                                                        dataTable
-                                                ), div().withClass("col-12 tab-pane fade show chart-tab").attr("role","tabpanel").with(
-                                                        p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
-                                                        chartTag
-                                                )
-                                        )
+                                div().withClass("col-12").with(
+                                        p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
+                                        dataTable
+                                ), div().withClass("col-12").with(
+                                        p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
+                                        chartTag
                                 )
                         );
                         html = new Gson().toJson(new AjaxChartMessage(results.render(), totalChartCnt.get(), totalTableCnt.get()));
@@ -2104,14 +2100,14 @@ public class SimilarPatentServer {
                         buttons,
                         div().withClass("col-12").with(
                                 div().withClass("row tab-content").with(
-                                        div().withClass("col-12 tab-pane fade data-tab").attr("role","tabpanel").with(
+                                        div().withClass("col-12 tab-pane fade").withId("data-tab").attr("role","tabpanel").with(
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").withId("attributesForm").with(
                                                                 customFormRow("attributes", allAttributes, userRoleFunction)
                                                         )
                                                 )
                                         ),
-                                        div().withClass("col-12 tab-pane fade chart-tab").attr("role","tabpanel").with(
+                                        div().withClass("col-12 tab-pane fade").withId("chart-tab").attr("role","tabpanel").with(
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").withId("chartsForm").with(
                                                                 customFormRow("charts",allCharts, userRoleFunction)
@@ -2162,18 +2158,19 @@ public class SimilarPatentServer {
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
                                 innerModelsFormAttributes(userRoleFunction,buttons)
-                        )
-                ),
-                div().withClass("col-12").attr("style","padding-top: 20px;").withId("results-wrapper").with(
-                        ul().withClass("nav nav-tabs").attr("role","tablist").with(
-                                li().withClass("nav-item").with(
-                                        a("Data").withClass("nav-link active").attr("data-toggle","tab").withHref(".data-tab").attr("role","tab")
-                                ),li().withClass("nav-item").with(
-                                        a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref(".chart-tab").attr("role","tab")
+                                div().withClass("col-12").attr("style","padding-top: 20px;").withId("results-wrapper").with(
+
+                                ),
+                                div().withClass("col-12").withId("results").with(
+                                        ul().withClass("nav nav-tabs").attr("role","tablist").with(
+                                                li().withClass("nav-item").with(
+                                                        a("Data").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
+                                                ),li().withClass("nav-item").with(
+                                                        a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
+                                                )
+                                        )
                                 )
                         )
-                ),
-                div().withClass("col-12").withId("results").with(
                 )
         );
     }
