@@ -73,14 +73,14 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             int i = 0;
             NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
-                    .learningRate(0.1)
+                    .learningRate(0.01)
                     .activation(Activation.TANH)
                     .list()
                     .layer(i, NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build());
 
             NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
-                    .learningRate(0.1)
+                    .learningRate(0.01)
                     .activation(Activation.TANH)
                     .list()
                     .layer(i, NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build());
