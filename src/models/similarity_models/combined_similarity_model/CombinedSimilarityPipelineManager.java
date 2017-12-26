@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
     public static final String MODEL_NAME = "combined_similarity_model";
-    private static final int BATCH_SIZE = 64;
+    private static final int BATCH_SIZE = 32;
     private static final File INPUT_DATA_FOLDER = new File("combined_similarity_model_input_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"combined_similarity_model_predictions/predictions_map.jobj");
     private String modelName;

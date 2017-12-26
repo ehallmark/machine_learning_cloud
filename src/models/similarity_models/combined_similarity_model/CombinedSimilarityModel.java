@@ -55,14 +55,14 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         MultiLayerNetwork wordCpc2Vec;
         MultiLayerNetwork cpcVecNet;
         if(net==null) {
-            int hiddenLayerSize = 64;
-            int encodingSize = 32;
+            int hiddenLayerSize = 512;
+            int encodingSize = 64;
             int input1 = 128;
             int input2 = 32;
             int outputSize = input1+input2;
-            int numHiddenEncodings = 6;
+            int numHiddenEncodings = 4;
             int numHiddenDecodings = 4;
-            int syncLastNLayers = 8;
+            int syncLastNLayers = 7;
 
             LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
@@ -152,14 +152,14 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
         Function2<LocalDateTime,Double,Void> saveFunction = (datetime, score) -> {
             try {
-                //save(datetime,score);
+                save(datetime,score);
             } catch(Exception e) {
                 e.printStackTrace();
             }
             return null;
         };
 
-        final int printIterations = 100;
+        final int printIterations = 800;
         final AtomicBoolean stoppingCondition = new AtomicBoolean(false);
 
         System.gc();
