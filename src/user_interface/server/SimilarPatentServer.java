@@ -2068,7 +2068,7 @@ public class SimilarPatentServer {
                                         div().withClass("row").with(
                                                 div().withClass("col-12").withId("attributesForm").with(
                                                         customFormRow("attributes", allAttributes, userRoleFunction)
-                                                ),
+                                                ),buttons, br(),
                                                 div().withClass("col-12 content").with(
 
                                                 )
@@ -2078,14 +2078,14 @@ public class SimilarPatentServer {
                                         div().withClass("row").with(
                                                 div().withClass("col-12").withId("chartsForm").with(
                                                         customFormRow("charts",allCharts, userRoleFunction)
-                                                ),
+                                                ),buttons, br(),
                                                 div().withClass("col-12 content").with(
 
                                                 )
                                         )
                                 )
                         )
-                ), buttons
+                )
         );
     }
 

@@ -51,6 +51,9 @@ $(document).ready(function() {
             // $('.loader').parent().hide();
            },
            error: function(jqxhr,status,error) {
+             if(jqxhr.status==404) {
+                alert("Unable to establish connection to platform. Try refreshing page.");
+             }
              $('#results .tab-pane .content').html('<div style="color: red;">Server error during ajax request:'+error+'</div>');
            },
            success: successFunction
@@ -809,6 +812,11 @@ var renameJSNodeFunction = function(tree,node,newName,file,node_type){
          success: function(data) {
 
          },
+         error: function(jqxhr,status,error) {
+             if(jqxhr.status==404) {
+                alert("Unable to establish connection to platform. Try refreshing page.");
+             }
+         },
          dataType: "json"
      });
      return false;
@@ -834,6 +842,11 @@ var removeJSNodeFunction = function(tree,node,file,node_type){
          },
          success: function(data) {
              tree.delete_node(node);
+         },
+         error: function(jqxhr,status,error) {
+             if(jqxhr.status==404) {
+                alert("Unable to establish connection to platform. Try refreshing page.");
+             }
          },
          dataType: "json"
      });
@@ -971,6 +984,11 @@ var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,cre
             type: "POST",
             url: '/secure/save_'+node_type,
             data: preData,
+            error: function(jqxhr,status,error) {
+                if(jqxhr.status==404) {
+                   alert("Unable to establish connection to platform. Try refreshing page.");
+                }
+            },
             success: function(data) {
                 if(callback!==null) {
                     callback();
