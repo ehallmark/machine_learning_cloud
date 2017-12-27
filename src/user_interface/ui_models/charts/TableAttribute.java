@@ -57,7 +57,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
             if (attr.contains(".")) return new Pair<>(attr.substring(0,attr.indexOf(".")),attr);
             else return null;
         }).filter(p->p!=null).collect(Collectors.groupingBy(p->p.getFirst(),Collectors.mapping(p->p.getSecond(),Collectors.toList())));
-        
+
         String[] topLevelAttrsArray = Stream.of(Stream.of(parentAttrs),attrList.stream().filter(attr->!children.contains(attr))).flatMap(stream->stream).toArray(size->new String[size]);
         return (List<Pair<Item,DeepList<Object>>>)data.stream().flatMap(item-> {
             List<Map<String,List<?>>> rs = Stream.of(topLevelAttrsArray).map(attribute-> {
@@ -77,7 +77,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
             }).collect(Collectors.toList());
             // handle nested objects
             int[] assignments = rs.stream().mapToInt(r->Math.max(1,r.values().stream().mapToInt(val->val.size()).max().orElse(1))).toArray();
-            System.out.println("Factors for attrs "+String.join(", ",topLevelAttrsArray)+": "+ Arrays.toString(assignments));
+            //System.out.println("Factors for attrs "+String.join(", ",topLevelAttrsArray)+": "+ Arrays.toString(assignments));
             FactorNode factor = new FactorNode(null,topLevelAttrsArray,assignments);
             return factor.assignmentPermutationsStream().map(assignment->{
                 return new Pair<>(item,
