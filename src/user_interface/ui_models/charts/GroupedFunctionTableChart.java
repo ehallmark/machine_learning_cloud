@@ -1,35 +1,22 @@
 package user_interface.ui_models.charts;
 
-import data_pipeline.helpers.Function2;
-import elasticsearch.DataSearcher;
 import j2html.tags.ContainerTag;
-import j2html.tags.Tag;
-import model.nodes.FactorNode;
-import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.charts.tables.DeepList;
-import user_interface.ui_models.charts.tables.TableResponse;
-import user_interface.ui_models.portfolios.PortfolioList;
-import user_interface.ui_models.portfolios.items.Item;
 
-import java.util.*;
-import java.util.concurrent.RecursiveTask;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static j2html.TagCreator.*;
 
 /**
  * Created by Evan on 12/16/2017.
  */
-public class GroupedFunctionTableChart extends TableAttribute {
+public class GroupedFunctionTableChart extends AbstractGroupedChart {
     public GroupedFunctionTableChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupedByAttrs, Collection<AbstractAttribute> numericAttrs) {
         super(attributes, groupedByAttrs, numericAttrs, CollectorType.Sum, Constants.GROUPED_FUNCTION_TABLE_CHART);
     }

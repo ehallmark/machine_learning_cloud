@@ -118,6 +118,8 @@ public class Constants {
 	public static final String LINE_CHART = "lineChart[]";
 	public static final String GROUPED_TABLE_CHART = "groupedTableChart[]";
 	public static final String GROUPED_FUNCTION_TABLE_CHART = "groupedFunctionTableChart[]";
+	public static final String PIVOT_COUNT_TABLE_CHART = "pivotCountTableChart[]";
+	public static final String PIVOT_FUNCTION_TABLE_CHART = "pivotFunctionTableChart[]";
 	public static final String COUNTRY = "country";
 	public static final String CITATION_CATEGORY = "citationCategory";
 	public static final String DOC_KIND = "docKind";

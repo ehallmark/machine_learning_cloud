@@ -1,6 +1,5 @@
 package user_interface.ui_models.charts;
 
-import data_pipeline.helpers.Function2;
 import elasticsearch.DataSearcher;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
@@ -16,7 +15,6 @@ import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
@@ -46,19 +44,65 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         this.defaultCollectType=defaultCollectType;
     }
 
-
-    public List<TableResponse> createTables(PortfolioList portfolioList) {
-        if(attrNames==null||attrNames.isEmpty()) return Collections.emptyList();
-        System.out.println("Table attr list: "+String.join("; ",attrNames));
-        return Stream.of(attrNames).flatMap(attrList->{
-            List<String> humanAttrs =  attrList.stream().map(attribute->SimilarPatentServer.fullHumanAttributeFor(attribute)).collect(Collectors.toList());
-            String humanSearchType = combineTypesToString(searchTypes);
-            String title = (collectByAttrName==null?humanSearchType:SimilarPatentServer.fullHumanAttributeFor(collectByAttrName)) + " "+ collectorType.toString() + (humanAttrs.isEmpty() ? "" :  " by "+ (humanAttrs.isEmpty() ? "*BLANK*" : String.join(", ",humanAttrs)));
-            return groupPortfolioListForGivenAttribute(portfolioList,"").map(groupPair-> {
-                return createHelper(groupPair.getSecond().getItemList(), attrList, title, groupPair.getFirst());
+    protected static List<Pair<Item,DeepList<Object>>> groupTableData(List<Item> data, List<String> attrList) {
+        String[] attrsArray = attrList.toArray(new String[]{});
+        return (List<Pair<Item,DeepList<Object>>>)data.stream().flatMap(item-> {
+            List<List<?>> rs = attrList.stream().map(attribute-> {
+                Object r = item.getData(attribute);
+                if (r != null) {
+                    if (r instanceof Collection) {
+                        return (List<?>) ((Collection)r).stream().collect(Collectors.toList());
+                    } else if (r.toString().contains(DataSearcher.ARRAY_SEPARATOR)) {
+                        return Arrays.asList(r.toString().split(DataSearcher.ARRAY_SEPARATOR));
+                    } else {
+                        return Collections.singletonList(r);
+                    }
+                }
+                return Collections.emptyList();
+            }).collect(Collectors.toList());
+            FactorNode factor = new FactorNode(null,attrsArray,rs.stream().mapToInt(r->Math.max(1,r.size())).toArray());
+            return factor.assignmentPermutationsStream().map(assignment->{
+                return new Pair<>(item,
+                        new DeepList<>(
+                                IntStream.range(0,assignment.length).mapToObj(i->{
+                                    if(i>=rs.size()) System.out.println("WARNING 1: "+factor.toString());
+                                    List<?> r = rs.get(i);
+                                    return r.size()>0?r.get(assignment[i]):"";
+                                }).collect(Collectors.toList())
+                        )
+                );
             });
         }).collect(Collectors.toList());
     }
+
+    protected static List<Pair<DeepList<Object>,Set<Item>>> collectData(List<Pair<Item,DeepList<Object>>> groups, int limit) {
+        Stream<Pair<DeepList<Object>,Set<Item>>> stream = groups.stream()
+                .collect(Collectors.groupingBy(t->t.getSecond(),Collectors.mapping(t->t.getFirst(),Collectors.toSet())))
+                .entrySet().stream().sorted((e1, e2)->Integer.compare(e2.getValue().size(),e1.getValue().size()))
+                .map(e->new Pair<>(e.getKey(),e.getValue()));
+        if(limit>0) stream = stream.limit(limit);
+        return stream.collect(Collectors.toList());
+
+    }
+
+    protected static List<Map<String,String>> collectData(List<Pair<Item,DeepList<Object>>> groups, List<String> attrs, CollectorType collectorType, Collector<Pair<Item,DeepList<Object>>,?,? extends Number> collector) {
+        return groups.stream()
+                .collect(Collectors.groupingBy(t->t.getSecond(),collector))
+                .entrySet().stream().sorted((e1, e2)->Double.compare(e2.getValue().doubleValue(),e1.getValue().doubleValue()))
+                .map(e->{
+                    Map<String,String> row = Collections.synchronizedMap(new HashMap<>());
+                    for(int i = 0; i < attrs.size(); i++) {
+                        if(i>=e.getKey().size()) System.out.println("WARNING 2: "+e.getKey()+"  ->  "+attrs);
+                        row.put(attrs.get(i),e.getKey().get(i).toString());
+                    }
+                    row.put(collectorType.toString(),e.getValue()==null?"":e.getValue().toString());
+                    return row;
+                }).collect(Collectors.toList());
+
+    }
+
+    public abstract List<TableResponse> createTables(PortfolioList portfolioList);
+
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
@@ -116,71 +160,6 @@ public abstract class TableAttribute extends AbstractChartAttribute {
                         ), tbody()
                 )
         )   ;
-    }
-
-    private TableResponse createHelper(List<Item> data, List<String> attrList, String yTitle, String subTitle) {
-        TableResponse response = new TableResponse();
-        response.type=getType();
-        response.title=yTitle + (subTitle!=null&&subTitle.length()>0 ? (" (Grouped by "+subTitle+")") : "");
-        response.headers = new ArrayList<>();
-        response.headers.addAll(attrList);
-        response.headers.add(collectorType.toString());
-        response.numericAttrNames = Collections.singleton(collectorType.toString());
-        response.computeAttributesTask = new RecursiveTask<List<Map<String,String>>>() {
-            @Override
-            protected List<Map<String,String>> compute() {
-                if(data.size()==0) return Collections.emptyList();
-                String[] attrsArray = attrList.toArray(new String[]{});
-                List<Pair<Item,DeepList<Object>>> items = (List<Pair<Item,DeepList<Object>>>)data.stream().flatMap(item-> {
-                    List<List<?>> rs = attrList.stream().map(attribute-> {
-                        Object r = item.getData(attribute);
-                        if (r != null) {
-                            if (r instanceof Collection) {
-                                return (List<?>) ((Collection)r).stream().collect(Collectors.toList());
-                            } else if (r.toString().contains(DataSearcher.ARRAY_SEPARATOR)) {
-                                return Arrays.asList(r.toString().split(DataSearcher.ARRAY_SEPARATOR));
-                            } else {
-                                return Collections.singletonList(r);
-                            }
-                        }
-                        return Collections.emptyList();
-                    }).collect(Collectors.toList());
-                    FactorNode factor = new FactorNode(null,attrsArray,rs.stream().mapToInt(r->Math.max(1,r.size())).toArray());
-                    return factor.assignmentPermutationsStream().map(assignment->{
-                        return new Pair<>(item,
-                                new DeepList<>(
-                                        IntStream.range(0,assignment.length).mapToObj(i->{
-                                            if(i>=rs.size()) System.out.println("WARNING 1: "+factor.toString());
-                                            List<?> r = rs.get(i);
-                                            return r.size()>0?r.get(assignment[i]):"";
-                                        }).collect(Collectors.toList())
-                                )
-                        );
-                    });
-                }).collect(Collectors.toList());
-
-                if(items.isEmpty()) return Collections.emptyList();
-
-                System.out.println("Starting to group table...");
-                Collector<Pair<Item,DeepList<Object>>,?,? extends Number> collector = getCollectorFromCollectorType();
-
-                return items.stream()
-                        .collect(Collectors.groupingBy(t->t.getSecond(),collector))
-                        .entrySet().stream().sorted((e1, e2)->Double.compare(e2.getValue().doubleValue(),e1.getValue().doubleValue()))
-                        .map(e->{
-                            Map<String,String> row = Collections.synchronizedMap(new HashMap<>());
-                            for(int i = 0; i < attrList.size(); i++) {
-                                if(i>=e.getKey().size()) System.out.println("WARNING 2: "+e.getKey()+"  ->  "+attrList);
-                                row.put(attrList.get(i),e.getKey().get(i).toString());
-                            }
-                            row.put(collectorType.toString(),e.getValue()==null?"":e.getValue().toString());
-                            return row;
-                        }).collect(Collectors.toList());
-
-            }
-        };
-        response.computeAttributesTask.fork();
-        return response;
     }
 
     Collector<Pair<Item,DeepList<Object>>,?,? extends Number> getCollectorFromCollectorType() {
