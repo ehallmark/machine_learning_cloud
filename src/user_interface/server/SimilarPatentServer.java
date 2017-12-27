@@ -60,6 +60,7 @@ import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1646,6 +1647,38 @@ public class SimilarPatentServer {
                         results.put("message", "success");
                         html = new Gson().toJson(results);
                     } else {
+                        try {
+                            // try to erase previous charts and tables from session memory
+                            //  stopping any computations if present
+                            List<String> previousSessionIds = req.session().attribute("previousSessionIds");
+                            if(previousSessionIds!=null) {
+                                previousSessionIds.forEach(id->{
+                                    Object attr = req.session().attribute(id);
+                                    if(attr!=null) {
+                                        ForkJoinTask task = null;
+                                        if(attr instanceof TableResponse) {
+                                            TableResponse tableResponse = (TableResponse)attr;
+                                            task=tableResponse.computeAttributesTask;
+                                        } else if (attr instanceof ForkJoinTask) {
+                                            task = (ForkJoinTask)attr;
+                                        }
+                                        if(task!=null) {
+                                            try {
+                                                task.quietlyComplete();
+                                                task.cancel(true);
+                                            }catch(Exception e) {
+
+                                            }
+                                        }
+                                        req.session().removeAttribute(id);
+                                    }
+                                });
+                            }
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        List<String> sessionIds = new ArrayList<>();
                         // add chart futures
                         AtomicInteger totalChartCnt = new AtomicInteger(0);
                         charts.forEach(chart -> {
@@ -1658,7 +1691,9 @@ public class SimilarPatentServer {
                                     }
                                 };
                                 chartTask.fork();
-                                req.session().attribute("chart-" + totalChartCnt.getAndIncrement(), chartTask);
+                                String chartId = "chart-" + totalChartCnt.getAndIncrement();
+                                sessionIds.add(chartId);
+                                req.session().attribute(chartId, chartTask);
                             }
                         });
 
@@ -1678,9 +1713,11 @@ public class SimilarPatentServer {
                         AtomicInteger totalTableCnt = new AtomicInteger(0);
                         tableResponses.forEach(table -> {
                             String id = "table-" + totalTableCnt.getAndIncrement();
+                            sessionIds.add(id);
                             req.session(false).attribute(id, table);
                         });
 
+                        req.session().attribute("previousSessionIds", sessionIds);
 
                         AtomicInteger tableCnt = new AtomicInteger(0);
                         AtomicInteger chartCnt = new AtomicInteger(0);
@@ -1719,7 +1756,7 @@ public class SimilarPatentServer {
         };
 
         handleReportTask.fork();
-        long maxTimeMillis =  180 * 1000;
+        long maxTimeMillis =  300 * 1000;
         try {
             String html = handleReportTask.get(maxTimeMillis, TimeUnit.MILLISECONDS);
             return html;
@@ -1728,7 +1765,10 @@ public class SimilarPatentServer {
             return new Gson().toJson(new SimpleAjaxMessage("Timeout occurred after "+(maxTimeMillis/(60*1000))+" minutes."));
         } finally {
             try {
-                if(!handleReportTask.isDone()) handleReportTask.cancel(true);
+                if(!handleReportTask.isDone()){
+                    handleReportTask.quietlyComplete();
+                    handleReportTask.cancel(true);
+                }
             } catch(Exception e) {
                 e.printStackTrace();
             }
