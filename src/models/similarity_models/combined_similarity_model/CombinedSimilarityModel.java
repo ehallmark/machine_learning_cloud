@@ -41,7 +41,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_model_data");
     public static final Function2<INDArray,INDArray,INDArray> DEFAULT_LABEL_FUNCTION = (f1,f2) -> {
         INDArray n1 = f1.divColumnVector(f1.sum(1));
-        INDArray n2 = f2.divColumnVector(f2.sum(2));
+        INDArray n2 = f2.divColumnVector(f2.sum(1));
         return n1.addi(Nd4j.hstack(IntStream.range(0,f1.columns()/f2.columns()).mapToObj(i->n2).collect(Collectors.toList())));
     };
 
