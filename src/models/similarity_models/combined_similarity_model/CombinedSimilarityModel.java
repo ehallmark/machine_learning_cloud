@@ -148,14 +148,14 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
         Function2<LocalDateTime,Double,Void> saveFunction = (datetime, score) -> {
             try {
-                save(datetime,score);
+                //save(datetime,score);
             } catch(Exception e) {
                 e.printStackTrace();
             }
             return null;
         };
 
-        final int printIterations = 200;
+        final int printIterations = 100;
         final AtomicBoolean stoppingCondition = new AtomicBoolean(false);
 
         System.gc();
