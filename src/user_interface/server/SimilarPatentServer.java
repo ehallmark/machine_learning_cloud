@@ -440,6 +440,7 @@ public class SimilarPatentServer {
         chartModelMap.put(Constants.GROUPED_TABLE_CHART, new GroupedCountTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAttrs)));
         chartModelMap.put(Constants.GROUPED_FUNCTION_TABLE_CHART, new GroupedFunctionTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(numericAttrs)));
         chartModelMap.put(Constants.PIVOT_COUNT_TABLE_CHART, new CountPivotTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAttrs)));
+        chartModelMap.put(Constants.PIVOT_FUNCTION_TABLE_CHART, new FunctionPivotTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(numericAttrs)));
 
         allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
             @Override
