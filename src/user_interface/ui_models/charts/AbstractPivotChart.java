@@ -53,7 +53,7 @@ public abstract class AbstractPivotChart extends TableAttribute {
 
         List<Pair<Item,DeepList<Object>>> columnGroups = groupTableData(data,columnAttrs);
         List<Pair<Item,DeepList<Object>>> rowGroups = groupTableData(data,rowAttrs);
-        
+
         System.out.println("Row groups size: "+rowGroups.size());
         System.out.println("Column groups size: "+columnGroups.size());
 

@@ -41,7 +41,6 @@ $(document).ready(function() {
             }
          });
 
-         //$('.loader').show();
          $.ajax({
            type: 'POST',
            dataType: 'json',
@@ -50,7 +49,6 @@ $(document).ready(function() {
            complete: function(jqxhr,status) {
              $button.prop('disabled',false).text(buttonText);
              $(window).scrollTop(tempScrollTop);
-             //$('.loader').hide();
            },
            error: function(jqxhr,status,error) {
              if(jqxhr.status==404) {
