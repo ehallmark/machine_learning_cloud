@@ -46,29 +46,55 @@ public abstract class TableAttribute extends AbstractChartAttribute {
 
     protected static List<Pair<Item,DeepList<Object>>> groupTableData(List<Item> data, List<String> attrList) {
         String[] attrsArray = attrList.toArray(new String[]{});
+        // group 1 level
+        String[] parentAttrs = attrList.stream().map(attr->attr.contains(".")?attr.substring(0,attr.indexOf(".")):null).filter(attr->attr!=null).toArray(size->new String[size]);
+
+        Map<String,String> childAttrToParentMap = attrList.stream().map(attr-> {
+                    if (attr.contains(".")) return new Pair<>(attr.substring(0,attr.indexOf(".")),attr);
+                    else return null;
+                }).filter(p->p!=null).collect(Collectors.toMap(p->p.getSecond(),p->p.getFirst()));
+
+        Map<String,List<String>> parentAttrToChildMap = attrList.stream().map(attr-> {
+            if (attr.contains(".")) return new Pair<>(attr.substring(0,attr.indexOf(".")),attr);
+            else return null;
+        }).filter(p->p!=null).collect(Collectors.groupingBy(p->p.getFirst(),Collectors.mapping(p->p.getSecond(),Collectors.toList())));
+
+
+        String[] topLevelAttrsArray = Stream.of(Stream.of(parentAttrs),attrList.stream().filter(attr->!childAttrToParentMap.containsKey(attr))).flatMap(stream->stream).toArray(size->new String[size]);
+
         return (List<Pair<Item,DeepList<Object>>>)data.stream().flatMap(item-> {
-            List<List<?>> rs = attrList.stream().map(attribute-> {
-                Object r = item.getData(attribute);
-                if (r != null) {
-                    if (r instanceof Collection) {
-                        return (List<?>) ((Collection)r).stream().collect(Collectors.toList());
-                    } else if (r.toString().contains(DataSearcher.ARRAY_SEPARATOR)) {
-                        return Arrays.asList(r.toString().split(DataSearcher.ARRAY_SEPARATOR));
-                    } else {
-                        return Collections.singletonList(r);
+            List<Map<String,List<?>>> rs = Stream.of(topLevelAttrsArray).map(attribute-> {
+                return parentAttrToChildMap.getOrDefault(attribute,Collections.singletonList(attribute)).stream().collect(Collectors.toMap(a->a,a-> {
+                    Object r = item.getData(a);
+                    if (r != null) {
+                        if (r instanceof Collection) {
+                            return (List<?>) ((Collection) r).stream().collect(Collectors.toList());
+                        } else if (r.toString().contains(DataSearcher.ARRAY_SEPARATOR)) {
+                            return Arrays.asList(r.toString().split(DataSearcher.ARRAY_SEPARATOR));
+                        } else {
+                            return Collections.singletonList(r);
+                        }
                     }
-                }
-                return Collections.emptyList();
+                    return Collections.emptyList();
+                }));
             }).collect(Collectors.toList());
-            FactorNode factor = new FactorNode(null,attrsArray,rs.stream().mapToInt(r->Math.max(1,r.size())).toArray());
+            // handle nested objects
+            FactorNode factor = new FactorNode(null,topLevelAttrsArray,rs.stream().mapToInt(r->Math.max(1,r.values().stream().mapToInt(val->val.size()).max().orElse(1))).toArray());
             return factor.assignmentPermutationsStream().map(assignment->{
                 return new Pair<>(item,
                         new DeepList<>(
                                 IntStream.range(0,assignment.length).mapToObj(i->{
                                     if(i>=rs.size()) System.out.println("WARNING 1: "+factor.toString());
-                                    List<?> r = rs.get(i);
-                                    return r.size()>0?r.get(assignment[i]):"";
-                                }).collect(Collectors.toList())
+                                    String topLevelAttr = topLevelAttrsArray[i];
+                                    Map<String,List<?>> r = rs.get(i);
+                                    return parentAttrToChildMap.getOrDefault(topLevelAttr,Collections.singletonList(topLevelAttr)).stream()
+                                            .map(attr->{
+                                                List<?> v = r.get(attr);
+                                                int a = assignment[i];
+                                                if(v!=null&&v.size()>a) return v.get(a);
+                                                else return "";
+                                            });
+                                }).flatMap(stream->stream).collect(Collectors.toList())
                         )
                 );
             });

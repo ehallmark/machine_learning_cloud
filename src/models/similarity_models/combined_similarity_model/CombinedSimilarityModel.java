@@ -7,6 +7,7 @@ import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import models.NDArrayHelper;
+import org.deeplearning4j.berkeley.Triple;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
@@ -20,7 +21,6 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
-import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 
 import java.io.File;
@@ -40,7 +40,9 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
     public static final String CPC_VEC_NET = "cpcVecNet";
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_model_data");
     public static final Function2<INDArray,INDArray,INDArray> DEFAULT_LABEL_FUNCTION = (f1,f2) -> {
-        return f1.add(Nd4j.hstack(IntStream.range(0,f1.columns()/f2.columns()).mapToObj(i->f2).collect(Collectors.toList())));
+        INDArray n1 = f1.divColumnVector(f1.sum(1));
+        INDArray n2 = f2.divColumnVector(f2.sum(2));
+        return n1.addi(Nd4j.hstack(IntStream.range(0,f1.columns()/f2.columns()).mapToObj(i->n2).collect(Collectors.toList())));
     };
 
     private CombinedSimilarityPipelineManager pipelineManager;
@@ -58,16 +60,18 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
     public void train(int nEpochs) {
         MultiLayerNetwork wordCpc2Vec;
         MultiLayerNetwork cpcVecNet;
+        int hiddenLayerSize = 128;
+        int encodingSize = 64;
+        int input1 = 128;
+        int input2 = 32;
+        int outputSize = Math.max(input1,input2);
+        int numHiddenEncodings = 4;
+        int numHiddenDecodings = 2;
+        int syncLastNLayers = 5;
+        Updater updater = Updater.RMSPROP;
+        final int encodingIdx = 1 + numHiddenEncodings;
+
         if(net==null) {
-            int hiddenLayerSize = 256;
-            int encodingSize = 256;
-            int input1 = 128;
-            int input2 = 32;
-            int outputSize = Math.max(input1,input2);
-            int numHiddenEncodings = 2;
-            int numHiddenDecodings = 2;
-            int syncLastNLayers = 3;
-            Updater updater = Updater.RMSPROP;
 
             LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
@@ -132,7 +136,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             wordCpc2Vec.init();
             cpcVecNet.init();
 
-            // syncParams(wordCpc2Vec,cpcVecNet,syncLastNLayers);
+            syncParams(wordCpc2Vec,cpcVecNet,syncLastNLayers);
 
             Map<String,MultiLayerNetwork> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
             nameToNetworkMap.put(WORD_CPC_2_VEC,wordCpc2Vec);
@@ -152,14 +156,14 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
         Function2<LocalDateTime,Double,Void> saveFunction = (datetime, score) -> {
             try {
-                //save(datetime,score);
+                save(datetime,score);
             } catch(Exception e) {
                 e.printStackTrace();
             }
             return null;
         };
 
-        final int printIterations = 100;
+        final int printIterations = 200;
         final AtomicBoolean stoppingCondition = new AtomicBoolean(false);
 
         System.gc();
@@ -175,9 +179,9 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
         Function<Void,Double> testErrorFunction = (v) -> {
             System.gc();
-            Pair<Double,Double> results = test(wordCpc2Vec, cpcVecNet, validationDataSets.iterator());
-            System.out.println(" Test Net 1: "+results.getFirst()+"\tTest Net 2: "+results.getSecond());
-            return (results.getFirst()+results.getSecond())/2;
+            Triple<Double,Double,Double> results = test(wordCpc2Vec, cpcVecNet, validationDataSets.iterator(),encodingIdx);
+            System.out.println(" Test Net 1: "+results.getFirst()+"\tTest Net 2: "+results.getSecond()+"\t Encoding Error: "+results.getThird());
+            return (results.getFirst()+results.getSecond()+results.getThird())/3;
         };
 
         IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
@@ -252,31 +256,36 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         net2.fit(new DataSet(features2, labels));
     }
 
-    public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2) {
+    public static Triple<Double,Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2, int encodingLayerIdx) {
         INDArray labels = DEFAULT_LABEL_FUNCTION.apply(features1, features2);
-        return new Pair<>(test(net1,features1,labels),test(net2,features2,labels));
+        INDArray encoding1 = net1.activateSelectedLayers(0,encodingLayerIdx,features1);
+        INDArray predictions1 = net1.activateSelectedLayers(encodingLayerIdx+1,net1.getnLayers()-1,encoding1);
+        INDArray encoding2 = net2.activateSelectedLayers(0,encodingLayerIdx,features2);
+        INDArray predictions2 = net2.activateSelectedLayers(encodingLayerIdx+1,net2.getnLayers()-1,encoding2);
+        return new Triple<>(test(predictions1,labels),test(predictions2,labels),test(encoding1,encoding2));
     }
 
-    public static double test(MultiLayerNetwork net, INDArray features, INDArray labels) {
-        INDArray predictions = net.activateSelectedLayers(0,net.getnLayers()-1,features);
-        return 1.0 - NDArrayHelper.sumOfCosineSimByRow(predictions,labels)/features.rows();
+    public static double test(INDArray predictions, INDArray labels) {
+        return 1.0 - NDArrayHelper.sumOfCosineSimByRow(predictions,labels)/predictions.rows();
     }
 
-    public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, Iterator<DataSet> iterator) {
+    public static Triple<Double,Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, Iterator<DataSet> iterator, int encodingLayerIdx) {
         double d1 = 0;
         double d2 = 0;
+        double d3 = 0;
         long count = 0;
         while(iterator.hasNext()) {
             DataSet ds = iterator.next();
-            Pair<Double,Double> test = test(net1,net2,ds.getFeatures(),ds.getLabels());
+            Triple<Double,Double,Double> test = test(net1,net2,ds.getFeatures(),ds.getLabels(),encodingLayerIdx);
             d1+=test.getFirst();
             d2+=test.getSecond();
+            d3+=test.getThird();
             count++;
         }
         if(count>0) {
             d1/=count;
             d2/=count;
         }
-        return new Pair<>(d1,d2);
+        return new Triple<>(d1,d2,d3);
     }
 }
