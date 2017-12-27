@@ -69,7 +69,8 @@ public abstract class AbstractPivotChart extends TableAttribute {
 
         response.headers = new ArrayList<>();
         response.headers.addAll(rowAttrs);
-        response.headers.add("Column-wise "+collectorType.toString());
+        String collectorHeader = "Column-wise "+collectorType.toString();
+        response.headers.add(collectorHeader);
         response.nonHumanAttrs = columnData.stream().map(d->{
             AtomicBoolean containsBlank = new AtomicBoolean(false);
             String label = String.join("; ",d.getFirst().stream().map(i->{
@@ -85,8 +86,9 @@ public abstract class AbstractPivotChart extends TableAttribute {
             } else {
                 return label;
             }
-        }).filter(label->label!=null).collect(Collectors.toList());
+        }).filter(label->label!=null).collect(Collectors.toCollection(ArrayList::new));
         response.headers.addAll(response.nonHumanAttrs);
+        response.nonHumanAttrs.add(collectorHeader);
         System.out.println("Row attrs: "+rowAttrs);
         System.out.println("Column colAttrs: "+columnAttrs);
         System.out.println("Row data size: "+rowData.size());
@@ -148,7 +150,7 @@ public abstract class AbstractPivotChart extends TableAttribute {
                             }
                         }
                         if(total!=null) {
-                            row.put(collectorType.toString(), total.toString());
+                            row.put(collectorHeader, total.toString());
                         }
                         return row;
                     } else {
