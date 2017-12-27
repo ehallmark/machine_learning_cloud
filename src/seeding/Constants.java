@@ -339,7 +339,11 @@ public class Constants {
 		ATTRIBUTE_DESCRIPTION_MAP.put("pie", "Create a pie chart.");
 		ATTRIBUTE_DESCRIPTION_MAP.put("line", "Create a timeline chart.");
 		ATTRIBUTE_DESCRIPTION_MAP.put("histogram", "Create a histogram.");
-		ATTRIBUTE_DESCRIPTION_MAP.put("groupedTable", "Create an aggregated counts table.");
+		ATTRIBUTE_DESCRIPTION_MAP.put("groupedTable", "Create an aggregated function table.");
+		ATTRIBUTE_DESCRIPTION_MAP.put("groupedCountTable", "Create an aggregated counts table.");
+		ATTRIBUTE_DESCRIPTION_MAP.put("pivotFunctionTable", "Create an pivot function table.");
+		ATTRIBUTE_DESCRIPTION_MAP.put("pivotCountTable", "Create an pivot count table.");
+
 	}
 
 	public static final Map<String,String> PG_NAME_MAP = Collections.synchronizedMap(new HashMap<>());

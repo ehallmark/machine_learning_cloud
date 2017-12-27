@@ -125,10 +125,10 @@ public abstract class AbstractAttribute {
         return str==null||str.length()==0 ? str : (str.substring(0,1).toUpperCase()+str.substring(1));
     }
 
-    private static String createSimpleNameText(String name) {
+    private String createSimpleNameText(String name) {
         if(name.contains(".")) {
-            String[] split = name.split("\\.",2);
-            return createSimpleNameText(split[1])+" of "+theOrAnd(split[0])+" "+singularize(createSimpleNameText(split[0]));
+            String[] split = name.split("\\.");
+            return createSimpleNameText(split[split.length-1])+" of "+theOrAnd(split[0])+" "+singularize(createSimpleNameText(split[split.length-2]));
         } else {
             return SimilarPatentServer.humanAttributeFor(name).toLowerCase();
         }
