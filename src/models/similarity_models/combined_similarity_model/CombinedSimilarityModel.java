@@ -29,6 +29,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Created by Evan on 12/24/2017.
@@ -37,7 +39,9 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
     public static final String WORD_CPC_2_VEC = "wordCpc2Vec";
     public static final String CPC_VEC_NET = "cpcVecNet";
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_model_data");
-    public static final Function2<INDArray,INDArray,INDArray> DEFAULT_LABEL_FUNCTION = (f1,f2) -> Nd4j.hstack(f1,f2);
+    public static final Function2<INDArray,INDArray,INDArray> DEFAULT_LABEL_FUNCTION = (f1,f2) -> {
+        return f1.add(Nd4j.hstack(IntStream.range(0,f1.columns()/f2.columns()).mapToObj(i->f2).collect(Collectors.toList())));
+    };
 
     private CombinedSimilarityPipelineManager pipelineManager;
     public CombinedSimilarityModel(CombinedSimilarityPipelineManager pipelineManager, String modelName) {
@@ -59,7 +63,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             int encodingSize = 256;
             int input1 = 128;
             int input2 = 32;
-            int outputSize = input1+input2;
+            int outputSize = Math.max(input1,input2);
             int numHiddenEncodings = 2;
             int numHiddenDecodings = 2;
             int syncLastNLayers = 3;
