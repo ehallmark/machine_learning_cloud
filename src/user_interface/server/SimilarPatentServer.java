@@ -185,6 +185,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Column Combination Count Table", Constants.GROUPED_TABLE_CHART);
             humanAttrToJavaAttrMap.put("Column Combination Function Table", Constants.GROUPED_FUNCTION_TABLE_CHART);
+            humanAttrToJavaAttrMap.put("Pivot Count Table", Constants.PIVOT_COUNT_TABLE_CHART);
+            humanAttrToJavaAttrMap.put("Pivot Function Table", Constants.PIVOT_FUNCTION_TABLE_CHART);
             humanAttrToJavaAttrMap.put("Cited Date", Constants.CITED_DATE);
             humanAttrToJavaAttrMap.put("Forward Citation", Constants.BACKWARD_CITATION);
             humanAttrToJavaAttrMap.put("Means Present", Constants.MEANS_PRESENT);
@@ -436,6 +438,7 @@ public class SimilarPatentServer {
         chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart(groupAttributesToNewParents(dateAttrs),duplicateAttributes(discreteAttrs)));
         chartModelMap.put(Constants.GROUPED_TABLE_CHART, new GroupedCountTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAttrs)));
         chartModelMap.put(Constants.GROUPED_FUNCTION_TABLE_CHART, new GroupedFunctionTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(numericAttrs)));
+        chartModelMap.put(Constants.PIVOT_COUNT_TABLE_CHART, new CountPivotTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAttrs)));
 
         allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
             @Override

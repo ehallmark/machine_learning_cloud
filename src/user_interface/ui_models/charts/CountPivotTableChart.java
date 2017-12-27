@@ -67,11 +67,11 @@ public class CountPivotTableChart extends TableAttribute {
             Integer maxLimit = attrNameToMaxGroupSizeMap.get("");
             Boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault("",false);
             if(maxLimit==null) maxLimit = 1;
-            return Stream.of(createHelper(portfolioList.getItemList(), groupedBy, attrList, title, null, maxLimit));
+            return Stream.of(createHelper(portfolioList.getItemList(), groupedBy, attrList, title, null, maxLimit, includeBlank));
         }).collect(Collectors.toList());
     }
 
-    protected TableResponse createHelper(List<Item> data, List<String> rowAttrs, List<String> columnAttrs, String yTitle, String subTitle, int maxLimit) {
+    protected TableResponse createHelper(List<Item> data, List<String> rowAttrs, List<String> columnAttrs, String yTitle, String subTitle, int maxLimit, boolean includeBlank) {
         TableResponse response = new TableResponse();
         response.type=getType();
         response.title=yTitle + (subTitle!=null&&subTitle.length()>0 ? (" (Grouped by "+subTitle+")") : "");
@@ -99,13 +99,17 @@ public class CountPivotTableChart extends TableAttribute {
                 List<Map<String,String>> data = new ArrayList<>();
 
                 rowData.forEach(rowPair->{
-                    Map<String,String> row = new HashMap<>();
-                    Set<Item> rowSet = rowPair.getSecond();
-                    columnData.forEach(colPair->{
-                        List<Item> intersection = rowSet.stream().filter(item->colPair.getSecond().contains(item)).collect(Collectors.toList());
-                        Number value = intersection.stream().map(item->new Pair<>(item,new DeepList<>())).collect(collector);
-                        row.put(String.join("; ",colPair.getFirst().stream().map(i->i.toString()).collect(Collectors.toList())), value==null?"":value.toString());
-                    });
+                    if(includeBlank || !rowPair.getFirst().stream().anyMatch(p->p==null||p.toString().length()==0)) {
+                        Map<String, String> row = new HashMap<>();
+                        Set<Item> rowSet = rowPair.getSecond();
+                        columnData.forEach(colPair -> {
+                            if(includeBlank || !colPair.getFirst().stream().anyMatch(p->p==null||p.toString().length()==0)) {
+                                List<Item> intersection = rowSet.stream().filter(item -> colPair.getSecond().contains(item)).collect(Collectors.toList());
+                                Number value = intersection.stream().map(item -> new Pair<>(item, new DeepList<>())).collect(collector);
+                                row.put(String.join("; ", colPair.getFirst().stream().map(i -> i.toString()).collect(Collectors.toList())), value == null ? "" : value.toString());
+                            }
+                        });
+                    }
                 });
 
                 return data;
