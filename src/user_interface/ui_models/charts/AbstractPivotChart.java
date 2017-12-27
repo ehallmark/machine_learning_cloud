@@ -65,6 +65,7 @@ public abstract class AbstractPivotChart extends TableAttribute {
         List<Pair<DeepList<Object>,Set<Item>>> rowData = collectData(rowGroups, -1);
 
         response.headers = new ArrayList<>();
+        response.headers.addAll(rowAttrs);
         response.headers.addAll(columnData.stream().map(d->String.join("; ",d.getFirst().stream().map(o->o.toString()).collect(Collectors.toList()))).collect(Collectors.toList()));
         response.headers.add(collectorType.toString());
 
@@ -80,13 +81,45 @@ public abstract class AbstractPivotChart extends TableAttribute {
                     if(includeBlank || !rowPair.getFirst().stream().anyMatch(p->p==null||p.toString().length()==0)) {
                         Map<String, String> row = new HashMap<>();
                         Set<Item> rowSet = rowPair.getSecond();
+                        for(int i = 0; i < rowAttrs.size(); i++) {
+                            row.put(rowAttrs.get(i),rowPair.getFirst().get(i).toString());
+                        }
+                        List<Number> totals = new ArrayList<>();
                         columnData.forEach(colPair -> {
                             if(includeBlank || !colPair.getFirst().stream().anyMatch(p->p==null||p.toString().length()==0)) {
                                 List<Item> intersection = rowSet.stream().filter(item -> colPair.getSecond().contains(item)).collect(Collectors.toList());
                                 Number value = intersection.stream().map(item -> new Pair<>(item, new DeepList<>())).collect(collector);
+                                if(value!=null) {
+                                    totals.add(value);
+                                }
                                 row.put(String.join("; ", colPair.getFirst().stream().map(i -> i.toString()).collect(Collectors.toList())), value == null ? "" : value.toString());
                             }
                         });
+                        Number total = null;
+                        switch(collectorType) {
+                            case Sum: {
+                                total = totals.stream().mapToDouble(d->d.doubleValue()).sum();
+                                break;
+                            }
+                            case Average: {
+                                total = totals.stream().mapToDouble(d->d.doubleValue()).average().orElse(Double.NaN);
+                                break;
+                            }
+                            case Min: {
+                                total = totals.stream().mapToDouble(d->d.doubleValue()).min().orElse(Double.NaN);
+                                break;
+                            }
+                            case Max: {
+                                total = totals.stream().mapToDouble(d->d.doubleValue()).max().orElse(Double.NaN);
+                                break;
+                            } case Count: {
+                                total = totals.stream().mapToInt(d->d.intValue()).sum();
+                                break;
+                            }
+                        }
+                        if(total!=null) {
+                            row.put(collectorType.toString(), total.toString());
+                        }
                         return row;
                     } else {
                         return null;
