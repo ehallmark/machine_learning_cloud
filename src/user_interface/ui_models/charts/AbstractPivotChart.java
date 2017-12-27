@@ -63,12 +63,21 @@ public abstract class AbstractPivotChart extends TableAttribute {
 
                 if(columnGroups.isEmpty() || rowGroups.isEmpty()) return Collections.emptyList();
 
+                System.out.println("Row groups size: "+rowGroups.size());
+                System.out.println("Column groups size: "+columnGroups.size());
+
                 System.out.println("Starting to group table...");
                 Collector<Pair<Item,DeepList<Object>>,?,? extends Number> collector = getCollectorFromCollectorType();
 
                 // build matrix
                 List<Pair<DeepList<Object>,Set<Item>>> columnData = collectData(columnGroups, maxLimit);
                 List<Pair<DeepList<Object>,Set<Item>>> rowData = collectData(rowGroups, -1);
+
+
+                System.out.println("Row attrs: "+rowAttrs);
+                System.out.println("Column colAttrs: "+columnAttrs);
+                System.out.println("Row data size: "+rowData.size());
+                System.out.println("Column data size: "+columnData.size());
 
                 List<Map<String,String>> data = new ArrayList<>();
 
