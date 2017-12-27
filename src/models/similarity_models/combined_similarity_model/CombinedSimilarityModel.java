@@ -167,7 +167,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             return null;
         };
 
-        final int printIterations = 200;
+        final int printIterations = 500;
         final AtomicBoolean stoppingCondition = new AtomicBoolean(false);
 
         System.gc();
