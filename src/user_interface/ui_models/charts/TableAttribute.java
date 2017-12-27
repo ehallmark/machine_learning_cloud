@@ -79,7 +79,9 @@ public abstract class TableAttribute extends AbstractChartAttribute {
                 }));
             }).collect(Collectors.toList());
             // handle nested objects
-            FactorNode factor = new FactorNode(null,topLevelAttrsArray,rs.stream().mapToInt(r->Math.max(1,r.values().stream().mapToInt(val->val.size()).max().orElse(1))).toArray());
+            int[] assignments = rs.stream().mapToInt(r->Math.max(1,r.values().stream().mapToInt(val->val.size()).max().orElse(1))).toArray();
+            System.out.println("Factors for attrs "+String.join(", ",topLevelAttrsArray)+": "+ Arrays.toString(assignments));
+            FactorNode factor = new FactorNode(null,topLevelAttrsArray,assignments);
             return factor.assignmentPermutationsStream().map(assignment->{
                 return new Pair<>(item,
                         new DeepList<>(

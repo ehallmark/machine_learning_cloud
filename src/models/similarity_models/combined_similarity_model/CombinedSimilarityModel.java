@@ -61,13 +61,12 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         MultiLayerNetwork wordCpc2Vec;
         MultiLayerNetwork cpcVecNet;
         int hiddenLayerSize = 128;
-        int encodingSize = 64;
+        int encodingSize = 32;
         int input1 = 128;
         int input2 = 32;
         int outputSize = Math.max(input1,input2);
-        int numHiddenEncodings = 4;
-        int numHiddenDecodings = 2;
-        int syncLastNLayers = 5;
+        int numHiddenEncodings = 5;
+        int numHiddenDecodings = 5;
         Updater updater = Updater.RMSPROP;
         final int encodingIdx = 1 + numHiddenEncodings;
 
@@ -136,7 +135,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             wordCpc2Vec.init();
             cpcVecNet.init();
 
-            syncParams(wordCpc2Vec,cpcVecNet,syncLastNLayers);
+            syncParams(wordCpc2Vec,cpcVecNet,encodingIdx);
 
             Map<String,MultiLayerNetwork> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
             nameToNetworkMap.put(WORD_CPC_2_VEC,wordCpc2Vec);
@@ -218,33 +217,34 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         return BASE_DIR;
     }
 
-    public static void syncParams(MultiLayerNetwork net1, MultiLayerNetwork net2, int lastNLayers) {
-        int paramsNet1Keeps = 0;
-        int paramsNet2Keeps = 0;
+    public static void syncParams(MultiLayerNetwork net1, MultiLayerNetwork net2, int layerIdx) {
+        int paramsNet1KeepsStart = 0;
+        int paramsNet2KeepsStart = 0;
 
-        for (int i = 0; i < net1.getnLayers()-lastNLayers; i++) {
-            paramsNet1Keeps += net1.getLayer(i).numParams();
+        for (int i = 0; i < layerIdx; i++) {
+            paramsNet1KeepsStart += net1.getLayer(i).numParams();
         }
-        for (int i = 0; i < net2.getnLayers()-lastNLayers; i++) {
-            paramsNet2Keeps += net2.getLayer(i).numParams();
+        for (int i = 0; i < layerIdx; i++) {
+            paramsNet2KeepsStart += net2.getLayer(i).numParams();
         }
 
         Layer[] layers1 = net1.getLayers();
         Layer[] layers2 = net2.getLayers();
-        for(int i = 0; i < lastNLayers; i++) {
-            int idx1 = net1.getnLayers() - 1 - i;
-            int idx2 = net2.getnLayers() - 1 - i;
-            layers2[idx2] = layers1[idx1];
-        }
+
+        int paramsNet1KeepsEnd = paramsNet1KeepsStart + layers1[layerIdx].numParams();
+        int paramsNet2KeepsEnd = paramsNet2KeepsStart + layers2[layerIdx].numParams();
+
+        layers2[layerIdx] = layers1[layerIdx];
         net2.setLayers(layers2);
 
         INDArray net1Params = net1.params();
         INDArray net2Params = net2.params();
 
-        INDArray paramAvg = net1Params.get(NDArrayIndex.interval(paramsNet1Keeps, net1Params.length())).addi(net2Params.get(NDArrayIndex.interval(paramsNet2Keeps, net2Params.length()))).divi(2);
+        INDArray paramAvg = net1Params.get(NDArrayIndex.interval(paramsNet1KeepsStart, paramsNet1KeepsEnd))
+                .addi(net2Params.get(NDArrayIndex.interval(paramsNet2KeepsStart, paramsNet2KeepsEnd))).divi(2);
 
-        net1Params.get(NDArrayIndex.interval(paramsNet1Keeps, net1Params.length())).assign(paramAvg);
-        net2Params.get(NDArrayIndex.interval(paramsNet2Keeps, net2Params.length())).assign(paramAvg);
+        net1Params.get(NDArrayIndex.interval(paramsNet1KeepsStart, paramsNet1KeepsEnd)).assign(paramAvg);
+        net2Params.get(NDArrayIndex.interval(paramsNet2KeepsStart, paramsNet2KeepsEnd)).assign(paramAvg);
 
         net1.setParams(net1Params);
         net2.setParams(net2Params);
@@ -285,6 +285,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         if(count>0) {
             d1/=count;
             d2/=count;
+            d3/=count;
         }
         return new Triple<>(d1,d2,d3);
     }
