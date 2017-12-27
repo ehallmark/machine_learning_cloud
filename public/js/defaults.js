@@ -51,8 +51,8 @@ $(document).ready(function() {
              $(window).scrollTop(tempScrollTop);
            },
            error: function(jqxhr,status,error) {
-             if(jqxhr.status==404) {
-                alert("Unable to establish connection to platform. Try refreshing page.");
+             if(jqxhr.status==404 || jqxhr.status==502) {
+                alert("Unable to establish connection to platform. Try refreshing page. Error code: "+jqxhr.status.toString());
              }
              $('#results .tab-pane .content').html('<div style="color: red;">Server error during ajax request:'+error+'</div>');
            },
