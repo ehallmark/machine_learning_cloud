@@ -85,19 +85,21 @@ public abstract class TableAttribute extends AbstractChartAttribute {
 
     }
 
-    protected static List<Map<String,String>> collectData(List<Pair<Item,DeepList<Object>>> groups, List<String> attrs, CollectorType collectorType, Collector<Pair<Item,DeepList<Object>>,?,? extends Number> collector) {
+    protected static List<Map<String,String>> collectData(List<Pair<Item,DeepList<Object>>> groups, List<String> attrs, CollectorType collectorType, Collector<Pair<Item,DeepList<Object>>,?,? extends Number> collector, boolean includeBlank) {
         return groups.stream()
                 .collect(Collectors.groupingBy(t->t.getSecond(),collector))
                 .entrySet().stream().sorted((e1, e2)->Double.compare(e2.getValue().doubleValue(),e1.getValue().doubleValue()))
                 .map(e->{
                     Map<String,String> row = Collections.synchronizedMap(new HashMap<>());
                     for(int i = 0; i < attrs.size(); i++) {
+                        String attrVal = e.getKey().get(i).toString();
+                        if(!includeBlank && attrVal.length()==0) return null;
                         if(i>=e.getKey().size()) System.out.println("WARNING 2: "+e.getKey()+"  ->  "+attrs);
                         row.put(attrs.get(i),e.getKey().get(i).toString());
                     }
                     row.put(collectorType.toString(),e.getValue()==null?"":e.getValue().toString());
                     return row;
-                }).collect(Collectors.toList());
+                }).filter(row->row!=null).collect(Collectors.toList());
 
     }
 

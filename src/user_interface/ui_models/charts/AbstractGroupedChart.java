@@ -31,13 +31,14 @@ public abstract class AbstractGroupedChart extends TableAttribute {
             List<String> humanAttrs =  attrList.stream().map(attribute-> SimilarPatentServer.fullHumanAttributeFor(attribute)).collect(Collectors.toList());
             String humanSearchType = combineTypesToString(searchTypes);
             String title = (collectByAttrName==null?humanSearchType:SimilarPatentServer.fullHumanAttributeFor(collectByAttrName)) + " "+ collectorType.toString() + (humanAttrs.isEmpty() ? "" :  " by "+ (humanAttrs.isEmpty() ? "*BLANK*" : String.join(", ",humanAttrs)));
+            Boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault("",false);
             return groupPortfolioListForGivenAttribute(portfolioList,"").map(groupPair-> {
-                return createHelper(groupPair.getSecond().getItemList(), attrList, title, groupPair.getFirst());
+                return createHelper(groupPair.getSecond().getItemList(), attrList, title, groupPair.getFirst(), includeBlank);
             });
         }).collect(Collectors.toList());
     }
 
-    protected TableResponse createHelper(List<Item> data, List<String> attrList, String yTitle, String subTitle) {
+    protected TableResponse createHelper(List<Item> data, List<String> attrList, String yTitle, String subTitle, boolean includeBlanks) {
         TableResponse response = new TableResponse();
         response.type=getType();
         response.title=yTitle + (subTitle!=null&&subTitle.length()>0 ? (" (Grouped by "+subTitle+")") : "");
@@ -57,7 +58,7 @@ public abstract class AbstractGroupedChart extends TableAttribute {
                 System.out.println("Starting to group table...");
                 Collector<Pair<Item,DeepList<Object>>,?,? extends Number> collector = getCollectorFromCollectorType();
 
-                return collectData(items,attrList,collectorType,collector);
+                return collectData(items,attrList,collectorType,collector,includeBlanks);
             }
         };
         response.computeAttributesTask.fork();
