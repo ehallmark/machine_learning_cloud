@@ -45,14 +45,13 @@ public abstract class TableAttribute extends AbstractChartAttribute {
     }
 
     protected static List<Pair<Item,DeepList<Object>>> groupTableData(List<Item> data, List<String> attrList) {
-        String[] attrsArray = attrList.toArray(new String[]{});
         // group 1 level
-        String[] parentAttrs = attrList.stream().map(attr->attr.contains(".")?attr.substring(0,attr.indexOf(".")):null).filter(attr->attr!=null).toArray(size->new String[size]);
+        String[] parentAttrs = attrList.stream().map(attr->attr.contains(".")?attr.substring(0,attr.indexOf(".")):null).filter(attr->attr!=null).distinct().toArray(size->new String[size]);
 
-        Map<String,String> childAttrToParentMap = attrList.stream().map(attr-> {
+        Set<String> children = attrList.stream().map(attr-> {
                     if (attr.contains(".")) return new Pair<>(attr.substring(0,attr.indexOf(".")),attr);
                     else return null;
-                }).filter(p->p!=null).collect(Collectors.toMap(p->p.getSecond(),p->p.getFirst()));
+                }).filter(p->p!=null).map(p->p.getFirst()).collect(Collectors.toSet());
 
         Map<String,List<String>> parentAttrToChildMap = attrList.stream().map(attr-> {
             if (attr.contains(".")) return new Pair<>(attr.substring(0,attr.indexOf(".")),attr);
@@ -60,7 +59,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         }).filter(p->p!=null).collect(Collectors.groupingBy(p->p.getFirst(),Collectors.mapping(p->p.getSecond(),Collectors.toList())));
 
 
-        String[] topLevelAttrsArray = Stream.of(Stream.of(parentAttrs),attrList.stream().filter(attr->!childAttrToParentMap.containsKey(attr))).flatMap(stream->stream).toArray(size->new String[size]);
+        String[] topLevelAttrsArray = Stream.of(Stream.of(parentAttrs),attrList.stream().filter(attr->!children.contains(attr))).flatMap(stream->stream).toArray(size->new String[size]);
 
         return (List<Pair<Item,DeepList<Object>>>)data.stream().flatMap(item-> {
             List<Map<String,List<?>>> rs = Stream.of(topLevelAttrsArray).map(attribute-> {
