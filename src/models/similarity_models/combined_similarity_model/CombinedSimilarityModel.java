@@ -61,13 +61,16 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
     public void train(int nEpochs) {
         MultiLayerNetwork wordCpc2Vec;
         MultiLayerNetwork cpcVecNet;
-        int hiddenLayerSize = 128;
-        int encodingSize = 32;
+        int hiddenLayerSize = 256;
+        int encodingSize = 64;
         int input1 = 128;
         int input2 = 32;
         int outputSize = Math.max(input1,input2);
-        int numHiddenEncodings = 5;
+        int numHiddenEncodings = 7;
         int numHiddenDecodings = 5;
+        boolean trainWordCpc2Vec = true;
+        boolean trainCpcVecNet = true;
+        boolean saveModels = true;
         Updater updater = Updater.RMSPROP;
         final int encodingIdx = 1 + numHiddenEncodings;
 
@@ -155,7 +158,9 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
         Function2<LocalDateTime,Double,Void> saveFunction = (datetime, score) -> {
             try {
-                //save(datetime,score);
+                if(saveModels) {
+                    save(datetime,score);
+                }
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -195,7 +200,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             for (int i = 0; i < nEpochs; i++) {
                 while (dataSetIterator.hasNext()) {
                     DataSet ds = dataSetIterator.next();
-                    train(wordCpc2Vec, cpcVecNet, ds.getFeatures(), ds.getLabels());
+                    train(trainWordCpc2Vec ? wordCpc2Vec : null, trainCpcVecNet ? cpcVecNet : null, ds.getFeatures(), ds.getLabels());
                     totalSeenThisEpoch.getAndAdd(ds.getFeatures().rows());
                     if (stoppingCondition.get()) break;
                 }
@@ -256,8 +261,8 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
     public static void train(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2) {
         INDArray labels = DEFAULT_LABEL_FUNCTION.apply(features1, features2);
-        net1.fit(new DataSet(features1, labels));
-        net2.fit(new DataSet(features2, labels));
+        if(net1!=null)net1.fit(new DataSet(features1, labels));
+        if(net2!=null)net2.fit(new DataSet(features2, labels));
     }
 
     public static Triple<Double,Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2, int encodingLayerIdx) {
