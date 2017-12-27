@@ -68,8 +68,8 @@ public abstract class AbstractPivotChart extends TableAttribute {
 
         response.headers = new ArrayList<>();
         response.headers.addAll(rowAttrs);
-        response.headers.addAll(columnData.stream().map(d->String.join("; ",d.getFirst().stream().map(o->o.toString()).collect(Collectors.toList()))).collect(Collectors.toList()));
         response.headers.add(collectorType.toString());
+        response.headers.addAll(columnData.stream().map(d->String.join("; ",d.getFirst().stream().map(o->o.toString()).collect(Collectors.toList()))).collect(Collectors.toList()));
 
         System.out.println("Row attrs: "+rowAttrs);
         System.out.println("Column colAttrs: "+columnAttrs);
