@@ -1,7 +1,7 @@
 package test;
 
 import data_pipeline.helpers.Function2;
-import org.deeplearning4j.nn.api.Layer;
+import models.similarity_models.combined_similarity_model.CombinedSimilarityModel;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
@@ -13,12 +13,8 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
-
-import java.util.Arrays;
-import java.util.function.Function;
 
 /**
  * Created by Evan on 12/24/2017.
@@ -69,7 +65,7 @@ public class NNDesignTest {
             System.out.println("Similarity of layer "+i+": "+ Transforms.cosineSim(net1.getLayer(i).params(),net2.getLayer(i).params()));
         }
 
-        syncParams(net1,net2);
+        CombinedSimilarityModel.syncParams(net1,net2, 1);
 
         System.out.println("Params for net 1 after: "+net1.params().toString());
         System.out.println("Params for net 2 after: "+net2.params().toString());
@@ -114,31 +110,9 @@ public class NNDesignTest {
         net2.fit(new DataSet(features2,labels));
 
         if(syncParams) {
-            syncParams(net1,net2);
+            CombinedSimilarityModel.syncParams(net1,net2, 1);
         }
     }
 
-    public static void syncParams(MultiLayerNetwork net1, MultiLayerNetwork net2) {
-        int numSeperate = 1;
-        int paramsNet1Keeps = 0;
-        for (int i = 0; i < numSeperate; i++) {
-            paramsNet1Keeps += net1.getLayer(i).numParams();
-        }
 
-        Layer[] layers2 = net2.getLayers();
-        for(int i = 1; i < net1.getnLayers(); i++) {
-            layers2[i] = net1.getLayer(i);
-        }
-        net2.setLayers(layers2);
-
-        INDArray net1Params = net1.params();
-        INDArray net2Params = net2.params();
-
-        int paramsNet2Keeps = net2Params.length() - (net1Params.length() - paramsNet1Keeps);
-        INDArray paramAvg = net1Params.get(NDArrayIndex.interval(paramsNet1Keeps, net1Params.length())).addi(net2Params.get(NDArrayIndex.interval(paramsNet2Keeps, net2Params.length()))).divi(2);
-        net1Params.get(NDArrayIndex.interval(paramsNet1Keeps, net1Params.length())).assign(paramAvg);
-        net2Params.get(NDArrayIndex.interval(paramsNet2Keeps, net2Params.length())).assign(paramAvg);
-        net1.setParams(net1Params);
-        net2.setParams(net2Params);
-         }
 }

@@ -22,6 +22,7 @@ public abstract class CombinedNeuralNetworkPredictionModel<T> extends BaseTraina
 
     public abstract File getModelBaseDirectory();
 
+
     @Override
     protected void saveNet(CombinedModel net, File file) throws IOException {
         if(net.getNameToNetworkMap()!=null) {

@@ -75,7 +75,6 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
             LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
-            if(numHiddenEncodings%2==1 || numHiddenDecodings%2==1) throw new UnsupportedOperationException("Network must have even number of layers for batch norm to work properly...");
             // build networks
             int i = 0;
             NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
@@ -156,7 +155,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
         Function2<LocalDateTime,Double,Void> saveFunction = (datetime, score) -> {
             try {
-                save(datetime,score);
+                //save(datetime,score);
             } catch(Exception e) {
                 e.printStackTrace();
             }

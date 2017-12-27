@@ -1,18 +1,14 @@
 package data_pipeline.models;
 
 import lombok.Getter;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.util.ModelSerializer;
 import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
@@ -53,7 +49,18 @@ public abstract class BaseTrainablePredictionModel<T,N> implements TrainablePred
     public File getMostRecentModelFile() {
         File baseDir = getModelBaseDirectory();
         if(baseDir==null||!baseDir.exists()||!baseDir.isDirectory()) return null;
-        File[] matchingFiles = baseDir.listFiles(file->file!=null&&file.getName().startsWith(modelName+"_"));
+        File[] matchingFiles = baseDir.listFiles(file->{
+            boolean filter = file!=null&&file.getName().startsWith(modelName+"_");
+            if(filter) {
+                try {
+                    LocalDateTime.parse(file.getName().substring(modelName.length()+1), DATE_TIME_FORMAT);
+                    return true;
+                } catch(Exception e) {
+                    return false;
+                }
+            }
+            return false;
+        });
         if(matchingFiles==null||matchingFiles.length==0) return null;
         return Stream.of(matchingFiles).sorted((f1,f2)->{
             String s1 = f1.getName().substring(modelName.length()+1);
