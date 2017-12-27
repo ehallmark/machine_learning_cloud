@@ -49,18 +49,16 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         String[] parentAttrs = attrList.stream().map(attr->attr.contains(".")?attr.substring(0,attr.indexOf(".")):null).filter(attr->attr!=null).distinct().toArray(size->new String[size]);
 
         Set<String> children = attrList.stream().map(attr-> {
-                    if (attr.contains(".")) return new Pair<>(attr.substring(0,attr.indexOf(".")),attr);
+                    if (attr.contains(".")) return attr;
                     else return null;
-                }).filter(p->p!=null).map(p->p.getFirst()).collect(Collectors.toSet());
+                }).filter(p->p!=null).collect(Collectors.toSet());
 
         Map<String,List<String>> parentAttrToChildMap = attrList.stream().map(attr-> {
             if (attr.contains(".")) return new Pair<>(attr.substring(0,attr.indexOf(".")),attr);
             else return null;
         }).filter(p->p!=null).collect(Collectors.groupingBy(p->p.getFirst(),Collectors.mapping(p->p.getSecond(),Collectors.toList())));
-
-
+        
         String[] topLevelAttrsArray = Stream.of(Stream.of(parentAttrs),attrList.stream().filter(attr->!children.contains(attr))).flatMap(stream->stream).toArray(size->new String[size]);
-
         return (List<Pair<Item,DeepList<Object>>>)data.stream().flatMap(item-> {
             List<Map<String,List<?>>> rs = Stream.of(topLevelAttrsArray).map(attribute-> {
                 return parentAttrToChildMap.getOrDefault(attribute,Collections.singletonList(attribute)).stream().collect(Collectors.toMap(a->a,a-> {

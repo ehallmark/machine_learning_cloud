@@ -103,6 +103,10 @@ h5 {
     padding: 3;
 }
 
+.dynatable-processing {
+    display: none !important;
+}
+
 .draggable .draggable {
     font-size: 14 !important;
 }
