@@ -148,7 +148,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
     }
 
     public static Tag getTable(TableResponse response, String type, int tableIdx) {
-        return div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(type).withId("table-" + tableIdx).with(
+        return div().attr("style", "width: 96%; margin-left: 2%; margin-bottom: 30px; overflow-x: auto;").withClass(type).withId("table-" + tableIdx).with(
                 h5(response.title),br(),
                 form().withMethod("post").withTarget("_blank").withAction(SimilarPatentServer.DOWNLOAD_URL).with(
                         input().withType("hidden").withName("tableId").withValue(String.valueOf(tableIdx)),

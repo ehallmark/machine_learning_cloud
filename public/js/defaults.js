@@ -72,10 +72,16 @@ $(document).ready(function() {
 
     var successReportFrom = function(data) {
        var $tabs = $('#results').find('.tab-pane .content');
-       var $content = $(data.message).children();
-       $tabs.each(function(i,e){
-           $(this).html($content.get(i));
-       });
+       try {
+           var $content = $(data.message).children();
+           $tabs.each(function(i,e){
+               $(this).html($content.get(i));
+           });
+       } catch(ex) {
+           $tabs.each(function(i,e){
+               $(this).html(data.message);
+           });
+       }
        if($('#results #data-table table thead th').length > 0) {
            $('#results #data-table table').dynatable({
              dataset: {

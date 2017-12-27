@@ -10,6 +10,7 @@ import user_interface.ui_models.charts.tables.TableResponse;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
@@ -41,7 +42,7 @@ public abstract class AbstractPivotChart extends TableAttribute {
             Integer maxLimit = attrNameToMaxGroupSizeMap.get("");
             Boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault("",false);
             if(maxLimit==null) maxLimit = 1;
-            return Stream.of(createHelper(portfolioList.getItemList(), groupedBy, attrList, title, null, maxLimit, includeBlank));
+            return Stream.of(createHelper(portfolioList.getItemList(), attrList, groupedBy, title, null, maxLimit, includeBlank));
         }).collect(Collectors.toList());
     }
 
@@ -51,8 +52,9 @@ public abstract class AbstractPivotChart extends TableAttribute {
         response.title=yTitle + (subTitle!=null&&subTitle.length()>0 ? (" (Grouped by "+subTitle+")") : "");
         response.numericAttrNames = Collections.singleton(collectorType.toString());
 
-        List<Pair<Item,DeepList<Object>>> columnGroups = groupTableData(data,columnAttrs);
-        List<Pair<Item,DeepList<Object>>> rowGroups = groupTableData(data,rowAttrs);
+
+        List<Pair<Item,DeepList<Object>>> columnGroups = columnAttrs == null ? Collections.emptyList() : groupTableData(data,columnAttrs);
+        List<Pair<Item,DeepList<Object>>> rowGroups = rowAttrs == null ? Collections.emptyList() : groupTableData(data,rowAttrs);
 
         System.out.println("Row groups size: "+rowGroups.size());
         System.out.println("Column groups size: "+columnGroups.size());
@@ -92,7 +94,15 @@ public abstract class AbstractPivotChart extends TableAttribute {
                                 if(value!=null) {
                                     totals.add(value);
                                 }
-                                row.put(String.join("; ", colPair.getFirst().stream().map(i -> i.toString()).collect(Collectors.toList())), value == null ? "" : value.toString());
+                                String valueStr;
+                                if(value != null && (value instanceof Double || value instanceof Float)) {
+                                    valueStr = String.format("%.2f", value.doubleValue());
+                                } else if(value != null) {
+                                    valueStr = value.toString();
+                                } else {
+                                    valueStr = "";
+                                }
+                                row.put(String.join("; ", colPair.getFirst().stream().map(i -> i.toString()).collect(Collectors.toList())), valueStr);
                             }
                         });
                         Number total = null;
