@@ -2191,7 +2191,7 @@ public class SimilarPatentServer {
 
     private static Tag loaderTag() {
         return div().withClass("loader col-12").attr("style","display: none;").with(
-                img().withSrc("/images/loader48.gif")
+                img().attr("height","48").attr("width","48").withSrc("/images/loader48.gif")
         );
     }
 

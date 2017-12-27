@@ -2,6 +2,8 @@ $(document).ready(function() {
     setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
     setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[lastGeneratedDatasetDataFunction,assetListDatasetDataFunction],["From Last Generated Report", "From Asset List", "From CSV File"]);
 
+    $('.loader').show();
+
     $('.miniTip').miniTip({
         title: 'Advanced Keyword Syntax',
         event: 'click',
@@ -576,12 +578,9 @@ $(document).ready(function() {
 
 
 var resetSearchForm = function() {
-    var $loaders = $('.loader');
-    $loaders.show();
     $('.attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
     $('div.attribute').addClass("disabled");
     $('#results .tab-pane .content').html('');
-    $loaders.hide();
 };
 
 var findByValue = function(inputs, value) {
