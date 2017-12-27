@@ -3,6 +3,7 @@ package models.similarity_models.combined_similarity_model;
 import data_pipeline.helpers.CombinedModel;
 import data_pipeline.helpers.Function2;
 import data_pipeline.models.CombinedNeuralNetworkPredictionModel;
+import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
@@ -191,24 +192,28 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
         AtomicInteger totalSeenThisEpoch = new AtomicInteger(0);
         AtomicInteger totalSeen = new AtomicInteger(0);
-        for(int i = 0; i < nEpochs; i++) {
-            while(dataSetIterator.hasNext()) {
-                DataSet ds = dataSetIterator.next();
-                train(wordCpc2Vec,cpcVecNet,ds.getFeatures(),ds.getLabels());
-                totalSeenThisEpoch.getAndAdd(ds.getFeatures().rows());
-                if(stoppingCondition.get()) break;
+        try {
+            for (int i = 0; i < nEpochs; i++) {
+                while (dataSetIterator.hasNext()) {
+                    DataSet ds = dataSetIterator.next();
+                    train(wordCpc2Vec, cpcVecNet, ds.getFeatures(), ds.getLabels());
+                    totalSeenThisEpoch.getAndAdd(ds.getFeatures().rows());
+                    if (stoppingCondition.get()) break;
+                }
+                totalSeen.getAndAdd(totalSeenThisEpoch.get());
+                System.out.println("Total seen this epoch: " + totalSeenThisEpoch.get());
+                System.out.println("Total seen so far: " + totalSeen.get());
+                if (stoppingCondition.get()) break;
+                dataSetIterator.reset();
             }
-            totalSeen.getAndAdd(totalSeenThisEpoch.get());
-            System.out.println("Total seen this epoch: "+totalSeenThisEpoch.get());
-            System.out.println("Total seen so far: "+totalSeen.get());
-            if(stoppingCondition.get()) break;
-            dataSetIterator.reset();
-        }
-        if(stoppingCondition.get()) {
-            System.out.println("Stopping condition reached...");
-        }
-        if(!isSaved()) {
-            saveFunction.apply(LocalDateTime.now(), testErrorFunction.apply(null));
+            if (stoppingCondition.get()) {
+                System.out.println("Stopping condition reached...");
+            }
+            if (!isSaved()) {
+                saveFunction.apply(LocalDateTime.now(), testErrorFunction.apply(null));
+            }
+        } catch(StoppingConditionMetException e) {
+            System.out.println("Stopping condition met: "+e.getMessage());
         }
     }
 
