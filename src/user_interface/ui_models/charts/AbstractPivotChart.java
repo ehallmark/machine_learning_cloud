@@ -50,35 +50,32 @@ public abstract class AbstractPivotChart extends TableAttribute {
         response.type=getType();
         response.title=yTitle + (subTitle!=null&&subTitle.length()>0 ? (" (Grouped by "+subTitle+")") : "");
         response.numericAttrNames = Collections.singleton(collectorType.toString());
+
+        List<Pair<Item,DeepList<Object>>> columnGroups = groupTableData(data,columnAttrs);
+        List<Pair<Item,DeepList<Object>>> rowGroups = groupTableData(data,rowAttrs);
+        
+        System.out.println("Row groups size: "+rowGroups.size());
+        System.out.println("Column groups size: "+columnGroups.size());
+
+        System.out.println("Starting to group table...");
+        Collector<Pair<Item,DeepList<Object>>,?,? extends Number> collector = getCollectorFromCollectorType();
+
+        // build matrix
+        List<Pair<DeepList<Object>,Set<Item>>> columnData = collectData(columnGroups, maxLimit);
+        List<Pair<DeepList<Object>,Set<Item>>> rowData = collectData(rowGroups, -1);
+
+        response.headers = new ArrayList<>();
+        response.headers.addAll(columnData.stream().map(d->String.join("; ",d.getFirst().stream().map(o->o.toString()).collect(Collectors.toList()))).collect(Collectors.toList()));
+        response.headers.add(collectorType.toString());
+
+        System.out.println("Row attrs: "+rowAttrs);
+        System.out.println("Column colAttrs: "+columnAttrs);
+        System.out.println("Row data size: "+rowData.size());
+        System.out.println("Column data size: "+columnData.size());
+
         response.computeAttributesTask = new RecursiveTask<List<Map<String,String>>>() {
             @Override
             protected List<Map<String,String>> compute() {
-                if(data.size()==0) return Collections.emptyList();
-
-                List<Pair<Item,DeepList<Object>>> columnGroups = groupTableData(data,columnAttrs);
-                List<Pair<Item,DeepList<Object>>> rowGroups = groupTableData(data,rowAttrs);
-
-                if(columnGroups.isEmpty() || rowGroups.isEmpty()) return Collections.emptyList();
-
-                System.out.println("Row groups size: "+rowGroups.size());
-                System.out.println("Column groups size: "+columnGroups.size());
-
-                System.out.println("Starting to group table...");
-                Collector<Pair<Item,DeepList<Object>>,?,? extends Number> collector = getCollectorFromCollectorType();
-
-                // build matrix
-                List<Pair<DeepList<Object>,Set<Item>>> columnData = collectData(columnGroups, maxLimit);
-                List<Pair<DeepList<Object>,Set<Item>>> rowData = collectData(rowGroups, -1);
-
-                response.headers = new ArrayList<>();
-                response.headers.addAll(columnData.stream().map(d->String.join("; ",d.getFirst().stream().map(o->o.toString()).collect(Collectors.toList()))).collect(Collectors.toList()));
-                response.headers.add(collectorType.toString());
-
-                System.out.println("Row attrs: "+rowAttrs);
-                System.out.println("Column colAttrs: "+columnAttrs);
-                System.out.println("Row data size: "+rowData.size());
-                System.out.println("Column data size: "+columnData.size());
-
                 return rowData.stream().map(rowPair->{
                     if(includeBlank || !rowPair.getFirst().stream().anyMatch(p->p==null||p.toString().length()==0)) {
                         Map<String, String> row = new HashMap<>();
