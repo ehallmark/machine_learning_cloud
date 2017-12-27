@@ -8,7 +8,6 @@ import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import models.NDArrayHelper;
 import org.deeplearning4j.nn.api.Layer;
-import org.deeplearning4j.nn.conf.LearningRatePolicy;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
@@ -56,8 +55,8 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         MultiLayerNetwork wordCpc2Vec;
         MultiLayerNetwork cpcVecNet;
         if(net==null) {
-            int hiddenLayerSize = 512;
-            int encodingSize = 512;
+            int hiddenLayerSize = 256;
+            int encodingSize = 256;
             int input1 = 128;
             int input2 = 32;
             int outputSize = input1+input2;
@@ -73,20 +72,14 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             int i = 0;
             NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
-                    .learningRate(0.025)
-                    .learningRateDecayPolicy(LearningRatePolicy.Inverse)
-                    .lrPolicyPower(0.7)
-                    .lrPolicyDecayRate(0.001)
+                    .learningRate(0.001)
                     .activation(Activation.TANH)
                     .list()
                     .layer(i, NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build());
 
             NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
-                    .learningRate(0.025)
-                    .learningRateDecayPolicy(LearningRatePolicy.Inverse)
-                    .lrPolicyPower(0.7)
-                    .lrPolicyDecayRate(0.001)
+                    .learningRate(0.001)
                     .activation(Activation.TANH)
                     .list()
                     .layer(i, NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build());
