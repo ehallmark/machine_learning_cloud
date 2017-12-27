@@ -359,7 +359,7 @@ public class SimilarPatentServer {
     }
 
     public static String fullHumanAttributeFor(String attr) {
-        if(javaAttrToHumanAttrMap.containsKey(attr.substring(0,attr.indexOf(".")))) {
+        if(attr.contains(".")) {
             return humanAttributeFor(attr) + " ("+fullHumanAttributeFor(attr.substring(0,attr.lastIndexOf(".")))+")";
         } else return humanAttributeFor(attr);
     }
