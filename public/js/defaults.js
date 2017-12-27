@@ -39,7 +39,7 @@ $(document).ready(function() {
             }
          });
 
-         //$('.loader').parent().show();
+         //$('.loader').show();
          $.ajax({
            type: 'POST',
            dataType: 'json',
@@ -48,7 +48,7 @@ $(document).ready(function() {
            complete: function(jqxhr,status) {
              $button.prop('disabled',false).text(buttonText);
              $(window).scrollTop(tempScrollTop);
-            // $('.loader').parent().hide();
+             //$('.loader').hide();
            },
            error: function(jqxhr,status,error) {
              if(jqxhr.status==404) {
@@ -569,15 +569,19 @@ $(document).ready(function() {
     });
     $('#sidebar-jstree-wrapper').show();
 
+
     resetSearchForm();
     showTemplateFunction({file: 'default'},null,null);
 });
 
 
 var resetSearchForm = function() {
+    var $loaders = $('.loader');
+    $loaders.show();
     $('.attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
     $('div.attribute').addClass("disabled");
     $('#results .tab-pane .content').html('');
+    $loaders.hide();
 };
 
 var findByValue = function(inputs, value) {
@@ -699,8 +703,11 @@ var showTemplateFormHelper = function(formSelector,dataMap) {
 
 var showTemplateFunction = function(data,tree,node){
     if(node!==null){ resetSearchForm(); }
+    var $loaders = $('.loader');
+    $loaders.show();
     if(data===null) {
         alert("Error finding template.");
+        $loaders.hide();
     } else if(data.hasOwnProperty('searchoptionsmap')) { // data came from li node
         showTemplateFormHelper("#searchOptionsForm",data["searchoptionsmap"]);
         showTemplateFormHelper("#attributesForm",data["attributesmap"]);
@@ -711,6 +718,7 @@ var showTemplateFunction = function(data,tree,node){
         } catch(err) {
 
         }
+        $loaders.hide();
     } else if(data.hasOwnProperty('searchOptionsMap')) { // data came from newly added node
         showTemplateFormHelper("#searchOptionsForm",$.parseJSON(data["searchOptionsMap"]));
         showTemplateFormHelper("#attributesForm",$.parseJSON(data["attributesMap"]));
@@ -721,6 +729,7 @@ var showTemplateFunction = function(data,tree,node){
         } catch(err) {
 
         }
+        $loaders.hide();
     } else if(data.hasOwnProperty('file')) {
         // need to get data
         var defaultFile = node === null;

@@ -2109,6 +2109,7 @@ public class SimilarPatentServer {
                         div().withClass("row tab-content").with(
                                 div().withClass("col-12 tab-pane fade active show").withId("data-tab").attr("role","tabpanel").with(
                                         div().withClass("row").with(
+                                                loaderTag(),
                                                 div().withClass("col-12").withId("attributesForm").with(
                                                         customFormRow("attributes", allAttributes, userRoleFunction)
                                                 ),buttons, br(),
@@ -2119,6 +2120,7 @@ public class SimilarPatentServer {
                                 ),
                                 div().withClass("col-12 tab-pane fade").withId("chart-tab").attr("role","tabpanel").with(
                                         div().withClass("row").with(
+                                                loaderTag(),
                                                 div().withClass("col-12").withId("chartsForm").with(
                                                         customFormRow("charts",allCharts, userRoleFunction)
                                                 ),buttons, br(),
@@ -2150,6 +2152,7 @@ public class SimilarPatentServer {
                                 div().withClass("row tab-content").with(
                                         div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("tab1").with(
                                                 div().withClass("row").with(
+                                                        loaderTag(),
                                                         div().withClass("col-12").withId("filtersForm").with(
                                                                 customFormRow("filters", allFilters, userRoleFunction)
                                                         )
@@ -2157,6 +2160,7 @@ public class SimilarPatentServer {
                                         ),
                                         div().withClass("col-12 tab-pane fade show").attr("role","tabpanel").withId("tab2").with(
                                                 div().withClass("row").with(
+                                                        loaderTag(),
                                                         div().withClass("col-12").withId("searchOptionsForm").with(
                                                                 mainOptionsRow()
                                                         )
@@ -2164,6 +2168,7 @@ public class SimilarPatentServer {
                                         ),
                                         div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab3").with(
                                                 div().withClass("collapsible-form row").withId("highlightForm").with(
+                                                        loaderTag(),
                                                         h5("Settings"),
                                                         div().withClass("col-12 attributeElement").with(
                                                                 label("Highlighting").attr("style","width: 100%;").with(
@@ -2180,6 +2185,12 @@ public class SimilarPatentServer {
                         ),
                         buttons
                 )
+        );
+    }
+
+    private static Tag loaderTag() {
+        return div().withClass("loader col-12").attr("style","display: none;").with(
+                img().withSrc("/images/loader48.gif")
         );
     }
 
