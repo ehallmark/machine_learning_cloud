@@ -11,7 +11,6 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
-import user_interface.ui_models.charts.tables.DeepList;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
@@ -160,11 +159,11 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                                 SimilarPatentServer.technologySelectWithCustomClass(id+"[]",id,clazz, groupedGroupAttrs,null)
                         )
                 ),div().withClass("col-2").with(
-                        label("Max Groups").attr("style","width: 100%;").with(
+                        label("Max Groups").attr("title", "The maximum number of groups to build charts for.").attr("style","width: 100%;").with(
                                 br(), input().withClass("form-control").withType("number").attr("style","height: 28px;").attr("min","0").withId(id+MAX_GROUP_FIELD).withName(id+MAX_GROUP_FIELD).withValue("10")
                         )
                 ),div().withClass("col-2").with(
-                        label("Include Blank Group").attr("style","width: 100%;").with(
+                        label("Include Blanks").attr("title","Whether or not blank groups or values should be included.").attr("style","width: 100%;").with(
                                 br(), input().withType("checkbox").withId(id+INCLUDE_BLANK_FIELD).withName(id+INCLUDE_BLANK_FIELD).withValue("10")
                         )
                 )

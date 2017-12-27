@@ -60,7 +60,7 @@ public class AbstractDistributionChart extends ChartAttribute {
         attrName = idFromName(attrName);
         return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        label("Max Slices").attr("style","width: 100%;").with(
+                        label("Max Slices").attr("title", "The maximum number of slices for this pie chart.").attr("style","width: 100%;").with(
                                 br(),
                                 input().withId(attrName+MAX_SLICES).attr("style","height: 28px;").withName(attrName+MAX_SLICES).withType("number").withClass("form-control").withValue("20")
                         )
