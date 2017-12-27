@@ -1055,8 +1055,8 @@ public class SimilarPatentServer {
                 TableResponse tableResponse = req.session(false).attribute("table-"+paramIdx);
                 if(tableResponse!=null) {
                     System.out.println("Found tableResponse...");
-                    headers = tableResponse.headers;
                     data = tableResponse.computeAttributesTask.join();
+                    headers = tableResponse.headers;
                     title = tableResponse.title;
                     System.out.println("Data size: "+data.size());
                 } else {
@@ -1103,9 +1103,9 @@ public class SimilarPatentServer {
                 TableResponse tableResponse = req.session().attribute("table-"+paramIdx);
                 if(tableResponse!=null) {
                     System.out.println("Found tableResponse...");
-                    headers = tableResponse.headers;
                     data = tableResponse.computeAttributesTask.join();
                     numericAttrNames = tableResponse.numericAttrNames;
+                    headers = tableResponse.headers;
                     System.out.println("Data size: "+data.size());
                 } else {
                     System.out.println("WARNING:: Could not find tableResponse...");

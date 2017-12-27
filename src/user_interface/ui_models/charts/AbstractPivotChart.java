@@ -49,9 +49,6 @@ public abstract class AbstractPivotChart extends TableAttribute {
         TableResponse response = new TableResponse();
         response.type=getType();
         response.title=yTitle + (subTitle!=null&&subTitle.length()>0 ? (" (Grouped by "+subTitle+")") : "");
-        response.headers = new ArrayList<>();
-        response.headers.addAll(columnAttrs);
-        response.headers.add(collectorType.toString());
         response.numericAttrNames = Collections.singleton(collectorType.toString());
         response.computeAttributesTask = new RecursiveTask<List<Map<String,String>>>() {
             @Override
@@ -73,15 +70,16 @@ public abstract class AbstractPivotChart extends TableAttribute {
                 List<Pair<DeepList<Object>,Set<Item>>> columnData = collectData(columnGroups, maxLimit);
                 List<Pair<DeepList<Object>,Set<Item>>> rowData = collectData(rowGroups, -1);
 
+                response.headers = new ArrayList<>();
+                response.headers.addAll(columnData.stream().map(d->String.join("; ",d.getFirst().stream().map(o->o.toString()).collect(Collectors.toList()))).collect(Collectors.toList()));
+                response.headers.add(collectorType.toString());
 
                 System.out.println("Row attrs: "+rowAttrs);
                 System.out.println("Column colAttrs: "+columnAttrs);
                 System.out.println("Row data size: "+rowData.size());
                 System.out.println("Column data size: "+columnData.size());
 
-                List<Map<String,String>> data = new ArrayList<>();
-
-                rowData.forEach(rowPair->{
+                return rowData.stream().map(rowPair->{
                     if(includeBlank || !rowPair.getFirst().stream().anyMatch(p->p==null||p.toString().length()==0)) {
                         Map<String, String> row = new HashMap<>();
                         Set<Item> rowSet = rowPair.getSecond();
@@ -92,10 +90,12 @@ public abstract class AbstractPivotChart extends TableAttribute {
                                 row.put(String.join("; ", colPair.getFirst().stream().map(i -> i.toString()).collect(Collectors.toList())), value == null ? "" : value.toString());
                             }
                         });
+                        return row;
+                    } else {
+                        return null;
                     }
-                });
+                }).filter(row->row!=null).collect(Collectors.toList());
 
-                return data;
             }
         };
         response.computeAttributesTask.fork();
