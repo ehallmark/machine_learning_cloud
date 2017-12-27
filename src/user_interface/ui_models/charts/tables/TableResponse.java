@@ -10,6 +10,7 @@ import java.util.concurrent.RecursiveTask;
  */
 public class TableResponse {
     public List<String> headers;
+    public List<String> nonHumanAttrs;
     public RecursiveTask<List<Map<String,String>>> computeAttributesTask;
     public String type;
     public String title;

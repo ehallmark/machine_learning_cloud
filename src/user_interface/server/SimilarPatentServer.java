@@ -359,7 +359,7 @@ public class SimilarPatentServer {
     }
 
     public static String fullHumanAttributeFor(String attr) {
-        if(attr.contains(".")) {
+        if(javaAttrToHumanAttrMap.containsKey(attr.substring(0,attr.indexOf(".")))) {
             return humanAttributeFor(attr) + " ("+fullHumanAttributeFor(attr.substring(0,attr.lastIndexOf(".")))+")";
         } else return humanAttributeFor(attr);
     }
@@ -1050,6 +1050,7 @@ public class SimilarPatentServer {
             // try to get custom data
             List<String> headers;
             List<Map<String,String>> data;
+            List<String> nonHumanAttrs;
             String title;
             if(paramIdx.length()>0) {
                 TableResponse tableResponse = req.session(false).attribute("table-"+paramIdx);
@@ -1058,11 +1059,13 @@ public class SimilarPatentServer {
                     data = tableResponse.computeAttributesTask.join();
                     headers = tableResponse.headers;
                     title = tableResponse.title;
+                    nonHumanAttrs = tableResponse.nonHumanAttrs;
                     System.out.println("Data size: "+data.size());
                 } else {
                     System.out.println("WARNING:: Could not find tableResponse...");
                     headers = Collections.emptyList();
                     data = Collections.emptyList();
+                    nonHumanAttrs = null;
                     title = "Data";
                 }
             } else {
@@ -1070,7 +1073,7 @@ public class SimilarPatentServer {
                 System.out.println("Received datatable request");
                 Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
                 if(map==null) return null;
-
+                nonHumanAttrs = null;
                 headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
                 data = (List<Map<String,String>>)map.getOrDefault("rows",Collections.emptyList());
                 title = "Data";
@@ -1079,7 +1082,14 @@ public class SimilarPatentServer {
             System.out.println("Number of excel headers: "+headers.size());
             res.header("Content-Disposition", "attachment; filename=download.xls");
             res.type("application/force-download");
-            ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "Data", title, data,  headers);
+            List<String> humanHeaders = headers.stream().map(header->{
+                if(nonHumanAttrs==null || !nonHumanAttrs.contains(header)) {
+                    return SimilarPatentServer.fullHumanAttributeFor(header);
+                } else {
+                    return header;
+                }
+            }).collect(Collectors.toList());
+            ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "Data", title, data,  headers, humanHeaders);
             long t1 = System.currentTimeMillis();
             System.out.println("Time to create excel sheet: "+(t1-t0)/1000+ " seconds");
             return raw;

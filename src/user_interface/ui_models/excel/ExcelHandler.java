@@ -85,10 +85,10 @@ public class ExcelHandler {
 
     }
 
-    public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, String sheetName, String sheetTitle, List<Map<String,String>> data, List<String> headers) throws Exception {
+    public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, String sheetName, String sheetTitle, List<Map<String,String>> data, List<String> headers, List<String> humanHeaders) throws Exception {
         WritableWorkbook workbook = Workbook.createWorkbook(raw.getOutputStream());
 
-        createSheetWithTemplate(workbook, sheetName, sheetTitle, data, headers);
+        createSheetWithTemplate(workbook, sheetName, sheetTitle, data, headers, humanHeaders);
 
         long t0 = System.currentTimeMillis();
 
@@ -105,7 +105,6 @@ public class ExcelHandler {
     private static int[] computeColWidths(List<Map<String,String>> data, List<String> attributes) {
         Stream<int[]> stream = data.parallelStream().limit(100).map(row->{
             int[] rowWidths = new int[attributes.size()];
-            Collection<Map.Entry<String,String>> entries = row.entrySet();
             for(int i = 0; i < attributes.size(); i++) {
                 rowWidths[i] = charToPixelLength(row.get(attributes.get(i)).length());
             }
@@ -122,7 +121,7 @@ public class ExcelHandler {
 
     private static int charToPixelLength(int numChars) { return Math.min(numChars + 8,70); }
 
-    private static WritableSheet createSheetWithTemplate(WritableWorkbook workbook, String sheetName, String sheetTitle, List<Map<String,String>> data, List<String> headers) throws Exception{
+    private static WritableSheet createSheetWithTemplate(WritableWorkbook workbook, String sheetName, String sheetTitle, List<Map<String,String>> data, List<String> headers, List<String> humanHeaders) throws Exception{
         try {
             setupExcelFormats();
         } catch(Exception e) {
@@ -172,12 +171,12 @@ public class ExcelHandler {
         sheet.addCell(new Label(1, row, "Privileged and Confidential Work Product", CellFormatMap.get("disclaimerStyle")));
         row++;
 
-        writeHeadersAndData(sheet,  data, row, headers);
+        writeHeadersAndData(sheet,  data, row, headers, humanHeaders);
 
         return sheet;
     }
 
-    private static void writeHeadersAndData(WritableSheet sheet, List<Map<String,String>> data, int rowOffset, List<String> attributes) throws Exception {
+    private static void writeHeadersAndData(WritableSheet sheet, List<Map<String,String>> data, int rowOffset, List<String> attributes, List<String> humanHeaders) throws Exception {
         System.out.println("Starting sheet with "+data.size()+ " elements");
 
         //int headerRow = 6 + rowOffset;
@@ -187,7 +186,7 @@ public class ExcelHandler {
         int headerHeight = 50 * 20;
         sheet.setRowView(headerRow, headerHeight);
         for (int c = 0; c < attributes.size(); c++) {
-            sheet.addCell(new Label(1 + c, headerRow, SimilarPatentServer.humanAttributeFor(attributes.get(c)), CellFormatMap.get("headerStyle")));
+            sheet.addCell(new Label(1 + c, headerRow, humanHeaders.get(c), CellFormatMap.get("headerStyle")));
         }
 
         for (int r = 0; r < data.size(); r++) {

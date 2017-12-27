@@ -13,6 +13,7 @@ import user_interface.ui_models.portfolios.items.Item;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -68,9 +69,24 @@ public abstract class AbstractPivotChart extends TableAttribute {
 
         response.headers = new ArrayList<>();
         response.headers.addAll(rowAttrs);
-        response.headers.add(collectorType.toString());
-        response.headers.addAll(columnData.stream().map(d->String.join("; ",d.getFirst().stream().map(o->o.toString()).collect(Collectors.toList()))).collect(Collectors.toList()));
-
+        response.headers.add("Column-wise "+collectorType.toString());
+        response.nonHumanAttrs = columnData.stream().map(d->{
+            AtomicBoolean containsBlank = new AtomicBoolean(false);
+            String label = String.join("; ",d.getFirst().stream().map(i->{
+                String str = i.toString();
+                if(str.isEmpty()){
+                    containsBlank.set(true);
+                    return "*BLANK*";
+                }
+                return str;
+            }).collect(Collectors.toList()));
+            if(containsBlank.get()&&!includeBlank) {
+                return null;
+            } else {
+                return label;
+            }
+        }).filter(label->label!=null).collect(Collectors.toList());
+        response.headers.addAll(response.nonHumanAttrs);
         System.out.println("Row attrs: "+rowAttrs);
         System.out.println("Column colAttrs: "+columnAttrs);
         System.out.println("Row data size: "+rowData.size());
@@ -102,7 +118,11 @@ public abstract class AbstractPivotChart extends TableAttribute {
                                 } else {
                                     valueStr = "";
                                 }
-                                row.put(String.join("; ", colPair.getFirst().stream().map(i -> i.toString()).collect(Collectors.toList())), valueStr);
+                                row.put(String.join("; ", colPair.getFirst().stream().map(i -> {
+                                    String str = i.toString();
+                                    if(str.isEmpty()) return "*BLANK*";
+                                    return str;
+                                }).collect(Collectors.toList())), valueStr);
                             }
                         });
                         Number total = null;

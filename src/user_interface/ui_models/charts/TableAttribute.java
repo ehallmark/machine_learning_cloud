@@ -148,6 +148,14 @@ public abstract class TableAttribute extends AbstractChartAttribute {
     }
 
     public static Tag getTable(TableResponse response, String type, int tableIdx) {
+        List<String> nonHumanAttrs = response.nonHumanAttrs;
+        List<String> humanHeaders = response.headers.stream().map(header->{
+            if(nonHumanAttrs==null || !nonHumanAttrs.contains(header)) {
+                return SimilarPatentServer.fullHumanAttributeFor(header);
+            } else {
+                return header;
+            }
+        }).collect(Collectors.toList());
         return div().attr("style", "width: 96%; margin-left: 2%; margin-bottom: 30px; overflow-x: auto;").withClass(type).withId("table-" + tableIdx).with(
                 h5(response.title),br(),
                 form().withMethod("post").withTarget("_blank").withAction(SimilarPatentServer.DOWNLOAD_URL).with(
@@ -157,7 +165,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
                 table().withClass("table table-striped").withId(type+"-table-"+tableIdx+"table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                         thead().with(
                                 tr().with(
-                                        response.headers.stream().map(header -> th(SimilarPatentServer.fullHumanAttributeFor(header)).attr("data-dynatable-column", header)).collect(Collectors.toList())
+                                        IntStream.range(0,humanHeaders.size()).mapToObj(i->th(humanHeaders.get(i)).attr("data-dynatable-column", response.headers.get(i))).collect(Collectors.toList())
                                 )
                         ), tbody()
                 )
