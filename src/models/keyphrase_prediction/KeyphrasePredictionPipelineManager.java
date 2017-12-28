@@ -95,7 +95,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         final int maxSamples = 200;
         final int windowSize = 8;
-        boolean rebuildPrerequisites = false;
+        boolean rebuildPrerequisites = true;
         boolean rebuildDatasets = false;
         boolean runModels = false;
         boolean forceRecreateModels = false;
