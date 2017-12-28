@@ -17,6 +17,7 @@ import tools.ClassCodeHandler;
 import tools.OpenMapBigRealMatrix;
 import tools.Stemmer;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.portfolios.items.Item;
 import util.Pair;
 
@@ -97,15 +98,34 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
 
         AtomicInteger cpcCount = new AtomicInteger(0);
         AtomicInteger total = new AtomicInteger(0);
-        final AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
 
+        Map<String,Set<String>> filingToCPCMap = Collections.synchronizedMap(new HashMap<>());
+        {
+            AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
+            AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
+            assetToFilingMap.getPatentDataMap().entrySet().parallelStream().forEach(e -> {
+                Set<String> cpcs = assetToCPCMap.getPatentDataMap().get(e.getKey());
+                if (cpcs != null) {
+                    filingToCPCMap.putIfAbsent(e.getValue(), cpcs);
+                }
+            });
+            assetToFilingMap.getApplicationDataMap().entrySet().parallelStream().forEach(e -> {
+                Set<String> cpcs = assetToCPCMap.getApplicationDataMap().get(e.getKey());
+                if (cpcs != null) {
+                    filingToCPCMap.putIfAbsent(e.getValue(), cpcs);
+                }
+            });
+
+            System.out.println("Num filings with cpcs: " + filingToCPCMap.size());
+        }
+        
         Function<org.nd4j.linalg.primitives.Pair<String,Map<MultiStem,Integer>>,Void> attributesFunction = pair-> {
             String asset = pair.getFirst();
             Map<MultiStem,Integer> wordCounts = pair.getSecond();
             total.getAndIncrement();
 
-            Map<CPC,Double> cpcToScoreMap = computeCPCToScoreMap(asset,assetToCPCMap.getPatentDataMap(),assetToCPCMap.getApplicationDataMap(),
-                    hierarchy);
+            // filings
+            Map<CPC,Double> cpcToScoreMap = computeCPCToScoreMap(asset,filingToCPCMap, hierarchy);
             if(cpcToScoreMap.isEmpty()) {
                 return null;
             }
@@ -132,8 +152,8 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
         return new Pair<>(cpcCodeIndexMap,matrix);
     }
 
-    public static Map<CPC,Double> computeCPCToScoreMap(String asset, Map<String,Set<String>> patentCPCMap, Map<String,Set<String>> appCPCMap, CPCHierarchy hierarchy) {
-        Collection<String> currentCpcs = patentCPCMap.getOrDefault(asset,appCPCMap.getOrDefault(asset,Collections.emptySet()));
+    public static Map<CPC,Double> computeCPCToScoreMap(String asset, Map<String,Set<String>> filingCPCMap, CPCHierarchy hierarchy) {
+        Collection<String> currentCpcs = filingCPCMap.getOrDefault(asset,Collections.emptySet());
         // add potential cpcs from keywords
         currentCpcs = currentCpcs.stream().map(cpc->ClassCodeHandler.convertToLabelFormat(cpc)).collect(Collectors.toList());
         Map<CPC,Double> cpcToScoreMap = new HashMap<>();
