@@ -181,6 +181,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             DataSet ds = validationIterator.next();
             validationDataSets.add(ds);
             valCount+=ds.getFeatures().rows();
+            System.gc();
         }
 
         System.out.println("Num validation datasets: "+validationDataSets.size());
@@ -200,9 +201,11 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
         AtomicInteger totalSeenThisEpoch = new AtomicInteger(0);
         AtomicInteger totalSeen = new AtomicInteger(0);
+        int gcIter = 0;
         try {
             for (int i = 0; i < nEpochs; i++) {
                 while (dataSetIterator.hasNext()) {
+                    if((gcIter++)%printIterations/10==0) System.gc();
                     DataSet ds = dataSetIterator.next();
                     train(trainWordCpc2Vec ? wordCpc2Vec : null, trainCpcVecNet ? cpcVecNet : null, ds.getFeatures(), ds.getLabels());
                     totalSeenThisEpoch.getAndAdd(ds.getFeatures().rows());
