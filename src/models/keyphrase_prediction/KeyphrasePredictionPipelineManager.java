@@ -76,7 +76,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     @Override
     protected void initModel(boolean forceRecreateModel) {
-        initStages(false,false);
+       // initStages(false,false);
 
     }
 
