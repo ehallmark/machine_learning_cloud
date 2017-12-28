@@ -129,7 +129,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         double sampling = 0.0001;
         double learningRate = 0.01;
         double minLearningRate = 0.001;
-        int testIterations = 5000000;
+        int testIterations = 2000000;
 
 
         AtomicInteger nTestsCounter = new AtomicInteger(0);
