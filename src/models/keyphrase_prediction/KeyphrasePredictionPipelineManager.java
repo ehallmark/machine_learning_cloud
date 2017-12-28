@@ -53,23 +53,25 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         stage2.run(rerunFilters);
         //if(alwaysRerun)stage2.createVisualization();
 
+        // valid word
+        System.out.println("Pre-grouping data for valid word stage...");
+        ValidWordStage validWordStage = new ValidWordStage(stage2.get(), modelParams);
+        validWordStage.run(rerunFilters);
+
+        // cpc density
+        System.out.println("Pre-grouping data for cpc density...");
+        CPCHierarchy hierarchy = new CPCHierarchy();
+        CPCDensityStage cpcDensityStage = new CPCDensityStage(validWordStage.get(), modelParams, hierarchy);
+        cpcDensityStage.run(rerunFilters);
+        //if(alwaysRerun) stage4.createVisualization();
+
         // stage 3
         System.out.println("Pre-grouping data for stage 3...");
-        Stage3 stage3 = new Stage3(stage2.get(), modelParams);
+        Stage3 stage3 = new Stage3(cpcDensityStage.get(), modelParams);
         stage3.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
-        // stage 4
-        System.out.println("Pre-grouping data for stage 4...");
-        CPCHierarchy hierarchy = new CPCHierarchy();
-        CPCDensityStage stage4 = new CPCDensityStage(stage3.get(), modelParams, hierarchy);
-        stage4.run(rerunFilters);
-        //if(alwaysRerun) stage4.createVisualization();
 
-        // stage 5
-        System.out.println("Pre-grouping data for stage 5...");
-        ValidWordStage stage5 = new ValidWordStage(stage4.get(), modelParams);
-        stage5.run(rerunFilters);
     }
 
     @Override
