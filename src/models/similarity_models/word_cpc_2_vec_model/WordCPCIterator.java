@@ -31,6 +31,10 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         }).filter(p->p!=null).collect(Collectors.toMap(p->p.getFirst(), p->p.getSecond()));
     };
 
+    public static final Function<String,List<String>> defaultWordListFunction = (content) -> {
+        return Arrays.asList(content.split("\\s+"));
+    };
+
     private static Random rand = new Random(56923);
     private ArrayBlockingQueue<Sequence<VocabWord>> queue;
     private RecursiveAction task;
@@ -43,15 +47,17 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     private int resetCounter = 0;
     private AtomicBoolean finished = new AtomicBoolean(true);
     private int minSequenceLength;
-    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, int minSequenceLength, int maxSamples) {
-        this(iterator,numEpochs,cpcMap,null,minSequenceLength,maxSamples);
+    private boolean fullText;
+    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, int minSequenceLength, int maxSamples, boolean fullText) {
+        this(iterator,numEpochs,cpcMap,null,minSequenceLength,maxSamples,fullText);
     }
 
-    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, Function<Void,Void> afterEpochFunction, int minSequenceLength, int maxSamples) {
+    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, Function<Void,Void> afterEpochFunction, int minSequenceLength, int maxSamples, boolean fullText) {
         this.numEpochs=numEpochs;
         this.iterator=iterator;
         this.minSequenceLength=minSequenceLength;
         this.maxSamples=maxSamples;
+        this.fullText=fullText;
         this.cpcMap=cpcMap;
         this.queue = new ArrayBlockingQueue<>(1000);
         this.vocabPass=true;
@@ -90,74 +96,98 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         return sequence;
     }
 
-    private static Sequence<VocabWord> extractSequenceFromDocumentAndTokens(LabelledDocument document, List<String> tokens, Random random, int minSequenceLength, int maxSamples) {
+    private static Sequence<VocabWord> extractSequenceFromDocumentAndTokens(LabelledDocument document, List<String> tokens, Random random, int minSequenceLength, int maxSamples, boolean fullText) {
         if(document.getContent()==null||document.getLabels()==null||document.getContent().isEmpty() || document.getLabels().isEmpty()) {
             //System.out.println("Returning NULL because content or labels are null");
             return null;
         }
 
-        Map<String,Integer> wordCountMap = defaultBOWFunction.apply(document.getContent());
         List<VocabWord> words;
-        if(maxSamples<=0) {
-            words = new ArrayList<>();
-            wordCountMap.forEach((word,cnt)->{
-                VocabWord vocabWord = new VocabWord(cnt,word);
-                vocabWord.setSequencesCount(1);
-                vocabWord.setElementFrequency(cnt);
-                words.add(vocabWord);
-            });
-            int tokenCnt = wordCountMap.size()/tokens.size();
-            tokens.forEach(token->{
-                VocabWord vocabWord = new VocabWord(tokenCnt,token);
-                vocabWord.setSequencesCount(1);
-                vocabWord.setElementFrequency(tokenCnt);
-                words.add(vocabWord);
-            });
-        } else {
-            String[] contentWords = new String[wordCountMap.size()];
-            int[] contentCounts = new int[wordCountMap.size()];
-            AtomicInteger total = new AtomicInteger(0);
-            AtomicInteger idx = new AtomicInteger(0);
-            wordCountMap.entrySet().forEach(e -> {
-                int i = idx.getAndIncrement();
-                int count = e.getValue();
-                contentCounts[i] = count;
-                contentWords[i] = e.getKey();
-                total.getAndAdd(count);
-            });
-
-            final int N = Math.min((total.get() + tokens.size()), maxSamples);
-
-            if (N < minSequenceLength) {
-                //System.out.println("Returning NULL because N <= 0");
-                return null;
+        if(fullText) {
+            List<String> text = defaultWordListFunction.apply(document.getContent());
+            if(text.size()>=minSequenceLength) {
+                int wordLimit = maxSamples > 0 ? maxSamples : text.size();
+                words = new ArrayList<>(2*wordLimit);
+                for(int i = 0; i < wordLimit; i++) {
+                    String word = text.get(i);
+                    VocabWord vocabWord = new VocabWord(1,word);
+                    vocabWord.setSequencesCount(1);
+                    vocabWord.setElementFrequency(1);
+                    words.add(vocabWord);
+                }
+                for(int i = 0; i < wordLimit; i++) {
+                    String word = tokens.get(random.nextInt(tokens.size()));
+                    VocabWord vocabWord = new VocabWord(1,word);
+                    vocabWord.setSequencesCount(1);
+                    vocabWord.setElementFrequency(1);
+                    words.add(random.nextInt(words.size()),vocabWord);
+                }
+            } else {
+                words = Collections.emptyList();
             }
+        } else {
+            Map<String, Integer> wordCountMap = defaultBOWFunction.apply(document.getContent());
+            if (maxSamples <= 0) {
+                words = new ArrayList<>();
+                wordCountMap.forEach((word, cnt) -> {
+                    VocabWord vocabWord = new VocabWord(cnt, word);
+                    vocabWord.setSequencesCount(1);
+                    vocabWord.setElementFrequency(cnt);
+                    words.add(vocabWord);
+                });
+                int tokenCnt = wordCountMap.size() / tokens.size();
+                tokens.forEach(token -> {
+                    VocabWord vocabWord = new VocabWord(tokenCnt, token);
+                    vocabWord.setSequencesCount(1);
+                    vocabWord.setElementFrequency(tokenCnt);
+                    words.add(vocabWord);
+                });
+            } else {
+                String[] contentWords = new String[wordCountMap.size()];
+                int[] contentCounts = new int[wordCountMap.size()];
+                AtomicInteger total = new AtomicInteger(0);
+                AtomicInteger idx = new AtomicInteger(0);
+                wordCountMap.entrySet().forEach(e -> {
+                    int i = idx.getAndIncrement();
+                    int count = e.getValue();
+                    contentCounts[i] = count;
+                    contentWords[i] = e.getKey();
+                    total.getAndAdd(count);
+                });
 
-            words = new ArrayList<>(N);
+                final int N = Math.min((total.get() + tokens.size()), maxSamples);
 
-            for (int i = 0; i < N; i++) {
-                VocabWord word = null;
-                boolean randBool = rand.nextBoolean();
-                if (randBool || tokens.size() == 0) {
-                    int r = rand.nextInt(total.get());
-                    int s = 0;
-                    for (int j = 0; j < contentCounts.length; j++) {
-                        s += contentCounts[j];
-                        if (s >= r) {
-                            word = new VocabWord(1, contentWords[j]);
-                            break;
+                if (N < minSequenceLength) {
+                    //System.out.println("Returning NULL because N <= 0");
+                    return null;
+                }
+
+                words = new ArrayList<>(N);
+
+                for (int i = 0; i < N; i++) {
+                    VocabWord word = null;
+                    boolean randBool = rand.nextBoolean();
+                    if (randBool || tokens.size() == 0) {
+                        int r = rand.nextInt(total.get());
+                        int s = 0;
+                        for (int j = 0; j < contentCounts.length; j++) {
+                            s += contentCounts[j];
+                            if (s >= r) {
+                                word = new VocabWord(1, contentWords[j]);
+                                break;
+                            }
                         }
                     }
-                }
-                if (!randBool || total.get() == 0) {
-                    if (tokens.size() > 0) {
-                        word = new VocabWord(1, tokens.get(random.nextInt(tokens.size())));
+                    if (!randBool || total.get() == 0) {
+                        if (tokens.size() > 0) {
+                            word = new VocabWord(1, tokens.get(random.nextInt(tokens.size())));
+                        }
                     }
-                }
-                if (word != null) {
-                    word.setSequencesCount(1);
-                    word.setElementFrequency(1);
-                    words.add(word);
+                    if (word != null) {
+                        word.setSequencesCount(1);
+                        word.setElementFrequency(1);
+                        words.add(word);
+                    }
                 }
             }
         }
@@ -201,7 +231,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                             List<String> cpcs = document.getLabels().stream().flatMap(asset -> cpcMap.getOrDefault(asset, Collections.emptyList()).stream()).flatMap(cpc -> IntStream.range(0,cpc.getNumParts()).mapToObj(c->cpc.getName())).collect(Collectors.toList());
 
                             // extract sequence
-                            Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document, cpcs, rand, minSequenceLength, maxSamples);
+                            Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document, cpcs, rand, minSequenceLength, maxSamples, fullText);
                             if (sequence != null) {
                                 //System.out.print("-");
                                 try {
