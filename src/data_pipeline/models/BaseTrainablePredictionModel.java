@@ -5,6 +5,7 @@ import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -46,21 +47,23 @@ public abstract class BaseTrainablePredictionModel<T,N> implements TrainablePred
         return new File(getModelBaseDirectory(), modelName+"_"+dateTime.format(DATE_TIME_FORMAT));
     }
 
+    private FileFilter defaultFileFilter = file -> {
+        boolean filter = file!=null&&file.getName().startsWith(modelName+"_");
+        if(filter) {
+            try {
+                LocalDateTime.parse(file.getName().substring(modelName.length()+1), DATE_TIME_FORMAT);
+                return true;
+            } catch(Exception e) {
+                return false;
+            }
+        }
+        return false;
+    };
+
     public File getMostRecentModelFile() {
         File baseDir = getModelBaseDirectory();
         if(baseDir==null||!baseDir.exists()||!baseDir.isDirectory()) return null;
-        File[] matchingFiles = baseDir.listFiles(file->{
-            boolean filter = file!=null&&file.getName().startsWith(modelName+"_");
-            if(filter) {
-                try {
-                    LocalDateTime.parse(file.getName().substring(modelName.length()+1), DATE_TIME_FORMAT);
-                    return true;
-                } catch(Exception e) {
-                    return false;
-                }
-            }
-            return false;
-        });
+        File[] matchingFiles = baseDir.listFiles(defaultFileFilter);
         if(matchingFiles==null||matchingFiles.length==0) return null;
         return Stream.of(matchingFiles).sorted((f1,f2)->{
             String s1 = f1.getName().substring(modelName.length()+1);
@@ -75,7 +78,7 @@ public abstract class BaseTrainablePredictionModel<T,N> implements TrainablePred
         mergeModelScoreMaps();
         File baseDir = getModelBaseDirectory();
         if(baseDir==null||!baseDir.exists()||!baseDir.isDirectory()) return null;
-        File[] matchingFiles = baseDir.listFiles(file->file!=null&&file.getName().startsWith(modelName+"_"));
+        File[] matchingFiles = baseDir.listFiles(defaultFileFilter);
         if(matchingFiles==null||matchingFiles.length==0) return null;
         Map<LocalDateTime,Double> scoreMap = modelToScoreMap.get(modelName);
         if(scoreMap==null) return null;
