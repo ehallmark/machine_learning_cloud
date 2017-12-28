@@ -2,13 +2,18 @@ package models.text_streaming;
 
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
+import org.deeplearning4j.berkeley.Triple;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.InnerHitBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.elasticsearch.join.query.HasParentQueryBuilder;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
@@ -17,6 +22,8 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -57,9 +64,9 @@ public class ESTextDataSetIterator {
         Random random = new Random(235);
 
         AtomicInteger cnt = new AtomicInteger(0);
-        Consumer<Pair<String,Collection<String>>> consumer = pair -> {
-            if(pair.getSecond().size()>=minWords) {
-                String line = pair.getFirst() + "," + String.join(" ", pair.getSecond())+"\n";
+        Consumer<Triple<String,LocalDate,Collection<String>>> consumer = triple -> {
+            if(triple.getThird().size()>=minWords) {
+                String line = triple.getFirst() + "," + triple.getSecond().toString()+","+ String.join(" ", triple.getThird())+"\n";
                 BufferedWriter writer;
                 boolean flush = false;
                 // pick reader
@@ -122,14 +129,14 @@ public class ESTextDataSetIterator {
         return Stream.of(text.split("\\s+")).collect(Collectors.toList());
     }
 
-    public static void iterateOverSentences(int limit, Consumer<Pair<String,Collection<String>>> consumer, Function<Void,Void> finallyDo) {
+    public static void iterateOverSentences(int limit, Consumer<Triple<String,LocalDate,Collection<String>>> consumer, Function<Void,Void> finallyDo) {
         BoolQueryBuilder query = QueryBuilders.boolQuery()
                 .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(2039852)))
                 .filter(QueryBuilders.boolQuery()
                         .should(QueryBuilders.termQuery(Constants.GRANTED,false))
                         .should(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()))
                         .minimumShouldMatch(1)
-                );
+                ).filter(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,QueryBuilders.matchAllQuery(),false).innerHit(new InnerHitBuilder().setFetchSourceContext(new FetchSourceContext(true,new String[]{Constants.FILING_DATE},new String[]{}))));
 
         SearchRequestBuilder request = DataSearcher.getClient().prepareSearch(DataIngester.INDEX_NAME)
                 .setTypes(DataIngester.TYPE_NAME)
@@ -146,9 +153,17 @@ public class ESTextDataSetIterator {
         Function<SearchHit,Item> transformer = hit -> {
             //String asset = hit.getId();
             String filing = hit.getField("_parent").getValue();
-            if(filing != null) {
+            SearchHits parentHit = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
+            Object filingDate;
+            if(parentHit!=null) {
+                if(parentHit.getHits()!=null&&parentHit.getHits().length>0) {
+                    filingDate = parentHit.getHits()[0].getSource().get(Constants.FILING_DATE);
+                } else filingDate = null;
+            } else filingDate = null;
+
+            if(filing != null && filingDate!=null) {
                 collectDocumentsFrom(hit).forEach(doc->{
-                    consumer.accept(new Pair<>(filing, toList(doc)));
+                    consumer.accept(new Triple<>(filing, LocalDate.parse(filingDate.toString(), DateTimeFormatter.ISO_DATE), toList(doc)));
                 });
             }
             return null;

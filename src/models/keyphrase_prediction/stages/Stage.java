@@ -284,16 +284,18 @@ public abstract class Stage<V> {
 
         Function<LabelledDocument, String> documentTransformer = doc -> {
             String asset = doc.getLabels().get(0);
+            String date = doc.getLabels().get(1);
             String text = doc.getContent();
             Annotation annotation = new Annotation(text);
             Map<String, Object> data = new HashMap<>();
             data.put(TEXT, text);
             data.put(ASSET_ID, asset);
+            data.put(DATE, date);
             pipeline.annotate(annotation, annotator.apply(data));
             attributesFunction.apply(data);
             Map<MultiStem, AtomicInteger> docCounts = (Map<MultiStem, AtomicInteger>) data.get(APPEARED_WITH_COUNTS);
             if (docCounts == null) return null;
-            String ret = asset + "," + String.join(",", docCounts.entrySet().stream().map(e -> e.getKey().toString() + ":" + e.getValue().get()).collect(Collectors.toList()));
+            String ret = asset + "," + date + "," + String.join(",", docCounts.entrySet().stream().map(e -> e.getKey().toString() + ":" + e.getValue().get()).collect(Collectors.toList()));
             if (ret == null || ret.isEmpty()) return null;
             return ret;
         };
@@ -320,10 +322,11 @@ public abstract class Stage<V> {
 
     public static void runSamplingIteratorWithLabels(Function<Pair<String, Map<MultiStem, Integer>>, Void> attributesFunction) {
         Function<String, Void> lineTransformer = line -> {
-            String[] cells = line.split(",", 2);
+            String[] cells = line.split(",", 3);
             String asset = cells[0];
-            if (cells.length == 1) return null;
-            String text = cells[1];
+            if (cells.length < 3) return null;
+            String date = cells[1];
+            String text = cells[2];
             Map<MultiStem, Integer> data = Stream.of(text.split(",")).map(str -> {
                 String[] pair = str.split(":");
                 if (pair.length == 1) return null;

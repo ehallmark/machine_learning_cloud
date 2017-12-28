@@ -18,7 +18,7 @@ import java.util.function.Function;
  * Created by Evan on 11/19/2017.
  */
 public class FileTextDataSetIterator implements LabelAwareIterator {
-    private static File BASE_DIR = new File("filing_text_data/");
+    private static File BASE_DIR = new File("filing_text_and_date_data/");
     public static final File trainFile = new File(BASE_DIR, "train_data.csv");
     public static File devFile1 = new File(BASE_DIR, "dev1_data.csv");
     public static File devFile2 = new File(BASE_DIR, "dev2_data.csv");
@@ -101,12 +101,13 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
     @Override
     public LabelledDocument next() {
         String line = lineIterator.nextLine();
-        String[] data = line.split(",",2);
+        String[] data = line.split(",",3);
         String label = data[0];
-        String text = data[1];
+        String date = data[1];
+        String text = data[2];
         LabelledDocument doc = new LabelledDocument();
         doc.setContent(text);
-        doc.setLabels(Collections.singletonList(label));
+        doc.setLabels(Arrays.asList(label,date));
         return doc;
     }
 

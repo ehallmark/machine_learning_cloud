@@ -118,7 +118,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
 
             System.out.println("Num filings with cpcs: " + filingToCPCMap.size());
         }
-        
+
         Function<org.nd4j.linalg.primitives.Pair<String,Map<MultiStem,Integer>>,Void> attributesFunction = pair-> {
             String asset = pair.getFirst();
             Map<MultiStem,Integer> wordCounts = pair.getSecond();
