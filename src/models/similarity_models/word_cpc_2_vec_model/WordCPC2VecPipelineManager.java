@@ -7,7 +7,6 @@ import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
 import lombok.Getter;
 import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
-import models.keyphrase_prediction.stages.Stage;
 import models.keyphrase_prediction.stages.Stage1;
 import models.text_streaming.FileTextDataSetIterator;
 import org.nd4j.linalg.api.buffer.DataBuffer;
@@ -26,7 +25,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 11/21/17.
  */
 public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIterator,INDArray> {
-    public static final String SMALL_MODEL_NAME = "wordcpc2vec_model";
+    public static final String SMALL_MODEL_NAME = "smallwordcpc2vec_model";
     public static final String LARGE_MODEL_NAME = "wordcpc2vec_model_large";
     public static final String MODEL_NAME = "wordcpc2vec2_model";
     public static final String OLD_MODEL_NAME = "wordcpc2vec_filing_model";
@@ -137,37 +136,47 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     @Override
     protected void setDatasetManager() {
         if(datasetManager==null) {
-            File trainFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.trainFile.getName());
-            File testFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.testFile.getName());
-            File devFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.devFile2.getName());
+            File baseDir = FileTextDataSetIterator.BASE_DIR;
+            File trainFile = new File(baseDir, FileTextDataSetIterator.trainFile.getName());
+            File testFile = new File(baseDir, FileTextDataSetIterator.testFile.getName());
+            File devFile = new File(baseDir, FileTextDataSetIterator.devFile2.getName());
 
             FileTextDataSetIterator trainIter = new FileTextDataSetIterator(trainFile);
             FileTextDataSetIterator testIter = new FileTextDataSetIterator(testFile);
             FileTextDataSetIterator devIter = new FileTextDataSetIterator(devFile);
 
+            boolean fullText = baseDir.getName().equals(FileTextDataSetIterator.BASE_DIR.getName());
+            System.out.println("Using full text: "+fullText);
             datasetManager = new NoSaveDataSetManager<>(
-                    new WordCPCIterator(trainIter,numEpochs,getCPCMap(), windowSize, maxSamples),
-                    new WordCPCIterator(testIter,1,getCPCMap(), windowSize, maxSamples),
-                    new WordCPCIterator(devIter,1,getCPCMap(), windowSize, maxSamples)
+                    new WordCPCIterator(trainIter,numEpochs,getCPCMap(), windowSize, maxSamples,fullText),
+                    new WordCPCIterator(testIter,1,getCPCMap(), windowSize, maxSamples,fullText),
+                    new WordCPCIterator(devIter,1,getCPCMap(), windowSize, maxSamples,fullText)
             );
         }
     }
 
 
     public static void main(String[] args) throws Exception {
+        boolean runSmallModel = true;
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         final int maxSamples = 300;
-        final int windowSize = 4;
+        final int windowSize;
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
-
-        rebuildPrerequisites = rebuildPrerequisites || !Stage.getTransformedDataFolder().exists();
-
         int nEpochs = 5; //10;
-        String modelName = MODEL_NAME;
+
+        String modelName;
+        if(runSmallModel) {
+            windowSize = 8;
+            modelName = SMALL_MODEL_NAME;
+        } else {
+            windowSize = 4;
+            modelName = MODEL_NAME;
+        }
+
         WordCPC2VecPipelineManager pipelineManager = new WordCPC2VecPipelineManager(modelName,nEpochs,windowSize,maxSamples);
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }

@@ -18,7 +18,7 @@ import java.util.function.Function;
  * Created by Evan on 11/19/2017.
  */
 public class FileTextDataSetIterator implements LabelAwareIterator {
-    private static File BASE_DIR = new File("filing_text_and_date_data/");
+    public static final File BASE_DIR = new File("filing_text_and_date_data/");
     public static final File trainFile = new File(BASE_DIR, "train_data.csv");
     public static File devFile1 = new File(BASE_DIR, "dev1_data.csv");
     public static File devFile2 = new File(BASE_DIR, "dev2_data.csv");

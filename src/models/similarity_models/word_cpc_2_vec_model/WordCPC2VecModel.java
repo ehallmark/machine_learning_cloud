@@ -5,7 +5,7 @@ import cpc_normalization.CPC;
 import data_pipeline.models.WordVectorPredictionModel;
 import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
-import org.deeplearning4j.models.embeddings.learning.impl.elements.CBOW;
+import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
@@ -126,9 +126,9 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         int windowSize = pipelineManager.getWindowSize();
         int minWordFrequency = 50;
         double negativeSampling = -1;
-        double sampling = -1;
-        double learningRate = 0.001; //0.01;
-        double minLearningRate = 0.0001; //0.001;
+        double sampling = 0.0001;
+        double learningRate = 0.01;
+        double minLearningRate = 0.001;
         int testIterations = 5000000;
 
 
@@ -170,7 +170,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
                 //.trainElementsRepresentation(true)
                 //.trainSequencesRepresentation(true)
                 //.sequenceLearningAlgorithm(new DBOW<>())
-                .elementsLearningAlgorithm(new CBOW<>())
+                .elementsLearningAlgorithm(new SkipGram<>())
                 .iterate(iterator);
 
         if(!newModel) {

@@ -89,13 +89,17 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
         //File trainFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.trainFile.getName());
         //File testFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.testFile.getName());
         //File devFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.devFile2.getName());
-        File trainFile = new File(Stage1.getNonDateTransformedDataFolder(), FileTextDataSetIterator.trainFile.getName());
-        File testFile = new File(Stage1.getNonDateTransformedDataFolder(), FileTextDataSetIterator.testFile.getName());
-        File devFile = new File(Stage1.getNonDateTransformedDataFolder(), FileTextDataSetIterator.devFile2.getName());
+        File baseDir = Stage1.getTransformedDataFolder();
+        File trainFile = new File(baseDir, FileTextDataSetIterator.trainFile.getName());
+        File testFile = new File(baseDir, FileTextDataSetIterator.testFile.getName());
+        File devFile = new File(baseDir, FileTextDataSetIterator.devFile2.getName());
 
-        WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,4);
-        WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,4);
-        WordCPCIterator devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,4);
+        boolean fullText = baseDir.getName().equals(FileTextDataSetIterator.BASE_DIR.getName());
+        System.out.println("Using full text: "+fullText);
+
+        WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,4, fullText);
+        WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,4, fullText);
+        WordCPCIterator devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,4, fullText);
 
         trainIter.setRunVocab(false);
         testIter.setRunVocab(false);
