@@ -47,8 +47,8 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
         this.cpcvaePipelineManager=cpcvaePipelineManager;
     }
 
-    protected void initModel(boolean forceRecreateModels) {
-        model = new CombinedSimilarityModel(this,modelName);
+    public void initModel(boolean forceRecreateModels) {
+        if(model==null) model = new CombinedSimilarityModel(this,modelName);
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
@@ -105,7 +105,7 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
         );
     }
 
-    protected synchronized Map<String,INDArray> getAssetToEncodingMap() {
+    public synchronized Map<String,INDArray> getAssetToEncodingMap() {
         if(assetToEncodingMap==null) {
             // convert to filing map
             assetToEncodingMap = Collections.synchronizedMap(new HashMap<>());
