@@ -86,9 +86,12 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
 
     @Override
     protected void setDatasetManager() {
-        File trainFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.trainFile.getName());
-        File testFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.testFile.getName());
-        File devFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.devFile2.getName());
+        //File trainFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.trainFile.getName());
+        //File testFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.testFile.getName());
+        //File devFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.devFile2.getName());
+        File trainFile = new File(Stage1.getNonDateTransformedDataFolder(), FileTextDataSetIterator.trainFile.getName());
+        File testFile = new File(Stage1.getNonDateTransformedDataFolder(), FileTextDataSetIterator.testFile.getName());
+        File devFile = new File(Stage1.getNonDateTransformedDataFolder(), FileTextDataSetIterator.devFile2.getName());
 
         WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,4);
         WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,4);

@@ -50,12 +50,14 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
 
     private File dataFile;
     private LineIterator lineIterator;
-
+    private boolean containsDate;
     public FileTextDataSetIterator(Type type) {
         this(typeToFileMap.get(type));
     }
     public FileTextDataSetIterator(File file) {
         dataFile = file;
+        this.containsDate = file.getParentFile().getName().contains("_date_");
+        System.out.println("File text data iterator acknowledging dates: "+containsDate);
         reset();
     }
 
@@ -101,13 +103,25 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
     @Override
     public LabelledDocument next() {
         String line = lineIterator.nextLine();
-        String[] data = line.split(",",3);
-        String label = data[0];
-        String date = data[1];
-        String text = data[2];
+        String[] data;
+        List<String> labels = new ArrayList<>();
+        String text;
+        if(containsDate) {
+            data = line.split(",", 3);
+            String label = data[0];
+            String date = data[1];
+            text = data[2];
+            labels.add(label);
+            labels.add(text);
+        } else {
+            data = line.split(",", 2);
+            String label = data[0];
+            text = data[1];
+            labels.add(label);
+        }
         LabelledDocument doc = new LabelledDocument();
         doc.setContent(text);
-        doc.setLabels(Arrays.asList(label,date));
+        doc.setLabels(labels);
         return doc;
     }
 
