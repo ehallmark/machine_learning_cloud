@@ -66,7 +66,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         int input1 = 128;
         int input2 = 32;
         int outputSize = Math.max(input1,input2);
-        int numHiddenEncodings = 7;
+        int numHiddenEncodings = 5;
         int numHiddenDecodings = 5;
         boolean trainWordCpc2Vec = true;
         boolean trainCpcVecNet = true;
