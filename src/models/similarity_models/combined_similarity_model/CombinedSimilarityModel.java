@@ -176,7 +176,8 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
                     )
                     .backprop(false).pretrain(true);
             encodingVae = new MultiLayerNetwork(encodingVaeConf.build());
-
+            encodingVae.init();
+            
             net.getNameToNetworkMap().put(ENCODING_VAE, encodingVae);
         }
 
