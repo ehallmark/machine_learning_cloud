@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
-import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.keyphrase_prediction.stages.Stage1;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
@@ -14,7 +13,6 @@ import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -101,9 +99,9 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
         devIter.setRunVocab(false);
 
         datasetManager = new NoSaveDataSetManager<>(
-                getRawIterator(trainIter),
-                getRawIterator(testIter),
-                getRawIterator(devIter)
+                getRawIterator(trainIter,BATCH_SIZE),
+                getRawIterator(testIter, 128),
+                getRawIterator(devIter, 128)
         );
     }
 
@@ -130,8 +128,8 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
     }
 
 
-    protected DataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator) {
-        return new Word2VecToCPCIterator(iterator,getAssetToEncodingMap(),word2Vec,BATCH_SIZE);
+    protected DataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {
+        return new Word2VecToCPCIterator(iterator,getAssetToEncodingMap(),word2Vec,batch);
     }
 
     public static void main(String[] args) throws Exception {
