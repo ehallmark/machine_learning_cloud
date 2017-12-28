@@ -8,7 +8,6 @@ import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import models.NDArrayHelper;
-import org.deeplearning4j.berkeley.Triple;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
@@ -168,7 +167,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             return null;
         };
 
-        final int printIterations = 500;
+        final int printIterations = 200;
         final AtomicBoolean stoppingCondition = new AtomicBoolean(false);
 
         System.gc();
