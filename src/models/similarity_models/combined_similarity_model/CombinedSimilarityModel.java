@@ -62,7 +62,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         MultiLayerNetwork wordCpc2Vec;
         MultiLayerNetwork cpcVecNet;
         int hiddenLayerSize = 256;
-        int encodingSize = 64;
+        int encodingSize = 128;
         int input1 = 128;
         int input2 = 32;
         int outputSize = Math.max(input1,input2);
