@@ -244,7 +244,7 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         }
     }
 
-    private double test(INDArray inputs, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
+    public static double test(INDArray inputs, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
         INDArray latentValues = model.activate(inputs,false);
         INDArray outputs = model.generateAtMeanGivenZ(latentValues);
         double similarity = NDArrayHelper.sumOfCosineSimByRow(inputs,outputs);

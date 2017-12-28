@@ -5,7 +5,6 @@ import data_pipeline.helpers.Function2;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
-import models.NDArrayHelper;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
@@ -168,11 +167,6 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         }
     }
 
-    private double test(INDArray inputs, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
-        INDArray latentValues = model.activate(inputs,false);
-        INDArray outputs = model.generateAtMeanGivenZ(latentValues);
-        double similarity = NDArrayHelper.sumOfCosineSimByRow(inputs,outputs);
-        return 1d - (similarity/inputs.rows());
-    }
+
 
 }

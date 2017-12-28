@@ -1103,6 +1103,7 @@ public class SimilarPatentServer {
         System.out.println("Received data table request.....");
         Map<String,Object> response = new HashMap<>();
         final String paramIdx = req.queryParamOrDefault("tableId","");
+        long timeLimit = 180 * 1000;
         try {
 
             // try to get custom data
@@ -1113,9 +1114,17 @@ public class SimilarPatentServer {
                 TableResponse tableResponse = req.session().attribute("table-"+paramIdx);
                 if(tableResponse!=null) {
                     System.out.println("Found tableResponse...");
-                    data = tableResponse.computeAttributesTask.join();
+                    try {
+                        data = tableResponse.computeAttributesTask.get(timeLimit, TimeUnit.MILLISECONDS);
+                        headers = tableResponse.headers;
+                    } catch(Exception e) {
+                        Map<String,String> noDataMap = new HashMap<>();
+                        noDataMap.put("Could not compute data in time", "Max time limit: "+(timeLimit/(1000*60)+" minutes."));
+                        data = Arrays.asList(noDataMap);
+                        headers = Collections.singletonList("Count not compute data in time");
+                    }
+
                     numericAttrNames = tableResponse.numericAttrNames;
-                    headers = tableResponse.headers;
                     System.out.println("Data size: "+data.size());
                 } else {
                     System.out.println("WARNING:: Could not find tableResponse...");
@@ -1559,6 +1568,8 @@ public class SimilarPatentServer {
             e.printStackTrace();
             System.out.println("While pinging platform starter...");
         }
+
+        List<RecursiveTask> otherTasks = Collections.synchronizedList(new ArrayList<>());
         // start timer
         RecursiveTask<String> handleReportTask = new RecursiveTask<String>() {
             @Override
@@ -1675,8 +1686,8 @@ public class SimilarPatentServer {
                                         }
                                         if(task!=null) {
                                             try {
-                                                task.quietlyComplete();
                                                 task.cancel(true);
+                                                task.quietlyComplete();
                                             }catch(Exception e) {
 
                                             }
@@ -1704,6 +1715,7 @@ public class SimilarPatentServer {
                                 chartTask.fork();
                                 String chartId = "chart-" + totalChartCnt.getAndIncrement();
                                 sessionIds.add(chartId);
+                                otherTasks.add(chartTask);
                                 req.session().attribute(chartId, chartTask);
                             }
                         });
@@ -1720,6 +1732,7 @@ public class SimilarPatentServer {
                         List<TableResponse> tableResponses = tables.stream().flatMap(table->{
                             return table.createTables(portfolioList).stream();
                         }).collect(Collectors.toList());
+                        tableResponses.forEach(tableResponse->otherTasks.add(tableResponse.computeAttributesTask));
 
                         AtomicInteger totalTableCnt = new AtomicInteger(0);
                         tableResponses.forEach(table -> {
@@ -1767,7 +1780,7 @@ public class SimilarPatentServer {
         };
 
         handleReportTask.fork();
-        long maxTimeMillis =  300 * 1000;
+        long maxTimeMillis =  180 * 1000;
         try {
             String html = handleReportTask.get(maxTimeMillis, TimeUnit.MILLISECONDS);
             return html;
@@ -1777,8 +1790,13 @@ public class SimilarPatentServer {
         } finally {
             try {
                 if(!handleReportTask.isDone()){
-                    handleReportTask.quietlyComplete();
+                    // clean up other tasks
+                    otherTasks.forEach(task->{
+                        task.cancel(true);
+                        task.quietlyComplete();
+                    });
                     handleReportTask.cancel(true);
+                    handleReportTask.quietlyComplete();
                 }
             } catch(Exception e) {
                 e.printStackTrace();
