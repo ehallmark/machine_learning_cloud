@@ -133,7 +133,9 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
     }
 
     public static void main(String[] args) throws Exception {
-        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
+        Nd4j.setDataType(DataBuffer.Type.FLOAT);
+        System.setProperty("org.bytedeco.javacpp.maxretries","100");
+
         boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = false;
