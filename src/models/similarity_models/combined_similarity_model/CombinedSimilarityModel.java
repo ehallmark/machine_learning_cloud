@@ -176,9 +176,13 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         DataSetIterator dataSetIterator = pipelineManager.getDatasetManager().getTrainingIterator();
         DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
         List<DataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
-        while(validationIterator.hasNext()) {
-            validationDataSets.add(validationIterator.next());
+        int valCount = 0;
+        while(validationIterator.hasNext()&&valCount<20000) {
+            DataSet ds = validationIterator.next();
+            validationDataSets.add(ds);
+            valCount+=ds.getFeatures().rows();
         }
+
         System.out.println("Num validation datasets: "+validationDataSets.size());
 
         Function<Void,Double> testErrorFunction = (v) -> {
