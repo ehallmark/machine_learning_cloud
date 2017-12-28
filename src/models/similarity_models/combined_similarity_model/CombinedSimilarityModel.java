@@ -62,8 +62,8 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
     public void train(int nEpochs) {
         MultiLayerNetwork wordCpc2Vec;
         MultiLayerNetwork cpcVecNet;
-        int hiddenLayerSize = 256;
-        int encodingSize = 256;
+        int hiddenLayerSize = 128;
+        int encodingSize = 128;
         int input1 = 128;
         int input2 = 32;
         int outputSize = Math.max(input1,input2);
@@ -146,7 +146,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             nameToNetworkMap.put(CPC_VEC_NET,cpcVecNet);
             this.net = new CombinedModel(nameToNetworkMap);
         } else {
-            double newLearningRate = 0.01;
+            double newLearningRate = 0.0001;
             wordCpc2Vec = NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(WORD_CPC_2_VEC),newLearningRate,false);
             cpcVecNet = NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(CPC_VEC_NET),newLearningRate,false);
             net.getNameToNetworkMap().put(WORD_CPC_2_VEC,wordCpc2Vec);
