@@ -7,6 +7,7 @@ import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.nd4j.linalg.primitives.Pair;
+import seeding.Constants;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -108,7 +109,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
             if(text.size()>=minSequenceLength) {
                 int wordLimit = maxSamples > 0 ? Math.min(text.size(),maxSamples) : text.size();
                 int start = text.size()>wordLimit ? random.nextInt(text.size()-wordLimit) : 0;
-                words = text.stream().skip(start).limit(wordLimit).flatMap(word->{
+                words = text.stream().filter(word-> !Constants.STOP_WORD_SET.contains(word)).skip(start).limit(wordLimit).flatMap(word->{
                     VocabWord vocabWord = new VocabWord(1, word);
                     vocabWord.setSequencesCount(1);
                     vocabWord.setElementFrequency(1);
