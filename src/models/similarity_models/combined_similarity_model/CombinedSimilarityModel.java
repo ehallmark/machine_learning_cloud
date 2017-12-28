@@ -22,6 +22,7 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 
 import java.io.File;
@@ -62,12 +63,12 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         MultiLayerNetwork wordCpc2Vec;
         MultiLayerNetwork cpcVecNet;
         int hiddenLayerSize = 256;
-        int encodingSize = 128;
+        int encodingSize = 256;
         int input1 = 128;
         int input2 = 32;
         int outputSize = Math.max(input1,input2);
-        int numHiddenEncodings = 5;
-        int numHiddenDecodings = 5;
+        int numHiddenEncodings = 3;
+        int numHiddenDecodings = 3;
         boolean trainWordCpc2Vec = true;
         boolean trainCpcVecNet = true;
         boolean saveModels = true;
@@ -138,7 +139,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             wordCpc2Vec.init();
             cpcVecNet.init();
 
-            syncParams(wordCpc2Vec,cpcVecNet,encodingIdx);
+            //syncParams(wordCpc2Vec,cpcVecNet,encodingIdx);
 
             Map<String,MultiLayerNetwork> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
             nameToNetworkMap.put(WORD_CPC_2_VEC,wordCpc2Vec);
@@ -188,9 +189,9 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
         Function<Void,Double> testErrorFunction = (v) -> {
             System.gc();
-            Triple<Double,Double,Double> results = test(wordCpc2Vec, cpcVecNet, validationDataSets.iterator(),encodingIdx);
-            System.out.println(" Test Net 1: "+results.getFirst()+"\tTest Net 2: "+results.getSecond()+"\t Encoding Error: "+results.getThird());
-            return (results.getFirst()+results.getSecond()+results.getThird())/3;
+            Pair<Double,Double> results = test(wordCpc2Vec, cpcVecNet, validationDataSets.iterator());
+            System.out.println(" Test Net 1: "+results.getFirst()+"\tTest Net 2: "+results.getSecond());
+            return (results.getFirst()+results.getSecond())/2;
         };
 
         IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
@@ -272,37 +273,32 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         if(net2!=null)net2.fit(new DataSet(features2, labels));
     }
 
-    public static Triple<Double,Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2, int encodingLayerIdx) {
+    public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2) {
         INDArray labels = DEFAULT_LABEL_FUNCTION.apply(features1, features2);
-        INDArray encoding1 = net1.activateSelectedLayers(0,encodingLayerIdx,features1);
-        INDArray predictions1 = net1.activateSelectedLayers(encodingLayerIdx+1,net1.getnLayers()-1,encoding1);
-        INDArray encoding2 = net2.activateSelectedLayers(0,encodingLayerIdx,features2);
-        INDArray predictions2 = net2.activateSelectedLayers(encodingLayerIdx+1,net2.getnLayers()-1,encoding2);
-        return new Triple<>(test(predictions1,labels),test(predictions2,labels),test(encoding1,encoding2));
+        INDArray predictions1 = net1.activateSelectedLayers(0,net1.getnLayers()-1,features1);
+        INDArray predictions2 = net2.activateSelectedLayers(0,net2.getnLayers()-1,features2);
+        return new Pair<>(test(predictions1,labels),test(predictions2,labels));
     }
 
     public static double test(INDArray predictions, INDArray labels) {
         return 1.0 - NDArrayHelper.sumOfCosineSimByRow(predictions,labels)/predictions.rows();
     }
 
-    public static Triple<Double,Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, Iterator<DataSet> iterator, int encodingLayerIdx) {
+    public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, Iterator<DataSet> iterator) {
         double d1 = 0;
         double d2 = 0;
-        double d3 = 0;
         long count = 0;
         while(iterator.hasNext()) {
             DataSet ds = iterator.next();
-            Triple<Double,Double,Double> test = test(net1,net2,ds.getFeatures(),ds.getLabels(),encodingLayerIdx);
+            Pair<Double,Double> test = test(net1,net2,ds.getFeatures(),ds.getLabels());
             d1+=test.getFirst();
             d2+=test.getSecond();
-            d3+=test.getThird();
             count++;
         }
         if(count>0) {
             d1/=count;
             d2/=count;
-            d3/=count;
         }
-        return new Triple<>(d1,d2,d3);
+        return new Pair<>(d1,d2);
     }
 }
