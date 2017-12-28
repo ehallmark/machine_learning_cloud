@@ -41,7 +41,7 @@ import java.util.stream.Stream;
  */
 public abstract class Stage<V> {
     @Getter
-    private static File transformedDataFolder = new File("filing_text_data_with_counts/");
+    private static File transformedDataFolder = new File("filing_text_and_date_data_with_counts/");
     public static final Collection<String> validPOS = Arrays.asList("JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS", "VBG", "VBN");
     public static final Collection<String> adjectivesPOS = Arrays.asList("JJ", "JJR", "JJS");
     static double scoreThreshold = 200f;
