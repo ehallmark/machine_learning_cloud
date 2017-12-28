@@ -97,7 +97,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     }
 
     private static Sequence<VocabWord> extractSequenceFromDocumentAndTokens(LabelledDocument document, List<String> tokens, Random random, int minSequenceLength, int maxSamples, boolean fullText) {
-        if(document.getContent()==null||document.getLabels()==null||document.getContent().isEmpty() || document.getLabels().isEmpty()) {
+        if(document.getContent()==null||document.getLabels()==null||tokens.isEmpty()||document.getContent().isEmpty() || document.getLabels().isEmpty()) {
             //System.out.println("Returning NULL because content or labels are null");
             return null;
         }
