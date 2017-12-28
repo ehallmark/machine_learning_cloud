@@ -159,7 +159,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     public static void main(String[] args) throws Exception {
         boolean runSmallModel = true;
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
-        final int maxSamples = 300;
+        final int maxSamples;
         final int windowSize;
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
@@ -172,9 +172,11 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         if(runSmallModel) {
             windowSize = 8;
             modelName = SMALL_MODEL_NAME;
+            maxSamples = 100;
         } else {
             windowSize = 4;
             modelName = MODEL_NAME;
+            maxSamples = 300;
         }
 
         WordCPC2VecPipelineManager pipelineManager = new WordCPC2VecPipelineManager(modelName,nEpochs,windowSize,maxSamples);

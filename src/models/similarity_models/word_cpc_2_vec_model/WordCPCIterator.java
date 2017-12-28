@@ -106,7 +106,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         if(fullText) {
             List<String> text = defaultWordListFunction.apply(document.getContent());
             if(text.size()>=minSequenceLength) {
-                int wordLimit = maxSamples > 0 ? maxSamples : text.size();
+                int wordLimit = maxSamples > 0 ? Math.min(text.size(),maxSamples) : text.size();
                 words = new ArrayList<>(2*wordLimit);
                 for(int i = 0; i < wordLimit; i++) {
                     String word = text.get(i);
