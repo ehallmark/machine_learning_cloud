@@ -4,7 +4,6 @@ import cpc_normalization.CPCHierarchy;
 import data_pipeline.helpers.CombinedModel;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
-import models.NDArrayHelper;
 import models.keyphrase_prediction.models.DefaultModel;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
@@ -122,7 +121,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         INDArray keywordMatrix = Nd4j.create(keywordToVectorLookupTable.size(),keywordToVectorLookupTable.values().stream().findAny().get().length());
 
         for(int i = 0; i < keywords.size(); i++) {
-            keywordMatrix.put(i,keywordToVectorLookupTable.get(keywords.get(i)));
+            keywordMatrix.putRow(i,keywordToVectorLookupTable.get(keywords.get(i)));
         }
 
         keywordMatrix.diviColumnVector(keywordMatrix.norm2(1));
