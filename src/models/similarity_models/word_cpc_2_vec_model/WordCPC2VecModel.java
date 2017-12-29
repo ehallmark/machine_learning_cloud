@@ -10,7 +10,6 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Constants;
-import seeding.Database;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -40,7 +39,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
     public Map<String, Map<String,INDArray>> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         Map<String,Map<String,INDArray>> predictions = Collections.synchronizedMap(new HashMap<>());
 
-        Set<String> allClassCodes = Database.getClassCodes();
+        Set<String> allClassCodes = Collections.synchronizedSet(new HashSet(classCodes));
 
         WeightLookupTable<VocabWord> lookupTable = net.lookupTable();
         Collection<VocabWord> vocabulary = net.vocab().tokens();
