@@ -78,7 +78,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
 
         Collection<String> words = pipelineManager.getTestWords();
         int windowSize = pipelineManager.getWindowSize();
-        int minWordFrequency = 5;
+        int minWordFrequency = 10;
         double negativeSampling = -1;
         double sampling = -1;
         double learningRate = 0.01;//0.01;
