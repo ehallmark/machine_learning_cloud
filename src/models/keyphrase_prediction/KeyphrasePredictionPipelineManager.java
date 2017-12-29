@@ -10,14 +10,11 @@ import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityModel;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityPipelineManager;
-import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
-import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.api.ops.impl.indexaccum.IAMax;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
@@ -34,12 +31,10 @@ import java.util.stream.Stream;
 public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<WordCPCIterator,List<String>> {
     public static final Model modelParams = new DefaultModel();
     private static final File keywordToVectorLookupTableFile = new File(Constants.DATA_FOLDER+"keyword_vector_lookup_table.jobj");
-    private static Map<MultiStem,INDArray> keywordToVectorLookupTable;
-    private static Map<String,INDArray> filingToVectorMap;
     private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyphrase_prediction_model_predictions/predictions_map.jobj");
-
+    private static Map<MultiStem,INDArray> keywordToVectorLookupTable;
     private Set<MultiStem> multiStemSet;
     private static MultiLayerNetwork filingToEncodingNet;
     private static MultiLayerNetwork wordToEncodingNet;
@@ -57,19 +52,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         return datasetManager;
     }
 
-    public Map<MultiStem,INDArray> getKeywordToVectorLookupTable() {
-        if(keywordToVectorLookupTable==null) {
-            keywordToVectorLookupTable = (Map<MultiStem,INDArray>) Database.tryLoadObject(keywordToVectorLookupTableFile);
-        }
-        return keywordToVectorLookupTable;
-    }
-
-    public Map<String,INDArray> getFilingToVectorMap() {
-        if(filingToVectorMap==null) {
-            buildFilingToVectorMap();
-        }
-        return filingToVectorMap;
-    }
 
     public Map<String,Collection<CPC>> getCPCMap() {
         if(cpcMap==null) {
@@ -122,12 +104,9 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         if(multiStemSet==null) initStages(false,false);
 
         System.out.println("Loading keyword to vector table...");
-        getKeywordToVectorLookupTable();
         if(keywordToVectorLookupTable==null) {
             buildKeywordToLookupTableMap();
         }
-        System.out.println("Loading filing to vector table...");
-        getFilingToVectorMap();
 
         System.out.println("Building keyword matrix...");
         List<MultiStem> keywords = Collections.synchronizedList(new ArrayList<>(keywordToVectorLookupTable.keySet()));
@@ -139,10 +118,13 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
         keywordMatrix.diviColumnVector(keywordMatrix.norm2(1));
 
-        if(filingToEncodingNet==null) loadSimilarityNetworks();
+        Map<String,INDArray> cpcVectors = wordCPC2VecPipelineManager.getOrLoadCPCVectors();
+
+
         getCPCMap();
 
-        System.out.println("Starting predictions...");
+        /*System.out.println("Starting predictions...");
+        if(filingToEncodingNet==null) loadSimilarityNetworks();
         getFilingToVectorMap().entrySet().forEach(e->{
             String filing = e.getKey();
             INDArray vec = e.getValue();
@@ -154,16 +136,9 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             // find most similar
             int best = Nd4j.getExecutioner().execAndReturn(new IAMax(Transforms.unitVec(encoding).broadcast(keywordMatrix.shape()).muli(keywordMatrix).sum(1).reshape(new int[]{1,encoding.columns()}))).getFinalResult();
             System.out.println("Best keyword for "+filing+": "+keywords.get(best));
-        });
+        }); */
     }
 
-    private void buildFilingToVectorMap() {
-        String similarityModelName = CombinedSimilarityPipelineManager.MODEL_NAME;
-        CombinedSimilarityPipelineManager combinedSimilarityPipelineManager = new CombinedSimilarityPipelineManager(similarityModelName,null,null,new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME));
-        combinedSimilarityPipelineManager.initModel(false);
-
-        filingToVectorMap = combinedSimilarityPipelineManager.getAssetToEncodingMap();
-    }
 
     private void loadSimilarityNetworks() {
         String similarityModelName = CombinedSimilarityPipelineManager.MODEL_NAME;
@@ -178,23 +153,17 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     }
 
     private void buildKeywordToLookupTableMap() {
-        if(wordToEncodingNet==null) loadSimilarityNetworks();
-
         // get vectors
         wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
-        Word2Vec word2Vec = (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet();
-
+        Map<String,INDArray> wordVectorMap = wordCPC2VecPipelineManager.getOrLoadWordVectors();
         keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
 
         multiStemSet.stream().forEach(stem->{
             String[] words = stem.getBestPhrase().split(" ");
-            List<INDArray> wordVectors = Stream.of(words).map(word->word2Vec.lookupTable().vector(word)).collect(Collectors.toList());
+            List<INDArray> wordVectors = Stream.of(words).map(word->wordVectorMap.get(word)).filter(vec->vec!=null).collect(Collectors.toList());
             if(wordVectors.size()>0) {
                 INDArray vec = Transforms.unitVec(Nd4j.vstack(wordVectors).mean(0));
-                INDArray encoding = wordToEncodingNet.activateSelectedLayers(0,wordToEncodingNet.getnLayers()-1,vec);
-                if(encoding!=null) {
-                    keywordToVectorLookupTable.put(stem, encoding);
-                }
+                keywordToVectorLookupTable.put(stem, vec);
             }
         });
 

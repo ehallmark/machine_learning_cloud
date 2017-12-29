@@ -45,9 +45,6 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
         WeightLookupTable<VocabWord> lookupTable = net.lookupTable();
         Collection<VocabWord> vocabulary = net.vocab().tokens();
         System.out.println("Vocabulary size: "+vocabulary.size());
-        vocabulary.forEach(word->{
-
-        });
 
         Map<String,INDArray> classCodeVectors = Collections.synchronizedMap(new HashMap<>());
         Map<String,INDArray> wordVectors = Collections.synchronizedMap(new HashMap<>());
@@ -61,6 +58,10 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
                 }
             }
         });
+
+        System.out.println("Vocabulary size: "+vocabulary.size());
+        System.out.println("Num cpcs: "+classCodeVectors.size());
+        System.out.println("Num words: "+wordVectors.size());
 
         predictions.put(CLASS_VECTORS,classCodeVectors);
         predictions.put(WORD_VECTORS,wordVectors);
