@@ -150,7 +150,7 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
         int nEpochs = 5;
         String modelName = MODEL_NAME;
         String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
-        String wordCpc2VecModel = WordCPC2VecPipelineManager.MODEL_NAME;
+        String wordCpc2VecModel = WordCPC2VecPipelineManager.SMALL_MODEL_NAME;
 
         WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(wordCpc2VecModel,-1,-1,-1);
         wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
