@@ -90,7 +90,6 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
                     .learningRate(0.001)
-                    .regularization(true).l2(1e-4)
                     .activation(Activation.TANH)
                     .list()
                     .layer(i, NNOptimizer.newBatchNormLayer(input1,input1).build())
@@ -99,7 +98,6 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
                     .learningRate(0.001)
-                    .regularization(true).l2(1e-4)
                     .activation(Activation.TANH)
                     .list()
                     .layer(i, NNOptimizer.newBatchNormLayer(input2,input2).build())
@@ -182,9 +180,10 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             this.net = new CombinedModel(nameToNetworkMap);
         } else {
             double newLearningRate = 0.0001;
-            wordCpc2Vec = NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(WORD_CPC_2_VEC),newLearningRate,false);
-            cpcVecNet = NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(CPC_VEC_NET),newLearningRate,false);
-            encodingVae = NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(ENCODING_VAE),newLearningRate,false);
+            double newRegularization = 1e-4;
+            wordCpc2Vec = NNRefactorer.updateNetworkRegularization(NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(WORD_CPC_2_VEC),newLearningRate,false),newRegularization>0,newRegularization,false);
+            cpcVecNet = NNRefactorer.updateNetworkRegularization(NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(CPC_VEC_NET),newLearningRate,false),newRegularization>0,newRegularization,false);
+            encodingVae = NNRefactorer.updateNetworkRegularization(NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(ENCODING_VAE),newLearningRate,false),newRegularization>0,newRegularization,false);
             net.getNameToNetworkMap().put(WORD_CPC_2_VEC,wordCpc2Vec);
             net.getNameToNetworkMap().put(CPC_VEC_NET,cpcVecNet);
             net.getNameToNetworkMap().put(ENCODING_VAE, encodingVae);
