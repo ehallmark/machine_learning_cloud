@@ -18,10 +18,12 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.impl.indexaccum.IAMax;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -118,12 +120,45 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         keywordMatrix.diviColumnVector(keywordMatrix.norm2(1));
 
         Map<String,INDArray> cpcVectors = wordCPC2VecPipelineManager.getOrLoadCPCVectors();
+        Map<String,INDArray> wordVectors = wordCPC2VecPipelineManager.getOrLoadWordVectors();
 
+        AtomicInteger incomplete = new AtomicInteger(0);
+        AtomicInteger cnt = new AtomicInteger(0);
         cpcVectors.entrySet().forEach(e->{
+            cnt.getAndIncrement();
+
             String cpc = e.getKey();
-            INDArray vec = e.getValue();
-            int best = Nd4j.getExecutioner().execAndReturn(new IAMax(Transforms.unitVec(vec).broadcast(keywordMatrix.shape()).muli(keywordMatrix).sum(1).reshape(new int[]{1,keywordMatrix.rows()}))).getFinalResult();
-            System.out.println("Best keyword for "+cpc+": "+keywords.get(best).getBestPhrase());
+            INDArray cpcVec = e.getValue();
+            int best = Nd4j.getExecutioner().execAndReturn(new IAMax(Transforms.unitVec(cpcVec).broadcast(keywordMatrix.shape()).muli(keywordMatrix).sum(1).reshape(new int[]{1,keywordMatrix.rows()}))).getFinalResult();
+            MultiStem bestKeyword = keywords.get(best);
+            INDArray multiStemVec = keywordToVectorLookupTable.get(bestKeyword);
+
+            // potentially remove words from keyphrase
+            List<Pair<String,INDArray>> wordVectorsPairs = Stream.of(bestKeyword.getBestPhrase().split(" "))
+                    .map(word->{
+                        if(wordVectors.containsKey(word)) return new Pair<>(word,wordVectors.get(word));
+                        else return null;
+                    }).filter(pair->pair!=null).collect(Collectors.toList());
+
+            List<Pair<String,Double>> wordSimilarityPairs = wordVectorsPairs.stream()
+                    .map(pair->new Pair<>(pair.getFirst(),Transforms.cosineSim(Transforms.unitVec(pair.getSecond()),Transforms.unitVec(cpcVec))))
+                    .collect(Collectors.toList());
+
+            double similarityFullPhrase = Transforms.cosineSim(multiStemVec,cpcVec);
+            List<String> wordList = wordSimilarityPairs.stream()
+                    .filter(pair->pair.getSecond()>=similarityFullPhrase*0.9)
+                    .map(pair->pair.getFirst())
+                    .collect(Collectors.toList());
+
+            if(wordList.isEmpty()) {
+                incomplete.getAndIncrement();
+            }
+
+            String prediction = String.join(" ",wordList);
+            System.out.println("Best keyword for "+cpc+": "+prediction);
+            if(cnt.get()%1000==999) {
+                System.out.println("Finished "+cnt.get()+" out of "+cpcVectors.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
+            }
         });
 
         /*System.out.println("Starting predictions...");
