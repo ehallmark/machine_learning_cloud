@@ -1,5 +1,6 @@
 package models.keyphrase_prediction;
 
+import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.helpers.CombinedModel;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
@@ -16,12 +17,16 @@ import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.impl.indexaccum.IAMax;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 12/21/17.
@@ -38,6 +43,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     private Set<MultiStem> multiStemSet;
     private static MultiLayerNetwork filingToEncodingNet;
     private static MultiLayerNetwork wordToEncodingNet;
+    private static Map<String,Collection<CPC>> cpcMap;
     public KeyphrasePredictionPipelineManager(WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
         super(INPUT_DATA_FOLDER, PREDICTION_DATA_FILE);
         this.wordCPC2VecPipelineManager=wordCPC2VecPipelineManager;
@@ -63,6 +69,13 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             buildFilingToVectorMap();
         }
         return filingToVectorMap;
+    }
+
+    public Map<String,Collection<CPC>> getCPCMap() {
+        if(cpcMap==null) {
+            cpcMap = wordCPC2VecPipelineManager.getCPCMap();
+        }
+        return cpcMap;
     }
 
     @Override
@@ -127,15 +140,19 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         keywordMatrix.diviColumnVector(keywordMatrix.norm2(1));
 
         if(filingToEncodingNet==null) loadSimilarityNetworks();
+        getCPCMap();
 
         System.out.println("Starting predictions...");
         getFilingToVectorMap().entrySet().forEach(e->{
             String filing = e.getKey();
             INDArray vec = e.getValue();
+            Collection<CPC> cpcs = cpcMap.get(filing);
+            if(cpcs!=null) {
+
+            }
             INDArray encoding = filingToEncodingNet.activateSelectedLayers(0,filingToEncodingNet.getnLayers()-1,vec);
             // find most similar
-            int best = Nd4j.argMax(encoding.divi(encoding.norm2Number()).broadcast(keywordMatrix.shape()).muli(keywordMatrix).sum(1),0).getInt(0);
-
+            int best = Nd4j.getExecutioner().execAndReturn(new IAMax(Transforms.unitVec(encoding).broadcast(keywordMatrix.shape()).muli(keywordMatrix).sum(1).reshape(new int[]{1,encoding.columns()}))).getFinalResult();
             System.out.println("Best keyword for "+filing+": "+keywords.get(best));
         });
     }
@@ -170,8 +187,10 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
 
         multiStemSet.stream().forEach(stem->{
-            INDArray vec = word2Vec.lookupTable().vector(stem.toString());
-            if(vec!=null) {
+            String[] words = stem.getBestPhrase().split(" ");
+            List<INDArray> wordVectors = Stream.of(words).map(word->word2Vec.lookupTable().vector(word)).collect(Collectors.toList());
+            if(wordVectors.size()>0) {
+                INDArray vec = Transforms.unitVec(Nd4j.vstack(wordVectors).mean(0));
                 INDArray encoding = wordToEncodingNet.activateSelectedLayers(0,wordToEncodingNet.getnLayers()-1,vec);
                 if(encoding!=null) {
                     keywordToVectorLookupTable.put(stem, encoding);
@@ -190,14 +209,12 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     @Override
     protected void setDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = wordCPC2VecPipelineManager.getDatasetManager();
         }
     }
 
     public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
-        final int maxSamples = 200;
-        final int windowSize = 8;
+
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = false;
@@ -206,11 +223,10 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         int nEpochs = 10;
         String modelName = modelParams.getModelName();
 
-        String CPC2VecModelName = WordCPC2VecPipelineManager.MODEL_NAME;
+        String CPC2VecModelName = WordCPC2VecPipelineManager.SMALL_MODEL_NAME;
 
-        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(CPC2VecModelName,nEpochs,windowSize,maxSamples);
+        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(CPC2VecModelName,-1,-1,-1);
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(wordCPC2VecPipelineManager);
-
 
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 11/21/17.
  */
-public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIterator,INDArray> {
+public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIterator,Map<String,INDArray>> {
     public static final String SMALL_MODEL_NAME = "smallwordcpc2vec_model";
     public static final String LARGE_MODEL_NAME = "wordcpc2vec_model_large";
     public static final String MODEL_NAME = "wordcpc2vec2_model";
@@ -71,6 +71,18 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    public Map<String,INDArray> getOrLoadWordVectors() {
+        Map<String,Map<String,INDArray>> predictions = loadPredictions();
+        if(predictions==null) return null;
+        return predictions.get(WordCPC2VecModel.WORD_VECTORS);
+    }
+
+    public Map<String,INDArray> getOrLoadCPCVectors() {
+        Map<String,Map<String,INDArray>> predictions = loadPredictions();
+        if(predictions==null) return null;
+        return predictions.get(WordCPC2VecModel.CLASS_VECTORS);
     }
 
     protected void initModel(boolean forceRecreateModels) {
@@ -163,9 +175,9 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         final int windowSize;
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
-        boolean runModels = true;
+        boolean runModels = false;
         boolean forceRecreateModels = false;
-        boolean runPredictions = false;
+        boolean runPredictions = true;
         int nEpochs = 5;
 
         String modelName;

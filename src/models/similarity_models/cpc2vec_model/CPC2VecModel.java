@@ -6,7 +6,7 @@ import data_pipeline.models.WordVectorPredictionModel;
 import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.CBOW;
-import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
+import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
@@ -170,7 +170,7 @@ public class CPC2VecModel extends WordVectorPredictionModel<INDArray> {
         net = builder.build();
         ((Word2Vec)net).fit();
 
-        Function<WordVectors,Void> saveFunction = sequenceVectors->{
+        Function<SequenceVectors<VocabWord>,Void> saveFunction = sequenceVectors->{
             System.out.println("Saving...");
             double score = 0d;
             try {

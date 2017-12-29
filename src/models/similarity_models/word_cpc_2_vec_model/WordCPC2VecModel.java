@@ -1,7 +1,5 @@
 package models.similarity_models.word_cpc_2_vec_model;
 
-import com.google.common.util.concurrent.AtomicDouble;
-import cpc_normalization.CPC;
 import data_pipeline.models.WordVectorPredictionModel;
 import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
@@ -11,8 +9,6 @@ import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 
@@ -21,14 +17,13 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 11/21/17.
  */
-public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
+public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDArray>> {
+    public static final String WORD_VECTORS = "wordVectors";
+    public static final String CLASS_VECTORS = "cpcVectors";
     private static final int BATCH_SIZE = 512;
     private static Type MODEL_TYPE = Type.Word2Vec;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"wordcpc2vec_model_data");
@@ -42,76 +37,33 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
     }
 
     @Override
-    public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        Map<String,INDArray> predictions = Collections.synchronizedMap(new HashMap<>());
+    public Map<String, Map<String,INDArray>> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
+        Map<String,Map<String,INDArray>> predictions = Collections.synchronizedMap(new HashMap<>());
+
+        Set<String> allClassCodes = Database.getClassCodes();
 
         WeightLookupTable<VocabWord> lookupTable = net.lookupTable();
+        Collection<VocabWord> vocabulary = net.vocab().tokens();
+        System.out.println("Vocabulary size: "+vocabulary.size());
+        vocabulary.forEach(word->{
 
-        AtomicInteger total = new AtomicInteger(0);
-        AtomicInteger found = new AtomicInteger(0);
-        classCodes.forEach(cpc->{
-            INDArray vec = lookupTable.vector(cpc);
+        });
+
+        Map<String,INDArray> classCodeVectors = Collections.synchronizedMap(new HashMap<>());
+        Map<String,INDArray> wordVectors = Collections.synchronizedMap(new HashMap<>());
+        vocabulary.parallelStream().forEach(vocabWord -> {
+            INDArray vec = lookupTable.vector(vocabWord.getLabel());
             if(vec!=null) {
-                found.getAndIncrement();
-                predictions.put(cpc, vec);
-            }
-            if(total.getAndIncrement()%10000==9999) {
-                System.out.println("Finished "+found.get()+" cpcs from "+total.get()+" / "+classCodes.size());
-            }
-        });
-
-        Map<String,Collection<CPC>> cpcMap = pipelineManager.getCPCMap();
-
-        total.set(0);
-        found.set(0);
-        assets.forEach(asset->{
-            Collection<CPC> cpcs = cpcMap.get(asset);
-            if(cpcs!=null) {
-                List<Pair<INDArray,Double>> vectorsWithWeights = cpcs.stream()
-                        .filter(cpc->predictions.containsKey(cpc.getName()))
-                        .map(cpc->new Pair<>(predictions.get(cpc.getName()),Math.exp(cpc.getNumParts())))
-                        .collect(Collectors.toList());
-                AtomicDouble sum = new AtomicDouble(0d);
-                List<INDArray> weightedVectors = vectorsWithWeights.stream().map(pair->{
-                    sum.getAndAdd(pair.getSecond());
-                    return pair.getFirst().mul(pair.getSecond());
-                }).collect(Collectors.toList());
-                if(sum.get()>0d) {
-                    INDArray vec = Nd4j.vstack(weightedVectors).sum(0).divi(sum.get());
-                    predictions.put(asset,vec);
-                    found.getAndIncrement();
-                }
-                if(total.getAndIncrement()%10000==9999) {
-                    System.out.println("Finished "+found.get()+" assets from "+total.get()+" / "+assets.size());
+                if (allClassCodes.contains(vocabWord.getLabel())) {
+                    classCodeVectors.put(vocabWord.getLabel(),vec);
+                } else {
+                    wordVectors.put(vocabWord.getLabel(),vec);
                 }
             }
         });
 
-        Random rand = new Random(352);
-        int maxSample = 500;
-        found.set(0);
-        total.set(0);
-        assignees.forEach(assignee->{
-            List<String> assigneeAssets = Stream.of(
-                    Database.selectPatentNumbersFromExactAssignee(assignee),
-                    Database.selectApplicationNumbersFromAssignee(assignee)
-            ).flatMap(collection->collection.stream())
-                    .filter(asset->predictions.containsKey(asset))
-                    .collect(Collectors.toCollection(ArrayList::new));
-            // sample
-            int nSamples = Math.min(maxSample,assigneeAssets.size());
-            if(nSamples > 0) {
-                INDArray vec = Nd4j.vstack(IntStream.range(0, nSamples).mapToObj(i -> {
-                    String asset = assigneeAssets.remove(rand.nextInt(assigneeAssets.size()));
-                    return predictions.get(asset);
-                }).collect(Collectors.toList())).sum(0).div(nSamples);
-                predictions.put(assignee,vec);
-                found.getAndIncrement();
-            }
-            if(total.getAndIncrement()%10000==9999) {
-                System.out.println("Finished "+found.get()+"assignees from "+total.get()+" / "+assignees.size());
-            }
-        });
+        predictions.put(CLASS_VECTORS,classCodeVectors);
+        predictions.put(WORD_VECTORS,wordVectors);
 
         return predictions;
     }

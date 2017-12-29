@@ -1,7 +1,6 @@
 package data_pipeline.models;
 
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
-import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.models.glove.Glove;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.sequencevectors.SequenceVectors;
@@ -15,7 +14,7 @@ import java.io.IOException;
 /**
  * Created by ehallmark on 11/8/17.
  */
-public abstract class WordVectorPredictionModel<T> extends BaseTrainablePredictionModel<T,WordVectors> {
+public abstract class WordVectorPredictionModel<T> extends BaseTrainablePredictionModel<T,SequenceVectors<VocabWord>> {
 
     public enum Type { Word2Vec, Glove, ParagraphVector, SequenceVector }
 
@@ -29,15 +28,15 @@ public abstract class WordVectorPredictionModel<T> extends BaseTrainablePredicti
     public abstract File getModelBaseDirectory();
 
     @Override
-    protected void saveNet(WordVectors net, File file) throws IOException {
+    protected void saveNet(SequenceVectors<VocabWord> net, File file) throws IOException {
         if(net instanceof ParagraphVectors) {
             WordVectorSerializer.writeParagraphVectors((ParagraphVectors)net, file);
         } else if(net instanceof Glove) {
             WordVectorSerializer.writeWordVectors((Glove) net, file);
         } else if(net instanceof Word2Vec) {
             WordVectorSerializer.writeWord2VecModel((Word2Vec)net, file);
-        } else if(net instanceof SequenceVectors) {
-            WordVectorSerializer.writeSequenceVectors((SequenceVectors<VocabWord>)net, new VocabWordFactory(), file);
+        } else {
+            WordVectorSerializer.writeSequenceVectors(net, new VocabWordFactory(), file);
         }
     }
 
@@ -46,7 +45,7 @@ public abstract class WordVectorPredictionModel<T> extends BaseTrainablePredicti
         if(modelFile!=null&&modelFile.exists()) {
             switch(type) {
                 case Glove: {
-                    this.net = WordVectorSerializer.loadTxtVectors(modelFile);
+                    this.net = (Glove)WordVectorSerializer.loadTxtVectors(modelFile);
                     break;
                 } case ParagraphVector: {
                     this.net = WordVectorSerializer.readParagraphVectors(modelFile);

@@ -4,7 +4,8 @@ import data_pipeline.models.WordVectorPredictionModel;
 import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
 import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
-import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
+import org.deeplearning4j.models.sequencevectors.SequenceVectors;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
@@ -40,7 +41,7 @@ public class Word2VecModel extends WordVectorPredictionModel<INDArray> {
 
     @Override
     public void train(int nEpochs) {
-        Function<WordVectors,Void> saveFunction = sequenceVectors->{
+        Function<SequenceVectors<VocabWord>,Void> saveFunction = sequenceVectors->{
             System.out.println("Saving...");
             double score = 0d;
             try {
