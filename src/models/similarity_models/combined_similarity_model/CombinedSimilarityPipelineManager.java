@@ -5,7 +5,6 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
 import lombok.Getter;
-import models.keyphrase_prediction.stages.Stage1;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
@@ -143,7 +142,7 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
 
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = false;
+        boolean forceRecreateModels = true;
         boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
         boolean rebuildPrerequisites = false;
 
