@@ -185,7 +185,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         CombinedSimilarityPipelineManager combinedSimilarityPipelineManager = new CombinedSimilarityPipelineManager(similarityModelName,null,null,null);
         combinedSimilarityPipelineManager.initModel(false);
 
-        CombinedModel combinedModel = (CombinedModel)combinedSimilarityPipelineManager.getModel().getNet();
+        CombinedModel<MultiLayerNetwork> combinedModel = (CombinedModel<MultiLayerNetwork>)combinedSimilarityPipelineManager.getModel().getNet();
 
         filingToEncodingNet = combinedModel.getNameToNetworkMap().get(CombinedSimilarityModel.CPC_VEC_NET);
         wordToEncodingNet = combinedModel.getNameToNetworkMap().get(CombinedSimilarityModel.WORD_CPC_2_VEC);

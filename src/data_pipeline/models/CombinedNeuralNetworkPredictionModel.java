@@ -1,6 +1,7 @@
 package data_pipeline.models;
 
 import data_pipeline.helpers.CombinedModel;
+import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.util.ModelSerializer;
 import seeding.Database;
@@ -14,7 +15,7 @@ import java.util.Map;
 /**
  * Created by ehallmark on 11/8/17.
  */
-public abstract class CombinedNeuralNetworkPredictionModel<T> extends BaseTrainablePredictionModel<T,CombinedModel> {
+public abstract class CombinedNeuralNetworkPredictionModel<T,N extends Model> extends BaseTrainablePredictionModel<T,CombinedModel<N>> {
     protected CombinedNeuralNetworkPredictionModel(String modelName) {
         super(modelName);
     }
@@ -24,7 +25,7 @@ public abstract class CombinedNeuralNetworkPredictionModel<T> extends BaseTraina
 
 
     @Override
-    protected void saveNet(CombinedModel net, File file) throws IOException {
+    protected void saveNet(CombinedModel<N> net, File file) throws IOException {
         if(net.getNameToNetworkMap()!=null) {
             Database.trySaveObject(net,file);
             net.getNameToNetworkMap().forEach((name,model)->{
@@ -42,11 +43,16 @@ public abstract class CombinedNeuralNetworkPredictionModel<T> extends BaseTraina
         if(modelFile!=null&&modelFile.exists()) {
             this.net = (CombinedModel)Database.tryLoadObject(modelFile);
             if(net!=null) {
-                Map<String,MultiLayerNetwork> map = Collections.synchronizedMap(new HashMap<>());
+                Map<String,N> map = Collections.synchronizedMap(new HashMap<>());
                 if(net.getNetworkNames()!=null) {
                     net.getNetworkNames().forEach(name->{
                         try {
-                            map.put(name, ModelSerializer.restoreMultiLayerNetwork(new File(modelFile.getAbsolutePath() + name), true));
+                            File file = new File(modelFile.getAbsolutePath() + name);
+                            if(net.getClazz().equals(MultiLayerNetwork.class)) {
+                                map.put(name, (N)ModelSerializer.restoreMultiLayerNetwork(file, true));
+                            } else {
+                                map.put(name, (N)ModelSerializer.restoreComputationGraph(file,true));
+                            }
                         } catch(Exception e) {
                             e.printStackTrace();
                         }

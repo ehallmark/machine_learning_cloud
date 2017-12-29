@@ -36,7 +36,7 @@ import java.util.stream.IntStream;
 /**
  * Created by Evan on 12/24/2017.
  */
-public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionModel<INDArray> {
+public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionModel<INDArray,MultiLayerNetwork> {
     public static final String WORD_CPC_2_VEC = "wordCpc2Vec";
     public static final String CPC_VEC_NET = "cpcVecNet";
     public static final String ENCODING_VAE = "encodingVAE";
@@ -135,7 +135,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             Map<String,MultiLayerNetwork> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
             nameToNetworkMap.put(WORD_CPC_2_VEC,wordCpc2Vec);
             nameToNetworkMap.put(CPC_VEC_NET,cpcVecNet);
-            this.net = new CombinedModel(nameToNetworkMap);
+            this.net = new CombinedModel<>(nameToNetworkMap, MultiLayerNetwork.class);
         } else {
             double newLearningRate = 0.0001;
             double newRegularization = 1e-4;
