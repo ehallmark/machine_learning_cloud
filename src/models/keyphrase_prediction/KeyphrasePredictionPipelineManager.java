@@ -122,7 +122,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         cpcVectors.entrySet().forEach(e->{
             String cpc = e.getKey();
             INDArray vec = e.getValue();
-            int best = Nd4j.getExecutioner().execAndReturn(new IAMax(Transforms.unitVec(vec).broadcast(keywordMatrix.shape()).muli(keywordMatrix).sum(1).reshape(new int[]{1,vec.columns()}))).getFinalResult();
+            int best = Nd4j.getExecutioner().execAndReturn(new IAMax(Transforms.unitVec(vec).broadcast(keywordMatrix.shape()).muli(keywordMatrix).sum(1).reshape(new int[]{1,keywordMatrix.rows()}))).getFinalResult();
             System.out.println("Best keyword for "+cpc+": "+keywords.get(best).getBestPhrase());
         });
 
@@ -164,7 +164,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         multiStemSet.stream().forEach(stem->{
             String[] words = stem.getBestPhrase().split(" ");
             List<INDArray> wordVectors = Stream.of(words).map(word->wordVectorMap.get(word)).filter(vec->vec!=null).collect(Collectors.toList());
-            if(wordVectors.size()>0) {
+            if(wordVectors.size()>=Math.max(1,words.length-1)) {
                 INDArray vec = Transforms.unitVec(Nd4j.vstack(wordVectors).mean(0));
                 keywordToVectorLookupTable.put(stem, vec);
             }
