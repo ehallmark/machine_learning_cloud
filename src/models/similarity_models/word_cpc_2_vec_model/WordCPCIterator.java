@@ -1,6 +1,8 @@
 package models.similarity_models.word_cpc_2_vec_model;
 
 import cpc_normalization.CPC;
+import lombok.Getter;
+import lombok.Setter;
 import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
@@ -32,8 +34,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         }).filter(p->p!=null).collect(Collectors.toMap(p->p.getFirst(), p->p.getSecond()));
     };
 
-    public static final Function<String,List<String>> defaultWordListFunction = (content) -> {
-        return Arrays.asList(content.split("\\s+"));
+    public static final Function<String,String[]> defaultWordListFunction = (content) -> {
+        return content.split(" ");
     };
 
     private static Random rand = new Random(56923);
@@ -45,6 +47,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     private FileTextDataSetIterator iterator;
     private Map<String,Collection<CPC>> cpcMap;
     private int maxSamples;
+    @Getter @Setter
+    private int vocabSampling = 0;
     private int resetCounter = 0;
     private AtomicBoolean finished = new AtomicBoolean(true);
     private int minSequenceLength;
@@ -105,30 +109,26 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
 
         List<VocabWord> words;
         if(fullText) {
-            List<String> text = defaultWordListFunction.apply(document.getContent());
-            if(text.size()>=minSequenceLength) {
-                int wordLimit = maxSamples > 0 ? Math.min(text.size(),maxSamples) : text.size();
-                int start = text.size()>wordLimit ? random.nextInt(text.size()-wordLimit) : 0;
-                words = text.stream().filter(word-> !Constants.STOP_WORD_SET.contains(word)).skip(start).limit(wordLimit).flatMap(word->{
-                    VocabWord vocabWord = new VocabWord(1, word);
-                    vocabWord.setSequencesCount(1);
-                    vocabWord.setElementFrequency(1);
+            String[] text = defaultWordListFunction.apply(document.getContent());
+            int wordLimit = maxSamples > 0 ? Math.min(text.length,maxSamples) : text.length;
+            int start = text.length>wordLimit ? random.nextInt(text.length-wordLimit) : 0;
+            words = Stream.of(text).filter(word-> !Constants.STOP_WORD_SET.contains(word)).skip(start).limit(wordLimit).flatMap(word->{
+                VocabWord vocabWord = new VocabWord(1, word);
+                vocabWord.setSequencesCount(1);
+                vocabWord.setElementFrequency(1);
+                if(random.nextBoolean()) {
+                    VocabWord cpc = new VocabWord(1, tokens.get(random.nextInt(tokens.size())));
+                    cpc.setSequencesCount(1);
+                    cpc.setElementFrequency(1);
                     if(random.nextBoolean()) {
-                        VocabWord cpc = new VocabWord(1, tokens.get(random.nextInt(tokens.size())));
-                        cpc.setSequencesCount(1);
-                        cpc.setElementFrequency(1);
-                        if(random.nextBoolean()) {
-                            return Stream.of(cpc,vocabWord);
-                        } else {
-                            return Stream.of(vocabWord,cpc);
-                        }
+                        return Stream.of(cpc,vocabWord);
+                    } else {
+                        return Stream.of(vocabWord,cpc);
                     }
-                    return Stream.of(vocabWord);
-                }).collect(Collectors.toList());
+                }
+                return Stream.of(vocabWord);
+            }).collect(Collectors.toList());
 
-            } else {
-                words = Collections.emptyList();
-            }
         } else {
             Map<String, Integer> wordCountMap = defaultBOWFunction.apply(document.getContent());
             if (maxSamples <= 0) {
@@ -221,6 +221,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         finished.set(false);
         queue.clear();
         final int finalNumEpochs = vocabPass ? 1 : numEpochs;
+        final int finalNumSamples = vocabPass && vocabSampling > 0 ? vocabSampling : maxSamples;
         task = new RecursiveAction() {
             @Override
             protected void compute() {
@@ -235,7 +236,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                             List<String> cpcs = document.getLabels().stream().flatMap(asset -> cpcMap.getOrDefault(asset, Collections.emptyList()).stream()).flatMap(cpc -> IntStream.range(0,cpc.getNumParts()).mapToObj(c->cpc.getName())).collect(Collectors.toList());
 
                             // extract sequence
-                            Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document, cpcs, rand, minSequenceLength, maxSamples, fullText);
+                            Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document, cpcs, rand, minSequenceLength, finalNumSamples, fullText);
                             if (sequence != null) {
                                 //System.out.print("-");
                                 try {

@@ -101,6 +101,8 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     @Override
     protected void initModel(boolean forceRecreateModel) {
+        final double keyphraseTrimAlpha = 0.9;
+
         System.out.println("Starting to init model...");
         if(multiStemSet==null) initStages(false,false);
 
@@ -146,7 +148,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
             double similarityFullPhrase = Transforms.cosineSim(multiStemVec,cpcVec);
             List<String> wordList = wordSimilarityPairs.stream()
-                    .filter(pair->pair.getSecond()>=similarityFullPhrase*0.9)
+                    .filter(pair->pair.getSecond()>=similarityFullPhrase*keyphraseTrimAlpha)
                     .map(pair->pair.getFirst())
                     .collect(Collectors.toList());
 

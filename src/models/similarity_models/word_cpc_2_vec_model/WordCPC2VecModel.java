@@ -23,7 +23,7 @@ import java.util.function.Function;
 public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDArray>> {
     public static final String WORD_VECTORS = "wordVectors";
     public static final String CLASS_VECTORS = "cpcVectors";
-    private static final int BATCH_SIZE = 512;
+    private static final int BATCH_SIZE = 1024;
     private static Type MODEL_TYPE = Type.Word2Vec;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"wordcpc2vec_model_data");
 
@@ -71,18 +71,19 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
 
     @Override
     public void train(int nEpochs) {
-        Collection<String> words = pipelineManager.getTestWords();
+        int vocabSampling = 100;
 
         WordCPCIterator iterator = pipelineManager.getDatasetManager().getTrainingIterator();
+        iterator.setVocabSampling(vocabSampling);
 
+        Collection<String> words = pipelineManager.getTestWords();
         int windowSize = pipelineManager.getWindowSize();
-        int minWordFrequency = 30;
+        int minWordFrequency = 5;
         double negativeSampling = -1;
         double sampling = -1;
-        double learningRate = 0.001;//0.01;
+        double learningRate = 0.01;//0.01;
         double minLearningRate = 0.0001;//0.001;
         int testIterations = 2000000;
-
 
         AtomicInteger nTestsCounter = new AtomicInteger(0);
         final int saveEveryNTests = 5;
@@ -118,7 +119,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
                 .iterations(1)
                 .setVectorsListeners(Collections.singleton(new CustomWordVectorListener(saveFunction,modelName,testIterations,words.toArray(new String[]{}))))
                 .useHierarchicSoftmax(true)
-                .stopWords(new HashSet<>())
+                .stopWords(Collections.emptySet())
                 //.trainElementsRepresentation(true)
                 //.trainSequencesRepresentation(true)
                 //.sequenceLearningAlgorithm(new DBOW<>())
@@ -134,13 +135,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
 
         net = builder.build();
 
-        if(net instanceof ParagraphVectors) {
-            ((ParagraphVectors)net).fit();
-        } else if(net instanceof Word2Vec) {
-            ((Word2Vec) net).fit();
-        } else if(net instanceof SequenceVectors) {
-            ((SequenceVectors) net).fit();
-        }
+        net.fit();
 
         System.out.println("Testing...");
         for (String word : words) {

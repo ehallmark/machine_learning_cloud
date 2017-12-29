@@ -6,6 +6,7 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
 import lombok.Getter;
+import lombok.Setter;
 import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
 import models.keyphrase_prediction.stages.Stage1;
 import models.text_streaming.FileTextDataSetIterator;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 11/21/17.
  */
 public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIterator,Map<String,INDArray>> {
-    public static final String SMALL_MODEL_NAME = "smallwordcpc2vec_model";
+    public static final String SMALL_MODEL_NAME = "32smallwordcpc2vec_model";
     public static final String LARGE_MODEL_NAME = "wordcpc2vec_model_large";
     public static final String MODEL_NAME = "wordcpc2vec2_model";
     public static final String OLD_MODEL_NAME = "wordcpc2vec_filing_model";
@@ -46,6 +47,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     private int numEpochs;
     @Getter
     private List<String> testWords;
+    @Getter @Setter
     private int maxSamples;
     @Getter
     private int windowSize;
@@ -175,8 +177,8 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         final int windowSize;
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
-        boolean runModels = false;
-        boolean forceRecreateModels = false;
+        boolean runModels = true;
+        boolean forceRecreateModels = true;
         boolean runPredictions = true;
         int nEpochs = 5;
 
@@ -184,7 +186,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         if(runSmallModel) {
             windowSize = 6;
             modelName = SMALL_MODEL_NAME;
-            maxSamples = 32;
+            maxSamples = 20;
         } else {
             windowSize = 4;
             modelName = MODEL_NAME;
