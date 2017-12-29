@@ -20,6 +20,7 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import seeding.Database;
 import tools.Stemmer;
 
 import java.util.*;
@@ -48,11 +49,13 @@ public class Word2VecToCPCIterator implements DataSetIterator {
     private int batch;
     private DataSet currentDataSet;
     private int numDimensions;
+    private double numDocs;
     public Word2VecToCPCIterator(SequenceIterator<VocabWord> documentIterator, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize) {
         this.documentIterator=documentIterator;
         this.vectorizer = new CPCSimilarityVectorizer(cpcEncodings,false,false,false);
         this.word2Vec=word2Vec;
         this.batch=batchSize;
+        this.numDocs = Database.getAllPatentsAndApplications().size()*3;
         this.numDimensions=cpcEncodings.values().stream().findAny().get().length();
         reset();
     }
@@ -140,8 +143,8 @@ public class Word2VecToCPCIterator implements DataSetIterator {
             totalWordsPerBatch.getAndAdd(wordCounts.size());
             List<INDArray> wordVectors = wordCounts.entrySet().stream().map(e -> {
                 double tf = e.getValue();
-                double idf = Math.log(1d+((double)word2Vec.getVocab().totalNumberOfDocs())/word2Vec.getVocab().docAppearedIn(e.getKey()));
-                System.out.println("tf: "+tf+", idf: "+idf+", total docs: "+word2Vec.getVocab().totalNumberOfDocs()+", appeared in: "+word2Vec.getVocab().docAppearedIn(e.getKey()));
+                double idf = Math.log(1d+(numDocs/word2Vec.getVocab().docAppearedIn(e.getKey())));
+                System.out.println("word: "+e.getKey()+", tf: "+tf+", idf: "+idf+", total docs: "+word2Vec.getVocab().totalNumberOfDocs()+", appeared in: "+word2Vec.getVocab().docAppearedIn(e.getKey()));
                 INDArray phraseVec = getPhraseVector(word2Vec, e.getKey(),tf*idf);
                 if(phraseVec!=null) {
                     wordsFoundPerBatch.getAndIncrement();
@@ -174,6 +177,8 @@ public class Word2VecToCPCIterator implements DataSetIterator {
     }
 
     public static INDArray getPhraseVector(Word2Vec word2Vec, String phrase, double freq) {
-        return word2Vec.getLookupTable().vector(phrase).mul(freq);
+        INDArray vec = word2Vec.getLookupTable().vector(phrase);
+        if(vec==null) return null;
+        return vec.mul(freq);
     }
 }
