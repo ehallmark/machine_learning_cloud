@@ -44,11 +44,12 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
     public static final String CPC_VEC_NET = "cpcVecNet";
     public static final String ENCODING_VAE = "encodingVAE";
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_model_data");
-    public static final Function2<INDArray,INDArray,INDArray> DEFAULT_LABEL_FUNCTION = (f1,f2) -> {
-        INDArray n1 = f1.divColumnVector(f1.sum(1));
-        INDArray n2 = f2.divColumnVector(f2.sum(1));
+    public static final Function2<INDArray,INDArray,INDArray> AVERAGE_LABEL_FUNCTION = (f1,f2) -> {
+        INDArray n1 = f1.divColumnVector(f1.norm2(1));
+        INDArray n2 = f2.divColumnVector(f2.norm2(1));
         return n1.addi(Nd4j.hstack(IntStream.range(0,f1.columns()/f2.columns()).mapToObj(i->n2).collect(Collectors.toList())));
     };
+    public static final Function2<INDArray,INDArray,INDArray> DEFAULT_LABEL_FUNCTION = (f1,f2) -> Nd4j.hstack(f1,f2);
 
     private CombinedSimilarityPipelineManager pipelineManager;
     public CombinedSimilarityModel(CombinedSimilarityPipelineManager pipelineManager, String modelName) {
@@ -68,15 +69,15 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         MultiLayerNetwork encodingVae;
         int hiddenLayerSize = 128;
         int encodingSize = 128;
-        int input1 = 128;
+        int input1 = 32;
         int input2 = 32;
         int outputSize = Math.max(input1,input2);
         int numHiddenEncodings = 3;
         int numHiddenDecodings = 3;
-        boolean trainWordCpc2Vec = false;
-        boolean trainCpcVecNet = false;
-        boolean trainVae = true;
-        boolean saveModels = true;
+        boolean trainWordCpc2Vec = true;
+        boolean trainCpcVecNet = true;
+        boolean trainVae = false;
+        boolean saveModels = false;
         Updater updater = Updater.RMSPROP;
         final int encodingIdx = 1 + numHiddenEncodings;
 
@@ -144,20 +145,6 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             wordCpc2Vec.init();
             cpcVecNet.init();
 
-            //syncParams(wordCpc2Vec,cpcVecNet,encodingIdx);
-
-            Map<String,MultiLayerNetwork> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
-            nameToNetworkMap.put(WORD_CPC_2_VEC,wordCpc2Vec);
-            nameToNetworkMap.put(CPC_VEC_NET,cpcVecNet);
-            encodingVae = null;
-            this.net = new CombinedModel(nameToNetworkMap);
-        } else {
-            double newLearningRate = 0.0001;
-            wordCpc2Vec = NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(WORD_CPC_2_VEC),newLearningRate,false);
-            cpcVecNet = NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(CPC_VEC_NET),newLearningRate,false);
-            net.getNameToNetworkMap().put(WORD_CPC_2_VEC,wordCpc2Vec);
-            net.getNameToNetworkMap().put(CPC_VEC_NET,cpcVecNet);
-
             NeuralNetConfiguration.ListBuilder encodingVaeConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .learningRate(0.001)
                     .weightInit(WeightInit.XAVIER)
@@ -171,13 +158,27 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
                             .encoderLayerSizes(128,128)
                             .decoderLayerSizes(128,128)
                             .pzxActivationFunction(Activation.IDENTITY)
-                            .lossFunction(Activation.IDENTITY, LossFunctions.LossFunction.COSINE_PROXIMITY)
+                            .lossFunction(Activation.IDENTITY, lossFunction)
                             .build()
                     )
                     .backprop(false).pretrain(true);
             encodingVae = new MultiLayerNetwork(encodingVaeConf.build());
             encodingVae.init();
 
+            //syncParams(wordCpc2Vec,cpcVecNet,encodingIdx);
+
+            Map<String,MultiLayerNetwork> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
+            nameToNetworkMap.put(WORD_CPC_2_VEC,wordCpc2Vec);
+            nameToNetworkMap.put(CPC_VEC_NET,cpcVecNet);
+            encodingVae = null;
+            this.net = new CombinedModel(nameToNetworkMap);
+        } else {
+            double newLearningRate = 0.0001;
+            wordCpc2Vec = NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(WORD_CPC_2_VEC),newLearningRate,false);
+            cpcVecNet = NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(CPC_VEC_NET),newLearningRate,false);
+            encodingVae = NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(ENCODING_VAE),newLearningRate,false);
+            net.getNameToNetworkMap().put(WORD_CPC_2_VEC,wordCpc2Vec);
+            net.getNameToNetworkMap().put(CPC_VEC_NET,cpcVecNet);
             net.getNameToNetworkMap().put(ENCODING_VAE, encodingVae);
         }
 

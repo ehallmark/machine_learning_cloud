@@ -94,7 +94,7 @@ public class KMeansStage extends Stage<Set<MultiStem>>  {
         }
         System.gc();
         return entryBatches.stream().flatMap(batch->{
-            List<Pair<String,INDArray>> vecPairs = batch.stream().map(e->new Pair<>(e.getKey(),Word2VecToCPCIterator.getPhraseVector(word2Vec,e.getValue())))
+            List<Pair<String,INDArray>> vecPairs = batch.stream().map(e->new Pair<>(e.getKey(),Word2VecToCPCIterator.getPhraseVector(word2Vec,e.getValue(),1)))
                     .filter(p->p.getSecond()!=null).collect(Collectors.toList());
             if(vecPairs.isEmpty())return Stream.empty();
             INDArray mat = Nd4j.create(vecPairs.size(),word2Vec.getLayerSize()*3);

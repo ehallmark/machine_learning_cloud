@@ -29,7 +29,8 @@ import java.util.Map;
  * Created by ehallmark on 11/7/17.
  */
 public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
-    public static final String MODEL_NAME = "combined_similarity_model";
+    public static final String MODEL_NAME = "combined_similarity_model_small";
+    public static final String OLD_MODEL_NAME = "combined_similarity_model";
     private static final int BATCH_SIZE = 16;
     private static final File INPUT_DATA_FOLDER = new File("combined_similarity_model_input_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"combined_similarity_model_predictions/predictions_map.jobj");
@@ -86,10 +87,7 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
 
     @Override
     protected void setDatasetManager() {
-        //File trainFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.trainFile.getName());
-        //File testFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.testFile.getName());
-        //File devFile = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.devFile2.getName());
-        File baseDir = Stage1.getTransformedDataFolder();
+        File baseDir = FileTextDataSetIterator.BASE_DIR;
         File trainFile = new File(baseDir, FileTextDataSetIterator.trainFile.getName());
         File testFile = new File(baseDir, FileTextDataSetIterator.testFile.getName());
         File devFile = new File(baseDir, FileTextDataSetIterator.devFile2.getName());
@@ -97,9 +95,9 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
         boolean fullText = baseDir.getName().equals(FileTextDataSetIterator.BASE_DIR.getName());
         System.out.println("Using full text: "+fullText);
 
-        WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,4, fullText);
-        WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,4, fullText);
-        WordCPCIterator devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,4, fullText);
+        WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,32, fullText);
+        WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,32, fullText);
+        WordCPCIterator devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,32, fullText);
 
         trainIter.setRunVocab(false);
         testIter.setRunVocab(false);
@@ -140,7 +138,7 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
     }
 
     public static void main(String[] args) throws Exception {
-        Nd4j.setDataType(DataBuffer.Type.FLOAT);
+        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
         boolean rebuildDatasets = false;
@@ -148,20 +146,17 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
         boolean forceRecreateModels = false;
         boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
         boolean rebuildPrerequisites = false;
-        int windowSize = 4;
-        int maxSamples = 300;
 
         int nEpochs = 5;
         String modelName = MODEL_NAME;
         String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
         String wordCpc2VecModel = WordCPC2VecPipelineManager.MODEL_NAME;
 
-        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(wordCpc2VecModel,-1,windowSize,maxSamples);
+        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(wordCpc2VecModel,-1,-1,-1);
         wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
 
         setLoggingLevel(Level.INFO);
         CombinedSimilarityPipelineManager pipelineManager = new CombinedSimilarityPipelineManager(modelName, (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet(), wordCPC2VecPipelineManager, new CPCVAEPipelineManager(cpcEncodingModel));
-
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
