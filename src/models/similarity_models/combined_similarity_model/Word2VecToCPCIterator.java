@@ -143,8 +143,7 @@ public class Word2VecToCPCIterator implements DataSetIterator {
             totalWordsPerBatch.getAndAdd(wordCounts.size());
             List<INDArray> wordVectors = wordCounts.entrySet().stream().map(e -> {
                 double tf = e.getValue();
-                double idf = Math.log(1d+(numDocs/word2Vec.getVocab().docAppearedIn(e.getKey())));
-                System.out.println("word: "+e.getKey()+", tf: "+tf+", idf: "+idf+", total docs: "+word2Vec.getVocab().totalNumberOfDocs()+", appeared in: "+word2Vec.getVocab().docAppearedIn(e.getKey()));
+                double idf = Math.log(1d+(numDocs/Math.max(30,word2Vec.getVocab().docAppearedIn(e.getKey()))));
                 INDArray phraseVec = getPhraseVector(word2Vec, e.getKey(),tf*idf);
                 if(phraseVec!=null) {
                     wordsFoundPerBatch.getAndIncrement();
