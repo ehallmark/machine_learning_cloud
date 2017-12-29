@@ -15,10 +15,10 @@ import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.impl.indexaccum.IAMax;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
-import seeding.Database;
 
 import java.io.File;
 import java.util.*;
@@ -30,7 +30,6 @@ import java.util.stream.Stream;
  */
 public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<WordCPCIterator,List<String>> {
     public static final Model modelParams = new DefaultModel();
-    private static final File keywordToVectorLookupTableFile = new File(Constants.DATA_FOLDER+"keyword_vector_lookup_table.jobj");
     private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyphrase_prediction_model_predictions/predictions_map.jobj");
@@ -120,8 +119,12 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
         Map<String,INDArray> cpcVectors = wordCPC2VecPipelineManager.getOrLoadCPCVectors();
 
-
-        getCPCMap();
+        cpcVectors.entrySet().forEach(e->{
+            String cpc = e.getKey();
+            INDArray vec = e.getValue();
+            int best = Nd4j.getExecutioner().execAndReturn(new IAMax(Transforms.unitVec(vec).broadcast(keywordMatrix.shape()).muli(keywordMatrix).sum(1).reshape(new int[]{1,vec.columns()}))).getFinalResult();
+            System.out.println("Best keyword for "+cpc+": "+keywords.get(best).getBestPhrase());
+        });
 
         /*System.out.println("Starting predictions...");
         if(filingToEncodingNet==null) loadSimilarityNetworks();
@@ -168,7 +171,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         });
 
         System.out.println("Stem lookup table size: "+keywordToVectorLookupTable.size());
-        Database.saveObject(keywordToVectorLookupTable,keywordToVectorLookupTableFile);
     }
 
     @Override
