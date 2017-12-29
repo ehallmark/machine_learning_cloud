@@ -124,9 +124,9 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<INDArray> {
         WordCPCIterator iterator = pipelineManager.getDatasetManager().getTrainingIterator();
 
         int windowSize = pipelineManager.getWindowSize();
-        int minWordFrequency = 50;
+        int minWordFrequency = 30;
         double negativeSampling = -1;
-        double sampling = 0.0001;
+        double sampling = -1;
         double learningRate = 0.01;
         double minLearningRate = 0.001;
         int testIterations = 2000000;

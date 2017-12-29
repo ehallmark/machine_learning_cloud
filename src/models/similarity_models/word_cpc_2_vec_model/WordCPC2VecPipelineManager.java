@@ -172,7 +172,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         if(runSmallModel) {
             windowSize = 6;
             modelName = SMALL_MODEL_NAME;
-            maxSamples = 16;
+            maxSamples = 32;
         } else {
             windowSize = 4;
             modelName = MODEL_NAME;
