@@ -8,14 +8,11 @@ import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import models.NDArrayHelper;
-import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
-import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -66,23 +63,20 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
     public void train(int nEpochs) {
         MultiLayerNetwork wordCpc2Vec;
         MultiLayerNetwork cpcVecNet;
-        MultiLayerNetwork encodingVae;
+        boolean useBatchNormalization = false;
         int hiddenLayerSize = 128;
-        int encodingSize = 128;
         int input1 = 32;
         int input2 = 32;
         int outputSize = input1+input2;
-        int numHiddenEncodings = 6;
-        int numHiddenDecodings = 6;
+        int numHiddenEncodings = 3;
+        int numHiddenDecodings = 3;
         boolean trainWordCpc2Vec = true;
         boolean trainCpcVecNet = true;
         boolean trainVae = false;
         boolean saveModels = true;
         Updater updater = Updater.RMSPROP;
-        final int encodingIdx = 1 + numHiddenEncodings;
-        if(numHiddenDecodings%2==1||numHiddenEncodings%2==1) throw new RuntimeException("Hidden encodings and decodings size must be even for batch norm to work...");
-        if(net==null) {
 
+        if(net==null) {
             LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
             // build networks
@@ -92,7 +86,8 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
                     .learningRate(0.001)
                     .activation(Activation.TANH)
                     .list()
-                    .layer(i, NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build())
+                    .layer(i, NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build());
+            if(useBatchNormalization) wordCPC2VecConf = wordCPC2VecConf
                     .layer(i+1, NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize).build());
 
             NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
@@ -100,43 +95,27 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
                     .learningRate(0.001)
                     .activation(Activation.TANH)
                     .list()
-                    .layer(i, NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build())
+                    .layer(i, NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build());
+            if(useBatchNormalization) cpcVecNetConf = cpcVecNetConf
                     .layer(i+1, NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize).build());
 
             // encoding hidden layers
-            i+=2;
+            int increment = 1 + (useBatchNormalization ? 1 : 0);
+
+            i++;
+            if(useBatchNormalization) i++;
+
             int t = i;
-            for(; i < t + numHiddenEncodings; i+=2) {
-                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize);
-                org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
-                wordCPC2VecConf = wordCPC2VecConf.layer(i,layer.build()).layer(i+1,norm.build());
-                cpcVecNetConf = cpcVecNetConf.layer(i,layer.build()).layer(i+1,norm.build());
-            }
-
-            /*
-            // encoding
-            org.deeplearning4j.nn.conf.layers.Layer.Builder encoding = NNOptimizer.newDenseLayer(hiddenLayerSize,encodingSize);
-            // decoding
-            org.deeplearning4j.nn.conf.layers.Layer.Builder decoding = NNOptimizer.newDenseLayer(encodingSize,hiddenLayerSize);
-
-            wordCPC2VecConf = wordCPC2VecConf
-                    .layer(i,encoding.build())
-                    .layer(i+1, decoding.build());
-            cpcVecNetConf = cpcVecNetConf
-                    .layer(i,encoding.build())
-                    .layer(i+1, decoding.build());
-
-
-            i+=2;
-            */
-
             // decoding hidden layers
-            t = i;
-            for(; i < t + numHiddenDecodings; i+=2) {
+            for(; i < t + (numHiddenEncodings + numHiddenDecodings)*increment; i+=increment) {
                 org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize);
-                org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
-                wordCPC2VecConf = wordCPC2VecConf.layer(i,layer.build()).layer(i+1,norm.build());
-                cpcVecNetConf = cpcVecNetConf.layer(i,layer.build()).layer(i+1,norm.build());
+                wordCPC2VecConf = wordCPC2VecConf.layer(i,layer.build());
+                cpcVecNetConf = cpcVecNetConf.layer(i,layer.build());
+                if(useBatchNormalization) {
+                    org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
+                    wordCPC2VecConf = wordCPC2VecConf.layer(i+1,norm.build());
+                    cpcVecNetConf = cpcVecNetConf.layer(i+1,norm.build());
+                }
             }
 
             // output layers
@@ -151,42 +130,19 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
             wordCpc2Vec.init();
             cpcVecNet.init();
 
-            NeuralNetConfiguration.ListBuilder encodingVaeConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
-                    .learningRate(0.001)
-                    .weightInit(WeightInit.XAVIER)
-                    .updater(Updater.RMSPROP)
-                    .regularization(true).l2(1e-4)
-                    .list()
-                    .layer(0, new VariationalAutoencoder.Builder()
-                            .activation(Activation.TANH)
-                            .nIn(encodingSize)
-                            .nOut(32)
-                            .encoderLayerSizes(128,128)
-                            .decoderLayerSizes(128,128)
-                            .pzxActivationFunction(Activation.IDENTITY)
-                            .lossFunction(Activation.IDENTITY, lossFunction)
-                            .build()
-                    )
-                    .backprop(false).pretrain(true);
-            encodingVae = new MultiLayerNetwork(encodingVaeConf.build());
-            encodingVae.init();
-
             //syncParams(wordCpc2Vec,cpcVecNet,encodingIdx);
 
             Map<String,MultiLayerNetwork> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
             nameToNetworkMap.put(WORD_CPC_2_VEC,wordCpc2Vec);
             nameToNetworkMap.put(CPC_VEC_NET,cpcVecNet);
-            encodingVae = null;
             this.net = new CombinedModel(nameToNetworkMap);
         } else {
             double newLearningRate = 0.0001;
             double newRegularization = 1e-4;
             wordCpc2Vec = NNRefactorer.updateNetworkRegularization(NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(WORD_CPC_2_VEC),newLearningRate,false),newRegularization>0,newRegularization,false);
             cpcVecNet = NNRefactorer.updateNetworkRegularization(NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(CPC_VEC_NET),newLearningRate,false),newRegularization>0,newRegularization,false);
-            encodingVae = NNRefactorer.updateNetworkRegularization(NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(ENCODING_VAE),newLearningRate,false),newRegularization>0,newRegularization,false);
             net.getNameToNetworkMap().put(WORD_CPC_2_VEC,wordCpc2Vec);
             net.getNameToNetworkMap().put(CPC_VEC_NET,cpcVecNet);
-            net.getNameToNetworkMap().put(ENCODING_VAE, encodingVae);
         }
 
         Function<Void,Double> trainErrorFunction = (v) -> {
@@ -233,18 +189,6 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
         wordCpc2Vec.setListeners(listener);
 
-        if(encodingVae!=null) {
-            org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
-                    = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) encodingVae.getLayer(0);
-            Function<Void, Double> testVaeErrorFunction = (v) -> {
-                return validationDataSets.stream().mapToDouble(ds->CPCVariationalAutoEncoderNN.test(ds.getFeatureMatrix(),vae)).average().orElse(Double.MAX_VALUE);
-            };
-            Function2<LocalDateTime,Double,Void> saveVaeFunction = (datetime, score) -> {
-                return null;
-            };
-            IterationListener cpcListener = new DefaultScoreListener(printIterations, testVaeErrorFunction, trainErrorFunction, saveVaeFunction, stoppingCondition);
-            cpcVecNet.setListeners(cpcListener);
-        }
 
         System.gc();
         System.gc();
@@ -256,7 +200,7 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
                 while (dataSetIterator.hasNext()) {
                    // if((gcIter++)%printIterations/10==0) System.gc();
                     DataSet ds = dataSetIterator.next();
-                    train(wordCpc2Vec, cpcVecNet, encodingVae, ds.getFeatures(), ds.getLabels(),trainWordCpc2Vec,trainCpcVecNet,trainVae);
+                    train(wordCpc2Vec, cpcVecNet, null, ds.getFeatures(), ds.getLabels(),trainWordCpc2Vec,trainCpcVecNet,trainVae);
                     totalSeenThisEpoch.getAndAdd(ds.getFeatures().rows());
                     if (stoppingCondition.get()) break;
                 }
