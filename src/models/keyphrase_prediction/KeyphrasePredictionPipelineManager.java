@@ -244,7 +244,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
 
-        boolean rebuildPrerequisites = true;
+        boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = false;
         boolean forceRecreateModels = false;
