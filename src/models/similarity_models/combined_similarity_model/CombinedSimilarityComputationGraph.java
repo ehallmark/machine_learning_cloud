@@ -53,7 +53,7 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
         int hiddenLayerSize = 48;
         int input1 = 32;
         int input2 = 32;
-        int numHiddenLayers = 12;
+        int numHiddenLayers = 20;
 
         Updater updater = Updater.RMSPROP;
 
