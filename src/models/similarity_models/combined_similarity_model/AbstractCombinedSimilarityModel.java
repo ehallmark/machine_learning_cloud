@@ -178,7 +178,7 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
         INDArray[] labels = new INDArray[]{features1,features2};
         MultiDataSet dataSet1 = new MultiDataSet(new INDArray[]{features1}, labels);
         MultiDataSet dataSet2 = new MultiDataSet(new INDArray[]{features2}, labels);
-        return new Pair<>(1d+net1.score(dataSet1),1d+net2.score(dataSet2));
+        return new Pair<>(1d+net1.score(dataSet1)/labels.length,1d+net2.score(dataSet2)/labels.length);
     }
 
     public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, Iterator<DataSet> iterator) {
