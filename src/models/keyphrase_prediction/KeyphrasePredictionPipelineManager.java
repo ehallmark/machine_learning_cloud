@@ -135,7 +135,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         AtomicInteger cnt = new AtomicInteger(0);
 
         Map<String,Set<String>> predictions = Collections.synchronizedMap(new HashMap<>());
-        cpcVectors.entrySet().forEach(e->{
+        cpcVectors.entrySet().parallelStream().forEach(e->{
             cnt.getAndIncrement();
 
             MinHeap<WordFrequencyPair<MultiStem,Double>> heap = new MinHeap<>(maxTags);
