@@ -94,8 +94,8 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
         }
 
         // output layers
-        OutputLayer.Builder outputLayer1 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input1).lossFunction(lossFunction);
-        OutputLayer.Builder outputLayer2 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input2).lossFunction(lossFunction);
+        OutputLayer.Builder outputLayer1 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input2).lossFunction(lossFunction);
+        OutputLayer.Builder outputLayer2 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input1).lossFunction(lossFunction);
 
         wordCPC2VecConf = wordCPC2VecConf.addLayer("y",outputLayer1.build(), String.valueOf(i-increment), String.valueOf(i-(2*increment)));
         cpcVecNetConf = cpcVecNetConf.addLayer("y",outputLayer2.build(), String.valueOf(i-increment), String.valueOf(i-(2*increment)));

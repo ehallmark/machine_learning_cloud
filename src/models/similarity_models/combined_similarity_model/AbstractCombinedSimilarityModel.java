@@ -162,9 +162,8 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
     }
 
     public static void train(ComputationGraph net1, ComputationGraph net2, INDArray features1, INDArray features2, boolean train1, boolean train2) {
-        INDArray[] labels = new INDArray[]{features1,features2};
-        MultiDataSet dataSet1 = new MultiDataSet(new INDArray[]{features1}, labels);
-        MultiDataSet dataSet2 = new MultiDataSet(new INDArray[]{features2}, labels);
+        MultiDataSet dataSet1 = new MultiDataSet(new INDArray[]{features1}, new INDArray[]{features2});
+        MultiDataSet dataSet2 = new MultiDataSet(new INDArray[]{features2}, new INDArray[]{features1});
         if(net1!=null&&train1)net1.fit(dataSet1);
         if(net2!=null&&train2)net2.fit(dataSet2);
     }
