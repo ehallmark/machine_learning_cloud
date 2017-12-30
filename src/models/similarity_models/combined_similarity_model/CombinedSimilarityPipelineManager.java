@@ -17,6 +17,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
+import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
@@ -102,10 +103,12 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
         testIter.setRunVocab(false);
         devIter.setRunVocab(false);
 
+        long numDocs = Database.getAllPatentsAndApplications().size()*3;
+
         datasetManager = new NoSaveDataSetManager<>(
-                getRawIterator(trainIter,BATCH_SIZE),
-                getRawIterator(testIter, 128),
-                getRawIterator(devIter, 128)
+                getRawIterator(trainIter,numDocs,BATCH_SIZE),
+                getRawIterator(testIter,numDocs, 128),
+                getRawIterator(devIter,numDocs, 128)
         );
     }
 
@@ -132,8 +135,8 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
     }
 
 
-    protected DataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {
-        return new Word2VecToCPCIterator(iterator,getAssetToEncodingMap(),word2Vec,batch);
+    protected DataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, long numDocs, int batch) {
+        return new Word2VecToCPCIterator(iterator,numDocs,getAssetToEncodingMap(),word2Vec,batch);
     }
 
     public static void main(String[] args) throws Exception {

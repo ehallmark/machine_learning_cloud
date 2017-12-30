@@ -1,16 +1,11 @@
 package models.similarity_models.combined_similarity_model;
 
-import lombok.Getter;
 import models.similarity_models.Vectorizer;
 import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
-import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
-import models.text_streaming.WordVectorizerToCPCVectorIterator;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
-import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
@@ -18,18 +13,12 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import org.nd4j.linalg.primitives.Pair;
-import seeding.Constants;
-import seeding.Database;
-import tools.Stemmer;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 10/27/17.
@@ -50,12 +39,12 @@ public class Word2VecToCPCIterator implements DataSetIterator {
     private DataSet currentDataSet;
     private int numDimensions;
     private double numDocs;
-    public Word2VecToCPCIterator(SequenceIterator<VocabWord> documentIterator, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize) {
+    public Word2VecToCPCIterator(SequenceIterator<VocabWord> documentIterator, long numDocs, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize) {
         this.documentIterator=documentIterator;
         this.vectorizer = new CPCSimilarityVectorizer(cpcEncodings,false,false,false);
         this.word2Vec=word2Vec;
         this.batch=batchSize;
-        this.numDocs = Database.getAllPatentsAndApplications().size()*3;
+        this.numDocs = numDocs;
         this.numDimensions=cpcEncodings.values().stream().findAny().get().length();
         reset();
     }

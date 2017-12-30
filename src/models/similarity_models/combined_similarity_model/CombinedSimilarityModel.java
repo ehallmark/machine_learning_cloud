@@ -1,14 +1,8 @@
 package models.similarity_models.combined_similarity_model;
 
-import data_pipeline.helpers.CombinedModel;
 import data_pipeline.helpers.Function2;
-import data_pipeline.models.CombinedNeuralNetworkPredictionModel;
-import data_pipeline.models.exceptions.StoppingConditionMetException;
-import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
-import models.NDArrayHelper;
-import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
@@ -19,16 +13,12 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 
 import java.io.File;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -36,10 +26,9 @@ import java.util.stream.IntStream;
 /**
  * Created by Evan on 12/24/2017.
  */
-public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionModel<INDArray,MultiLayerNetwork> {
+public class CombinedSimilarityModel extends AbstractCombinedSimilarityModel<MultiLayerNetwork> {
     public static final String WORD_CPC_2_VEC = "wordCpc2Vec";
     public static final String CPC_VEC_NET = "cpcVecNet";
-    public static final String ENCODING_VAE = "encodingVAE";
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_model_data");
     public static final Function2<INDArray,INDArray,INDArray> AVERAGE_LABEL_FUNCTION = (f1,f2) -> {
         INDArray n1 = f1.divColumnVector(f1.norm2(1));
@@ -48,10 +37,22 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
     };
     public static final Function2<INDArray,INDArray,INDArray> DEFAULT_LABEL_FUNCTION = (f1,f2) -> Nd4j.hstack(f1,f2);
 
-    private CombinedSimilarityPipelineManager pipelineManager;
+    MultiLayerNetwork wordCpc2Vec;
+    MultiLayerNetwork cpcVecNet;
+    boolean useBatchNormalization = false;
+    int hiddenLayerSize = 128;
+    int input1 = 32;
+    int input2 = 32;
+    int outputSize = input1+input2;
+    int numHiddenEncodings = 3;
+    int numHiddenDecodings = 3;
+    boolean trainWordCpc2Vec = true;
+    boolean trainCpcVecNet = true;
+    boolean saveModels = true;
+    Updater updater = Updater.RMSPROP;
+
     public CombinedSimilarityModel(CombinedSimilarityPipelineManager pipelineManager, String modelName) {
-        super(modelName);
-        this.pipelineManager=pipelineManager;
+        super(pipelineManager,MultiLayerNetwork.class,modelName);
     }
 
     @Override
@@ -60,113 +61,82 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
     }
 
     @Override
-    public void train(int nEpochs) {
-        MultiLayerNetwork wordCpc2Vec;
-        MultiLayerNetwork cpcVecNet;
-        boolean useBatchNormalization = false;
-        int hiddenLayerSize = 128;
-        int input1 = 32;
-        int input2 = 32;
-        int outputSize = input1+input2;
-        int numHiddenEncodings = 3;
-        int numHiddenDecodings = 3;
-        boolean trainWordCpc2Vec = true;
-        boolean trainCpcVecNet = true;
-        boolean trainVae = false;
-        boolean saveModels = true;
-        Updater updater = Updater.RMSPROP;
+    protected Map<String, MultiLayerNetwork> buildNetworksForTraining() {
+        LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
-        if(net==null) {
-            LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
+        // build networks
+        int i = 0;
+        NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
+                .updater(updater)
+                .learningRate(0.001)
+                .activation(Activation.TANH)
+                .list()
+                .layer(i, NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build());
+        if(useBatchNormalization) wordCPC2VecConf = wordCPC2VecConf
+                .layer(i+1, NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize).build());
 
-            // build networks
-            int i = 0;
-            NeuralNetConfiguration.ListBuilder wordCPC2VecConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
-                    .updater(updater)
-                    .learningRate(0.001)
-                    .activation(Activation.TANH)
-                    .list()
-                    .layer(i, NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build());
-            if(useBatchNormalization) wordCPC2VecConf = wordCPC2VecConf
-                    .layer(i+1, NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize).build());
+        NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
+                .updater(updater)
+                .learningRate(0.001)
+                .activation(Activation.TANH)
+                .list()
+                .layer(i, NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build());
+        if(useBatchNormalization) cpcVecNetConf = cpcVecNetConf
+                .layer(i+1, NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize).build());
 
-            NeuralNetConfiguration.ListBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
-                    .updater(updater)
-                    .learningRate(0.001)
-                    .activation(Activation.TANH)
-                    .list()
-                    .layer(i, NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build());
-            if(useBatchNormalization) cpcVecNetConf = cpcVecNetConf
-                    .layer(i+1, NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize).build());
+        // encoding hidden layers
+        int increment = 1 + (useBatchNormalization ? 1 : 0);
 
-            // encoding hidden layers
-            int increment = 1 + (useBatchNormalization ? 1 : 0);
+        i++;
+        if(useBatchNormalization) i++;
 
-            i++;
-            if(useBatchNormalization) i++;
-
-            int t = i;
-            // decoding hidden layers
-            for(; i < t + (numHiddenEncodings + numHiddenDecodings)*increment; i+=increment) {
-                org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize);
-                wordCPC2VecConf = wordCPC2VecConf.layer(i,layer.build());
-                cpcVecNetConf = cpcVecNetConf.layer(i,layer.build());
-                if(useBatchNormalization) {
-                    org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
-                    wordCPC2VecConf = wordCPC2VecConf.layer(i+1,norm.build());
-                    cpcVecNetConf = cpcVecNetConf.layer(i+1,norm.build());
-                }
+        int t = i;
+        // decoding hidden layers
+        for(; i < t + (numHiddenEncodings + numHiddenDecodings)*increment; i+=increment) {
+            org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize,hiddenLayerSize);
+            wordCPC2VecConf = wordCPC2VecConf.layer(i,layer.build());
+            cpcVecNetConf = cpcVecNetConf.layer(i,layer.build());
+            if(useBatchNormalization) {
+                org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
+                wordCPC2VecConf = wordCPC2VecConf.layer(i+1,norm.build());
+                cpcVecNetConf = cpcVecNetConf.layer(i+1,norm.build());
             }
-
-            // output layers
-            OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize,outputSize).lossFunction(lossFunction);
-
-            wordCPC2VecConf = wordCPC2VecConf.layer(i,outputLayer.build());
-            cpcVecNetConf = cpcVecNetConf.layer(i,outputLayer.build());
-
-            wordCpc2Vec = new MultiLayerNetwork(wordCPC2VecConf.build());
-            cpcVecNet = new MultiLayerNetwork(cpcVecNetConf.build());
-
-            wordCpc2Vec.init();
-            cpcVecNet.init();
-
-            //syncParams(wordCpc2Vec,cpcVecNet,encodingIdx);
-
-            Map<String,MultiLayerNetwork> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
-            nameToNetworkMap.put(WORD_CPC_2_VEC,wordCpc2Vec);
-            nameToNetworkMap.put(CPC_VEC_NET,cpcVecNet);
-            this.net = new CombinedModel<>(nameToNetworkMap, MultiLayerNetwork.class);
-        } else {
-            double newLearningRate = 0.0001;
-            double newRegularization = 1e-4;
-            wordCpc2Vec = NNRefactorer.updateNetworkRegularization(NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(WORD_CPC_2_VEC),newLearningRate,false),newRegularization>0,newRegularization,false);
-            cpcVecNet = NNRefactorer.updateNetworkRegularization(NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(CPC_VEC_NET),newLearningRate,false),newRegularization>0,newRegularization,false);
-            net.getNameToNetworkMap().put(WORD_CPC_2_VEC,wordCpc2Vec);
-            net.getNameToNetworkMap().put(CPC_VEC_NET,cpcVecNet);
         }
 
-        Function<Void,Double> trainErrorFunction = (v) -> {
-            return 0d;
-        };
+        // output layers
+        OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize,outputSize).lossFunction(lossFunction);
 
-        Function2<LocalDateTime,Double,Void> saveFunction = (datetime, score) -> {
-            try {
-                if(saveModels) {
-                    save(datetime,score);
-                }
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        };
+        wordCPC2VecConf = wordCPC2VecConf.layer(i,outputLayer.build());
+        cpcVecNetConf = cpcVecNetConf.layer(i,outputLayer.build());
 
-        final int printIterations = 500;
-        final AtomicBoolean stoppingCondition = new AtomicBoolean(false);
+        wordCpc2Vec = new MultiLayerNetwork(wordCPC2VecConf.build());
+        cpcVecNet = new MultiLayerNetwork(cpcVecNetConf.build());
 
-        System.gc();
-        System.gc();
+        wordCpc2Vec.init();
+        cpcVecNet.init();
 
-        DataSetIterator dataSetIterator = pipelineManager.getDatasetManager().getTrainingIterator();
+        //syncParams(wordCpc2Vec,cpcVecNet,encodingIdx);
+
+        Map<String,MultiLayerNetwork> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
+        nameToNetworkMap.put(WORD_CPC_2_VEC,wordCpc2Vec);
+        nameToNetworkMap.put(CPC_VEC_NET,cpcVecNet);
+        return nameToNetworkMap;
+    }
+
+    @Override
+    protected Map<String, MultiLayerNetwork> updateNetworksBeforeTraining(Map<String, MultiLayerNetwork> networkMap) {
+        double newLearningRate = 0.0001;
+        double newRegularization = 1e-4;
+        wordCpc2Vec = NNRefactorer.updateNetworkRegularization(NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(WORD_CPC_2_VEC),newLearningRate,false),newRegularization>0,newRegularization,false);
+        cpcVecNet = NNRefactorer.updateNetworkRegularization(NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(CPC_VEC_NET),newLearningRate,false),newRegularization>0,newRegularization,false);
+        Map<String,MultiLayerNetwork> updates = Collections.synchronizedMap(new HashMap<>());
+        updates.put(WORD_CPC_2_VEC,wordCpc2Vec);
+        updates.put(CPC_VEC_NET,cpcVecNet);
+        return updates;
+    }
+
+    @Override
+    protected Function<Void, Double> getTestFunction() {
         DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
         List<DataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
         int valCount = 0;
@@ -179,46 +149,25 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
 
         System.out.println("Num validation datasets: "+validationDataSets.size());
 
-        Function<Void,Double> testErrorFunction = (v) -> {
+        return (v) -> {
             System.gc();
             Pair<Double,Double> results = test(wordCpc2Vec, cpcVecNet, validationDataSets.iterator());
             System.out.println(" Test Net 1: "+results.getFirst()+"\tTest Net 2: "+results.getSecond());
             return (results.getFirst()+results.getSecond())/2;
         };
+    }
 
-        IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
-        wordCpc2Vec.setListeners(listener);
+    @Override
+    protected void train(INDArray features, INDArray labels) {
+        train(wordCpc2Vec, cpcVecNet, features, labels,trainWordCpc2Vec,trainCpcVecNet);
+    }
 
-
-        System.gc();
-        System.gc();
-
-        AtomicInteger totalSeenThisEpoch = new AtomicInteger(0);
-        AtomicInteger totalSeen = new AtomicInteger(0);
-        try {
-            for (int i = 0; i < nEpochs; i++) {
-                while (dataSetIterator.hasNext()) {
-                   // if((gcIter++)%printIterations/10==0) System.gc();
-                    DataSet ds = dataSetIterator.next();
-                    train(wordCpc2Vec, cpcVecNet, null, ds.getFeatures(), ds.getLabels(),trainWordCpc2Vec,trainCpcVecNet,trainVae);
-                    totalSeenThisEpoch.getAndAdd(ds.getFeatures().rows());
-                    if (stoppingCondition.get()) break;
-                }
-                totalSeen.getAndAdd(totalSeenThisEpoch.get());
-                System.out.println("Total seen this epoch: " + totalSeenThisEpoch.get());
-                System.out.println("Total seen so far: " + totalSeen.get());
-                if (stoppingCondition.get()) break;
-                dataSetIterator.reset();
-            }
-            if (stoppingCondition.get()) {
-                System.out.println("Stopping condition reached...");
-            }
-            if (!isSaved()) {
-                saveFunction.apply(LocalDateTime.now(), testErrorFunction.apply(null));
-            }
-        } catch(StoppingConditionMetException e) {
-            System.out.println("Stopping condition met: "+e.getMessage());
-        }
+    @Override
+    protected Function<IterationListener, Void> setListenerFunction() {
+        return listener -> {
+            wordCpc2Vec.setListeners(listener);
+            return null;
+        };
     }
 
     @Override
@@ -226,82 +175,4 @@ public class CombinedSimilarityModel extends CombinedNeuralNetworkPredictionMode
         return BASE_DIR;
     }
 
-    public static void syncParams(MultiLayerNetwork net1, MultiLayerNetwork net2, int layerIdx) {
-        int paramsNet1KeepsStart = 0;
-        int paramsNet2KeepsStart = 0;
-
-        for (int i = 0; i < layerIdx; i++) {
-            paramsNet1KeepsStart += net1.getLayer(i).numParams();
-        }
-        for (int i = 0; i < layerIdx; i++) {
-            paramsNet2KeepsStart += net2.getLayer(i).numParams();
-        }
-
-        Layer[] layers1 = net1.getLayers();
-        Layer[] layers2 = net2.getLayers();
-
-        int paramsNet1KeepsEnd = paramsNet1KeepsStart + layers1[layerIdx].numParams();
-        int paramsNet2KeepsEnd = paramsNet2KeepsStart + layers2[layerIdx].numParams();
-
-        layers2[layerIdx] = layers1[layerIdx];
-        net2.setLayers(layers2);
-
-        INDArray net1Params = net1.params();
-        INDArray net2Params = net2.params();
-
-        INDArray paramAvg = net1Params.get(NDArrayIndex.interval(paramsNet1KeepsStart, paramsNet1KeepsEnd))
-                .addi(net2Params.get(NDArrayIndex.interval(paramsNet2KeepsStart, paramsNet2KeepsEnd))).divi(2);
-
-        net1Params.get(NDArrayIndex.interval(paramsNet1KeepsStart, paramsNet1KeepsEnd)).assign(paramAvg);
-        net2Params.get(NDArrayIndex.interval(paramsNet2KeepsStart, paramsNet2KeepsEnd)).assign(paramAvg);
-
-        net1.setParams(net1Params);
-        net2.setParams(net2Params);
-    }
-
-    public static void train(MultiLayerNetwork net1, MultiLayerNetwork net2, MultiLayerNetwork vae, INDArray features1, INDArray features2, boolean train1, boolean train2, boolean train3) {
-        INDArray labels = DEFAULT_LABEL_FUNCTION.apply(features1, features2);
-        if(net1!=null&&train1)net1.fit(new DataSet(features1, labels));
-        if(net2!=null&&train2)net2.fit(new DataSet(features2, labels));
-        if(vae!=null&&train3){
-            if(net1!=null) {
-                INDArray net1Labels = net1.activateSelectedLayers(0,net1.getnLayers()-1,features1);
-                vae.fit(new DataSet(net1Labels,labels));
-            }
-            if(net2!=null) {
-                INDArray net2Labels = net2.activateSelectedLayers(0,net2.getnLayers()-1,features2);
-                vae.fit(new DataSet(net2Labels,labels));
-            }
-            vae.fit(new DataSet(labels,labels));
-        }
-    }
-
-    public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2) {
-        INDArray labels = DEFAULT_LABEL_FUNCTION.apply(features1, features2);
-        INDArray predictions1 = net1.activateSelectedLayers(0,net1.getnLayers()-1,features1);
-        INDArray predictions2 = net2.activateSelectedLayers(0,net2.getnLayers()-1,features2);
-        return new Pair<>(test(predictions1,labels),test(predictions2,labels));
-    }
-
-    public static double test(INDArray predictions, INDArray labels) {
-        return 1.0 - NDArrayHelper.sumOfCosineSimByRow(predictions,labels)/predictions.rows();
-    }
-
-    public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, Iterator<DataSet> iterator) {
-        double d1 = 0;
-        double d2 = 0;
-        long count = 0;
-        while(iterator.hasNext()) {
-            DataSet ds = iterator.next();
-            Pair<Double,Double> test = test(net1,net2,ds.getFeatures(),ds.getLabels());
-            d1+=test.getFirst();
-            d2+=test.getSecond();
-            count++;
-        }
-        if(count>0) {
-            d1/=count;
-            d2/=count;
-        }
-        return new Pair<>(d1,d2);
-    }
 }
