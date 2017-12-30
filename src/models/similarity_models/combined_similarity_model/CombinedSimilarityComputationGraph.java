@@ -50,7 +50,7 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
 
     @Override
     protected Map<String, ComputationGraph> buildNetworksForTraining() {
-        int hiddenLayerSize = 512;
+        int hiddenLayerSize = 256;
         int input1 = 32;
         int input2 = 32;
         int numHiddenLayers = 3;
