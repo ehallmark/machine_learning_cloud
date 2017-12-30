@@ -111,8 +111,12 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
         return predictions;
     }
 
-    @Override
     public void runPipeline(boolean rebuildPrerequisites, boolean rebuildDatasets, boolean runModels, boolean forceRecreateModel, int nTrainingEpochs, boolean predictAssets) {
+        this.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModel,nTrainingEpochs,predictAssets,true);
+    }
+
+    @Override
+    public void runPipeline(boolean rebuildPrerequisites, boolean rebuildDatasets, boolean runModels, boolean forceRecreateModel, int nTrainingEpochs, boolean predictAssets, boolean forceRerunPredictions) {
         // start with data pipeline
 
         // STAGE 0 of pipeline: PREREQUISITES
@@ -143,7 +147,7 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
             List<String> allAssets = new ArrayList<>(Database.getAllPatentsAndApplications());
             List<String> allAssignees = new ArrayList<>(Database.getAssignees());
             List<String> allClassCodes = new ArrayList<>(Database.getClassCodes());
-            Map<String,T> allPredictions = predict(allAssets, allAssignees, allClassCodes);
+            Map<String,T> allPredictions = forceRerunPredictions ? predict(allAssets, allAssignees, allClassCodes) : updatePredictions(allAssets, allAssignees, allClassCodes);
             savePredictions(allPredictions);
         }
 
