@@ -10,6 +10,7 @@ import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityModel;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityPipelineManager;
+import models.similarity_models.paragraph_vectors.WordFrequencyPair;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -21,6 +22,7 @@ import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
+import tools.MinHeap;
 
 import java.io.File;
 import java.util.*;
@@ -103,6 +105,8 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     @Override
     protected void initModel(boolean forceRecreateModel) {
         final double keyphraseTrimAlpha = 0.9;
+        final double minScore = 0.5d;
+        final int maxTags = 5;
 
         System.out.println("Starting to init model...");
         if(multiStemSet==null) initStages(false,false);
@@ -114,13 +118,15 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
         System.out.println("Building keyword matrix...");
         List<MultiStem> keywords = Collections.synchronizedList(new ArrayList<>(keywordToVectorLookupTable.keySet()));
-        INDArray keywordMatrix = Nd4j.create(keywordToVectorLookupTable.size(),keywordToVectorLookupTable.values().stream().findAny().get().length());
+        List<Pair<MultiStem,INDArray>> keywordVectorPairs = Collections.synchronizedList(new ArrayList<>(keywords.size()));
 
         for(int i = 0; i < keywords.size(); i++) {
-            keywordMatrix.putRow(i,keywordToVectorLookupTable.get(keywords.get(i)));
+            INDArray vec = keywordToVectorLookupTable.get(keywords.get(i));
+            if(vec!=null) {
+                keywordVectorPairs.add(new Pair<>(keywords.get(i), Transforms.unitVec(vec)));
+            }
         }
 
-        keywordMatrix.diviColumnVector(keywordMatrix.norm2(1));
 
         Map<String,INDArray> cpcVectors = wordCPC2VecPipelineManager.getOrLoadCPCVectors();
         Map<String,INDArray> wordVectors = wordCPC2VecPipelineManager.getOrLoadWordVectors();
@@ -128,47 +134,63 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
 
-        Map<String,String> predictions = Collections.synchronizedMap(new HashMap<>());
+        Map<String,List<String>> predictions = Collections.synchronizedMap(new HashMap<>());
         cpcVectors.entrySet().forEach(e->{
             cnt.getAndIncrement();
 
+            MinHeap<WordFrequencyPair<MultiStem,Double>> heap = new MinHeap<>(maxTags);
+
             String cpc = e.getKey();
-            INDArray cpcVec = e.getValue();
+            INDArray cpcVec = Transforms.unitVec(e.getValue());
 
-            INDArray similarityResultVector = Transforms.unitVec(cpcVec).broadcast(keywordMatrix.shape()).muli(keywordMatrix).sum(1).reshape(new int[]{1,keywordMatrix.rows()});
+            keywordVectorPairs.forEach(pair->{
+                double score = Transforms.cosineSim(pair.getSecond(),cpcVec);
+                if(score >= minScore) {
+                    heap.add(new WordFrequencyPair<>(pair.getFirst(), score));
+                }
+            });
 
-            int best = Nd4j.getExecutioner().execAndReturn(new IAMax(similarityResultVector)).getFinalResult();
+            List<String> tags = Collections.synchronizedList(new ArrayList<>(maxTags));
 
-            MultiStem bestKeyword = keywords.get(best);
-            INDArray multiStemVec = keywordToVectorLookupTable.get(bestKeyword);
+            while(!heap.isEmpty()) {
+                MultiStem keyword = heap.remove().getFirst();
+                INDArray multiStemVec = keywordToVectorLookupTable.get(keyword);
 
-            // potentially remove words from keyphrase
-            List<Pair<String,INDArray>> wordVectorsPairs = Stream.of(bestKeyword.getBestPhrase().split(" "))
-                    .map(word->{
-                        if(wordVectors.containsKey(word)) return new Pair<>(word,wordVectors.get(word));
-                        else return null;
-                    }).filter(pair->pair!=null).collect(Collectors.toList());
+                // potentially remove words from keyphrase
+                List<Pair<String,INDArray>> wordVectorsPairs = Stream.of(keyword.getBestPhrase().split(" "))
+                        .map(word->{
+                            if(wordVectors.containsKey(word)) return new Pair<>(word,wordVectors.get(word));
+                            else return null;
+                        }).filter(pair->pair!=null).collect(Collectors.toList());
 
-            List<Pair<String,Double>> wordSimilarityPairs = wordVectorsPairs.stream()
-                    .map(pair->new Pair<>(pair.getFirst(),Transforms.cosineSim(Transforms.unitVec(pair.getSecond()),Transforms.unitVec(cpcVec))))
-                    .collect(Collectors.toList());
+                List<Pair<String,Double>> wordSimilarityPairs = wordVectorsPairs.stream()
+                        .map(pair->new Pair<>(pair.getFirst(),Transforms.cosineSim(Transforms.unitVec(pair.getSecond()),Transforms.unitVec(cpcVec))))
+                        .collect(Collectors.toList());
 
-            double similarityFullPhrase = Transforms.cosineSim(multiStemVec,cpcVec);
-            List<String> wordList = wordSimilarityPairs.stream()
-                    .filter(pair->pair.getSecond()>=similarityFullPhrase*keyphraseTrimAlpha)
-                    .map(pair->pair.getFirst())
-                    .collect(Collectors.toList());
+                double similarityFullPhrase = Transforms.cosineSim(multiStemVec,cpcVec);
+                List<String> wordList = wordSimilarityPairs.stream()
+                        .filter(pair->pair.getSecond()>=similarityFullPhrase*keyphraseTrimAlpha)
+                        .map(pair->pair.getFirst())
+                        .collect(Collectors.toList());
 
 
-            String prediction = String.join(" ",wordList);
 
-            if(wordList.isEmpty()) {
-                incomplete.getAndIncrement();
-            } else {
-                predictions.put(cpc, prediction);
+                if(!wordList.isEmpty()) {
+                    String prediction = String.join(" ",wordList);
+                    tags.add(prediction);
+                }
             }
+
+            if(!tags.isEmpty()) {
+                predictions.put(cpc, tags);
+            } else {
+                incomplete.getAndIncrement();
+            }
+
+            System.out.println("Best keywords for "+cpc+": "+String.join("; ",tags));
+
+
             if(cnt.get()%1000==999) {
-                System.out.println("Best keyword for "+cpc+": "+prediction);
                 System.out.println("Finished "+cnt.get()+" out of "+cpcVectors.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
             }
         });
