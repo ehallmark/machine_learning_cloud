@@ -138,7 +138,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             INDArray similarityResultVector = Transforms.unitVec(cpcVec).broadcast(keywordMatrix.shape()).muli(keywordMatrix).sum(1).reshape(new int[]{1,keywordMatrix.rows()});
 
             int best = Nd4j.getExecutioner().execAndReturn(new IAMax(similarityResultVector)).getFinalResult();
-            
+
             MultiStem bestKeyword = keywords.get(best);
             INDArray multiStemVec = keywordToVectorLookupTable.get(bestKeyword);
 
