@@ -20,6 +20,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import seeding.Database;
 
 import java.io.File;
 import java.util.*;
@@ -126,12 +127,18 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
+
+        Map<String,String> predictions = Collections.synchronizedMap(new HashMap<>());
         cpcVectors.entrySet().forEach(e->{
             cnt.getAndIncrement();
 
             String cpc = e.getKey();
             INDArray cpcVec = e.getValue();
-            int best = Nd4j.getExecutioner().execAndReturn(new IAMax(Transforms.unitVec(cpcVec).broadcast(keywordMatrix.shape()).muli(keywordMatrix).sum(1).reshape(new int[]{1,keywordMatrix.rows()}))).getFinalResult();
+
+            INDArray similarityResultVector = Transforms.unitVec(cpcVec).broadcast(keywordMatrix.shape()).muli(keywordMatrix).sum(1).reshape(new int[]{1,keywordMatrix.rows()});
+
+            int best = Nd4j.getExecutioner().execAndReturn(new IAMax(similarityResultVector)).getFinalResult();
+            
             MultiStem bestKeyword = keywords.get(best);
             INDArray multiStemVec = keywordToVectorLookupTable.get(bestKeyword);
 
@@ -152,31 +159,23 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
                     .map(pair->pair.getFirst())
                     .collect(Collectors.toList());
 
-            if(wordList.isEmpty()) {
-                incomplete.getAndIncrement();
-            }
 
             String prediction = String.join(" ",wordList);
-            System.out.println("Best keyword for "+cpc+": "+prediction);
+
+            if(wordList.isEmpty()) {
+                incomplete.getAndIncrement();
+            } else {
+                predictions.put(cpc, prediction);
+            }
             if(cnt.get()%1000==999) {
+                System.out.println("Best keyword for "+cpc+": "+prediction);
                 System.out.println("Finished "+cnt.get()+" out of "+cpcVectors.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
             }
         });
 
-        /*System.out.println("Starting predictions...");
-        if(filingToEncodingNet==null) loadSimilarityNetworks();
-        getFilingToVectorMap().entrySet().forEach(e->{
-            String filing = e.getKey();
-            INDArray vec = e.getValue();
-            Collection<CPC> cpcs = cpcMap.get(filing);
-            if(cpcs!=null) {
+        System.out.println("saving results... size="+predictions.size());
+        Database.trySaveObject(predictions,predictionsFile);
 
-            }
-            INDArray encoding = filingToEncodingNet.activateSelectedLayers(0,filingToEncodingNet.getnLayers()-1,vec);
-            // find most similar
-            int best = Nd4j.getExecutioner().execAndReturn(new IAMax(Transforms.unitVec(encoding).broadcast(keywordMatrix.shape()).muli(keywordMatrix).sum(1).reshape(new int[]{1,encoding.columns()}))).getFinalResult();
-            System.out.println("Best keyword for "+filing+": "+keywords.get(best));
-        }); */
     }
 
 
@@ -223,7 +222,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
 
-        boolean rebuildPrerequisites = false;
+        boolean rebuildPrerequisites = true;
         boolean rebuildDatasets = false;
         boolean runModels = false;
         boolean forceRecreateModels = false;
