@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 12/21/17.
  */
-public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<WordCPCIterator,List<String>> {
+public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<WordCPCIterator,Set<String>> {
     public static final Model modelParams = new DefaultModel();
     private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
@@ -134,7 +134,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
 
-        Map<String,List<String>> predictions = Collections.synchronizedMap(new HashMap<>());
+        Map<String,Set<String>> predictions = Collections.synchronizedMap(new HashMap<>());
         cpcVectors.entrySet().forEach(e->{
             cnt.getAndIncrement();
 
@@ -150,7 +150,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
                 }
             });
 
-            List<String> tags = Collections.synchronizedList(new ArrayList<>(maxTags));
+            Set<String> tags = Collections.synchronizedSet(new HashSet<>(maxTags));
 
             while(!heap.isEmpty()) {
                 MultiStem keyword = heap.remove().getFirst();
@@ -187,10 +187,9 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
                 incomplete.getAndIncrement();
             }
 
-            System.out.println("Best keywords for "+cpc+": "+String.join("; ",tags));
-
 
             if(cnt.get()%1000==999) {
+                System.out.println("Best keywords for "+cpc+": "+String.join("; ",tags));
                 System.out.println("Finished "+cnt.get()+" out of "+cpcVectors.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
             }
         });
