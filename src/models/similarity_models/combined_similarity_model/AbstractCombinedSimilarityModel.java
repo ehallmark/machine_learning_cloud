@@ -175,10 +175,11 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
     }
 
     public static Pair<Double,Double> test(ComputationGraph net1, ComputationGraph net2, INDArray features1, INDArray features2) {
-        INDArray[] labels = new INDArray[]{features1,features2};
-        MultiDataSet dataSet1 = new MultiDataSet(new INDArray[]{features1}, labels);
-        MultiDataSet dataSet2 = new MultiDataSet(new INDArray[]{features2}, labels);
-        return new Pair<>(1d+net1.score(dataSet1)/labels.length,1d+net2.score(dataSet2)/labels.length);
+        INDArray[] label1 = new INDArray[]{features2};
+        INDArray[] label2 = new INDArray[]{features1};
+        MultiDataSet dataSet1 = new MultiDataSet(new INDArray[]{features1}, label1);
+        MultiDataSet dataSet2 = new MultiDataSet(new INDArray[]{features2}, label2);
+        return new Pair<>(1d+net1.score(dataSet1)/label1.length,1d+net2.score(dataSet2)/label2.length);
     }
 
     public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, Iterator<DataSet> iterator) {

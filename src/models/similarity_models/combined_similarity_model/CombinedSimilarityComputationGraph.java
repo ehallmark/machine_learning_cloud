@@ -50,10 +50,10 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
 
     @Override
     protected Map<String, ComputationGraph> buildNetworksForTraining() {
-        int hiddenLayerSize = 96;
+        int hiddenLayerSize = 128;
         int input1 = 32;
         int input2 = 32;
-        int numHiddenLayers = 14;
+        int numHiddenLayers = 8;
 
         Updater updater = Updater.RMSPROP;
 
@@ -67,7 +67,7 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
                 .activation(Activation.TANH)
                 .graphBuilder()
                 .addInputs("x")
-                .setOutputs("y1","y2")
+                .setOutputs("y")
                 .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build(), "x")
                 .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
@@ -77,7 +77,7 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
                 .activation(Activation.TANH)
                 .graphBuilder()
                 .addInputs("x")
-                .setOutputs("y1","y2")
+                .setOutputs("y")
                 .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build(), "x")
                 .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input2+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
@@ -97,11 +97,8 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
         OutputLayer.Builder outputLayer1 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input1).lossFunction(lossFunction);
         OutputLayer.Builder outputLayer2 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input2).lossFunction(lossFunction);
 
-        wordCPC2VecConf = wordCPC2VecConf.addLayer("y1",outputLayer1.build(), String.valueOf(i-increment), String.valueOf(i-(2*increment)));
-        cpcVecNetConf = cpcVecNetConf.addLayer("y1",outputLayer1.build(), String.valueOf(i-increment), String.valueOf(i-(2*increment)));
-
-        wordCPC2VecConf = wordCPC2VecConf.addLayer("y2",outputLayer2.build(), String.valueOf(i-increment), String.valueOf(i-(2*increment)));
-        cpcVecNetConf = cpcVecNetConf.addLayer("y2",outputLayer2.build(), String.valueOf(i-increment), String.valueOf(i-(2*increment)));
+        wordCPC2VecConf = wordCPC2VecConf.addLayer("y",outputLayer1.build(), String.valueOf(i-increment), String.valueOf(i-(2*increment)));
+        cpcVecNetConf = cpcVecNetConf.addLayer("y",outputLayer2.build(), String.valueOf(i-increment), String.valueOf(i-(2*increment)));
 
         wordCpc2Vec = new ComputationGraph(wordCPC2VecConf.build());
         cpcVecNet = new ComputationGraph(cpcVecNetConf.build());
