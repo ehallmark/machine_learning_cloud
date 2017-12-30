@@ -30,7 +30,6 @@ import java.util.Map;
  */
 public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
     public static final String MODEL_NAME = "combined_similarity_model_small";
-    public static final String OLD_MODEL_NAME = "combined_similarity_model";
     private static final int BATCH_SIZE = 16;
     private static final File INPUT_DATA_FOLDER = new File("combined_similarity_model_input_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"combined_similarity_model_predictions/predictions_map.jobj");
@@ -49,7 +48,7 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
     }
 
     public void initModel(boolean forceRecreateModels) {
-        if(model==null) model = new CombinedSimilarityModel(this,modelName);
+        if(model==null) model = new CombinedSimilarityComputationGraph(this,modelName);
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
