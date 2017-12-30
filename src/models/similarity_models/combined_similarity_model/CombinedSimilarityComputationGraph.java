@@ -68,7 +68,7 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
                 .graphBuilder()
                 .addInputs("x")
                 .setOutputs("y")
-                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build(), String.valueOf(i))
+                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build(), "x")
                 .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
         ComputationGraphConfiguration.GraphBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
