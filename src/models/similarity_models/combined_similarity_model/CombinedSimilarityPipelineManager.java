@@ -94,9 +94,9 @@ public class CombinedSimilarityPipelineManager extends DefaultPipelineManager<Da
         boolean fullText = baseDir.getName().equals(FileTextDataSetIterator.BASE_DIR.getName());
         System.out.println("Using full text: "+fullText);
 
-        WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,32, fullText);
-        WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,32, fullText);
-        WordCPCIterator devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,32, fullText);
+        WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,20, fullText);
+        WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,20, fullText);
+        WordCPCIterator devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,20, fullText);
 
         trainIter.setRunVocab(false);
         testIter.setRunVocab(false);
