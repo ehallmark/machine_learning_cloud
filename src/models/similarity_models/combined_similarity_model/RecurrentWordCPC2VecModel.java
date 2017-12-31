@@ -46,7 +46,7 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
 
     @Override
     protected Map<String, ComputationGraph> buildNetworksForTraining() {
-        int hiddenLayerSize = 32;
+        int hiddenLayerSize = 48;
         int inputSize = 32;
         int outputSize = 32;
         int numHiddenLayers = 6;
@@ -65,7 +65,7 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
                 .addInputs("x")
                 .setOutputs("y")
                 .addLayer(String.valueOf(i), NNOptimizer.newGravesLSTMLayer(inputSize,hiddenLayerSize).build(), "x")
-                .addLayer(String.valueOf(i+1), NNOptimizer.newGravesLSTMLayer(inputSize+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
+                .addLayer(String.valueOf(i+1), NNOptimizer.newGravesLSTMLayer(inputSize+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i));//, "x");
 
         int increment = 1;
 
@@ -75,13 +75,13 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
         //  hidden layers
         for(; i < t + numHiddenLayers*increment; i+=increment) {
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize);
-            wordCPC2VecConf = wordCPC2VecConf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+            wordCPC2VecConf = wordCPC2VecConf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment));//, String.valueOf(i-2*increment));
         }
 
         // output layers
         RnnOutputLayer.Builder outputLayer = NNOptimizer.newRNNOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize).lossFunction(lossFunction);
 
-        wordCPC2VecConf = wordCPC2VecConf.addLayer("y",outputLayer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+        wordCPC2VecConf = wordCPC2VecConf.addLayer("y",outputLayer.build(), String.valueOf(i-increment));//, String.valueOf(i-2*increment));
 
         recurrentWordCpc2Vec = new ComputationGraph(wordCPC2VecConf.build());
 
