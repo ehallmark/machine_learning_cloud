@@ -73,12 +73,16 @@ public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultP
         // handled by Elasticsearch
     }
 
+    public File getDevFile() {
+        return FileTextDataSetIterator.devFile2;
+    }
+
     @Override
     protected void setDatasetManager() {
         File baseDir = FileTextDataSetIterator.BASE_DIR;
         File trainFile = new File(baseDir, FileTextDataSetIterator.trainFile.getName());
         File testFile = new File(baseDir, FileTextDataSetIterator.testFile.getName());
-        File devFile = new File(baseDir, FileTextDataSetIterator.devFile2.getName());
+        File devFile = new File(baseDir, getDevFile().getName());
 
         boolean fullText = baseDir.getName().equals(FileTextDataSetIterator.BASE_DIR.getName());
         System.out.println("Using full text: "+fullText);

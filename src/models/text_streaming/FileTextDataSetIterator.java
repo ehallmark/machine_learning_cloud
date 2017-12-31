@@ -22,8 +22,8 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
     public static final File trainFile = new File(BASE_DIR, "train_data.csv");
     public static File devFile1 = new File(BASE_DIR, "dev1_data.csv");
     public static File devFile2 = new File(BASE_DIR, "dev2_data.csv");
-    static File devFile3 = new File(BASE_DIR, "dev3_data.csv");
-    static File devFile4 = new File(BASE_DIR, "dev4_data.csv");
+    public static File devFile3 = new File(BASE_DIR, "dev3_data.csv");
+    public static File devFile4 = new File(BASE_DIR, "dev4_data.csv");
     public static File testFile = new File(BASE_DIR, "test_data.csv");
     private static Map<Type,File> typeToFileMap = Collections.synchronizedMap(new HashMap<>());
 

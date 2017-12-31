@@ -54,6 +54,11 @@ public class CombinedSimilarityPipelineManager extends AbstractCombinedSimilarit
     }
 
 
+    @Override
+    public File getDevFile() {
+        return FileTextDataSetIterator.devFile3;
+    }
+
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
