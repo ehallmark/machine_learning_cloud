@@ -105,7 +105,11 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
                 while (dataSetIterator.hasNext()) {
                    // if((gcIter++)%printIterations/10==0) System.gc();
                     DataSet ds = dataSetIterator.next();
-                    train(ds.getFeatures(), ds.getLabels());
+                    if(this instanceof RecurrentModel) {
+                        ((RecurrentModel)this).train(ds.getFeatureMatrix(),ds.getLabels(),ds.getFeaturesMaskArray(),ds.getLabelsMaskArray());
+                    } else {
+                        train(ds.getFeatures(), ds.getLabels());
+                    }
                     totalSeenThisEpoch.getAndAdd(ds.getFeatures().rows());
                     if (stoppingCondition.get()) break;
                 }
@@ -168,6 +172,10 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
     public static void train(ComputationGraph net, INDArray features, INDArray labels) {
         MultiDataSet dataSet = new MultiDataSet(new INDArray[]{features}, new INDArray[]{labels});
         if(net!=null)net.fit(dataSet);
+    }
+
+    public static void train(ComputationGraph net, INDArray features, INDArray labels, INDArray featuresMask, INDArray labelsMask) {
+        if(net!=null)net.fit(new MultiDataSet(new INDArray[]{features},new INDArray[]{labels}, new INDArray[]{featuresMask},new INDArray[]{labelsMask}));
     }
 
     public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2) {
