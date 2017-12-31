@@ -1,9 +1,11 @@
 package models.similarity_models.combined_similarity_model;
 
+import data_pipeline.optimize.nn_optimization.CGRefactorer;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
+import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
@@ -13,6 +15,7 @@ import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
 import org.deeplearning4j.nn.conf.layers.variational.LossFunctionWrapper;
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
+import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
@@ -31,17 +34,17 @@ import java.util.function.Function;
 /**
  * Created by Evan on 12/24/2017.
  */
-public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityModel<MultiLayerNetwork> {
+public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityModel<ComputationGraph> {
     public static final String VAE_NETWORK = "vaeNet";
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_vae_data");
 
-    MultiLayerNetwork vaeNetwork;
-    int hiddenLayerSize = 64;
+    ComputationGraph vaeNetwork;
+    int hiddenLayerSize = 96;
     int input1 = 32;
     int input2 = 32;
 
     public CombinedVariationalAutoencoder(CombinedSimilarityVAEPipelineManager pipelineManager, String modelName) {
-        super(pipelineManager,MultiLayerNetwork.class,modelName);
+        super(pipelineManager,ComputationGraph.class,modelName);
     }
 
     @Override
@@ -50,49 +53,75 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
     }
 
     @Override
-    protected Map<String, MultiLayerNetwork> buildNetworksForTraining() {
+    protected Map<String, ComputationGraph> buildNetworksForTraining() {
         System.out.println("Build model....");
-        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .seed(2352)
-                .iterations(1)
+        int hiddenLayerSize = 48;
+        int input1 = 32;
+        int input2 = 32;
+        int numHiddenLayers = 20;
+
+        Updater updater = Updater.RMSPROP;
+
+        LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
+
+        // build networks
+        int i = 0;
+        ComputationGraphConfiguration.GraphBuilder conf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
+                .updater(updater)
                 .learningRate(0.001)
-                .updater(Updater.RMSPROP)
-                .miniBatch(true)
-                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
-                .list()
-                .layer(0, new DenseLayer.Builder().nIn(input1+input2).nOut(input1+input2).activation(Activation.SIGMOID).build())
-                .layer(1, new RBM.Builder().nIn(input1+input2).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
-                .layer(2, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
-                .layer(3, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
-                .layer(4, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
-                .layer(5, new RBM.Builder().nIn(hiddenLayerSize).nOut(32).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //encoding stops
-                .layer(6, new RBM.Builder().nIn(32).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //decoding starts
-                .layer(7, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
-                .layer(8, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
-                .layer(9, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
-                .layer(10, new OutputLayer.Builder(LossFunctions.LossFunction.COSINE_PROXIMITY).activation(Activation.TANH).nIn(hiddenLayerSize).nOut(input1+input2).build())
-                .pretrain(true).backprop(true)
-                .build();
+                .activation(Activation.TANH)
+                .graphBuilder()
+                .addInputs("x")
+                .setOutputs("y")
+                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build(), "x")
+                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
-        MultiLayerNetwork model = new MultiLayerNetwork(conf);
-        model.init();
-        vaeNetwork = new MultiLayerNetwork(conf);
+        int increment = 1;
 
+        i+=2;
+
+        int t = i;
+        //  hidden layers
+        for(; i < t + numHiddenLayers*increment; i+=increment) {
+            org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize);
+            conf = conf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+        }
+
+        org.deeplearning4j.nn.conf.layers.Layer.Builder encoding = NNOptimizer.newDenseLayer(hiddenLayerSize+hiddenLayerSize,32);
+        conf = conf.addLayer(String.valueOf(i),encoding.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+        i++;
+        org.deeplearning4j.nn.conf.layers.Layer.Builder decoding = NNOptimizer.newDenseLayer(32,hiddenLayerSize);
+        conf = conf.addLayer(String.valueOf(i),decoding.build(), String.valueOf(i-increment));
+        i++;
+
+        t=i;
+
+        //  hidden layers
+        for(; i < t + numHiddenLayers*increment; i+=increment) {
+            org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize);
+            conf = conf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+        }
+
+        // output layers
+        OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input2).lossFunction(lossFunction);
+
+        conf = conf.addLayer("y",outputLayer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+
+        vaeNetwork = new ComputationGraph(conf.build());
         vaeNetwork.init();
 
         //syncParams(wordCpc2Vec,cpcVecNet,encodingIdx);
 
-        Map<String,MultiLayerNetwork> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
+        Map<String,ComputationGraph> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
         nameToNetworkMap.put(VAE_NETWORK,vaeNetwork);
         return nameToNetworkMap;
     }
 
     @Override
-    protected Map<String, MultiLayerNetwork> updateNetworksBeforeTraining(Map<String, MultiLayerNetwork> networkMap) {
+    protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         double newLearningRate = 0.0001;
-        double newRegularization = -1;
-        vaeNetwork = NNRefactorer.updateNetworkRegularization(NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(VAE_NETWORK),newLearningRate,false),newRegularization>0,newRegularization,false);
-        Map<String,MultiLayerNetwork> updates = Collections.synchronizedMap(new HashMap<>());
+        vaeNetwork = CGRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(VAE_NETWORK),newLearningRate,false);
+        Map<String,ComputationGraph> updates = Collections.synchronizedMap(new HashMap<>());
         updates.put(VAE_NETWORK,vaeNetwork);
         return updates;
     }
