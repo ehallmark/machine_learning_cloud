@@ -36,6 +36,8 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import seeding.Database;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
@@ -46,6 +48,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Created by Evan on 12/24/2017.
@@ -58,16 +61,14 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
     private ComputationGraph vaeNetwork;
     int encodingIdx = 22;
 
-    private double numDocs;
-    public CombinedVariationalAutoencoder(CombinedSimilarityVAEPipelineManager pipelineManager, String modelName, long numDocs) {
+    public CombinedVariationalAutoencoder(CombinedSimilarityVAEPipelineManager pipelineManager, String modelName) {
         super(pipelineManager,ComputationGraph.class,modelName);
-        this.numDocs=numDocs;
     }
 
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         final int numSamples = 32;
-        final int sampleLength = 16;
+        final int sampleLength = 8;
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         Set<String> filings = Collections.synchronizedSet(new HashSet<>());
         assets.forEach(asset->{
@@ -81,7 +82,6 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
         Map<String,INDArray> filingCpcVaeEncoderPredictions = pipelineManager.getAssetToEncodingMap();
         Map<String,Collection<CPC>> cpcMap = pipelineManager.wordCPC2VecPipelineManager.getCPCMap();
-        Map<String,INDArray> word2VecMap = pipelineManager.wordCPC2VecPipelineManager.getOrLoadWordVectors();
         Map<String,INDArray> cpc2VecMap = pipelineManager.wordCPC2VecPipelineManager.getOrLoadCPCVectors();
 
         final Random rand = new Random(32);
@@ -91,55 +91,34 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
 
-
-        Consumer<Triple<String,LocalDate,Collection<String>>> consumer = triple -> {
-            if(!filings.contains(triple.getFirst())) {
+        filings.forEach(filing->{
+            INDArray cpcVaeVec = filingCpcVaeEncoderPredictions.get(filing);
+            if (cpcVaeVec == null) {
                 incomplete.getAndIncrement();
             } else {
+                cpcVaeVec = Transforms.unitVec(cpcVaeVec);
 
-                INDArray cpcVaeVec = filingCpcVaeEncoderPredictions.get(triple.getFirst());
-                if (cpcVaeVec == null) {
+                // word info
+                List<INDArray> cpcVectors = cpcMap.getOrDefault(filing, Collections.emptySet()).stream().filter(cpc -> cpc.getNumParts() >= 3).limit(100).map(cpc -> cpc2VecMap.get(cpc.getName())).filter(vec -> vec != null).collect(Collectors.toList());
+                if (cpcVectors.isEmpty()) {
                     incomplete.getAndIncrement();
                 } else {
-                    cpcVaeVec = Transforms.unitVec(cpcVaeVec);
-
-                    // word info
-                    List<String> samples = (List<String>) triple.getThird();
-                    List<Pair<String, INDArray>> wordVectorPairs = samples.stream().limit(100).map(word -> {
-                        INDArray vec = word2VecMap.get(word);
-                        if (vec == null) return null;
-                        else return new Pair<>(word, vec);
-                    }).filter(vec -> vec != null).collect(Collectors.toList());
-                    List<INDArray> cpcVectors = cpcMap.getOrDefault(triple.getFirst(), Collections.emptySet()).stream().filter(cpc -> cpc.getNumParts() >= 3).limit(100).map(cpc -> cpc2VecMap.get(cpc.getName())).filter(vec -> vec != null).collect(Collectors.toList());
-                    if (wordVectorPairs.size() <= sampleLength || cpcVectors.isEmpty()) {
-                        incomplete.getAndIncrement();
-                    } else {
-                        INDArray features = Nd4j.create(numSamples, 64);
-                        for (int i = 0; i < numSamples; i++) {
-                            int randWordIdx = rand.nextInt(wordVectorPairs.size() - sampleLength);
-                            INDArray word2Vec = Transforms.unitVec(Nd4j.vstack(IntStream.range(0, sampleLength).mapToObj(j -> {
-                                Pair<String, INDArray> wordVectorPair = wordVectorPairs.get(randWordIdx + j);
-                                String word = wordVectorPair.getFirst();
-                                double idf = Math.log(1d + (numDocs / Math.max(30, pipelineManager.word2Vec.getVocab().docAppearedIn(word))));
-                                return wordVectorPair.getSecond().mul(idf);
-                            }).collect(Collectors.toList())).mean(0));
-                            INDArray cpc2Vec = Transforms.unitVec(Nd4j.vstack(IntStream.range(0, 3).mapToObj(j -> cpcVectors.get(rand.nextInt(cpcVectors.size()))).collect(Collectors.toList())).mean(0));
-                            features.putRow(i, Nd4j.hstack(word2Vec.mul(cpc2Vec), cpcVaeVec));
-                        }
-                        INDArray encoding = encode(features);
-
-                        INDArray averageEncoding = Transforms.unitVec(encoding.mean(0));
-                        finalPredictionsMap.put(triple.getFirst(), averageEncoding);
+                    INDArray features = Nd4j.create(numSamples, 64);
+                    for (int i = 0; i < numSamples; i++) {
+                        INDArray cpc2Vec = Transforms.unitVec(Nd4j.vstack(IntStream.range(0, sampleLength).mapToObj(j -> cpcVectors.get(rand.nextInt(cpcVectors.size()))).collect(Collectors.toList())).mean(0));
+                        features.putRow(i, Nd4j.hstack(cpc2Vec, cpcVaeVec));
                     }
+                    INDArray encoding = encode(features);
+
+                    INDArray averageEncoding = Transforms.unitVec(encoding.mean(0));
+                    finalPredictionsMap.put(filing, averageEncoding);
                 }
 
             }
             if(cnt.getAndIncrement()%10000==9999) {
                 System.out.println("Finished "+cnt.get()+" filings. Incomplete: "+incomplete.get()+ " / "+cnt.get());
             }
-        };
-
-        ESTextDataSetIterator.iterateOverSentences(-1,consumer,null,true);
+        });
 
         Map<String,INDArray> cpcVaeEncoderPredictions = pipelineManager.cpcvaePipelineManager.loadPredictions();
 
@@ -164,7 +143,12 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
 
         // add assignee vectors
-        Map<String,List<String>> assigneeToCpcMap = null;
+        Map<String,List<String>> assigneeToCpcMap = assignees.parallelStream().collect(Collectors.toConcurrentMap(assignee->assignee,assignee->{
+            return Stream.of(
+                    Database.selectApplicationNumbersFromExactAssignee(assignee).stream().flatMap(asset->new AssetToCPCMap().getApplicationDataMap().getOrDefault(asset,Collections.emptySet()).stream()),
+                    Database.selectPatentNumbersFromExactAssignee(assignee).stream().flatMap(asset->new AssetToCPCMap().getPatentDataMap().getOrDefault(asset,Collections.emptySet()).stream())
+            ).flatMap(stream->stream).collect(Collectors.toList());
+        }));
         cnt.set(0);
         incomplete.set(0);
         assignees.forEach(assignee->{

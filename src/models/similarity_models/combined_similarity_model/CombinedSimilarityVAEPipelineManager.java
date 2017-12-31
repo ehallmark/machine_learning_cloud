@@ -39,8 +39,7 @@ public class CombinedSimilarityVAEPipelineManager extends AbstractCombinedSimila
 
     public void initModel(boolean forceRecreateModels) {
         if(model==null) {
-            int numDocs = Database.getAllPatentsAndApplications().size()*3;
-            model = new CombinedVariationalAutoencoder(this,modelName,numDocs);
+            model = new CombinedVariationalAutoencoder(this,modelName);
         }
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
