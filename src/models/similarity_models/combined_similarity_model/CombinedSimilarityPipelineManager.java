@@ -46,7 +46,7 @@ public class CombinedSimilarityPipelineManager extends AbstractCombinedSimilarit
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
-                model.loadBestModel();
+                model.loadMostRecentModel();
             } catch(Exception e) {
                 System.out.println("Error loading previous model: "+e.getMessage());
             }
