@@ -22,6 +22,7 @@ import seeding.Constants;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -33,6 +34,7 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
 
     ComputationGraph recurrentWordCpc2Vec;
     CombinedVariationalAutoencoder autoencoder;
+    AtomicInteger trainCnt = new AtomicInteger(0);
 
     public RecurrentWordCPC2VecModel(RecurrentWordCPC2VecPipelineManager pipelineManager, String modelName, CombinedVariationalAutoencoder autoencoder) {
         super(pipelineManager,ComputationGraph.class,modelName);
@@ -163,6 +165,7 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
     public void train(INDArray features, INDArray labels, INDArray featuresMask, INDArray labelsMask) {
         INDArray encoding = getEncodingTimeSeries(new DataSet(features,labels,featuresMask,labelsMask));
         train(recurrentWordCpc2Vec, features, encoding,featuresMask,labelsMask);
+        if(trainCnt.getAndIncrement()%10==0) System.gc();
         //System.gc();
     }
 

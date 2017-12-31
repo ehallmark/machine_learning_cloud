@@ -102,11 +102,12 @@ public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultP
         long numDocs = Database.getAllPatentsAndApplications().size()*3;
 
         datasetManager = new NoSaveDataSetManager<>(
-                getRawIterator(trainIter,numDocs,BATCH_SIZE),
+                getRawIterator(trainIter,numDocs,getBatchSize()),
                 getRawIterator(testIter,numDocs, 128),
                 getRawIterator(devIter,numDocs, 128)
         );
     }
+
 
     public synchronized Map<String,INDArray> getAssetToEncodingMap() {
         if(assetToEncodingMap==null) {

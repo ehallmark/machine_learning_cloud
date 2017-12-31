@@ -135,23 +135,26 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
             if(vocabWords.isEmpty()) continue;
             totalWordsPerBatch.getAndAdd(vocabWords.size());
             AtomicInteger lastIdx = new AtomicInteger(-1);
-            List<INDArray> wordVectors = IntStream.range(0,maxSamples).mapToObj(i->{
+            INDArray featureVec = Nd4j.create(inputColumns(),maxSamples);
+            IntStream.range(0,maxSamples).forEach(i->{
                 VocabWord vocabWord = vocabWords.size()>i?vocabWords.get(i):null;
-                if(vocabWord==null) {
-                    return Nd4j.zeros(totalOutcomes());
+                INDArray phraseVec = null;
+                if(vocabWord!=null) {
+                    phraseVec = getPhraseVector(word2Vec, vocabWord.getLabel());
+                    if (phraseVec != null) {
+                        featureMask[i] = 1d;
+                        lastIdx.set(i);
+                        wordsFoundPerBatch.getAndIncrement();
+                        phraseVec = Transforms.unitVec(phraseVec);
+                    }
                 }
-                INDArray phraseVec = getPhraseVector(word2Vec, vocabWord.getLabel());
-                if(phraseVec!=null) {
-                    featureMask[i]=1d;
-                    lastIdx.set(i);
-                    wordsFoundPerBatch.getAndIncrement();
-                    return Transforms.unitVec(phraseVec);
+                if(phraseVec==null) {
+                    phraseVec = Nd4j.zeros(inputColumns());
                 }
-                return Nd4j.zeros(totalOutcomes());
-            }).collect(Collectors.toList());
+                featureVec.putColumn(i,phraseVec);
+            });
             if(lastIdx.get()<0) continue;
             labelMask[lastIdx.get()]=1d;
-            INDArray featureVec = Nd4j.vstack(wordVectors).transpose();
             labels.putRow(idx,labelVec);
             featureMasks.putRow(idx,Nd4j.create(featureMask));
             labelMasks.putRow(idx,Nd4j.create(labelMask));

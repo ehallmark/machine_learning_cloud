@@ -48,6 +48,11 @@ public class RecurrentWordCPC2VecPipelineManager extends AbstractCombinedSimilar
         }
     }
 
+    @Override
+    public int getBatchSize() {
+        return 8;
+    }
+
 
     @Override
     protected DataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, long numDocs, int batch) {
