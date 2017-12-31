@@ -39,7 +39,10 @@ public class CombinedSimilarityPipelineManager extends AbstractCombinedSimilarit
     }
 
     public void initModel(boolean forceRecreateModels) {
-        if(model==null) model = new CombinedSimilarityComputationGraph(this,modelName);
+        CombinedSimilarityVAEPipelineManager vaePipelineManager = new CombinedSimilarityVAEPipelineManager(CombinedSimilarityVAEPipelineManager.MODEL_NAME,word2Vec,wordCPC2VecPipelineManager,cpcvaePipelineManager);
+        vaePipelineManager.runPipeline(false,false,false,false,-1,false);
+
+        if(model==null) model = new CombinedSimilarityComputationGraph(this,modelName,(CombinedVariationalAutoencoder)vaePipelineManager.getModel());
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {

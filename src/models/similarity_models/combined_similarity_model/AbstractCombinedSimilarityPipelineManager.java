@@ -37,7 +37,7 @@ public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultP
     protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     protected CPCVAEPipelineManager cpcvaePipelineManager;
     @Getter
-    private Word2Vec word2Vec;
+    protected Word2Vec word2Vec;
     public AbstractCombinedSimilarityPipelineManager(File inputDataFolder, File predictionsDataFile, String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, CPCVAEPipelineManager cpcvaePipelineManager) {
         super(inputDataFolder,predictionsDataFile);
         this.word2Vec=word2Vec;

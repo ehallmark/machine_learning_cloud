@@ -38,9 +38,12 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
     boolean trainCpcVecNet = true;
     ComputationGraph wordCpc2Vec;
     ComputationGraph cpcVecNet;
+    CombinedVariationalAutoencoder autoencoder;
 
-    public CombinedSimilarityComputationGraph(CombinedSimilarityPipelineManager pipelineManager, String modelName) {
+    public CombinedSimilarityComputationGraph(CombinedSimilarityPipelineManager pipelineManager, String modelName, CombinedVariationalAutoencoder autoencoder) {
         super(pipelineManager,ComputationGraph.class,modelName);
+        this.autoencoder=autoencoder;
+
     }
 
     @Override
@@ -53,7 +56,7 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
         int hiddenLayerSize = 48;
         int input1 = 32;
         int input2 = 32;
-        int numHiddenLayers = 20;
+        int numHiddenLayers = 30;
 
         Updater updater = Updater.RMSPROP;
 
@@ -94,8 +97,8 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
         }
 
         // output layers
-        OutputLayer.Builder outputLayer1 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input2).lossFunction(lossFunction);
-        OutputLayer.Builder outputLayer2 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input1).lossFunction(lossFunction);
+        OutputLayer.Builder outputLayer1 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,32).lossFunction(lossFunction);
+        OutputLayer.Builder outputLayer2 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,32).lossFunction(lossFunction);
 
         wordCPC2VecConf = wordCPC2VecConf.addLayer("y",outputLayer1.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
         cpcVecNetConf = cpcVecNetConf.addLayer("y",outputLayer2.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
@@ -147,9 +150,38 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
         };
     }
 
+    public static double test(ComputationGraph net, INDArray features, INDArray labels) {
+        return 1d+net.score(new DataSet(features,labels));
+    }
+
+
+    public Pair<Double,Double> test(ComputationGraph net1, ComputationGraph net2, Iterator<DataSet> iterator) {
+        double d1 = 0;
+        double d2 = 0;
+        long count = 0;
+        while(iterator.hasNext()) {
+            DataSet ds = iterator.next();
+            INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(ds.getFeatureMatrix(),ds.getLabels()));
+            Pair<Double,Double> test = new Pair<>(test(net1,ds.getFeatures(),encoding),test(net2,ds.getLabels(),encoding));
+            d1+=test.getFirst();
+            d2+=test.getSecond();
+            count++;
+        }
+        if(count>0) {
+            d1/=count;
+            d2/=count;
+        }
+        return new Pair<>(d1,d2);
+    }
+
+
+
+
     @Override
     protected void train(INDArray features, INDArray labels) {
-        train(wordCpc2Vec, cpcVecNet, features, labels,trainWordCpc2Vec,trainCpcVecNet);
+        INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(features,labels));
+        train(wordCpc2Vec, features, encoding);
+        train(cpcVecNet,labels,encoding);
     }
 
     @Override

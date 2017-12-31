@@ -3,12 +3,15 @@ package models.similarity_models.combined_similarity_model;
 import data_pipeline.optimize.nn_optimization.CGRefactorer;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
+import lombok.Getter;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.graph.GraphVertex;
+import org.deeplearning4j.nn.conf.graph.LayerVertex;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
@@ -38,7 +41,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
     public static final String VAE_NETWORK = "vaeNet";
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_vae_data");
 
-    ComputationGraph vaeNetwork;
+    @Getter
+    private ComputationGraph vaeNetwork;
+    Integer encodingIdx;
 
 
     public CombinedVariationalAutoencoder(CombinedSimilarityVAEPipelineManager pipelineManager, String modelName) {
@@ -50,6 +55,15 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         return null;
     }
 
+    public INDArray encode(INDArray input) {
+        vaeNetwork.feedForward(input,false);
+        INDArray encoding = vaeNetwork.getVertex(String.valueOf(encodingIdx+1)).getInputs()[0];
+        System.out.println("encoding shape: "+encoding.shapeInfoToString());
+        return encoding;
+    }
+
+
+
     @Override
     protected Map<String, ComputationGraph> buildNetworksForTraining() {
         System.out.println("Build model....");
@@ -57,6 +71,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         int input1 = 32;
         int input2 = 32;
         int numHiddenLayers = 20;
+        encodingIdx = numHiddenLayers + 2;
 
         Updater updater = Updater.RMSPROP;
 
@@ -142,6 +157,11 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
             System.gc();
             return validationDataSets.stream().mapToDouble(ds->test(vaeNetwork,ds.getFeatures(),ds.getLabels())).average().orElse(Double.NaN);
         };
+    }
+
+    public static double test(ComputationGraph net, INDArray features1, INDArray features2) {
+        INDArray labels = DEFAULT_LABEL_FUNCTION.apply(features1, features2);
+        return 1d+net.score(new DataSet(labels,labels));
     }
 
     @Override

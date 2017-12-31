@@ -161,11 +161,9 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
         if(net2!=null&&train2)net2.fit(new DataSet(features2, labels));
     }
 
-    public static void train(ComputationGraph net1, ComputationGraph net2, INDArray features1, INDArray features2, boolean train1, boolean train2) {
-        MultiDataSet dataSet1 = new MultiDataSet(new INDArray[]{features1}, new INDArray[]{features2});
-        MultiDataSet dataSet2 = new MultiDataSet(new INDArray[]{features2}, new INDArray[]{features1});
-        if(net1!=null&&train1)net1.fit(dataSet1);
-        if(net2!=null&&train2)net2.fit(dataSet2);
+    public static void train(ComputationGraph net, INDArray features, INDArray labels) {
+        MultiDataSet dataSet = new MultiDataSet(new INDArray[]{features}, new INDArray[]{labels});
+        if(net!=null)net.fit(dataSet);
     }
 
     public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2) {
@@ -173,18 +171,12 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
         return new Pair<>(1d+net1.score(new DataSet(features1,labels)),1d+net2.score(new DataSet(features2,labels)));
     }
 
-    public static double test(ComputationGraph net, INDArray features1, INDArray features2) {
-        INDArray labels = DEFAULT_LABEL_FUNCTION.apply(features1, features2);
-        return 1d+net.score(new DataSet(labels,labels));
-    }
 
-
-    public static Pair<Double,Double> test(ComputationGraph net1, ComputationGraph net2, INDArray features1, INDArray features2) {
-        INDArray[] label1 = new INDArray[]{features2};
-        INDArray[] label2 = new INDArray[]{features1};
-        MultiDataSet dataSet1 = new MultiDataSet(new INDArray[]{features1}, label1);
-        MultiDataSet dataSet2 = new MultiDataSet(new INDArray[]{features2}, label2);
-        return new Pair<>(1d+net1.score(dataSet1)/label1.length,1d+net2.score(dataSet2)/label2.length);
+    public static Pair<Double,Double> test(ComputationGraph net1, ComputationGraph net2, INDArray features1, INDArray features2, INDArray labels) {
+        INDArray[] label = new INDArray[]{labels};
+        MultiDataSet dataSet1 = new MultiDataSet(new INDArray[]{features1}, label);
+        MultiDataSet dataSet2 = new MultiDataSet(new INDArray[]{features2}, label);
+        return new Pair<>(1d+net1.score(dataSet1)/label.length,1d+net2.score(dataSet2)/label.length);
     }
 
     public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, Iterator<DataSet> iterator) {
@@ -205,21 +197,5 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
         return new Pair<>(d1,d2);
     }
 
-    public static Pair<Double,Double> test(ComputationGraph net1, ComputationGraph net2, Iterator<DataSet> iterator) {
-        double d1 = 0;
-        double d2 = 0;
-        long count = 0;
-        while(iterator.hasNext()) {
-            DataSet ds = iterator.next();
-            Pair<Double,Double> test = test(net1,net2,ds.getFeatures(),ds.getLabels());
-            d1+=test.getFirst();
-            d2+=test.getSecond();
-            count++;
-        }
-        if(count>0) {
-            d1/=count;
-            d2/=count;
-        }
-        return new Pair<>(d1,d2);
-    }
+
 }
