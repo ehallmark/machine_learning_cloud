@@ -110,7 +110,7 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
                     } else {
                         train(ds.getFeatures(), ds.getLabels());
                     }
-                    totalSeenThisEpoch.getAndAdd(ds.getFeatures().rows());
+                    totalSeenThisEpoch.getAndAdd(ds.getFeatures().shape()[0]);
                     if (stoppingCondition.get()) break;
                 }
                 totalSeen.getAndAdd(totalSeenThisEpoch.get());
