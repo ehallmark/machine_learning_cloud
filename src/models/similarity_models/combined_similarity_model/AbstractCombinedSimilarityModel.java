@@ -52,6 +52,10 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
     protected abstract void train(INDArray features, INDArray labels);
     protected abstract Function<IterationListener,Void> setListenerFunction();
 
+    public Map<String,T> getNetworks() {
+        return net.getNameToNetworkMap();
+    }
+
     @Override
     public void train(int nEpochs) {
         if(this.net==null) {

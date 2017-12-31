@@ -34,8 +34,6 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
     public static final String CPC_VEC_NET = "cpcVecNet";
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_graph_data");
 
-    boolean trainWordCpc2Vec = true;
-    boolean trainCpcVecNet = true;
     ComputationGraph wordCpc2Vec;
     ComputationGraph cpcVecNet;
     CombinedVariationalAutoencoder autoencoder;

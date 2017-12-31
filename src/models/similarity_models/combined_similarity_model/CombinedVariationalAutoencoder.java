@@ -55,7 +55,10 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         return null;
     }
 
-    public INDArray encode(INDArray input) {
+    public synchronized INDArray encode(INDArray input) {
+        if(vaeNetwork==null) {
+            vaeNetwork = getNetworks().get(VAE_NETWORK);
+        }
         vaeNetwork.feedForward(input,false);
         INDArray encoding = vaeNetwork.getVertex(String.valueOf(encodingIdx+1)).getInputs()[0];
         System.out.println("encoding shape: "+encoding.shapeInfoToString());
