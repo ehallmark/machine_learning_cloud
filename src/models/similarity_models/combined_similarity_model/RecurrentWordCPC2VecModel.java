@@ -63,16 +63,6 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
                 .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build(), "x")
                 .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
-        ComputationGraphConfiguration.GraphBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
-                .updater(updater)
-                .learningRate(0.001)
-                .activation(Activation.TANH)
-                .graphBuilder()
-                .addInputs("x")
-                .setOutputs("y")
-                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build(), "x")
-                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input2+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
-
         int increment = 1;
 
         i+=2;
@@ -82,15 +72,12 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
         for(; i < t + numHiddenLayers*increment; i+=increment) {
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize);
             wordCPC2VecConf = wordCPC2VecConf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
-            cpcVecNetConf = cpcVecNetConf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
         }
 
         // output layers
-        OutputLayer.Builder outputLayer1 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,32).lossFunction(lossFunction);
-        OutputLayer.Builder outputLayer2 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,32).lossFunction(lossFunction);
+        OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,32).lossFunction(lossFunction);
 
-        wordCPC2VecConf = wordCPC2VecConf.addLayer("y",outputLayer1.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
-        cpcVecNetConf = cpcVecNetConf.addLayer("y",outputLayer2.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+        wordCPC2VecConf = wordCPC2VecConf.addLayer("y",outputLayer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
 
         recurrentWordCpc2Vec = new ComputationGraph(wordCPC2VecConf.build());
 

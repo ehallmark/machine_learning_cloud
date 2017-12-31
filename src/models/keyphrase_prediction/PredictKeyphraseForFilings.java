@@ -62,7 +62,7 @@ public class PredictKeyphraseForFilings {
                     Collection<CPC> cpcs = e.getValue();
                     List<INDArray> cpcVecs = cpcs.stream().filter(cpc->cpc.getNumParts()>=4).map(cpc->cpcVectors.get(cpc.getName())).filter(vec->vec!=null).collect(Collectors.toList());
                     if(cpcVecs.size()>0) {
-                        INDArray cpcVec = Transforms.unitVec(Nd4j.vstack().mean(0));
+                        INDArray cpcVec = Transforms.unitVec(Nd4j.vstack(cpcVecs).mean(0));
                         Map<String, Long> keyphraseCounts = cpcs.stream().flatMap(cpc -> cpcToKeyphraseMap.getOrDefault(cpc.getName(), Collections.emptySet()).stream()).collect(Collectors.groupingBy(i -> i, Collectors.counting()));
 
                         List<Pair<String, INDArray>> phrasesWithVectors = keyphraseCounts.keySet().stream().map(phrase -> {
@@ -102,7 +102,7 @@ public class PredictKeyphraseForFilings {
                         return null;
                     }
                     return new Pair<>(filing,technologies);
-                }).filter(pair->pair!=null).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond())));
+                }).filter(pair->pair!=null).collect(Collectors.toConcurrentMap(e->e.getFirst(),e->e.getSecond())));
 
 
         Database.trySaveObject(technologyMap,technologyMapFile);
