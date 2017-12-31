@@ -49,7 +49,7 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
         int hiddenLayerSize = 48;
         int inputSize = 32;
         int outputSize = 32;
-        int numHiddenLayers = 6;
+        int numHiddenLayers = 10;
 
         Updater updater = Updater.RMSPROP;
 
@@ -163,6 +163,7 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
     public void train(INDArray features, INDArray labels, INDArray featuresMask, INDArray labelsMask) {
         INDArray encoding = getEncodingTimeSeries(new DataSet(features,labels,featuresMask,labelsMask));
         train(recurrentWordCpc2Vec, features, encoding,featuresMask,labelsMask);
+        System.gc();
     }
 
     @Override
