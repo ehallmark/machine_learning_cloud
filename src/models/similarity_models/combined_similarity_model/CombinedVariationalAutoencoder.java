@@ -72,7 +72,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                 .addInputs("x")
                 .setOutputs("y")
                 .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1+input2,hiddenLayerSize).build(), "x")
-                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
+                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+input2+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
         int increment = 1;
 
