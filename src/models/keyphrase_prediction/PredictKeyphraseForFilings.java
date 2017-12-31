@@ -54,7 +54,7 @@ public class PredictKeyphraseForFilings {
         AtomicInteger cnt = new AtomicInteger(0);
 
 
-        technologyMap = filingToCPCMap.entrySet().parallelStream()
+        technologyMap = Collections.synchronizedMap(filingToCPCMap.entrySet().parallelStream()
                 .map(e->{
                     List<String> technologies = Collections.synchronizedList(new ArrayList<>(maxTags));
                     String filing = e.getKey();
@@ -93,6 +93,7 @@ public class PredictKeyphraseForFilings {
                         }
                     }
                     if(cnt.getAndIncrement()%10000==9999) {
+                        System.out.println("Example "+filing+": "+String.join("; ",technologies));
                         System.out.println("Finished "+cnt.get()+" out of "+filingToCPCMap.size()+". Missing: "+incomplete.get()+" / "+cnt.get());
                     }
 
@@ -101,7 +102,7 @@ public class PredictKeyphraseForFilings {
                         return null;
                     }
                     return new Pair<>(filing,technologies);
-                }).filter(pair->pair!=null).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
+                }).filter(pair->pair!=null).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond())));
 
 
         Database.trySaveObject(technologyMap,technologyMapFile);
