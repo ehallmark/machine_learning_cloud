@@ -1,11 +1,15 @@
 package models.similarity_models.combined_similarity_model;
 
+import cpc_normalization.CPC;
 import data_pipeline.optimize.nn_optimization.CGRefactorer;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import lombok.Getter;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
+import models.text_streaming.ESTextDataSetIterator;
+import org.deeplearning4j.berkeley.Triple;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
+import org.deeplearning4j.nn.api.layers.IOutputLayer;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -19,6 +23,7 @@ import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDist
 import org.deeplearning4j.nn.conf.layers.variational.LossFunctionWrapper;
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.graph.ComputationGraph;
+import org.deeplearning4j.nn.graph.vertex.VertexIndices;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
@@ -26,13 +31,21 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Created by Evan on 12/24/2017.
@@ -45,28 +58,187 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
     private ComputationGraph vaeNetwork;
     int encodingIdx = 22;
 
-
-    public CombinedVariationalAutoencoder(CombinedSimilarityVAEPipelineManager pipelineManager, String modelName) {
+    private double numDocs;
+    public CombinedVariationalAutoencoder(CombinedSimilarityVAEPipelineManager pipelineManager, String modelName, long numDocs) {
         super(pipelineManager,ComputationGraph.class,modelName);
+        this.numDocs=numDocs;
     }
 
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        return null;
+        final int numSamples = 32;
+        final int sampleLength = 16;
+        AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
+        Set<String> filings = Collections.synchronizedSet(new HashSet<>());
+        assets.forEach(asset->{
+            // get filing
+            String filing = assetToFilingMap.getApplicationDataMap().getOrDefault(asset,assetToFilingMap.getPatentDataMap().get(asset));
+            if(filing!=null) {
+                filings.add(filing);
+            }
+        });
+
+
+        Map<String,INDArray> filingCpcVaeEncoderPredictions = pipelineManager.getAssetToEncodingMap();
+        Map<String,Collection<CPC>> cpcMap = pipelineManager.cpcvaePipelineManager.getCPCMap();
+        Map<String,INDArray> word2VecMap = pipelineManager.wordCPC2VecPipelineManager.getOrLoadWordVectors();
+        Map<String,INDArray> cpc2VecMap = pipelineManager.wordCPC2VecPipelineManager.getOrLoadCPCVectors();
+
+        final Random rand = new Random(32);
+
+        Map<String,INDArray> finalPredictionsMap = Collections.synchronizedMap(new HashMap<>(filings.size()));
+
+        AtomicInteger incomplete = new AtomicInteger(0);
+        AtomicInteger cnt = new AtomicInteger(0);
+
+
+        Consumer<Triple<String,LocalDate,Collection<String>>> consumer = triple -> {
+            if(!filings.contains(triple.getFirst())) {
+                incomplete.getAndIncrement();
+                return;
+            }
+
+            INDArray cpcVaeVec = filingCpcVaeEncoderPredictions.get(triple.getFirst());
+            if(cpcVaeVec==null) {
+                incomplete.getAndIncrement();
+                return;
+            }
+            cpcVaeVec = Transforms.unitVec(cpcVaeVec);
+
+            // word info
+            List<String> samples = (List<String>)triple.getThird();
+            List<Pair<String,INDArray>> wordVectorPairs = samples.stream().limit(100).map(word->{
+                INDArray vec = word2VecMap.get(word);
+                if(vec==null) return null;
+                else return new Pair<>(word,vec);
+            }).filter(vec->vec!=null).collect(Collectors.toList());
+            List<INDArray> cpcVectors = cpcMap.getOrDefault(triple.getFirst(),Collections.emptySet()).stream().filter(cpc->cpc.getNumParts()>=3).limit(100).map(cpc->cpc2VecMap.get(cpc.getName())).filter(vec->vec!=null).collect(Collectors.toList());
+            if(wordVectorPairs.size()<=sampleLength||cpcVectors.isEmpty()) {
+                incomplete.getAndIncrement();
+                return;
+            }
+            INDArray features = Nd4j.create(numSamples,64);
+            for(int i = 0; i < numSamples; i++) {
+                int randWordIdx = rand.nextInt(wordVectorPairs.size()-sampleLength);
+                INDArray word2Vec = Transforms.unitVec(Nd4j.vstack(IntStream.range(0,sampleLength).mapToObj(j->{
+                    Pair<String,INDArray> wordVectorPair = wordVectorPairs.get(randWordIdx+j);
+                    String word = wordVectorPair.getFirst();
+                    double idf = Math.log(1d+(numDocs/Math.max(30,pipelineManager.word2Vec.getVocab().docAppearedIn(word))));
+                    return wordVectorPair.getSecond().mul(idf);
+                }).collect(Collectors.toList())).mean(0));
+                INDArray cpc2Vec = Transforms.unitVec(Nd4j.vstack(IntStream.range(0,3).mapToObj(j->cpcVectors.get(rand.nextInt(cpcVectors.size()))).collect(Collectors.toList())).mean(0));
+                features.putRow(i,Nd4j.hstack(word2Vec.mul(cpc2Vec),cpcVaeVec));
+            }
+            INDArray encoding = encode(features);
+
+            INDArray averageEncoding = Transforms.unitVec(encoding.mean(0));
+            finalPredictionsMap.put(triple.getFirst(),averageEncoding);
+
+            if(cnt.getAndIncrement()%10000==9999) {
+                System.out.println("Finished "+cnt.get()+" filings. Incomplete: "+incomplete.get()+ " / "+cnt.get());
+            }
+        };
+
+        ESTextDataSetIterator.iterateOverSentences(-1,consumer,null,true);
+
+        Map<String,INDArray> cpcVaeEncoderPredictions = pipelineManager.cpcvaePipelineManager.loadPredictions();
+
+        // add cpc vectors
+        cnt.set(0);
+        incomplete.set(0);
+        classCodes.forEach(cpc->{
+            INDArray vaeVec = cpcVaeEncoderPredictions.get(cpc);
+            if(vaeVec!=null) {
+                INDArray cpc2Vec = cpc2VecMap.get(cpc);
+                if(cpc2Vec!=null) {
+                    INDArray feature = Nd4j.hstack(Transforms.unitVec(cpc2Vec),Transforms.unitVec(vaeVec)).reshape(new int[]{1,64});
+                    INDArray encoding = encode(feature);
+                    finalPredictionsMap.put(cpc,Transforms.unitVec(encoding));
+                } else incomplete.getAndIncrement();
+            } else incomplete.getAndIncrement();
+
+            if(cnt.getAndIncrement()%10000==9999) {
+                System.out.println("Finished "+cnt.get()+" out of "+classCodes.size()+" cpcs. Incomplete: "+incomplete.get()+" / "+cnt.get());
+            }
+        });
+
+
+        // add assignee vectors
+      /*  cnt.set(0);
+        incomplete.set(0);
+        assignees.forEach(assignee->{
+            INDArray vaeVec = cpcVaeEncoderPredictions.get(assignee);
+            if(vaeVec!=null) {
+                INDArray cpc2Vec = cpc2VecMap.get(cpc);
+                if(cpc2Vec!=null) {
+                    INDArray feature = Nd4j.hstack(Transforms.unitVec(cpc2Vec),Transforms.unitVec(vaeVec)).reshape(new int[]{1,64});
+                    INDArray encoding = encode(feature);
+                    finalPredictionsMap.put(cpc,Transforms.unitVec(encoding));
+                } else incomplete.getAndIncrement();
+            } else incomplete.getAndIncrement();
+
+            if(cnt.getAndIncrement()%10000==9999) {
+                System.out.println("Finished "+cnt.get()+" out of "+classCodes.size()+" cpcs. Incomplete: "+incomplete.get()+" / "+cnt.get());
+            }
+        });*/
+
+        return finalPredictionsMap;
     }
 
     public synchronized INDArray encode(INDArray input) {
         if(vaeNetwork==null) {
             vaeNetwork = getNetworks().get(VAE_NETWORK);
         }
-        Map<String,INDArray> activations = vaeNetwork.feedForward(input,false);
+        // Map<String,INDArray> activations = vaeNetwork.feedForward(input,false);
+        return feedForwardToVertex(vaeNetwork,input,String.valueOf(encodingIdx)); // activations.get(String.valueOf(encodingIdx));
+    }
 
-        INDArray encoding = activations.get(String.valueOf(encodingIdx));
-        //activations.forEach((name,val)->{
-        //    System.out.println("Activation "+name+": "+val);
-        //});
-       // System.out.println("encoding shape: "+encoding.shapeInfoToString());
-        return encoding;
+    public static INDArray feedForwardToVertex(ComputationGraph encoder, INDArray input, String vertexName) {
+        encoder.setInput(0, input);
+        boolean excludeOutputLayers = false;
+        boolean train = false;
+        for(int i = 0; i < encoder.topologicalSortOrder().length; ++i) {
+            org.deeplearning4j.nn.graph.vertex.GraphVertex current = encoder.getVertices()[encoder.topologicalSortOrder()[i]];
+            VertexIndices[] var8;
+            int var9;
+            int var10;
+            VertexIndices v;
+            int vIdx;
+            int inputNum;
+            if(current.isInputVertex()) {
+                VertexIndices[] var14 = current.getOutputVertices();
+                INDArray var15 = encoder.getInputs()[current.getVertexIndex()];
+                if(current.getVertexName().equals(vertexName)) return var15;
+                var8 = var14;
+                var9 = var14.length;
+
+                for(var10 = 0; var10 < var9; ++var10) {
+                    v = var8[var10];
+                    vIdx = v.getVertexIndex();
+                    inputNum = v.getVertexEdgeNumber();
+                    encoder.getVertices()[vIdx].setInput(inputNum, var15.dup());
+                }
+            } else if(!excludeOutputLayers || !current.isOutputVertex() || !current.hasLayer() || !(current.getLayer() instanceof IOutputLayer)) {
+                INDArray out = current.doForward(train);
+                if(current.hasLayer()) {
+                    if(current.getVertexName().equals(vertexName)) return out;
+                }
+
+                VertexIndices[] outputsTo = current.getOutputVertices();
+                if(outputsTo != null) {
+                    var8 = outputsTo;
+                    var9 = outputsTo.length;
+
+                    for(var10 = 0; var10 < var9; ++var10) {
+                        v = var8[var10];
+                        vIdx = v.getVertexIndex();
+                        inputNum = v.getVertexEdgeNumber();
+                        encoder.getVertices()[vIdx].setInput(inputNum, out);
+                    }
+                }
+            }
+        }
+        return null;
     }
 
 

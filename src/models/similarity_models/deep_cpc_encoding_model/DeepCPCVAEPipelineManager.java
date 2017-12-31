@@ -79,7 +79,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
 
 
     @Override
-    public synchronized Map<String,? extends Collection<CPC>> getCPCMap() {
+    public synchronized Map<String,Collection<CPC>> getCPCMap() {
         if(cpcMap==null) {
             getHierarchy();
             getCpcToIdxMap();

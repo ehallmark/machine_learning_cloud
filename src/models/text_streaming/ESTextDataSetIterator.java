@@ -98,7 +98,7 @@ public class ESTextDataSetIterator {
             }
         };
 
-        iterateOverSentences(limit,consumer,null);
+        iterateOverSentences(limit,consumer,null,false);
 
         typeToWriterMap.forEach((type,writer)->{
             try {
@@ -129,7 +129,7 @@ public class ESTextDataSetIterator {
         return Stream.of(text.split("\\s+")).collect(Collectors.toList());
     }
 
-    public static void iterateOverSentences(int limit, Consumer<Triple<String,LocalDate,Collection<String>>> consumer, Function<Void,Void> finallyDo) {
+    public static void iterateOverSentences(int limit, Consumer<Triple<String,LocalDate,Collection<String>>> consumer, Function<Void,Void> finallyDo, boolean groupDocuments) {
         BoolQueryBuilder query = QueryBuilders.boolQuery()
                 .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(2039852)))
                 .filter(QueryBuilders.boolQuery()
@@ -162,9 +162,16 @@ public class ESTextDataSetIterator {
             } else filingDate = null;
 
             if(filing != null && filingDate!=null) {
-                collectDocumentsFrom(hit).forEach(doc->{
-                    consumer.accept(new Triple<>(filing, LocalDate.parse(filingDate.toString(), DateTimeFormatter.ISO_DATE), toList(doc)));
-                });
+                if(groupDocuments) {
+
+                    List<String> words = collectDocumentsFrom(hit).stream().flatMap(doc->toList(doc).stream()).collect(Collectors.toList());
+                    consumer.accept(new Triple<>(filing, LocalDate.parse(filingDate.toString(), DateTimeFormatter.ISO_DATE), words));
+
+                } else {
+                    collectDocumentsFrom(hit).forEach(doc -> {
+                        consumer.accept(new Triple<>(filing, LocalDate.parse(filingDate.toString(), DateTimeFormatter.ISO_DATE), toList(doc)));
+                    });
+                }
             }
             return null;
         };

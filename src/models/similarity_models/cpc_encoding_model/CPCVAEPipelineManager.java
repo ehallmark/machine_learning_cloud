@@ -30,7 +30,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<DataSetIterato
     private static final int BATCH_SIZE = 128;
     private static final File INPUT_DATA_FOLDER = new File("cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"cpc_vae_predictions/predictions_map.jobj");
-    protected Map<String,? extends Collection<CPC>> cpcMap;
+    protected Map<String,Collection<CPC>> cpcMap;
     @Setter
     protected CPCHierarchy hierarchy;
     protected Map<String,Integer> cpcToIdxMap;
@@ -92,11 +92,11 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<DataSetIterato
         return hierarchy;
     }
 
-    public synchronized Map<String,? extends Collection<CPC>> getCPCMap() {
+    public synchronized Map<String,Collection<CPC>> getCPCMap() {
         if(cpcMap==null) {
             Set<String> allAssets = new HashSet<>(Database.getAllPatentsAndApplications());
             getHierarchy();
-            Map<String,Set<String>> patentToCPCStringMap = new HashMap<>();
+            Map<String,Collection<String>> patentToCPCStringMap = new HashMap<>();
             patentToCPCStringMap.putAll(new AssetToCPCMap().getApplicationDataMap());
             patentToCPCStringMap.putAll(new AssetToCPCMap().getPatentDataMap());
             cpcMap = patentToCPCStringMap.entrySet().parallelStream()
