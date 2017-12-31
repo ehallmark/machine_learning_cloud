@@ -105,7 +105,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     @Override
     protected void initModel(boolean forceRecreateModel) {
         final double keyphraseTrimAlpha = 0.9;
-        final double minScore = 0.5d;
+        final double minScore = 0.6d;
         final int maxTags = 5;
 
         System.out.println("Starting to init model...");
@@ -116,15 +116,12 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             buildKeywordToLookupTableMap();
         }
 
-        System.out.println("Building keyword matrix...");
+        System.out.println("Building keyword vector pairs...");
         List<MultiStem> keywords = Collections.synchronizedList(new ArrayList<>(keywordToVectorLookupTable.keySet()));
-        List<Pair<MultiStem,INDArray>> keywordVectorPairs = Collections.synchronizedList(new ArrayList<>(keywords.size()));
-
+        INDArray keywordMatrix = Nd4j.create(keywords.size(),keywordToVectorLookupTable.values().stream().findAny().get().length());
         for(int i = 0; i < keywords.size(); i++) {
             INDArray vec = keywordToVectorLookupTable.get(keywords.get(i));
-            if(vec!=null) {
-                keywordVectorPairs.add(new Pair<>(keywords.get(i), Transforms.unitVec(vec)));
-            }
+            keywordMatrix.putRow(i,Transforms.unitVec(vec));
         }
 
 
@@ -133,6 +130,8 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
+
+        System.out.println("Starting predictions...");
 
         Map<String,Set<String>> predictions = Collections.synchronizedMap(new HashMap<>());
         cpcVectors.entrySet().parallelStream().forEach(e->{
@@ -143,12 +142,13 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             String cpc = e.getKey();
             INDArray cpcVec = Transforms.unitVec(e.getValue());
 
-            keywordVectorPairs.forEach(pair->{
-                double score = Transforms.cosineSim(pair.getSecond(),cpcVec);
-                if(score >= minScore) {
-                    heap.add(new WordFrequencyPair<>(pair.getFirst(), score));
+            float[] scores = keywordMatrix.mulRowVector(cpcVec).sum(1).data().asFloat();
+            for(int i = 0; i < scores.length; i++) {
+                double score = scores[i];
+                if(score>=minScore) {
+                    heap.add(new WordFrequencyPair<>(keywords.get(i), score));
                 }
-            });
+            }
 
             Set<String> tags = Collections.synchronizedSet(new HashSet<>(maxTags));
 
