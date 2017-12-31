@@ -106,12 +106,15 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     @Override
     protected void initModel(boolean forceRecreateModel) {
+        System.out.println("Starting to init model...");
+        if(multiStemSet==null) initStages(false,false);
+    }
+
+    @Override
+    public Map<String,Set<String>> predict(List<String> assets, List<String> assignees, List<String> cpcs) {
         final double keyphraseTrimAlpha = 0.9;
         final double minScore = 0.6d;
         final int maxTags = 5;
-
-        System.out.println("Starting to init model...");
-        if(multiStemSet==null) initStages(false,false);
 
         System.out.println("Loading keyword to vector table...");
         if(keywordToVectorLookupTable==null) {
@@ -195,11 +198,9 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             }
         });
 
-        System.out.println("saving results... size="+predictions.size());
-        savePredictions(predictions);
-
+        System.out.println("size="+predictions.size());
+        return predictions;
     }
-
 
     private void loadSimilarityNetworks() {
         String similarityModelName = CombinedSimilarityPipelineManager.MODEL_NAME;
