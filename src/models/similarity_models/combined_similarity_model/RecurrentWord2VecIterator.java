@@ -11,6 +11,7 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.ops.transforms.Transforms;
 
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Created by ehallmark on 10/27/17.
@@ -39,11 +41,13 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
     private DataSet currentDataSet;
     private int numDimensions;
     private double numDocs;
-    public RecurrentWord2VecIterator(SequenceIterator<VocabWord> documentIterator, long numDocs, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize) {
+    private int maxSamples;
+    public RecurrentWord2VecIterator(SequenceIterator<VocabWord> documentIterator, long numDocs, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize, int maxSamples) {
         this.documentIterator=documentIterator;
         this.vectorizer = new CPCSimilarityVectorizer(cpcEncodings,false,false,false);
         this.word2Vec=word2Vec;
         this.batch=batchSize;
+        this.maxSamples=maxSamples;
         this.numDocs = numDocs;
         this.numDimensions=cpcEncodings.values().stream().findAny().get().length();
         reset();
@@ -119,31 +123,38 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
         currentDataSet=null;
         int idx = 0;
         INDArray labels = Nd4j.create(batch,totalOutcomes());
-        INDArray features = Nd4j.create(batch,inputColumns());
+        INDArray features = Nd4j.create(batch,inputColumns(),maxSamples);
+        INDArray masks = Nd4j.create(batch,maxSamples);
         AtomicInteger wordsFoundPerBatch = new AtomicInteger(0);
         AtomicInteger totalWordsPerBatch = new AtomicInteger(0);
         while(documentIterator.hasMoreSequences()&&idx<batch) {
             Sequence<VocabWord> document = documentIterator.nextSequence();
             String label = document.getSequenceLabel().getLabel();
             INDArray labelVec = vectorizer.vectorFor(label);
+            double[] mask = new double[maxSamples];
             if (labelVec == null) continue;
             labelVec = Transforms.unitVec(labelVec);
-            Map<String, Integer> wordCounts = groupingBOWFunction.apply(document.getElements());
-            totalWordsPerBatch.getAndAdd(wordCounts.size());
-            List<INDArray> wordVectors = wordCounts.entrySet().stream().map(e -> {
-                double tf = e.getValue();
-                double idf = Math.log(1d+(numDocs/Math.max(30,word2Vec.getVocab().docAppearedIn(e.getKey()))));
-                INDArray phraseVec = getPhraseVector(word2Vec, e.getKey(),tf*idf);
-                if(phraseVec!=null) {
-                    wordsFoundPerBatch.getAndIncrement();
-                    return phraseVec;
+            List<VocabWord> vocabWords = document.getElements();
+            if(vocabWords.isEmpty()) continue;
+            totalWordsPerBatch.getAndAdd(vocabWords.size());
+            List<INDArray> wordVectors = IntStream.range(0,maxSamples).mapToObj(i->{
+                VocabWord vocabWord = vocabWords.size()>i?vocabWords.get(i):null;
+                if(vocabWord==null) {
+                    return Nd4j.zeros(totalOutcomes());
                 }
-                return null;
+                INDArray phraseVec = getPhraseVector(word2Vec, vocabWord.getLabel());
+                if(phraseVec!=null) {
+                    mask[i]=1d;
+                    wordsFoundPerBatch.getAndIncrement();
+                    return Transforms.unitVec(phraseVec);
+                }
+                return Nd4j.zeros(totalOutcomes());
             }).filter(vec->vec!=null).collect(Collectors.toList());
             if(wordVectors.isEmpty()) continue;
-            INDArray featureVec = Transforms.unitVec(Nd4j.vstack(wordVectors).mean(0));
+            INDArray featureVec = Nd4j.vstack(wordVectors).transpose();
             labels.putRow(idx,labelVec);
-            features.putRow(idx,featureVec);
+            masks.putRow(idx,Nd4j.create(mask));
+            features.put(new INDArrayIndex[]{NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()},featureVec);
             idx++;
         }
 
@@ -151,10 +162,11 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
 
         if(idx>0) {
             if(idx < batch) {
-                features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+                features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all(),NDArrayIndex.all());
                 labels = labels.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+                masks = masks.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
             }
-            currentDataSet = new DataSet(features,labels);
+            currentDataSet = new DataSet(features,labels,masks,masks);
         }
         return currentDataSet!=null;
     }
@@ -164,9 +176,7 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
         return next(batch());
     }
 
-    public static INDArray getPhraseVector(Word2Vec word2Vec, String phrase, double freq) {
-        INDArray vec = word2Vec.getLookupTable().vector(phrase);
-        if(vec==null) return null;
-        return vec.mul(freq);
+    public static INDArray getPhraseVector(Word2Vec word2Vec, String phrase) {
+        return word2Vec.getLookupTable().vector(phrase);
     }
 }

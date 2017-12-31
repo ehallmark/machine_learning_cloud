@@ -1,14 +1,20 @@
 package models.similarity_models.combined_similarity_model;
 
 import ch.qos.logback.classic.Level;
+import data_pipeline.vectorize.NoSaveDataSetManager;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
+import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
 import models.text_streaming.FileTextDataSetIterator;
+import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
+import seeding.Database;
 
 import java.io.File;
 
@@ -38,6 +44,12 @@ public class RecurrentWordCPC2VecPipelineManager extends AbstractCombinedSimilar
                 System.out.println("Error loading previous model: "+e.getMessage());
             }
         }
+    }
+
+
+    @Override
+    protected DataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, long numDocs, int batch) {
+        return new RecurrentWord2VecIterator(iterator,numDocs,getAssetToEncodingMap(),word2Vec,batch);
     }
 
 

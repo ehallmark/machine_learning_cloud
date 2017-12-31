@@ -12,6 +12,7 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
@@ -129,7 +130,7 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
         long count = 0;
         while(iterator.hasNext()) {
             DataSet ds = iterator.next();
-            INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(ds.getFeatureMatrix(),ds.getLabels()));
+            INDArray encoding = getEncodingTimeSeries(ds);
             d += test(net1,ds.getFeatures(),encoding,ds.getFeaturesMaskArray(),ds.getLabelsMaskArray());
             count++;
         }
@@ -139,10 +140,22 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
         return d;
     }
 
+    private INDArray getEncodingTimeSeries(DataSet ds) {
+        INDArray featureMean = ds.getFeatureMatrix().mean(2);
+        INDArray labelsMean = ds.getLabels();
+        featureMean.diviColumnVector(featureMean.norm2(1));
+        labelsMean.diviColumnVector(labelsMean.norm2(1));
+
+        INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(featureMean,labelsMean));
+        encoding.diviColumnVector(encoding.norm2(1));
+
+        encoding = encoding.broadcast(ds.getFeatureMatrix().shape());
+        return encoding;
+    }
 
     @Override
     public void train(INDArray features, INDArray labels, INDArray featuresMask, INDArray labelsMask) {
-        INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(features,labels));
+        INDArray encoding = getEncodingTimeSeries(new DataSet(features,labels,featuresMask,labelsMask));
         train(recurrentWordCpc2Vec, features, encoding,featuresMask,labelsMask);
     }
 

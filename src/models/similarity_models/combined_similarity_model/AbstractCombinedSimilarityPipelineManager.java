@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
     public static final String MODEL_NAME = "combined_similarity_model_small";
-    private static final int BATCH_SIZE = 16;
+    protected static final int BATCH_SIZE = 16;
 
     protected String modelName;
     protected Map<String,INDArray> assetToEncodingMap;
