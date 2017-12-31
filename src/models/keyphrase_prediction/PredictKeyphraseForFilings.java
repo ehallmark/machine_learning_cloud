@@ -90,20 +90,18 @@ public class PredictKeyphraseForFilings {
                                 technologies.add(0,keyword);
                             }
 
-
-
                         }
+                    }
+                    if(cnt.getAndIncrement()%10000==9999) {
+                        System.out.println("Finished "+cnt.get()+" out of "+filingToCPCMap.size()+". Missing: "+incomplete.get()+" / "+cnt.get());
                     }
 
                     if(technologies.isEmpty()) {
                         incomplete.getAndIncrement();
-                    }
-
-                    if(cnt.getAndIncrement()%10000==9999) {
-                        System.out.println("Finished "+cnt.get()+" out of "+filingToCPCMap.size()+". Missing: "+incomplete.get()+" / "+cnt.get());
+                        return null;
                     }
                     return new Pair<>(filing,technologies);
-                }).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
+                }).filter(pair->pair!=null).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
 
 
         Database.trySaveObject(technologyMap,technologyMapFile);
