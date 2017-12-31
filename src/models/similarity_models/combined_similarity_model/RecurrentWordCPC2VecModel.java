@@ -109,7 +109,7 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
         while(validationIterator.hasNext()&&valCount<20000) {
             DataSet ds = validationIterator.next();
             validationDataSets.add(ds);
-            valCount+=ds.getFeatures().rows();
+            valCount+=ds.getFeatures().shape()[0];
             //System.gc();
         }
 
