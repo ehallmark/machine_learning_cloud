@@ -61,7 +61,7 @@ public class RecurrentWordCPC2VecPipelineManager extends AbstractCombinedSimilar
 
     @Override
     public int getMaxSamples() {
-        return 10;
+        return 16;
     }
 
 
