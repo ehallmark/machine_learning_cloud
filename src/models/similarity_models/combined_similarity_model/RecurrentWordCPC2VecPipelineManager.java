@@ -54,6 +54,11 @@ public class RecurrentWordCPC2VecPipelineManager extends AbstractCombinedSimilar
         return new RecurrentWord2VecIterator(iterator,numDocs,getAssetToEncodingMap(),word2Vec,batch,getMaxSamples(), Collections.synchronizedSet(new HashSet<>(wordCPC2VecPipelineManager.getOrLoadCPCVectors().keySet())));
     }
 
+    @Override
+    public int getMaxSamples() {
+        return 10;
+    }
+
 
     @Override
     public File getDevFile() {
