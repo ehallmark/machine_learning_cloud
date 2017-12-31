@@ -164,23 +164,35 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
 
         // add assignee vectors
-      /*  cnt.set(0);
+        Map<String,List<String>> assigneeToCpcMap = null;
+        cnt.set(0);
         incomplete.set(0);
         assignees.forEach(assignee->{
             INDArray vaeVec = cpcVaeEncoderPredictions.get(assignee);
             if(vaeVec!=null) {
-                INDArray cpc2Vec = cpc2VecMap.get(cpc);
-                if(cpc2Vec!=null) {
-                    INDArray feature = Nd4j.hstack(Transforms.unitVec(cpc2Vec),Transforms.unitVec(vaeVec)).reshape(new int[]{1,64});
-                    INDArray encoding = encode(feature);
-                    finalPredictionsMap.put(cpc,Transforms.unitVec(encoding));
-                } else incomplete.getAndIncrement();
-            } else incomplete.getAndIncrement();
+                List<String> cpcs = assigneeToCpcMap.getOrDefault(assignee, Collections.emptyList()).stream().filter(cpc->cpc2VecMap.containsKey(cpc)).collect(Collectors.toList());
+                if(cpcs.size()>0) {
+                    INDArray features = Nd4j.create(numSamples,64);
+                    for(int i = 0; i < numSamples; i++) {
+                        List<INDArray> cpcVectors = IntStream.range(0, sampleLength).mapToObj(j -> cpc2VecMap.get(cpcs.get(rand.nextInt(cpcs.size())))).filter(vec -> vec != null).collect(Collectors.toList());
+                        INDArray feature = Nd4j.hstack(Transforms.unitVec(Nd4j.vstack(cpcVectors).mean(0)), Transforms.unitVec(vaeVec)).reshape(new int[]{1, 64});
+                        features.putRow(i,feature);
+                    }
+                    INDArray encoding = encode(features);
+                    finalPredictionsMap.put(assignee, Transforms.unitVec(encoding.mean(0)));
+
+                } else {
+                    incomplete.getAndIncrement();
+                }
+
+            } else {
+                incomplete.getAndIncrement();
+            }
 
             if(cnt.getAndIncrement()%10000==9999) {
-                System.out.println("Finished "+cnt.get()+" out of "+classCodes.size()+" cpcs. Incomplete: "+incomplete.get()+" / "+cnt.get());
+                System.out.println("Finished "+cnt.get()+" out of "+assignees.size()+" assignees. Incomplete: "+incomplete.get()+" / "+cnt.get());
             }
-        });*/
+        });
 
         return finalPredictionsMap;
     }
