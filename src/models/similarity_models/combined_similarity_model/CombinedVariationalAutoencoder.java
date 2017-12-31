@@ -101,7 +101,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         }
 
         // output layers
-        OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input2).lossFunction(lossFunction);
+        OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input1+input2).lossFunction(lossFunction);
 
         conf = conf.addLayer("y",outputLayer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
 
