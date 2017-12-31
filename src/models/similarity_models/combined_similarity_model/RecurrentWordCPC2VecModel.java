@@ -72,7 +72,7 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
         int t = i;
         //  hidden layers
         for(; i < t + numHiddenLayers*increment; i+=increment) {
-            org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize);
+            org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newGravesLSTMLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize);
             wordCPC2VecConf = wordCPC2VecConf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
         }
 
