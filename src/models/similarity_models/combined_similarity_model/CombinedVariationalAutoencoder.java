@@ -59,8 +59,12 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         if(vaeNetwork==null) {
             vaeNetwork = getNetworks().get(VAE_NETWORK);
         }
-        vaeNetwork.feedForward(input,false);
-        INDArray encoding = vaeNetwork.getVertex(String.valueOf(encodingIdx+1)).getInputs()[0];
+        Map<String,INDArray> activations = vaeNetwork.feedForward(input,false);
+
+        INDArray encoding = activations.get(String.valueOf(encodingIdx));
+        activations.forEach((name,val)->{
+            System.out.println("Activation "+name+": "+val);
+        });
         System.out.println("encoding shape: "+encoding.shapeInfoToString());
         return encoding;
     }
