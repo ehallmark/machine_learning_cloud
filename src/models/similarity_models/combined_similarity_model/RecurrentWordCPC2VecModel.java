@@ -149,7 +149,6 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
         INDArray featureMean = ds.getFeatureMatrix().mean(2);
         INDArray labelsMean = ds.getLabels();
         featureMean.diviColumnVector(featureMean.norm2(1));
-        labelsMean.diviColumnVector(labelsMean.norm2(1));
 
         INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(featureMean,labelsMean));
         encoding.diviColumnVector(encoding.norm2(1));
