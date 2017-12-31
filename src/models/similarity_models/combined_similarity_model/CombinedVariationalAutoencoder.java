@@ -39,9 +39,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_vae_data");
 
     ComputationGraph vaeNetwork;
-    int hiddenLayerSize = 96;
-    int input1 = 32;
-    int input2 = 32;
+
 
     public CombinedVariationalAutoencoder(CombinedSimilarityVAEPipelineManager pipelineManager, String modelName) {
         super(pipelineManager,ComputationGraph.class,modelName);
@@ -73,7 +71,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                 .graphBuilder()
                 .addInputs("x")
                 .setOutputs("y")
-                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build(), "x")
+                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1+input2,hiddenLayerSize).build(), "x")
                 .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
         int increment = 1;
