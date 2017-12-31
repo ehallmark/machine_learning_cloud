@@ -6,6 +6,7 @@ import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
@@ -44,9 +45,9 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
     @Override
     protected Map<String, ComputationGraph> buildNetworksForTraining() {
         int hiddenLayerSize = 48;
-        int input1 = 32;
-        int input2 = 32;
-        int numHiddenLayers = 30;
+        int inputSize = 32;
+        int outputSize = 32;
+        int numHiddenLayers = 10;
 
         Updater updater = Updater.RMSPROP;
 
@@ -61,8 +62,8 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
                 .graphBuilder()
                 .addInputs("x")
                 .setOutputs("y")
-                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build(), "x")
-                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
+                .addLayer(String.valueOf(i), NNOptimizer.newGravesLSTMLayer(inputSize,hiddenLayerSize).build(), "x")
+                .addLayer(String.valueOf(i+1), NNOptimizer.newGravesLSTMLayer(inputSize+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
         int increment = 1;
 
@@ -76,7 +77,7 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
         }
 
         // output layers
-        OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,32).lossFunction(lossFunction);
+        RnnOutputLayer.Builder outputLayer = NNOptimizer.newRNNOutputLayer(hiddenLayerSize+hiddenLayerSize,outputSize).lossFunction(lossFunction);
 
         wordCPC2VecConf = wordCPC2VecConf.addLayer("y",outputLayer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
 

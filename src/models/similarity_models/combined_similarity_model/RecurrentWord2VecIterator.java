@@ -26,14 +26,6 @@ import java.util.stream.IntStream;
  * Created by ehallmark on 10/27/17.
  */
 public class RecurrentWord2VecIterator implements DataSetIterator {
-    private static Function<List<VocabWord>,Map<String,Integer>> groupingBOWFunction = sequence -> {
-        return sequence.stream().collect(Collectors.groupingBy(word->word.getLabel(), Collectors.summingInt(label->(int)label.getElementFrequency())));
-    };
-    private static Function<List<VocabWord>,Map<String,Integer>> countBOWFunction = sequence -> {
-        return sequence.stream().collect(Collectors.toMap(word->word.getLabel(),word->(int)word.getElementFrequency()));
-    };
-
-
     private SequenceIterator<VocabWord> documentIterator;
     private Vectorizer vectorizer;
     private Word2Vec word2Vec;

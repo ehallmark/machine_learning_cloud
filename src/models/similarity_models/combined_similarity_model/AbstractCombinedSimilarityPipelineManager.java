@@ -77,6 +77,10 @@ public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultP
         return FileTextDataSetIterator.devFile2;
     }
 
+    protected int getMaxSamples() {
+        return 20;
+    }
+
     @Override
     protected void setDatasetManager() {
         File baseDir = FileTextDataSetIterator.BASE_DIR;
@@ -87,9 +91,9 @@ public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultP
         boolean fullText = baseDir.getName().equals(FileTextDataSetIterator.BASE_DIR.getName());
         System.out.println("Using full text: "+fullText);
 
-        WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,20, fullText);
-        WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,20, fullText);
-        WordCPCIterator devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,20, fullText);
+        WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,getMaxSamples(), fullText);
+        WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,getMaxSamples(), fullText);
+        WordCPCIterator devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,getMaxSamples(), fullText);
 
         trainIter.setRunVocab(false);
         testIter.setRunVocab(false);

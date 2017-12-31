@@ -49,7 +49,7 @@ public class RecurrentWordCPC2VecPipelineManager extends AbstractCombinedSimilar
 
     @Override
     protected DataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, long numDocs, int batch) {
-        return new RecurrentWord2VecIterator(iterator,numDocs,getAssetToEncodingMap(),word2Vec,batch);
+        return new RecurrentWord2VecIterator(iterator,numDocs,getAssetToEncodingMap(),word2Vec,batch,getMaxSamples());
     }
 
 
