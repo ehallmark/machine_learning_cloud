@@ -175,7 +175,7 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
 
     public static double test(MultiLayerNetwork net, INDArray features1, INDArray features2) {
         INDArray labels = DEFAULT_LABEL_FUNCTION.apply(features1, features2);
-        return 1d+net.score(new DataSet(features1,labels));
+        return 1d+net.score(new DataSet(labels,labels));
     }
 
 
