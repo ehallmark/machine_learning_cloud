@@ -7,7 +7,9 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
 import org.deeplearning4j.nn.conf.layers.variational.LossFunctionWrapper;
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
@@ -34,11 +36,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_vae_data");
 
     MultiLayerNetwork vaeNetwork;
-    int hiddenLayerSize = 96;
+    int hiddenLayerSize = 64;
     int input1 = 32;
     int input2 = 32;
-    int numHiddenEncodings = 5;
-    int numHiddenDecodings = 5;
 
     public CombinedVariationalAutoencoder(CombinedSimilarityVAEPipelineManager pipelineManager, String modelName) {
         super(pipelineManager,MultiLayerNetwork.class,modelName);
@@ -51,44 +51,32 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
     @Override
     protected Map<String, MultiLayerNetwork> buildNetworksForTraining() {
-        LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
-
-        int[] hiddenLayerEncoder = new int[numHiddenEncodings];
-        int[] hiddenLayerDecoder = new int[numHiddenDecodings];
-        for(int i = 0; i < numHiddenEncodings; i++) {
-            hiddenLayerEncoder[i]=hiddenLayerSize;
-        }
-        for(int i = 0; i < numHiddenDecodings; i++) {
-            hiddenLayerDecoder[i]=hiddenLayerSize;
-        }
-
-
-        MultiLayerConfiguration vaeNetworkConf =  new NeuralNetConfiguration.Builder()
-                .seed(235)
+        System.out.println("Build model....");
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                .seed(2352)
+                .iterations(1)
                 .learningRate(0.001)
-                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .updater(Updater.RMSPROP).rmsDecay(0.95)
-                //.updater(Updater.ADAM)
+                .updater(Updater.RMSPROP)
                 .miniBatch(true)
-                .weightInit(WeightInit.XAVIER)
-                //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
-                //.gradientNormalizationThreshold(1d)
-                //.regularization(true).l2(1e-4)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .list()
-                .layer(0, new VariationalAutoencoder.Builder()
-                        .encoderLayerSizes(hiddenLayerEncoder)
-                        .decoderLayerSizes(hiddenLayerDecoder)
-                        //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
-                        .activation(Activation.TANH)
-                        .pzxActivationFunction(Activation.IDENTITY)
-                        .lossFunction(Activation.IDENTITY,lossFunction)
-                        .nIn(input1+input2)
-                        .nOut((input1+input2)/2)
-                        .build()
-                )
-                .pretrain(true).backprop(false).build();
+                .layer(0, new DenseLayer.Builder().nIn(input1+input2).nOut(input1+input2).activation(Activation.SIGMOID).build())
+                .layer(1, new RBM.Builder().nIn(input1+input2).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(2, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(3, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(4, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(5, new RBM.Builder().nIn(hiddenLayerSize).nOut(32).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //encoding stops
+                .layer(6, new RBM.Builder().nIn(32).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //decoding starts
+                .layer(7, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(8, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(9, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(10, new OutputLayer.Builder(LossFunctions.LossFunction.COSINE_PROXIMITY).activation(Activation.TANH).nIn(hiddenLayerSize).nOut(input1+input2).build())
+                .pretrain(true).backprop(true)
+                .build();
 
-        vaeNetwork = new MultiLayerNetwork(vaeNetworkConf);
+        MultiLayerNetwork model = new MultiLayerNetwork(conf);
+        model.init();
+        vaeNetwork = new MultiLayerNetwork(conf);
 
         vaeNetwork.init();
 
@@ -122,12 +110,10 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         }
 
         System.out.println("Num validation datasets: "+validationDataSets.size());
-        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
-                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) vaeNetwork.getLayer(0);
 
         return (v) -> {
             System.gc();
-            return validationDataSets.stream().mapToDouble(ds->CPCVariationalAutoEncoderNN.test(DEFAULT_LABEL_FUNCTION.apply(ds.getFeatureMatrix(),ds.getLabels()),vae)).average().orElse(Double.NaN);
+            return validationDataSets.stream().mapToDouble(ds->test(vaeNetwork,ds.getFeatures(),ds.getLabels())).average().orElse(Double.NaN);
         };
     }
 
