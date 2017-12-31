@@ -65,7 +65,7 @@ public class CombinedSimilarityPipelineManager extends AbstractCombinedSimilarit
 
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = false;
+        boolean forceRecreateModels = true;
         boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
         boolean rebuildPrerequisites = false;
 
