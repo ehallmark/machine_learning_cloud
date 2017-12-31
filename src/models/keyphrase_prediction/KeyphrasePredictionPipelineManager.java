@@ -187,6 +187,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
 
             if(cnt.getAndIncrement()%1000==999) {
+                System.gc();
                 System.out.println("Best keywords for "+cpc+": "+String.join("; ",tags));
                 System.out.println("Finished "+cnt.get()+" out of "+cpcVectors.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
             }
