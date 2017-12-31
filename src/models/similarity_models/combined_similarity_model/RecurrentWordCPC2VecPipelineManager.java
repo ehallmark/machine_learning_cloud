@@ -17,6 +17,8 @@ import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashSet;
 
 /**
  * Created by ehallmark on 11/7/17.
@@ -49,7 +51,7 @@ public class RecurrentWordCPC2VecPipelineManager extends AbstractCombinedSimilar
 
     @Override
     protected DataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, long numDocs, int batch) {
-        return new RecurrentWord2VecIterator(iterator,numDocs,getAssetToEncodingMap(),word2Vec,batch,getMaxSamples());
+        return new RecurrentWord2VecIterator(iterator,numDocs,getAssetToEncodingMap(),word2Vec,batch,getMaxSamples(), Collections.synchronizedSet(new HashSet<>(wordCPC2VecPipelineManager.getOrLoadCPCVectors().keySet())));
     }
 
 
