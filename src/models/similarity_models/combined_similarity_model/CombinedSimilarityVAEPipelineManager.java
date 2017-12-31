@@ -58,9 +58,9 @@ public class CombinedSimilarityVAEPipelineManager extends AbstractCombinedSimila
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
         boolean rebuildDatasets = false;
-        boolean runModels = true;
+        boolean runModels = false;
         boolean forceRecreateModels = false;
-        boolean runPredictions = false; // NO PREDICTIONS FOR THIS MODEL
+        boolean runPredictions = true;
         boolean rebuildPrerequisites = false;
 
         int nEpochs = 5;
