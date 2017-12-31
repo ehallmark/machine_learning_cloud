@@ -14,6 +14,8 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.INDArrayIndex;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
@@ -150,8 +152,11 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
         INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(featureMean,labelsMean));
         encoding.diviColumnVector(encoding.norm2(1));
 
-        encoding = encoding.broadcast(ds.getFeatureMatrix().shape());
-        return encoding;
+        INDArray labels = Nd4j.create(ds.getFeatures().shape());
+        for(int i = 0; i < ds.getFeatures().shape()[2]; i++) {
+            labels.put(new INDArrayIndex[]{NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(i)},encoding);
+        }
+        return labels;
     }
 
     @Override
