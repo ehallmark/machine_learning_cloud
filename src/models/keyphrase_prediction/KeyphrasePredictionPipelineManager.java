@@ -135,8 +135,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
         Map<String,Set<String>> predictions = Collections.synchronizedMap(new HashMap<>());
         cpcVectors.entrySet().parallelStream().forEach(e->{
-            cnt.getAndIncrement();
-
             MinHeap<WordFrequencyPair<MultiStem,Double>> heap = new MinHeap<>(maxTags);
 
             String cpc = e.getKey();
@@ -188,7 +186,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             }
 
 
-            if(cnt.get()%1000==999) {
+            if(cnt.getAndIncrement()%1000==999) {
                 System.out.println("Best keywords for "+cpc+": "+String.join("; ",tags));
                 System.out.println("Finished "+cnt.get()+" out of "+cpcVectors.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
             }
