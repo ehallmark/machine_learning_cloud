@@ -80,7 +80,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
 
         Map<String,INDArray> filingCpcVaeEncoderPredictions = pipelineManager.getAssetToEncodingMap();
-        Map<String,Collection<CPC>> cpcMap = pipelineManager.cpcvaePipelineManager.getCPCMap();
+        Map<String,Collection<CPC>> cpcMap = pipelineManager.wordCPC2VecPipelineManager.getCPCMap();
         Map<String,INDArray> word2VecMap = pipelineManager.wordCPC2VecPipelineManager.getOrLoadWordVectors();
         Map<String,INDArray> cpc2VecMap = pipelineManager.wordCPC2VecPipelineManager.getOrLoadCPCVectors();
 
@@ -95,45 +95,45 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         Consumer<Triple<String,LocalDate,Collection<String>>> consumer = triple -> {
             if(!filings.contains(triple.getFirst())) {
                 incomplete.getAndIncrement();
-                return;
-            }
+            } else {
 
-            INDArray cpcVaeVec = filingCpcVaeEncoderPredictions.get(triple.getFirst());
-            if(cpcVaeVec==null) {
-                incomplete.getAndIncrement();
-                return;
-            }
-            cpcVaeVec = Transforms.unitVec(cpcVaeVec);
+                INDArray cpcVaeVec = filingCpcVaeEncoderPredictions.get(triple.getFirst());
+                if (cpcVaeVec == null) {
+                    incomplete.getAndIncrement();
+                } else {
+                    cpcVaeVec = Transforms.unitVec(cpcVaeVec);
 
-            // word info
-            List<String> samples = (List<String>)triple.getThird();
-            List<Pair<String,INDArray>> wordVectorPairs = samples.stream().limit(100).map(word->{
-                INDArray vec = word2VecMap.get(word);
-                if(vec==null) return null;
-                else return new Pair<>(word,vec);
-            }).filter(vec->vec!=null).collect(Collectors.toList());
-            List<INDArray> cpcVectors = cpcMap.getOrDefault(triple.getFirst(),Collections.emptySet()).stream().filter(cpc->cpc.getNumParts()>=3).limit(100).map(cpc->cpc2VecMap.get(cpc.getName())).filter(vec->vec!=null).collect(Collectors.toList());
-            if(wordVectorPairs.size()<=sampleLength||cpcVectors.isEmpty()) {
-                incomplete.getAndIncrement();
-                return;
-            }
-            INDArray features = Nd4j.create(numSamples,64);
-            for(int i = 0; i < numSamples; i++) {
-                int randWordIdx = rand.nextInt(wordVectorPairs.size()-sampleLength);
-                INDArray word2Vec = Transforms.unitVec(Nd4j.vstack(IntStream.range(0,sampleLength).mapToObj(j->{
-                    Pair<String,INDArray> wordVectorPair = wordVectorPairs.get(randWordIdx+j);
-                    String word = wordVectorPair.getFirst();
-                    double idf = Math.log(1d+(numDocs/Math.max(30,pipelineManager.word2Vec.getVocab().docAppearedIn(word))));
-                    return wordVectorPair.getSecond().mul(idf);
-                }).collect(Collectors.toList())).mean(0));
-                INDArray cpc2Vec = Transforms.unitVec(Nd4j.vstack(IntStream.range(0,3).mapToObj(j->cpcVectors.get(rand.nextInt(cpcVectors.size()))).collect(Collectors.toList())).mean(0));
-                features.putRow(i,Nd4j.hstack(word2Vec.mul(cpc2Vec),cpcVaeVec));
-            }
-            INDArray encoding = encode(features);
+                    // word info
+                    List<String> samples = (List<String>) triple.getThird();
+                    List<Pair<String, INDArray>> wordVectorPairs = samples.stream().limit(100).map(word -> {
+                        INDArray vec = word2VecMap.get(word);
+                        if (vec == null) return null;
+                        else return new Pair<>(word, vec);
+                    }).filter(vec -> vec != null).collect(Collectors.toList());
+                    List<INDArray> cpcVectors = cpcMap.getOrDefault(triple.getFirst(), Collections.emptySet()).stream().filter(cpc -> cpc.getNumParts() >= 3).limit(100).map(cpc -> cpc2VecMap.get(cpc.getName())).filter(vec -> vec != null).collect(Collectors.toList());
+                    if (wordVectorPairs.size() <= sampleLength || cpcVectors.isEmpty()) {
+                        incomplete.getAndIncrement();
+                    } else {
+                        INDArray features = Nd4j.create(numSamples, 64);
+                        for (int i = 0; i < numSamples; i++) {
+                            int randWordIdx = rand.nextInt(wordVectorPairs.size() - sampleLength);
+                            INDArray word2Vec = Transforms.unitVec(Nd4j.vstack(IntStream.range(0, sampleLength).mapToObj(j -> {
+                                Pair<String, INDArray> wordVectorPair = wordVectorPairs.get(randWordIdx + j);
+                                String word = wordVectorPair.getFirst();
+                                double idf = Math.log(1d + (numDocs / Math.max(30, pipelineManager.word2Vec.getVocab().docAppearedIn(word))));
+                                return wordVectorPair.getSecond().mul(idf);
+                            }).collect(Collectors.toList())).mean(0));
+                            INDArray cpc2Vec = Transforms.unitVec(Nd4j.vstack(IntStream.range(0, 3).mapToObj(j -> cpcVectors.get(rand.nextInt(cpcVectors.size()))).collect(Collectors.toList())).mean(0));
+                            features.putRow(i, Nd4j.hstack(word2Vec.mul(cpc2Vec), cpcVaeVec));
+                        }
+                        INDArray encoding = encode(features);
 
-            INDArray averageEncoding = Transforms.unitVec(encoding.mean(0));
-            finalPredictionsMap.put(triple.getFirst(),averageEncoding);
+                        INDArray averageEncoding = Transforms.unitVec(encoding.mean(0));
+                        finalPredictionsMap.put(triple.getFirst(), averageEncoding);
+                    }
+                }
 
+            }
             if(cnt.getAndIncrement()%10000==9999) {
                 System.out.println("Finished "+cnt.get()+" filings. Incomplete: "+incomplete.get()+ " / "+cnt.get());
             }
