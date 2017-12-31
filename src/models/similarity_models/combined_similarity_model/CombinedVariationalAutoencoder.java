@@ -31,19 +31,16 @@ import java.util.function.Function;
  */
 public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityModel<MultiLayerNetwork> {
     public static final String VAE_NETWORK = "vaeNet";
-    public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_model_data");
+    public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_vae_data");
 
     MultiLayerNetwork vaeNetwork;
-    int hiddenLayerSize = 128;
+    int hiddenLayerSize = 96;
     int input1 = 32;
     int input2 = 32;
-    int outputSize = input1+input2;
-    int numHiddenEncodings = 3;
-    int numHiddenDecodings = 3;
-    boolean saveModels = true;
-    Updater updater = Updater.RMSPROP;
+    int numHiddenEncodings = 5;
+    int numHiddenDecodings = 5;
 
-    public CombinedVariationalAutoencoder(CombinedSimilarityPipelineManager pipelineManager, String modelName) {
+    public CombinedVariationalAutoencoder(CombinedSimilarityVAEPipelineManager pipelineManager, String modelName) {
         super(pipelineManager,MultiLayerNetwork.class,modelName);
     }
 

@@ -38,9 +38,9 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
     };
     public static final Function2<INDArray,INDArray,INDArray> DEFAULT_LABEL_FUNCTION = (f1,f2) -> Nd4j.hstack(f1,f2);
 
-    protected CombinedSimilarityPipelineManager pipelineManager;
+    protected AbstractCombinedSimilarityPipelineManager pipelineManager;
     private Class<T> clazz;
-    public AbstractCombinedSimilarityModel(CombinedSimilarityPipelineManager pipelineManager, Class<T> clazz, String modelName) {
+    public AbstractCombinedSimilarityModel(AbstractCombinedSimilarityPipelineManager pipelineManager, Class<T> clazz, String modelName) {
         super(modelName);
         this.clazz=clazz;
         this.pipelineManager=pipelineManager;

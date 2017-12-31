@@ -28,18 +28,17 @@ import java.util.Map;
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class CombinedSimilarityPipelineManager extends AbstractCombinedSimilarityPipelineManager {
-    public static final String MODEL_NAME = "combined_similarity_model_small";
+public class CombinedSimilarityVAEPipelineManager extends AbstractCombinedSimilarityPipelineManager {
+    public static final String MODEL_NAME = "combined_similarity_vae";
     private static final File INPUT_DATA_FOLDER = new File("combined_similarity_model_input_data");
-    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"combined_similarity_model_predictions/predictions_map.jobj");
+    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"combined_similarity_vae_predictions/predictions_map.jobj");
 
-    public CombinedSimilarityPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, CPCVAEPipelineManager cpcvaePipelineManager) {
+    public CombinedSimilarityVAEPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, CPCVAEPipelineManager cpcvaePipelineManager) {
         super(INPUT_DATA_FOLDER,PREDICTION_DATA_FILE,modelName,word2Vec,wordCPC2VecPipelineManager,cpcvaePipelineManager);
-
     }
 
     public void initModel(boolean forceRecreateModels) {
-        if(model==null) model = new CombinedSimilarityComputationGraph(this,modelName);
+        if(model==null) model = new CombinedVariationalAutoencoder(this,modelName);
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
@@ -70,7 +69,7 @@ public class CombinedSimilarityPipelineManager extends AbstractCombinedSimilarit
         wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
 
         setLoggingLevel(Level.INFO);
-        CombinedSimilarityPipelineManager pipelineManager = new CombinedSimilarityPipelineManager(modelName, (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet(), wordCPC2VecPipelineManager, new CPCVAEPipelineManager(cpcEncodingModel));
+        CombinedSimilarityVAEPipelineManager pipelineManager = new CombinedSimilarityVAEPipelineManager(modelName, (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet(), wordCPC2VecPipelineManager, new CPCVAEPipelineManager(cpcEncodingModel));
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
