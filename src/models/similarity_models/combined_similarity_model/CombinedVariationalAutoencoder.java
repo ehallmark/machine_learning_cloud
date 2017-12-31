@@ -43,7 +43,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
     @Getter
     private ComputationGraph vaeNetwork;
-    Integer encodingIdx;
+    int encodingIdx = 22;
 
 
     public CombinedVariationalAutoencoder(CombinedSimilarityVAEPipelineManager pipelineManager, String modelName) {
@@ -78,7 +78,6 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         int input1 = 32;
         int input2 = 32;
         int numHiddenLayers = 20;
-        encodingIdx = numHiddenLayers + 2;
 
         Updater updater = Updater.RMSPROP;
 
