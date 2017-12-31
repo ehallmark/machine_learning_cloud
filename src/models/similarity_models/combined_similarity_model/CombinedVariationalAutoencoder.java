@@ -96,7 +96,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
         //  hidden layers
         for(; i < t + numHiddenLayers*increment; i+=increment) {
-            org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize);
+            org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(i==t?(hiddenLayerSize+32):(hiddenLayerSize+hiddenLayerSize),hiddenLayerSize);
             conf = conf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
         }
 
