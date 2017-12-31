@@ -5,6 +5,7 @@ import cpc_normalization.CPCHierarchy;
 import data_pipeline.helpers.CombinedModel;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
+import lombok.Getter;
 import models.keyphrase_prediction.models.DefaultModel;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
@@ -38,6 +39,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyphrase_prediction_model_predictions/predictions_map.jobj");
+    @Getter
     private static Map<MultiStem,INDArray> keywordToVectorLookupTable;
     private Set<MultiStem> multiStemSet;
     private static MultiLayerNetwork filingToEncodingNet;
