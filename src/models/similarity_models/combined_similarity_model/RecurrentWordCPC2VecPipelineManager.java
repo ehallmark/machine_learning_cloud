@@ -50,7 +50,7 @@ public class RecurrentWordCPC2VecPipelineManager extends AbstractCombinedSimilar
 
     @Override
     public int getBatchSize() {
-        return 8;
+        return 32;
     }
 
 

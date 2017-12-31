@@ -164,7 +164,7 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
     public void train(INDArray features, INDArray labels, INDArray featuresMask, INDArray labelsMask) {
         INDArray encoding = getEncodingTimeSeries(new DataSet(features,labels,featuresMask,labelsMask));
         train(recurrentWordCpc2Vec, features, encoding,featuresMask,labelsMask);
-        if(trainCnt.getAndIncrement()%100==0) System.gc();
+        //if(trainCnt.getAndIncrement()%100==0) System.gc();
         //System.gc();
     }
 
