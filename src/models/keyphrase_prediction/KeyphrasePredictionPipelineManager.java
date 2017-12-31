@@ -194,7 +194,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         });
 
         System.out.println("saving results... size="+predictions.size());
-        Database.trySaveObject(predictions,predictionsFile);
+        savePredictions(predictions);
 
     }
 
