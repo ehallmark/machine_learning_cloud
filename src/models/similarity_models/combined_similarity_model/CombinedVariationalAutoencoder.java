@@ -67,8 +67,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        final int numSamples = 32;
-        final int sampleLength = 8;
+        final int numSamples = 16;
+        final int sampleLength = 4;
+        final int assigneeSamples = 64;
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         Set<String> filings = Collections.synchronizedSet(new HashSet<>());
         assets.forEach(asset->{
@@ -90,10 +91,11 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
-
-        filings.forEach(filing->{
+        AtomicInteger nullVae = new AtomicInteger(0);
+        filings.parallelStream().forEach(filing->{
             INDArray cpcVaeVec = filingCpcVaeEncoderPredictions.get(filing);
             if (cpcVaeVec == null) {
+                nullVae.getAndIncrement();
                 incomplete.getAndIncrement();
             } else {
                 cpcVaeVec = Transforms.unitVec(cpcVaeVec);
@@ -111,12 +113,15 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                     INDArray encoding = encode(features);
 
                     INDArray averageEncoding = Transforms.unitVec(encoding.mean(0));
+                    if(averageEncoding.length()!=32) {
+                        throw new RuntimeException("Average encoding has length: "+averageEncoding.length());
+                    }
                     finalPredictionsMap.put(filing, averageEncoding);
                 }
 
             }
             if(cnt.getAndIncrement()%10000==9999) {
-                System.out.println("Finished "+cnt.get()+" filings. Incomplete: "+incomplete.get()+ " / "+cnt.get());
+                System.out.println("Finished "+cnt.get()+" filings. Incomplete: "+incomplete.get()+ " / "+cnt.get()+", Null Vae: "+nullVae.get()+" / "+incomplete.get());
             }
         });
 
@@ -156,8 +161,8 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
             if(vaeVec!=null) {
                 List<String> cpcs = assigneeToCpcMap.getOrDefault(assignee, Collections.emptyList()).stream().filter(cpc->cpc2VecMap.containsKey(cpc)).collect(Collectors.toList());
                 if(cpcs.size()>0) {
-                    INDArray features = Nd4j.create(numSamples,64);
-                    for(int i = 0; i < numSamples; i++) {
+                    INDArray features = Nd4j.create(assigneeSamples,64);
+                    for(int i = 0; i < assigneeSamples; i++) {
                         List<INDArray> cpcVectors = IntStream.range(0, sampleLength).mapToObj(j -> cpc2VecMap.get(cpcs.get(rand.nextInt(cpcs.size())))).filter(vec -> vec != null).collect(Collectors.toList());
                         INDArray feature = Nd4j.hstack(Transforms.unitVec(Nd4j.vstack(cpcVectors).mean(0)), Transforms.unitVec(vaeVec)).reshape(new int[]{1, 64});
                         features.putRow(i,feature);
