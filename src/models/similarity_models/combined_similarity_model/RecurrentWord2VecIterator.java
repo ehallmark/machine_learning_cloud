@@ -171,7 +171,7 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
             INDArray featureMasksView;
             INDArray labelMasksView;
             if(idx < batch) {
-                featuresView = features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all(),NDArrayIndex.all());
+                featuresView = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all(),NDArrayIndex.all());
                 labelsView = labels.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
                 featureMasksView = featureMasks.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
                 labelMasksView = labelMasks.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
