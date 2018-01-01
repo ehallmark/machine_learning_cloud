@@ -144,6 +144,7 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
                 if(vocabWord!=null) {
                     phraseVec = getPhraseVector(word2Vec, vocabWord.getLabel());
                     if (phraseVec != null) {
+                        phraseVec = Transforms.unitVec(phraseVec);
                         featureMask[i] = 1d;
                         lastIdx.set(i);
                         wordsFoundPerBatch.getAndIncrement();
@@ -159,7 +160,7 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
             labels.putRow(idx,labelVec);
             featureMasks.putRow(idx,Nd4j.create(featureMask));
             labelMasks.putRow(idx,Nd4j.create(labelMask));
-            features.put(new INDArrayIndex[]{NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()},featureVec.diviRowVector(featureVec.norm2(0)));
+            features.put(new INDArrayIndex[]{NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()},featureVec);
             idx++;
         }
 
