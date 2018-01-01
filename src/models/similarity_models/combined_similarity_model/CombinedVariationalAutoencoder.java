@@ -218,10 +218,10 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                 incomplete.getAndIncrement();
             }
 
+            if(cnt.get()%50000==49999) {
+                System.gc();
+            }
             if(cnt.getAndIncrement()%10000==9999) {
-                if(cnt.get()%50000==49999) {
-                    System.gc();
-                }
                 System.out.println("Finished "+cnt.get()+" out of "+assignees.size()+" assignees. Incomplete: "+incomplete.get()+" / "+cnt.get());
             }
         });
