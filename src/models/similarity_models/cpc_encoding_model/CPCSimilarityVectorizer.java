@@ -156,8 +156,8 @@ public class CPCSimilarityVectorizer implements Vectorizer {
 
 
         List<String> allAssets = new ArrayList<>(latestAssets==null?(Database.getAllPatentsAndApplications()):latestAssets);
-        List<String> allAssignees = new ArrayList<>(latestAssets==null?Database.getAssignees():latestAssets.stream().map(asset->Database.assigneeFor(asset)).filter(assignee->assignee!=null).collect(Collectors.toList()));
-        List<String> allClassCodes = new ArrayList<>(latestAssets==null?Database.getClassCodes():latestAssets.stream().flatMap(asset->Database.classificationsFor(asset).stream()).filter(cpc->cpc!=null).collect(Collectors.toList()));
+        List<String> allAssignees = new ArrayList<>(latestAssets==null?Database.getAssignees():latestAssets.stream().map(asset->Database.assigneeFor(asset)).filter(assignee->assignee!=null).distinct().collect(Collectors.toList()));
+        List<String> allClassCodes = new ArrayList<>(latestAssets==null?Database.getClassCodes():latestAssets.stream().flatMap(asset->Database.classificationsFor(asset).stream()).filter(cpc->cpc!=null).distinct().collect(Collectors.toList()));
 
         System.out.println("Testing encodings");
         if(latestAssets==null) {
