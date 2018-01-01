@@ -35,10 +35,10 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
     private int numDimensions;
     private int maxSamples;
     private Set<String> cpc2VecSet;
-    private INDArray labels = Nd4j.create(batch,totalOutcomes());
-    private INDArray features = Nd4j.create(batch,inputColumns(),maxSamples);
-    private INDArray featureMasks = Nd4j.create(batch,maxSamples);
-    private INDArray labelMasks = Nd4j.create(batch,maxSamples);
+    private INDArray labels;
+    private INDArray features;
+    private INDArray featureMasks;
+    private INDArray labelMasks;
     public RecurrentWord2VecIterator(SequenceIterator<VocabWord> documentIterator, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize, int maxSamples, Set<String> cpc2VecSet) {
         this.documentIterator=documentIterator;
         this.vectorizer = new CPCSimilarityVectorizer(cpcEncodings,false,false,false);
@@ -47,6 +47,10 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
         this.cpc2VecSet=cpc2VecSet;
         this.maxSamples=maxSamples;
         this.numDimensions=cpcEncodings.values().stream().findAny().get().length();
+        this.labels = Nd4j.create(batch,totalOutcomes());
+        this.features = Nd4j.create(batch,inputColumns(),maxSamples);
+        this.featureMasks = Nd4j.create(batch,maxSamples);
+        this.labelMasks = Nd4j.create(batch,maxSamples);
         reset();
     }
 
