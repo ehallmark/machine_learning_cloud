@@ -10,6 +10,7 @@ import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEP
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
+import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
@@ -132,6 +133,8 @@ public class CPCSimilarityVectorizer implements Vectorizer {
     }
 
     public void update() throws Exception {
+        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
+
         // test restore model
         System.out.println("Restoring model...");
         pipelineManager.runPipeline(false,false,false,false,-1,false,false);
