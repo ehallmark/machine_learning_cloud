@@ -33,12 +33,8 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "recurrent_word_cpc_2_vec_model_data");
 
     ComputationGraph recurrentWordCpc2Vec;
-    CombinedVariationalAutoencoder autoencoder;
-    AtomicInteger trainCnt = new AtomicInteger(0);
-
-    public RecurrentWordCPC2VecModel(RecurrentWordCPC2VecPipelineManager pipelineManager, String modelName, CombinedVariationalAutoencoder autoencoder) {
+    public RecurrentWordCPC2VecModel(RecurrentWordCPC2VecPipelineManager pipelineManager, String modelName) {
         super(pipelineManager,ComputationGraph.class,modelName);
-        this.autoencoder=autoencoder;
     }
 
     @Override
@@ -151,18 +147,12 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
     }
 
     private INDArray getEncodingTimeSeries(DataSet ds) {
-        INDArray featureMean = ds.getFeatureMatrix().mean(2);
-        INDArray labelsMean = ds.getLabels();
-        featureMean.diviColumnVector(featureMean.norm2(1));
-
-        INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(featureMean,labelsMean));
-        encoding.diviColumnVector(encoding.norm2(1));
-
-        INDArray labels = Nd4j.create(ds.getFeatures().shape());
+        INDArray encodings = Nd4j.create(ds.getFeatures().shape());
+        INDArray encoding = ds.getLabels();
         for(int i = 0; i < ds.getFeatures().shape()[2]; i++) {
-            labels.put(new INDArrayIndex[]{NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(i)},encoding);
+            encodings.put(new INDArrayIndex[]{NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(i)},encoding);
         }
-        return labels;
+        return encodings;
     }
 
     @Override

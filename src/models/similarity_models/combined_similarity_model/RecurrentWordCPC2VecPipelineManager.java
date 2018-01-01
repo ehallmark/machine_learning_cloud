@@ -19,6 +19,7 @@ import seeding.Database;
 import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 
 /**
  * Created by ehallmark on 11/7/17.
@@ -28,6 +29,7 @@ public class RecurrentWordCPC2VecPipelineManager extends AbstractCombinedSimilar
     private static final File INPUT_DATA_FOLDER = new File("combined_similarity_model_input_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"recurrent_word_cpc_2_vec_model_predictions/predictions_map.jobj");
 
+    private static Map<String,INDArray> combinedVaePredictionsMap;
     public RecurrentWordCPC2VecPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, CPCVAEPipelineManager cpcvaePipelineManager) {
         super(INPUT_DATA_FOLDER,PREDICTION_DATA_FILE,modelName,word2Vec,wordCPC2VecPipelineManager,cpcvaePipelineManager);
 
@@ -35,9 +37,9 @@ public class RecurrentWordCPC2VecPipelineManager extends AbstractCombinedSimilar
 
     public void initModel(boolean forceRecreateModels) {
         CombinedSimilarityVAEPipelineManager vaePipelineManager = new CombinedSimilarityVAEPipelineManager(CombinedSimilarityVAEPipelineManager.MODEL_NAME,word2Vec,wordCPC2VecPipelineManager,cpcvaePipelineManager);
-        vaePipelineManager.runPipeline(false,false,false,false,-1,false);
+        combinedVaePredictionsMap = vaePipelineManager.loadPredictions();
 
-        if(model==null) model = new RecurrentWordCPC2VecModel(this,modelName,(CombinedVariationalAutoencoder)vaePipelineManager.getModel());
+        if(model==null) model = new RecurrentWordCPC2VecModel(this,modelName);
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
@@ -54,9 +56,10 @@ public class RecurrentWordCPC2VecPipelineManager extends AbstractCombinedSimilar
     }
 
 
+
     @Override
     protected DataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, long numDocs, int batch) {
-        return new RecurrentWord2VecIterator(iterator,getAssetToEncodingMap(),word2Vec,batch,getMaxSamples(), Collections.synchronizedSet(new HashSet<>(wordCPC2VecPipelineManager.getOrLoadCPCVectors().keySet())));
+        return new RecurrentWord2VecIterator(iterator,combinedVaePredictionsMap,word2Vec,batch,getMaxSamples(), Collections.synchronizedSet(new HashSet<>(wordCPC2VecPipelineManager.getOrLoadCPCVectors().keySet())));
     }
 
     @Override

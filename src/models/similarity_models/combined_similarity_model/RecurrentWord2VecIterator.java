@@ -35,6 +35,10 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
     private int numDimensions;
     private int maxSamples;
     private Set<String> cpc2VecSet;
+    private INDArray labels = Nd4j.create(batch,totalOutcomes());
+    private INDArray features = Nd4j.create(batch,inputColumns(),maxSamples);
+    private INDArray featureMasks = Nd4j.create(batch,maxSamples);
+    private INDArray labelMasks = Nd4j.create(batch,maxSamples);
     public RecurrentWord2VecIterator(SequenceIterator<VocabWord> documentIterator, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize, int maxSamples, Set<String> cpc2VecSet) {
         this.documentIterator=documentIterator;
         this.vectorizer = new CPCSimilarityVectorizer(cpcEncodings,false,false,false);
@@ -115,10 +119,7 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
     public boolean hasNext() {
         currentDataSet=null;
         int idx = 0;
-        INDArray labels = Nd4j.create(batch,totalOutcomes());
-        INDArray features = Nd4j.create(batch,inputColumns(),maxSamples);
-        INDArray featureMasks = Nd4j.create(batch,maxSamples);
-        INDArray labelMasks = Nd4j.create(batch,maxSamples);
+
         AtomicInteger wordsFoundPerBatch = new AtomicInteger(0);
         AtomicInteger totalWordsPerBatch = new AtomicInteger(0);
         while(documentIterator.hasMoreSequences()&&idx<batch) {
@@ -128,7 +129,6 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
             double[] featureMask = new double[maxSamples];
             double[] labelMask = new double[maxSamples];
             if (labelVec == null) continue;
-            labelVec = Transforms.unitVec(labelVec);
             List<VocabWord> vocabWords = document.getElements().stream().filter(word->!cpc2VecSet.contains(word.getLabel())).collect(Collectors.toList());
             if(vocabWords.isEmpty()) continue;
             totalWordsPerBatch.getAndAdd(vocabWords.size());
@@ -143,7 +143,6 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
                         featureMask[i] = 1d;
                         lastIdx.set(i);
                         wordsFoundPerBatch.getAndIncrement();
-                        phraseVec = Transforms.unitVec(phraseVec);
                     }
                 }
                 if(phraseVec==null) {
@@ -156,20 +155,30 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
             labels.putRow(idx,labelVec);
             featureMasks.putRow(idx,Nd4j.create(featureMask));
             labelMasks.putRow(idx,Nd4j.create(labelMask));
-            features.put(new INDArrayIndex[]{NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()},featureVec);
+            features.put(new INDArrayIndex[]{NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()},featureVec.diviRowVector(featureVec.norm2(0)));
             idx++;
         }
 
         //System.out.println("Words found: "+wordsFoundPerBatch.get() + " / "+totalWordsPerBatch.get());
 
         if(idx>0) {
+            INDArray featuresView;
+            INDArray labelsView;
+            INDArray featureMasksView;
+            INDArray labelMasksView;
             if(idx < batch) {
-                features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all(),NDArrayIndex.all());
-                labels = labels.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
-                featureMasks = featureMasks.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
-                labelMasks = labelMasks.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+                featuresView = features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all(),NDArrayIndex.all());
+                labelsView = labels.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+                featureMasksView = featureMasks.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+                labelMasksView = labelMasks.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+            } else {
+                featuresView = features;
+                labelsView = labels;
+                featureMasksView = featureMasks;
+                labelMasksView = labelMasks;
             }
-            currentDataSet = new DataSet(features,labels,featureMasks,labelMasks);
+            labelsView.diviColumnVector(labelsView.norm2(1));
+            currentDataSet = new DataSet(featuresView,labelsView,featureMasksView,labelMasksView);
         }
         return currentDataSet!=null;
     }
