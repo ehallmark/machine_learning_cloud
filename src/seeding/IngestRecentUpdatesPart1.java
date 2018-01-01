@@ -18,23 +18,12 @@ import java.util.stream.Collectors;
  * Created by Evan on 9/29/2017.
  */
 public class IngestRecentUpdatesPart1 {
-    static File newAssetsFile = new File("newest_assets.jobj");
     public static void main(String[] args) {
         String[] updates = new String[]{"-1","1","2","3","4","5","6","7","8","9","10","11"};
 
-        Collection<String> newAssets;
         try {
 
-            Collection<String> oldAssets = new HashSet<>();
-            oldAssets.addAll(new AssetToFilingMap().getPatentDataMap().keySet());
-            oldAssets.addAll(new AssetToFilingMap().getApplicationDataMap().keySet());
             UpdateAll.main(updates);
-            newAssets = new HashSet<>();
-            newAssets.addAll(new AssetToFilingMap().getPatentDataMap().keySet());
-            newAssets.addAll(new AssetToFilingMap().getApplicationDataMap().keySet());
-            newAssets.removeAll(oldAssets);
-            System.out.println("Num new assets: " + newAssets.size());
-            Database.trySaveObject(newAssets, newAssetsFile);
 
             try {
                 // add encodings
