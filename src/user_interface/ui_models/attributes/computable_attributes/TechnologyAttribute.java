@@ -1,6 +1,7 @@
 package user_interface.ui_models.attributes.computable_attributes;
 
 import models.keyphrase_prediction.KeywordModelRunner;
+import models.keyphrase_prediction.PredictKeyphraseForFilings;
 import models.keyphrase_prediction.models.Model;
 import seeding.Constants;
 import seeding.Database;
@@ -16,27 +17,22 @@ import java.util.stream.Stream;
  * Created by Evan on 6/17/2017.
  */
 public class TechnologyAttribute extends ComputableAttribute<List<String>> {
-    private static final Map<String,TechnologyAttribute> MAP = Collections.synchronizedMap(new HashMap<>());
+    private static TechnologyAttribute ATTR;
     private Map<String,List<String>> modelMap;
-    private Model model;
-    private TechnologyAttribute(Model model) {
+    private TechnologyAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp));
-        this.model=model;
     }
 
     @Override
     public AbstractAttribute clone() {
-        return new TechnologyAttribute(model);
+        return new TechnologyAttribute();
     }
 
-    public static TechnologyAttribute getOrCreate(Model model) {
-        if(MAP.containsKey(model.getModelName())) {
-            return MAP.get(model.getModelName());
-        } else {
-            TechnologyAttribute attr = new TechnologyAttribute(model);
-            MAP.put(model.getModelName(),attr);
-            return attr;
+    public static synchronized TechnologyAttribute getOrCreate() {
+        if(ATTR==null) {
+            ATTR = new TechnologyAttribute();
         }
+        return ATTR;
     }
 
     @Override
@@ -65,7 +61,7 @@ public class TechnologyAttribute extends ComputableAttribute<List<String>> {
         if(modelMap==null) {
             synchronized (this) {
                 if(modelMap==null) {
-                    modelMap = KeywordModelRunner.loadModelMap(model);
+                    modelMap = PredictKeyphraseForFilings.loadOrGetTechnologyMap();
                 }
             }
         }

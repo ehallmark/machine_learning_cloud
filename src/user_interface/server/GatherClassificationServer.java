@@ -30,7 +30,7 @@ import static spark.Spark.*;
  * Created by ehallmark on 11/1/16.
  */
 public class GatherClassificationServer {
-    private static ClassificationAttr techTagger = new TechnologyClassifier(TechnologyAttribute.getOrCreate(new NewestModel()));
+    private static ClassificationAttr techTagger = new TechnologyClassifier(TechnologyAttribute.getOrCreate());
     private static ClassificationAttr wipoTagger = new WIPOTechnologyClassifier();
     public static void StartServer() throws Exception {
         get("/predict_patents", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> techTagger.attributesFor(patents,tagLimit)));
