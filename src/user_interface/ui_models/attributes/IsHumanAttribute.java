@@ -39,7 +39,7 @@ public class IsHumanAttribute extends ComputableAssigneeAttribute<Boolean> {
     }
 
     @Override
-    public Boolean attributesFor(Collection<String> portfolio, int limit) {
+    public Boolean attributesFor(Collection<String> portfolio, int limit, Boolean isApp) {
         if(portfolio.isEmpty()) return null;
         String item = portfolio.stream().filter(i->i!=null).findAny().orElse(null);
         if(item == null) return null;
