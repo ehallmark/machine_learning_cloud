@@ -95,7 +95,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger nullVae = new AtomicInteger(0);
         final List<String> filingsWithVecs = filings.parallelStream().filter(filing->filingCpcVaeEncoderPredictions.containsKey(filing)).collect(Collectors.toList());
-        int batchSize = 256;
+        int batchSize = 512;
         final INDArray sampleVec = Nd4j.create(sampleLength,32);
         INDArray features = Nd4j.create(sampleLength*batchSize,64);
         IntStream.range(0,1+(filingsWithVecs.size()/batchSize)).forEach(i->{
