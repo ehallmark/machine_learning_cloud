@@ -145,10 +145,10 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                             throw new RuntimeException("Average encoding has length: " + averageEncoding.length());
                         }
                         finalPredictionsMap.put(label, averageEncoding);
+                        if(cnt.get()%50000==49999) {
+                            System.gc();
+                        }
                         if(cnt.getAndIncrement()%10000==9999) {
-                            if(cnt.get()%50000==49999) {
-                                System.gc();
-                            }
                             System.out.println("Finished "+cnt.get()+" filings out of "+filingsWithVecs.size()+". Incomplete: "+incomplete.get()+ " / "+cnt.get()+", Null Vae: "+nullVae.get()+" / "+incomplete.get());
                         }
                     }
@@ -178,10 +178,10 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                 } else incomplete.getAndIncrement();
             } else incomplete.getAndIncrement();
 
+            if(cnt.get()%50000==49999) {
+                System.gc();
+            }
             if(cnt.getAndIncrement()%10000==9999) {
-                if(cnt.get()%50000==49999) {
-                    System.gc();
-                }
                 System.out.println("Finished "+cnt.get()+" out of "+classCodes.size()+" cpcs. Incomplete: "+incomplete.get()+" / "+cnt.get());
             }
         });
