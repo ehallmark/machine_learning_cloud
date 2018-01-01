@@ -53,6 +53,8 @@ public class CombinedSimilarityVAEPipelineManager extends AbstractCombinedSimila
 
     public static synchronized CombinedSimilarityVAEPipelineManager getOrLoadManager() {
         if(MANAGER==null) {
+            Nd4j.setDataType(DataBuffer.Type.DOUBLE);
+
             String modelName = MODEL_NAME;
             String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
             String wordCpc2VecModel = WordCPC2VecPipelineManager.SMALL_MODEL_NAME;
