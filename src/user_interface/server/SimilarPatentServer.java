@@ -636,12 +636,12 @@ public class SimilarPatentServer {
     }
 
 
-    public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, Map<String,Vectorizer> vectorizers) {
-        List<String> applications = new AssetToFilingMap().getApplicationDataMap().keySet().stream().collect(Collectors.toList());
+    public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, Map<String,Vectorizer> vectorizers, Set<String> onlyAssets) {
+        List<String> applications = new AssetToFilingMap().getApplicationDataMap().keySet().stream().filter(asset->onlyAssets==null||onlyAssets.contains(asset)).collect(Collectors.toList());
         System.out.println("Num applications found: "+applications.size());
         handleItemsList(applications, attributes, PortfolioList.Type.applications,vectorizers);
         DataIngester.finishCurrentMongoBatch();
-        List<String> patents = new AssetToFilingMap().getPatentDataMap().keySet().stream().collect(Collectors.toList());
+        List<String> patents = new AssetToFilingMap().getPatentDataMap().keySet().stream().filter(asset->onlyAssets==null||onlyAssets.contains(asset)).collect(Collectors.toList());
         System.out.println("Num patents found: "+patents.size());
         handleItemsList(patents, attributes, PortfolioList.Type.patents,vectorizers);
     }

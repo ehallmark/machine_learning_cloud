@@ -83,7 +83,7 @@ public class UpdateAll {
                 } else if (arg.equals("10")) {
                     UpdateAssetGraphs.update(false);
                 } else if (arg.equals("11")) {
-                    UpdateExtraneousComputableAttributeData.main(args);
+                    UpdateExtraneousComputableAttributeData.update(null);
                 }
             }
         } finally {

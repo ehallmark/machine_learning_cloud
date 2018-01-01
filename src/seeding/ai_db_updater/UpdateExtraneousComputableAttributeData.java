@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 7/23/2017.
  */
 public class UpdateExtraneousComputableAttributeData {
-    public static void main(String[] args) {
+    public static void update(List<String> assets) {
         SimilarPatentServer.initialize(true,false);
 
         CPCVAEPipelineManager cpcvaePipelineManager = new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME);
@@ -32,7 +32,7 @@ public class UpdateExtraneousComputableAttributeData {
         List<ComputableAttribute<?>> computableAttributes = SimilarPatentServer.getAllComputableAttributes().stream().filter(a->!(a instanceof HiddenAttribute)).collect(Collectors.toCollection(ArrayList::new));
         computableAttributes.add(new NestedComputedCPCAttribute());
         // add cpc nested attr
-        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(computableAttributes,vectorizerMap);
+        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(computableAttributes,vectorizerMap,assets==null?null:Collections.synchronizedSet(new HashSet<>(assets)));
     }
 
 }

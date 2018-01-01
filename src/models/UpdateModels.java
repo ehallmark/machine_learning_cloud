@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 7/11/17.
@@ -30,7 +31,7 @@ public class UpdateModels {
     public static List<String> runModels(boolean rerunModels) throws Exception{
         // PRE DATA
         Database.main(null);
-        UpdateCompDBAndGatherData.update();
+        List<String> gatherCompdbAssets = UpdateCompDBAndGatherData.update();
         Database.main(null);
 
         // MODELS
@@ -45,6 +46,13 @@ public class UpdateModels {
             unknownAssets.removeAll(new OverallEvaluator(false).getPatentDataMap().keySet());
         }
         UpdateValueModels.updateLatest(unknownAssets);
-        return unknownAssets==null?null:unknownAssets.stream().collect(Collectors.toList());
+
+        if(unknownAssets==null) {
+            return gatherCompdbAssets;
+        } else if(gatherCompdbAssets==null) {
+            return unknownAssets.stream().collect(Collectors.toList());
+        } else {
+            return Stream.of(unknownAssets,gatherCompdbAssets).flatMap(list->list.stream()).collect(Collectors.toList());
+        }
     }
 }

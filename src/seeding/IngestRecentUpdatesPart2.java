@@ -38,7 +38,9 @@ public class IngestRecentUpdatesPart2 {
 
         // update mongo
         try {
-            UpdateExtraneousComputableAttributeData.main(args);
+            if(updates!=null) {
+                UpdateExtraneousComputableAttributeData.update(updates);
+            }
         } catch(Exception e) {
             System.out.println("Error updating mongo computable attrs...");
             e.printStackTrace();
@@ -46,7 +48,9 @@ public class IngestRecentUpdatesPart2 {
         }
 
         // update elasticsearch
-        updateElasticSearch(updates);
+        if(updates!=null) {
+            updateElasticSearch(updates);
+        }
 
         System.out.println("Updates completed successfully.");
     }

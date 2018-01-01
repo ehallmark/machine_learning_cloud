@@ -13,6 +13,6 @@ public class UpdateElasticSearch {
         //PatentGrantIterator applicationIterator = Constants.DEFAULT_PATENT_APPLICATION_ITERATOR;
         //applicationIterator.applyHandlers(new ElasticSearchHandler(PortfolioList.Type.applications));
 
-        UpdateExtraneousComputableAttributeData.main(args);
+        UpdateExtraneousComputableAttributeData.update(null);
     }
 }
