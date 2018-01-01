@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.vectorize.DataSetManager;
 import lombok.Getter;
+import lombok.Setter;
 import seeding.Database;
 
 import java.io.File;
@@ -24,6 +25,7 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
     protected File predictionsFile;
     @Getter
     protected TrainablePredictionModel<T,?> model;
+    @Setter
     private Map<String,T> predictions;
 
     protected DefaultPipelineManager(File dataFolder, File finalPredictionsFile) {

@@ -119,6 +119,12 @@ public class Database {
 		return all;
 	}
 
+	public static Collection<String> getAllFilings() {
+		Set<String> collection = Collections.synchronizedSet(new FilingToAssetMap().getPatentDataMap().keySet());
+		collection.addAll(new FilingToAssetMap().getApplicationDataMap().keySet());
+		return collection;
+	}
+
 	public static void ingestPairRecords(Map<Flag,String> data, String tableName) throws SQLException {
 		List<Map.Entry<Flag,String>> entries = data.entrySet().stream().collect(Collectors.toList());
 		String queryPrefix = "INSERT INTO "+tableName+" ("+String.join(",",entries.stream().map(e->e.getKey().dbName).collect(Collectors.toList()))+") VALUES ";

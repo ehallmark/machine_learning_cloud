@@ -32,7 +32,7 @@ public class CombinedSimilarityVAEPipelineManager extends AbstractCombinedSimila
     public static final String MODEL_NAME = "combined_similarity_vae";
     private static final File INPUT_DATA_FOLDER = new File("combined_similarity_model_input_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"combined_similarity_vae_predictions/predictions_map.jobj");
-
+    private static CombinedSimilarityVAEPipelineManager MANAGER;
     public CombinedSimilarityVAEPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, CPCVAEPipelineManager cpcvaePipelineManager) {
         super(INPUT_DATA_FOLDER,PREDICTION_DATA_FILE,modelName,word2Vec,wordCPC2VecPipelineManager,cpcvaePipelineManager);
     }
@@ -51,6 +51,21 @@ public class CombinedSimilarityVAEPipelineManager extends AbstractCombinedSimila
         }
     }
 
+    public static synchronized CombinedSimilarityVAEPipelineManager getOrLoadManager() {
+        if(MANAGER==null) {
+            String modelName = MODEL_NAME;
+            String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
+            String wordCpc2VecModel = WordCPC2VecPipelineManager.SMALL_MODEL_NAME;
+
+            WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(wordCpc2VecModel, -1, -1, -1);
+            wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
+
+            setLoggingLevel(Level.INFO);
+            MANAGER = new CombinedSimilarityVAEPipelineManager(modelName, (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet(), wordCPC2VecPipelineManager, new CPCVAEPipelineManager(cpcEncodingModel));
+        }
+        return MANAGER;
+    }
+
 
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
@@ -61,17 +76,9 @@ public class CombinedSimilarityVAEPipelineManager extends AbstractCombinedSimila
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
         boolean rebuildPrerequisites = false;
-
         int nEpochs = 5;
-        String modelName = MODEL_NAME;
-        String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
-        String wordCpc2VecModel = WordCPC2VecPipelineManager.SMALL_MODEL_NAME;
 
-        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(wordCpc2VecModel,-1,-1,-1);
-        wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
-
-        setLoggingLevel(Level.INFO);
-        CombinedSimilarityVAEPipelineManager pipelineManager = new CombinedSimilarityVAEPipelineManager(modelName, (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet(), wordCPC2VecPipelineManager, new CPCVAEPipelineManager(cpcEncodingModel));
+        CombinedSimilarityVAEPipelineManager pipelineManager = getOrLoadManager();
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 

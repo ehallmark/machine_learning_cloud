@@ -2,9 +2,11 @@ package models.similarity_models.cpc_encoding_model;
 
 import ch.qos.logback.classic.Level;
 import data_pipeline.models.TrainablePredictionModel;
+import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.pipeline_manager.PipelineManager;
 import lombok.Getter;
 import models.similarity_models.Vectorizer;
+import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEPipelineManager;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
@@ -15,6 +17,7 @@ import seeding.Constants;
 import seeding.Database;
 import org.nd4j.linalg.primitives.Pair;
 import tools.MinHeap;
+import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 
 import java.io.File;
 import java.util.*;
@@ -30,21 +33,18 @@ import java.util.stream.Stream;
 public class CPCSimilarityVectorizer implements Vectorizer {
     //private static final File vectorMapFile = new File(Constants.DATA_FOLDER+"signature_model_vector_map-depth4.jobj");
     //private static final File bestModelFile = new File("data/word_to_cpc_deep_nn_model_data/word_to_cpc_encoder_2017-11-17T07:37:15.921");
-    private static final PipelineManager pipelineManager = new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME);
-    private static Map<String,INDArray> DATA;
     private Map<String,INDArray> data;
     private boolean binarize;
     private boolean normalize;
     private boolean probability;
-    public CPCSimilarityVectorizer(boolean binarize, boolean normalize, boolean probability) {
-        this(getLookupTable(),binarize, normalize, probability);
-    }
-
-    public CPCSimilarityVectorizer(Map<String,INDArray> data, boolean binarize, boolean normalize, boolean probability) {
+    private DefaultPipelineManager<?,INDArray> pipelineManager;
+    private Function<Void,Collection<String>> getAllAssetsFunction;
+    public CPCSimilarityVectorizer(DefaultPipelineManager<?,INDArray> pipelineManager, boolean binarize, boolean normalize, boolean probability, Function<Void,Collection<String>> getAllAssetsFunction) {
         this.binarize=binarize;
         this.probability=probability;
+        this.getAllAssetsFunction=getAllAssetsFunction;
         this.normalize=normalize;
-        this.data=data;
+        this.pipelineManager=pipelineManager;
     }
 
     public INDArray vectorFor(String item) {
@@ -85,7 +85,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
     }
 
     private INDArray binarize(INDArray in) {
-        return in.gte(0.0);
+        return in.gt(0.0);
     }
 
     private INDArray normalize(INDArray in) {
@@ -96,30 +96,53 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         return Transforms.sigmoid(in,true);
     }
 
-    public synchronized static Map<String,INDArray> getLookupTable() {
-        //boolean notUpdatedYet = true;
-        if (DATA == null) {
-            //if(notUpdatedYet) { // TODO remove this (after update)
-            //    DATA = (Map<String, INDArray>) Database.tryLoadObject(vectorMapFile);
-            //} else {
-                DATA = (Map<String, INDArray>) Database.tryLoadObject(pipelineManager.getPredictionsFile());
-            //}
+    public synchronized Map<String,INDArray> getLookupTable() {
+        if (data == null) {
+            data = (Map<String, INDArray>) Database.tryLoadObject(pipelineManager.getPredictionsFile());
         }
-        return DATA;
+        return data;
     }
 
     public static void main(String[] args) throws Exception {
-        updateLatest(null);
+        updateLatest();
     }
 
-    public static void updateLatest(Collection<String> latestAssets) throws Exception {
-        // test restore model
-        String modelName = CPCVAEPipelineManager.MODEL_NAME;
-        int cpcDepth = CPCVAEPipelineManager.MAX_CPC_DEPTH;
+    public static void updateLatest() {
+        // update cpc
+        CPCVAEPipelineManager cpcvaePipelineManager = new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME);
+        CombinedSimilarityVAEPipelineManager combinedPipelineManager = CombinedSimilarityVAEPipelineManager.getOrLoadManager();
+        Collection<CPCSimilarityVectorizer> vectorizers = Arrays.asList(
+                new CPCSimilarityVectorizer(cpcvaePipelineManager,false,false,false,v->Database.getAllPatentsAndApplications()),
+                new CPCSimilarityVectorizer(combinedPipelineManager,false,false,false,v->Database.getAllFilings())
+        );
+        vectorizers.forEach(vectorizer->{
+            try {
+                vectorizer.update();
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
-        System.out.println("Restoring model: "+modelName);
-        CPCVariationalAutoEncoderNN clone = new CPCVariationalAutoEncoderNN((CPCVAEPipelineManager)pipelineManager,modelName,cpcDepth);
-        clone.loadBestModel();
+    public void update() throws Exception {
+        // test restore model
+        System.out.println("Restoring model...");
+        pipelineManager.runPipeline(false,false,false,false,-1,false,false);
+
+
+        Map<String,INDArray> previous = pipelineManager.loadPredictions();
+        Collection<String> latestAssets = null;
+        if(previous!=null&&previous.size()>0) {
+            List<String> unknownAssets = getAllAssetsFunction.apply(null)
+                    .parallelStream()
+                    .filter(asset->!previous.containsKey(asset))
+                    .collect(Collectors.toList());
+            if(unknownAssets.isEmpty()) {
+                return;
+            }
+            latestAssets = unknownAssets.stream().flatMap(asset->new FilingToAssetMap().getApplicationDataMap().getOrDefault(asset,new FilingToAssetMap().getPatentDataMap().getOrDefault(asset,Collections.singleton(asset))).stream())
+                    .distinct().collect(Collectors.toList());
+        }
 
 
         List<String> allAssets = new ArrayList<>(latestAssets==null?(Database.getAllPatentsAndApplications()):latestAssets);
@@ -129,17 +152,17 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         System.out.println("Testing encodings");
         if(latestAssets==null) {
             // not updating
-            DATA = clone.predict(allAssets,allAssignees,allClassCodes);
+            data = pipelineManager.predict(allAssets,allAssignees,allClassCodes);
         } else {
             // updating
-            DATA = getLookupTable();
-            clone.setPredictions(DATA);
-            DATA.putAll(clone.predict(allAssets,allAssignees,allClassCodes));
+            data = pipelineManager.updatePredictions(allAssets,allAssignees,allClassCodes);
         }
-        System.out.println("Num patent vectors found: "+DATA.size());
+        System.out.println("Num patent vectors found: "+data.size());
         System.out.println("Saving results...");
-        Database.trySaveObject(DATA,pipelineManager.getPredictionsFile());
-        System.out.println("Finished saving.");
+        if(data!=null&&data.size()>0) {
+            pipelineManager.savePredictions(data);
+            System.out.println("Finished saving.");
+        }
     }
 
 }

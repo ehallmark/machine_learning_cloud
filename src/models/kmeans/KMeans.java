@@ -4,6 +4,7 @@ import data_pipeline.helpers.Function2;
 import lombok.Getter;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -295,7 +296,7 @@ public class KMeans {
 
         private void recomputeMean() {
             if(!dataPoints.isEmpty()) {
-                mean = Nd4j.vstack(dataPoints.stream().map(dp -> dp.dataPoint).collect(Collectors.toList())).mean(0);
+                mean = Transforms.unitVec(Nd4j.vstack(dataPoints.stream().map(dp -> dp.dataPoint).collect(Collectors.toList())).mean(0));
             }
         }
 
@@ -306,13 +307,15 @@ public class KMeans {
     }
 
 
-    public static void main(String[] args) {
-        // test
-        KMeans kMeans = new KMeans(10,10, DistanceFunctions.L2_DISTANCE_FUNCTION);
+        public static void main(String[] args) {
+            // test
+            int k = 10;
+            int l = 2*k;
+            KMeans kMeans = new KMeans(k, l, DistanceFunctions.PRENORM_COSINE_DISTANCE_FUNCTION);
 
         Map<String,INDArray> dataMap = new HashMap<>();
-        for(int i = 0; i < 2000; i++) {
-            dataMap.put("v"+i, Nd4j.randn(new int[]{1,32}));
+        for(int i = 0; i < 10000; i++) {
+            dataMap.put("v"+i, Transforms.unitVec(Nd4j.randn(new int[]{1,32})));
         }
 
         kMeans.fit(dataMap, 20, false);

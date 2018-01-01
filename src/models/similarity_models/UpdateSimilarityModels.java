@@ -14,18 +14,13 @@ import java.util.stream.Collectors;
  */
 public class UpdateSimilarityModels {
     public static void main(String[] args) throws Exception {
-        Map<String,INDArray> lookupTable = CPCSimilarityVectorizer.getLookupTable();
-        List<String> unknownAssets = Database.getAllPatentsAndApplications()
-                .parallelStream()
-                .filter(asset->!lookupTable.containsKey(asset))
-                .collect(Collectors.toList());
-        updateLatest(unknownAssets);
+        updateLatest();
     }
 
-    private static void updateLatest(Collection<String> assets) throws Exception {
+    private static void updateLatest() throws Exception {
         // Update CPC encodings
         System.out.println("Updating cpc similarity vectorizer...");
-        CPCSimilarityVectorizer.updateLatest(assets);
+        CPCSimilarityVectorizer.updateLatest();
 
     }
 }
