@@ -48,10 +48,10 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
 
     @Override
     protected Map<String, ComputationGraph> buildNetworksForTraining() {
-        int hiddenLayerSize = 48;
+        int hiddenLayerSize = 32;
         int inputSize = 32;
         int outputSize = 32;
-        int numHiddenLayers = 10;
+        int numHiddenLayers = 8;
 
         Updater updater = Updater.RMSPROP;
 
