@@ -32,6 +32,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
@@ -72,14 +73,14 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         final int sampleLength = 4;
         final int assigneeSamples = 64;
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
-        Set<String> filings = Collections.synchronizedSet(new HashSet<>());
-        assets.forEach(asset->{
+        Collection<String> filings = Collections.synchronizedSet(new HashSet<>());
+        for(String asset : assets) {
             // get filing
             String filing = assetToFilingMap.getApplicationDataMap().getOrDefault(asset,assetToFilingMap.getPatentDataMap().get(asset));
             if(filing!=null) {
                 filings.add(filing);
             }
-        });
+        };
 
 
         Map<String,INDArray> filingCpcVaeEncoderPredictions = pipelineManager.getAssetToEncodingMap();
@@ -93,47 +94,58 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger nullVae = new AtomicInteger(0);
-        filings.forEach(filing->{
-            INDArray cpcVaeVec = filingCpcVaeEncoderPredictions.get(filing);
-           /* if (cpcVaeVec == null) {
-                List<String> appAndGrant = Collections.synchronizedList(new ArrayList<>(2));
-                appAndGrant.addAll(new FilingToAssetMap().getApplicationDataMap().getOrDefault(filing,Collections.emptyList()));
-                appAndGrant.addAll(new FilingToAssetMap().getPatentDataMap().getOrDefault(filing,Collections.emptyList()));
-                if(pipelineManager.cpcvaePipelineManager.getModel()==null) pipelineManager.cpcvaePipelineManager.runPipeline(false,false,false,false,-1,false);
-                List<INDArray> vecs = new ArrayList<>(pipelineManager.cpcvaePipelineManager.predict(appAndGrant, Collections.emptyList(), Collections.emptyList()).values());
-                if (vecs.size() > 0) {
-                    cpcVaeVec = Nd4j.vstack(vecs).mean(0);
-                }
-            } */
-            if(cpcVaeVec==null) {
-                nullVae.getAndIncrement();
-                incomplete.getAndIncrement();
-            } else {
-                cpcVaeVec = Transforms.unitVec(cpcVaeVec);
+        final List<String> filingsWithVecs = filings.parallelStream().filter(filing->filingCpcVaeEncoderPredictions.containsKey(filing)).collect(Collectors.toList());
+        IntStream.range(0,1+(filingsWithVecs.size()/128)).forEach(i->{
+            int start = i*128;
+            int end = Math.min(start+128,filingsWithVecs.size());
+            if(start<end) {
+                List<String> range = filingsWithVecs.subList(start,end);
+                List<INDArray> allFeatures = new ArrayList<>();
+                List<String> featureNames = new ArrayList<>();
 
-                // word info
-                List<String> cpcNames = cpcMap.getOrDefault(filing, Collections.emptySet()).stream().filter(cpc -> cpc.getNumParts() >= 3 && cpc2VecMap.containsKey(cpc.getName())).limit(100).map(cpc->cpc.getName()).collect(Collectors.toList());
-                if (cpcNames.isEmpty()) {
-                    incomplete.getAndIncrement();
-                } else {
-                    INDArray features = Nd4j.create(numSamples, 64);
-                    for (int i = 0; i < numSamples; i++) {
-                        INDArray cpc2Vec = Transforms.unitVec(Nd4j.vstack(IntStream.range(0, sampleLength).mapToObj(j -> cpc2VecMap.get(cpcNames.get(rand.nextInt(cpcNames.size())))).collect(Collectors.toList())).mean(0));
-                        features.putRow(i, Nd4j.hstack(cpc2Vec, cpcVaeVec));
+                range.forEach(filing-> {
+                    INDArray cpcVaeVec = filingCpcVaeEncoderPredictions.get(filing);
+
+                    // word info
+                    List<String> cpcNames = cpcMap.getOrDefault(filing, Collections.emptySet()).stream().filter(cpc -> cpc.getNumParts() >= 3 && cpc2VecMap.containsKey(cpc.getName())).limit(100).map(cpc -> cpc.getName()).collect(Collectors.toList());
+                    if (cpcNames.isEmpty()) {
+                        incomplete.getAndIncrement();
+                    } else {
+                        INDArray features = Nd4j.create(numSamples, 64);
+                        for (int j = 0; j < numSamples; j++) {
+                            INDArray cpc2Vec = Nd4j.vstack(IntStream.range(0, sampleLength).mapToObj(h -> cpc2VecMap.get(cpcNames.get(rand.nextInt(cpcNames.size())))).collect(Collectors.toList())).mean(0);
+                            features.putRow(j, Nd4j.hstack(cpc2Vec, cpcVaeVec));
+                        }
+
+                        allFeatures.add(features);
+                        featureNames.add(filing);
                     }
+                });
+
+                if(allFeatures.size()>0) {
+                    INDArray features = Nd4j.vstack(allFeatures);
+                    INDArray f1 = features.get(NDArrayIndex.all(),NDArrayIndex.interval(0,32));
+                    f1.diviColumnVector(f1.norm2(1));
+                    INDArray f2 = features.get(NDArrayIndex.all(),NDArrayIndex.interval(32,64));
+                    f2.diviColumnVector(f2.norm2(1));
+
                     INDArray encoding = encode(features);
 
-                    INDArray averageEncoding = Transforms.unitVec(encoding.mean(0));
-                    if(averageEncoding.length()!=32) {
-                        throw new RuntimeException("Average encoding has length: "+averageEncoding.length());
+                    for (int j = 0; j < allFeatures.size(); j++) {
+                        String label = featureNames.get(j);
+                        INDArray averageEncoding = Transforms.unitVec(encoding.get(NDArrayIndex.interval(j*numSamples, j*numSamples+numSamples), NDArrayIndex.all()).mean(0));
+                        if (averageEncoding.length() != 32) {
+                            throw new RuntimeException("Average encoding has length: " + averageEncoding.length());
+                        }
+                        finalPredictionsMap.put(label, averageEncoding);
+                        if(cnt.getAndIncrement()%10000==9999) {
+                            System.out.println("Finished "+cnt.get()+" filings out of "+filings.size()+". Incomplete: "+incomplete.get()+ " / "+cnt.get()+", Null Vae: "+nullVae.get()+" / "+incomplete.get());
+                        }
                     }
-                    finalPredictionsMap.put(filing, averageEncoding);
+
+                } else {
+                    incomplete.getAndIncrement();
                 }
-
-            }
-
-            if(cnt.getAndIncrement()%10000==9999) {
-                System.out.println("Finished "+cnt.get()+" filings out of "+filings.size()+". Incomplete: "+incomplete.get()+ " / "+cnt.get()+", Null Vae: "+nullVae.get()+" / "+incomplete.get());
             }
         });
 
