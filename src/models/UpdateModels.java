@@ -16,6 +16,8 @@ import user_interface.ui_models.attributes.computable_attributes.OverallEvaluato
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 7/11/17.
@@ -25,10 +27,10 @@ public class UpdateModels {
         runModels(false);
     }
 
-    public static void runModels(boolean rerunModels) throws Exception{
+    public static List<String> runModels(boolean rerunModels) throws Exception{
         // PRE DATA
         Database.main(null);
-        UpdateCompDBAndGatherData.main(null);
+        UpdateCompDBAndGatherData.update();
         Database.main(null);
 
         // MODELS
@@ -43,5 +45,6 @@ public class UpdateModels {
             unknownAssets.removeAll(new OverallEvaluator(false).getPatentDataMap().keySet());
         }
         UpdateValueModels.updateLatest(unknownAssets);
+        return unknownAssets==null?null:unknownAssets.stream().collect(Collectors.toList());
     }
 }

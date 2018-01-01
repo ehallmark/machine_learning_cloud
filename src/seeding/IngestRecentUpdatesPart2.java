@@ -25,30 +25,14 @@ import java.util.stream.Collectors;
 public class IngestRecentUpdatesPart2 {
     // Completes the initial seed into mongo
     public static void main(String[] args) {
-        File newAssetsFile = IngestRecentUpdatesPart1.newAssetsFile;
-        if(!newAssetsFile.exists()) throw new RuntimeException("New assets file does not exist...");
-
-        // update compdb and gather data
-        try {
-            UpdateCompDBAndGatherData.main(args);
-        } catch(Exception e) {
-            System.out.println("Error during compdb and gather update...");
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        // then update everything for the new assets
-        Collection<String> newAssets = (Collection<String>)Database.tryLoadObject(newAssetsFile);
-
-        // update elasticsearch
-        updateElasticSearch(newAssets);
-
         // run value models
+        List<String> updates;
         try {
-            UpdateModels.runModels(false);
+            updates = UpdateModels.runModels(false);
         } catch(Exception e) {
             System.out.println("Error during value models...");
             e.printStackTrace();
+            updates = null;
             System.exit(1);
         }
 
@@ -62,20 +46,24 @@ public class IngestRecentUpdatesPart2 {
         }
 
         // update elasticsearch
-        updateElasticSearch(newAssets);
+        updateElasticSearch(updates);
 
-        if(newAssetsFile.exists()) newAssetsFile.delete();
         System.out.println("Updates completed successfully.");
     }
 
     public static void updateElasticSearch(Collection<String> newAssets) {
         try {
-            List<String> filings = newAssets.parallelStream().map(asset->new AssetToFilingMap().getPatentDataMap().getOrDefault(asset,new AssetToFilingMap().getApplicationDataMap().get(asset))).filter(a->a!=null).collect(Collectors.toList());
-            List<String> assets = newAssets.stream().collect(Collectors.toList());
-            Document parentQuery = new Document("_id", new Document("$in",filings));
-            Document query = new Document("_id", new Document("$in",assets));
-            IngestMongoIntoElasticSearch.ingestByType(DataIngester.PARENT_TYPE_NAME, parentQuery);
-            IngestMongoIntoElasticSearch.ingestByType(DataIngester.TYPE_NAME, query);
+            if(newAssets==null) {
+                IngestMongoIntoElasticSearch.ingestByType(DataIngester.PARENT_TYPE_NAME);
+                IngestMongoIntoElasticSearch.ingestByType(DataIngester.TYPE_NAME);
+            } else {
+                List<String> filings = newAssets.parallelStream().map(asset -> new AssetToFilingMap().getPatentDataMap().getOrDefault(asset, new AssetToFilingMap().getApplicationDataMap().get(asset))).filter(a -> a != null).collect(Collectors.toList());
+                List<String> assets = newAssets.stream().collect(Collectors.toList());
+                Document parentQuery = new Document("_id", new Document("$in", filings));
+                Document query = new Document("_id", new Document("$in", assets));
+                IngestMongoIntoElasticSearch.ingestByType(DataIngester.PARENT_TYPE_NAME, parentQuery);
+                IngestMongoIntoElasticSearch.ingestByType(DataIngester.TYPE_NAME, query);
+            }
         } catch(Exception e) {
             System.out.println("Error during elasticsearch ingest...");
             e.printStackTrace();

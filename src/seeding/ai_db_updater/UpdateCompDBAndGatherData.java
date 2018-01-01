@@ -24,8 +24,8 @@ import java.util.stream.Stream;
 public class UpdateCompDBAndGatherData {
     static AssetToFilingMap assetToFilingMap;
 
-    public static void main(String[] args) {
-        Database.main(args);
+    public static List<String> update() {
+        Database.main(null);
         try {
             Database.loadCompDBData();
         } catch(Exception e) {
@@ -54,7 +54,7 @@ public class UpdateCompDBAndGatherData {
             Document query = new Document("_id", idMap);
             IngestMongoIntoElasticSearch.ingestByType(DataIngester.PARENT_TYPE_NAME, query);
         }
-
+        return Stream.of(gatherAssets,compDBAssets).flatMap(list->list.stream()).collect(Collectors.toList());
     }
 
     private static List<String> union(Collection<String> c1, Collection<String> c2) {

@@ -46,7 +46,7 @@ public class IngestMongoIntoElasticSearch {
         }
     }
 
-    private static void ingestByType(String type) {
+    public static void ingestByType(String type) {
         ingestByType(type, new Document());
     }
 
