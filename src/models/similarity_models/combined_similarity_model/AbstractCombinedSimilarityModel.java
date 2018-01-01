@@ -56,6 +56,10 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
         return net.getNameToNetworkMap();
     }
 
+    public int printIterations() {
+        return 500;
+    }
+
     @Override
     public void train(int nEpochs) {
         if(this.net==null) {
@@ -81,7 +85,7 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
             return null;
         };
 
-        final int printIterations = 500;
+        final int printIterations = printIterations();
         final AtomicBoolean stoppingCondition = new AtomicBoolean(false);
 
         System.gc();
