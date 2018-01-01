@@ -39,6 +39,7 @@ import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
+import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -67,7 +68,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        final int numSamples = 16;
+        final int numSamples = 8;
         final int sampleLength = 4;
         final int assigneeSamples = 64;
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
@@ -92,22 +93,31 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger nullVae = new AtomicInteger(0);
-        filings.parallelStream().forEach(filing->{
+        filings.forEach(filing->{
             INDArray cpcVaeVec = filingCpcVaeEncoderPredictions.get(filing);
             if (cpcVaeVec == null) {
+                List<String> appAndGrant = Collections.synchronizedList(new ArrayList<>(2));
+                appAndGrant.addAll(new FilingToAssetMap().getApplicationDataMap().getOrDefault(filing,Collections.emptyList()));
+                appAndGrant.addAll(new FilingToAssetMap().getPatentDataMap().getOrDefault(filing,Collections.emptyList()));
+                List<INDArray> vecs = new ArrayList<>(pipelineManager.cpcvaePipelineManager.predict(appAndGrant, Collections.emptyList(), Collections.emptyList()).values());
+                if (vecs.size() > 0) {
+                    cpcVaeVec = Nd4j.vstack(vecs).mean(0);
+                }
+            }
+            if(cpcVaeVec==null) {
                 nullVae.getAndIncrement();
                 incomplete.getAndIncrement();
             } else {
                 cpcVaeVec = Transforms.unitVec(cpcVaeVec);
 
                 // word info
-                List<INDArray> cpcVectors = cpcMap.getOrDefault(filing, Collections.emptySet()).stream().filter(cpc -> cpc.getNumParts() >= 3).limit(100).map(cpc -> cpc2VecMap.get(cpc.getName())).filter(vec -> vec != null).collect(Collectors.toList());
-                if (cpcVectors.isEmpty()) {
+                List<String> cpcNames = cpcMap.getOrDefault(filing, Collections.emptySet()).stream().filter(cpc -> cpc.getNumParts() >= 3 && cpc2VecMap.containsKey(cpc.getName())).limit(100).map(cpc->cpc.getName()).collect(Collectors.toList());
+                if (cpcNames.isEmpty()) {
                     incomplete.getAndIncrement();
                 } else {
                     INDArray features = Nd4j.create(numSamples, 64);
                     for (int i = 0; i < numSamples; i++) {
-                        INDArray cpc2Vec = Transforms.unitVec(Nd4j.vstack(IntStream.range(0, sampleLength).mapToObj(j -> cpcVectors.get(rand.nextInt(cpcVectors.size()))).collect(Collectors.toList())).mean(0));
+                        INDArray cpc2Vec = Transforms.unitVec(Nd4j.vstack(IntStream.range(0, sampleLength).mapToObj(j -> cpc2VecMap.get(cpcNames.get(rand.nextInt(cpcNames.size())))).collect(Collectors.toList())).mean(0));
                         features.putRow(i, Nd4j.hstack(cpc2Vec, cpcVaeVec));
                     }
                     INDArray encoding = encode(features);
@@ -120,8 +130,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                 }
 
             }
+
             if(cnt.getAndIncrement()%10000==9999) {
-                System.out.println("Finished "+cnt.get()+" filings. Incomplete: "+incomplete.get()+ " / "+cnt.get()+", Null Vae: "+nullVae.get()+" / "+incomplete.get());
+                System.out.println("Finished "+cnt.get()+" filings out of "+filings.size()+". Incomplete: "+incomplete.get()+ " / "+cnt.get()+", Null Vae: "+nullVae.get()+" / "+incomplete.get());
             }
         });
 
