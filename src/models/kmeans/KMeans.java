@@ -227,7 +227,6 @@ public class KMeans {
     }
 
     private void recomputeClusterAverages() {
-        System.gc();
         centroids.parallelStream().forEach(Centroid::recomputeMean);
         // rebuild global centroid matrix
         this.centroidMatrix = Nd4j.vstack(centroids.stream().map(centroid->centroid.mean).collect(Collectors.toList()));
@@ -236,7 +235,6 @@ public class KMeans {
     // TODO Most Computationally intensive part (speed this up!)
     private double reassignDataToClusters(boolean forceAssign) {
         AtomicInteger cnt = new AtomicInteger(0);
-        System.gc();
         return dataPoints.stream().mapToDouble(dataPoint->{
             Centroid centroid = findClosestCentroid(dataPoint,forceAssign);
             if(centroid!=null) {
@@ -248,7 +246,6 @@ public class KMeans {
             }
             if(cnt.getAndIncrement()%10000==9999) {
                 System.out.print("-");
-                System.gc();
             }
              return dataPoint.squareDist;
         }).sum();

@@ -32,6 +32,7 @@ public abstract class IngestUSPTOIterator implements DateIterator {
     public void run(LocalDate startDate, Collection<LocalDate> failedDates) {
         List<RecursiveAction> tasks = new ArrayList<>();
         List<LocalDate> failedDatesList = new ArrayList<>(failedDates);
+        System.out.println("Starting to run ingest uspto iterator from "+startDate);
         while (startDate.isBefore(LocalDate.now())||failedDatesList.size()>0) {
             if(failedDatesList.size()>0) {
                 final LocalDate date = failedDatesList.remove(0);

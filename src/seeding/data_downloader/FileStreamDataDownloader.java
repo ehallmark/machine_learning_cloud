@@ -52,6 +52,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
 
     @Override
     public synchronized void pullMostRecentData() {
+        System.out.println("Pulling most recent data...");
         // pull zips only
         LocalDate dateToUse = null;
         try {
@@ -73,6 +74,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
                 throw new RuntimeException("Unable to parse date from current files...");
             }
         }
+        System.out.println("Date to start from: "+dateToUse);
         if(dateToUse!=null) zipDownloader.run(dateToUse,failedDates);
     }
 
