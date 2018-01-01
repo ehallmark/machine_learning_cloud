@@ -56,11 +56,11 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
         // pull zips only
         LocalDate dateToUse = null;
         try {
-            LocalDate date = LocalDate.parse(zipFileStream(file->false).sorted((f1,f2)->f2.getName().compareTo(f1.getName())).findFirst().orElse(null).getName(), DateTimeFormatter.ISO_DATE);
+            LocalDate date = LocalDate.parse(zipFileStream(file->true).sorted((f1,f2)->f2.getName().compareTo(f1.getName())).findFirst().orElse(null).getName(), DateTimeFormatter.ISO_DATE);
             dateToUse = date;
         } catch(Exception e) {
             try {
-                LocalDate date = zipFileStream(file->false).map(file->{
+                LocalDate date = zipFileStream(file->true).map(file->{
                     try {
                         return LocalDate.parse("20"+file.getName(), DateTimeFormatter.BASIC_ISO_DATE);
                     } catch(Exception e2) {
