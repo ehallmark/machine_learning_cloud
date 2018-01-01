@@ -150,6 +150,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
             }
         });
 
+        System.out.println("FINAL:: Finished "+cnt.get()+" filings out of "+filings.size()+". Incomplete: "+incomplete.get()+ " / "+cnt.get()+", Null Vae: "+nullVae.get()+" / "+incomplete.get());
+
+
         Map<String,INDArray> cpcVaeEncoderPredictions = pipelineManager.cpcvaePipelineManager.loadPredictions();
 
         // add cpc vectors
@@ -207,6 +210,8 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                 System.out.println("Finished "+cnt.get()+" out of "+assignees.size()+" assignees. Incomplete: "+incomplete.get()+" / "+cnt.get());
             }
         });
+
+        System.out.println("Final prediction map size: "+finalPredictionsMap.size());
 
         return finalPredictionsMap;
     }
