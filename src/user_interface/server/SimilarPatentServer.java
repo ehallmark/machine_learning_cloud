@@ -665,7 +665,7 @@ public class SimilarPatentServer {
                 Item item = new Item(label);
                 Set<String> attributesToRemove = new HashSet<>();
                 attributes.forEach(model -> {
-                    Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1);
+                    Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1,type.equals(PortfolioList.Type.applications));
                     AbstractAttribute parent = model.getParent();
                     boolean isAttrOfObject = parent!=null && parent.isObject();
                     if(isAttrOfObject&&!item.getDataMap().containsKey(parent.getName())) {

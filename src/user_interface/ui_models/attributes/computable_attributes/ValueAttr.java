@@ -29,6 +29,11 @@ public abstract class ValueAttr extends ComputableAttribute<Number> {
     // Returns value between 1 and 5
     @Override
     public Double attributesFor(Collection<String> portfolio, int n) {
+        return attributesFor(portfolio,n,null);
+    }
+
+    @Override
+    public Double attributesFor(Collection<String> portfolio, int n, Boolean isApp) {
         return portfolio.stream()
                 .collect(Collectors.averagingDouble(token->evaluate(new Item(token))));
     }

@@ -51,10 +51,10 @@ public class TechnologyClassifier extends ClassificationAttr {
     }
 
 
-    private List<Pair<String,Double>> technologyHelper(Collection<String> patents, int limit) {
+    private List<Pair<String,Double>> technologyHelper(Collection<String> patents, int limit, Boolean isApp) {
         if(patents.isEmpty()) return Collections.emptyList();
         return patents.stream().flatMap(item->{
-            Collection<String> attributes = attribute.attributesFor(Arrays.asList(item),1);
+            Collection<String> attributes = attribute.attributesFor(Arrays.asList(item),1,isApp);
             if(attributes==null) return Stream.empty();
             else return attributes.stream();
         }).filter(tech->tech!=null).collect(Collectors.groupingBy(tech->tech,Collectors.counting()))
@@ -64,7 +64,11 @@ public class TechnologyClassifier extends ClassificationAttr {
 
     @Override
     public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int n) {
-        return technologyHelper(portfolio,n);
+        return attributesFor(portfolio,n,null);
+    }
+
+    public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int n, Boolean isApp) {
+        return technologyHelper(portfolio,n, isApp);
     }
 
 }

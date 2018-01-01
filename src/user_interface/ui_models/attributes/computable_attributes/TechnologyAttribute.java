@@ -7,6 +7,7 @@ import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
@@ -57,7 +58,7 @@ public class TechnologyAttribute extends ComputableAttribute<List<String>> {
     }
 
     @Override
-    public List<String> attributesFor(Collection<String> items, int limit) {
+    public List<String> attributesFor(Collection<String> items, int limit, Boolean isApp) {
         if(modelMap==null) {
             synchronized (this) {
                 if(modelMap==null) {
@@ -66,7 +67,18 @@ public class TechnologyAttribute extends ComputableAttribute<List<String>> {
             }
         }
         if(items.isEmpty())return null;
-        List<String> techList = modelMap.get(items.stream().findAny().get());
+        String asset = items.stream().findAny().get();
+        String filing;
+        if(isApp==null) {
+            filing = new AssetToFilingMap().getApplicationDataMap().getOrDefault(asset,new AssetToFilingMap().getPatentDataMap().get(asset));
+        } else {
+            if(isApp) {
+                filing = new AssetToFilingMap().getApplicationDataMap().get(asset);
+            } else {
+                filing = new AssetToFilingMap().getPatentDataMap().get(asset);
+            }
+        }
+        List<String> techList = modelMap.getOrDefault(asset, filing==null?null:modelMap.get(filing));
         if(techList==null) return null;
         return techList.stream().map(tech->titleize(tech)).filter(t->t!=null).map(t->technologyCorrectionsMap.getOrDefault(t,t)).collect(Collectors.toList());
     }
