@@ -1,6 +1,7 @@
 package models.similarity_models;
 
 import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
+import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.Collection;
@@ -13,6 +14,6 @@ public class DefaultSimilarityModel extends BaseSimilarityModel {
 
     public DefaultSimilarityModel(Collection<String> candidateSet) {
         super(candidateSet.stream().map(str->new Item(str)).collect(Collectors.toList()),
-                new CPCSimilarityVectorizer(false, true, false));
+                new CPCSimilarityVectorizer(new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME), false, true, false,null));
     }
 }

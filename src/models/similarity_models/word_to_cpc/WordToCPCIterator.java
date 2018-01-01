@@ -37,10 +37,6 @@ public class WordToCPCIterator extends WordVectorizerToCPCVectorIterator {
         this.wordToIdxMap=wordToIdxMap;
     }
 
-    public WordToCPCIterator(LabelAwareIterator documentIterator, Map<String, INDArray> cpcEncodings, Map<String,Integer> wordToIdxMap, Map<String,Integer> docCountMap, int totalNumDocuments, int batchSize, boolean binarize, boolean normalize, boolean probability) {
-        super(batchSize,documentIterator,wordToIdxMap,docCountMap,totalNumDocuments,defaultTokenizer,new CPCSimilarityVectorizer(cpcEncodings, binarize, normalize, probability),CPCVariationalAutoEncoderNN.VECTOR_SIZE);
-        this.wordToIdxMap=wordToIdxMap;
-    }
 
     public void buildVocabMap(int minDocCount, int maxDocCount) {
         wordToDocCountMap = Collections.synchronizedMap(new HashMap<>());

@@ -1,6 +1,7 @@
 package stocks;
 
 import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
+import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
@@ -31,7 +32,7 @@ public class BuildTrainableDataset {
 
     public static void main(String[] args) throws Exception {
         File csvFile = BuildCSVDataset.csvOutputFile;
-        CPCSimilarityVectorizer vectorizer = new CPCSimilarityVectorizer(false,false,false);
+        CPCSimilarityVectorizer vectorizer = new CPCSimilarityVectorizer(new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME),false,false,false,null);
 
         // define constants
         final int nMonths = 3;

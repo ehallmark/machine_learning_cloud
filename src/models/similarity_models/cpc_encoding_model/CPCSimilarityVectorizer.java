@@ -47,9 +47,16 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         this.pipelineManager=pipelineManager;
     }
 
+    public CPCSimilarityVectorizer(Map<String,INDArray> data, boolean binarize, boolean normalize, boolean probability) {
+        this.binarize=binarize;
+        this.probability=probability;
+        this.normalize=normalize;
+        this.data=data;
+    }
+
     public INDArray vectorFor(String item) {
         if(item==null||item.isEmpty()) return null;
-        INDArray vec = data.get(item);
+        INDArray vec = getLookupTable().get(item);
         if(vec==null) return null;
         if(binarize) vec = binarize(vec);
         if(probability) vec = probability(vec);
