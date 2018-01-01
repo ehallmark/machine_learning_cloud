@@ -120,7 +120,7 @@ public class Database {
 	}
 
 	public static Collection<String> getAllFilings() {
-		Set<String> collection = Collections.synchronizedSet(new FilingToAssetMap().getPatentDataMap().keySet());
+		Set<String> collection = Collections.synchronizedSet(new HashMap<>(new FilingToAssetMap().getPatentDataMap().keySet()));
 		collection.addAll(new FilingToAssetMap().getApplicationDataMap().keySet());
 		return collection;
 	}

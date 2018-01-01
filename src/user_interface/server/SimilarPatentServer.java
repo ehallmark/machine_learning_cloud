@@ -636,14 +636,14 @@ public class SimilarPatentServer {
     }
 
 
-    public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, Vectorizer vectorizer) {
+    public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, Map<String,Vectorizer> vectorizers) {
         List<String> applications = new AssetToFilingMap().getApplicationDataMap().keySet().stream().collect(Collectors.toList());
         System.out.println("Num applications found: "+applications.size());
-        handleItemsList(applications, attributes, PortfolioList.Type.applications,vectorizer);
+        handleItemsList(applications, attributes, PortfolioList.Type.applications,vectorizers);
         DataIngester.finishCurrentMongoBatch();
         List<String> patents = new AssetToFilingMap().getPatentDataMap().keySet().stream().collect(Collectors.toList());
         System.out.println("Num patents found: "+patents.size());
-        handleItemsList(patents, attributes, PortfolioList.Type.patents,vectorizer);
+        handleItemsList(patents, attributes, PortfolioList.Type.patents,vectorizers);
     }
 
     public static Map<String,Float> vectorToElasticSearchObject(INDArray vector) {
@@ -655,7 +655,7 @@ public class SimilarPatentServer {
         return obj;
     }
 
-    public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, PortfolioList.Type type, Vectorizer vectorizer) {
+    public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, PortfolioList.Type type, Map<String,Vectorizer> vectorizers) {
         Map<String,String> assetToFiling = type.equals(PortfolioList.Type.patents) ? new AssetToFilingMap().getPatentDataMap() : new AssetToFilingMap().getApplicationDataMap();
         AtomicInteger cnt = new AtomicInteger(0);
         inputs.forEach(label->{
@@ -686,15 +686,17 @@ public class SimilarPatentServer {
                         attributesToRemove.add(model.getMongoDBName());
                     }
                 });
-                INDArray vec = vectorizer.vectorFor(filing);
-                if(vec==null) {
-                    vec = vectorizer.vectorFor(label); // default to regular asset name
-                }
-                if(vec!=null) {
-                    item.addData("vector_obj", vectorToElasticSearchObject(vec));
-                } else {
-                    attributesToRemove.add("vector_obj");
-                }
+                vectorizers.forEach((name,vectorizer)->{
+                    INDArray vec = vectorizer.vectorFor(filing);
+                    if(vec==null) {
+                        vec = vectorizer.vectorFor(label); // default to regular asset name
+                    }
+                    if(vec!=null) {
+                        item.addData(name, vectorToElasticSearchObject(vec));
+                    } else {
+                        attributesToRemove.add(name);
+                    }
+                });
 
                 if(item.getDataMap().size()>0 || attributesToRemove.size()>0) {
                     DataIngester.ingestItem(item, filing, attributesToRemove);
