@@ -69,9 +69,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        final int numSamples = 5;
+        final int numSamples = 4;
         final int sampleLength = 4;
-        final int assigneeSamples = 64;
+        final int assigneeSamples = 32;
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         Collection<String> filings = Collections.synchronizedSet(new HashSet<>());
         for(String asset : assets) {
@@ -95,7 +95,8 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger nullVae = new AtomicInteger(0);
         final List<String> filingsWithVecs = filings.parallelStream().filter(filing->filingCpcVaeEncoderPredictions.containsKey(filing)).collect(Collectors.toList());
-        int batchSize = 1000;
+        int batchSize = 512;
+        final INDArray sampleVec = Nd4j.create(sampleLength,32);
         IntStream.range(0,1+(filingsWithVecs.size()/batchSize)).forEach(i->{
             int start = i*batchSize;
             int end = Math.min(start+batchSize,filingsWithVecs.size());
@@ -112,13 +113,14 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                     if (cpcNames.isEmpty()) {
                         incomplete.getAndIncrement();
                     } else {
-                        INDArray features = Nd4j.create(numSamples, 64);
+                        final INDArray featuresVec = Nd4j.create(numSamples, 64);
                         for (int j = 0; j < numSamples; j++) {
-                            INDArray cpc2Vec = Nd4j.vstack(IntStream.range(0, sampleLength).mapToObj(h -> cpc2VecMap.get(cpcNames.get(rand.nextInt(cpcNames.size())))).collect(Collectors.toList())).mean(0);
-                            features.putRow(j, Nd4j.hstack(cpc2Vec, cpcVaeVec));
+                            IntStream.range(0, sampleLength).forEach(h -> sampleVec.putRow(h,cpc2VecMap.get(cpcNames.get(rand.nextInt(cpcNames.size())))));
+                            INDArray cpc2Vec = sampleVec.mean(0);
+                            featuresVec.putRow(j, Nd4j.hstack(cpc2Vec, cpcVaeVec));
                         }
 
-                        allFeatures.add(features);
+                        allFeatures.add(featuresVec);
                         featureNames.add(filing);
                     }
                 });
@@ -140,6 +142,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                         }
                         finalPredictionsMap.put(label, averageEncoding);
                         if(cnt.getAndIncrement()%10000==9999) {
+                            if(cnt.get()%100000==99999) {
+                                System.gc();
+                            }
                             System.out.println("Finished "+cnt.get()+" filings out of "+filingsWithVecs.size()+". Incomplete: "+incomplete.get()+ " / "+cnt.get()+", Null Vae: "+nullVae.get()+" / "+incomplete.get());
                         }
                     }
