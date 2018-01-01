@@ -51,7 +51,7 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
         int hiddenLayerSize = 48;
         int inputSize = 32;
         int outputSize = 32;
-        int numHiddenLayers = 16;
+        int numHiddenLayers = 10;
 
         Updater updater = Updater.RMSPROP;
 

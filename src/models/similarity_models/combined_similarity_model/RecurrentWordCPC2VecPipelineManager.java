@@ -50,18 +50,18 @@ public class RecurrentWordCPC2VecPipelineManager extends AbstractCombinedSimilar
 
     @Override
     public int getBatchSize() {
-        return 32;
+        return 16;
     }
 
 
     @Override
     protected DataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, long numDocs, int batch) {
-        return new RecurrentWord2VecIterator(iterator,numDocs,getAssetToEncodingMap(),word2Vec,batch,getMaxSamples(), Collections.synchronizedSet(new HashSet<>(wordCPC2VecPipelineManager.getOrLoadCPCVectors().keySet())));
+        return new RecurrentWord2VecIterator(iterator,getAssetToEncodingMap(),word2Vec,batch,getMaxSamples(), Collections.synchronizedSet(new HashSet<>(wordCPC2VecPipelineManager.getOrLoadCPCVectors().keySet())));
     }
 
     @Override
     public int getMaxSamples() {
-        return 16;
+        return 8;
     }
 
 

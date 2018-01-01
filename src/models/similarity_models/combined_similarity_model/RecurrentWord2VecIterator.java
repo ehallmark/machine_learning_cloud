@@ -33,17 +33,15 @@ public class RecurrentWord2VecIterator implements DataSetIterator {
     private int batch;
     private DataSet currentDataSet;
     private int numDimensions;
-    private double numDocs;
     private int maxSamples;
     private Set<String> cpc2VecSet;
-    public RecurrentWord2VecIterator(SequenceIterator<VocabWord> documentIterator, long numDocs, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize, int maxSamples, Set<String> cpc2VecSet) {
+    public RecurrentWord2VecIterator(SequenceIterator<VocabWord> documentIterator, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize, int maxSamples, Set<String> cpc2VecSet) {
         this.documentIterator=documentIterator;
         this.vectorizer = new CPCSimilarityVectorizer(cpcEncodings,false,false,false);
         this.word2Vec=word2Vec;
         this.batch=batchSize;
         this.cpc2VecSet=cpc2VecSet;
         this.maxSamples=maxSamples;
-        this.numDocs = numDocs;
         this.numDimensions=cpcEncodings.values().stream().findAny().get().length();
         reset();
     }

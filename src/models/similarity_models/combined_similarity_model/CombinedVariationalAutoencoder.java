@@ -99,6 +99,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                 List<String> appAndGrant = Collections.synchronizedList(new ArrayList<>(2));
                 appAndGrant.addAll(new FilingToAssetMap().getApplicationDataMap().getOrDefault(filing,Collections.emptyList()));
                 appAndGrant.addAll(new FilingToAssetMap().getPatentDataMap().getOrDefault(filing,Collections.emptyList()));
+                if(pipelineManager.cpcvaePipelineManager.getModel()==null) pipelineManager.cpcvaePipelineManager.runPipeline(false,false,false,false,-1,false);
                 List<INDArray> vecs = new ArrayList<>(pipelineManager.cpcvaePipelineManager.predict(appAndGrant, Collections.emptyList(), Collections.emptyList()).values());
                 if (vecs.size() > 0) {
                     cpcVaeVec = Nd4j.vstack(vecs).mean(0);
