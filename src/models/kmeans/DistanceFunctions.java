@@ -14,6 +14,7 @@ public interface DistanceFunctions {
     double EPSILON = 0.0000001;
 
     Function2<INDArray,INDArray,INDArray> COSINE_DISTANCE_FUNCTION = (v1,v2)-> cosineSimByRow(v1,v2).rsubi(1.0);
+    Function2<INDArray,INDArray,INDArray> PRENORM_COSINE_DISTANCE_FUNCTION = (v1,v2)-> preNormCosineSimByRow(v1,v2).rsubi(1.0);
     Function2<INDArray,INDArray,INDArray> L1_DISTANCE_FUNCTION = DistanceFunctions::l1SimByRow;
     Function2<INDArray,INDArray,INDArray> L2_DISTANCE_FUNCTION = DistanceFunctions::l2SimByRow;
 
@@ -24,6 +25,10 @@ public interface DistanceFunctions {
         INDArray dot = m2.mulRowVector(m1).sum(1);
         INDArray norm = norms2.muliRowVector(norms1);
         return dot.divi(norm.addi(EPSILON));
+    }
+
+    static INDArray preNormCosineSimByRow(INDArray m1, INDArray m2) {
+        return m2.mulRowVector(m1).sum(1);
     }
 
     static INDArray l2SimByRow(INDArray m1, INDArray m2) {

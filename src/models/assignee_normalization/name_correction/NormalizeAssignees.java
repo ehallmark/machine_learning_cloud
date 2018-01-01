@@ -368,8 +368,12 @@ public class NormalizeAssignees {
     }
 
     public static void main(String[] args) {
+        run(HumanNamePredictionPipelineManager.loadPipelineManager().loadPredictions());
+    }
+
+    public static void run(Map<String,Boolean> assigneeToHumanMap) {
         // find most common suffixes
-        Collection<String> allCompanies = Collections.synchronizedList(HumanNamePredictionPipelineManager.loadPipelineManager().loadPredictions().entrySet().parallelStream().filter(e->!e.getValue()).map(e->e.getKey()).collect(Collectors.toList()));
+        Collection<String> allCompanies = Collections.synchronizedList(assigneeToHumanMap.entrySet().parallelStream().filter(e->!e.getValue()).map(e->e.getKey()).collect(Collectors.toList()));
 
         Map<String,Integer> assigneeToPortfolioSizeMap = Collections.synchronizedMap(new HashMap<>(allCompanies
                 .parallelStream()

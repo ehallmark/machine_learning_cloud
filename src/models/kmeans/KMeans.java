@@ -75,7 +75,7 @@ public class KMeans {
     }
 
     public void fit(Map<String,INDArray> dataMap, Map<String,Double> sampleProbabilities, int nEpochs, boolean forceReinitCentroids) {
-        this.dataPoints = dataMap.entrySet().parallelStream().map(e->new DataPoint(e.getKey(),e.getValue())).collect(Collectors.toList());
+        this.dataPoints = dataMap.entrySet().stream().map(e->new DataPoint(e.getKey(),e.getValue())).collect(Collectors.toList());
         if(this.centroids==null||forceReinitCentroids) {
             this.centroids = initializeCentroids(sampleProbabilities);
         }
@@ -314,9 +314,8 @@ public class KMeans {
         KMeans kMeans = new KMeans(10,10, DistanceFunctions.L2_DISTANCE_FUNCTION);
 
         Map<String,INDArray> dataMap = new HashMap<>();
-        Random rand = new Random();
-        for(int i = 0; i < 200; i++) {
-            dataMap.put("v"+i, Nd4j.create(new double[]{rand.nextDouble(),rand.nextDouble()}));
+        for(int i = 0; i < 2000; i++) {
+            dataMap.put("v"+i, Nd4j.randn(new int[]{1,32}));
         }
 
         kMeans.fit(dataMap, 20, false);
