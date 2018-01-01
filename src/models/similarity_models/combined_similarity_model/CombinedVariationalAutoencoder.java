@@ -70,7 +70,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         final int numSamples = 8;
-        final int sampleLength = 4;
+        final int sampleLength = 6;
         final int assigneeSamples = 64;
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         Collection<String> filings = Collections.synchronizedSet(new HashSet<>());
@@ -95,9 +95,10 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger nullVae = new AtomicInteger(0);
         final List<String> filingsWithVecs = filings.parallelStream().filter(filing->filingCpcVaeEncoderPredictions.containsKey(filing)).collect(Collectors.toList());
-        IntStream.range(0,1+(filingsWithVecs.size()/128)).forEach(i->{
-            int start = i*128;
-            int end = Math.min(start+128,filingsWithVecs.size());
+        int batchSize = 512;
+        IntStream.range(0,1+(filingsWithVecs.size()/batchSize)).forEach(i->{
+            int start = i*batchSize;
+            int end = Math.min(start+batchSize,filingsWithVecs.size());
             if(start<end) {
                 List<String> range = filingsWithVecs.subList(start,end);
                 List<INDArray> allFeatures = new ArrayList<>();
