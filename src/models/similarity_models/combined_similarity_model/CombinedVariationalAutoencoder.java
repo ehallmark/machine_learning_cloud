@@ -146,7 +146,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                         }
                         finalPredictionsMap.put(label, averageEncoding);
                         if(cnt.getAndIncrement()%10000==9999) {
-                            if(cnt.get()%100000==99999) {
+                            if(cnt.get()%50000==49999) {
                                 System.gc();
                             }
                             System.out.println("Finished "+cnt.get()+" filings out of "+filingsWithVecs.size()+". Incomplete: "+incomplete.get()+ " / "+cnt.get()+", Null Vae: "+nullVae.get()+" / "+incomplete.get());
@@ -179,7 +179,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
             } else incomplete.getAndIncrement();
 
             if(cnt.getAndIncrement()%10000==9999) {
-                if(cnt.get()%100000==99999) {
+                if(cnt.get()%50000==49999) {
                     System.gc();
                 }
                 System.out.println("Finished "+cnt.get()+" out of "+classCodes.size()+" cpcs. Incomplete: "+incomplete.get()+" / "+cnt.get());
@@ -219,6 +219,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
             }
 
             if(cnt.getAndIncrement()%10000==9999) {
+                if(cnt.get()%50000==49999) {
+                    System.gc();
+                }
                 System.out.println("Finished "+cnt.get()+" out of "+assignees.size()+" assignees. Incomplete: "+incomplete.get()+" / "+cnt.get());
             }
         });
