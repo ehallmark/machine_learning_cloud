@@ -120,7 +120,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         CPCVAEPipelineManager cpcvaePipelineManager = new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME);
         CombinedSimilarityVAEPipelineManager combinedPipelineManager = CombinedSimilarityVAEPipelineManager.getOrLoadManager();
         Collection<CPCSimilarityVectorizer> vectorizers = Arrays.asList(
-               // new CPCSimilarityVectorizer(cpcvaePipelineManager,false,false,false,v->Database.getAllPatentsAndApplications()),
+                new CPCSimilarityVectorizer(cpcvaePipelineManager,false,false,false,v->Database.getAllPatentsAndApplications()),
                 new CPCSimilarityVectorizer(combinedPipelineManager,false,false,false,v->Database.getAllFilings())
         );
         vectorizers.forEach(vectorizer->{
