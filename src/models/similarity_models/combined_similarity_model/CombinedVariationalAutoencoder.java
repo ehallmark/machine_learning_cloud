@@ -69,8 +69,8 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        final int numSamples = 8;
-        final int sampleLength = 6;
+        final int numSamples = 5;
+        final int sampleLength = 4;
         final int assigneeSamples = 64;
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         Collection<String> filings = Collections.synchronizedSet(new HashSet<>());
@@ -95,7 +95,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger nullVae = new AtomicInteger(0);
         final List<String> filingsWithVecs = filings.parallelStream().filter(filing->filingCpcVaeEncoderPredictions.containsKey(filing)).collect(Collectors.toList());
-        int batchSize = 5000;
+        int batchSize = 1000;
         IntStream.range(0,1+(filingsWithVecs.size()/batchSize)).forEach(i->{
             int start = i*batchSize;
             int end = Math.min(start+batchSize,filingsWithVecs.size());
@@ -108,7 +108,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                     INDArray cpcVaeVec = filingCpcVaeEncoderPredictions.get(filing);
 
                     // word info
-                    List<String> cpcNames = cpcMap.getOrDefault(filing, Collections.emptySet()).stream().filter(cpc -> cpc.getNumParts() >= 3 && cpc2VecMap.containsKey(cpc.getName())).limit(100).map(cpc -> cpc.getName()).collect(Collectors.toList());
+                    List<String> cpcNames = cpcMap.getOrDefault(filing, Collections.emptySet()).stream().filter(cpc -> cpc.getNumParts() > 3 && cpc2VecMap.containsKey(cpc.getName())).limit(100).map(cpc -> cpc.getName()).collect(Collectors.toList());
                     if (cpcNames.isEmpty()) {
                         incomplete.getAndIncrement();
                     } else {
@@ -170,6 +170,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
             } else incomplete.getAndIncrement();
 
             if(cnt.getAndIncrement()%10000==9999) {
+                if(cnt.get()%100000==99999) {
+                    System.gc();
+                }
                 System.out.println("Finished "+cnt.get()+" out of "+classCodes.size()+" cpcs. Incomplete: "+incomplete.get()+" / "+cnt.get());
             }
         });
