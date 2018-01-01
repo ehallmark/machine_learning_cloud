@@ -95,7 +95,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         AtomicInteger nullVae = new AtomicInteger(0);
         filings.forEach(filing->{
             INDArray cpcVaeVec = filingCpcVaeEncoderPredictions.get(filing);
-            if (cpcVaeVec == null) {
+           /* if (cpcVaeVec == null) {
                 List<String> appAndGrant = Collections.synchronizedList(new ArrayList<>(2));
                 appAndGrant.addAll(new FilingToAssetMap().getApplicationDataMap().getOrDefault(filing,Collections.emptyList()));
                 appAndGrant.addAll(new FilingToAssetMap().getPatentDataMap().getOrDefault(filing,Collections.emptyList()));
@@ -104,7 +104,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                 if (vecs.size() > 0) {
                     cpcVaeVec = Nd4j.vstack(vecs).mean(0);
                 }
-            }
+            } */
             if(cpcVaeVec==null) {
                 nullVae.getAndIncrement();
                 incomplete.getAndIncrement();
