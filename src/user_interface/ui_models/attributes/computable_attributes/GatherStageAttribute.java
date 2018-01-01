@@ -38,7 +38,7 @@ public class GatherStageAttribute extends ComputableAttribute<Collection<String>
 
 
     @Override
-    public Collection<String> attributesFor(Collection<String> items, int limit) {
+    public Collection<String> attributesFor(Collection<String> items, int limit, Boolean isApp) {
         return Database.getGatherPatentToStagesCompleteMap().get(items.stream().findAny().get());
     }
 

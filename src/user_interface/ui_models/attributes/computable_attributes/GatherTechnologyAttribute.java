@@ -19,7 +19,7 @@ public class GatherTechnologyAttribute extends ComputableAttribute<Collection<St
     }
 
     @Override
-    public Collection<String> attributesFor(Collection<String> items, int limit) {
+    public Collection<String> attributesFor(Collection<String> items, int limit, Boolean isApp) {
         return Database.getGatherPatentToTechnologyMap().get(items.stream().findAny().get());
     }
 

@@ -34,7 +34,7 @@ public class IsGrantedApplicationAttribute extends ComputableAttribute<Boolean> 
     }
 
     @Override
-    public Boolean attributesFor(Collection<String> items, int limit) {
+    public Boolean attributesFor(Collection<String> items, int limit, Boolean isApp) {
         String item = items.stream().findAny().get();
         if(assetToFilingMap.getPatentDataMap().containsKey(item) || !Database.isApplication(item)) return true; // is already a grant
         String filing = assetToFilingMap.getApplicationDataMap().get(item);

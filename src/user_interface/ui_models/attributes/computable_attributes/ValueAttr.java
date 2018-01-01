@@ -26,11 +26,6 @@ public abstract class ValueAttr extends ComputableAttribute<Number> {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }
 
-    // Returns value between 1 and 5
-    @Override
-    public Double attributesFor(Collection<String> portfolio, int n) {
-        return attributesFor(portfolio,n,null);
-    }
 
     @Override
     public Double attributesFor(Collection<String> portfolio, int n, Boolean isApp) {

@@ -96,7 +96,7 @@ public class UpdateCompDBAndGatherData {
             });
         } else {
             if(attribute instanceof ComputableAttribute) {
-                Object value = ((ComputableAttribute) attribute).attributesFor(Arrays.asList(asset),1);
+                Object value = ((ComputableAttribute) attribute).attributesFor(Arrays.asList(asset),1, null);
                 if(value!=null) {
                     data.put(attribute.getName(),value);
                 }

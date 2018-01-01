@@ -38,11 +38,11 @@ public abstract class ComputableAssigneeAttribute<T> extends ComputableAttribute
     }
 
     @Override
-    public T attributesFor(Collection<String> portfolio, int limit) {
+    public T attributesFor(Collection<String> portfolio, int limit, Boolean isApplication) {
         if(portfolio.isEmpty()) return null;
         String item = portfolio.stream().filter(i->i!=null).findAny().orElse(null);
         if(item == null) return null;
-        boolean probablyApplication = Database.isApplication(item);
+        boolean probablyApplication = isApplication != null ? isApplication : Database.isApplication(item);
         String assignee = probablyApplication ? getAppToAssigneeMap().getOrDefault(item,getPatentToAssigneeMap().get(item))
                 : getPatentToAssigneeMap().getOrDefault(item,getAppToAssigneeMap().get(item));
         if(assignee == null) return null;

@@ -36,11 +36,11 @@ public abstract class ComputableCPCAttribute<T> extends ComputableAttribute<T> {
     }
 
     @Override
-    public T attributesFor(Collection<String> portfolio, int limit) {
+    public T attributesFor(Collection<String> portfolio, int limit,Boolean isApp) {
         if(portfolio.isEmpty()) return null;
         String item = portfolio.stream().filter(i->i!=null).findAny().orElse(null);
         if(item == null) return null;
-        boolean probablyApplication = Database.isApplication(item);
+        boolean probablyApplication = isApp != null ? isApp : Database.isApplication(item);
         Set<String> cpcs = probablyApplication ? getAppToCPCMap().getOrDefault(item,getPatentToCPCMap().get(item))
                 : getPatentToCPCMap().getOrDefault(item,getAppToCPCMap().get(item));
         if(cpcs == null) return null;

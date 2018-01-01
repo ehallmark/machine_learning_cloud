@@ -23,7 +23,7 @@ public class TestFilingToAssetMap {
         AtomicLong total = new AtomicLong(0);
         assetToFilingMap.getApplicationDataMap().entrySet().forEach(e->{
             String item = e.getKey();
-            Boolean granted = isGrantedApplicationAttribute.attributesFor(Arrays.asList(item),1);
+            Boolean granted = isGrantedApplicationAttribute.attributesFor(Arrays.asList(item),1,true);
             if(granted==null) {
                 System.out.println("missing");
                 missing.getAndIncrement();
@@ -37,7 +37,7 @@ public class TestFilingToAssetMap {
         AtomicLong wrong = new AtomicLong(0);
         assetToFilingMap.getPatentDataMap().entrySet().forEach(e->{
             String item = e.getKey();
-            Boolean granted = isGrantedApplicationAttribute.attributesFor(Arrays.asList(item),1);
+            Boolean granted = isGrantedApplicationAttribute.attributesFor(Arrays.asList(item),1,false);
             if(granted==null) {
                 System.out.println("missing");
                 missing.getAndIncrement();
