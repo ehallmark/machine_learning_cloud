@@ -35,6 +35,7 @@ import java.util.stream.Stream;
  */
 public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<WordCPCIterator,Set<String>> {
     public static final Model modelParams = new DefaultModel();
+    @Getter
     private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyphrase_prediction_model_predictions/predictions_map.jobj");
@@ -44,6 +45,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     private static MultiLayerNetwork filingToEncodingNet;
     private static MultiLayerNetwork wordToEncodingNet;
     private static Map<String,Collection<CPC>> cpcMap;
+    private static Map<String,MultiStem> labelToKeywordMap;
     public KeyphrasePredictionPipelineManager(WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
         super(INPUT_DATA_FOLDER, PREDICTION_DATA_FILE);
         this.wordCPC2VecPipelineManager=wordCPC2VecPipelineManager;
@@ -101,6 +103,9 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         //if(alwaysRerun) stage3.createVisualization();
 
         multiStemSet = stage3.get();
+
+        labelToKeywordMap = Collections.synchronizedMap(new HashMap<>());
+        multiStemSet.parallelStream().forEach(stem->labelToKeywordMap.put(stem.getBestPhrase(),stem));
     }
 
     @Override
@@ -109,19 +114,25 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         if(multiStemSet==null) initStages(false,false);
     }
 
-    @Override
-    public Map<String,Set<String>> predict(List<String> assets, List<String> assignees, List<String> cpcs) {
-        final double keyphraseTrimAlpha = 0.9;
-        final double minScore = 0.6d;
-        final int maxTags = 5;
 
-        System.out.println("Loading keyword to vector table...");
+    private MultiStem findByLabel(String keyword) {
+        return labelToKeywordMap.get(keyword.toLowerCase());
+    }
+
+    public Map<String,Set<String>> predict(Collection<String> keywords, Map<String,INDArray> toPredictMap, int maxTags, double minScore) {
+        List<MultiStem> keywordStems = keywords.stream().map(keyword->findByLabel(keyword)).filter(mul->mul!=null).collect(Collectors.toList());
+        return predict(keywordStems, toPredictMap, maxTags, minScore);
+    }
+
+    public Map<String,Set<String>> predict(List<MultiStem> keywords, Map<String,INDArray> toPredictMap, int maxTags, double minScore) {
         if(keywordToVectorLookupTable==null) {
+            System.out.println("Loading keyword to vector table...");
             buildKeywordToLookupTableMap();
         }
 
+        final double keyphraseTrimAlpha = 0.9;
+
         System.out.println("Building keyword vector pairs...");
-        List<MultiStem> keywords = Collections.synchronizedList(new ArrayList<>(keywordToVectorLookupTable.keySet()));
         INDArray keywordMatrix = Nd4j.create(keywords.size(),keywordToVectorLookupTable.values().stream().findAny().get().length());
         for(int i = 0; i < keywords.size(); i++) {
             INDArray vec = keywordToVectorLookupTable.get(keywords.get(i));
@@ -129,7 +140,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         }
 
 
-        Map<String,INDArray> cpcVectors = wordCPC2VecPipelineManager.getOrLoadCPCVectors();
+        Map<String,INDArray> cpcVectors = toPredictMap;
         Map<String,INDArray> wordVectors = wordCPC2VecPipelineManager.getOrLoadWordVectors();
 
         AtomicInteger incomplete = new AtomicInteger(0);
@@ -201,6 +212,20 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         return predictions;
     }
 
+    @Override
+    public Map<String,Set<String>> predict(List<String> assets, List<String> assignees, List<String> cpcs) {
+        final double minScore = 0.6d;
+        final int maxTags = 5;
+
+        if(keywordToVectorLookupTable==null) {
+            System.out.println("Loading keyword to vector table...");
+            buildKeywordToLookupTableMap();
+        }
+
+        List<MultiStem> keywords = Collections.synchronizedList(new ArrayList<>(keywordToVectorLookupTable.keySet()));
+        return predict(keywords,wordCPC2VecPipelineManager.getOrLoadCPCVectors(),maxTags,minScore);
+    }
+
     private void loadSimilarityNetworks() {
         String similarityModelName = CombinedSimilarityPipelineManager.MODEL_NAME;
         CombinedSimilarityPipelineManager combinedSimilarityPipelineManager = new CombinedSimilarityPipelineManager(similarityModelName,null,null,null);
@@ -220,7 +245,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
 
         multiStemSet.stream().forEach(stem->{
-            String[] words = stem.getBestPhrase().split(" ");
+            String[] words = stem.getBestPhrase().toLowerCase().split(" ");
             List<INDArray> wordVectors = Stream.of(words).map(word->wordVectorMap.get(word)).filter(vec->vec!=null).collect(Collectors.toList());
             if(wordVectors.size()>=Math.max(1,words.length-1)) {
                 INDArray vec = Transforms.unitVec(Nd4j.vstack(wordVectors).mean(0));

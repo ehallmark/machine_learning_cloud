@@ -296,7 +296,7 @@ public class KMeans {
 
         private void recomputeMean() {
             if(!dataPoints.isEmpty()) {
-                mean = Transforms.unitVec(Nd4j.vstack(dataPoints.stream().map(dp -> dp.dataPoint).collect(Collectors.toList())).mean(0));
+                mean = Nd4j.vstack(dataPoints.stream().map(dp -> dp.dataPoint).collect(Collectors.toList())).mean(0);
             }
         }
 

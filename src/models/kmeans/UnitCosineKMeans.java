@@ -18,7 +18,6 @@ import java.util.stream.IntStream;
  * Created by Evan on 11/27/2017.
  */
 public class UnitCosineKMeans {
-    private static final int DEFAULT_MAX_NUM_EPOCHS_FOR_CENTROID_INIT = 100;
     private static final double EPSILON = 0.0000001;
     private final int k;
     @Getter
@@ -40,9 +39,6 @@ public class UnitCosineKMeans {
     }
 
 
-
-
-
     public List<Set<String>> getClusters() {
         List<Set<String>> clusters = new ArrayList<>();
         centroids.forEach(centroid->{
@@ -54,15 +50,13 @@ public class UnitCosineKMeans {
         return clusters;
     }
 
-    public void fit(Map<String,INDArray> dataMap, int nEpochs, boolean forceReinitCentroids) {
-        this.fit(dataMap,null,nEpochs,forceReinitCentroids);
-    }
 
-    public void fit(Map<String,INDArray> dataMap, Map<String,Double> sampleProbabilities, int nEpochs, boolean forceReinitCentroids) {
+
+    public void fit(Map<String,INDArray> dataMap, int nEpochs) {
         this.dataPoints = dataMap.entrySet().stream().map(e->new DataPoint(e.getKey(),e.getValue())).collect(Collectors.toList());
         this.V=Nd4j.vstack(this.dataPoints.stream().map(d->d.dataPoint).collect(Collectors.toList()));
-        if(this.centroids==null||forceReinitCentroids) {
-            this.centroids = initializeCentroids(sampleProbabilities);
+        if(this.centroids==null) {
+            this.centroids = initializeCentroids();
         }
 
         Double lastError = null;
@@ -110,7 +104,7 @@ public class UnitCosineKMeans {
         }
     }
 
-    private List<Centroid> initializeCentroids(Map<String,Double> sampleProbabilities) {
+    private List<Centroid> initializeCentroids() {
         System.out.println("Building centroids...");
 
         Random random = new Random(6342);
@@ -118,7 +112,7 @@ public class UnitCosineKMeans {
         List<DataPoint> dataPointsRemaining = Collections.synchronizedList(new ArrayList<>(this.dataPoints));
 
         // step 1: pick one center uniformly at random
-        DataPoint dataPoint0 = pickRandomly(dataPointsRemaining,sampleProbabilities,random);
+        DataPoint dataPoint0 = pickRandomly(dataPointsRemaining,null,random);
         INDArray centroid0 = dataPoint0.dataPoint.dup();
         this.centroids.add(new Centroid(centroid0));
         this.centroidMatrix = centroid0;
@@ -136,13 +130,7 @@ public class UnitCosineKMeans {
             this.error = reassignDataToClusters();
 
             // step 2: compute distances
-            Map<String,Double> probabilities = dataPointsRemaining.parallelStream().collect(Collectors.toMap(d->d.name,d->{
-                double prob = d.squareDist/this.error;
-                if(sampleProbabilities!=null) {
-                    prob = (prob+sampleProbabilities.get(d.name))/2d;
-                }
-                return prob;
-            }));
+            Map<String,Double> probabilities = dataPointsRemaining.parallelStream().collect(Collectors.toMap(d->d.name,d->d.squareDist/this.error));
 
             DataPoint dataPointSample = pickRandomly(dataPointsRemaining,probabilities,random);
             if(dataPointSample!=null) {
@@ -243,19 +231,19 @@ public class UnitCosineKMeans {
     public static void main(String[] args) {
         // test
         long t0 = System.currentTimeMillis();
-        int k = 20;
+        int k = 30;
         UnitCosineKMeans kMeans = new UnitCosineKMeans(k);
 
         Map<String,INDArray> dataMap = new HashMap<>();
-        for(int i = 0; i < 500; i++) {
-            dataMap.put("v"+i, Transforms.unitVec(Nd4j.randn(new int[]{1,2})));
+        for(int i = 0; i < 10000; i++) {
+            dataMap.put("v"+i, Transforms.unitVec(Nd4j.randn(new int[]{1,32})));
         }
 
-        kMeans.fit(dataMap, 200, false);
+        kMeans.fit(dataMap, 200);
 
 
         long t1 = System.currentTimeMillis();
-        System.out.println(kMeans.toString());
+        //System.out.println(kMeans.toString());
         System.out.println("Completed in "+(t1-t0)/1000+" seconds");
     }
 }
