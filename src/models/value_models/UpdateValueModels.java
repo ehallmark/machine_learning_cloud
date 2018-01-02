@@ -3,6 +3,10 @@ package models.value_models;
 import elasticsearch.DataSearcher;
 import models.value_models.graphical.WIPOValueModel;
 import models.value_models.regression.AIValueModel;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.indices.TermsLookup;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
@@ -12,6 +16,7 @@ import user_interface.ui_models.attributes.ResultTypeAttribute;
 import user_interface.ui_models.attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
+import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -76,7 +81,24 @@ public class UpdateValueModels {
         if(onlyUpdateAssets == null) {
             filters = Collections.emptyList();
         } else {
-            filters = Arrays.asList(new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, onlyUpdateAssets));
+            filters = Arrays.asList(new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, onlyUpdateAssets) {
+                @Override
+                public QueryBuilder getFilterQuery() {
+                    final String preReq;
+                    if(!attribute.getType().equals("keyword")) {
+                        if (fieldType.equals(FieldType.Multiselect)&&attribute.getNestedFields() != null) {
+                            preReq = getFullPrerequisite()+".raw";
+                        } else {
+                            preReq = getFullPrerequisite();
+                        }
+                    } else {
+                        preReq = getFullPrerequisite();
+                    }
+
+                    return QueryBuilders.termsQuery(preReq,labels);
+
+                }
+            });
         }
         DataSearcher.searchForAssets(toSearchFor,filters,null, SortOrder.ASC, 20000000,SimilarPatentServer.getNestedAttrMap(), transformer, false,false,false);
         aiValueModel.save();
