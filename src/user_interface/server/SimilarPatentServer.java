@@ -888,7 +888,8 @@ public class SimilarPatentServer {
             String actualUser = req.session().attribute("username");
             if(actualUser==null) return null;
             String fileName = actualUser;
-            deleteForm(fileName,Constants.USER_DEFAULT_ATTRIBUTES_FOLDER,actualUser,false,false);
+            String message = deleteForm(fileName,Constants.USER_DEFAULT_ATTRIBUTES_FOLDER,actualUser,false,false);
+            System.out.println("Delete form message: "+message);
             res.redirect(HOME_URL);
             return null;
         });
@@ -1621,8 +1622,8 @@ public class SimilarPatentServer {
 
     private static String deleteForm(String fileName, String baseFolder, String actualUser, boolean shared, boolean deleteFromES) {
         String message;
-        if(fileName!=null && fileName.replaceAll("[^0-9]","").length() > 0) {
-            fileName = fileName.replaceAll("[^0-9]","");
+        if(fileName!=null && fileName.replaceAll(PasswordHandler.USER_NAME_REGEX,"").length() > 0) {
+            fileName = fileName.replaceAll(PasswordHandler.USER_NAME_REGEX,"");
             try {
                 String username = shared ? SHARED_USER : actualUser;
                 if(username==null||username.isEmpty()) {

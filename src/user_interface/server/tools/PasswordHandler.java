@@ -17,6 +17,7 @@ public class PasswordHandler {
     private static final int MAX_PASSWORD_SIZE = 500;
     private static final String passwordFolder = Constants.DATA_FOLDER+"passwords/";
     private static final String roleFolder = Constants.DATA_FOLDER+"roles/";
+    public static final String USER_NAME_REGEX = "[^a-zA-Z0-9_\\-]";
     // Returns the role of the user (or null if not authorized)
     public String authorizeUser(String username, String password) throws PasswordException {
         if(username == null || password == null) return null;
@@ -113,7 +114,7 @@ public class PasswordHandler {
         if(username == null) {
             throw new PasswordException("Please include username.");
         }
-        if(username.replaceAll("[^a-zA-Z0-9_\\-]","").length()!=username.length()) {
+        if(username.replaceAll(USER_NAME_REGEX,"").length()!=username.length()) {
             throw new PasswordException("Username must be alphanumeric.");
         }
         File passwordFile = new File(passwordFolder+username);
