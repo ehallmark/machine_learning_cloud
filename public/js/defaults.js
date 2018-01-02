@@ -1258,7 +1258,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                                     }
                                                 );
                                             }
-                                        }
+                                        });
                                     }
                                 },
                                 dataType: "json"
