@@ -778,18 +778,13 @@ var showDatasetFunction = function(data,tree,node){
         nodeData = tree.get_node(currId);
     }
     var shared = parents.length > 0 && parents[0].startsWith("Shared");
-    $.ajax({
-        type: "POST",
-        url: '/secure/get_dataset',
-        data: {
-            file: data.file,
-            shared: shared
-        },
-        success: function(data) {
-            alert(data.assets);
-        },
-        dataType: "json"
-    });
+    $('#filters-row .attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
+    $('#filters-row div.attribute').addClass("disabled");
+    var $datasetInput = $('#multiselect-multiselect-datasetNameInclude_filter');
+    $datasetInput.trigger('select2:opening');
+    $datasetInput.trigger('select2:close');
+    $datasetInput.val([data.file+"_"+data.user]).trigger('change');
+    $('#generate-reports-form').trigger('submit');
     return false;
 };
 

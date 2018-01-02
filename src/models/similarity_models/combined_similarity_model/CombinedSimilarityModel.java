@@ -1,6 +1,5 @@
 package models.similarity_models.combined_similarity_model;
 
-import data_pipeline.helpers.Function2;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -12,7 +11,6 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
-import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
@@ -20,8 +18,6 @@ import seeding.Constants;
 import java.io.File;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Created by Evan on 12/24/2017.
@@ -42,7 +38,6 @@ public class CombinedSimilarityModel extends AbstractCombinedSimilarityModel<Mul
     int numHiddenDecodings = 3;
     boolean trainWordCpc2Vec = true;
     boolean trainCpcVecNet = true;
-    boolean saveModels = true;
     Updater updater = Updater.RMSPROP;
 
     public CombinedSimilarityModel(CombinedSimilarityPipelineManager pipelineManager, String modelName) {
