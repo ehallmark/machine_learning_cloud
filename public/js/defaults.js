@@ -790,7 +790,7 @@ var showDatasetFunction = function(data,tree,node){
     var $filter = $('#multiselect-nested-filter-select-attributesNested_filter');
     $filter.val([$datasetInput.attr('name')]).trigger('change');
     var name = data.file+"_"+data.user;
-    $datasetInput.trigger('select2:opening', [true,name]));
+    $datasetInput.trigger('select2:opening', [true,name]);
     return false;
 };
 
