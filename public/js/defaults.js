@@ -1258,18 +1258,21 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                     if(!clusters.hasOwnProperty('clusters')) {
                                          alert('Error saving template: '+clusters.message);
                                     } else {
+                                        var folderData = {
+                                            'text': node.text,
+                                            'type': 'folder',
+                                            'icon': 'jstree-folder',
+                                            'jstree': {'type':'folder'}
+                                        };
                                         tree.create_node(
                                             tree.get_node(node.parent),
-                                            {'data' : {
-                                                'text': node.text,
-                                                'type': 'folder',
-                                                'icon': 'jstree-folder',
-                                                'jstree': {'type':'file'}
-                                            }},
+                                            {'data' : folderData},
                                             'first',
                                             function(newFolder) {
+                                                newFolder.data=folderData;
                                                 $.each(clusters.clusters, function(idx,data){
                                                     if(data.hasOwnProperty('file')&&data.hasOwnProperty('user')&&data.hasOwnProperty('name')) {
+                                                        nameToData[]
                                                         var newData = {
                                                             'text': data.name,
                                                             'type': 'file',
@@ -1282,7 +1285,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                                             { 'data' : newData},
                                                             'first',
                                                             function(newNode) {
-
+                                                                newNode.data=newData;
                                                             }
                                                         );
                                                     }
