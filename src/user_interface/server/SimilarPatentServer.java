@@ -2098,16 +2098,16 @@ public class SimilarPatentServer {
             });
 
             // recursively build directory
-            return templateHelper(directoryStructure,rootName,deletable, new ArrayList<>(), loadData);
+            return templateHelper(directoryStructure,rootName,deletable, new ArrayList<>(), loadData, true);
         } else {
             return div();
         }
     }
 
 
-    public static Tag templateHelper(Pair<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable, List<String> parentDirs, boolean loadData) {
+    public static Tag templateHelper(Pair<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable, List<String> parentDirs, boolean loadData, boolean topLevel) {
         // find nested
-        if(directoryStructure.getFirst().isEmpty()&&directoryStructure.getSecond().isEmpty()) return span();
+        if(!topLevel&&directoryStructure.getFirst().isEmpty()&&directoryStructure.getSecond().isEmpty()) return span();
 
         return li(folderName).attr("data-deletable", String.valueOf(deletable)).attr("data-jstree","{\"type\":\"folder\"}").with(
                 ul().with(
@@ -2116,7 +2116,7 @@ public class SimilarPatentServer {
                                 .map(e->{
                                     List<String> parentDirsCopy = new ArrayList<>(parentDirs);
                                     parentDirsCopy.add(e.getKey());
-                                    return templateHelper((Pair<Map<String,Object>,List<FormTemplate>>)e.getValue(),e.getKey(),deletable,parentDirsCopy, loadData);
+                                    return templateHelper((Pair<Map<String,Object>,List<FormTemplate>>)e.getValue(),e.getKey(),deletable,parentDirsCopy, loadData, false);
                                 })
                         .collect(Collectors.toList())
                 ).with(
