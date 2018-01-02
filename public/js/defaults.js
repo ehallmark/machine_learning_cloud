@@ -505,25 +505,22 @@ $(document).ready(function() {
         minimumResultsForSearch: 5,
         width: "100%",
     })
-    $('.dataset-multiselect').on('select2:opening',function(e,returnFalse) {
+
+    var datasetMultiselect = function(e,returnFalse,name) {
         createDatasetSelect2(this);
         if(returnFalse==true) {
+            $(this).val([name]).trigger('change');
             return false;
         } else {
             return true;
         }
-    });
+    };
+
+    $('.dataset-multiselect').on('select2:opening',datasetMultiselect);
 
     $('.dataset-multiselect').on('select2:open',function(e) {
         $(this).off('select2:opening');
-        $(this).on('select2:opening',function(e,returnFalse) {
-            createDatasetSelect2(this);
-            if(returnFalse==true) {
-                return false;
-            } else {
-                return true;
-            }
-        });
+        $(this).on('select2:opening',datasetMultiselect);
     });
 
     var createDatasetSelect2 = function(elem) {
@@ -790,9 +787,9 @@ var showDatasetFunction = function(data,tree,node){
     $('#filters-row div.attribute').addClass("disabled");
     var $datasetInput = $('#multiselect-multiselect-datasetNameInclude_filter');
     var $filter = $('#multiselect-nested-filter-select-attributesNested_filter');
-    $filter.val([$datasetInput.attr('name')]).trigger('change';
-    $datasetInput.trigger('select2:opening', [true]));
-    $datasetInput.val([data.file+"_"+data.user]).trigger('change');
+    $filter.val([$datasetInput.attr('name')]).trigger('change');
+    var name = data.file+"_"+data.user;
+    $datasetInput.trigger('select2:opening', [true,name]));
     $('#generate-reports-form').trigger('submit');
     return false;
 };
