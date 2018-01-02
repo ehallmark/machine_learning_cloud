@@ -507,13 +507,12 @@ $(document).ready(function() {
     })
 
     var datasetMultiselect = function(e,returnFalse,name) {
-        $(this).find('option').not("[value]").remove();
-        createDatasetSelect2(this);
+        var $select = createDatasetSelect2(this);
         if(returnFalse==true) {
             $(this).val([name]).trigger('change');
             $('#generate-reports-form').trigger('submit');
             e.preventDefault();
-            $(this).select2('close');
+            $select.select2('close');
             return false;
         } else {
             return true;
@@ -548,6 +547,7 @@ $(document).ready(function() {
             width: '100%',
             data: getDatasetSelectData()
         });
+        $this.find('option').not("[value]").remove();
         $this.val(previousVal).trigger('change');
         $this.off('select2:opening');
         $this.on('select2:opening', function(e) {
