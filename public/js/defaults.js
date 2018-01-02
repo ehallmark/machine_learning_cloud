@@ -516,9 +516,13 @@ $(document).ready(function() {
 
     $('.dataset-multiselect').on('select2:open',function(e) {
         $(this).off('select2:opening');
-        $(this).on('select2:opening',function(e) {
+        $(this).on('select2:opening',function(e,returnFalse) {
             createDatasetSelect2(this);
-            return true;
+            if(returnFalse==true) {
+                return false;
+            } else {
+                return true;
+            }
         });
     });
 
