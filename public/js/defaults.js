@@ -781,6 +781,8 @@ var showDatasetFunction = function(data,tree,node){
     $('#filters-row .attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
     $('#filters-row div.attribute').addClass("disabled");
     var $datasetInput = $('#multiselect-multiselect-datasetNameInclude_filter');
+    var $filter = $('#multiselect-nested-filter-select-attributesNested_filter');
+    $filter.val([$datasetInput.attr('name')]).trigger('change');
     $datasetInput.trigger('select2:opening');
     $datasetInput.trigger('select2:close');
     $datasetInput.val([data.file+"_"+data.user]).trigger('change');
