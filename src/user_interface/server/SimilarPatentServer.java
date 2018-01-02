@@ -116,6 +116,7 @@ public class SimilarPatentServer {
     public static final String CLUSTER_DATASET_URL = PROTECTED_URL_PREFIX+"/cluster_dataset";
     public static final String DELETE_DATASET_URL = PROTECTED_URL_PREFIX+"/delete_dataset";
     public static final String RENAME_DATASET_URL = PROTECTED_URL_PREFIX+"/rename_dataset";
+    public static final String RESET_DEFAULT_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/reset_default_template";
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
     public static final String SHOW_DATATABLE_URL = PROTECTED_URL_PREFIX+"/dataTable.json";
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
@@ -882,6 +883,16 @@ public class SimilarPatentServer {
             return templateWrapper(true,req,res, defaultAttributesModelForm(req.session().attribute("username"),req.session().attribute("role")));
         });
 
+        get(RESET_DEFAULT_TEMPLATE_URL, (req,res)->{
+            authorize(req,res);
+            String actualUser = req.session().attribute("username");
+            if(actualUser==null) return null;
+            String fileName = actualUser;
+            deleteForm(fileName,Constants.USER_TEMPLATE_FOLDER,actualUser,false,false);
+            res.redirect(HOME_URL);
+            return null;
+        });
+
         post(REPORT_URL, (req, res) -> {
             authorize(req,res);
             return handleReport(req,res);
@@ -1419,7 +1430,7 @@ public class SimilarPatentServer {
             Map<String, Object> data = getMapFromFile(new File(filename), false);
 
             System.out.println("Parent data: "+new Gson().toJson(data));
-            
+
             String[] parentParentDirs = (String[]) data.get("parentDirs");
             String parentName = (String) data.get("name");
             if (parentParentDirs==null || parentName == null) {
@@ -1611,14 +1622,12 @@ public class SimilarPatentServer {
         return new Gson().toJson(responseMap);
     }
 
-    private static Object handleDeleteForm(Request req, Response res, String baseFolder, boolean deleteFromES) {
-        String fileName = req.queryParams("path_to_remove");
-        boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
+    private static String deleteForm(String fileName, String baseFolder, String actualUser, boolean shared, boolean deleteFromES) {
         String message;
         if(fileName!=null && fileName.replaceAll("[^0-9]","").length() > 0) {
             fileName = fileName.replaceAll("[^0-9]","");
             try {
-                String username = shared ? SHARED_USER : req.session().attribute("username");
+                String username = shared ? SHARED_USER : actualUser;
                 if(username==null||username.isEmpty()) {
                     message = "Unable to locate user.";
                 } else {
@@ -1663,6 +1672,16 @@ public class SimilarPatentServer {
         } else {
             message = "Did not provide path.";
         }
+        return message;
+    }
+
+    private static Object handleDeleteForm(Request req, Response res, String baseFolder, boolean deleteFromES) {
+        String fileName = req.queryParams("path_to_remove");
+        boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
+        String actualUser = req.session().attribute("username");
+
+        String message = deleteForm(fileName,baseFolder,actualUser,shared,deleteFromES);
+
         return new Gson().toJson(new SimpleAjaxMessage(message));
     };
 
@@ -2342,7 +2361,8 @@ public class SimilarPatentServer {
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px; margin-top: 20px;").with(
                 span().withId("main-content-id").withClass("collapse").with(
                         div().withClass("col-12").withId("attributesForm").with(
-                                h4("Update defaults for "+user+".")
+                                h4("Update defaults for "+user+"."),
+                                a("Reset defaults").withHref(RESET_DEFAULT_TEMPLATE_URL)
                         ), br(),
                         form().withAction(UPDATE_DEFAULT_ATTRIBUTES_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId("update-default-attributes-form").with(
                                 input().withType("hidden").withName("name").withValue("default"),
