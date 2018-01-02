@@ -2,7 +2,9 @@ package models.kmeans;
 
 import data_pipeline.helpers.Function2;
 import lombok.Getter;
+import org.deeplearning4j.berkeley.Triple;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.impl.indexaccum.IMax;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
@@ -19,7 +21,6 @@ public class UnitCosineKMeans {
     private static final int DEFAULT_MAX_NUM_EPOCHS_FOR_CENTROID_INIT = 100;
     private static final double EPSILON = 0.0000001;
     private final int k;
-    private final double l;
     @Getter
     private List<Centroid> centroids;
     private List<DataPoint> dataPoints;
@@ -29,36 +30,17 @@ public class UnitCosineKMeans {
     private INDArray centroidMatrix;
     private INDArray V;
     private INDArray Ctranspose;
-    private boolean largeDataset;
     @Getter
     private boolean converged;
-    private int maxNumEpochsForCentroidInit;
-    public UnitCosineKMeans(int k, double l, boolean largeDataset, int maxNumEpochsForCentroidInit) {
+    public UnitCosineKMeans(int k) {
         this.k=k;
-        this.l=l;
-        this.maxNumEpochsForCentroidInit=maxNumEpochsForCentroidInit;
-        this.largeDataset=largeDataset;
         this.avgError=0d;
         this.converged=false;
         this.avgErrorAlpha = 0.8;
     }
 
-    public UnitCosineKMeans(int k, boolean largeDataset, int maxNumEpochsForCentroidInit) {
-        this(k,2*k,largeDataset,maxNumEpochsForCentroidInit);
-    }
-
-    public UnitCosineKMeans(int k, double l) {
-        this(k,l,true,DEFAULT_MAX_NUM_EPOCHS_FOR_CENTROID_INIT);
-    }
-
-    public UnitCosineKMeans(int k) {
-        this(k,true,DEFAULT_MAX_NUM_EPOCHS_FOR_CENTROID_INIT);
-    }
 
 
-    public UnitCosineKMeans(int k, boolean largeDataset) {
-        this(k,largeDataset,DEFAULT_MAX_NUM_EPOCHS_FOR_CENTROID_INIT);
-    }
 
 
     public List<Set<String>> getClusters() {
@@ -141,89 +123,32 @@ public class UnitCosineKMeans {
         this.centroids.add(new Centroid(centroid0));
         this.centroidMatrix = centroid0;
 
-        if(largeDataset) {
-            this.error = this.reassignDataToClusters();
-            // check
-            List<Centroid> centroidCandidates = new ArrayList<>();
-            centroidCandidates.addAll(this.centroids);
-            long iterations = Math.round(Math.log(this.error));
-            for (int iteration = 0; iteration < iterations; iteration++) {
-                System.out.println("Finding centroid approximation: "+(iteration+1) + " / "+iterations);
-                // step 2: compute distances
-                List<Centroid> newCentroids = Collections.synchronizedList(new ArrayList<>());
-                List<Integer> indicesToRemove = Collections.synchronizedList(new ArrayList<>());
-                IntStream.range(0, dataPointsRemaining.size()).parallel().forEach(i -> {
-                    DataPoint dp = dataPointsRemaining.get(i);
-                    double prob = (dp.squareDist * l) / this.error;
-                    double rand = random.nextDouble();
-                    if (prob > rand) {
-                        // add sample
-                        INDArray centroid = dp.dataPoint.dup();
-                        newCentroids.add(new Centroid(centroid));
-                        indicesToRemove.add(i);
-                    }
-                });
-                this.centroids.clear();
-                if(newCentroids.isEmpty()) {
-                    System.out.println("Warning: No centroids found during iteration "+(iteration+1));
-                    break;
+
+         /* k-means++ algorithm
+            1- Choose one center uniformly at random from among the data points.
+            2- For each data point x, compute D(x), the distance between x and the nearest center that has already been chosen.
+            3- Choose one new data point at random as a new center, using a weighted probability distribution where a point x is chosen with probability proportional to D(x)2.
+            4- Repeat Steps 2 and 3 until k centers have been chosen.
+         */
+        // recluster the weighted points in C into k clusters
+        while(this.centroids.size()<k&&!dataPointsRemaining.isEmpty()) {
+            System.out.print("-");
+            this.error = reassignDataToClusters();
+
+            // step 2: compute distances
+            Map<String,Double> probabilities = dataPointsRemaining.parallelStream().collect(Collectors.toMap(d->d.name,d->{
+                double prob = d.squareDist/this.error;
+                if(sampleProbabilities!=null) {
+                    prob = (prob+sampleProbabilities.get(d.name))/2d;
                 }
-                this.centroids.addAll(newCentroids);
-                centroidCandidates.addAll(newCentroids);
-                this.centroidMatrix = Nd4j.vstack(newCentroids.stream().map(centroid->centroid.mean).collect(Collectors.toList()));
-                indicesToRemove.stream().sorted(Comparator.reverseOrder()).forEach(idx->dataPointsRemaining.remove(idx.intValue()));
-                System.out.println("Reassigning data...");
-                this.error = this.reassignDataToClusters();
-            }
-            // compute w
-            Map<String,Double> w = Collections.synchronizedMap(new HashMap<>());
-            Map<String,INDArray> centroidMap = Collections.synchronizedMap(new HashMap<>());
-            for (int i = 0; i < centroidCandidates.size(); i++) {
-                Centroid centroid = centroidCandidates.get(i);
-                w.put(String.valueOf(i),((double)centroid.dataPoints.size())/dataPoints.size());
-                centroidMap.put(String.valueOf(i),centroid.mean);
-            }
-            System.out.println("Recentering "+centroidMap.size()+" centroids...");
-            UnitCosineKMeans child = new UnitCosineKMeans(k,false);
-            child.fit(centroidMap,w,maxNumEpochsForCentroidInit,true);
-            List<Centroid> newCentroids = child.getCentroids();
-            this.centroids.clear();
-            centroidCandidates.clear();
-            int vectorSize = dataPoints.get(0).dataPoint.length();
-            this.centroidMatrix=Nd4j.create(k,vectorSize);
-            AtomicInteger idx = new AtomicInteger(0);
-            newCentroids.forEach(centroid->{
-                centroidMatrix.putRow(idx.getAndIncrement(),centroid.mean);
-                centroids.add(centroid);
-            });
+                return prob;
+            }));
 
-        } else {
-             /* k-means++ algorithm
-                1- Choose one center uniformly at random from among the data points.
-                2- For each data point x, compute D(x), the distance between x and the nearest center that has already been chosen.
-                3- Choose one new data point at random as a new center, using a weighted probability distribution where a point x is chosen with probability proportional to D(x)2.
-                4- Repeat Steps 2 and 3 until k centers have been chosen.
-             */
-            // recluster the weighted points in C into k clusters
-            while(this.centroids.size()<k&&!dataPointsRemaining.isEmpty()) {
-                System.out.print("-");
-                this.error = reassignDataToClusters();
-
-                // step 2: compute distances
-                Map<String,Double> probabilities = dataPointsRemaining.parallelStream().collect(Collectors.toMap(d->d.name,d->{
-                    double prob = d.squareDist/this.error;
-                    if(sampleProbabilities!=null) {
-                        prob = (prob+sampleProbabilities.get(d.name))/2d;
-                    }
-                    return prob;
-                }));
-
-                DataPoint dataPointSample = pickRandomly(dataPointsRemaining,probabilities,random);
-                if(dataPointSample!=null) {
-                    INDArray centroid = dataPointSample.dataPoint.dup();
-                    this.centroids.add(new Centroid(centroid));
-                    this.centroidMatrix = Nd4j.vstack(this.centroidMatrix, centroid);
-                }
+            DataPoint dataPointSample = pickRandomly(dataPointsRemaining,probabilities,random);
+            if(dataPointSample!=null) {
+                INDArray centroid = dataPointSample.dataPoint.dup();
+                this.centroids.add(new Centroid(centroid));
+                this.centroidMatrix = Nd4j.vstack(this.centroidMatrix, centroid);
             }
         }
         return this.centroids;
@@ -238,11 +163,15 @@ public class UnitCosineKMeans {
     // TODO Most Computationally intensive part (speed this up!)
     private double reassignDataToClusters() {
         AtomicInteger cnt = new AtomicInteger(0);
-        Pair<Double,int[]> pair = findClosestCentroids(V,Ctranspose);
-        int[] bestCentroidIndicesPerDataPoint = pair.getSecond();
+        this.Ctranspose = centroidMatrix.transpose();
+
+        Triple<Double,double[],int[]> pair = findClosestCentroids(V,Ctranspose);
+        int[] bestCentroidIndicesPerDataPoint = pair.getThird();
+        double[] errors = pair.getSecond();
         IntStream.range(0,dataPoints.size()).forEach(i->{
             int centroidIdx = bestCentroidIndicesPerDataPoint[i];
             DataPoint dataPoint = dataPoints.get(i);
+            dataPoint.squareDist=errors[i];
             if(centroidIdx>=0) {
                 Centroid centroid = centroids.get(centroidIdx);
                 if (centroid != null) {
@@ -260,10 +189,12 @@ public class UnitCosineKMeans {
         return pair.getFirst();
     }
 
-    private Pair<Double,int[]> findClosestCentroids(INDArray V, INDArray Ctranspose) {
+    private Triple<Double,double[],int[]> findClosestCentroids(INDArray V, INDArray Ctranspose) {
         INDArray res = V.mmul(Ctranspose);
-        double totalScore = res.sumNumber().doubleValue();
-        return new Pair<>(totalScore,Nd4j.argMax(res,1).data().asInt());
+        INDArray max = res.max(1).rsubi(1d);
+        double error = max.sumNumber().doubleValue();
+        INDArray idxOfMaxInEachRow = Nd4j.getExecutioner().exec(new IMax(res),1);
+        return new Triple<>(error,max.data().asDouble(),idxOfMaxInEachRow.data().asInt());
     }
 
     @Override
@@ -309,19 +240,22 @@ public class UnitCosineKMeans {
     }
 
 
-        public static void main(String[] args) {
-            // test
-            int k = 10;
-            int l = 2*k;
-            UnitCosineKMeans kMeans = new UnitCosineKMeans(k, l);
+    public static void main(String[] args) {
+        // test
+        long t0 = System.currentTimeMillis();
+        int k = 20;
+        UnitCosineKMeans kMeans = new UnitCosineKMeans(k);
 
         Map<String,INDArray> dataMap = new HashMap<>();
-        for(int i = 0; i < 10000; i++) {
-            dataMap.put("v"+i, Transforms.unitVec(Nd4j.randn(new int[]{1,32})));
+        for(int i = 0; i < 500; i++) {
+            dataMap.put("v"+i, Transforms.unitVec(Nd4j.randn(new int[]{1,2})));
         }
 
-        kMeans.fit(dataMap, 20, false);
+        kMeans.fit(dataMap, 200, false);
 
+
+        long t1 = System.currentTimeMillis();
         System.out.println(kMeans.toString());
+        System.out.println("Completed in "+(t1-t0)/1000+" seconds");
     }
 }
