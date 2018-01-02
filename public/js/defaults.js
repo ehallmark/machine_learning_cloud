@@ -1216,13 +1216,58 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                     }
                 }
                 if((node_type==='dataset') && !isFolder) {
-                    items["Apply Current Form"] = {
+                    items["Cluster Dataset"] = {
                         "separator_before": false,
                         "separator_after": false,
-                        "label": "Apply Current Form",
-                        "title": "Generate report from the current form applied to this dataset.",
+                        "label": "Cluster Dataset",
+                        "title": "Cluster this dataset into technology categories.",
                         "action": function(obj) {
-                            alert("Not yet implemented.");
+                            // need to get data
+                            var nodeData = node;
+                            var parents = [];
+                            while(typeof nodeData.text !== 'undefined') {
+                                if(nodeData.type==='folder') {
+                                    parents.unshift(nodeData.text);
+                                }
+                                var currId = nodeData.parent;
+                                nodeData = tree.get_node(currId);
+                            }
+                            var shared = parents.length > 0 && parents[0].startsWith("Shared");
+                            $.ajax({
+                                type: "POST",
+                                url: '/secure/cluster_dataset',
+                                data: {
+                                    file: node.data.file,
+                                    shared: shared
+                                },
+                                success: function(clusters) {
+                                    if(!clusters.hasOwnProperty('clusters')) {
+                                         alert('Error saving template: '+data.message);
+                                    } else {
+                                        $.each(clusters.clusters, function(idx,data){
+                                            if(data.hasOwnProperty('file')&&data.hasOwnProperty('user')) {
+
+                                                var newData = {
+                                                    'text': name,
+                                                    'type': 'file',
+                                                    'icon': 'jstree-file',
+                                                    'jstree': {'type': 'file'},
+                                                };
+                                                $.each(data, function(k,v) { newData[k] = v; });
+                                                var newNode = tree.create_node(
+                                                    node,
+                                                    { 'data' : newData},
+                                                    'first',
+                                                    function(newNode) {
+
+                                                    }
+                                                );
+                                            }
+                                        }
+                                    }
+                                },
+                                dataType: "json"
+                            });
                             return true;
                         }
                     };

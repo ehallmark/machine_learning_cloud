@@ -13,10 +13,13 @@ import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
+import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
 import models.keyphrase_prediction.models.NewestModel;
+import models.kmeans.AssetKMeans;
 import models.similarity_models.AbstractSimilarityModel;
 import models.similarity_models.DefaultSimilarityModel;
 import models.similarity_models.Vectorizer;
+import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_to_cpc.WordToCPCIterator;
 import models.text_streaming.BOWVectorFromTextTransformer;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
@@ -111,6 +114,7 @@ public class SimilarPatentServer {
     public static final String RENAME_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/rename_template";
     public static final String SAVE_DATASET_URL = PROTECTED_URL_PREFIX+"/save_dataset";
     public static final String GET_DATASET_URL = PROTECTED_URL_PREFIX+"/get_dataset";
+    public static final String CLUSTER_DATASET_URL = PROTECTED_URL_PREFIX+"/cluster_dataset";
     public static final String DELETE_DATASET_URL = PROTECTED_URL_PREFIX+"/delete_dataset";
     public static final String RENAME_DATASET_URL = PROTECTED_URL_PREFIX+"/rename_dataset";
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
@@ -138,6 +142,7 @@ public class SimilarPatentServer {
     private static NestedAttribute allAttributes;
     private static AbstractNestedFilter allFilters;
     private static NestedAttribute allCharts;
+    private static KeyphrasePredictionPipelineManager kephrasePredictionPipelineManager;
 
     static {
         roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.startsWith("gather"));
@@ -390,6 +395,8 @@ public class SimilarPatentServer {
             loadFilterModels();
             loadChartModels();
             loadSimilarityModels();
+            kephrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.MODEL_NAME,-1,-1,-1));
+            kephrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
         }
     }
 
@@ -892,7 +899,7 @@ public class SimilarPatentServer {
             if(defaultFile) {
                 return handleUpdateDefaultAttributes(req,res);
             } else {
-                return handleSaveForm(req, res, Constants.USER_TEMPLATE_FOLDER, templateFormMapFunction());
+                return handleSaveForm(req, res, Constants.USER_TEMPLATE_FOLDER, templateFormMapFunction(), saveTemplatesFunction(), saveTemplateUpdatesFunction());
             }
         });
 
@@ -914,25 +921,17 @@ public class SimilarPatentServer {
         post(SAVE_DATASET_URL, (req, res) -> {
             authorize(req,res);
             String user = req.session().attribute("username");
-            Function3<Map<String,Object>,File,Boolean,Void> saveFunction = (formMap, file, shared) -> {
-                String[] assets = (String[])formMap.get("assets");
-                if(assets!=null&&file!=null) {
-                    String username = shared ? SHARED_USER : user;
-                    DatasetIndex.index(username,file.getName(),Arrays.asList(assets));
-                }
-                formMap.remove("assets");
-                Database.trySaveObject(formMap,file);
-                return null;
-            };
-            Function2<Map<String,Object>,File,Void> saveUpdatesFunction = (updateMap,updatesFile) -> {
-                return null;
-            };
-            return handleSaveForm(req,res,Constants.USER_DATASET_FOLDER,datasetFormMapFunction(),saveFunction,saveUpdatesFunction);
+            return handleSaveForm(req,res,Constants.USER_DATASET_FOLDER,datasetFormMapFunction(),saveDatasetsFunction(user),saveDatasetUpdatesFunction());
         });
 
         post(GET_DATASET_URL, (req, res) -> {
             authorize(req,res);
             return handleGetForm(req,res,Constants.USER_DATASET_FOLDER,true);
+        });
+
+        post(CLUSTER_DATASET_URL, (req, res) -> {
+            authorize(req,res);
+            return handleClusterForm(req,res,Constants.USER_DATASET_FOLDER);
         });
 
         post(DELETE_DATASET_URL, (req, res) -> {
@@ -1042,6 +1041,45 @@ public class SimilarPatentServer {
         }
     }
 
+    private static Function3<Map<String,Object>,File,Boolean,Void> saveTemplatesFunction() {
+        return (formMap,file,shared) -> {
+            Database.trySaveObject(formMap, file);
+            fileCache.putWithLimit(file.getAbsolutePath(),formMap);
+            return null;
+        };
+    }
+
+    private static Function2<Map<String,Object>,File,Void> saveTemplateUpdatesFunction() {
+        return (updateMap,updatesFile)->{
+            if (updatesFile.exists()) updatesFile.delete();
+            if (updateMap.size() > 0) {
+                fileCache.put(updatesFile.getAbsolutePath(),updateMap);
+                Database.trySaveObject(updateMap, updatesFile);
+            } else {
+                fileCache.remove(updatesFile.getAbsolutePath());
+            }
+            return null;
+        };
+    }
+
+    private static Function3<Map<String,Object>,File,Boolean,Void> saveDatasetsFunction(String user) {
+        return (formMap, file, shared) -> {
+            String[] assets = (String[])formMap.get("assets");
+            if(assets!=null&&file!=null) {
+                String username = shared ? SHARED_USER : user;
+                DatasetIndex.index(username,file.getName(),Arrays.asList(assets));
+            }
+            formMap.remove("assets");
+            Database.trySaveObject(formMap,file);
+            return null;
+        };
+    }
+
+    private static Function2<Map<String,Object>,File,Void> saveDatasetUpdatesFunction() {
+        return (updateMap,updatesFile) -> {
+            return null;
+        };
+    }
 
     private static Object handleExcel(Request req, Response res) {
         try {
@@ -1354,6 +1392,79 @@ public class SimilarPatentServer {
         return new Gson().toJson(data);
     }
 
+    private static Object handleClusterForm(Request req, Response res, String baseFolder) {
+        Map<String, Object> response = new HashMap<>();
+
+        String file = req.queryParams("file");
+        boolean defaultFile = Boolean.valueOf(req.queryParamOrDefault("defaultFile","false"));
+        boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
+
+        StringJoiner message = new StringJoiner("; ", "Messages: ", ".");
+
+        String user = req.session().attribute("username");
+        if(user==null||user.isEmpty()) {
+            message.add("no user found");
+        } else {
+
+            String filename;
+            if (defaultFile) {
+                filename = Constants.USER_DEFAULT_ATTRIBUTES_FOLDER + user + "/" + user;
+                // may not exist
+                if (!new File(filename).exists()) {
+                    filename = Constants.USER_DEFAULT_ATTRIBUTES_FOLDER + SUPER_USER + "/" + SUPER_USER;
+                }
+            } else {
+                filename = baseFolder + (shared ? SHARED_USER : user) + "/" + file;
+            }
+
+            Map<String, Object> data = getMapFromFile(new File(filename), true);
+
+            String[] parentParentDirs = (String[]) data.get("parentDirs");
+            String parentName = (String) data.get("name");
+            if (parentParentDirs==null || parentName == null) {
+                message.add("no parent name or directory found");
+            } else {
+
+                String username = shared ? SHARED_USER : user;
+                List<String> assets = DatasetIndex.get(username, file);
+
+                if (assets == null) {
+                    message.add("assets are null");
+                } else {
+
+                    AssetKMeans kMeans = new AssetKMeans(10, assets, kephrasePredictionPipelineManager);
+
+                    Map<String, List<String>> clusters = kMeans.clusterAssets();
+
+                    if (clusters == null) {
+                        message.add("clusters are null");
+                    } else {
+
+                        List<Map<String, Object>> clustersData = new ArrayList<>(clusters.size());
+                        response.put("clusters", clustersData);
+
+                        clusters.forEach((name, cluster) -> {
+                            //handleSaveForm()
+                            String[] parentDirs = Stream.of(Stream.of(parentParentDirs), Stream.of(parentName)).flatMap(stream -> stream).toArray(size -> new String[size]);
+
+                            Map<String, Object> formMap = new HashMap<>();
+
+                            Pair<String, Map<String, Object>> pair = saveFormToFile(formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user), saveDatasetUpdatesFunction());
+
+                            Map<String, Object> clusterData = pair.getSecond();
+                            clustersData.add(clusterData);
+                        });
+                    }
+                }
+            }
+        }
+
+        response.put("message", message.toString());
+
+        return new Gson().toJson(response);
+    }
+
+
     private static Function<Request,Map<String,Object>> templateFormMapFunction() {
         return req -> {
             String attributesMap = req.queryParams("attributesMap");
@@ -1406,40 +1517,14 @@ public class SimilarPatentServer {
             map.put("file", username);
             return map;
         };
-        return handleSaveForm(req,res,Constants.USER_DEFAULT_ATTRIBUTES_FOLDER,templateFormMapFunction().andThen(afterFunction));
+        return handleSaveForm(req,res,Constants.USER_DEFAULT_ATTRIBUTES_FOLDER,templateFormMapFunction().andThen(afterFunction),saveTemplatesFunction(),saveTemplateUpdatesFunction());
     }
 
-    private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction) {
-        Function3<Map<String,Object>,File,Boolean,Void> saveFunction = (formMap,file,shared) -> {
-            Database.trySaveObject(formMap, file);
-            fileCache.putWithLimit(file.getAbsolutePath(),formMap);
-            return null;
-        };
-        Function2<Map<String,Object>,File,Void> saveUpdatesFunction = (updateMap,updatesFile)->{
-            if (updatesFile.exists()) updatesFile.delete();
-            if (updateMap.size() > 0) {
-                fileCache.put(updatesFile.getAbsolutePath(),updateMap);
-                Database.trySaveObject(updateMap, updatesFile);
-            } else {
-                fileCache.remove(updatesFile.getAbsolutePath());
-            }
-            return null;
-        };
-        return handleSaveForm(req,res,baseFolder,formMapFunction,saveFunction,saveUpdatesFunction);
-    }
 
-    private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction, Function3<Map<String,Object>,File,Boolean,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
-        String name = req.queryParams("name");
-        String[] parentDirs = req.queryParamsValues("parentDirs[]");
-        if(parentDirs==null) {
-            System.out.println("Parent dirs is null...");
-        } else {
-            System.out.println("Parent dirs: "+Arrays.toString(parentDirs));
-        }
+    private static Pair<String,Map<String,Object>> saveFormToFile(Map<String,Object> formMap, String name, String[] parentDirs, String actualUsername, String baseFolder, Function3<Map<String,Object>,File,Boolean,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
         String message;
         Random random = new Random(System.currentTimeMillis());
         Map<String,Object> responseMap = new HashMap<>();
-        Map<String,Object> formMap = formMapFunction.apply(req);
         Object prevFilename = formMap.get("file");
         if(formMap!=null) {
             if(debug) System.out.println("Form "+name+" attributes: "+new Gson().toJson(formMap));
@@ -1449,7 +1534,7 @@ public class SimilarPatentServer {
             if(parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
                 isShared = true;
             }
-            String username = isShared ? SHARED_USER : req.session().attribute("username");
+            String username = isShared ? SHARED_USER : actualUsername;
             if(username!=null&&username.length()>0) {
                 String templateFolderStr = baseFolder+username+"/";
                 File templateFolder = new File(templateFolderStr);
@@ -1503,7 +1588,25 @@ public class SimilarPatentServer {
                 message = "Unable to create form. Data missing.";
             }
         }
-        responseMap.put("message", message);
+        return new Pair<>(message, responseMap);
+    }
+
+    private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction, Function3<Map<String,Object>,File,Boolean,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
+        String name = req.queryParams("name");
+        String[] parentDirs = req.queryParamsValues("parentDirs[]");
+        if(parentDirs==null) {
+            System.out.println("Parent dirs is null...");
+        } else {
+            System.out.println("Parent dirs: "+Arrays.toString(parentDirs));
+        }
+        String actualUsername = req.session().attribute("username");
+        Map<String,Object> formMap = formMapFunction.apply(req);
+
+        Pair<String,Map<String,Object>> pairResponse = saveFormToFile(formMap,name,parentDirs,actualUsername,baseFolder,saveFunction,saveUpdatesFunction);
+
+        String message = pairResponse.getFirst();
+        Map<String,Object> responseMap = pairResponse.getSecond();
+        responseMap.put("message",message);
         return new Gson().toJson(responseMap);
     }
 
