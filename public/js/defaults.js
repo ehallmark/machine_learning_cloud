@@ -505,9 +505,13 @@ $(document).ready(function() {
         minimumResultsForSearch: 5,
         width: "100%",
     })
-    $('.dataset-multiselect').on('select2:opening',function(e) {
+    $('.dataset-multiselect').on('select2:opening',function(e,returnFalse) {
         createDatasetSelect2(this);
-        return true;
+        if(returnFalse==true) {
+            return false;
+        } else {
+            return true;
+        }
     });
 
     $('.dataset-multiselect').on('select2:open',function(e) {
@@ -782,9 +786,8 @@ var showDatasetFunction = function(data,tree,node){
     $('#filters-row div.attribute').addClass("disabled");
     var $datasetInput = $('#multiselect-multiselect-datasetNameInclude_filter');
     var $filter = $('#multiselect-nested-filter-select-attributesNested_filter');
-    $filter.val([$datasetInput.attr('name')]).trigger('change');
-    $datasetInput.trigger('select2:opening');
-    $datasetInput.trigger('select2:close');
+    $filter.val([$datasetInput.attr('name')]).trigger('change';
+    $datasetInput.trigger('select2:opening', [true]));
     $datasetInput.val([data.file+"_"+data.user]).trigger('change');
     $('#generate-reports-form').trigger('submit');
     return false;
