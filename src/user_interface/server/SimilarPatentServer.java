@@ -888,7 +888,7 @@ public class SimilarPatentServer {
             String actualUser = req.session().attribute("username");
             if(actualUser==null) return null;
             String fileName = actualUser;
-            deleteForm(fileName,Constants.USER_TEMPLATE_FOLDER,actualUser,false,false);
+            deleteForm(fileName,Constants.USER_DEFAULT_ATTRIBUTES_FOLDER,actualUser,false,false);
             res.redirect(HOME_URL);
             return null;
         });
@@ -1384,7 +1384,7 @@ public class SimilarPatentServer {
         String filename;
         if(defaultFile) {
             filename = Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+user+"/"+user;
-            // may not exist
+            // may not exist so default to super user default attributes form
             if(! new File(filename).exists()) {
                 filename = Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+SUPER_USER+"/"+SUPER_USER;
             }
@@ -1416,16 +1416,7 @@ public class SimilarPatentServer {
             message.add("no user found");
         } else {
 
-            String filename;
-            if (defaultFile) {
-                filename = Constants.USER_DEFAULT_ATTRIBUTES_FOLDER + user + "/" + user;
-                // may not exist
-                if (!new File(filename).exists()) {
-                    filename = Constants.USER_DEFAULT_ATTRIBUTES_FOLDER + SUPER_USER + "/" + SUPER_USER;
-                }
-            } else {
-                filename = baseFolder + (shared ? SHARED_USER : user) + "/" + file;
-            }
+            String filename = baseFolder + (shared ? SHARED_USER : user) + "/" + file;
 
             Map<String, Object> data = getMapFromFile(new File(filename), false);
 
