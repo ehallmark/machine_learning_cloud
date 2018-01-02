@@ -1,7 +1,6 @@
 package models.kmeans;
 
 import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
-import models.similarity_models.Vectorizer;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -67,6 +66,8 @@ public class AssetKMeans {
             map.putIfAbsent(tag,Collections.synchronizedList(new ArrayList<>()));
             map.get(tag).addAll(cluster);
         });
+
+        System.out.println("Num assets to cluster: "+assetEncodingMap.size());
         return map;
     }
 
