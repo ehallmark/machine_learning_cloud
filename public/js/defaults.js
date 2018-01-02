@@ -1272,7 +1272,6 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                                 newFolder.data=folderData;
                                                 $.each(clusters.clusters, function(idx,data){
                                                     if(data.hasOwnProperty('file')&&data.hasOwnProperty('user')&&data.hasOwnProperty('name')) {
-                                                        nameToData[]
                                                         var newData = {
                                                             'text': data.name,
                                                             'type': 'file',
