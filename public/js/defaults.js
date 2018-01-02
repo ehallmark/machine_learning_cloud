@@ -1215,7 +1215,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         };
                     }
                 }
-                if((node_type==='dataset') && !isFolder) {
+                if((node_type==='dataset') && !isFolder && deletable) {
                     items["Cluster Dataset"] = {
                         "separator_before": false,
                         "separator_after": false,
