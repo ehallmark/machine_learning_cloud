@@ -1451,6 +1451,12 @@ public class SimilarPatentServer {
                     if (clusters == null) {
                         message.add("clusters are null");
                     } else {
+                        Set<String> valid = clusters.values().stream().flatMap(l->l.stream()).collect(Collectors.toSet());
+                        List<String> other = assets.stream().filter(asset->!valid.contains(asset)).collect(Collectors.toList());
+                        if(other.size()>0) {
+                            clusters.putIfAbsent("other", new ArrayList<>());
+                            clusters.get("other").addAll(other);
+                        }
 
                         List<Map<String, Object>> clustersData = new ArrayList<>(clusters.size());
                         response.put("clusters", clustersData);
