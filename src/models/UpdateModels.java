@@ -30,9 +30,9 @@ public class UpdateModels {
 
     public static List<String> runModels(boolean rerunModels) throws Exception{
         // PRE DATA
-        Database.main(null);
-        List<String> gatherCompdbAssets = UpdateCompDBAndGatherData.update();
-        Database.main(null);
+        //Database.main(null);
+        //List<String> gatherCompdbAssets = UpdateCompDBAndGatherData.update();
+        //Database.main(null);
 
         // MODELS
         //UpdateSimilarityModels.updateLatest();
