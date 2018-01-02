@@ -2107,6 +2107,8 @@ public class SimilarPatentServer {
 
     public static Tag templateHelper(Pair<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable, List<String> parentDirs, boolean loadData) {
         // find nested
+        if(directoryStructure.getFirst().isEmpty()&&directoryStructure.getSecond().isEmpty()) return span();
+
         return li(folderName).attr("data-deletable", String.valueOf(deletable)).attr("data-jstree","{\"type\":\"folder\"}").with(
                 ul().with(
                         directoryStructure.getFirst().entrySet().stream()
