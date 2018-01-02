@@ -507,6 +507,7 @@ $(document).ready(function() {
     })
 
     var datasetMultiselect = function(e,returnFalse,name) {
+        $(this).find('option').not("[value]").remove();
         createDatasetSelect2(this);
         if(returnFalse==true) {
             $(this).val([name]).trigger('change');
