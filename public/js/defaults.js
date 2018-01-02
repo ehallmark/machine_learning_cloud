@@ -511,6 +511,8 @@ $(document).ready(function() {
         if(returnFalse==true) {
             $(this).val([name]).trigger('change');
             $('#generate-reports-form').trigger('submit');
+            e.preventDefault();
+            $(this).select2('close');
             return false;
         } else {
             return true;
@@ -544,7 +546,7 @@ $(document).ready(function() {
             minimumResultsForSearch: 5,
             width: '100%',
             data: getDatasetSelectData()
-        })
+        });
         $this.val(previousVal).trigger('change');
         $this.off('select2:opening');
         $this.on('select2:opening', function(e) {
