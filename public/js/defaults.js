@@ -510,6 +510,7 @@ $(document).ready(function() {
         createDatasetSelect2(this);
         if(returnFalse==true) {
             $(this).val([name]).trigger('change');
+            $('#generate-reports-form').trigger('submit');
             return false;
         } else {
             return true;
@@ -790,7 +791,6 @@ var showDatasetFunction = function(data,tree,node){
     $filter.val([$datasetInput.attr('name')]).trigger('change');
     var name = data.file+"_"+data.user;
     $datasetInput.trigger('select2:opening', [true,name]));
-    $('#generate-reports-form').trigger('submit');
     return false;
 };
 
