@@ -65,6 +65,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -399,8 +400,14 @@ public class SimilarPatentServer {
             loadSimilarityModels();
             keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.MODEL_NAME,-1,-1,-1));
             keyphrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
-            keyphrasePredictionPipelineManager.getCPCMap();
-            keyphrasePredictionPipelineManager.loadPredictions();
+            new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    keyphrasePredictionPipelineManager.loadPredictions();
+                    keyphrasePredictionPipelineManager.getCPCMap();
+                }
+            };
+
         }
     }
 
@@ -1468,6 +1475,7 @@ public class SimilarPatentServer {
                             Pair<String, Map<String, Object>> pair = saveFormToFile(formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user), saveDatasetUpdatesFunction());
 
                             Map<String, Object> clusterData = pair.getSecond();
+                            clusterData.put("name",name);
                             clustersData.add(clusterData);
                         });
                     }

@@ -1258,7 +1258,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                     if(!clusters.hasOwnProperty('clusters')) {
                                          alert('Error saving template: '+clusters.message);
                                     } else {
-                                        var newFolder = tree.create_node(
+                                        tree.create_node(
                                             tree.get_node(node.parent),
                                             {'data' : {
                                                 'text': node.text,
@@ -1278,7 +1278,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                                         };
                                                         $.each(data, function(k,v) { newData[k] = v; });
                                                         var newNode = tree.create_node(
-                                                            node,
+                                                            newFolder,
                                                             { 'data' : newData},
                                                             'first',
                                                             function(newNode) {
