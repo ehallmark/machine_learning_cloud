@@ -144,7 +144,7 @@ public class SimilarPatentServer {
     private static NestedAttribute allAttributes;
     private static AbstractNestedFilter allFilters;
     private static NestedAttribute allCharts;
-    private static KeyphrasePredictionPipelineManager kephrasePredictionPipelineManager;
+    private static KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager;
 
     static {
         roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.startsWith("gather"));
@@ -397,8 +397,10 @@ public class SimilarPatentServer {
             loadFilterModels();
             loadChartModels();
             loadSimilarityModels();
-            kephrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.MODEL_NAME,-1,-1,-1));
-            kephrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
+            keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.MODEL_NAME,-1,-1,-1));
+            keyphrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
+            keyphrasePredictionPipelineManager.getCPCMap();
+            keyphrasePredictionPipelineManager.loadPredictions();
         }
     }
 
@@ -1424,7 +1426,6 @@ public class SimilarPatentServer {
 
             System.out.println("Parent data: "+new Gson().toJson(data));
 
-            String[] parentParentDirs = (String[]) data.getOrDefault("parentDirs",new String[]{});
             String parentName = (String) data.get("name");
             if (parentName == null) {
                 message.add("no parent name");
@@ -1432,23 +1433,28 @@ public class SimilarPatentServer {
                 String username = shared ? SHARED_USER : user;
                 List<String> assets = DatasetIndex.get(username, file);
 
+                String[] parentParentDirs = Stream.of(new String[]{shared ? "Shared Datasets":"My Datasets"},(String[]) data.getOrDefault("parentDirs",new String[]{}))
+                        .flatMap(array->Stream.of(array)).toArray(size->new String[size]);
+
                 if (assets == null) {
                     message.add("assets are null");
                 } else {
 
-                    AssetKMeans kMeans = new AssetKMeans(10, assets, kephrasePredictionPipelineManager);
+                    AssetKMeans kMeans = new AssetKMeans(10, assets, keyphrasePredictionPipelineManager);
 
                     Map<String, List<String>> clusters = kMeans.clusterAssets();
 
                     if (clusters == null) {
                         message.add("clusters are null");
                     } else {
+                        System.out.println("Num clusters: "+clusters.size());
                         Set<String> valid = clusters.values().stream().flatMap(l->l.stream()).collect(Collectors.toSet());
                         List<String> other = assets.stream().filter(asset->!valid.contains(asset)).collect(Collectors.toList());
                         if(other.size()>0) {
                             clusters.putIfAbsent("other", new ArrayList<>());
                             clusters.get("other").addAll(other);
                         }
+                        System.out.println("Num others: "+other.size());
 
                         List<Map<String, Object>> clustersData = new ArrayList<>(clusters.size());
                         response.put("clusters", clustersData);

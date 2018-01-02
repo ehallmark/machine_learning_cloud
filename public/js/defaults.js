@@ -1258,26 +1258,38 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                     if(!clusters.hasOwnProperty('clusters')) {
                                          alert('Error saving template: '+clusters.message);
                                     } else {
-                                        $.each(clusters.clusters, function(idx,data){
-                                            if(data.hasOwnProperty('file')&&data.hasOwnProperty('user')) {
+                                        var newFolder = tree.create_node(
+                                            tree.get_node(node.parent),
+                                            {'data' : {
+                                                'text': node.text,
+                                                'type': 'folder',
+                                                'icon': 'jstree-folder',
+                                                'jstree': {'type':'file'}
+                                            }},
+                                            'first',
+                                            function(newFolder) {
+                                                $.each(clusters.clusters, function(idx,data){
+                                                    if(data.hasOwnProperty('file')&&data.hasOwnProperty('user')&&data.hasOwnProperty('name')) {
+                                                        var newData = {
+                                                            'text': data.name,
+                                                            'type': 'file',
+                                                            'icon': 'jstree-file',
+                                                            'jstree': {'type': 'file'},
+                                                        };
+                                                        $.each(data, function(k,v) { newData[k] = v; });
+                                                        var newNode = tree.create_node(
+                                                            node,
+                                                            { 'data' : newData},
+                                                            'first',
+                                                            function(newNode) {
 
-                                                var newData = {
-                                                    'text': name,
-                                                    'type': 'file',
-                                                    'icon': 'jstree-file',
-                                                    'jstree': {'type': 'file'},
-                                                };
-                                                $.each(data, function(k,v) { newData[k] = v; });
-                                                var newNode = tree.create_node(
-                                                    node,
-                                                    { 'data' : newData},
-                                                    'first',
-                                                    function(newNode) {
-
+                                                            }
+                                                        );
                                                     }
-                                                );
+                                                });
                                             }
-                                        });
+                                        );
+
                                     }
                                 },
                                 dataType: "json"
