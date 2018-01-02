@@ -30,9 +30,9 @@ public class UpdateModels {
 
     public static List<String> runModels(boolean rerunModels) throws Exception{
         // PRE DATA
-        Database.main(null);
-        List<String> gatherCompdbAssets = UpdateCompDBAndGatherData.update();
-        Database.main(null);
+        //Database.main(null);
+        //List<String> gatherCompdbAssets = UpdateCompDBAndGatherData.update();
+        //Database.main(null);
 
         // MODELS
         //UpdateSimilarityModels.updateLatest();
@@ -47,12 +47,12 @@ public class UpdateModels {
         }
         UpdateValueModels.updateLatest(unknownAssets);
 
-        if(unknownAssets==null) {
-            return gatherCompdbAssets;
-        } else if(gatherCompdbAssets==null) {
+       // if(unknownAssets==null) {
+       //     return gatherCompdbAssets;
+       // } else if(gatherCompdbAssets==null) {
             return unknownAssets.stream().collect(Collectors.toList());
-        } else {
-            return Stream.of(unknownAssets,gatherCompdbAssets).flatMap(list->list.stream()).collect(Collectors.toList());
-        }
+       // } else {
+       //     return Stream.of(unknownAssets,gatherCompdbAssets).flatMap(list->list.stream()).collect(Collectors.toList());
+       // }
     }
 }
