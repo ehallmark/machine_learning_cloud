@@ -24,7 +24,9 @@ import models.text_streaming.BOWVectorFromTextTransformer;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.elasticsearch.search.sort.SortOrder;
+import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
@@ -2546,6 +2548,7 @@ public class SimilarPatentServer {
     }
 
     public static void main(String[] args) throws Exception {
+        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         DefaultPipelineManager.setLoggingLevel(Level.INFO);
         boolean testFilterNames = false;
         if(testFilterNames) {
