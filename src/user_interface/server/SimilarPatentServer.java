@@ -1407,7 +1407,6 @@ public class SimilarPatentServer {
         Map<String, Object> response = new HashMap<>();
 
         String file = req.queryParams("file");
-        boolean defaultFile = Boolean.valueOf(req.queryParamOrDefault("defaultFile","false"));
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
 
         StringJoiner message = new StringJoiner("; ", "Messages: ", ".");
@@ -1423,12 +1422,11 @@ public class SimilarPatentServer {
 
             System.out.println("Parent data: "+new Gson().toJson(data));
 
-            String[] parentParentDirs = (String[]) data.get("parentDirs");
+            String[] parentParentDirs = (String[]) data.getOrDefault("parentDirs",new String[]{});
             String parentName = (String) data.get("name");
-            if (parentParentDirs==null || parentName == null) {
-                message.add("no parent name or directory found");
+            if (parentName == null) {
+                message.add("no parent name");
             } else {
-
                 String username = shared ? SHARED_USER : user;
                 List<String> assets = DatasetIndex.get(username, file);
 
