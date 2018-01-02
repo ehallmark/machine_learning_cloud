@@ -524,10 +524,20 @@ $(document).ready(function() {
         $(this).on('select2:opening',datasetMultiselect);
     });
 
+    function cleanArray(actual) {
+      var newArray = new Array();
+      for (var i = 0; i < actual.length; i++) {
+        if (actual[i]) {
+          newArray.push(actual[i]);
+        }
+      }
+      return newArray;
+    }
+
     var createDatasetSelect2 = function(elem) {
         // get datasets
         var $this = $(elem);
-        var previousVal = $this.val();
+        var previousVal = cleanArray($this.val());
         $this.select2('destroy');
         $this.empty();
         $this.select2({
