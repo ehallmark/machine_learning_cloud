@@ -14,7 +14,6 @@ import j2html.tags.Tag;
 import lombok.Getter;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
 import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
-import models.keyphrase_prediction.models.NewestModel;
 import models.kmeans.AssetKMeans;
 import models.similarity_models.AbstractSimilarityModel;
 import models.similarity_models.DefaultSimilarityModel;
@@ -1417,8 +1416,10 @@ public class SimilarPatentServer {
                 filename = baseFolder + (shared ? SHARED_USER : user) + "/" + file;
             }
 
-            Map<String, Object> data = getMapFromFile(new File(filename), true);
+            Map<String, Object> data = getMapFromFile(new File(filename), false);
 
+            System.out.println("Parent data: "+new Gson().toJson(data));
+            
             String[] parentParentDirs = (String[]) data.get("parentDirs");
             String parentName = (String) data.get("name");
             if (parentParentDirs==null || parentName == null) {

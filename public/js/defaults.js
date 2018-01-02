@@ -1256,7 +1256,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 },
                                 success: function(clusters) {
                                     if(!clusters.hasOwnProperty('clusters')) {
-                                         alert('Error saving template: '+data.message);
+                                         alert('Error saving template: '+clusters.message);
                                     } else {
                                         $.each(clusters.clusters, function(idx,data){
                                             if(data.hasOwnProperty('file')&&data.hasOwnProperty('user')) {
