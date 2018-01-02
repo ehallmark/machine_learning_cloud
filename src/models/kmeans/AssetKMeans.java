@@ -48,7 +48,9 @@ public class AssetKMeans {
     public Map<String,List<String>> clusterAssets() {
         kMeans.fit(assetEncodingMap,maxEpochs);
         Map<String,List<String>> map = Collections.synchronizedMap(new HashMap<>());
-        kMeans.getClusters().forEach(cluster->{
+        List<Set<String>> clusters = kMeans.getClusters();
+        System.out.println("Found "+clusters.size()+" clusters.");
+        clusters.forEach(cluster->{
             if(cluster.isEmpty()) return;
 
             // tag

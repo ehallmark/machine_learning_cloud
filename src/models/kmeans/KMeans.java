@@ -67,6 +67,7 @@ public class KMeans {
             centroid.dataPoints.forEach(point->{
                 points.add(point.name);
             });
+            clusters.add(points);
         });
         return clusters;
     }

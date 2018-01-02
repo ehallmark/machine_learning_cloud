@@ -1,13 +1,11 @@
 package models.kmeans;
 
-import data_pipeline.helpers.Function2;
 import lombok.Getter;
 import org.deeplearning4j.berkeley.Triple;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.impl.indexaccum.IMax;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import org.nd4j.linalg.primitives.Pair;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,6 +44,7 @@ public class UnitCosineKMeans {
             centroid.dataPoints.forEach(point->{
                 points.add(point.name);
             });
+            clusters.add(points);
         });
         return clusters;
     }
