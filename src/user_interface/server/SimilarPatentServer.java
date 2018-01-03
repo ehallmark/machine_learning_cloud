@@ -1471,6 +1471,9 @@ public class SimilarPatentServer {
 
                             Map<String, Object> formMap = new HashMap<>();
 
+                            formMap.put("name",name);
+                            formMap.put("assets", cluster.toArray(new String[cluster.size()]));
+
                             Pair<String, Map<String, Object>> pair = saveFormToFile(formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user), saveDatasetUpdatesFunction());
 
                             Map<String, Object> clusterData = pair.getSecond();
