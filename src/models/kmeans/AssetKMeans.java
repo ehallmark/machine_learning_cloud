@@ -23,8 +23,10 @@ public class AssetKMeans {
     private UnitCosineKMeans kMeans;
     private Map<String,INDArray> assetEncodingMap;
     private Map<String,Set<String>> techPredictions;
+    private int k;
     public AssetKMeans(int k, Map<String,INDArray> assetToEncodingMap, KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager) {
-        this.kMeans = new UnitCosineKMeans(k);
+        this.kMeans = new UnitCosineKMeans();
+        this.k=k;
         this.keyphrasePredictionPipelineManager=keyphrasePredictionPipelineManager;
         this.techPredictions = keyphrasePredictionPipelineManager.loadPredictions();
         this.assetEncodingMap = assetToEncodingMap;
@@ -41,13 +43,14 @@ public class AssetKMeans {
             }
             else return null;
         }).filter(p->p!=null).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
-        this.kMeans = new UnitCosineKMeans(k);
+        this.kMeans = new UnitCosineKMeans();
+        this.k=k;
         this.keyphrasePredictionPipelineManager=keyphrasePredictionPipelineManager;
         this.techPredictions = keyphrasePredictionPipelineManager.loadPredictions();
     }
 
     public Map<String,List<String>> clusterAssets() {
-        kMeans.fit(assetEncodingMap,maxEpochs);
+        kMeans.fit(assetEncodingMap,maxEpochs,k);
         Map<String,List<String>> map = Collections.synchronizedMap(new HashMap<>());
         List<Set<String>> clusters = kMeans.getClusters();
         System.out.println("Found "+clusters.size()+" clusters.");
