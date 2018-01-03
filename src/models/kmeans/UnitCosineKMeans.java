@@ -1,7 +1,6 @@
 package models.kmeans;
 
 import lombok.Getter;
-import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.berkeley.Triple;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.impl.indexaccum.IMax;
@@ -31,6 +30,7 @@ public class UnitCosineKMeans {
     private INDArray minBoundary;
     private INDArray maxBoundary;
     private INDArray boundaryDiff;
+    private Random randomSampler = new Random(235);
     public UnitCosineKMeans() {
         this.converged=false;
     }
@@ -49,8 +49,7 @@ public class UnitCosineKMeans {
 
     protected INDArray sampleFromNullDistribution(int numSamples) {
         if(minBoundary==null||boundaryDiff==null) computeBoundingBox();
-
-        INDArray samples = Nd4j.rand(numSamples,V.columns());
+        INDArray samples = Nd4j.rand(numSamples,V.columns(),randomSampler.nextInt());
         samples.muliRowVector(boundaryDiff).addiRowVector(minBoundary);
         samples.diviColumnVector(samples.norm2(1));
         return samples;
@@ -82,22 +81,22 @@ public class UnitCosineKMeans {
 
     }
 
-    public void optimize(Map<String,INDArray> dataMap, int minK, int maxK, int B, int nEpochs) {
+    public void optimize(Map<String,INDArray> dataMap, int minK, int maxK, int nSamplesPerInterval, int B, int nEpochs) {
         if(dataMap.isEmpty()) return;
 
         setVAndDatapoints(dataMap);
 
-        optimize(minK,maxK,B,nEpochs);
+        optimize(minK,maxK,nSamplesPerInterval,B,nEpochs);
     }
 
-    protected void optimize(int minK, int maxK, int B, int nEpochs) {
+    protected void optimize(int minK, int maxK, int nSamplesPerInterval, int B, int nEpochs) {
         if(this.V==null||this.dataPoints==null) throw new NullPointerException("Please initialize V and data points list.");
 
         UnitCosineKMeans nullDistribution = new UnitCosineKMeans();
         nullDistribution.dataPoints = IntStream.range(0,this.dataPoints.size()).mapToObj(i->new DataPoint(String.valueOf(i),i)).collect(Collectors.toList());
         List<INDArray> nullDatasets = IntStream.range(0,B).mapToObj(i->sampleFromNullDistribution(this.dataPoints.size())).collect(Collectors.toList());
 
-        int optimalK = optimizeHelper(minK,maxK,nEpochs,nullDatasets,nullDistribution,null,null);
+        int optimalK = optimizeHelper(minK,maxK,nSamplesPerInterval,nEpochs,nullDatasets,nullDistribution,new Double[nSamplesPerInterval]);
         fit(optimalK,nEpochs);
 
         System.out.println("Final score: "+error+". Best k: "+optimalK);
@@ -113,30 +112,80 @@ public class UnitCosineKMeans {
         return Math.log(1d + nullError) - Math.log(1d + thisError);
     }
 
-    protected Integer optimizeHelper(int minK, int maxK, int nEpochs, List<INDArray> nullDatasets, UnitCosineKMeans nullDistribution, Double lScore, Double rScore) {
-        if(minK>=maxK-1) {
-            int finalK = lScore < rScore ? maxK : minK;
+    private static int argMax(Double[] in) {
+        if(in.length==0) return -1;
+        int i = 0;
+        double max = in[0];
+        for(int j = 1; j < in.length; j++) {
+            Double x = in[j];
+            if(x==null)continue;
+            if(x>max) {
+                max = x;
+                i = j;
+            }
+        }
+        return i;
+    }
+
+    private static int argMax(double[] in) {
+        if(in.length==0) return -1;
+        int i = 0;
+        double max = in[0];
+        for(int j = 1; j < in.length; j++) {
+            double x = in[j];
+            if(x>max) {
+                max = x;
+                i = j;
+            }
+        }
+        return i;
+    }
+
+    private static int argMin(double[] in) {
+        if(in.length==0) return -1;
+        int i = 0;
+        double min = in[0];
+        for(int j = 1; j < in.length; j++) {
+            double x = in[j];
+            if(x<min) {
+                min=x;
+                i = j;
+            }
+        }
+        return i;
+    }
+
+    protected Integer optimizeHelper(int minK, int maxK, int nSamplesPerInterval, int nEpochs, List<INDArray> nullDatasets, UnitCosineKMeans nullDistribution, Double... scores) {
+        if(minK>=maxK-1-nSamplesPerInterval) {
+            int finalK = minK+argMax(scores);
             System.out.println("Final k: " + finalK);
             return finalK;
         }
 
-        int middleIdx = (minK+maxK)/2;
-
-        System.out.println("k: ["+minK+","+maxK+"], Score: ["+lScore+","+rScore+"]");
+        int intervalLength = (maxK-minK)/nSamplesPerInterval;
 
         // fit min
-        double startGap = lScore!=null?lScore:computeGap(minK,nEpochs,nullDatasets,nullDistribution);
-        double middleGap = computeGap(middleIdx,nEpochs,nullDatasets,nullDistribution);
-        double endGap = rScore!=null?rScore:computeGap(maxK,nEpochs,nullDatasets,nullDistribution);
-
-        double startDiff = (startGap+middleGap)/2;
-        double endDiff = (middleGap+endGap)/2;
-
-        if(endDiff>startDiff) {
-            return optimizeHelper(middleIdx,maxK, nEpochs,nullDatasets,nullDistribution,middleGap,endGap);
-        } else {
-            return optimizeHelper(minK,middleIdx, nEpochs,nullDatasets,nullDistribution,startGap,middleGap);
+        int i = 0;
+        double[] diffs = new double[scores.length-1];
+        for(; i < nSamplesPerInterval; i++) {
+            scores[i] = computeGap(minK+i*intervalLength, nEpochs, nullDatasets, nullDistribution);
+            if(i>0) {
+                diffs[i-1]=(scores[i]-scores[i-1]);
+                if(diffs[i-1]<0) {
+                }
+            }
         }
+
+
+        int bestIdx = Math.max(argMin(diffs),argMax(scores));
+
+
+        int newMinK = minK+(bestIdx)*intervalLength;
+        int newMaxK = minK+(bestIdx+1)*intervalLength;
+        System.out.println("k: ["+minK+","+maxK+"], Diffs: "+Arrays.toString(diffs));
+        System.out.println("BestIdx: "+bestIdx);
+
+        return optimizeHelper(newMinK,newMaxK,nSamplesPerInterval, nEpochs,nullDatasets,nullDistribution,scores);
     }
 
     public void fit(int k, int nEpochs) {
@@ -333,10 +382,11 @@ public class UnitCosineKMeans {
     public static void main(String[] args) {
         // test
         long t0 = System.currentTimeMillis();
-        int maxK = 60;
+        int maxK = 130;
         int B = 10;
-        int maxClusters = 4;
+        int maxClusters = 2;
         int numPerCluster = 10;
+        int nSamplesPerInterval = 8;
         UnitCosineKMeans kMeans = new UnitCosineKMeans();
 
         Map<String,INDArray> dataMap = new HashMap<>();
@@ -350,7 +400,7 @@ public class UnitCosineKMeans {
             }
         }
 
-        kMeans.optimize(dataMap,2,maxK,B,100);
+        kMeans.optimize(dataMap,2,maxK,nSamplesPerInterval,B,100);
 
         long t1 = System.currentTimeMillis();
         //System.out.println(kMeans.toString());
