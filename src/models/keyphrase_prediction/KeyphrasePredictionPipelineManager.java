@@ -125,7 +125,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             if(keywordToVectorLookupTable==null) {
                 buildKeywordToLookupTableMap();
             }
-            
+
             Map<String,INDArray> wordVectorMap = getWordCPC2VecPipelineManager().getOrLoadWordVectors();
             // create
             multiStem = new MultiStem(keyword.toLowerCase().split(" "),-1);

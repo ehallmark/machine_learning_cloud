@@ -39,7 +39,7 @@ public class UnitCosineKMeans {
 
     public List<Set<String>> getClusters() {
         List<Set<String>> clusters = new ArrayList<>();
-        centroids.forEach(centroid->{
+        centroids.stream().sorted(Comparator.comparing(c->c.getOrComputeFinalError())).forEach(centroid->{
             Set<String> points = new HashSet<>();
             centroid.dataPoints.forEach(point->{
                 points.add(point.name);
@@ -209,9 +209,17 @@ public class UnitCosineKMeans {
     private class Centroid {
         private INDArray mean;
         private Set<DataPoint> dataPoints;
+        private Double finalError;
         Centroid(INDArray mean) {
             this.mean=mean;
             this.dataPoints = Collections.synchronizedSet(new HashSet<>());
+        }
+
+        private double getOrComputeFinalError() {
+            if(finalError==null) {
+                finalError = dataPoints.stream().mapToDouble(dp -> dp.squareDist).average().orElse(Double.MAX_VALUE);
+            }
+            return finalError;
         }
 
         private void recomputeMean() {

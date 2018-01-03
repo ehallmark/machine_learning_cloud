@@ -9,6 +9,7 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Database;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -50,6 +51,7 @@ public class AssetKMeans {
         Map<String,List<String>> map = Collections.synchronizedMap(new HashMap<>());
         List<Set<String>> clusters = kMeans.getClusters();
         System.out.println("Found "+clusters.size()+" clusters.");
+        AtomicInteger cnt = new AtomicInteger(0);
         clusters.forEach(cluster->{
             if(cluster.isEmpty()) return;
 
@@ -63,7 +65,7 @@ public class AssetKMeans {
                     tag = results.values().stream().findAny().orElse(Collections.emptySet()).stream().findAny().orElse(null);
                 }
             }
-            if(tag==null) tag = "other";
+            if(tag==null) tag = "other "+cnt.getAndIncrement();
 
             map.putIfAbsent(tag,Collections.synchronizedList(new ArrayList<>()));
             map.get(tag).addAll(cluster);
