@@ -1260,6 +1260,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                     } else {
                                         var folderData = {
                                             'text': node.text,
+                                            'deletable': true,
                                             'type': 'folder',
                                             'icon': 'jstree-folder',
                                             'jstree': {'type':'folder'}
@@ -1274,6 +1275,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                                     if(data.hasOwnProperty('file')&&data.hasOwnProperty('user')&&data.hasOwnProperty('name')) {
                                                         var newData = {
                                                             'text': data.name,
+                                                            'deletable': true,
                                                             'type': 'file',
                                                             'icon': 'jstree-file',
                                                             'jstree': {'type': 'file'},
