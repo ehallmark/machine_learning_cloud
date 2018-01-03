@@ -40,7 +40,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     private static MultiLayerNetwork wordToEncodingNet;
     private static final int maxSampleLength = 15;
     private static final int maxNumSamples = 30;
-    private static final long numDocs = 18000000L;
+    private static final double numDocs = 18000000d;
 
     private synchronized void loadSimilarityNetworks() {
         if(wordToEncodingNet==null) {
