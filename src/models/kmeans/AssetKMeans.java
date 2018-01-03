@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class AssetKMeans {
     private static final int maxEpochs = 200;
-    private static final double minScore = 0.6;
+    private static final double minScore = 0.3;
 
     private KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager;
     private UnitCosineKMeans kMeans;

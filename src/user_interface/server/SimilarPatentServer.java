@@ -1455,12 +1455,12 @@ public class SimilarPatentServer {
                     } else {
                         System.out.println("Num clusters: "+clusters.size());
                         Set<String> valid = clusters.values().stream().flatMap(l->l.stream()).collect(Collectors.toSet());
-                        List<String> other = assets.stream().filter(asset->!valid.contains(asset)).collect(Collectors.toList());
-                        if(other.size()>0) {
-                            clusters.putIfAbsent("other", new ArrayList<>());
-                            clusters.get("other").addAll(other);
+                        List<String> unknown = assets.stream().filter(asset->!valid.contains(asset)).collect(Collectors.toList());
+                        if(unknown.size()>0) {
+                            clusters.putIfAbsent("unknown", new ArrayList<>());
+                            clusters.get("unknown").addAll(unknown);
                         }
-                        System.out.println("Num others: "+other.size());
+                        System.out.println("Num others: "+unknown.size());
 
                         List<Map<String, Object>> clustersData = new ArrayList<>(clusters.size());
                         response.put("clusters", clustersData);

@@ -119,8 +119,27 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         return labelToKeywordMap.get(keyword.toLowerCase());
     }
 
+    private MultiStem findOrCreateByLabel(String keyword) {
+        MultiStem multiStem = labelToKeywordMap.get(keyword.toLowerCase());
+        if(multiStem==null) {
+            Map<String,INDArray> wordVectorMap = getWordCPC2VecPipelineManager().getOrLoadWordVectors();
+            // create
+            multiStem = new MultiStem(keyword.toLowerCase().split(" "),-1);
+            multiStem.setBestPhrase(keyword.toLowerCase());
+            List<INDArray> wordVectors = Stream.of(multiStem.getStems()).map(word->wordVectorMap.get(word)).filter(vec->vec!=null).collect(Collectors.toList());
+            if(wordVectors.size()>=Math.max(1,multiStem.getStems().length-1)) {
+                INDArray vec = Transforms.unitVec(Nd4j.vstack(wordVectors).mean(0));
+                keywordToVectorLookupTable.put(multiStem, vec);
+            } else {
+                multiStem = null;
+            }
+        }
+        return multiStem;
+    }
+
+
     public Map<String,Set<String>> predict(Collection<String> keywords, Map<String,INDArray> toPredictMap, int maxTags, double minScore) {
-        List<MultiStem> keywordStems = keywords.stream().map(keyword->findByLabel(keyword)).filter(mul->mul!=null).collect(Collectors.toList());
+        List<MultiStem> keywordStems = keywords.stream().map(keyword->findOrCreateByLabel(keyword)).filter(mul->mul!=null).collect(Collectors.toList());
         return predict(keywordStems, toPredictMap, maxTags, minScore);
     }
 
