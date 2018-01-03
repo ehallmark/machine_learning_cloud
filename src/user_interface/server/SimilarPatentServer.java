@@ -1548,6 +1548,15 @@ public class SimilarPatentServer {
         String message;
         Random random = new Random(System.currentTimeMillis());
         Map<String,Object> responseMap = new HashMap<>();
+
+        System.out.println("Saving form to file. Name="+name);
+        if(parentDirs!=null) System.out.println("Parent dirs: "+String.join(", ",parentDirs));
+        else System.out.println("Parent dirs: null");
+        System.out.println("Username: "+actualUsername);
+        System.out.println("Base folder: "+baseFolder);
+        if(formMap!=null)System.out.println("Form map: "+new Gson().toJson(formMap));
+        else System.out.println("Form map: null");
+
         Object prevFilename = formMap.get("file");
         if(formMap!=null) {
             if(debug) System.out.println("Form "+name+" attributes: "+new Gson().toJson(formMap));
