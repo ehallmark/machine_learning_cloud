@@ -37,8 +37,8 @@ public class CreatePatentDBIndex {
         for(int i = 0; i < SimilarityAttribute.vectorSize; i++) {
             vectorProperties.put(String.valueOf(i),typeMap("double",null,null));
         }
-        parentProperties.put("vector_obj",typeMap("object",vectorProperties,null));
-        parentProperties.put("cvec",typeMap("object",vectorProperties,null));
+        //parentProperties.put("vector_obj",typeMap("object",vectorProperties,null));
+        parentProperties.put(SimilarityAttribute.VECTOR_NAME,typeMap("object",vectorProperties,null));
 
         builder = createMapping(builder, parentProperties, DataIngester.PARENT_TYPE_NAME, null);
 

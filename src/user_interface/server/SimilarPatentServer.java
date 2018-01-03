@@ -403,6 +403,8 @@ public class SimilarPatentServer {
             new RecursiveAction() {
                 @Override
                 protected void compute() {
+                    keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors();
+                    keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadWordVectors();
                     keyphrasePredictionPipelineManager.loadPredictions();
                     keyphrasePredictionPipelineManager.getCPCMap();
                 }
@@ -633,10 +635,7 @@ public class SimilarPatentServer {
                 @Override
                 protected SimilarityEngineController compute() {
                     // current word vectorizer
-                    boolean binary = true;
-                    Function<String,Collection<String>> tokenizer = WordToCPCIterator.getDefaultTokenizer();
-                    Function<String,INDArray> wordVectorizer = tokenizer.andThen(new BOWVectorFromTextTransformer(TextSimilarityEngine.getWordIdxMap().join(),binary));
-                    SimilarityEngineController.setAllEngines(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(wordVectorizer), new CPCSimilarityEngine()));
+                    SimilarityEngineController.setAllEngines(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(), new CPCSimilarityEngine()));
                     return new SimilarityEngineController();
                 }
             };

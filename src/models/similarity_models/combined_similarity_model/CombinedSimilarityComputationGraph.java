@@ -172,9 +172,6 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
         return new Pair<>(d1,d2);
     }
 
-
-
-
     @Override
     protected void train(INDArray features, INDArray labels) {
         INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(features,labels));

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 10/27/17.
  */
 public class Word2VecToCPCIterator implements DataSetIterator {
-    private static Function<List<VocabWord>,Map<String,Integer>> groupingBOWFunction = sequence -> {
+    public static final Function<List<VocabWord>,Map<String,Integer>> groupingBOWFunction = sequence -> {
         return sequence.stream().collect(Collectors.groupingBy(word->word.getLabel(), Collectors.summingInt(label->(int)label.getElementFrequency())));
     };
     private static Function<List<VocabWord>,Map<String,Integer>> countBOWFunction = sequence -> {

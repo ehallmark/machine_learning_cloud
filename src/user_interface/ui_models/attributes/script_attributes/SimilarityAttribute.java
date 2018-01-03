@@ -22,14 +22,15 @@ import static user_interface.server.SimilarPatentServer.extractArray;
  */
 public class SimilarityAttribute extends AbstractScriptAttribute implements DependentAttribute<AbstractScriptAttribute> {
     public static final int vectorSize = 32;
+    public static final String VECTOR_NAME = "cvec";
 
     public static final String EXPRESSION_SIMILARITY_SCRIPT;
     public static final String EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT;
     static {
-        StringJoiner cosSort = new StringJoiner("+", "doc['vector_obj.0'].empty ? _score : ((99.0 * (", ")) + _score)");
-        StringJoiner cos = new StringJoiner("+", "doc['vector_obj.0'].empty ? 0.0 : ((100.0 * (", ")))");
+        StringJoiner cosSort = new StringJoiner("+", "doc['"+VECTOR_NAME+".0'].empty ? _score : ((99.0 * (", ")) + _score)");
+        StringJoiner cos = new StringJoiner("+", "doc['"+VECTOR_NAME+".0'].empty ? 0.0 : ((100.0 * (", ")))");
         for (int i = 0; i < vectorSize; i++) {
-            String inner = "(doc['vector_obj." + i + "'].value*avg_vector" + i + ")";
+            String inner = "(doc['"+VECTOR_NAME+"." + i + "'].value*avg_vector" + i + ")";
             cos.add(inner);
             cosSort.add(inner);
         }

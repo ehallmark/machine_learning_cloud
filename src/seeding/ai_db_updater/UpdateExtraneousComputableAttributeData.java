@@ -8,6 +8,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.attributes.computable_attributes.NestedComputedCPCAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
+import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,15 +20,15 @@ public class UpdateExtraneousComputableAttributeData {
     public static void update(List<String> assets) {
         SimilarPatentServer.initialize(true,false);
 
-        CPCVAEPipelineManager cpcvaePipelineManager = new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME);
-        Vectorizer cpcVaeVectorizer = new CPCSimilarityVectorizer(cpcvaePipelineManager,false, true, false,null);
+        //CPCVAEPipelineManager cpcvaePipelineManager = new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME);
+        //Vectorizer cpcVaeVectorizer = new CPCSimilarityVectorizer(cpcvaePipelineManager,false, true, false,null);
 
         CombinedSimilarityVAEPipelineManager combinedSimilarityVAEPipelineManager = CombinedSimilarityVAEPipelineManager.getOrLoadManager();
         Vectorizer combinedVectorizer = new CPCSimilarityVectorizer(combinedSimilarityVAEPipelineManager,false, true, false,null);
 
         Map<String,Vectorizer> vectorizerMap = Collections.synchronizedMap(new HashMap<>());
-        vectorizerMap.put("vector_obj",cpcVaeVectorizer);
-        vectorizerMap.put("cvec",combinedVectorizer);
+        //vectorizerMap.put("vector_obj",cpcVaeVectorizer);
+        vectorizerMap.put(SimilarityAttribute.VECTOR_NAME,combinedVectorizer);
 
         List<ComputableAttribute<?>> computableAttributes = SimilarPatentServer.getAllComputableAttributes().stream().filter(a->!(a instanceof HiddenAttribute)).collect(Collectors.toCollection(ArrayList::new));
         computableAttributes.add(new NestedComputedCPCAttribute());
