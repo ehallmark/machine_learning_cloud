@@ -120,7 +120,7 @@ public class UnitCosineKMeans {
             return finalK;
         }
 
-        int middleIdx = (3*minK+maxK)/4;
+        int middleIdx = (minK+maxK)/2;
 
         System.out.println("k: ["+minK+","+maxK+"], Score: ["+lScore+","+rScore+"]");
 
@@ -335,8 +335,8 @@ public class UnitCosineKMeans {
         long t0 = System.currentTimeMillis();
         int maxK = 60;
         int B = 10;
-        int maxClusters = 10;
-        int numPerCluster = 100;
+        int maxClusters = 70;
+        int numPerCluster = 10;
         UnitCosineKMeans kMeans = new UnitCosineKMeans();
 
         Map<String,INDArray> dataMap = new HashMap<>();
