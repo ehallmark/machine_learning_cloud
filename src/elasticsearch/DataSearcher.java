@@ -296,41 +296,32 @@ public class DataSearcher {
         boolean componentOfScore = (usingScore && Constants.SIMILARITY.equals(attribute.getFullName()))
                 || (attribute.getFullName().equals(comparator) && (isParentAttr || attribute instanceof AbstractScriptAttribute));
         if (attribute instanceof AbstractScriptAttribute) {
-            System.out.println("  Script Component... " + attribute.getFullName());
             AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute) attribute;
             Script script = scriptAttribute.getScript();
             if (script != null) {
                 if (isParentAttr) {
                     innerHitBuilder.set(innerHitBuilder.get().addScriptField(scriptAttribute.getName(), script));
-                    System.out.println("Adding script to inner hit builder: " + script.getIdOrCode());
 
                 } else {
                     request.set(request.get().addScriptField(scriptAttribute.getFullName(), script));
-                    System.out.println("Adding script to main request: " + script.getIdOrCode());
                 }
                 // add script to query
                 if (componentOfScore) {
-                    System.out.println("Component of script score...");
                     // try adding custom sort script
                     QueryBuilder sortScript = scriptAttribute.getSortQuery();
                     if (sortScript != null) {
                         if (attribute.getParent() != null && !attribute.getParent().isObject()) {
-                            System.out.println("Is nested");
                             queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), sortScript, ScoreMode.Avg)));
                         } else {
-                            System.out.println("Not nested.");
                             queryBuilder.set(queryBuilder.get().must(sortScript));
                         }
                     }
-                    System.out.println("Is Script and Component of score: "+sortScript);
                 }
             }
         } else if (componentOfScore) {
-            System.out.println("  Score Component... " + attribute.getFullName());
             // add default sort
             if (isParentAttr) {
                 String sortScript = "doc['" + attribute.getFullName() + "'].empty ? 0 : ("+(usingScore ? "_score *":"")+" doc['" + attribute.getFullName() + "'].value)";
-                System.out.println("Using custom score component on filings: " + sortScript);
                 QueryBuilder query = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(new Script(ScriptType.INLINE, "expression", sortScript, Collections.emptyMap())));
                 if(attribute.getParent() != null && !attribute.getParent().isObject()) {
                     queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), query, ScoreMode.Avg)));
@@ -385,11 +376,6 @@ public class DataSearcher {
             filterNestedObjects(nestedAttrNameMap,hit,item,foundInnerHits);
         }
 
-        //if(debug) {
-        //    System.out.println("fields: "+new Gson().toJson(hit.getFields()));
-        //    System.out.println("source: "+new Gson().toJson(hit.getSource()));
-        //    System.out.println("highlights: "+new Gson().toJson(hit.getHighlightFields()));
-        // }
 
         hit.getSource().forEach((k,v)->{
             if(!foundInnerHits.contains(k)) {
@@ -417,11 +403,7 @@ public class DataSearcher {
                 });
                 handleFields(item, firstHit, foundInnerHits, false);
                 handleHighlightFields(item, firstHit.getHighlightFields(), foundInnerHits, false);
-                // if(debug) {
-               //     System.out.println(" Filings inner fields: " + new Gson().toJson(firstHit.getFields()));
-               //     System.out.println(" Filings inner source: " + new Gson().toJson(firstHit.getSource()));
-               //     System.out.println(" Filings inner highlighting: " + new Gson().toJson(firstHit.getHighlightFields()));
-               // }
+
             }
         }
 
