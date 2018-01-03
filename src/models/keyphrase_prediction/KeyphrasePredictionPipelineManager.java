@@ -122,6 +122,10 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     private MultiStem findOrCreateByLabel(String keyword) {
         MultiStem multiStem = labelToKeywordMap.get(keyword.toLowerCase());
         if(multiStem==null) {
+            if(keywordToVectorLookupTable==null) {
+                buildKeywordToLookupTableMap();
+            }
+            
             Map<String,INDArray> wordVectorMap = getWordCPC2VecPipelineManager().getOrLoadWordVectors();
             // create
             multiStem = new MultiStem(keyword.toLowerCase().split(" "),-1);
@@ -140,6 +144,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     public Map<String,Set<String>> predict(Collection<String> keywords, Map<String,INDArray> toPredictMap, int maxTags, double minScore) {
         List<MultiStem> keywordStems = keywords.stream().map(keyword->findOrCreateByLabel(keyword)).filter(mul->mul!=null).collect(Collectors.toList());
+        System.out.println("In keyphrase manager, num keyword stems found: "+keywordStems.size()+ " out of "+keywords.size());
         return predict(keywordStems, toPredictMap, maxTags, minScore);
     }
 
