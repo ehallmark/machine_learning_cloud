@@ -97,29 +97,46 @@ public class UnitCosineKMeans {
         nullDistribution.dataPoints = IntStream.range(0,this.dataPoints.size()).mapToObj(i->new DataPoint(String.valueOf(i),i)).collect(Collectors.toList());
         List<INDArray> nullDatasets = IntStream.range(0,B).mapToObj(i->sampleFromNullDistribution(this.dataPoints.size())).collect(Collectors.toList());
 
-        List<Double> thisErrors = new ArrayList<>();
-        List<Double> nullErrors = new ArrayList<>();
-        List<Double> gapStatistics = new ArrayList<>();
-        for(int k = minK; k < maxK; k++) {
-            final int K = k;
-            fit(k,nEpochs);
-            double thisError = error;
-            double nullError = nullDatasets.stream().mapToDouble(ds->{
-                nullDistribution.fit(ds,K,nEpochs);
-                return nullDistribution.error;
-            }).average().orElse(Double.NaN);
+        int optimalK = optimizeHelper(minK,maxK,nEpochs,nullDatasets,nullDistribution,null,null);
+        fit(optimalK,nEpochs);
 
-            thisErrors.add(thisError);
-            nullErrors.add(nullError);
-            System.out.println("This error: "+thisError);
-            System.out.println("Null error: "+nullError);
-            double gapStatistic = Math.log(1d+nullError) - Math.log(1d+thisError);
-            gapStatistics.add(gapStatistic);
+        System.out.println("Final score: "+error+". Best k: "+optimalK);
+    }
+
+    private double computeGap(int k, int nEpochs, List<INDArray> nullDatasets, UnitCosineKMeans nullDistribution) {
+        fit(k, nEpochs);
+        double thisError = error;
+        double nullError = nullDatasets.stream().mapToDouble(ds -> {
+            nullDistribution.fit(ds, k, nEpochs);
+            return nullDistribution.error;
+        }).average().orElse(Double.NaN);
+        return Math.log(1d + nullError) - Math.log(1d + thisError);
+    }
+
+    protected Integer optimizeHelper(int minK, int maxK, int nEpochs, List<INDArray> nullDatasets, UnitCosineKMeans nullDistribution, Double lScore, Double rScore) {
+        if(minK>=maxK-1) {
+            int finalK = lScore < rScore ? maxK : minK;
+            System.out.println("Final k: " + finalK);
+            return finalK;
         }
 
-        System.out.println("This errors: "+thisErrors);
-        System.out.println("Null errors: "+nullErrors);
-        System.out.println("Gap statistics: "+gapStatistics);
+        int middleIdx = (3*minK+maxK)/4;
+
+        System.out.println("k: ["+minK+","+maxK+"], Score: ["+lScore+","+rScore+"]");
+
+        // fit min
+        double startGap = lScore!=null?lScore:computeGap(minK,nEpochs,nullDatasets,nullDistribution);
+        double middleGap = computeGap(middleIdx,nEpochs,nullDatasets,nullDistribution);
+        double endGap = rScore!=null?rScore:computeGap(maxK,nEpochs,nullDatasets,nullDistribution);
+
+        double startDiff = (startGap+middleGap)/2;
+        double endDiff = (middleGap+endGap)/2;
+
+        if(endDiff>startDiff) {
+            return optimizeHelper(middleIdx,maxK, nEpochs,nullDatasets,nullDistribution,middleGap,endGap);
+        } else {
+            return optimizeHelper(minK,middleIdx, nEpochs,nullDatasets,nullDistribution,startGap,middleGap);
+        }
     }
 
     public void fit(int k, int nEpochs) {
@@ -127,11 +144,11 @@ public class UnitCosineKMeans {
 
         Double lastError = null;
         for(int n = 0; n < nEpochs; n++) {
-            System.out.println("Starting epoch: "+(n+1));
+            //System.out.println("Starting epoch: "+(n+1));
 
             // reassign points to nearest cluster
             this.error = this.reassignDataToClusters();
-            System.out.println("Current error: "+error);
+            //System.out.println("Current error: "+error);
 
             // recenter centroids
             this.recomputeClusterAverages();
@@ -144,7 +161,7 @@ public class UnitCosineKMeans {
 
             lastError = this.error;
         }
-        System.out.println("Converged: "+isConverged());
+        //System.out.println("Converged: "+isConverged());
     }
 
 
@@ -181,7 +198,7 @@ public class UnitCosineKMeans {
     }
 
     private List<Centroid> initializeCentroids(int k) {
-        System.out.println("Building centroids...");
+        //System.out.println("Building centroids...");
 
         Random random = new Random(6342);
         if(this.centroids==null) {
@@ -316,8 +333,9 @@ public class UnitCosineKMeans {
     public static void main(String[] args) {
         // test
         long t0 = System.currentTimeMillis();
-        int maxK = 15;
-        int maxClusters = 6;
+        int maxK = 60;
+        int B = 10;
+        int maxClusters = 10;
         int numPerCluster = 100;
         UnitCosineKMeans kMeans = new UnitCosineKMeans();
 
@@ -332,7 +350,7 @@ public class UnitCosineKMeans {
             }
         }
 
-        kMeans.optimize(dataMap,1,maxK,10,100);
+        kMeans.optimize(dataMap,2,maxK,B,100);
 
         long t1 = System.currentTimeMillis();
         //System.out.println(kMeans.toString());
