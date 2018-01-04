@@ -1,10 +1,12 @@
 package models.kmeans;
 
 import lombok.Getter;
+import lombok.NonNull;
 import org.deeplearning4j.berkeley.Triple;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.impl.indexaccum.IMax;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.ops.transforms.Transforms;
 
 import java.util.*;
@@ -12,7 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Created by Evan on 11/27/2017.
@@ -49,11 +50,14 @@ public class UnitCosineKMeans {
         }
     }
 
-    protected INDArray sampleFromNullDistribution(int numSamples) {
+    protected INDArray sampleFromNullDistribution(int numSamples,int B) {
         if(minBoundary==null||boundaryDiff==null) computeBoundingBox();
-        INDArray samples = Nd4j.rand(numSamples,V.columns(),randomSampler.nextInt());
-        samples.muliRowVector(boundaryDiff).addiRowVector(minBoundary);
-        samples.diviColumnVector(samples.norm2(1));
+        INDArray samples = Nd4j.rand(randomSampler.nextInt(),numSamples,boundaryDiff.length(), B);
+        for(int i = 0; i < B; i++) {
+            INDArray sample=samples.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(i));
+            sample.muliRowVector(boundaryDiff).addiRowVector(minBoundary);
+            sample.diviColumnVector(sample.norm2(1));
+        }
         return samples;
     }
 
@@ -96,7 +100,7 @@ public class UnitCosineKMeans {
 
         UnitCosineKMeans nullDistribution = new UnitCosineKMeans();
         nullDistribution.dataPoints = IntStream.range(0,this.dataPoints.size()).mapToObj(i->new DataPoint(String.valueOf(i),i)).collect(Collectors.toList());
-        List<INDArray> nullDatasets = IntStream.range(0,B).mapToObj(i->sampleFromNullDistribution(this.dataPoints.size())).collect(Collectors.toList());
+        INDArray nullDatasets = sampleFromNullDistribution(this.dataPoints.size(),B);
 
         int optimalK = optimizeHelper(minK,maxK,nEpochs,nullDatasets,nullDistribution);
         fit(optimalK,nEpochs);
@@ -105,12 +109,12 @@ public class UnitCosineKMeans {
         return optimalK;
     }
 
-    private double[] computeGap(int k, int nEpochs, List<INDArray> nullDatasets, UnitCosineKMeans nullDistribution) {
+    private double[] computeGap(int k, int nEpochs, INDArray nullDatasets, UnitCosineKMeans nullDistribution) {
         fit(k, nEpochs);
         double thisError = Math.log(EPSILON+Math.max(0,error));
 
-        double[] Bscores = nullDatasets.stream().mapToDouble(ds -> {
-            nullDistribution.fit(ds, k, nEpochs);
+        double[] Bscores = IntStream.range(0,nullDatasets.shape()[2]).mapToDouble(i -> {
+            nullDistribution.fit(nullDatasets.get(NDArrayIndex.all(),NDArrayIndex.all(), NDArrayIndex.point(i)), k, nEpochs);
             return Math.log(EPSILON+Math.max(0,nullDistribution.error));
         }).toArray();
 
@@ -182,7 +186,7 @@ public class UnitCosineKMeans {
         return i;
     }
 
-    protected Integer optimizeHelper(int minK, int maxK, int nEpochs, List<INDArray> nullDatasets, UnitCosineKMeans nullDistribution) {
+    protected Integer optimizeHelper(int minK, int maxK, int nEpochs, INDArray nullDatasets, UnitCosineKMeans nullDistribution) {
         int intervalLength = 1;
         int width = maxK - minK;
 
@@ -191,26 +195,31 @@ public class UnitCosineKMeans {
 
         // fit min
         int i = 0;
+        double[] scores = new double[width/intervalLength];
+        int bestIdx = -1;
         for(; i < width/intervalLength; i++) {
             int j = minK + i*intervalLength;
             if(j<maxK) {
                 double[] stats = computeGap(j, nEpochs, nullDatasets, nullDistribution);
                 gapKplus1 = stats[0];
-                double sKplus1 = 0d;//stats[1];
+                double sKplus1 = stats[1];
+                scores[i]=gapKplus1;
                 if(i>0) {
                     // Gap(k)>=Gap(k + 1)−sk + 1
-                    if(gapK >= gapKplus1-sKplus1) {
-                        i--;
+                    double diff = (gapK - (gapKplus1-sKplus1));
+                    if (diff>=0 || error < EPSILON) {
+                        bestIdx = i-1;
                         break;
                     }
                 }
                 gapK = gapKplus1;
 
             } else break;
-
         }
-        int finalK = Math.min(minK+ intervalLength*i,maxK);
-        System.out.println("Final k: " + finalK);
+        if(bestIdx<0) bestIdx = minK + intervalLength * argMax(scores);
+
+        int finalK = Math.min(minK+ intervalLength*bestIdx,maxK);
+        System.out.println("Final k: " + finalK + ", scores: "+Arrays.toString(scores));
         return finalK;
     }
 
@@ -240,8 +249,7 @@ public class UnitCosineKMeans {
     }
 
 
-    public void fit(INDArray V, int k, int nEpochs) {
-        if(dataPoints==null||V.rows()!=dataPoints.size()) throw new RuntimeException("V must have rows() == dataPoints.size()");
+    public void fit(@NonNull INDArray V, int k, int nEpochs) {
         this.V=V;
         fit(k,nEpochs);
     }
@@ -287,7 +295,6 @@ public class UnitCosineKMeans {
             this.centroidMatrix = centroid0;
         }
 
-
          /* k-means++ algorithm
             1- Choose one center uniformly at random from among the data points.
             2- For each data point x, compute D(x), the distance between x and the nearest center that has already been chosen.
@@ -308,19 +315,24 @@ public class UnitCosineKMeans {
                 this.centroidMatrix = Nd4j.vstack(this.centroidMatrix, centroid);
             }
         }
+
+        this.centroidMatrix = Nd4j.create(this.centroids.size(), V.columns());
+        for(int i = 0; i < this.centroids.size(); i++) {
+            this.centroidMatrix.putRow(i, this.centroids.get(i).mean);
+        }
         return this.centroids;
     }
 
     private void recomputeClusterAverages() {
         centroids.parallelStream().forEach(Centroid::recomputeMean);
         // rebuild global centroid matrix
-        this.centroidMatrix = Nd4j.vstack(centroids.stream().map(centroid->centroid.mean).collect(Collectors.toList()));
     }
 
     // TODO Most Computationally intensive part (speed this up!)
     private double reassignDataToClusters() {
-        AtomicInteger cnt = new AtomicInteger(0);
         this.Ctranspose = centroidMatrix.transpose();
+
+        AtomicInteger cnt = new AtomicInteger(0);
 
         Triple<Double,double[],int[]> pair = findClosestCentroids(V,Ctranspose);
         int[] bestCentroidIndicesPerDataPoint = pair.getThird();
@@ -346,8 +358,18 @@ public class UnitCosineKMeans {
         return pair.getFirst();
     }
 
+    private static INDArray multiplyInBatches(INDArray x, INDArray y, int batchSize) {
+        if(x.rows()<=batchSize) {
+            return x.mmul(y);
+        } else {
+            INDArray xPart = x.get(NDArrayIndex.interval(0,batchSize),NDArrayIndex.all());
+            INDArray xEnd = x.get(NDArrayIndex.interval(batchSize,x.rows()),NDArrayIndex.all());
+            return Nd4j.vstack(multiplyInBatches(xPart,y,batchSize),multiplyInBatches(xEnd,y,batchSize));
+        }
+    }
+
     private Triple<Double,double[],int[]> findClosestCentroids(INDArray V, INDArray Ctranspose) {
-        INDArray res = V.mmul(Ctranspose);
+        INDArray res = multiplyInBatches(V,Ctranspose,1024);
         INDArray max = res.max(1).rsubi(1d);
         double error = max.sumNumber().doubleValue();
         INDArray idxOfMaxInEachRow = Nd4j.getExecutioner().exec(new IMax(res),1);
@@ -394,7 +416,7 @@ public class UnitCosineKMeans {
 
         private void recomputeMean() {
             if(!dataPoints.isEmpty()) {
-                mean = Transforms.unitVec(V.getRows(dataPoints.stream().mapToInt(dp -> dp.index).toArray()).mean(0));
+                mean.assign(Transforms.unitVec(V.getRows(dataPoints.stream().mapToInt(dp -> dp.index).toArray()).mean(0)));
             }
         }
 
@@ -413,19 +435,20 @@ public class UnitCosineKMeans {
         double error = 0d;
         for(int n = 0; n < numTests; n++) {
             long t0 = System.currentTimeMillis();
-            int maxK = 66;
+            int maxK = 20;
             int B = 10;
-            int maxClusters = 2+random.nextInt(10);
-            int numPerCluster = 30;
+            int maxClusters = 2+n;
+            int numPerCluster = 1000;
             UnitCosineKMeans kMeans = new UnitCosineKMeans();
 
             Map<String, INDArray> dataMap = new HashMap<>();
 
 
             for (int j = 0; j < maxClusters; j++) {
-                double[] rand = new double[]{random.nextInt(1000) - 500, random.nextInt(1000) - 500};
+                INDArray rand = Nd4j.rand(1,32).subi(0.5);
+                double variance = random.nextDouble()*random.nextDouble()+EPSILON;
                 for (int i = 0; i < numPerCluster; i++) {
-                    dataMap.put("a" + j + "-" + i, Transforms.unitVec(Nd4j.create(new double[][]{rand}).addi(Nd4j.randn(new int[]{1, 2}).muli(0.01))));
+                    dataMap.put("a" + j + "-" + i, Transforms.unitVec(rand.addi(Nd4j.randn(new int[]{1, 32}).muli(variance))));
                 }
             }
 
