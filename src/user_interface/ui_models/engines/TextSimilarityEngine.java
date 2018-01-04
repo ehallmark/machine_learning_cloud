@@ -2,19 +2,14 @@ package user_interface.ui_models.engines;
 
 import data_pipeline.helpers.CombinedModel;
 import j2html.tags.Tag;
-import lombok.Getter;
-import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityModel;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityPipelineManager;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEPipelineManager;
 import models.similarity_models.combined_similarity_model.Word2VecToCPCIterator;
-import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
-import models.similarity_models.word_to_cpc.word_to_cpc_encoding_model.WordToCPCEncodingNN;
-import models.similarity_models.word_to_cpc.word_to_cpc_encoding_model.WordToCPCPipelineManager;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
@@ -23,7 +18,6 @@ import spark.Request;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,7 +31,7 @@ import static user_interface.server.SimilarPatentServer.extractString;
  * Created by ehallmark on 2/28/17.
  */
 public class TextSimilarityEngine extends AbstractSimilarityEngine {
-    private static MultiLayerNetwork wordToEncodingNet;
+    private static ComputationGraph wordToEncodingNet;
     private static final int maxSampleLength = 15;
     private static final int maxNumSamples = 30;
     private static final double numDocs = 18000000d;
@@ -48,7 +42,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
             CombinedSimilarityPipelineManager combinedSimilarityPipelineManager = new CombinedSimilarityPipelineManager(similarityModelName, null, null, null);
             combinedSimilarityPipelineManager.initModel(false);
 
-            CombinedModel<MultiLayerNetwork> combinedModel = (CombinedModel<MultiLayerNetwork>) combinedSimilarityPipelineManager.getModel().getNet();
+            CombinedModel<ComputationGraph> combinedModel = (CombinedModel<ComputationGraph>) combinedSimilarityPipelineManager.getModel().getNet();
             wordToEncodingNet = combinedModel.getNameToNetworkMap().get(CombinedSimilarityModel.WORD_CPC_2_VEC);
         }
     }
@@ -101,7 +95,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
                 }
             }
             // encode using word to cpc network
-            avg = wordToEncodingNet.activateSelectedLayers(0, wordToEncodingNet.getnLayers() - 1, Transforms.unitVec(Nd4j.vstack(featureVecs).mean(0)));
+            avg = wordToEncodingNet.output(false, Transforms.unitVec(Nd4j.vstack(featureVecs).mean(0)))[0];
             avg.divi(avg.norm2Number());
 
         }

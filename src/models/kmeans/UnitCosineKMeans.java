@@ -407,7 +407,7 @@ public class UnitCosineKMeans {
         // test
         Random random = new Random(3);
 
-        int numTests = 50;
+        int numTests = 1;
         double error = 0d;
         for(int n = 0; n < numTests; n++) {
             long t0 = System.currentTimeMillis();
@@ -415,7 +415,7 @@ public class UnitCosineKMeans {
             int B = 10;
             int maxClusters = random.nextInt(maxK);
             int numPerCluster = 10;
-            int nSamplesPerInterval = 8;
+            int nSamplesPerInterval = maxClusters;
             UnitCosineKMeans kMeans = new UnitCosineKMeans();
 
             Map<String, INDArray> dataMap = new HashMap<>();
