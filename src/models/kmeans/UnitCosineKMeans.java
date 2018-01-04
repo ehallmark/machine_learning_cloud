@@ -409,7 +409,7 @@ public class UnitCosineKMeans {
         // test
         Random random = new Random(3);
 
-        int numTests = 1;
+        int numTests = 10;
         double error = 0d;
         for(int n = 0; n < numTests; n++) {
             long t0 = System.currentTimeMillis();
