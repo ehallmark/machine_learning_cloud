@@ -7,6 +7,7 @@ import user_interface.ui_models.attributes.CompDBTechnologyAttribute;
 import user_interface.ui_models.attributes.computable_attributes.GatherTechnologyAttribute;
 import user_interface.ui_models.attributes.computable_attributes.TechnologyAttribute;
 import user_interface.ui_models.attributes.WIPOTechnologyAttribute;
+import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;
@@ -286,7 +287,7 @@ public class Constants {
 			SIMILARITY,
 			GATHER,
 			COMPDB,
-			"vector_obj"
+			SimilarityAttribute.VECTOR_NAME
 	).collect(Collectors.toSet());
 
 	static {
