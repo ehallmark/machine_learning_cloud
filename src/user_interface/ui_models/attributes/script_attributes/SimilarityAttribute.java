@@ -56,7 +56,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
             System.out.println("Found similarity vectors!!!");
             Map<String, Object> params = new HashMap<>();
             INDArray avgVector = simVectors.size() == 1 ? simVectors.get(0) : Nd4j.vstack(simVectors).mean(0);
-            float[] data = avgVector.data().asFloat();
+            double[] data = avgVector.data().asDouble();
             for(int i = 0; i < vectorSize; i++) {
                 params.put("avg_vector"+i,data[i]);
             }

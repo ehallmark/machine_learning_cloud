@@ -1,32 +1,20 @@
 package models.similarity_models.cpc_encoding_model;
 
-import ch.qos.logback.classic.Level;
-import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
-import data_pipeline.pipeline_manager.PipelineManager;
-import lombok.Getter;
 import models.similarity_models.Vectorizer;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEPipelineManager;
-import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
-import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import seeding.Constants;
 import seeding.Database;
-import org.nd4j.linalg.primitives.Pair;
 import tools.MinHeap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 
-import java.io.File;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Created by Evan on 10/28/2017.
@@ -106,7 +94,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
 
     public synchronized Map<String,INDArray> getLookupTable() {
         if (data == null) {
-            data = (Map<String, INDArray>) Database.tryLoadObject(pipelineManager.getPredictionsFile());
+            data = pipelineManager.loadPredictions();
         }
         return data;
     }
