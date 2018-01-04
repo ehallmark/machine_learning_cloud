@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class UpdateExtraneousComputableAttributeData {
     public static void update(List<String> assets) {
         SimilarPatentServer.initialize(true,false);
-        
+
         CombinedSimilarityVAEPipelineManager combinedSimilarityVAEPipelineManager = CombinedSimilarityVAEPipelineManager.getOrLoadManager();
         Vectorizer combinedVectorizer = new CPCSimilarityVectorizer(combinedSimilarityVAEPipelineManager,false, true, false,null);
 
