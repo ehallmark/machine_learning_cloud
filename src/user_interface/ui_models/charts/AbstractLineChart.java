@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -191,11 +192,13 @@ public class AbstractLineChart extends ChartAttribute {
         if(sortedData.size() == 0) return Collections.emptyList();
 
         LocalDate firstDate = min == null ? sortedData.firstKey() : min;
+        LocalDate endDate = max == null ? sortedData.lastKey() : max;
         long pointStart = millisecondsFromDate(firstDate);
         long pointInterval = MILLISECONDS_PER_DAY;
         series.setPointStart(pointStart);
         series.setPointInterval(pointInterval);
 
+        long expectedNumberOfDataPoints = ChronoUnit.DAYS.between(firstDate,endDate);
         AtomicReference<LocalDate> lastDate = new AtomicReference<>(firstDate);
         List<Number> dataPoints = sortedData.entrySet().stream().flatMap(e->{
             // catch up dates
@@ -207,7 +210,7 @@ public class AbstractLineChart extends ChartAttribute {
                 points.add(0);
             }
             lastDate.set(date.plusDays(1));
-            
+
             // add date
             points.add(count);
             return points.stream();
@@ -217,6 +220,13 @@ public class AbstractLineChart extends ChartAttribute {
             dataPoints.add(0);
             lastDate.set(lastDate.get().plusDays(1));
         }
+
+        System.out.println("Expected number of datapoints for timeline chart: "+expectedNumberOfDataPoints);
+        System.out.println("Actual number of datapoints for timeline chart: "+dataPoints.size());
+        if(expectedNumberOfDataPoints!=dataPoints.size()) {
+            throw new RuntimeException("Unexpected number of datapoints found for timeline chart: "+getName());
+        }
+
         series.setData(dataPoints);
         return Arrays.asList(
             series
