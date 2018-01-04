@@ -94,10 +94,11 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
                     featureVecs.add(featureVec);
                 }
             }
-            // encode using word to cpc network
-            avg = wordToEncodingNet.output(false, Transforms.unitVec(Nd4j.vstack(featureVecs).mean(0)))[0];
-            avg.divi(avg.norm2Number());
-
+            if(featureVecs.size()>0) {
+                // encode using word to cpc network
+                avg = wordToEncodingNet.output(false, Transforms.unitVec(Nd4j.vstack(featureVecs).mean(0)))[0];
+                avg.divi(avg.norm2Number());
+            }
         }
     }
     @Override

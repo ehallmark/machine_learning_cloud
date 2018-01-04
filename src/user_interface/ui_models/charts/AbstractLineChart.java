@@ -198,7 +198,7 @@ public class AbstractLineChart extends ChartAttribute {
         series.setPointStart(pointStart);
         series.setPointInterval(pointInterval);
 
-        long expectedNumberOfDataPoints = ChronoUnit.DAYS.between(firstDate,endDate);
+        long expectedNumberOfDataPoints = ChronoUnit.DAYS.between(firstDate,endDate)+1;
         AtomicReference<LocalDate> lastDate = new AtomicReference<>(firstDate);
         List<Number> dataPoints = sortedData.entrySet().stream().flatMap(e->{
             // catch up dates
@@ -223,7 +223,7 @@ public class AbstractLineChart extends ChartAttribute {
 
         System.out.println("Expected number of datapoints for timeline chart: "+expectedNumberOfDataPoints);
         System.out.println("Actual number of datapoints for timeline chart: "+dataPoints.size());
-        if(expectedNumberOfDataPoints!=dataPoints.size()) {
+        if(Math.abs(expectedNumberOfDataPoints-dataPoints.size())>1) {
             throw new RuntimeException("Unexpected number of datapoints found for timeline chart: "+getName());
         }
 
