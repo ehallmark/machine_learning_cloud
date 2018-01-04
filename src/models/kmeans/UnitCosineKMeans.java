@@ -415,7 +415,7 @@ public class UnitCosineKMeans {
             long t0 = System.currentTimeMillis();
             int maxK = 66;
             int B = 10;
-            int maxClusters = 2+random.nextInt(40);
+            int maxClusters = 2+random.nextInt(10);
             int numPerCluster = 30;
             UnitCosineKMeans kMeans = new UnitCosineKMeans();
 
