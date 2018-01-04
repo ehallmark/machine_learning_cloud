@@ -3,7 +3,6 @@ package seeding.ai_db_updater;
 import models.similarity_models.Vectorizer;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEPipelineManager;
 import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.attributes.computable_attributes.NestedComputedCPCAttribute;
@@ -26,14 +25,6 @@ public class UpdateExtraneousComputableAttributeData {
         Map<String,Vectorizer> vectorizerMap = Collections.synchronizedMap(new HashMap<>());
         //vectorizerMap.put("vector_obj",cpcVaeVectorizer);
         vectorizerMap.put(SimilarityAttribute.VECTOR_NAME,combinedVectorizer);
-
-        // clears old vector
-        vectorizerMap.put("vector_obj", new Vectorizer() {
-            @Override
-            public INDArray vectorFor(String item) {
-                return null;
-            }
-        });
 
         List<ComputableAttribute<?>> computableAttributes = SimilarPatentServer.getAllComputableAttributes().stream().filter(a->!(a instanceof HiddenAttribute)).collect(Collectors.toCollection(ArrayList::new));
         computableAttributes.add(new NestedComputedCPCAttribute());
