@@ -206,10 +206,13 @@ public class AbstractLineChart extends ChartAttribute {
                 lastDate.set(lastDate.get().plusDays(1));
                 points.add(0);
             }
+            lastDate.set(date.plusDays(1));
+            
             // add date
             points.add(count);
             return points.stream();
         }).collect(Collectors.toCollection(ArrayList::new));
+
         while(max!=null && lastDate.get().isBefore(max)) {
             dataPoints.add(0);
             lastDate.set(lastDate.get().plusDays(1));
