@@ -1446,7 +1446,7 @@ public class SimilarPatentServer {
                     message.add("assets are null");
                 } else {
 
-                    AssetKMeans kMeans = new AssetKMeans(10, assets, keyphrasePredictionPipelineManager);
+                    AssetKMeans kMeans = new AssetKMeans(assets, keyphrasePredictionPipelineManager);
 
                     Map<String, List<String>> clusters = kMeans.clusterAssets();
 

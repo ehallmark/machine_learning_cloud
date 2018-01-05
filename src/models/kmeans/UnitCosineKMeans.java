@@ -443,7 +443,6 @@ public class UnitCosineKMeans {
 
             Map<String, INDArray> dataMap = new HashMap<>();
 
-
             for (int j = 0; j < maxClusters; j++) {
                 INDArray rand = Nd4j.rand(1,32).subi(0.5);
                 double variance = random.nextDouble()*random.nextDouble()+EPSILON;
