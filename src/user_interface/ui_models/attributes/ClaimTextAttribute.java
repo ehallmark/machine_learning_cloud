@@ -23,6 +23,7 @@ public class ClaimTextAttribute extends AbstractAttribute {
         return "text";
     }
 
+
     @Override
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Text;

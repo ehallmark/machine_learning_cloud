@@ -24,6 +24,7 @@ import static j2html.TagCreator.span;
  */
 public abstract class AbstractFilter extends AbstractAttribute implements DependentAttribute<AbstractFilter> {
 
+
     public enum FilterType {
         Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword, PrefixExclude, PrefixInclude, Regexp, Exists, DoesNotExist
     }
@@ -46,9 +47,9 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     protected boolean isScriptFilter;
     public AbstractFilter(AbstractAttribute attribute, FilterType filterType) {
         super(Arrays.asList(filterType));
-        this.attribute=attribute instanceof DependentAttribute ? ((DependentAttribute) attribute).dup() : attribute;
+        this.attribute=attribute!=null && attribute instanceof DependentAttribute ? ((DependentAttribute) attribute).dup() : attribute;
         this.filterType=filterType;
-        this.isScriptFilter = attribute instanceof AbstractScriptAttribute;
+        this.isScriptFilter =attribute!=null &&  attribute instanceof AbstractScriptAttribute;
     }
 
     public String getAttributeId() {

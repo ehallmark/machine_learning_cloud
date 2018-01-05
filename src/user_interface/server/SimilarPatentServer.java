@@ -19,8 +19,6 @@ import models.similarity_models.AbstractSimilarityModel;
 import models.similarity_models.DefaultSimilarityModel;
 import models.similarity_models.Vectorizer;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
-import models.similarity_models.word_to_cpc.WordToCPCIterator;
-import models.text_streaming.BOWVectorFromTextTransformer;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.elasticsearch.search.sort.SortOrder;
@@ -580,6 +578,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.NUM_RELATED_ASSETS, new NumRelatedAssetsAttribute());
             attributesMap.put(Constants.NUM_BACKWARD_CITATIONS, new NumBackwardCitationsAttribute());
             attributesMap.put(Constants.GRANTED,new IsGrantedApplicationAttribute());
+            attributesMap.put(Constants.ASSIGNEE_ENTITY_TYPE, new EntityTypeAttribute());
             attributesMap.put(Constants.GTT_RESERVOIR, new IsGTTReservoirAttribute());
 
             // nested attrs

@@ -41,6 +41,10 @@ public abstract class AbstractAttribute {
         return true;
     }
 
+    public String getAcclaimIPName() {
+        return null;
+    }
+
     public abstract String getName();
 
     public String getAttributeId() {

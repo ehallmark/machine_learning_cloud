@@ -19,6 +19,13 @@ import static j2html.TagCreator.*;
  * Created by Evan on 7/9/2017.
  */
 public class AdvancedKeywordFilter extends AbstractFilter {
+    public static final String OR = "|";
+    public static final String AND = "+";
+    public static final String NOT = "-";
+    public static final String OR_FRIENDLY = "OR";
+    public static final String AND_FRIENDLY = "AND";
+    public static final String NOT_FRIENDLY = "NOT";
+
     @Setter
     protected String queryStr;
 
@@ -43,6 +50,8 @@ public class AdvancedKeywordFilter extends AbstractFilter {
         }
     }
 
+
+
     @Override
     protected String transformAttributeScript(String attributeScript) {
         throw new UnsupportedOperationException("Include Filter not supported by scripts");
@@ -53,6 +62,10 @@ public class AdvancedKeywordFilter extends AbstractFilter {
     @Override
     public void extractRelevantInformationFromParams(Request req) {
         queryStr = String.join("", SimilarPatentServer.extractArray(req,getName()));
+        // check for boolean operators
+        queryStr = queryStr.replace(" "+OR_FRIENDLY+" ",OR);
+        queryStr = queryStr.replace(" "+AND_FRIENDLY+" ",AND);
+        queryStr = queryStr.replace(" "+NOT_FRIENDLY+" ",NOT);
     }
 
     @Override
