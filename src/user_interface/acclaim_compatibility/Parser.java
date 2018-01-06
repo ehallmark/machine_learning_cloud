@@ -1,5 +1,6 @@
 package user_interface.acclaim_compatibility;
 
+import elasticsearch.DataIngester;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -10,6 +11,7 @@ import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.join.ScoreMode;
 import org.deeplearning4j.berkeley.Pair;
 import org.elasticsearch.index.query.*;
+import org.elasticsearch.join.query.HasParentQueryBuilder;
 import seeding.Constants;
 
 import java.time.Duration;
@@ -147,7 +149,7 @@ public class Parser {
         return new Pair<>(strQuery,isFiling);
     }
 
-    public Pair<QueryBuilder,QueryBuilder> parseAcclaimQuery(String text) {
+    public QueryBuilder parseAcclaimQuery(String text) {
         Query query;
         try {
             query = parser.parse(text.replace(" to "," TO "));
@@ -169,19 +171,17 @@ public class Parser {
             Pair<QueryBuilder,Boolean> p = replaceAcclaimName(query.toString(),query);
             boolean isFiling = p.getSecond();
             if(isFiling) {
-                filingQuery = p.getFirst();
+                return new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,p.getFirst(),false);
             } else {
-                mainQuery = p.getFirst();
+               return p.getFirst();
             }
         }
-        return new Pair<>(filingQuery,mainQuery);
     }
 
-    public Pair<QueryBuilder,QueryBuilder> parseAcclaimQueryHelper(BooleanQuery booleanQuery) {
+    public QueryBuilder parseAcclaimQueryHelper(BooleanQuery booleanQuery) {
         boolean prevOr = false;
         boolean currOr;
-        BoolQueryBuilder mainBool = QueryBuilders.boolQuery();
-        BoolQueryBuilder filingBool = QueryBuilders.boolQuery();
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         for(int i = 0; i < booleanQuery.clauses().size(); i++) {
             BooleanClause c = booleanQuery.clauses().get(i);
             Query subQuery = c.getQuery();
@@ -192,45 +192,29 @@ public class Parser {
                 currOr = prevOr;
             }
             if(subQuery instanceof BooleanQuery) {
-                Pair<QueryBuilder,QueryBuilder> p = parseAcclaimQueryHelper((BooleanQuery)subQuery);
-                QueryBuilder filingQuery = p.getFirst();
-                QueryBuilder mainQuery = p.getSecond();
-
-                if(filingQuery!=null) {
+                QueryBuilder query = parseAcclaimQueryHelper((BooleanQuery)subQuery);
+                if(query!=null) {
                     if(prevOr&&currOr) {
-                        filingBool=filingBool.should(filingQuery);
+                        boolQuery = boolQuery.should(query);
                     } else {
-                        filingBool=filingBool.must(filingQuery);
-                    }
-                }
-                if(mainQuery!=null) {
-                    if(prevOr&&currOr) {
-                        mainBool = mainBool.should(mainQuery);
-                    } else {
-                        mainBool = mainBool.must(mainQuery);
+                        boolQuery = boolQuery.must(query);
                     }
                 }
             } else {
                 String queryStr = subQuery.toString();
                 Pair<QueryBuilder,Boolean> p = replaceAcclaimName(queryStr,subQuery);
-                if(p.getSecond()) {
-                    if(p.getFirst()!=null) {
-                        if(prevOr&&currOr) {
-                            filingBool=filingBool.should(p.getFirst());
+                QueryBuilder builder = p.getFirst();
+                if(builder!=null) {
+                    if (p.getSecond()) {
+                        builder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, builder, false);
+                    }
+                    if (p.getFirst() != null) {
+                        if (prevOr && currOr) {
+                            boolQuery = boolQuery.should(builder);
                         } else {
-                            filingBool=filingBool.must(p.getFirst());
+                            boolQuery = boolQuery.must(builder);
                         }
                     }
-
-                } else {
-                    if(p.getFirst()!=null) {
-                        if(prevOr&&currOr) {
-                            mainBool = mainBool.should(p.getFirst());
-                        } else {
-                            mainBool = mainBool.must(p.getFirst());
-                        }
-                    }
-
                 }
             }
 
