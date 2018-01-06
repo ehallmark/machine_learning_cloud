@@ -123,7 +123,7 @@ public class AbstractNestedFilter extends AbstractFilter {
 
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction) {
         String styleString = "display: none; margin-left: 5%; margin-right: 5%;";
-        List<AbstractFilter> availableFilters = filters.stream().filter(filter->filter.getAttribute().isDisplayable()&&userRoleFunction.apply(filter.getAttribute().getRootName())).collect(Collectors.toList());
+        List<AbstractFilter> availableFilters = filters.stream().filter(filter->filter.getAttribute()==null||(filter.getAttribute().isDisplayable()&&userRoleFunction.apply(filter.getAttribute().getRootName()))).collect(Collectors.toList());
         Map<String,List<String>> filterGroups = new TreeMap<>(availableFilters.stream().collect(Collectors.groupingBy(filter->filter.getFullPrerequisite())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
 
