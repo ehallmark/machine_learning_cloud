@@ -167,54 +167,80 @@ public class Parser {
     }
 
     public Pair<String,String> parseAcclaimQueryHelper(BooleanQuery booleanQuery) {
-        StringBuilder mainBuilder = new StringBuilder();
-        StringBuilder filingBuilder = new StringBuilder();
-
+        StringJoiner mainBuilder = new StringJoiner("");
+        StringJoiner filingBuilder = new StringJoiner("");
+        boolean previousMain = false;
+        boolean previousFiling = false;
+        boolean prevOr = false;
+        boolean currOr;
         for(int i = 0; i < booleanQuery.clauses().size(); i++) {
-            boolean hadFiling = false;
-            boolean hadMain = false;
             BooleanClause c = booleanQuery.clauses().get(i);
             Query subQuery = c.getQuery();
+            if(i<booleanQuery.clauses().size()-1) {
+                BooleanClause c2 = booleanQuery.clauses().get(i+1);
+                currOr = (!c2.isRequired()&&!c2.isProhibited());
+            } else {
+                currOr = false;
+            }
             if(subQuery instanceof BooleanQuery) {
                 Pair<String,String> p = parseAcclaimQueryHelper((BooleanQuery)subQuery);
                 String filingQuery = p.getFirst();
                 String mainQuery = p.getSecond();
                 if(filingQuery.length()>0) {
-                    filingBuilder.append(c.getOccur().toString());
-                    hadFiling = true;
-                    filingBuilder.append("(");
-                    filingBuilder.append(filingQuery);
-                    filingBuilder.append(")");
+                    if(prevOr&&currOr) {
+                        filingBuilder.add(" ||");
+                    }
+                    if(previousFiling) {
+                        filingBuilder.add(" ");
+                    }
+                    previousFiling=true;
+                    filingBuilder.add(c.getOccur().toString());
+                    filingBuilder.add("("+filingQuery+")");
+
                 }
                 if(mainQuery.length()>0) {
-                    mainBuilder.append(c.getOccur().toString());
-                    hadMain = true;
-                    mainBuilder.append("(");
-                    mainBuilder.append(mainQuery);
-                    mainBuilder.append(")");
+                    if(prevOr&&currOr) {
+                        mainBuilder.add(" ||");
+                    }
+                    if(previousMain) {
+                        mainBuilder.add(" ");
+                    }
+                    previousMain=true;
+                    mainBuilder.add(c.getOccur().toString());
+                    mainBuilder.add("("+mainQuery+")");
+
                 }
             } else {
                 String queryStr = subQuery.toString();
                 Pair<String,Boolean> p = replaceAcclaimName(queryStr,subQuery);
                 if(p.getSecond()) {
-                    hadFiling=true;
-                    filingBuilder.append(c.getOccur().toString());
-                    filingBuilder.append(p.getFirst());
+                    if(prevOr&&currOr) {
+                        filingBuilder.add(" ||");
+                    }
+                    if(previousFiling) {
+                        filingBuilder.add(" ");
+                    }
+                    previousFiling=true;
+                    filingBuilder.add(c.getOccur().toString());
+                    filingBuilder.add(p.getFirst());
+
                 } else {
-                    hadMain=true;
-                    mainBuilder.append(c.getOccur().toString());
-                    mainBuilder.append(p.getFirst());
+                    if(prevOr&&currOr) {
+                        mainBuilder.add(" ||");
+                    }
+                    if(previousMain) {
+                        mainBuilder.add(" ");
+                    }
+                    previousMain=true;
+                    mainBuilder.add(c.getOccur().toString());
+                    mainBuilder.add(p.getFirst());
+
                 }
             }
 
-            if(i != booleanQuery.clauses().size() - 1) {
-                if(hadFiling) {
-                    filingBuilder.append(" ");
-                }
-                if(hadMain) {
-                    mainBuilder.append(" ");
-                }
-            }
+
+            prevOr = currOr;
+
         }
 
         //if(needParens) {
@@ -226,7 +252,11 @@ public class Parser {
         //    buffer.append(this.getMinimumNumberShouldMatch());
         //}
 
-        return new Pair<>(filingBuilder.toString(),mainBuilder.toString());
+        String main = mainBuilder.toString();
+        String filing = filingBuilder.toString();
+        if(main.endsWith(" ||") && main.length()>3) main = main.substring(0,main.length()-3);
+        if(filing.endsWith(" ||") && filing.length()>3) filing = filing.substring(0,filing.length()-3);
+        return new Pair<>(filing,main);
     }
 
 
