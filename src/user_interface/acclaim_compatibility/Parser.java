@@ -177,12 +177,10 @@ public class Parser {
     }
 
     public QueryBuilder parseAcclaimQueryHelper(BooleanQuery booleanQuery) {
-        boolean currOr;
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery().minimumShouldMatch(1);
         for(int i = 0; i < booleanQuery.clauses().size(); i++) {
             BooleanClause c = booleanQuery.clauses().get(i);
             Query subQuery = c.getQuery();
-            currOr = (!c.isRequired()&&!c.isProhibited());
             if(subQuery instanceof BooleanQuery) {
                 QueryBuilder query = parseAcclaimQueryHelper((BooleanQuery)subQuery);
                 if (query != null) {
