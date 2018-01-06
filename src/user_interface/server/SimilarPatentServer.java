@@ -488,6 +488,8 @@ public class SimilarPatentServer {
                     });
                 });
 
+                preFilterModelMap.put(AcclaimExpertSearchFilter.NAME,new AcclaimExpertSearchFilter());
+
                 buildJavaToHumanAttrMap();
                 List<AbstractAttribute> nestedAttributes = new ArrayList<>(allAttributes.getAttributes());
                 nestedAttributes.addAll(similarityEngine.join().getEngineMap().values().stream().map(engine->(AbstractAttribute)engine).collect(Collectors.toList()));
