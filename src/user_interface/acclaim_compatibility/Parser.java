@@ -177,7 +177,7 @@ public class Parser {
     }
 
     public QueryBuilder parseAcclaimQueryHelper(BooleanQuery booleanQuery) {
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery().minimumShouldMatch(1);
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         for(int i = 0; i < booleanQuery.clauses().size(); i++) {
             BooleanClause c = booleanQuery.clauses().get(i);
             Query subQuery = c.getQuery();
