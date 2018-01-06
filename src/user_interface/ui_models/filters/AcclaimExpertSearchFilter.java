@@ -41,6 +41,7 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
         if(query==null) {
             return QueryBuilders.boolQuery();
         } else {
+            System.out.println("Acclaim query: "+query.toString());
             return query;
         }
     }

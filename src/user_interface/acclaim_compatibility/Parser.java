@@ -160,8 +160,6 @@ public class Parser {
         //if(needParens) {
         //    buffer.append("(");
         //}
-        QueryBuilder filingQuery = null;
-        QueryBuilder mainQuery = null;
 
         BooleanQuery booleanQuery;
         if(query instanceof BooleanQuery) {
@@ -179,22 +177,16 @@ public class Parser {
     }
 
     public QueryBuilder parseAcclaimQueryHelper(BooleanQuery booleanQuery) {
-        boolean prevOr = false;
         boolean currOr;
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery().minimumShouldMatch(1);
         for(int i = 0; i < booleanQuery.clauses().size(); i++) {
             BooleanClause c = booleanQuery.clauses().get(i);
             Query subQuery = c.getQuery();
-            if(i<booleanQuery.clauses().size()-1) {
-                BooleanClause c2 = booleanQuery.clauses().get(i+1);
-                currOr = (!c2.isRequired()&&!c2.isProhibited());
-            } else {
-                currOr = prevOr;
-            }
+            currOr = (!c.isRequired()&&!c.isProhibited());
             if(subQuery instanceof BooleanQuery) {
                 QueryBuilder query = parseAcclaimQueryHelper((BooleanQuery)subQuery);
                 if(query!=null) {
-                    if(prevOr&&currOr) {
+                    if(currOr) {
                         boolQuery = boolQuery.should(query);
                     } else {
                         boolQuery = boolQuery.must(query);
@@ -209,7 +201,7 @@ public class Parser {
                         builder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, builder, false);
                     }
                     if (p.getFirst() != null) {
-                        if (prevOr && currOr) {
+                        if (currOr) {
                             boolQuery = boolQuery.should(builder);
                         } else {
                             boolQuery = boolQuery.must(builder);
@@ -217,10 +209,6 @@ public class Parser {
                     }
                 }
             }
-
-
-            prevOr = currOr;
-
         }
 
         //if(needParens) {
