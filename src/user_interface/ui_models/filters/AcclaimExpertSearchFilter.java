@@ -47,7 +47,7 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
                 boolQueryBuilder = boolQueryBuilder.must(mainQuery);
             }
             if(filingQuery!=null) {
-                boolQueryBuilder = boolQueryBuilder.must(filingQuery);
+                boolQueryBuilder = boolQueryBuilder.must(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,filingQuery,false));
             }
             System.out.println("Acclaim query: "+boolQueryBuilder.toString());
 
