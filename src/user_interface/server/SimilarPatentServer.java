@@ -144,7 +144,7 @@ public class SimilarPatentServer {
     private static NestedAttribute allAttributes;
     private static AbstractNestedFilter allFilters;
     private static NestedAttribute allCharts;
-    private static KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager;
+    private static RecursiveTask<KeyphrasePredictionPipelineManager> keyphrasePredictionPipelineManagerTask;
 
     static {
         roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.startsWith("gather"));
@@ -398,17 +398,19 @@ public class SimilarPatentServer {
             loadFilterModels();
             loadChartModels();
             loadSimilarityModels();
-            new RecursiveAction() {
+            keyphrasePredictionPipelineManagerTask = new RecursiveTask<KeyphrasePredictionPipelineManager>() {
                 @Override
-                protected void compute() {
-                    keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.MODEL_NAME,-1,-1,-1));
+                protected KeyphrasePredictionPipelineManager compute() {
+                    KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.MODEL_NAME,-1,-1,-1));
                     keyphrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
                     keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors();
                     keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadWordVectors();
                     keyphrasePredictionPipelineManager.loadPredictions();
                     keyphrasePredictionPipelineManager.getCPCMap();
+                    return keyphrasePredictionPipelineManager;
                 }
-            }.fork();
+            };
+            keyphrasePredictionPipelineManagerTask.fork();
 
         }
     }
@@ -1447,7 +1449,7 @@ public class SimilarPatentServer {
                     message.add("assets are null");
                 } else {
 
-                    AssetKMeans kMeans = new AssetKMeans(assets, keyphrasePredictionPipelineManager);
+                    AssetKMeans kMeans = new AssetKMeans(assets, keyphrasePredictionPipelineManagerTask.join());
 
                     Map<String, List<String>> clusters = kMeans.clusterAssets();
 
