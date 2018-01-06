@@ -185,11 +185,13 @@ public class Parser {
             currOr = (!c.isRequired()&&!c.isProhibited());
             if(subQuery instanceof BooleanQuery) {
                 QueryBuilder query = parseAcclaimQueryHelper((BooleanQuery)subQuery);
-                if(query!=null) {
-                    if(currOr) {
-                        boolQuery = boolQuery.should(query);
-                    } else {
+                if (query != null) {
+                    if (c.isProhibited()) {
+                        boolQuery = boolQuery.mustNot(query);
+                    } else if(c.isRequired()) {
                         boolQuery = boolQuery.must(query);
+                    } else {
+                        boolQuery = boolQuery.should(query);
                     }
                 }
             } else {
@@ -201,10 +203,12 @@ public class Parser {
                         builder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, builder, false);
                     }
                     if (p.getFirst() != null) {
-                        if (currOr) {
-                            boolQuery = boolQuery.should(builder);
-                        } else {
+                        if (c.isProhibited()) {
+                            boolQuery = boolQuery.mustNot(builder);
+                        } else if(c.isRequired()) {
                             boolQuery = boolQuery.must(builder);
+                        } else {
+                            boolQuery = boolQuery.should(builder);
                         }
                     }
                 }
