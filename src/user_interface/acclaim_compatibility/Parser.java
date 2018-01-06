@@ -69,7 +69,6 @@ public class Parser {
     }
 
     private static Pair<QueryBuilder,Boolean> replaceAcclaimName(String queryStr, Query query) {
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolean isFiling = false;
         String nestedPath = null;
         int colIdx = queryStr.indexOf(":");
@@ -143,11 +142,9 @@ public class Parser {
         //    System.out.println("Foound near!!!!!");
         //}
         if(nestedPath!=null) {
-            boolQueryBuilder = boolQueryBuilder.must(QueryBuilders.nestedQuery(nestedPath,strQuery, ScoreMode.Max));
-        } else {
-            boolQueryBuilder = boolQueryBuilder.must(strQuery);
+            strQuery = QueryBuilders.nestedQuery(nestedPath,strQuery, ScoreMode.Max);
         }
-        return new Pair<>(boolQueryBuilder,isFiling);
+        return new Pair<>(strQuery,isFiling);
     }
 
     public Pair<QueryBuilder,QueryBuilder> parseAcclaimQuery(String text) {
