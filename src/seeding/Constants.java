@@ -402,7 +402,9 @@ public class Constants {
 
 	public static final Map<String,String> ACCLAIM_IP_TO_ATTR_NAME_MAP = Stream.of(
 			Arrays.asList("ANG",LATEST_ASSIGNEE+"."+NORMALIZED_LATEST_ASSIGNEE),
+			Arrays.asList("ANG_F",LATEST_ASSIGNEE+"."+NORMALIZED_LATEST_ASSIGNEE),
 			Arrays.asList("ANC",LATEST_ASSIGNEE+"."+NORMALIZED_LATEST_ASSIGNEE),
+			Arrays.asList("ANC_F",LATEST_ASSIGNEE+"."+NORMALIZED_LATEST_ASSIGNEE),
 			Arrays.asList("ANO",ASSIGNEES+"."+ASSIGNEE),
 			Arrays.asList("AN_ORIG",ASSIGNEES+"."+ASSIGNEE),
 			Arrays.asList("AC", ASSIGNEES+"."+CITY),

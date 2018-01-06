@@ -72,8 +72,8 @@ public class Parser {
         int colIdx = queryStr.indexOf(":");
         if(colIdx>0) {
             String prefix = queryStr.substring(0,colIdx);
-            if(prefix.equals(prefix.toUpperCase()) && Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.containsKey(prefix)) {
-                String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(prefix);
+            String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(prefix, prefix.endsWith("_F")&&prefix.length()>2 ? Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(prefix.substring(0,prefix.length()-2)):null);
+            if(attr!=null && prefix.equals(prefix.toUpperCase())) {
                 queryStr = attr+queryStr.substring(colIdx);
                 // check filing
                 if(attr.contains(".")) attr = attr.substring(0,attr.indexOf("."));
