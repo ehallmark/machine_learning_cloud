@@ -12,7 +12,10 @@ import org.elasticsearch.join.query.HasParentQueryBuilder;
 import spark.Request;
 import user_interface.acclaim_compatibility.Parser;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.AbstractAttribute;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Function;
 
 import static j2html.TagCreator.*;
@@ -26,7 +29,7 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
     protected String filingQueryStr;
 
     public AcclaimExpertSearchFilter() {
-        super(null,FilterType.AdvancedKeyword);
+        super(new AcclaimAttribute(),FilterType.AdvancedKeyword);
     }
 
     @Override
@@ -111,5 +114,27 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
     @Override
     public String getType() {
         return "text";
+    }
+
+}
+
+class AcclaimAttribute extends AbstractAttribute {
+    public AcclaimAttribute() {
+        super(Collections.emptyList());
+    }
+
+    @Override
+    public String getName() {
+        return AcclaimExpertSearchFilter.NAME;
+    }
+
+    @Override
+    public String getType() {
+        return "text";
+    }
+
+    @Override
+    public AbstractFilter.FieldType getFieldType() {
+        return AbstractFilter.FieldType.Text;
     }
 }

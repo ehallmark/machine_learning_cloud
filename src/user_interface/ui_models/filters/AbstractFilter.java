@@ -101,7 +101,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     public FieldType getFieldType() { return attribute.getFieldType(); }
 
     public QueryBuilder getScriptFilter() {
-        if(!(attribute instanceof AbstractScriptAttribute)) throw new RuntimeException("Getting script filter for non script attribute: "+attribute.getName());
+        if(attribute!=null && !(attribute instanceof AbstractScriptAttribute)) throw new RuntimeException("Getting script filter for non script attribute: "+attribute.getName());
         AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
         Script searchScript = scriptAttribute.getScript();
         if(searchScript==null) return QueryBuilders.boolQuery();
@@ -118,7 +118,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
 
     @Override
     public boolean isNotYetImplemented() {
-        return attribute.isNotYetImplemented();
+        return attribute!=null && attribute.isNotYetImplemented();
     }
 
     @Override
