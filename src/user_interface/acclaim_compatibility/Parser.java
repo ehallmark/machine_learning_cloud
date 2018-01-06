@@ -180,7 +180,7 @@ public class Parser {
                 BooleanClause c2 = booleanQuery.clauses().get(i+1);
                 currOr = (!c2.isRequired()&&!c2.isProhibited());
             } else {
-                currOr = false;
+                currOr = prevOr;
             }
             if(subQuery instanceof BooleanQuery) {
                 Pair<String,String> p = parseAcclaimQueryHelper((BooleanQuery)subQuery);
