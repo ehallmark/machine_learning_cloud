@@ -232,7 +232,7 @@ public class Parser {
         //    buffer.append(this.getMinimumNumberShouldMatch());
         //}
 
-        return new Pair<>(filingBool,mainBool);
+        return boolQuery;
     }
 
 
@@ -240,11 +240,9 @@ public class Parser {
     public static void main(String[] args) throws Exception {
         Parser parser = new Parser();
 
-        Pair<QueryBuilder,QueryBuilder> res = parser.parseAcclaimQuery("(TTL:foo* NEAR foot OR PRIRD:[NOW-2000DAYS TO NOW+2YEARS] (something && ACLM:(else OR elephant && \"phrase of something\"))) OR -field2:bar AND NOT foorbar");
+        QueryBuilder res = parser.parseAcclaimQuery("(TTL:foo* NEAR foot OR PRIRD:[NOW-2000DAYS TO NOW+2YEARS] (something && ACLM:(else OR elephant && \"phrase of something\"))) OR -field2:bar AND NOT foorbar");
 
-
-        System.out.println("Filing query: "+res.getFirst());
-        System.out.println("Main query: "+res.getSecond());
+        System.out.println(" query: "+res);
     }
 
 
