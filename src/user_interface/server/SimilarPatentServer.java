@@ -50,6 +50,7 @@ import user_interface.ui_models.engines.*;
 import user_interface.ui_models.excel.ExcelHandler;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
+import user_interface.ui_models.filters.AcclaimExpertSearchFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.templates.FormTemplate;
@@ -234,6 +235,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Include By Prefix", AbstractFilter.FilterType.PrefixInclude.toString());
             humanAttrToJavaAttrMap.put("Exclude By Prefix", AbstractFilter.FilterType.PrefixExclude.toString());
             humanAttrToJavaAttrMap.put("Exclude All", AbstractFilter.FilterType.Exclude.toString());
+            humanAttrToJavaAttrMap.put("Acclaim Expert Query Syntax Filter", AcclaimExpertSearchFilter.NAME);
             humanAttrToJavaAttrMap.put("Advanced Keyword Filter", AbstractFilter.FilterType.AdvancedKeyword.toString());
             humanAttrToJavaAttrMap.put("Advanced Regexp Filter", AbstractFilter.FilterType.Regexp.toString());
             humanAttrToJavaAttrMap.put("Include", AbstractFilter.FilterType.BoolTrue.toString());
@@ -493,7 +495,7 @@ public class SimilarPatentServer {
                         return allAttributes.getName();
                     }
                 };
-                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false);
+                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false, new AcclaimExpertSearchFilter());
             } catch(Exception e) {
                 e.printStackTrace();
             }

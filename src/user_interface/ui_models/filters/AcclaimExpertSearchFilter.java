@@ -1,10 +1,14 @@
 package user_interface.ui_models.filters;
 
+import elasticsearch.DataIngester;
 import j2html.tags.Tag;
 import lombok.Setter;
+import org.deeplearning4j.berkeley.Pair;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.join.query.HasParentQueryBuilder;
 import spark.Request;
 import user_interface.acclaim_compatibility.Parser;
 import user_interface.server.SimilarPatentServer;
@@ -18,8 +22,8 @@ import static j2html.TagCreator.*;
  */
 public class AcclaimExpertSearchFilter extends AbstractFilter {
     public static final String NAME = "acclaim_expert_filter";
-    @Setter
-    protected String queryStr;
+    protected String mainQueryStr;
+    protected String filingQueryStr;
 
     public AcclaimExpertSearchFilter() {
         super(null,FilterType.AdvancedKeyword);
@@ -32,12 +36,25 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        if(queryStr==null) {
+        if(mainQueryStr==null&&filingQueryStr==null) {
             return QueryBuilders.boolQuery();
         } else {
-            return QueryBuilders.queryStringQuery(queryStr)
-                    .defaultOperator(Operator.AND)
-                    .analyzeWildcard(true);
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+            if(mainQueryStr!=null) {
+                QueryBuilder query = QueryBuilders.queryStringQuery(mainQueryStr)
+                        .defaultOperator(Operator.AND)
+                        .analyzeWildcard(true);
+                boolQueryBuilder = boolQueryBuilder.must(query);
+            }
+            if(filingQueryStr!=null) {
+                QueryBuilder query = QueryBuilders.queryStringQuery(filingQueryStr)
+                        .defaultOperator(Operator.AND)
+                        .analyzeWildcard(true);
+                HasParentQueryBuilder filingQuery = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,query,false);
+                boolQueryBuilder = boolQueryBuilder.must(filingQuery);
+            }
+
+            return QueryBuilders.boolQuery().filter(boolQueryBuilder);
         }
     }
 
@@ -47,13 +64,15 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
         throw new UnsupportedOperationException("Filter not supported by scripts");
     }
 
-    public boolean isActive() {return queryStr!=null && queryStr.length()>0; }
+    public boolean isActive() {return (mainQueryStr!=null && mainQueryStr.length()>0) || (filingQueryStr!=null && filingQueryStr.length()>0); }
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        queryStr = String.join("", SimilarPatentServer.extractArray(req,getName()));
+        String queryStr = String.join("", SimilarPatentServer.extractArray(req,getName()));
         Parser parser = new Parser();
-        queryStr = parser.parseAcclaimQuery();
+        Pair<String,String> p = parser.parseAcclaimQuery(queryStr);
+        filingQueryStr=p.getFirst();
+        mainQueryStr=p.getSecond();
     }
 
     @Override

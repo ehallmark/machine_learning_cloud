@@ -17,6 +17,12 @@ $(document).ready(function() {
                  "<p>~N after a phrase signifies slop amount</p>"
     });
 
+    $('.miniTip2').miniTip({
+        title: 'Acclaim Expert Search Syntax',
+        event: 'click',
+        content: "<p>Supports most functionality available in the Acclaim Expert Search form. NEAR and ADJ are currently not supported; however, proximity searching (\"word1 word2\"~N) is supported.</p>"+
+    });
+
     var submitFormFunction = function(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successFunction) {
          e.preventDefault();
 

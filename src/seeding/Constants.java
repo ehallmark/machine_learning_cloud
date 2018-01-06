@@ -401,8 +401,8 @@ public class Constants {
 	);
 
 	public static final Map<String,String> ACCLAIM_IP_TO_ATTR_NAME_MAP = Stream.of(
-			Arrays.asList("ANG",LATEST_ASSIGNEE+"."+ASSIGNEE),
-			Arrays.asList("ANC",LATEST_ASSIGNEE+"."+ASSIGNEE),
+			Arrays.asList("ANG",LATEST_ASSIGNEE+"."+NORMALIZED_LATEST_ASSIGNEE),
+			Arrays.asList("ANC",LATEST_ASSIGNEE+"."+NORMALIZED_LATEST_ASSIGNEE),
 			Arrays.asList("ANO",ASSIGNEES+"."+ASSIGNEE),
 			Arrays.asList("AN_ORIG",ASSIGNEES+"."+ASSIGNEE),
 			Arrays.asList("AC", ASSIGNEES+"."+CITY),
@@ -415,6 +415,7 @@ public class Constants {
 			Arrays.asList("EXP", EXPIRATION_DATE),
 			Arrays.asList("APN", FILING_NAME),
 			Arrays.asList("DN", NAME),
+			Arrays.asList("GPN", NAME),
 			Arrays.asList("PN", NAME),
 			Arrays.asList("CC", COUNTRY),
 			Arrays.asList("PT", DOC_KIND),
@@ -435,9 +436,24 @@ public class Constants {
 			Arrays.asList("ANA_CLM_CT", CLAIMS+COUNT_SUFFIX),
 			Arrays.asList("KCOD", DOC_KIND),
 			Arrays.asList("AGT", AGENTS+"."+LAST_NAME),
+			Arrays.asList("AGTN", AGENTS+"."+FIRST_NAME),
+			Arrays.asList("AGTS", AGENTS+"."+STATE),
+			Arrays.asList("AGTCN", AGENTS+"."+COUNTRY),
+			Arrays.asList("AGTC", AGENTS+"."+CITY),
+			Arrays.asList("ANA_EXT_DAYS", PATENT_TERM_ADJUSTMENT),
+			Arrays.asList("ANA_FCLM_TW", CLAIMS+"."+CLAIM_LENGTH),
+			Arrays.asList("ANA_CLM_TW", CLAIMS+"."+CLAIM_LENGTH),
+			Arrays.asList("ANA_ANRE_EXE_CT",ASSIGNMENTS+COUNT_SUFFIX),
+			Arrays.asList("REC_DT", ASSIGNMENTS+"."+RECORDED_DATE),
+			Arrays.asList("EXE_DT", ASSIGNMENTS+"."+EXECUTION_DATE),
+			Arrays.asList("ANRE_EXE_DT", LATEST_ASSIGNEE+"."+EXECUTION_DATE),
+			Arrays.asList("REFN",NAME),
+			Arrays.asList("REF",NAME),
 			Arrays.asList("RVI", AI_VALUE),
 			Arrays.asList("TTL", INVENTION_TITLE),
 			Arrays.asList("ABST", ABSTRACT),
-			Arrays.asList("ACLM", CLAIMS+"."+CLAIM)
+			Arrays.asList("ACLM", CLAIMS+"."+CLAIM),
+			Arrays.asList("ANRE_CUR",LATEST_ASSIGNEE+"."+ASSIGNEE),
+			Arrays.asList("SFAM", PATENT_FAMILY+"."+NAME)
 	).collect(Collectors.toMap(e->e.get(0),e->e.get(1)));
 }
