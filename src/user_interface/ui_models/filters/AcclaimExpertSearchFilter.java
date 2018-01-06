@@ -25,8 +25,8 @@ import static j2html.TagCreator.*;
  */
 public class AcclaimExpertSearchFilter extends AbstractFilter {
     public static final String NAME = "acclaim_expert_filter";
-    protected String mainQueryStr;
-    protected String filingQueryStr;
+    protected QueryBuilder mainQuery;
+    protected QueryBuilder filingQuery;
 
     public AcclaimExpertSearchFilter() {
         super(new AcclaimAttribute(),FilterType.AdvancedKeyword);
@@ -39,21 +39,14 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        if((mainQueryStr==null||mainQueryStr.length()==0)&&(filingQueryStr==null||filingQueryStr.length()==0)) {
+        if((mainQuery==null&&filingQuery==null)) {
             return QueryBuilders.boolQuery();
         } else {
             BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-            if(mainQueryStr!=null&&mainQueryStr.length()>0) {
-                QueryBuilder query = QueryBuilders.queryStringQuery(mainQueryStr)
-                        .defaultOperator(Operator.AND)
-                        .analyzeWildcard(true);
-                boolQueryBuilder = boolQueryBuilder.must(query);
+            if(mainQuery!=null) {
+                boolQueryBuilder = boolQueryBuilder.must(mainQuery);
             }
-            if(filingQueryStr!=null&&filingQueryStr.length()>0) {
-                QueryBuilder query = QueryBuilders.queryStringQuery(filingQueryStr)
-                        .defaultOperator(Operator.AND)
-                        .analyzeWildcard(true);
-                HasParentQueryBuilder filingQuery = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,query,false);
+            if(filingQuery!=null) {
                 boolQueryBuilder = boolQueryBuilder.must(filingQuery);
             }
             System.out.println("Acclaim query: "+boolQueryBuilder.toString());
@@ -68,15 +61,15 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
         throw new UnsupportedOperationException("Filter not supported by scripts");
     }
 
-    public boolean isActive() {return (mainQueryStr!=null && mainQueryStr.length()>0) || (filingQueryStr!=null && filingQueryStr.length()>0); }
+    public boolean isActive() {return (mainQuery!=null) || (filingQuery!=null); }
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
         String queryStr = String.join("", SimilarPatentServer.extractArray(req,getName()));
         Parser parser = new Parser();
-        Pair<String,String> p = parser.parseAcclaimQuery(queryStr);
-        filingQueryStr=p.getFirst();
-        mainQueryStr=p.getSecond();
+        Pair<QueryBuilder,QueryBuilder> p = parser.parseAcclaimQuery(queryStr);
+        filingQuery=p.getFirst();
+        mainQuery=p.getSecond();
     }
 
     @Override

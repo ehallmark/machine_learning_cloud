@@ -7,8 +7,9 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermRangeQuery;
+import org.apache.lucene.search.join.ScoreMode;
 import org.deeplearning4j.berkeley.Pair;
-import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.index.query.*;
 import seeding.Constants;
 
 import java.time.Duration;
@@ -67,8 +68,10 @@ public class Parser {
         return val;
     }
 
-    private static Pair<String,Boolean> replaceAcclaimName(String queryStr, Query query) {
+    private static Pair<QueryBuilder,Boolean> replaceAcclaimName(String queryStr, Query query) {
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolean isFiling = false;
+        String nestedPath = null;
         int colIdx = queryStr.indexOf(":");
         if(colIdx>0) {
             String prefix = queryStr.substring(0,colIdx);
@@ -79,6 +82,9 @@ public class Parser {
                 if(attr.contains(".")) attr = attr.substring(0,attr.indexOf("."));
                 if(Constants.FILING_ATTRIBUTES_SET.contains(attr)) {
                     isFiling = true;
+                }
+                if(Constants.NESTED_ATTRIBUTES.contains(attr)) {
+                    nestedPath = attr;
                 }
             } else {
                 // warning
@@ -127,16 +133,24 @@ public class Parser {
                         firstVal = yearSyntaxToDate(firstVal,"day");
                     }
                     queryStr = queryStr.substring(0, r+1) + firstVal + " TO " + secondVal + queryStr.substring(queryStr.length() - 1, queryStr.length());
+
                 }
             }
         }
+        QueryBuilder strQuery = QueryBuilders.queryStringQuery(queryStr).defaultOperator(Operator.AND);
+
         //if(queryStr.equals("near")||queryStr.equals("+near")) {
         //    System.out.println("Foound near!!!!!");
         //}
-        return new Pair<>(queryStr,isFiling);
+        if(nestedPath!=null) {
+            boolQueryBuilder = boolQueryBuilder.must(QueryBuilders.nestedQuery(nestedPath,strQuery, ScoreMode.Max));
+        } else {
+            boolQueryBuilder = boolQueryBuilder.must(strQuery);
+        }
+        return new Pair<>(boolQueryBuilder,isFiling);
     }
 
-    public Pair<String,String> parseAcclaimQuery(String text) {
+    public Pair<QueryBuilder,QueryBuilder> parseAcclaimQuery(String text) {
         Query query;
         try {
             query = parser.parse(text.replace(" to "," TO "));
@@ -147,15 +161,15 @@ public class Parser {
         //if(needParens) {
         //    buffer.append("(");
         //}
-        String filingQuery = "";
-        String mainQuery = "";
+        QueryBuilder filingQuery = null;
+        QueryBuilder mainQuery = null;
 
         BooleanQuery booleanQuery;
         if(query instanceof BooleanQuery) {
             booleanQuery = (BooleanQuery)query;
             return parseAcclaimQueryHelper(booleanQuery);
         } else {
-            Pair<String,Boolean> p = replaceAcclaimName(query.toString(),query);
+            Pair<QueryBuilder,Boolean> p = replaceAcclaimName(query.toString(),query);
             boolean isFiling = p.getSecond();
             if(isFiling) {
                 filingQuery = p.getFirst();
@@ -166,13 +180,11 @@ public class Parser {
         return new Pair<>(filingQuery,mainQuery);
     }
 
-    public Pair<String,String> parseAcclaimQueryHelper(BooleanQuery booleanQuery) {
-        StringJoiner mainBuilder = new StringJoiner("");
-        StringJoiner filingBuilder = new StringJoiner("");
-        boolean previousMain = false;
-        boolean previousFiling = false;
+    public Pair<QueryBuilder,QueryBuilder> parseAcclaimQueryHelper(BooleanQuery booleanQuery) {
         boolean prevOr = false;
         boolean currOr;
+        BoolQueryBuilder mainBool = QueryBuilders.boolQuery();
+        BoolQueryBuilder filingBool = QueryBuilders.boolQuery();
         for(int i = 0; i < booleanQuery.clauses().size(); i++) {
             BooleanClause c = booleanQuery.clauses().get(i);
             Query subQuery = c.getQuery();
@@ -183,57 +195,44 @@ public class Parser {
                 currOr = prevOr;
             }
             if(subQuery instanceof BooleanQuery) {
-                Pair<String,String> p = parseAcclaimQueryHelper((BooleanQuery)subQuery);
-                String filingQuery = p.getFirst();
-                String mainQuery = p.getSecond();
-                if(filingQuery.length()>0) {
-                    if(prevOr&&currOr) {
-                        filingBuilder.add(" ||");
-                    }
-                    if(previousFiling) {
-                        filingBuilder.add(" ");
-                    }
-                    previousFiling=true;
-                    filingBuilder.add(c.getOccur().toString());
-                    filingBuilder.add("("+filingQuery+")");
+                Pair<QueryBuilder,QueryBuilder> p = parseAcclaimQueryHelper((BooleanQuery)subQuery);
+                QueryBuilder filingQuery = p.getFirst();
+                QueryBuilder mainQuery = p.getSecond();
 
+                if(filingQuery!=null) {
+                    if(prevOr&&currOr) {
+                        filingBool=filingBool.should(filingQuery);
+                    } else {
+                        filingBool=filingBool.must(filingQuery);
+                    }
                 }
-                if(mainQuery.length()>0) {
+                if(mainQuery!=null) {
                     if(prevOr&&currOr) {
-                        mainBuilder.add(" ||");
+                        mainBool = mainBool.should(mainQuery);
+                    } else {
+                        mainBool = mainBool.must(mainQuery);
                     }
-                    if(previousMain) {
-                        mainBuilder.add(" ");
-                    }
-                    previousMain=true;
-                    mainBuilder.add(c.getOccur().toString());
-                    mainBuilder.add("("+mainQuery+")");
-
                 }
             } else {
                 String queryStr = subQuery.toString();
-                Pair<String,Boolean> p = replaceAcclaimName(queryStr,subQuery);
+                Pair<QueryBuilder,Boolean> p = replaceAcclaimName(queryStr,subQuery);
                 if(p.getSecond()) {
-                    if(prevOr&&currOr) {
-                        filingBuilder.add(" ||");
+                    if(p.getFirst()!=null) {
+                        if(prevOr&&currOr) {
+                            filingBool=filingBool.should(p.getFirst());
+                        } else {
+                            filingBool=filingBool.must(p.getFirst());
+                        }
                     }
-                    if(previousFiling) {
-                        filingBuilder.add(" ");
-                    }
-                    previousFiling=true;
-                    filingBuilder.add(c.getOccur().toString());
-                    filingBuilder.add(p.getFirst());
 
                 } else {
-                    if(prevOr&&currOr) {
-                        mainBuilder.add(" ||");
+                    if(p.getFirst()!=null) {
+                        if(prevOr&&currOr) {
+                            mainBool = mainBool.should(p.getFirst());
+                        } else {
+                            mainBool = mainBool.must(p.getFirst());
+                        }
                     }
-                    if(previousMain) {
-                        mainBuilder.add(" ");
-                    }
-                    previousMain=true;
-                    mainBuilder.add(c.getOccur().toString());
-                    mainBuilder.add(p.getFirst());
 
                 }
             }
@@ -252,11 +251,7 @@ public class Parser {
         //    buffer.append(this.getMinimumNumberShouldMatch());
         //}
 
-        String main = mainBuilder.toString();
-        String filing = filingBuilder.toString();
-        if(main.endsWith(" ||") && main.length()>3) main = main.substring(0,main.length()-3);
-        if(filing.endsWith(" ||") && filing.length()>3) filing = filing.substring(0,filing.length()-3);
-        return new Pair<>(filing,main);
+        return new Pair<>(filingBool,mainBool);
     }
 
 
@@ -264,7 +259,7 @@ public class Parser {
     public static void main(String[] args) throws Exception {
         Parser parser = new Parser();
 
-        Pair<String,String> res = parser.parseAcclaimQuery("(TTL:foo* NEAR foot OR PRIRD:[NOW-2000DAYS TO NOW+2YEARS] (something && ACLM:(else OR elephant && \"phrase of something\"))) OR -field2:bar AND NOT foorbar");
+        Pair<QueryBuilder,QueryBuilder> res = parser.parseAcclaimQuery("(TTL:foo* NEAR foot OR PRIRD:[NOW-2000DAYS TO NOW+2YEARS] (something && ACLM:(else OR elephant && \"phrase of something\"))) OR -field2:bar AND NOT foorbar");
 
 
         System.out.println("Filing query: "+res.getFirst());
