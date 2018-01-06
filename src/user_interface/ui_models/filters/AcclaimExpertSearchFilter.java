@@ -39,23 +39,24 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        if(mainQueryStr==null&&filingQueryStr==null) {
+        if((mainQueryStr==null||mainQueryStr.length()==0)&&(filingQueryStr==null||filingQueryStr.length()==0)) {
             return QueryBuilders.boolQuery();
         } else {
             BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-            if(mainQueryStr!=null) {
+            if(mainQueryStr!=null&&mainQueryStr.length()>0) {
                 QueryBuilder query = QueryBuilders.queryStringQuery(mainQueryStr)
                         .defaultOperator(Operator.AND)
                         .analyzeWildcard(true);
                 boolQueryBuilder = boolQueryBuilder.must(query);
             }
-            if(filingQueryStr!=null) {
+            if(filingQueryStr!=null&&filingQueryStr.length()>0) {
                 QueryBuilder query = QueryBuilders.queryStringQuery(filingQueryStr)
                         .defaultOperator(Operator.AND)
                         .analyzeWildcard(true);
                 HasParentQueryBuilder filingQuery = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,query,false);
                 boolQueryBuilder = boolQueryBuilder.must(filingQuery);
             }
+            System.out.println("Acclaim query: "+boolQueryBuilder.toString());
 
             return QueryBuilders.boolQuery().filter(boolQueryBuilder);
         }
