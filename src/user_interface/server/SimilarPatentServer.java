@@ -398,17 +398,17 @@ public class SimilarPatentServer {
             loadFilterModels();
             loadChartModels();
             loadSimilarityModels();
-            keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.MODEL_NAME,-1,-1,-1));
-            keyphrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
             new RecursiveAction() {
                 @Override
                 protected void compute() {
+                    keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.MODEL_NAME,-1,-1,-1));
+                    keyphrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
                     keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors();
                     keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadWordVectors();
                     keyphrasePredictionPipelineManager.loadPredictions();
                     keyphrasePredictionPipelineManager.getCPCMap();
                 }
-            };
+            }.fork();
 
         }
     }

@@ -69,31 +69,31 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     @Override
     public void rebuildPrerequisiteData() {
-        initStages(false,true);
+        initStages(true,true,false,true);
     }
 
-    private void initStages(boolean rerunVocab, boolean rerunFilters) {
+    private void initStages(boolean vocab, boolean filters, boolean rerunVocab, boolean rerunFilters) {
         // stage 1;
         Stage1 stage1 = new Stage1(modelParams);
-        stage1.run(rerunVocab);
+        if(vocab)stage1.run(rerunVocab);
         //if(alwaysRerun)stage1.createVisualization();
 
         // stage 2
         System.out.println("Pre-grouping data for stage 2...");
         Stage2 stage2 = new Stage2(stage1.get(), modelParams);
-        stage2.run(rerunFilters);
+        if(filters)stage2.run(rerunFilters);
         //if(alwaysRerun)stage2.createVisualization();
 
         // valid word
         System.out.println("Pre-grouping data for valid word stage...");
         ValidWordStage validWordStage = new ValidWordStage(stage2.get(), modelParams);
-        validWordStage.run(rerunFilters);
+        if(filters)validWordStage.run(rerunFilters);
 
         // cpc density
         System.out.println("Pre-grouping data for cpc density...");
         CPCHierarchy hierarchy = new CPCHierarchy();
         CPCDensityStage cpcDensityStage = new CPCDensityStage(validWordStage.get(), modelParams, hierarchy);
-        cpcDensityStage.run(rerunFilters);
+        if(filters)cpcDensityStage.run(rerunFilters);
         //if(alwaysRerun) stage4.createVisualization();
 
         // stage 3
@@ -111,7 +111,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     @Override
     protected void initModel(boolean forceRecreateModel) {
         System.out.println("Starting to init model...");
-        if(multiStemSet==null) initStages(false,false);
+        if(multiStemSet==null) initStages(false,false,false,false);
     }
 
 

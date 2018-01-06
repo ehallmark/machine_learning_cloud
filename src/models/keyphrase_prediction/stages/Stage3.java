@@ -9,10 +9,7 @@ import seeding.Database;
 import tools.OpenMapBigRealMatrix;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -25,7 +22,7 @@ public class Stage3 extends Stage<Set<MultiStem>> {
     private double minValue;
     public Stage3(Collection<MultiStem> multiStems, Model model) {
         super(model);
-        this.data = new HashSet<>(multiStems);
+        this.data = new HashSet<>(multiStems==null? Collections.emptySet():multiStems);
         this.multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
         this.minValue = model.getDefaultMinValue();
     }
