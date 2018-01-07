@@ -42,6 +42,10 @@ public class Parser {
     static {
         defaultTransformation = (name,val) -> {
             if(name!=null && name.length()>0) {
+                if(name.endsWith("Date")) {
+                    // try date formatting
+                    val = tryCoerceDate(val);
+                }
                 return QueryBuilders.queryStringQuery(name + ":" + val).defaultOperator(Operator.AND);
             } else {
                 return QueryBuilders.queryStringQuery(val).defaultOperator(Operator.AND);
@@ -116,25 +120,39 @@ public class Parser {
             return null;
         });
         transformationsForAttr.put("FIELD",(name,val)->{
+            String replace;
             if(val.startsWith("isEmpty")) {
-                String field = val.replaceFirst("isEmpty","").toUpperCase();
-                String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(field, field.length()>2&&field.endsWith("_F")?Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(field.substring(0,field.length()-2)):null);
-                if(attr!=null) {
+                replace="isEmpty";
+            } else if(val.startsWith("isNotEmpty")) {
+                replace="isNotEmpty";
+            } else {
+                replace=null;
+            }
+
+            if(replace!=null) {
+                String field = val.replaceFirst(replace, "").toUpperCase();
+                String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(field, field.length() > 2 && field.endsWith("_F") ? Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(field.substring(0, field.length() - 2)) : null);
+                if (attr != null) {
                     // check for nested)
                     QueryBuilder queryBuilder = QueryBuilders.existsQuery(attr);
 
-                    String root = attr.contains(".") ? attr.substring(0,attr.indexOf(".")) : attr;
-                    if(Constants.NESTED_ATTRIBUTES.contains(root)) {
-                        queryBuilder = QueryBuilders.nestedQuery(root,queryBuilder,ScoreMode.Min);
+                    String root = attr.contains(".") ? attr.substring(0, attr.indexOf(".")) : attr;
+                    if (Constants.NESTED_ATTRIBUTES.contains(root)) {
+                        queryBuilder = QueryBuilders.nestedQuery(root, queryBuilder, ScoreMode.Min);
                     }
 
                     // check filing
-                    if(Constants.FILING_ATTRIBUTES_SET.contains(root)) {
+                    if (Constants.FILING_ATTRIBUTES_SET.contains(root)) {
                         queryBuilder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, queryBuilder, false);
                     }
-                    return QueryBuilders.boolQuery().mustNot(queryBuilder);
+
+                    if(replace.equals("isEmpty")) {
+                        return QueryBuilders.boolQuery().mustNot(queryBuilder);
+                    } else {
+                        return QueryBuilders.boolQuery().must(queryBuilder);
+                    }
                 }
-            };
+            }
             return null;
         });
         transformationsForAttr.put("PEND",(name,val)->{
@@ -148,6 +166,71 @@ public class Parser {
                         .must(QueryBuilders.termQuery(Constants.GRANTED, true));
             }
         });
+        transformationsForAttr.put("ICLM",(name,val)->{
+            String attrName = Constants.CLAIMS+"."+Constants.CLAIM;
+            QueryBuilder query = QueryBuilders.boolQuery()
+                    .mustNot(QueryBuilders.existsQuery(Constants.CLAIMS+"."+Constants.PARENT_CLAIM_NUM))
+                    .must(QueryBuilders.queryStringQuery(attrName+":"+val).defaultOperator(Operator.AND));
+            return QueryBuilders.nestedQuery(Constants.CLAIMS,query,ScoreMode.Max);
+        });
+        transformationsForAttr.put("DCLM",(name,val)->{
+            String attrName = Constants.CLAIMS+"."+Constants.CLAIM;
+            QueryBuilder query = QueryBuilders.boolQuery()
+                    .must(QueryBuilders.existsQuery(Constants.CLAIMS+"."+Constants.PARENT_CLAIM_NUM))
+                    .must(QueryBuilders.queryStringQuery(attrName+":"+val).defaultOperator(Operator.AND));
+            return QueryBuilders.nestedQuery(Constants.CLAIMS,query,ScoreMode.Max);
+        });
+        transformationsForAttr.put("TAC",(name,val)->{
+            return QueryBuilders.boolQuery()
+                    .should(QueryBuilders.nestedQuery(Constants.CLAIMS, QueryBuilders.queryStringQuery(Constants.CLAIMS+"."+Constants.CLAIM+":"+val).defaultOperator(Operator.AND), ScoreMode.Max))
+                    .should(QueryBuilders.queryStringQuery(Constants.ABSTRACT+":"+val).defaultOperator(Operator.AND))
+                    .should(QueryBuilders.queryStringQuery(Constants.INVENTION_TITLE+":"+val).defaultOperator(Operator.AND));
+        });
+        transformationsForAttr.put(Constants.NESTED_CPC_CODES+"."+Constants.CPC_CODES, (name,val)->{
+            if(val.endsWith("+")) {
+                BoolQueryBuilder builder = QueryBuilders.boolQuery();
+                if(val.length()>1) {
+                    String a = val.substring(0,1);
+                    builder = builder.must(QueryBuilders.termQuery(Constants.CPC_SECTION,a));
+                    if(val.length()>3) {
+                        String b = val.substring(1,3);
+                        builder = builder.must(QueryBuilders.termQuery(Constants.CPC_CLASS,b));
+                        if(val.length()>4) {
+                            String c = val.substring(3,4);
+                            builder = builder.must(QueryBuilders.termQuery(Constants.CPC_SUBCLASS,c));
+                            int slashIdx = val.indexOf("/",4);
+                            if(slashIdx>4) {
+                                String d = val.substring(4,slashIdx).trim();
+                                builder = builder.must(QueryBuilders.termQuery(Constants.CPC_MAIN_GROUP,d));
+                                if(val.length()>slashIdx+2) {
+                                    String e = val.substring(slashIdx+1,val.length()-1).trim();
+                                    builder = builder.must(QueryBuilders.termQuery(Constants.CPC_SUBGROUP,e));
+                                }
+                            } else if (val.length()>5) {
+                                String d = val.substring(4,val.length()-1).trim();
+                                builder = builder.must(QueryBuilders.termQuery(Constants.CPC_MAIN_GROUP,d));
+                            }
+                        }
+                    }
+                }
+                return builder;
+            } else {
+                return QueryBuilders.queryStringQuery(name+":"+val).defaultOperator(Operator.AND);
+            }
+        });
+    }
+
+    private static String tryCoerceDate(String val) {
+        try {
+            val = LocalDate.parse(val, DateTimeFormatter.ofPattern("MM/dd/yyyy")).format(DateTimeFormatter.ISO_DATE);
+        } catch (Exception e) {
+            try {
+                val = LocalDate.parse(val, DateTimeFormatter.ofPattern("yyyy/MM/dd")).format(DateTimeFormatter.ISO_DATE);
+            } catch (Exception e2) {
+                if(val.length()==4)val = LocalDate.of(Integer.valueOf(val),1,1).format(DateTimeFormatter.ISO_DATE);
+            }
+        }
+        return val;
     }
 
     private QueryParser parser;
@@ -236,26 +319,13 @@ public class Parser {
                 if(r>=0&&queryStr.length()>r+1) {
                     String d = queryStr.substring(r).replace("now", LocalDate.now().toString()).replace("NOW",LocalDate.now().toString());
                     s = d.indexOf(" TO ");
+
                     String firstVal = d.substring(1, s).trim();
                     String secondVal = d.substring(s + 4, d.length()-1).trim();
-                    try {
-                        firstVal = LocalDate.parse(firstVal, DateTimeFormatter.ofPattern("MM/dd/yyyy")).format(DateTimeFormatter.ISO_DATE);
-                    } catch (Exception e) {
-                        try {
-                            firstVal = LocalDate.parse(firstVal, DateTimeFormatter.ofPattern("yyyy/MM/dd")).format(DateTimeFormatter.ISO_DATE);
-                        } catch (Exception e2) {
-                            if(firstVal.length()==4)firstVal = LocalDate.of(Integer.valueOf(firstVal),1,1).format(DateTimeFormatter.ISO_DATE);
-                        }
-                    }
-                    try {
-                        secondVal = LocalDate.parse(secondVal, DateTimeFormatter.ofPattern("MM/dd/yyyy")).format(DateTimeFormatter.ISO_DATE);
-                    } catch (Exception e) {
-                        try {
-                            secondVal = LocalDate.parse(secondVal, DateTimeFormatter.ofPattern("yyyy/MM/dd")).format(DateTimeFormatter.ISO_DATE);
-                        } catch (Exception e2) {
-                            if(secondVal.length()==4)secondVal = LocalDate.of(Integer.valueOf(secondVal),1,1).format(DateTimeFormatter.ISO_DATE);
-                        }
-                    }
+
+                    firstVal = tryCoerceDate(firstVal);
+                    secondVal = tryCoerceDate(secondVal);
+
                     if(secondVal.contains("year")) {
                         secondVal = yearSyntaxToDate(secondVal,"year");
                     } else if(secondVal.contains("month")) {
@@ -383,7 +453,7 @@ public class Parser {
     public static void main(String[] args) throws Exception {
         Parser parser = new Parser();
 
-        QueryBuilder res = parser.parseAcclaimQuery("(ANC_F:\"HTC CORP\" OR ANC_F:\"HTC\") AND (ANO_F:HTC || FIELD:isEmptyANO_F) AND CC:US AND DT:G AND EXP:[NOW+5YEARS TO NOW+6YEARS] AND EXP:f AND NOT PEND:false AND (PT:U OR PT:RE)");
+        QueryBuilder res = parser.parseAcclaimQuery("CPC:A02F33+ AND CPC:A02301\\/32 (ANC_F:\"HTC CORP\" OR ANC_F:\"HTC\") AND (ANO_F:HTC || FIELD:isEmptyANO_F) AND CC:US AND DT:G AND EXP:[NOW+5YEARS TO NOW+6YEARS] AND EXP:f AND NOT PEND:false AND (PT:U OR PT:RE)");
 
         System.out.println(" query: "+res);
     }
