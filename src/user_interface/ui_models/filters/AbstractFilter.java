@@ -101,17 +101,23 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     public FieldType getFieldType() { return attribute.getFieldType(); }
 
     public QueryBuilder getScriptFilter() {
+        Script filterScript = getScript();
+        if(filterScript==null)  return QueryBuilders.boolQuery();
+        return QueryBuilders.scriptQuery(filterScript);
+    }
+
+    public Script getScript() {
         if(attribute!=null && !(attribute instanceof AbstractScriptAttribute)) throw new RuntimeException("Getting script filter for non script attribute: "+attribute.getName());
         AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
         Script searchScript = scriptAttribute.getScript();
-        if(searchScript==null) return QueryBuilders.boolQuery();
+        if(searchScript==null) return null;
         Script filterScript = new Script(
                 searchScript.getType(),
                 searchScript.getLang(),
                 transformAttributeScript(searchScript.getIdOrCode()),
                 searchScript.getParams()
         );
-        return QueryBuilders.scriptQuery(filterScript);
+        return filterScript;
     }
 
     protected abstract String transformAttributeScript(String attributeScript);

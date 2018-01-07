@@ -53,11 +53,10 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute  {
     }
 
 
-    public QueryBuilder getSortQuery(FiltersFunctionScoreQuery.ScoreMode scoreMode) {
-        Script searchScript = getSortScript();
+    public static QueryBuilder getSortQuery(Script searchScript, FiltersFunctionScoreQuery.ScoreMode scoreMode, float weight) {
         if(searchScript==null) return null;
-        System.out.println("Getting "+getName()+" sort script");
-        return  QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(searchScript).setWeight(getWeight()))
+        //System.out.println("Getting "+getName()+" sort script");
+        return  QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(searchScript).setWeight(weight))
                 .boostMode(CombineFunction.REPLACE)
                 .scoreMode(scoreMode);
     }

@@ -16,6 +16,7 @@ import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.join.query.HasParentQueryBuilder;
 import seeding.Constants;
+import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.attributes.script_attributes.CalculatedExpirationDateAttribute;
 import user_interface.ui_models.attributes.script_attributes.CalculatedPriorityDateAttribute;
 import user_interface.ui_models.attributes.script_attributes.ExpiredAttribute;
@@ -69,7 +70,7 @@ public class Parser {
         });
         transformationsForAttr.put(Constants.EXPIRATION_DATE,(name,val)->{
             if(val.equals("expired")) {
-                return new AbstractBooleanIncludeFilter(new ExpiredAttribute(), AbstractFilter.FilterType.BoolTrue).getScriptFilter();
+                return AbstractScriptAttribute.getSortQuery(new ExpiredAttribute().getScript(), FiltersFunctionScoreQuery.ScoreMode.MIN, 1f);
             }
             if(val.length()>2) {
                 String[] vals = val.substring(1, val.length() - 1).split(" TO ");
@@ -88,7 +89,7 @@ public class Parser {
                 AbstractBetweenFilter betweenFilter = new AbstractBetweenFilter(new CalculatedExpirationDateAttribute(), AbstractFilter.FilterType.Between);
                 betweenFilter.setMin(date1);
                 betweenFilter.setMax(date2);
-                return betweenFilter.getScriptFilter();
+                return AbstractScriptAttribute.getSortQuery(betweenFilter.getScript(), FiltersFunctionScoreQuery.ScoreMode.MIN, 1f);
             }
             return null;
         });
@@ -110,7 +111,7 @@ public class Parser {
                 AbstractBetweenFilter betweenFilter = new AbstractBetweenFilter(new CalculatedPriorityDateAttribute(), AbstractFilter.FilterType.Between);
                 betweenFilter.setMin(date1);
                 betweenFilter.setMax(date2);
-                return betweenFilter.getFilterQuery();
+                return AbstractScriptAttribute.getSortQuery(betweenFilter.getScript(), FiltersFunctionScoreQuery.ScoreMode.MIN, 1f);
             }
             return null;
         });
@@ -119,9 +120,15 @@ public class Parser {
                 String field = val.replaceFirst("isEmpty","").toUpperCase();
                 String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(field, field.length()>2&&field.endsWith("_F")?Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(field.substring(0,field.length()-2)):null);
                 if(attr!=null) {
-                    return QueryBuilders.boolQuery().mustNot(
-                            QueryBuilders.existsQuery(attr)
-                    );
+                    QueryBuilder queryBuilder = QueryBuilders.existsQuery(attr);
+
+                    String root = attr.contains(".") ? attr.substring(0,attr.indexOf(".")) : attr;
+
+                    // check filing
+                    if(Constants.FILING_ATTRIBUTES_SET.contains(root)) {
+                        queryBuilder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, queryBuilder, true);
+                    }
+                    return QueryBuilders.boolQuery().mustNot(queryBuilder);
                 }
             };
             return null;
