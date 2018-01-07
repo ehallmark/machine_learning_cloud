@@ -70,7 +70,7 @@ public class Parser {
         });
         transformationsForAttr.put(Constants.EXPIRATION_DATE,(name,val)->{
             if(val.equals("expired")) {
-                return AbstractScriptAttribute.getSortQuery(new ExpiredAttribute().getScript(), FiltersFunctionScoreQuery.ScoreMode.MIN, 1f);
+                return new AbstractBooleanIncludeFilter(new ExpiredAttribute(), AbstractFilter.FilterType.BoolTrue).getFilterQuery();
             }
             if(val.length()>2) {
                 String[] vals = val.substring(1, val.length() - 1).split(" TO ");
@@ -89,7 +89,7 @@ public class Parser {
                 AbstractBetweenFilter betweenFilter = new AbstractBetweenFilter(new CalculatedExpirationDateAttribute(), AbstractFilter.FilterType.Between);
                 betweenFilter.setMin(date1);
                 betweenFilter.setMax(date2);
-                return AbstractScriptAttribute.getSortQuery(betweenFilter.getScript(), FiltersFunctionScoreQuery.ScoreMode.MIN, 1f);
+                return betweenFilter.getScriptFilter();
             }
             return null;
         });
@@ -111,7 +111,7 @@ public class Parser {
                 AbstractBetweenFilter betweenFilter = new AbstractBetweenFilter(new CalculatedPriorityDateAttribute(), AbstractFilter.FilterType.Between);
                 betweenFilter.setMin(date1);
                 betweenFilter.setMax(date2);
-                return AbstractScriptAttribute.getSortQuery(betweenFilter.getScript(), FiltersFunctionScoreQuery.ScoreMode.MIN, 1f);
+                return betweenFilter.getScriptFilter();
             }
             return null;
         });
