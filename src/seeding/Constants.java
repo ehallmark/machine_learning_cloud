@@ -419,7 +419,7 @@ public class Constants {
 			Arrays.asList("DN", NAME),
 			Arrays.asList("GPN", NAME),
 			Arrays.asList("PN", NAME),
-			Arrays.asList("CC", COUNTRY),
+			Arrays.asList("CC", FILING_COUNTRY),
 			Arrays.asList("PT", DOC_KIND),
 			Arrays.asList("DT", DOC_TYPE),
 			Arrays.asList("SMALLENT", ASSIGNEE_ENTITY_TYPE),

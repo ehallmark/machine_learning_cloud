@@ -47,22 +47,22 @@ public class Parser {
         transformationsForAttr.put(Constants.FILING_COUNTRY,(name,str)->QueryBuilders.termQuery(name,str.toUpperCase()));
         transformationsForAttr.put(Constants.DOC_TYPE,(name,str)->{
             String ret;
-            if(str.equals("g")) ret = "patents";
-            else if(str.equals("a")) ret = "applications";
+            if(str.toLowerCase().equals("g")) ret = "patents";
+            else if(str.toLowerCase().equals("a")) ret = "applications";
             else ret = str;
             return QueryBuilders.termQuery(name,ret);
         });
         transformationsForAttr.put(Constants.DOC_KIND,(name,str) ->{
-            String ret;
+            QueryBuilder ret;
             str=str.toUpperCase();
-            if(str.equals("U")) ret = "B*";
-            else if(str.equals("A")) ret = "A*";
-            else if(str.equals("P")) ret = "P*";
-            else if(str.equals("H")) ret = "H";
-            else if(str.equals("D")) ret = "S";
-            else if(str.equals("RE")) ret = "E";
-            else ret = str;
-            return QueryBuilders.queryStringQuery(name+":"+ret).defaultOperator(Operator.AND);
+            if(str.equals("U")) ret = QueryBuilders.termsQuery(name,"B1","B","B2");
+            else if(str.equals("A")) ret =QueryBuilders.termsQuery(name,"A1","A","A2","A9");
+            else if(str.equals("P")) ret = QueryBuilders.termsQuery(name,"P","PP","P1","P2","P3","P4","P9");
+            else if(str.equals("H")) ret = QueryBuilders.termsQuery(name,"H");
+            else if(str.equals("D")) ret = QueryBuilders.termQuery(name,"S");
+            else if(str.equals("RE")) ret = QueryBuilders.termQuery(name,"E");
+            else ret = QueryBuilders.queryStringQuery(name+":"+str).defaultOperator(Operator.AND);
+            return ret;
         });
         transformationsForAttr.put(Constants.EXPIRATION_DATE,(name,val)->{
             if(val.equals("expired")) {
@@ -116,7 +116,9 @@ public class Parser {
                 String field = val.replaceFirst("isEmpty","").toUpperCase();
                 String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(field, field.length()>2&&field.endsWith("_F")?Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(field.substring(0,field.length()-2)):null);
                 if(attr!=null) {
-                    return QueryBuilders.existsQuery(attr);
+                    return QueryBuilders.boolQuery().mustNot(
+                            QueryBuilders.existsQuery(attr)
+                    );
                 }
             };
             return null;
