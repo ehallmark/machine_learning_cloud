@@ -2176,6 +2176,11 @@ public class SimilarPatentServer {
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
                 body().with(
+                        div().withId("acclaim-supported-fields").attr("style","display: none;").with(
+                                Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.entrySet().stream().sorted(Comparator.comparing(e->e.getKey())).map(e->{
+                                    return p(e.getKey()+" -> "+fullHumanAttributeFor(e.getValue()));
+                                }).collect(Collectors.toList())
+                        ),
                         div().withClass("container-fluid text-center").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
                                         nav().withClass("sidebar col-3").attr("style","overflow-y: auto; height: 100%; position: fixed; padding-top: 75px;").with(

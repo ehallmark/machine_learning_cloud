@@ -20,7 +20,7 @@ $(document).ready(function() {
     $('.miniTip2').miniTip({
         title: 'Acclaim Expert Search Syntax',
         event: 'click',
-        content: "<p>Supports most functionality available in the Acclaim Expert Search form. NEAR and ADJ are currently not supported; however, proximity searching (\"word1 word2\"~N) is supported.</p>"
+        content: "<p>Supports most functionality available in the Acclaim Expert Search form. NEAR and ADJ are currently not supported; however, proximity searching</p><p>(\"word1 word2\"~N)</p><p> is supported.</p><p>Supported Fields: </p><p style='margin-left: 5%;'>"+$('#acclaim-supported-fields').html()+"</p>";
     });
 
     var submitFormFunction = function(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successFunction) {
