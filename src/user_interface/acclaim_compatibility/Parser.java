@@ -219,7 +219,7 @@ public class Parser {
                 int r = Math.max(queryStr.indexOf("["),queryStr.indexOf("{"));
                 if(r>=0&&queryStr.length()>r+1) {
                     String d = queryStr.substring(r).replace("now", LocalDate.now().toString()).replace("NOW",LocalDate.now().toString());
-                    String firstVal = d.substring(1, s).trim();
+                    String firstVal = d.substring(1, s-r).trim();
                     String secondVal = d.substring(s - r + 4, d.length()-1).trim();
                     try {
                         firstVal = LocalDate.parse(firstVal, DateTimeFormatter.ofPattern("MM/dd/yyyy")).format(DateTimeFormatter.ISO_DATE);
