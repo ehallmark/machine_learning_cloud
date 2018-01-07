@@ -99,6 +99,11 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
         return "text";
     }
 
+    @Override
+    public boolean contributesToScore() {
+        return true;
+    }
+
 }
 
 class AcclaimAttribute extends AbstractAttribute {

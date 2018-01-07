@@ -1237,8 +1237,6 @@ public class SimilarPatentServer {
             }
             long queriedCount = queriedData.size();
             // check for sorting
-            String previousSort = req.session().attribute("previousSort"+paramIdx);
-            System.out.println("Previous sort: "+previousSort);
             if(req.queryMap("sorts")!=null) {
                 req.queryMap("sorts").toMap().forEach((k,v)->{
                     System.out.println("Sorting "+k+": "+v);
@@ -1250,33 +1248,29 @@ public class SimilarPatentServer {
 
                     String sortStr = k+directionStr+searchStr;
                     System.out.println("New sort string: "+sortStr);
-                    if(previousSort!=null&&sortStr.equals(k + (reversed ? "1" : "-1") + searchStr)) {
-                        Collections.reverse(queriedData);
-                    }
-                    else if(previousSort==null||!sortStr.equals(previousSort)) {
-                        Comparator<Map<String, String>> comp = (d1, d2) -> {
-                            if(isNumericField) {
-                                Double v1 = null;
-                                Double v2 = null;
-                                try {
-                                    v1 = Double.valueOf(d1.get(k));
-                                } catch (Exception nfe) {
-                                }
-                                try {
-                                    v2 = Double.valueOf(d2.get(k));
-                                } catch(Exception e) {
-                                }
-                                if(v1==null&&v2==null) return 0;
-                                if(v1==null) return 1;
-                                if(v2==null) return -1;
-                                return v1.compareTo(v2) * (reversed ? -1 : 1);
-                            } else {
-                                return d1.get(k).compareTo(d2.get(k)) * (reversed ? -1 : 1);
+
+                    Comparator<Map<String, String>> comp = (d1, d2) -> {
+                        if(isNumericField) {
+                            Double v1 = null;
+                            Double v2 = null;
+                            try {
+                                v1 = Double.valueOf(d1.get(k));
+                            } catch (Exception nfe) {
                             }
-                        };
-                        queriedData.sort(comp);
-                    }
-                    req.session().attribute("previousSort"+paramIdx,sortStr);
+                            try {
+                                v2 = Double.valueOf(d2.get(k));
+                            } catch(Exception e) {
+                            }
+                            if(v1==null&&v2==null) return 0;
+                            if(v1==null) return 1;
+                            if(v2==null) return -1;
+                            return v1.compareTo(v2) * (reversed ? -1 : 1);
+                        } else {
+                            return d1.get(k).compareTo(d2.get(k)) * (reversed ? -1 : 1);
+                        }
+                    };
+                    queriedData.sort(comp);
+
                 });
             }
             List<Map<String,String>> dataPage;
