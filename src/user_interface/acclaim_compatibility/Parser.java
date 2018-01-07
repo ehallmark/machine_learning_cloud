@@ -66,7 +66,7 @@ public class Parser {
         });
         transformationsForAttr.put(Constants.EXPIRATION_DATE,(name,val)->{
             if(val.equals("expired")) {
-                return QueryBuilders.boolQuery().must(new AbstractBooleanExcludeFilter(new CalculatedExpirationDateAttribute(), AbstractFilter.FilterType.BoolFalse).getFilterQuery());
+                return new AbstractBooleanExcludeFilter(new CalculatedExpirationDateAttribute(), AbstractFilter.FilterType.BoolFalse).getFilterQuery();
             }
             if(val.length()>2) {
                 String[] vals = val.substring(1, val.length() - 1).split(" TO ");
@@ -85,7 +85,7 @@ public class Parser {
                 AbstractBetweenFilter betweenFilter = new AbstractBetweenFilter(new CalculatedExpirationDateAttribute(), AbstractFilter.FilterType.Between);
                 betweenFilter.setMin(date1);
                 betweenFilter.setMax(date2);
-                return QueryBuilders.boolQuery().must(betweenFilter.getFilterQuery());
+                return betweenFilter.getFilterQuery();
             }
             return null;
         });
