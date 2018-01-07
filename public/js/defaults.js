@@ -14,7 +14,7 @@ $(document).ready(function() {
                  "<p>* at the end of a term signifies a prefix query</p>"+
                  "<p>( and ) signify precedence</p>"+
                  "<p>~N after a word signifies edit distance (fuzziness)</p>"+
-                 "<p>~N after a phrase signifies slop amount</p>"
+                 "<p>~N after a phrase signifies slop amount (proximity searching)</p>"
     });
 
     $('.miniTip2').miniTip({
