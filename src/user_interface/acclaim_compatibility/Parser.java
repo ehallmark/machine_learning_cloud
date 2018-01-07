@@ -6,10 +6,7 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermRangeQuery;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.spans.SpanWithinQuery;
 import org.deeplearning4j.berkeley.Pair;
@@ -41,7 +38,29 @@ import java.util.function.Function;
 public class Parser {
     private static final Map<String,Function2<String,String,QueryBuilder>> transformationsForAttr;
     private static final Function2<String,String,QueryBuilder> defaultTransformation;
+    private static final Map<String,Float> defaultFields = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<String,Float> mainFields = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<String,Float> parentFields = Collections.synchronizedMap(new HashMap<>());
     static {
+        defaultFields.put(Constants.ABSTRACT,1f);
+        defaultFields.put(Constants.INVENTION_TITLE,1f);
+        defaultFields.put(Constants.CLAIMS+"."+Constants.CLAIM,1f);
+        defaultFields.put(Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE,1f);
+        defaultFields.put(Constants.LATEST_ASSIGNEE+"."+Constants.NORMALIZED_LATEST_ASSIGNEE,1f);
+        defaultFields.put(Constants.ASSIGNEES+"."+Constants.ASSIGNEE,1f);
+        defaultFields.put(Constants.CPC_CODES,1f);
+        defaultFields.put(Constants.TECHNOLOGY,1f);
+        defaultFields.put(Constants.NESTED_CPC_CODES+"."+Constants.CPC_TITLE,1f);
+
+        defaultFields.forEach((field,score)->{
+            String root = field.contains(".") ? field.substring(0,field.indexOf(".")) : field;
+            if(Constants.FILING_ATTRIBUTES_SET.contains(root)) {
+                parentFields.put(field,score);
+            } else {
+                mainFields.put(field,score);
+            }
+        });
+
         defaultTransformation = (name,val) -> {
             if(name!=null && name.length()>0) {
                 if(name.endsWith("Date")) {
@@ -50,7 +69,11 @@ public class Parser {
                 }
                 return QueryBuilders.queryStringQuery(name + ":" + val).defaultOperator(Operator.AND);
             } else {
-                return QueryBuilders.queryStringQuery(val).defaultOperator(Operator.AND);
+                QueryBuilder query = QueryBuilders.queryStringQuery(val).fields(mainFields).defaultOperator(Operator.AND);
+                QueryBuilder parentQuery = QueryBuilders.queryStringQuery(val).fields(parentFields).defaultOperator(Operator.AND);
+                return QueryBuilders.boolQuery()
+                        .should(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,parentQuery,false))
+                        .should(query);
             }
         };
         transformationsForAttr = Collections.synchronizedMap(new HashMap<>());
@@ -356,12 +379,18 @@ public class Parser {
 
         QueryBuilder strQuery;
 
+        if(val==null) val = queryStr;
+
+        if(query instanceof TermQuery) {
+            val = "\""+val+"\"";
+        }
+
         // check for transformation
         if(fullAttr!=null) {
             Function2<String, String, QueryBuilder> builder = transformationsForAttr.getOrDefault(fullAttr, defaultTransformation);
             strQuery = builder.apply(fullAttr,val);
         } else {
-            strQuery = QueryBuilders.queryStringQuery(queryStr).defaultOperator(Operator.AND);
+            strQuery = defaultTransformation.apply(null,val);
         }
 
 
@@ -401,7 +430,7 @@ public class Parser {
         }
     }
 
-    private SpanQueryBuilder spanQueryFrom(BooleanClause clause) {
+    private SpanQueryBuilder spanQueryFrom(BooleanClause clause, String defaultField) {
         Query query = clause.getQuery();
         if(query instanceof BooleanQuery) {
             SpanOrQueryBuilder orBuilder = null;
@@ -411,7 +440,7 @@ public class Parser {
             boolean useAnd = ((BooleanQuery) query).clauses().stream().findFirst().orElseThrow(()->new RuntimeException("Parse Error: No boolean clause found in NEAR or ADJ search.")).isRequired();
             for(int i = 0; i < ((BooleanQuery) query).clauses().size(); i++) {
                 BooleanClause c = ((BooleanQuery) query).clauses().get(i);
-                SpanQueryBuilder inner = spanQueryFrom(c);
+                SpanQueryBuilder inner = spanQueryFrom(c,defaultField);
                 if(inner!=null) {
                     if(c.isProhibited()) {
                         throw new RuntimeException("Parse Error: Cannot use NOT with NEAR or ADJ.");
@@ -438,12 +467,18 @@ public class Parser {
             if(useAnd) return andBuilder;
             else return orBuilder;
         } else {
-            String[] fields = query.toString().split(":",2);
-            String field = fields[0];
-            if(field.length()>1) {
-                String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(field, field.length() > 2 && field.endsWith("_F") ? Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(field.substring(0, field.length() - 2)) : null);
-                String val = fields[1];
-                return new SpanTermQueryBuilder(attr,val);
+            if(defaultField!=null) {
+                return new SpanTermQueryBuilder(defaultField, query.toString());
+            } else {
+                String[] fields = query.toString().split(":",2);
+                String field = fields[0];
+                if(fields.length>1) {
+                    String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(field, field.length() > 2 && field.endsWith("_F") ? Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(field.substring(0, field.length() - 2)) : null);
+                    if(attr!=null) {
+                        String val = fields[1];
+                        return new SpanTermQueryBuilder(attr, val);
+                    }
+                }
             }
             return null;
         }
@@ -472,7 +507,9 @@ public class Parser {
                 String queryStr = subQuery.toString();
                 boolean isFiling;
 
+                boolean isProximityQuery = false;
                 if((queryStr.toLowerCase().startsWith("near") || queryStr.toLowerCase().startsWith("adj")) && !queryStr.contains(" ") && !queryStr.contains(":") && preIdx!=null&&postIdx!=null) {
+                    isProximityQuery = true;
                     int slop;
                     boolean useOrder = queryStr.toLowerCase().startsWith("adj");
                     try {
@@ -481,15 +518,38 @@ public class Parser {
                         slop = 1;
                     }
                     // valid near query
-                    SpanQueryBuilder builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx));
-                    SpanQueryBuilder builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx));
-                    if(builder1!=null&&builder2!=null) {
-                        builder = new SpanNearQueryBuilder(builder1, slop).inOrder(useOrder)
-                                .addClause(builder2);
-                    } else {
-                        builder = null;
+                    boolean matchAll = false;
+                    if(!booleanQuery.clauses().get(preIdx).getQuery().toString().contains(":")) {
+                        matchAll = true;
                     }
-                    isFiling = latestElementIsFiling.get();
+                    BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+                    if(matchAll) {
+                        for(String field : defaultFields.keySet()) {
+                            SpanQueryBuilder builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx),field);
+                            SpanQueryBuilder builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),field);
+                            QueryBuilder innerQuery =  new SpanNearQueryBuilder(builder1, slop).inOrder(useOrder)
+                                    .addClause(builder2);
+                            if(parentFields.containsKey(field)) {
+                                innerQuery = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,innerQuery,false);
+                            }
+                            boolQueryBuilder = boolQueryBuilder.should(innerQuery);
+                        }
+                        builder = boolQueryBuilder;
+                        isFiling=false;
+                    } else {
+                        SpanQueryBuilder builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx),null);
+                        SpanQueryBuilder builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),null);
+                        if(builder1!=null&&builder2!=null) {
+                            isFiling = latestElementIsFiling.get();
+                            builder = new SpanNearQueryBuilder(builder1, slop).inOrder(useOrder)
+                                    .addClause(builder2);
+                        } else {
+                            builder = null;
+                            isFiling=false;
+                        }
+                    }
+
                 } else {
                     Pair<QueryBuilder,Boolean> p = replaceAcclaimName(queryStr,subQuery);
                     builder = p.getFirst();
@@ -500,10 +560,10 @@ public class Parser {
                     if (isFiling) {
                         builder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, builder, false);
                     }
-                    if (c.isProhibited()) {
-                        boolQuery = boolQuery.mustNot(builder);
-                    } else if(c.isRequired()) {
+                    if(isProximityQuery||c.isRequired()) {
                         boolQuery = boolQuery.must(builder);
+                    } else if (c.isProhibited()) {
+                        boolQuery = boolQuery.mustNot(builder);
                     } else {
                         boolQuery = boolQuery.should(builder);
                     }
@@ -528,7 +588,7 @@ public class Parser {
     public static void main(String[] args) throws Exception {
         Parser parser = new Parser();
 
-        QueryBuilder res = parser.parseAcclaimQuery("CPC:A02F33+ AND CPC:A02301\\/32 (ANC_F:\"HTC CORP\" OR ANC_F:\"HTC\") AND (ANO_F:HTC || FIELD:isEmptyANO_F) AND TTL:one ADJ21 (TTL: three AND TTL:two) CC:US AND DT:G AND EXP:[NOW+5YEARS TO NOW+6YEARS] AND EXP:f AND NOT PEND:false AND (PT:U OR PT:RE)");
+        QueryBuilder res = parser.parseAcclaimQuery("blah near2 blah \"search everything\" CPC:A02F33+ AND CPC:A02301\\/32 (ANC_F:\"HTC CORP\" OR ANC_F:\"HTC\") AND (ANO_F:HTC || FIELD:isEmptyANO_F) AND TTL:one ADJ21 (TTL: three AND TTL:two) CC:US AND DT:G AND EXP:[NOW+5YEARS TO NOW+6YEARS] AND EXP:f AND NOT PEND:false AND (PT:U OR PT:RE)");
 
         System.out.println(" query: "+res);
     }
