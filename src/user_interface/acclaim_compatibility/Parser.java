@@ -12,13 +12,16 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.join.ScoreMode;
 import org.deeplearning4j.berkeley.Pair;
+import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.join.query.HasParentQueryBuilder;
 import seeding.Constants;
 import user_interface.ui_models.attributes.script_attributes.CalculatedExpirationDateAttribute;
 import user_interface.ui_models.attributes.script_attributes.CalculatedPriorityDateAttribute;
+import user_interface.ui_models.attributes.script_attributes.ExpiredAttribute;
 import user_interface.ui_models.filters.AbstractBetweenFilter;
 import user_interface.ui_models.filters.AbstractBooleanExcludeFilter;
+import user_interface.ui_models.filters.AbstractBooleanIncludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
@@ -66,7 +69,7 @@ public class Parser {
         });
         transformationsForAttr.put(Constants.EXPIRATION_DATE,(name,val)->{
             if(val.equals("expired")) {
-                return new AbstractBooleanExcludeFilter(new CalculatedExpirationDateAttribute(), AbstractFilter.FilterType.BoolFalse).getFilterQuery();
+                return new AbstractBooleanIncludeFilter(new ExpiredAttribute(), AbstractFilter.FilterType.BoolTrue).getScriptFilter();
             }
             if(val.length()>2) {
                 String[] vals = val.substring(1, val.length() - 1).split(" TO ");
@@ -85,7 +88,7 @@ public class Parser {
                 AbstractBetweenFilter betweenFilter = new AbstractBetweenFilter(new CalculatedExpirationDateAttribute(), AbstractFilter.FilterType.Between);
                 betweenFilter.setMin(date1);
                 betweenFilter.setMax(date2);
-                return betweenFilter.getFilterQuery();
+                return betweenFilter.getScriptFilter();
             }
             return null;
         });

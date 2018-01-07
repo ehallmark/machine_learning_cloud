@@ -8,6 +8,7 @@ import org.elasticsearch.action.search.ClearScrollResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -308,10 +309,10 @@ public class DataSearcher {
                 // add script to query
                 if (componentOfScore) {
                     // try adding custom sort script
-                    QueryBuilder sortScript = scriptAttribute.getSortQuery();
+                    QueryBuilder sortScript = scriptAttribute.getSortQuery(FiltersFunctionScoreQuery.ScoreMode.MAX);
                     if (sortScript != null) {
                         if (attribute.getParent() != null && !attribute.getParent().isObject()) {
-                            queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), sortScript, ScoreMode.Avg)));
+                            queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), sortScript, ScoreMode.Max)));
                         } else {
                             queryBuilder.set(queryBuilder.get().must(sortScript));
                         }
