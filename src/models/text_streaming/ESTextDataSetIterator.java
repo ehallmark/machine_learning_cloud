@@ -136,7 +136,7 @@ public class ESTextDataSetIterator {
                         .should(QueryBuilders.termQuery(Constants.GRANTED,false))
                         .should(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()))
                         .minimumShouldMatch(1)
-                ).filter(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,QueryBuilders.matchAllQuery(),false).innerHit(new InnerHitBuilder().setFetchSourceContext(new FetchSourceContext(true,new String[]{Constants.FILING_DATE},new String[]{}))));
+                );
 
         SearchRequestBuilder request = DataSearcher.getClient().prepareSearch(DataIngester.INDEX_NAME)
                 .setTypes(DataIngester.TYPE_NAME)
@@ -145,7 +145,7 @@ public class ESTextDataSetIterator {
                 .setFrom(0)
                 .setSize(10000)
                 .addDocValueField("_parent")
-                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE, Constants.CLAIMS+"."+Constants.CLAIM},new String[]{})
+                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE, Constants.CLAIMS+"."+Constants.CLAIM,Constants.FILING_DATE},new String[]{})
                 .setQuery(query)
                 .addSort(SortBuilders.scoreSort());
 
@@ -153,14 +153,7 @@ public class ESTextDataSetIterator {
         Function<SearchHit,Item> transformer = hit -> {
             //String asset = hit.getId();
             String filing = hit.getField("_parent").getValue();
-            SearchHits parentHit = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
-            Object filingDate;
-            if(parentHit!=null) {
-                if(parentHit.getHits()!=null&&parentHit.getHits().length>0) {
-                    filingDate = parentHit.getHits()[0].getSource().get(Constants.FILING_DATE);
-                } else filingDate = null;
-            } else filingDate = null;
-
+            Object filingDate = hit.getSource().get(Constants.FILING_DATE);
             if(filing != null && filingDate!=null) {
                 if(groupDocuments) {
 

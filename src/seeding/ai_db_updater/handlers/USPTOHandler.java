@@ -371,7 +371,7 @@ public class USPTOHandler extends NestedHandler {
         Object filingName = doc.get(Constants.FILING_NAME);
         if(filingName != null) {
             if(debug)System.out.println("filing: "+filingName);
-            DataIngester.ingestBulk(name, filingName.toString(), doc, true);
+            DataIngester.ingestBulk(name, doc, true);
         }
     }
 

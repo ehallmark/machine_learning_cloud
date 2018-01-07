@@ -26,21 +26,16 @@ public class CreatePatentDBIndex {
         CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(DataIngester.INDEX_NAME);
         Collection<? extends AbstractAttribute> allAttributes = SimilarPatentServer.getAllTopLevelAttributes().stream().filter(attr->!(attr instanceof HiddenAttribute)).collect(Collectors.toList());
 
-        Collection<? extends AbstractAttribute> childAttributes = allAttributes.stream().filter(attr->!Constants.FILING_ATTRIBUTES_SET.contains(attr.getName())).collect(Collectors.toList());
-        Map<String,Object> childProperties = createPropertiesMap(childAttributes);
+        Map<String,Object> properties = createPropertiesMap(allAttributes);
 
-        builder = createMapping(builder, childProperties, DataIngester.TYPE_NAME, DataIngester.PARENT_TYPE_NAME);
-
-        Collection<? extends AbstractAttribute> parentAttributes = allAttributes.stream().filter(attr->Constants.FILING_ATTRIBUTES_SET.contains(attr.getName())).collect(Collectors.toList());
-        Map<String,Object> parentProperties = createPropertiesMap(parentAttributes);
         Map<String,Object> vectorProperties = new HashMap<>();
         for(int i = 0; i < SimilarityAttribute.vectorSize; i++) {
             vectorProperties.put(String.valueOf(i),typeMap("double",null,null));
         }
-        //parentProperties.put("vector_obj",typeMap("object",vectorProperties,null));
-        parentProperties.put(SimilarityAttribute.VECTOR_NAME,typeMap("object",vectorProperties,null));
+        properties.put(SimilarityAttribute.VECTOR_NAME,typeMap("object",vectorProperties,null));
 
-        builder = createMapping(builder, parentProperties, DataIngester.PARENT_TYPE_NAME, null);
+
+        builder = createMapping(builder, properties, DataIngester.TYPE_NAME, null);
 
         // get response
         builder.get();

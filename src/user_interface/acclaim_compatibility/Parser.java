@@ -39,8 +39,6 @@ public class Parser {
     private static final Map<String,Function2<String,String,QueryBuilder>> transformationsForAttr;
     private static final Function2<String,String,QueryBuilder> defaultTransformation;
     private static final Map<String,Float> defaultFields = Collections.synchronizedMap(new HashMap<>());
-    private static final Map<String,Float> mainFields = Collections.synchronizedMap(new HashMap<>());
-    private static final Map<String,Float> parentFields = Collections.synchronizedMap(new HashMap<>());
     static {
         defaultFields.put(Constants.ABSTRACT,1f);
         defaultFields.put(Constants.INVENTION_TITLE,1f);
@@ -52,15 +50,6 @@ public class Parser {
         defaultFields.put(Constants.TECHNOLOGY,1f);
         defaultFields.put(Constants.NESTED_CPC_CODES+"."+Constants.CPC_TITLE,1f);
 
-        defaultFields.forEach((field,score)->{
-            String root = field.contains(".") ? field.substring(0,field.indexOf(".")) : field;
-            if(Constants.FILING_ATTRIBUTES_SET.contains(root)) {
-                parentFields.put(field,score);
-            } else {
-                mainFields.put(field,score);
-            }
-        });
-
         defaultTransformation = (name,val) -> {
             if(name!=null && name.length()>0) {
                 if(name.endsWith("Date")) {
@@ -69,11 +58,9 @@ public class Parser {
                 }
                 return QueryBuilders.queryStringQuery(name + ":" + val).defaultOperator(Operator.AND);
             } else {
-                QueryBuilder query = QueryBuilders.queryStringQuery(val).fields(mainFields).defaultOperator(Operator.AND);
-                QueryBuilder parentQuery = QueryBuilders.queryStringQuery(val).fields(parentFields).defaultOperator(Operator.AND);
+                QueryBuilder query = QueryBuilders.queryStringQuery(val).fields(defaultFields).defaultOperator(Operator.AND);
                 return QueryBuilders.boolQuery()
-                        .should(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,parentQuery,false))
-                        .should(query);
+                        .must(query);
             }
         };
         transformationsForAttr = Collections.synchronizedMap(new HashMap<>());
@@ -164,11 +151,6 @@ public class Parser {
                     String root = attr.contains(".") ? attr.substring(0, attr.indexOf(".")) : attr;
                     if (Constants.NESTED_ATTRIBUTES.contains(root)) {
                         queryBuilder = QueryBuilders.nestedQuery(root, queryBuilder, ScoreMode.Min);
-                    }
-
-                    // check filing
-                    if (Constants.FILING_ATTRIBUTES_SET.contains(root)) {
-                        queryBuilder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, queryBuilder, false);
                     }
 
                     if(replace.equals("isEmpty")) {
@@ -304,8 +286,7 @@ public class Parser {
         return val;
     }
 
-    private static Pair<QueryBuilder,Boolean> replaceAcclaimName(String queryStr, Query query) {
-        boolean isFiling = false;
+    private static QueryBuilder replaceAcclaimName(String queryStr, Query query) {
         String nestedPath = null;
         String fullAttr = null;
         String val = null;
@@ -318,9 +299,6 @@ public class Parser {
                 val = queryStr.substring(colIdx+1);
                 // check filing
                 if(attr.contains(".")) attr = attr.substring(0,attr.indexOf("."));
-                if(Constants.FILING_ATTRIBUTES_SET.contains(attr)) {
-                    isFiling = true;
-                }
                 if(Constants.NESTED_ATTRIBUTES.contains(attr)) {
                     nestedPath = attr;
                 }
@@ -400,7 +378,7 @@ public class Parser {
         if(nestedPath!=null && strQuery!=null) {
             strQuery = QueryBuilders.nestedQuery(nestedPath,strQuery, ScoreMode.Max);
         }
-        return new Pair<>(strQuery,isFiling);
+        return strQuery;
     }
 
     public QueryBuilder parseAcclaimQuery(String text) {
@@ -418,15 +396,9 @@ public class Parser {
         BooleanQuery booleanQuery;
         if(query instanceof BooleanQuery) {
             booleanQuery = (BooleanQuery)query;
-            return parseAcclaimQueryHelper(booleanQuery, new AtomicBoolean(false));
+            return parseAcclaimQueryHelper(booleanQuery);
         } else {
-            Pair<QueryBuilder,Boolean> p = replaceAcclaimName(query.toString(),query);
-            boolean isFiling = p.getSecond();
-            if(isFiling&&p.getFirst()!=null) {
-                return new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,p.getFirst(),false);
-            } else {
-               return p.getFirst();
-            }
+            return replaceAcclaimName(query.toString(),query);
         }
     }
 
@@ -484,13 +456,13 @@ public class Parser {
         }
     }
 
-    public QueryBuilder parseAcclaimQueryHelper(BooleanQuery booleanQuery, AtomicBoolean latestElementIsFiling) {
+    public QueryBuilder parseAcclaimQueryHelper(BooleanQuery booleanQuery) {
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         for(int i = 0; i < booleanQuery.clauses().size(); i++) {
             BooleanClause c = booleanQuery.clauses().get(i);
             Query subQuery = c.getQuery();
             if(subQuery instanceof BooleanQuery) {
-                QueryBuilder query = parseAcclaimQueryHelper((BooleanQuery)subQuery,latestElementIsFiling);
+                QueryBuilder query = parseAcclaimQueryHelper((BooleanQuery)subQuery);
                 if (query != null) {
                     if (c.isProhibited()) {
                         boolQuery = boolQuery.mustNot(query);
@@ -505,7 +477,6 @@ public class Parser {
                 Integer preIdx = i > 0 ? i-1 : null;
                 Integer postIdx = i < booleanQuery.clauses().size()-1 ? i+1 : null;
                 String queryStr = subQuery.toString();
-                boolean isFiling;
 
                 boolean isProximityQuery = false;
                 if((queryStr.toLowerCase().startsWith("near") || queryStr.toLowerCase().startsWith("adj")) && !queryStr.contains(" ") && !queryStr.contains(":") && preIdx!=null&&postIdx!=null) {
@@ -530,36 +501,24 @@ public class Parser {
                             SpanQueryBuilder builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),field);
                             QueryBuilder innerQuery =  new SpanNearQueryBuilder(builder1, slop).inOrder(useOrder)
                                     .addClause(builder2);
-                            if(parentFields.containsKey(field)) {
-                                innerQuery = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,innerQuery,false);
-                            }
                             boolQueryBuilder = boolQueryBuilder.should(innerQuery);
                         }
                         builder = boolQueryBuilder;
-                        isFiling=false;
                     } else {
                         SpanQueryBuilder builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx),null);
                         SpanQueryBuilder builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),null);
                         if(builder1!=null&&builder2!=null) {
-                            isFiling = latestElementIsFiling.get();
                             builder = new SpanNearQueryBuilder(builder1, slop).inOrder(useOrder)
                                     .addClause(builder2);
                         } else {
                             builder = null;
-                            isFiling=false;
                         }
                     }
 
                 } else {
-                    Pair<QueryBuilder,Boolean> p = replaceAcclaimName(queryStr,subQuery);
-                    builder = p.getFirst();
-                    isFiling = p.getSecond();
+                    builder = replaceAcclaimName(queryStr,subQuery);
                 }
-                latestElementIsFiling.set(isFiling);
                 if(builder!=null) {
-                    if (isFiling) {
-                        builder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, builder, false);
-                    }
                     if(isProximityQuery||c.isRequired()) {
                         boolQuery = boolQuery.must(builder);
                     } else if (c.isProhibited()) {

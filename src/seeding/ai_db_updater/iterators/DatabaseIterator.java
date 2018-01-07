@@ -278,7 +278,7 @@ public class DatabaseIterator {
                     computableAttribute.handlePatentData(patent.toString(),data);
                 });
                 data.put(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()); // previous bug
-                DataIngester.ingestBulk(patent.toString(), filing.toString(), data, true);
+                DataIngester.ingestBulk(patent.toString(), data, true);
             }
         }
 
@@ -298,7 +298,6 @@ public class DatabaseIterator {
         }).collect(Collectors.toList());
 
         patentDBStatement.setFetchSize(10);
-        Map<String,String> assetToFilingMap = new AssetToFilingMap().getPatentDataMap();
         System.out.println("Executing query: "+patentDBStatement.toString());
 
         ResultSet rs = patentDBStatement.executeQuery();
@@ -320,7 +319,6 @@ public class DatabaseIterator {
                 }
             });
             String patent = rs.getString(javaNames.size()+1);
-            String filing = assetToFilingMap.get(patent);
             if(patent!=null) {
                 // computable attrs
                 if(cnt.getAndIncrement()%100000==99999) {
@@ -329,7 +327,7 @@ public class DatabaseIterator {
                 computableAttributes.forEach(computableAttribute -> {
                     computableAttribute.handlePatentData(patent,data);
                 });
-                DataIngester.ingestBulk(patent, filing, data, false);
+                DataIngester.ingestBulk(patent, data, false);
             }
         }
 
@@ -345,7 +343,6 @@ public class DatabaseIterator {
         patentDBStatement.setInt(2, Integer.valueOf(endDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
 
         patentDBStatement.setFetchSize(10);
-        Map<String,String> assetToFilingMap = new AssetToFilingMap().getPatentDataMap();
         System.out.println("Executing query: "+patentDBStatement.toString());
 
         ResultSet rs = patentDBStatement.executeQuery();
@@ -364,14 +361,13 @@ public class DatabaseIterator {
                 }
             });
             String patent = rs.getString(javaNames.size()+1);
-            String filing = assetToFilingMap.get(patent);
             if(patent!=null) {
                 // computable attrs
                 if(cnt.getAndIncrement()%100000==99999) {
                     System.out.println("Completed: "+cnt.get());
                     System.out.println("Sample "+patent+": "+new Gson().toJson(data));
                 }
-                DataIngester.ingestBulk(patent, filing, data, false);
+                DataIngester.ingestBulk(patent, data, false);
             }
         }
 
@@ -447,7 +443,6 @@ public class DatabaseIterator {
             }
 
             String patent = rs.getString(pgNames.size()+1);
-            String filing = assetToFilingMap.get(patent);
             if(patent!=null) {
                 // computable attrs
                 if(cnt.getAndIncrement()%100000==99999) {
@@ -492,7 +487,7 @@ public class DatabaseIterator {
                 });
                 if (debug) System.out.println("Post Data: " + new Gson().toJson(fullMap));
                 if(!fullMap.isEmpty()) {
-                    DataIngester.ingestBulk(patent, filing, fullMap, false);
+                    DataIngester.ingestBulk(patent, fullMap, false);
                 }
             }
             endFlag.save();

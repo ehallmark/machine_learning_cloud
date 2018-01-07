@@ -721,7 +721,7 @@ public class SimilarPatentServer {
                 });
 
                 if(item.getDataMap().size()>0 || attributesToRemove.size()>0) {
-                    DataIngester.ingestItem(item, filing, attributesToRemove);
+                    DataIngester.ingestItem(item, attributesToRemove);
                     if (debug) System.out.println("Item: " + item.getName());
                 }
             }

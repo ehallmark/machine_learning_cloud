@@ -54,7 +54,7 @@ public class UpdateWIPOTechnologies {
                             if (wipoTechnology != null) {
                                 Map<String, Object> data = new HashMap<>();
                                 data.put(Constants.WIPO_TECHNOLOGY, wipoTechnology);
-                                DataIngester.ingestBulk(null, filing, data, false);
+                                DataIngester.ingestBulkFromFiling(filing, data, false);
                                 if (cnt.getAndIncrement() % 100000 == 99999) {
                                     System.out.println("Seen " + cnt.get() + " wipo technologies...");
                                 }

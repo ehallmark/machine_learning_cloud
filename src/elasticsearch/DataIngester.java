@@ -7,6 +7,7 @@ import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.transport.TransportClient;
 import seeding.Constants;
+import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
@@ -14,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Evan on 7/22/2017.
@@ -22,25 +24,26 @@ public class DataIngester {
     private static TransportClient client = MyClient.get();
     private static final BulkProcessor bulkProcessor = MyClient.getBulkProcessor();
     public static final String INDEX_NAME = "ai_db";
-    public static final String TYPE_NAME = "patents_and_applications";
-    public static final String PARENT_TYPE_NAME = "filings";
+    public static final String TYPE_NAME = "p_a";
     private static MongoDatabase mongoDB = MongoDBClient.get().getDatabase(INDEX_NAME);
     private static AtomicLong mongoCount = new AtomicLong(0);
+    private static FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
 
-    public static void ingestBulk(String name, String parent, Map<String,Object> doc, boolean create) {
+    public static void ingestBulk(String name, Map<String,Object> doc, boolean create) {
        // if(create) bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
        // else bulkProcessor.add(new UpdateRequest(INDEX_NAME,TYPE_NAME, name).doc(doc));
-        ingestMongo(name, parent, doc, Collections.emptySet(), create);
+        ingestMongo(name, doc, Collections.emptySet(), create);
+    }
+
+    public static void ingestBulkFromFiling(String filing, Map<String,Object> doc, boolean create) {
+        Stream.of(filingToAssetMap.getApplicationDataMap().getOrDefault(filing,Collections.emptyList()),filingToAssetMap.getPatentDataMap().getOrDefault(filing, Collections.emptyList())).flatMap(list->list.stream()).forEach(name->{
+            ingestBulk(name,doc,create);
+        });
     }
 
     public static void ingestBulkFromMongoDB(String type, String name,  Document doc) {
         doc.remove("_id");
-        Object parent = doc.get("_parent");
         IndexRequest request = new IndexRequest(INDEX_NAME,type, name);
-        if(parent!=null) {
-            request = request.parent(parent.toString());
-            doc.remove("_parent");
-        }
         request = request.source(doc);
         synchronized (bulkProcessor) { bulkProcessor.add(request); }
     }
@@ -88,38 +91,20 @@ public class DataIngester {
         }
     }
 
-    public static synchronized void ingestMongo(String id, String parent, Map<String,Object> doc, Set<String> unset, boolean create) {
-        Collection<String> filingAttributes = Constants.FILING_ATTRIBUTES_SET;
-        Map<String,Object> assetDoc = new HashMap<>();
-        Map<String,Object> filingDoc = new HashMap<>();
-        doc.forEach((key,val)->{
-            if(filingAttributes.contains(key)||(key.contains(".")&&filingAttributes.contains(key.substring(0,key.indexOf("."))))) {
-                filingDoc.put(key,val);
-            } else {
-                assetDoc.put(key,val);
-            }
-        });
+    public static synchronized void ingestMongo(String id, Map<String,Object> doc, Set<String> unset, boolean create) {
         if(create) {
-            assetDoc.put("_parent", parent);
-            filingDoc.put("_id", parent);
             if(id!=null) {
-                Document upsertDoc = new Document("$set",assetDoc);
+                Document upsertDoc = new Document("$set",doc);
                 Document upsertQuery = new Document("_id", id);
                 WriteModel<Document> model = new UpdateOneModel<>(upsertQuery, upsertDoc, new UpdateOptions().upsert(true));
                 addToUpdateMap(TYPE_NAME, model);
             }
-            // upsert
-            Document upsertParentDoc = new Document("$set",filingDoc);
-            Document upsertParentQuery = new Document("_id", parent);
-            WriteModel<Document> model = new UpdateOneModel<>(upsertParentQuery, upsertParentDoc, new UpdateOptions().upsert(true));
-            addToUpdateMap(PARENT_TYPE_NAME, model);
-
         } else {
             Map<String,String> unsetMap = unset.isEmpty()?Collections.emptyMap():unset.stream().collect(Collectors.toMap(d->d,d->""));
-            if (id != null && assetDoc.size() > 0) {
+            if (id != null) {
                 Map<String,Object> updateDoc = new HashMap<>();
-                if(assetDoc.size()>0) {
-                    updateDoc.put("$set",assetDoc);
+                if(doc.size()>0) {
+                    updateDoc.put("$set",doc);
                 }
                 if(unsetMap.size()>0){
                     updateDoc.put("$unset", unsetMap);
@@ -128,20 +113,6 @@ public class DataIngester {
                     Document updateQuery = new Document("_id", id);
                     WriteModel<Document> model = new UpdateOneModel<>(updateQuery, new Document(updateDoc));
                     addToUpdateMap(TYPE_NAME, model);
-                }
-            }
-            if(parent!=null && filingDoc.size() > 0) {
-                Map<String,Object> updateParentDoc = new HashMap<>();
-                if(filingDoc.size()>0) {
-                    updateParentDoc.put("$set",filingDoc);
-                }
-                if(unsetMap.size()>0) {
-                    updateParentDoc.put("$unset",unsetMap);
-                }
-                if(!updateParentDoc.isEmpty()) {
-                    Document updateParentQuery = new Document("_id", parent);
-                    WriteModel<Document> model = new UpdateOneModel<>(updateParentQuery, new Document(updateParentDoc));
-                    addToUpdateMap(PARENT_TYPE_NAME, model);
                 }
             }
         }
@@ -246,13 +217,11 @@ public class DataIngester {
         }
     }
 
-    public static void ingestItem(Item item, String filing, Set<String> unset) {
+    public static void ingestItem(Item item, Set<String> unset) {
         Map<String,Object> itemData = item.getDataMap();
         String name = item.getName();
         if(itemData.size()>0 || unset.size()>0) {
-            if(filing!=null) {
-                ingestMongo(name,filing,itemData,unset,false);
-            }
+            ingestMongo(name,itemData,unset,false);
         }
     }
 

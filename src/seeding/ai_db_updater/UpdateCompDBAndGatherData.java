@@ -22,8 +22,6 @@ import java.util.stream.Stream;
  * Created by Evan on 7/23/2017.
  */
 public class UpdateCompDBAndGatherData {
-    static AssetToFilingMap assetToFilingMap;
-
     public static List<String> update() {
         Database.main(null);
         try {
@@ -31,8 +29,6 @@ public class UpdateCompDBAndGatherData {
         } catch(Exception e) {
             e.printStackTrace();
         }
-
-        assetToFilingMap = new AssetToFilingMap();
 
         Collection<AbstractAttribute> gatherAttributes = Arrays.asList(new GatherNestedAttribute());
         Collection<String> gatherAssets = Database.getGatherAssets();
@@ -50,9 +46,9 @@ public class UpdateCompDBAndGatherData {
             System.out.println("Starting to ingest into elasticsearch...");
             // add to elastic search
             Map<String, Object> idMap = new HashMap<>();
-            idMap.put("$in", union(gatherAssets, compDBAssets).stream().map(asset -> assetToFilingMap.getApplicationDataMap().getOrDefault(asset, assetToFilingMap.getPatentDataMap().get(asset))).filter(filing -> filing != null).distinct().collect(Collectors.toList()));
+            idMap.put("$in", union(gatherAssets, compDBAssets).stream().filter(filing -> filing != null).distinct().collect(Collectors.toList()));
             Document query = new Document("_id", idMap);
-            IngestMongoIntoElasticSearch.ingestByType(DataIngester.PARENT_TYPE_NAME, query);
+            IngestMongoIntoElasticSearch.ingestByType(DataIngester.TYPE_NAME, query);
         }
         return Stream.of(gatherAssets,compDBAssets).flatMap(list->list.stream()).collect(Collectors.toList());
     }
@@ -65,25 +61,21 @@ public class UpdateCompDBAndGatherData {
     private static void ingestCompDBNestedData(Collection<String> assets) {
         Map<String,List<Map<String,Object>>> compDBData = Database.getCompDBAssetToNestedDataMap();
         assets.parallelStream().forEach(asset->{
-            String filing = assetToFilingMap.getApplicationDataMap().getOrDefault(asset,assetToFilingMap.getPatentDataMap().get(asset));
-            if(filing == null) return;
             Map<String,Object> data = new HashMap<>();
             List<Map<String,Object>> compdb = compDBData.get(asset);
             if(compdb!=null&&compdb.size()>0) {
                 data.put(Constants.COMPDB, compdb);
-                DataIngester.ingestBulk(asset, filing, data, false);
+                DataIngester.ingestBulk(asset, data, false);
             }
         });
     }
 
     private static void ingestAttributesForAssets(Collection<AbstractAttribute> attributes, Collection<String> assets) {
         assets.parallelStream().forEach(asset->{
-            String filing = assetToFilingMap.getApplicationDataMap().getOrDefault(asset,assetToFilingMap.getPatentDataMap().get(asset));
-            if(filing == null) return;
             Map<String,Object> data = new HashMap<>();
             attributes.forEach(attr->helper(attr,data,asset));
             if(data.isEmpty()) return;
-            DataIngester.ingestBulk(asset,filing,data,false);
+            DataIngester.ingestBulk(asset,data,false);
         });
     }
 

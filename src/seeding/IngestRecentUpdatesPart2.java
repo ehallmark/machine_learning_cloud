@@ -58,14 +58,9 @@ public class IngestRecentUpdatesPart2 {
     public static void updateElasticSearch(Collection<String> newAssets) {
         try {
             if(newAssets==null) {
-                IngestMongoIntoElasticSearch.ingestByType(DataIngester.PARENT_TYPE_NAME);
                 IngestMongoIntoElasticSearch.ingestByType(DataIngester.TYPE_NAME);
             } else {
-                List<String> filings = newAssets.parallelStream().map(asset -> new AssetToFilingMap().getPatentDataMap().getOrDefault(asset, new AssetToFilingMap().getApplicationDataMap().get(asset))).filter(a -> a != null).collect(Collectors.toList());
-                List<String> assets = newAssets.stream().collect(Collectors.toList());
-                Document parentQuery = new Document("_id", new Document("$in", filings));
-                Document query = new Document("_id", new Document("$in", assets));
-                IngestMongoIntoElasticSearch.ingestByType(DataIngester.PARENT_TYPE_NAME, parentQuery);
+                Document query = new Document("_id", new Document("$in", newAssets));
                 IngestMongoIntoElasticSearch.ingestByType(DataIngester.TYPE_NAME, query);
             }
         } catch(Exception e) {

@@ -91,16 +91,13 @@ public class DataSearcher {
 
     public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
         try {
-            String[] attrNames = attributes.stream().filter(attr->!Constants.FILING_ATTRIBUTES_SET.contains(attr.getRootName())).map(attr->(attr instanceof NestedAttribute) ? attr.getName()+".*" : attr.getFullName()).toArray(size->new String[size]);
-            String[] filingAttrNames = attributes.stream().filter(attr->Constants.FILING_ATTRIBUTES_SET.contains(attr.getRootName())).map(attr->(attr instanceof NestedAttribute) ? attr.getName()+".*" : attr.getFullName()).toArray(size->new String[size]);
+            String[] attrNames = attributes.stream().flatMap(attr->(attr instanceof NestedAttribute) ? Stream.of(((NestedAttribute)attr).getAttributes().stream().map(a->a.getFullName())) : Stream.of(attr.getFullName())).toArray(size->new String[size]);
             // Run elasticsearch
             String comparator = _comparator == null ? "" : _comparator;
             boolean isOverallScore = comparator.equals(Constants.SIMILARITY);
             SortBuilder sortBuilder;
             // only pull ids by setting first parameter to empty list
             if(isOverallScore) {
-                sortBuilder = SortBuilders.scoreSort().order(sortOrder);
-            } else if (Constants.FILING_ATTRIBUTES_SET.contains(comparator)||(comparator.contains(".")&&Constants.FILING_ATTRIBUTES_SET.contains(comparator.substring(0,comparator.indexOf("."))))) {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
             } else if(comparator.equals(Constants.RANDOM_SORT)) {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
@@ -163,13 +160,10 @@ public class DataSearcher {
                     if(debug)System.out.println("  filter: "+filter.getName());
                     AtomicReference<BoolQueryBuilder> currentQuery;
                     AtomicReference<BoolQueryBuilder> currentFilter;
-                    if(Constants.FILING_ATTRIBUTES_SET.contains(filter.getAttribute().getRootName())) {
-                        currentQuery = parentQueryBuilder;
-                        currentFilter = parentFilterBuilder;
-                    } else {
-                        currentQuery = queryBuilder;
-                        currentFilter = filterBuilder;
-                    }
+
+                    currentQuery = queryBuilder;
+                    currentFilter = filterBuilder;
+
                     if (filter.contributesToScore() && isOverallScore) {
                         currentQuery.set(currentQuery.get().must(filter.getFilterQuery().boost(10)));
                     } else if (isOverallScore && filter instanceof AbstractNestedFilter) {
@@ -188,23 +182,16 @@ public class DataSearcher {
                 }
             }
             System.out.println("Starting ES attributes...");
-            AtomicReference<InnerHitBuilder> innerHitBuilder = new AtomicReference<>(new InnerHitBuilder().setSize(1).setFrom(0).setFetchSourceContext(new FetchSourceContext(true,filingAttrNames,new String[]{})));
             for(AbstractAttribute attribute : attributes) {
-                boolean isFilingType = Constants.FILING_ATTRIBUTES_SET.contains(attribute.getRootName());
-                AtomicReference<BoolQueryBuilder> queryBuilderToUse = isFilingType ? parentQueryBuilder : queryBuilder;
                 if(debug)System.out.println("  attribute: " + attribute.getName());
                 if(attribute instanceof NestedAttribute) {
                     ((NestedAttribute) attribute).getAttributes().forEach(childAttr->{
-                        handleAttributesHelper(childAttr, comparator, isOverallScore, queryBuilderToUse, request, innerHitBuilder);
+                        handleAttributesHelper(childAttr, comparator, isOverallScore, queryBuilder, request);
                     });
                 } else {
-                    handleAttributesHelper(attribute, comparator, isOverallScore, queryBuilderToUse, request, innerHitBuilder);
+                    handleAttributesHelper(attribute, comparator, isOverallScore, queryBuilder, request);
                 }
 
-            }
-
-            if(highlight) {
-                innerHitBuilder.set(innerHitBuilder.get().setHighlightBuilder(highlighter));
             }
 
             // special case to handle similarity greater than filter without sorting by similarity
@@ -216,10 +203,6 @@ public class DataSearcher {
             // Add filter to query
             queryBuilder.set(queryBuilder.get().filter(filterBuilder.get()));
             parentQueryBuilder.set(parentQueryBuilder.get().filter(parentFilterBuilder.get()));
-            queryBuilder.set(queryBuilder.get().must(
-                    new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,parentQueryBuilder.get(),true)
-                            .innerHit(innerHitBuilder.get())
-            ));
 
             if(comparator.equals(Constants.RANDOM_SORT)) {
                 queryBuilder.set(queryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.randomFunction(System.currentTimeMillis()))));
@@ -292,24 +275,19 @@ public class DataSearcher {
         }
     }
 
-    private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, @NonNull String comparator, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request, AtomicReference<InnerHitBuilder> innerHitBuilder) {
-        boolean isParentAttr = Constants.FILING_ATTRIBUTES_SET.contains(attribute.getRootName());
+    private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, @NonNull String comparator, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request) {
         boolean componentOfScore = (usingScore && Constants.SIMILARITY.equals(attribute.getFullName()))
-                || (attribute.getFullName().equals(comparator) && (isParentAttr || attribute instanceof AbstractScriptAttribute));
+                || (attribute.getFullName().equals(comparator) && (attribute instanceof AbstractScriptAttribute));
         if (attribute instanceof AbstractScriptAttribute) {
             AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute) attribute;
             Script script = scriptAttribute.getScript();
             if (script != null) {
-                if (isParentAttr) {
-                    innerHitBuilder.set(innerHitBuilder.get().addScriptField(scriptAttribute.getName(), script));
+                request.set(request.get().addScriptField(scriptAttribute.getFullName(), script));
 
-                } else {
-                    request.set(request.get().addScriptField(scriptAttribute.getFullName(), script));
-                }
                 // add script to query
                 if (componentOfScore) {
                     // try adding custom sort script
-                    QueryBuilder sortScript = scriptAttribute.getSortQuery(scriptAttribute.getSortScript(),FiltersFunctionScoreQuery.ScoreMode.MAX, scriptAttribute.getWeight());
+                    QueryBuilder sortScript = AbstractScriptAttribute.getSortQuery(scriptAttribute.getSortScript(),FiltersFunctionScoreQuery.ScoreMode.MAX, scriptAttribute.getWeight());
                     if (sortScript != null) {
                         if (attribute.getParent() != null && !attribute.getParent().isObject()) {
                             queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), sortScript, ScoreMode.Max)));
@@ -321,21 +299,11 @@ public class DataSearcher {
             }
         } else if (componentOfScore) {
             // add default sort
-            if (isParentAttr) {
-                String sortScript = "doc['" + attribute.getFullName() + "'].empty ? 0 : ("+(usingScore ? "_score *":"")+" doc['" + attribute.getFullName() + "'].value)";
-                QueryBuilder query = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(new Script(ScriptType.INLINE, "expression", sortScript, Collections.emptyMap())));
-                if(attribute.getParent() != null && !attribute.getParent().isObject()) {
-                    queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), query, ScoreMode.Max)));
-                } else {
-                    queryBuilder.set(queryBuilder.get().must(query));
-                }
+            QueryBuilder query = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.fieldValueFactorFunction(attribute.getFullName()).missing(0));
+            if(attribute.getParent() != null && !attribute.getParent().isObject()) {
+                queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), query, ScoreMode.Max)));
             } else {
-                QueryBuilder query = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.fieldValueFactorFunction(attribute.getFullName()).missing(0));
-                if(attribute.getParent() != null && !attribute.getParent().isObject()) {
-                    queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), query, ScoreMode.Max)));
-                } else {
-                    queryBuilder.set(queryBuilder.get().must(query));
-                }
+                queryBuilder.set(queryBuilder.get().must(query));
             }
         }
     }
@@ -385,28 +353,6 @@ public class DataSearcher {
         });
         handleFields(item, hit, foundInnerHits, false);
 
-
-        SearchHits innerHit = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
-        if(innerHit != null) {
-            SearchHit[] innerHits = innerHit.getHits();
-            if(innerHits != null && innerHits.length > 0) {
-                SearchHit firstHit = innerHits[0];
-                // try nested inner hits
-                if(filterNestedObjects) {
-                    filterNestedObjects(nestedAttrNameMap,firstHit,item,foundInnerHits);
-                }
-
-                // get regular attrs
-                firstHit.getSource().forEach((k,v)->{
-                    if(!foundInnerHits.contains(k)) {
-                        hitToItemHelper(k, v, item.getDataMap(), nestedAttrNameMap, false);
-                    }
-                });
-                handleFields(item, firstHit, foundInnerHits, false);
-                handleHighlightFields(item, firstHit.getHighlightFields(), foundInnerHits, false);
-
-            }
-        }
 
         // override highlights if any
         handleHighlightFields(item, hit.getHighlightFields(), foundInnerHits, false);

@@ -76,20 +76,10 @@ public class PAIRHandler extends NestedHandler {
                         }
                     }
                     if(updateElasticSearch) {
-                        String publicationNum = dataMap.get(publicationNumber);
-                        String grantNum = dataMap.get(grantNumber);
                         Map<String,Object> cleanData = dataMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey().dbName,e->e.getValue()));
-                        if(dataMap.size() > 0 && (publicationNum!=null || grantNum != null)) {
-                            if(publicationNum!=null) {
-                                DataIngester.ingestBulk(publicationNum, filingNumber, cleanData, false);
-                            }
-                            if(grantNum!=null) {
-                                DataIngester.ingestBulk(grantNum, filingNumber, cleanData,false);
-                            }
-                        } else if (dataMap.size() > 0) {
-                            DataIngester.ingestBulk(null, filingNumber, cleanData,false);
+                        if(dataMap.size() > 0) {
+                            DataIngester.ingestBulkFromFiling(filingNumber, cleanData,false);
                         }
-
                     }
                 }
                 dataMap = new HashMap<>();

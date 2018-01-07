@@ -253,7 +253,7 @@ public class Constants {
 			NESTED_CPC_CODES
 	);
 
-	public static Collection<String> FILING_ATTRIBUTES_SET = Stream.of(
+	/*public static Collection<String> FILING_ATTRIBUTES_SET = Stream.of(
 			FILING_NAME,
 			FILING_COUNTRY,
 			FILING_DATE,
@@ -300,7 +300,7 @@ public class Constants {
 		});
 		FILING_ATTRIBUTES_SET = Stream.of(FILING_ATTRIBUTES_SET,temp).flatMap(set->set.stream()).collect(Collectors.toSet());
 
-	}
+	}*/
 
 	public static final String GATHER_IS = "is";
 	public static final String GATHER_MA = "ma";

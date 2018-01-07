@@ -258,7 +258,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
             if(reelFrame!=null) {
                 Document assetQuery = new Document("_id",new Document("$in", ids));
                 // update reel frames array
-                DataIngester.updateMongoSet(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.REEL_FRAME, reelFrame);
+                DataIngester.updateMongoSet(DataIngester.TYPE_NAME, assetQuery, Constants.REEL_FRAME, reelFrame);
 
                 // update complex data
                 Map<String,Object> mergedDataMap = new HashMap<>();
@@ -312,7 +312,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                 }
 
                 if (mergedDataMap.size()>0) {
-                    DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.ASSIGNMENTS, mergedDataMap, Constants.REEL_FRAME, reelFrame);
+                    DataIngester.updateMongoArray(DataIngester.TYPE_NAME, assetQuery, Constants.ASSIGNMENTS, mergedDataMap, Constants.REEL_FRAME, reelFrame);
                 }
             }
         }

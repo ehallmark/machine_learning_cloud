@@ -4,8 +4,10 @@ import elasticsearch.DataIngester;
 import seeding.Constants;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 7/12/17.
@@ -46,7 +48,8 @@ public class MaintenanceEventHandler implements LineHandler {
                     }
 
                     if (data.size() > 0) {
-                        DataIngester.ingestBulk(null, filing, data, false);
+                        DataIngester.ingestBulkFromFiling(filing, data, false);
+
                     }
                 }
 

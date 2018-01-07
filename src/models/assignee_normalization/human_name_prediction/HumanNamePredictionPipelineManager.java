@@ -179,7 +179,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         };
 
         SearchRequestBuilder request = DataSearcher.getClient().prepareSearch(DataIngester.INDEX_NAME)
-                .setTypes(DataIngester.PARENT_TYPE_NAME)
+                .setTypes(DataIngester.TYPE_NAME)
                 .setScroll(new TimeValue(120000))
                 .setExplain(false)
                 .setFrom(0)
