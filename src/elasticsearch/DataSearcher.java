@@ -325,14 +325,14 @@ public class DataSearcher {
                 String sortScript = "doc['" + attribute.getFullName() + "'].empty ? 0 : ("+(usingScore ? "_score *":"")+" doc['" + attribute.getFullName() + "'].value)";
                 QueryBuilder query = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(new Script(ScriptType.INLINE, "expression", sortScript, Collections.emptyMap())));
                 if(attribute.getParent() != null && !attribute.getParent().isObject()) {
-                    queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), query, ScoreMode.Avg)));
+                    queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), query, ScoreMode.Max)));
                 } else {
                     queryBuilder.set(queryBuilder.get().must(query));
                 }
             } else {
                 QueryBuilder query = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.fieldValueFactorFunction(attribute.getFullName()).missing(0));
                 if(attribute.getParent() != null && !attribute.getParent().isObject()) {
-                    queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), query, ScoreMode.Avg)));
+                    queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), query, ScoreMode.Max)));
                 } else {
                     queryBuilder.set(queryBuilder.get().must(query));
                 }

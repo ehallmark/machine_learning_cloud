@@ -120,9 +120,13 @@ public class Parser {
                 String field = val.replaceFirst("isEmpty","").toUpperCase();
                 String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(field, field.length()>2&&field.endsWith("_F")?Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(field.substring(0,field.length()-2)):null);
                 if(attr!=null) {
+                    // check for nested)
                     QueryBuilder queryBuilder = QueryBuilders.existsQuery(attr);
 
                     String root = attr.contains(".") ? attr.substring(0,attr.indexOf(".")) : attr;
+                    if(Constants.NESTED_ATTRIBUTES.contains(root)) {
+                        queryBuilder = QueryBuilders.nestedQuery(root,queryBuilder,ScoreMode.Min);
+                    }
 
                     // check filing
                     if(Constants.FILING_ATTRIBUTES_SET.contains(root)) {
