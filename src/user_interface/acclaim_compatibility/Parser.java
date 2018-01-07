@@ -66,7 +66,7 @@ public class Parser {
         });
         transformationsForAttr.put(Constants.EXPIRATION_DATE,(name,val)->{
             if(val.equals("expired")) {
-                return new AbstractBooleanExcludeFilter(new CalculatedExpirationDateAttribute(), AbstractFilter.FilterType.BoolFalse).getFilterQuery();
+                return QueryBuilders.boolQuery().must(new AbstractBooleanExcludeFilter(new CalculatedExpirationDateAttribute(), AbstractFilter.FilterType.BoolFalse).getFilterQuery());
             }
             if(val.length()>2) {
                 String[] vals = val.substring(1, val.length() - 1).split(" TO ");
@@ -85,7 +85,7 @@ public class Parser {
                 AbstractBetweenFilter betweenFilter = new AbstractBetweenFilter(new CalculatedExpirationDateAttribute(), AbstractFilter.FilterType.Between);
                 betweenFilter.setMin(date1);
                 betweenFilter.setMax(date2);
-                return betweenFilter.getFilterQuery();
+                return QueryBuilders.boolQuery().must(betweenFilter.getFilterQuery());
             }
             return null;
         });
@@ -229,7 +229,7 @@ public class Parser {
                         try {
                             firstVal = LocalDate.parse(firstVal, DateTimeFormatter.ofPattern("yyyy/MM/dd")).format(DateTimeFormatter.ISO_DATE);
                         } catch (Exception e2) {
-
+                            if(firstVal.length()==4)firstVal = LocalDate.of(Integer.valueOf(firstVal),1,1).format(DateTimeFormatter.ISO_DATE);
                         }
                     }
                     try {
@@ -238,7 +238,7 @@ public class Parser {
                         try {
                             secondVal = LocalDate.parse(secondVal, DateTimeFormatter.ofPattern("yyyy/MM/dd")).format(DateTimeFormatter.ISO_DATE);
                         } catch (Exception e2) {
-
+                            if(secondVal.length()==4)secondVal = LocalDate.of(Integer.valueOf(secondVal),1,1).format(DateTimeFormatter.ISO_DATE);
                         }
                     }
                     if(secondVal.contains("year")) {
@@ -307,7 +307,7 @@ public class Parser {
             Pair<QueryBuilder,Boolean> p = replaceAcclaimName(query.toString(),query);
             boolean isFiling = p.getSecond();
             if(isFiling&&p.getFirst()!=null) {
-                return new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,p.getFirst(),false);
+                return new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,p.getFirst(),true);
             } else {
                return p.getFirst();
             }
@@ -336,7 +336,7 @@ public class Parser {
                 QueryBuilder builder = p.getFirst();
                 if(builder!=null) {
                     if (p.getSecond()) {
-                        builder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, builder, false);
+                        builder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, builder, true);
                     }
                     if (p.getFirst() != null) {
                         if (c.isProhibited()) {
