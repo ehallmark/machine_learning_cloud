@@ -65,7 +65,7 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
                 button("Syntax").withClass("miniTip2 btn btn-sm btn-secondary"),
-                textarea().withId(getId()).withClass("form-control").attr("placeholder","Example: (ACLM:\"find in claim text\" OR TTL:\"in invention title\")").withName(getName())
+                textarea().withId(getId()).withClass("form-control").attr("placeholder","Example: (ACLM:\"find in claim text\"^3 OR TTL:\"in invention title\"~6) || ACLM:prefi* || TTL:wil?card && NOT EXP:expired AND EXP:[NOW+5years TO *]").withName(getName())
         );
     }
 
