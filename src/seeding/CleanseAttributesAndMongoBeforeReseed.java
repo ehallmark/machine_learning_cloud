@@ -5,6 +5,7 @@ import elasticsearch.MongoDBClient;
 import seeding.data_downloader.*;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
+import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,11 +27,13 @@ public class CleanseAttributesAndMongoBeforeReseed {
         downloaders.forEach(FileStreamDataDownloader::clearCache);
 
         // cleanse attributes
-        SimilarPatentServer.initialize(true,false);
+        SimilarPatentServer.initialize(true,true);
         Collection<ComputableAttribute<?>> attributes = SimilarPatentServer.getAllComputableAttributes();
         attributes.forEach(attr->{
-            if(attr.shouldCleanseBeforeReseed()) {
-                attr.cleanse();
+            if(!(attr instanceof HiddenAttribute)) {
+                if (attr.shouldCleanseBeforeReseed()) {
+                    attr.cleanse();
+                }
             }
         });
     }
