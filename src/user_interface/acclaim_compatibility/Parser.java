@@ -20,6 +20,7 @@ import user_interface.ui_models.attributes.script_attributes.CalculatedPriorityD
 import user_interface.ui_models.filters.AbstractBetweenFilter;
 import user_interface.ui_models.filters.AbstractBooleanExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -38,16 +39,9 @@ public class Parser {
         defaultTransformation = (name,val) -> {
             if(name!=null && name.length()>0) {
                 return QueryBuilders.queryStringQuery(name + ":" + val).defaultOperator(Operator.AND);
-            } else if(val.startsWith("isEmpty")) {
-                String field = val.replaceFirst("isEmpty","").toUpperCase();
-                String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(field, field.length()>2&&field.endsWith("_F")?Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(field.substring(0,field.length()-2)):null);
-                if(attr!=null) {
-                    return QueryBuilders.existsQuery(attr);
-                }
             } else {
                 return QueryBuilders.queryStringQuery(val).defaultOperator(Operator.AND);
             }
-            return null;
         };
         transformationsForAttr = Collections.synchronizedMap(new HashMap<>());
         transformationsForAttr.put(Constants.FILING_COUNTRY,(name,str)->QueryBuilders.termQuery(name,str.toUpperCase()));
@@ -60,12 +54,13 @@ public class Parser {
         });
         transformationsForAttr.put(Constants.DOC_KIND,(name,str) ->{
             String ret;
-            if(str.equals("u")) ret = "B*";
-            else if(str.equals("a")) ret = "A*";
-            else if(str.equals("p")) ret = "P*";
-            else if(str.equals("h")) ret = "H";
-            else if(str.equals("d")) ret = "S";
-            else if(str.equals("re")) ret = "E";
+            str=str.toUpperCase();
+            if(str.equals("U")) ret = "B*";
+            else if(str.equals("A")) ret = "A*";
+            else if(str.equals("P")) ret = "P*";
+            else if(str.equals("H")) ret = "H";
+            else if(str.equals("D")) ret = "S";
+            else if(str.equals("RE")) ret = "E";
             else ret = str;
             return QueryBuilders.queryStringQuery(name+":"+ret).defaultOperator(Operator.AND);
         });
@@ -116,6 +111,27 @@ public class Parser {
             }
             return null;
         });
+        transformationsForAttr.put("FIELD",(name,val)->{
+            if(val.startsWith("isEmpty")) {
+                String field = val.replaceFirst("isEmpty","").toUpperCase();
+                String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(field, field.length()>2&&field.endsWith("_F")?Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(field.substring(0,field.length()-2)):null);
+                if(attr!=null) {
+                    return QueryBuilders.existsQuery(attr);
+                }
+            };
+            return null;
+        });
+        transformationsForAttr.put("PEND",(name,val)->{
+            if(val.toLowerCase().startsWith("t")) {
+                return QueryBuilders.boolQuery()
+                        .must(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.applications.toString()))
+                        .must(QueryBuilders.termQuery(Constants.GRANTED, false));
+            } else {
+                return QueryBuilders.boolQuery()
+                        .must(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.applications.toString()))
+                        .must(QueryBuilders.termQuery(Constants.GRANTED, true));
+            }
+        });
     }
 
     private QueryParser parser;
@@ -149,11 +165,11 @@ public class Parser {
             try {
                 LocalDate date = LocalDate.parse(first, DateTimeFormatter.ISO_DATE);
                 int n = Integer.valueOf(num);
-                if(t.startsWith("year")) {
+                if(t.toLowerCase().startsWith("year")) {
                     date = date.plusYears(n);
-                } else if (t.startsWith("month")) {
+                } else if (t.toLowerCase().startsWith("month")) {
                     date = date.plusMonths(n);
-                } else if(t.startsWith("day")) {
+                } else if(t.toLowerCase().startsWith("day")) {
                     date = date.plusDays(n);
                 }
                 val = date.toString();
@@ -187,6 +203,9 @@ public class Parser {
 
                 queryStr = fullAttr+":"+val;
 
+            } else if(transformationsForAttr.containsKey(prefix)&&queryStr.length()>colIdx+1) {
+                fullAttr = prefix;
+                val = queryStr.substring(colIdx+1);
             } else {
                 // warning
             }
@@ -195,13 +214,13 @@ public class Parser {
         // check date
         if(query instanceof TermRangeQuery) {
             TermRangeQuery numericRangeQuery = (TermRangeQuery) query;
-            queryStr = queryStr.replace("now", LocalDate.now().toString());
             int s = queryStr.indexOf(" TO ");
             if(queryStr.length()-1>s+4) {
                 int r = Math.max(queryStr.indexOf("["),queryStr.indexOf("{"));
                 if(r>=0&&queryStr.length()>r+1) {
-                    String firstVal = queryStr.substring(r+1, s).trim();
-                    String secondVal = queryStr.substring(s + 4, queryStr.length()-1).trim();
+                    String d = queryStr.substring(r).replace("now", LocalDate.now().toString()).replace("NOW",LocalDate.now().toString());
+                    String firstVal = d.substring(1, s).trim();
+                    String secondVal = d.substring(s - r + 4, d.length()-1).trim();
                     try {
                         firstVal = LocalDate.parse(firstVal, DateTimeFormatter.ofPattern("MM/dd/yyyy")).format(DateTimeFormatter.ISO_DATE);
                     } catch (Exception e) {
@@ -236,7 +255,11 @@ public class Parser {
                     }
 
                     val = queryStr.substring(r, r+1) + firstVal + " TO " + secondVal + queryStr.substring(queryStr.length() - 1, queryStr.length());
-                    queryStr = queryStr.substring(0, r) + val;
+                    if(fullAttr==null) {
+                        queryStr = val;
+                    } else {
+                        queryStr = fullAttr + ":" + val;
+                    }
 
                 }
             }
@@ -256,7 +279,7 @@ public class Parser {
         //if(queryStr.equals("near")||queryStr.equals("+near")) {
         //    System.out.println("Foound near!!!!!");
         //}
-        if(nestedPath!=null) {
+        if(nestedPath!=null && strQuery!=null) {
             strQuery = QueryBuilders.nestedQuery(nestedPath,strQuery, ScoreMode.Max);
         }
         return new Pair<>(strQuery,isFiling);
@@ -281,7 +304,7 @@ public class Parser {
         } else {
             Pair<QueryBuilder,Boolean> p = replaceAcclaimName(query.toString(),query);
             boolean isFiling = p.getSecond();
-            if(isFiling) {
+            if(isFiling&&p.getFirst()!=null) {
                 return new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,p.getFirst(),false);
             } else {
                return p.getFirst();
@@ -343,7 +366,7 @@ public class Parser {
     public static void main(String[] args) throws Exception {
         Parser parser = new Parser();
 
-        QueryBuilder res = parser.parseAcclaimQuery("(TTL:FOO* NEAR FOOT OR PRIRD:[NOW-2000DAYS TO NOW+2YEARS] (SOMETHING && ACLM:(else OR elephant && \"phrase of something\"))) OR -field2:bar AND NOT foorbar");
+        QueryBuilder res = parser.parseAcclaimQuery("PEND:T && FIELD:isEmptyTTL && (TTL:FOO* NEAR FOOT OR PRIRD:[NOW-2000DAYS TO NOW+2YEARS] (SOMETHING && ACLM:(else OR elephant && \"phrase of something\"))) OR -field2:bar AND NOT foorbar");
 
         System.out.println(" query: "+res);
     }
