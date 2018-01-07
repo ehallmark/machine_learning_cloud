@@ -2477,6 +2477,25 @@ public class SimilarPatentServer {
         );
     }
 
+    public static List<String> allSortableAttributes() {
+        return Stream.of(Stream.of(Constants.SIMILARITY, Constants.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
+                getAllTopLevelAttributes().stream()
+                        .flatMap(attr->{
+                            if(attr instanceof NestedAttribute) {
+                                return ((NestedAttribute) attr).getAttributes().stream().filter(child->child.getName().endsWith(Constants.COUNT_SUFFIX));
+                            } else return Stream.of(attr);
+                        })
+                        .filter(attr->attr.getName().endsWith(Constants.COUNT_SUFFIX)||attr.getFieldType().equals(AbstractFilter.FieldType.Date))
+                        .map(AbstractAttribute::getFullName)).flatMap(stream->stream).sorted().collect(Collectors.toList());
+    }
+
+    public static Map<String,String> allSortableAttributesToRootName() {
+        return allSortableAttributes().stream().collect(Collectors.toMap(e->e,e->{
+            if(e.contains(".")) e = e.substring(0,e.indexOf("."));
+            return e;
+        }));
+    }
+
     private static Tag mainOptionsRow() {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
@@ -2486,15 +2505,7 @@ public class SimilarPatentServer {
                                 div().withClass("col-12 attributeElement").with(
                                         label("Sort By").attr("style","width: 100%;").with(
                                                 br(),select().withId("main-options-"+COMPARATOR_FIELD).withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
-                                                        Stream.of(Stream.of(Constants.SIMILARITY, Constants.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
-                                                                getAllTopLevelAttributes().stream()
-                                                                        .flatMap(attr->{
-                                                                            if(attr instanceof NestedAttribute) {
-                                                                                return ((NestedAttribute) attr).getAttributes().stream().filter(child->child.getName().endsWith(Constants.COUNT_SUFFIX));
-                                                                            } else return Stream.of(attr);
-                                                                        })
-                                                                        .filter(attr->attr.getName().endsWith(Constants.COUNT_SUFFIX)||attr.getFieldType().equals(AbstractFilter.FieldType.Date))
-                                                                        .map(AbstractAttribute::getFullName)).flatMap(stream->stream)
+                                                        allSortableAttributes().stream()
                                                                 .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
                                                 )
                                         )
