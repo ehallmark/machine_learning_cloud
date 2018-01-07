@@ -235,8 +235,9 @@ public class Parser {
                 int r = Math.max(queryStr.indexOf("["),queryStr.indexOf("{"));
                 if(r>=0&&queryStr.length()>r+1) {
                     String d = queryStr.substring(r).replace("now", LocalDate.now().toString()).replace("NOW",LocalDate.now().toString());
-                    String firstVal = d.substring(1, s-r).trim();
-                    String secondVal = d.substring(s - r + 4, d.length()-1).trim();
+                    s = d.indexOf(" TO ");
+                    String firstVal = d.substring(1, s).trim();
+                    String secondVal = d.substring(s + 4, d.length()-1).trim();
                     try {
                         firstVal = LocalDate.parse(firstVal, DateTimeFormatter.ofPattern("MM/dd/yyyy")).format(DateTimeFormatter.ISO_DATE);
                     } catch (Exception e) {
@@ -270,7 +271,7 @@ public class Parser {
                         firstVal = yearSyntaxToDate(firstVal,"day");
                     }
 
-                    val = queryStr.substring(r, r+1) + firstVal + " TO " + secondVal + queryStr.substring(queryStr.length() - 1, queryStr.length());
+                    val = d.substring(0, 1) + firstVal + " TO " + secondVal + d.substring(d.length() - 1, d.length());
                     if(fullAttr==null) {
                         queryStr = val;
                     } else {
@@ -382,7 +383,7 @@ public class Parser {
     public static void main(String[] args) throws Exception {
         Parser parser = new Parser();
 
-        QueryBuilder res = parser.parseAcclaimQuery("PEND:T && FIELD:isEmptyTTL && (TTL:FOO* NEAR FOOT OR PRIRD:[NOW-2000DAYS TO NOW+2YEARS] (SOMETHING && ACLM:(else OR elephant && \"phrase of something\"))) OR -field2:bar AND NOT foorbar");
+        QueryBuilder res = parser.parseAcclaimQuery("(ANC_F:\"HTC CORP\" OR ANC_F:\"HTC\") AND (ANO_F:HTC || FIELD:isEmptyANO_F) AND CC:US AND DT:G AND EXP:[NOW+5YEARS TO NOW+6YEARS] AND EXP:f AND NOT PEND:false AND (PT:U OR PT:RE)");
 
         System.out.println(" query: "+res);
     }
