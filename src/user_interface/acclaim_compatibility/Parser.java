@@ -130,7 +130,7 @@ public class Parser {
 
                     // check filing
                     if(Constants.FILING_ATTRIBUTES_SET.contains(root)) {
-                        queryBuilder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, queryBuilder, true);
+                        queryBuilder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, queryBuilder, false);
                     }
                     return QueryBuilders.boolQuery().mustNot(queryBuilder);
                 }
@@ -322,7 +322,7 @@ public class Parser {
             Pair<QueryBuilder,Boolean> p = replaceAcclaimName(query.toString(),query);
             boolean isFiling = p.getSecond();
             if(isFiling&&p.getFirst()!=null) {
-                return new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,p.getFirst(),true);
+                return new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,p.getFirst(),false);
             } else {
                return p.getFirst();
             }
@@ -351,7 +351,7 @@ public class Parser {
                 QueryBuilder builder = p.getFirst();
                 if(builder!=null) {
                     if (p.getSecond()) {
-                        builder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, builder, true);
+                        builder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, builder, false);
                     }
                     if (p.getFirst() != null) {
                         if (c.isProhibited()) {
