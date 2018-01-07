@@ -11,6 +11,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.join.ScoreMode;
+import org.apache.lucene.search.spans.SpanWithinQuery;
 import org.deeplearning4j.berkeley.Pair;
 import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.index.query.*;
@@ -31,6 +32,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 /**
@@ -387,7 +389,7 @@ public class Parser {
         BooleanQuery booleanQuery;
         if(query instanceof BooleanQuery) {
             booleanQuery = (BooleanQuery)query;
-            return parseAcclaimQueryHelper(booleanQuery);
+            return parseAcclaimQueryHelper(booleanQuery, new AtomicBoolean(false));
         } else {
             Pair<QueryBuilder,Boolean> p = replaceAcclaimName(query.toString(),query);
             boolean isFiling = p.getSecond();
@@ -399,13 +401,61 @@ public class Parser {
         }
     }
 
-    public QueryBuilder parseAcclaimQueryHelper(BooleanQuery booleanQuery) {
+    private SpanQueryBuilder spanQueryFrom(BooleanClause clause) {
+        Query query = clause.getQuery();
+        if(query instanceof BooleanQuery) {
+            SpanOrQueryBuilder orBuilder = null;
+            SpanContainingQueryBuilder andBuilder = null;
+
+            SpanQueryBuilder lastInner = null;
+            boolean useAnd = ((BooleanQuery) query).clauses().stream().findFirst().orElseThrow(()->new RuntimeException("Parse Error: No boolean clause found in NEAR or ADJ search.")).isRequired();
+            for(int i = 0; i < ((BooleanQuery) query).clauses().size(); i++) {
+                BooleanClause c = ((BooleanQuery) query).clauses().get(i);
+                SpanQueryBuilder inner = spanQueryFrom(c);
+                if(inner!=null) {
+                    if(c.isProhibited()) {
+                        throw new RuntimeException("Parse Error: Cannot use NOT with NEAR or ADJ.");
+                    } else {
+                        if(useAnd) {
+                            if(andBuilder==null) {
+                                if(lastInner!=null) {
+                                    andBuilder = new SpanContainingQueryBuilder(lastInner, inner);
+                                }
+                            } else {
+                                andBuilder = new SpanContainingQueryBuilder(andBuilder,inner);
+                            }
+                        } else {
+                            if (orBuilder == null) {
+                                orBuilder = new SpanOrQueryBuilder(inner);
+                            } else {
+                                orBuilder = orBuilder.addClause(inner);
+                            }
+                        }
+                    }
+                    lastInner = inner;
+                }
+            }
+            if(useAnd) return andBuilder;
+            else return orBuilder;
+        } else {
+            String[] fields = query.toString().split(":",2);
+            String field = fields[0];
+            if(field.length()>1) {
+                String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(field, field.length() > 2 && field.endsWith("_F") ? Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(field.substring(0, field.length() - 2)) : null);
+                String val = fields[1];
+                return new SpanTermQueryBuilder(attr,val);
+            }
+            return null;
+        }
+    }
+
+    public QueryBuilder parseAcclaimQueryHelper(BooleanQuery booleanQuery, AtomicBoolean latestElementIsFiling) {
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         for(int i = 0; i < booleanQuery.clauses().size(); i++) {
             BooleanClause c = booleanQuery.clauses().get(i);
             Query subQuery = c.getQuery();
             if(subQuery instanceof BooleanQuery) {
-                QueryBuilder query = parseAcclaimQueryHelper((BooleanQuery)subQuery);
+                QueryBuilder query = parseAcclaimQueryHelper((BooleanQuery)subQuery,latestElementIsFiling);
                 if (query != null) {
                     if (c.isProhibited()) {
                         boolQuery = boolQuery.mustNot(query);
@@ -416,21 +466,46 @@ public class Parser {
                     }
                 }
             } else {
+                QueryBuilder builder;
+                Integer preIdx = i > 0 ? i-1 : null;
+                Integer postIdx = i < booleanQuery.clauses().size()-1 ? i+1 : null;
                 String queryStr = subQuery.toString();
-                Pair<QueryBuilder,Boolean> p = replaceAcclaimName(queryStr,subQuery);
-                QueryBuilder builder = p.getFirst();
+                boolean isFiling;
+
+                if((queryStr.toLowerCase().startsWith("near") || queryStr.toLowerCase().startsWith("adj")) && !queryStr.contains(" ") && !queryStr.contains(":") && preIdx!=null&&postIdx!=null) {
+                    int slop;
+                    boolean useOrder = queryStr.toLowerCase().startsWith("adj");
+                    try {
+                        slop = Integer.valueOf(queryStr.toLowerCase().replace("near","").replace("adj",""));
+                    } catch(Exception e) {
+                        slop = 1;
+                    }
+                    // valid near query
+                    SpanQueryBuilder builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx));
+                    SpanQueryBuilder builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx));
+                    if(builder1!=null&&builder2!=null) {
+                        builder = new SpanNearQueryBuilder(builder1, slop).inOrder(useOrder)
+                                .addClause(builder2);
+                    } else {
+                        builder = null;
+                    }
+                    isFiling = latestElementIsFiling.get();
+                } else {
+                    Pair<QueryBuilder,Boolean> p = replaceAcclaimName(queryStr,subQuery);
+                    builder = p.getFirst();
+                    isFiling = p.getSecond();
+                }
+                latestElementIsFiling.set(isFiling);
                 if(builder!=null) {
-                    if (p.getSecond()) {
+                    if (isFiling) {
                         builder = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, builder, false);
                     }
-                    if (p.getFirst() != null) {
-                        if (c.isProhibited()) {
-                            boolQuery = boolQuery.mustNot(builder);
-                        } else if(c.isRequired()) {
-                            boolQuery = boolQuery.must(builder);
-                        } else {
-                            boolQuery = boolQuery.should(builder);
-                        }
+                    if (c.isProhibited()) {
+                        boolQuery = boolQuery.mustNot(builder);
+                    } else if(c.isRequired()) {
+                        boolQuery = boolQuery.must(builder);
+                    } else {
+                        boolQuery = boolQuery.should(builder);
                     }
                 }
             }
@@ -453,7 +528,7 @@ public class Parser {
     public static void main(String[] args) throws Exception {
         Parser parser = new Parser();
 
-        QueryBuilder res = parser.parseAcclaimQuery("CPC:A02F33+ AND CPC:A02301\\/32 (ANC_F:\"HTC CORP\" OR ANC_F:\"HTC\") AND (ANO_F:HTC || FIELD:isEmptyANO_F) AND CC:US AND DT:G AND EXP:[NOW+5YEARS TO NOW+6YEARS] AND EXP:f AND NOT PEND:false AND (PT:U OR PT:RE)");
+        QueryBuilder res = parser.parseAcclaimQuery("CPC:A02F33+ AND CPC:A02301\\/32 (ANC_F:\"HTC CORP\" OR ANC_F:\"HTC\") AND (ANO_F:HTC || FIELD:isEmptyANO_F) AND TTL:one ADJ21 (TTL: three AND TTL:two) CC:US AND DT:G AND EXP:[NOW+5YEARS TO NOW+6YEARS] AND EXP:f AND NOT PEND:false AND (PT:U OR PT:RE)");
 
         System.out.println(" query: "+res);
     }
