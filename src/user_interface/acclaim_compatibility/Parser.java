@@ -1,6 +1,8 @@
 package user_interface.acclaim_compatibility;
 
+import data_pipeline.helpers.Function2;
 import elasticsearch.DataIngester;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -13,20 +15,112 @@ import org.deeplearning4j.berkeley.Pair;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.join.query.HasParentQueryBuilder;
 import seeding.Constants;
+import user_interface.ui_models.attributes.script_attributes.CalculatedExpirationDateAttribute;
+import user_interface.ui_models.attributes.script_attributes.CalculatedPriorityDateAttribute;
+import user_interface.ui_models.filters.AbstractBetweenFilter;
+import user_interface.ui_models.filters.AbstractBooleanExcludeFilter;
+import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
  * Created by ehallmark on 1/5/18.
  */
 public class Parser {
+    private static final Map<String,Function2<String,String,QueryBuilder>> transformationsForAttr;
+    private static final Function2<String,String,QueryBuilder> defaultTransformation;
+    static {
+        defaultTransformation = (name,val) -> {
+            if(name!=null && name.length()>0) {
+                return QueryBuilders.queryStringQuery(name + ":" + val).defaultOperator(Operator.AND);
+            } else if(val.startsWith("isEmpty")) {
+                String field = val.replaceFirst("isEmpty","").toUpperCase();
+                String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(field, field.length()>2&&field.endsWith("_F")?Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(field.substring(0,field.length()-2)):null);
+                if(attr!=null) {
+                    return QueryBuilders.existsQuery(attr);
+                }
+            } else {
+                return QueryBuilders.queryStringQuery(val).defaultOperator(Operator.AND);
+            }
+            return null;
+        };
+        transformationsForAttr = Collections.synchronizedMap(new HashMap<>());
+        transformationsForAttr.put(Constants.FILING_COUNTRY,(name,str)->QueryBuilders.termQuery(name,str.toUpperCase()));
+        transformationsForAttr.put(Constants.DOC_TYPE,(name,str)->{
+            String ret;
+            if(str.equals("g")) ret = "patents";
+            else if(str.equals("a")) ret = "applications";
+            else ret = str;
+            return QueryBuilders.termQuery(name,ret);
+        });
+        transformationsForAttr.put(Constants.DOC_KIND,(name,str) ->{
+            String ret;
+            if(str.equals("u")) ret = "B*";
+            else if(str.equals("a")) ret = "A*";
+            else if(str.equals("p")) ret = "P*";
+            else if(str.equals("h")) ret = "H";
+            else if(str.equals("d")) ret = "S";
+            else if(str.equals("re")) ret = "E";
+            else ret = str;
+            return QueryBuilders.queryStringQuery(name+":"+ret).defaultOperator(Operator.AND);
+        });
+        transformationsForAttr.put(Constants.EXPIRATION_DATE,(name,val)->{
+            if(val.equals("expired")) {
+                return new AbstractBooleanExcludeFilter(new CalculatedExpirationDateAttribute(), AbstractFilter.FilterType.BoolFalse).getFilterQuery();
+            }
+            if(val.length()>2) {
+                String[] vals = val.substring(1, val.length() - 1).split(" TO ");
+                LocalDate date1= null;
+                LocalDate date2= null;
+                try {
+                    date1 = LocalDate.parse(vals[0], DateTimeFormatter.ISO_DATE);
+                } catch (Exception e) {
+
+                }
+                try {
+                    date2 = LocalDate.parse(vals[1], DateTimeFormatter.ISO_DATE);
+                } catch(Exception e) {
+
+                }
+                AbstractBetweenFilter betweenFilter = new AbstractBetweenFilter(new CalculatedExpirationDateAttribute(), AbstractFilter.FilterType.Between);
+                betweenFilter.setMin(date1);
+                betweenFilter.setMax(date2);
+                return betweenFilter.getFilterQuery();
+            }
+            return null;
+        });
+        transformationsForAttr.put(Constants.PRIORITY_DATE,(name,val)->{
+            if(val.length()>2) {
+                String[] vals = val.substring(1, val.length() - 1).split(" TO ");
+                LocalDate date1= null;
+                LocalDate date2= null;
+                try {
+                    date1 = LocalDate.parse(vals[0], DateTimeFormatter.ISO_DATE);
+                } catch (Exception e) {
+
+                }
+                try {
+                    date2 = LocalDate.parse(vals[1], DateTimeFormatter.ISO_DATE);
+                } catch(Exception e) {
+
+                }
+                AbstractBetweenFilter betweenFilter = new AbstractBetweenFilter(new CalculatedPriorityDateAttribute(), AbstractFilter.FilterType.Between);
+                betweenFilter.setMin(date1);
+                betweenFilter.setMax(date2);
+                return betweenFilter.getFilterQuery();
+            }
+            return null;
+        });
+    }
+
     private QueryParser parser;
     public Parser() {
-        this.parser = new QueryParser("", new EnglishAnalyzer());
+        this.parser = new QueryParser("", new KeywordAnalyzer());
         parser.setDefaultOperator(QueryParser.Operator.AND);
     }
 
@@ -73,12 +167,15 @@ public class Parser {
     private static Pair<QueryBuilder,Boolean> replaceAcclaimName(String queryStr, Query query) {
         boolean isFiling = false;
         String nestedPath = null;
+        String fullAttr = null;
+        String val = null;
         int colIdx = queryStr.indexOf(":");
         if(colIdx>0) {
             String prefix = queryStr.substring(0,colIdx);
             String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(prefix, prefix.endsWith("_F")&&prefix.length()>2 ? Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(prefix.substring(0,prefix.length()-2)):null);
-            if(attr!=null && prefix.equals(prefix.toUpperCase())) {
-                queryStr = attr+queryStr.substring(colIdx);
+            if(attr!=null && prefix.equals(prefix.toUpperCase())&&queryStr.length()>colIdx+1) {
+                fullAttr = attr;
+                val = queryStr.substring(colIdx+1);
                 // check filing
                 if(attr.contains(".")) attr = attr.substring(0,attr.indexOf("."));
                 if(Constants.FILING_ATTRIBUTES_SET.contains(attr)) {
@@ -87,10 +184,14 @@ public class Parser {
                 if(Constants.NESTED_ATTRIBUTES.contains(attr)) {
                     nestedPath = attr;
                 }
+
+                queryStr = fullAttr+":"+val;
+
             } else {
                 // warning
             }
         }
+
         // check date
         if(query instanceof TermRangeQuery) {
             TermRangeQuery numericRangeQuery = (TermRangeQuery) query;
@@ -133,12 +234,24 @@ public class Parser {
                     } else if(firstVal.contains("day")) {
                         firstVal = yearSyntaxToDate(firstVal,"day");
                     }
-                    queryStr = queryStr.substring(0, r+1) + firstVal + " TO " + secondVal + queryStr.substring(queryStr.length() - 1, queryStr.length());
+
+                    val = queryStr.substring(r, r+1) + firstVal + " TO " + secondVal + queryStr.substring(queryStr.length() - 1, queryStr.length());
+                    queryStr = queryStr.substring(0, r) + val;
 
                 }
             }
         }
-        QueryBuilder strQuery = QueryBuilders.queryStringQuery(queryStr).defaultOperator(Operator.AND);
+
+        QueryBuilder strQuery;
+
+        // check for transformation
+        if(fullAttr!=null) {
+            Function2<String, String, QueryBuilder> builder = transformationsForAttr.getOrDefault(fullAttr, defaultTransformation);
+            strQuery = builder.apply(fullAttr,val);
+        } else {
+            strQuery = QueryBuilders.queryStringQuery(queryStr).defaultOperator(Operator.AND);
+        }
+
 
         //if(queryStr.equals("near")||queryStr.equals("+near")) {
         //    System.out.println("Foound near!!!!!");
@@ -230,7 +343,7 @@ public class Parser {
     public static void main(String[] args) throws Exception {
         Parser parser = new Parser();
 
-        QueryBuilder res = parser.parseAcclaimQuery("(TTL:foo* NEAR foot OR PRIRD:[NOW-2000DAYS TO NOW+2YEARS] (something && ACLM:(else OR elephant && \"phrase of something\"))) OR -field2:bar AND NOT foorbar");
+        QueryBuilder res = parser.parseAcclaimQuery("(TTL:FOO* NEAR FOOT OR PRIRD:[NOW-2000DAYS TO NOW+2YEARS] (SOMETHING && ACLM:(else OR elephant && \"phrase of something\"))) OR -field2:bar AND NOT foorbar");
 
         System.out.println(" query: "+res);
     }

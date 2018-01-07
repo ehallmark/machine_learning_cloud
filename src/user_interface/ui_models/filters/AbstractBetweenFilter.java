@@ -2,6 +2,7 @@ package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
 import lombok.NonNull;
+import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -24,7 +25,9 @@ import static j2html.TagCreator.*;
  * Created by Evan on 6/17/2017.
  */
 public class AbstractBetweenFilter extends AbstractFilter {
+    @Setter
     protected Object max;
+    @Setter
     protected Object min;
     protected String minName;
     protected String maxName;
