@@ -23,7 +23,8 @@ import java.util.stream.Stream;
 public class DataIngester {
     private static TransportClient client = MyClient.get();
     private static final BulkProcessor bulkProcessor = MyClient.getBulkProcessor();
-    public static final String INDEX_NAME = "ai_db";
+    public static final String OLD_INDEX_NAME = "ai_db";
+    public static final String INDEX_NAME = "aidb2";
     public static final String TYPE_NAME = "p_a";
     private static MongoDatabase mongoDB = MongoDBClient.get().getDatabase(INDEX_NAME);
     private static AtomicLong mongoCount = new AtomicLong(0);
