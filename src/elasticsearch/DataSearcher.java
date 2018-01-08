@@ -21,6 +21,8 @@ import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
+import org.elasticsearch.search.rescore.QueryRescoreMode;
+import org.elasticsearch.search.rescore.RescoreBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -103,6 +105,7 @@ public class DataSearcher {
             boolean isOverallScore = comparator.equals(Constants.SCORE);
 
             SortBuilder sortBuilder;
+            QueryBuilder resortBuilder = null;
             // only pull ids by setting first parameter to empty list
             if(isOverallScore) {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
@@ -120,6 +123,10 @@ public class DataSearcher {
                         Script sortScript = ((AbstractScriptAttribute) comparatorAttr).getSortScript();
                         if(sortScript!=null) {
                             sortBuilder = SortBuilders.scriptSort(sortScript, scriptType).order(sortOrder);
+                            if(comparator.equals(Constants.SIMILARITY)) {
+                                // need to rescore
+                                resortBuilder = QueryBuilders.scriptQuery(((AbstractScriptAttribute) comparatorAttr).getScript());
+                            }
                         } else {
                             throw new RuntimeException("Unable to create sort script for attribute "+ SimilarPatentServer.humanAttributeFor(comparator));
                             //System.out.println("WARNING:: DEFAULTING TO NO SORT!");
@@ -169,6 +176,11 @@ public class DataSearcher {
             if(!comparator.isEmpty() && sortBuilder!=null) {
                 request.set(request.get().addSort(sortBuilder));
             }
+
+            if(resortBuilder!=null) {
+                request.set(request.get().addRescorer(RescoreBuilder.queryRescorer(resortBuilder).setScoreMode(QueryRescoreMode.Total).setQueryWeight(0f).setRescoreQueryWeight(1f)));
+            }
+
             AtomicReference<BoolQueryBuilder> filterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             AtomicReference<BoolQueryBuilder> queryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             // filters

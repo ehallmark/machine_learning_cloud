@@ -25,17 +25,19 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
     public static final String VECTOR_NAME = "cvec";
 
     public static final String EXPRESSION_SIMILARITY_SCRIPT;
-    //public static final String EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT;
+    public static final String EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT;
     static {
-        //StringJoiner cosSort = new StringJoiner("+", "doc['"+VECTOR_NAME+".0'].empty ? _score : ((99.0 * (", ")) + _score)");
+        StringJoiner cosSort = new StringJoiner("+", "doc['"+VECTOR_NAME+".0'].empty ? 0.0 : (100.0 * (", "))");
         StringJoiner cos = new StringJoiner("+", "doc['"+VECTOR_NAME+".0'].empty ? 0.0 : (100.0 * (", "))");
         for (int i = 0; i < vectorSize; i++) {
             String inner = "(doc['"+VECTOR_NAME+"." + i + "'].value*avg_vector" + i + ")";
             cos.add(inner);
-            //cosSort.add(inner);
+            if(i<vectorSize/4) {
+                cosSort.add(inner);
+            }
         }
         EXPRESSION_SIMILARITY_SCRIPT = cos.toString();
-        //EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT = cosSort.toString();
+        EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT = cosSort.toString();
     }
     protected List<INDArray> simVectors;
 
@@ -45,10 +47,12 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
         return getScriptHelper(EXPRESSION_SIMILARITY_SCRIPT);
     }
 
-   // @Override
-   // public Script getSortScript() {
-   //     return getScriptHelper(EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT);
-   // }
+
+    // WARNING THIS IS JUST AN APPROXIMATION...
+    @Override
+    public Script getSortScript() {
+        return getScriptHelper(EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT);
+    }
 
     private Script getScriptHelper(String script) {
         Script searchScript = null;
