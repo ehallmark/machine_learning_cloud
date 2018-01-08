@@ -6,12 +6,15 @@ import org.elasticsearch.script.ScriptType;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by ehallmark on 7/20/17.
  */
 public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
+    private static final Map<String,String> scriptMap = Collections.synchronizedMap(new HashMap<>());
 
 
     private String type;
@@ -29,15 +32,38 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        String script = "("+emptyDocFieldCheck(fieldName,language)+" ? ("+defaultVal.toString()+") : (doc['"+fieldName+"']."+type+"))";
-        return new Script(ScriptType.INLINE,language,script, new HashMap<>());
+        String script = getOrCreateScriptFor(type,language);
+        Map<String,Object> params = new HashMap<>();
+        params.put("defaultVal",defaultVal);
+        params.put("field",fieldName);
+        return new Script(ScriptType.INLINE,language,script, params);
     }
 
-    private static String emptyDocFieldCheck(String name, String language) {
+    private String getOrCreateScriptFor(String type, String language) {
+        synchronized (scriptMap) {
+            if (scriptMap.containsKey(type+"_"+language)) {
+            } else {
+                String scriptStr = "("+emptyDocFieldCheck(language)+" ? ("+paramsFieldForLanguage(language,"defaultVal")+") : (doc["+paramsFieldForLanguage(language,"field")+")]."+type+"))";
+                scriptMap.put(type+"_"+language,scriptStr);
+            }
+            return scriptMap.get(type);
+        }
+    }
+
+    private static String paramsFieldForLanguage(String language, String param) {
         if(language.equals("expression")) {
-            return "doc['"+name+"'].empty";
+            return param;
         } else {
-            return "doc.containsKey('"+name+"')";
+            return "params."+param;
+        }
+    }
+
+    private static String emptyDocFieldCheck(String language) {
+        String name = paramsFieldForLanguage(language,"field");
+        if(language.equals("expression")) {
+            return "doc["+name+")].empty";
+        } else {
+            return "doc.containsKey("+name+")";
         }
     }
 }

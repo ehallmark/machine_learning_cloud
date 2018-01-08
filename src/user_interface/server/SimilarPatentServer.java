@@ -64,7 +64,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ForkJoinTask;
-import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -273,6 +272,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Assignor Name", Constants.ASSIGNOR);
             humanAttrToJavaAttrMap.put("Conveyance Text", Constants.CONVEYANCE_TEXT);
             humanAttrToJavaAttrMap.put("Is Human", Constants.IS_HUMAN);
+            humanAttrToJavaAttrMap.put("Overall Score", Constants.SCORE);
 
             // custom filter name for excluding granted apps
             humanAttrToJavaAttrMap.put("Exclude Granted Applications Filter", Constants.GRANTED+ AbstractFilter.FilterType.BoolFalse+ Constants.FILTER_SUFFIX);
@@ -1776,6 +1776,12 @@ public class SimilarPatentServer {
                     List<String> tableHeaders = new ArrayList<>(itemAttributes);
                     tableHeaders.sort(Comparator.comparing(h -> baseOrderMap.get(h)));
 
+                    String comparator = extractString(req,COMPARATOR_FIELD,Constants.SCORE);
+                    if(comparator.equals(Constants.SCORE)) {
+                        tableHeaders.add(Math.min(1,tableHeaders.size()),Constants.SCORE);
+                    }
+
+
                     System.out.println("Rendering table...");
                     boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
                     List<Map<String, String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, false));
@@ -2481,7 +2487,7 @@ public class SimilarPatentServer {
                             } else return Stream.of(attr);
                         })
                         .filter(attr->attr.getName().endsWith(Constants.COUNT_SUFFIX)||attr.getFieldType().equals(AbstractFilter.FieldType.Date))
-                        .map(AbstractAttribute::getFullName)).flatMap(stream->stream).sorted().collect(Collectors.toList());
+                        .map(AbstractAttribute::getFullName).sorted()).flatMap(stream->stream).collect(Collectors.toList());
     }
 
     public static Map<String,String> allSortableAttributesToRootName() {
