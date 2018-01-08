@@ -43,7 +43,7 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
         synchronized (scriptMap) {
             String key = type+"_"+language;
             if (!scriptMap.containsKey(key)) {
-                String scriptStr = "("+emptyDocFieldCheck(language)+" ? ("+paramsFieldForLanguage(language,"defaultVal")+") : (doc["+paramsFieldForLanguage(language,"field")+")]."+type+"))";
+                String scriptStr = "("+emptyDocFieldCheck(language)+" ? ("+paramsFieldForLanguage(language,"defaultVal")+") : (doc["+paramsFieldForLanguage(language,"field")+"]."+type+"))";
                 scriptMap.put(key,scriptStr);
             }
             return scriptMap.get(key);
@@ -61,7 +61,7 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
     private static String emptyDocFieldCheck(String language) {
         String name = paramsFieldForLanguage(language,"field");
         if(language.equals("expression")) {
-            return "doc["+name+")].empty";
+            return "doc["+name+"].empty";
         } else {
             return "doc.containsKey("+name+")";
         }
