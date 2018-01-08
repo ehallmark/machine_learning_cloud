@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public class ReinstatedAttribute extends DefaultValueScriptAttribute {
     public ReinstatedAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.BoolTrue, AbstractFilter.FilterType.BoolFalse), Constants.REINSTATED,"0");
+        super(Arrays.asList(AbstractFilter.FilterType.BoolTrue, AbstractFilter.FilterType.BoolFalse), Constants.REINSTATED,0);
     }
     @Override
     public String getType() {

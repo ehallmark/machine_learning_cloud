@@ -13,7 +13,7 @@ import java.util.HashMap;
  * Created by ehallmark on 7/20/17.
  */
 public abstract class DefaultValueScriptAttribute extends AggregateScriptAttribute {
-    public DefaultValueScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes, String fieldName, String defaultVal) {
+    public DefaultValueScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes, String fieldName, Object defaultVal) {
         super(filterTypes,"expression", fieldName, defaultVal, "value");
     }
 

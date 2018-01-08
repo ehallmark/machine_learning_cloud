@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public class CountAttribute extends DefaultValueScriptAttribute {
     public CountAttribute(String name) {
-        super(Arrays.asList(AbstractFilter.FilterType.Between),name,"0");
+        super(Arrays.asList(AbstractFilter.FilterType.Between),name,0);
     }
 
     @Override

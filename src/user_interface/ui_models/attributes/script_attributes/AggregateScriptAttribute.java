@@ -1,5 +1,6 @@
 package user_interface.ui_models.attributes.script_attributes;
 
+import lombok.Getter;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -14,10 +15,11 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
 
 
     private String type;
-    private String defaultVal;
+    @Getter
+    private Object defaultVal;
     protected String fieldName;
     private String language;
-    public AggregateScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes, String language, String fieldName, String defaultVal, String type) {
+    public AggregateScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes, String language, String fieldName, Object defaultVal, String type) {
         super(filterTypes);
         this.type=type;
         this.defaultVal=defaultVal;
@@ -27,7 +29,7 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        String script = "("+emptyDocFieldCheck(fieldName,language)+" ? ("+defaultVal+") : (doc['"+fieldName+"']."+type+"))";
+        String script = "("+emptyDocFieldCheck(fieldName,language)+" ? ("+defaultVal.toString()+") : (doc['"+fieldName+"']."+type+"))";
         return new Script(ScriptType.INLINE,language,script, new HashMap<>());
     }
 

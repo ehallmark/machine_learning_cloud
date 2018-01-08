@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class LapsedAttribute extends DefaultValueScriptAttribute {
     public LapsedAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.BoolTrue,AbstractFilter.FilterType.BoolFalse),Constants.LAPSED,"0");
+        super(Arrays.asList(AbstractFilter.FilterType.BoolTrue,AbstractFilter.FilterType.BoolFalse),Constants.LAPSED,0);
     }
 
     @Override

@@ -25,6 +25,7 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
+import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -32,6 +33,8 @@ import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
+import user_interface.ui_models.attributes.script_attributes.CountAttribute;
+import user_interface.ui_models.attributes.script_attributes.DefaultValueScriptAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractGreaterThanFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
@@ -93,7 +96,7 @@ public class DataSearcher {
         try {
             String[] attrNames = attributes.stream().flatMap(attr->(attr instanceof NestedAttribute) ? Stream.of(((NestedAttribute)attr).getAttributes().stream().map(a->a.getFullName())) : Stream.of(attr.getFullName())).toArray(size->new String[size]);
             // Run elasticsearch
-            String comparator = _comparator == null ? "" : _comparator;
+            String comparator = _comparator == null ? Constants.NO_SORT : _comparator;
             boolean isOverallScore = comparator.equals(Constants.SIMILARITY);
             SortBuilder sortBuilder;
             // only pull ids by setting first parameter to empty list
@@ -102,11 +105,16 @@ public class DataSearcher {
             } else if(comparator.equals(Constants.RANDOM_SORT)) {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
             } else if(comparator.equals(Constants.NO_SORT)) {
-                sortBuilder = SortBuilders.scoreSort().order(sortOrder);
+                sortBuilder = SortBuilders.fieldSort("_doc").order(SortOrder.ASC);
             } else {
                 AbstractAttribute comparatorAttr = findAttribute(attributes,comparator);
                 if(comparatorAttr != null && comparatorAttr instanceof AbstractScriptAttribute) {
-                    sortBuilder = SortBuilders.scoreSort().order(sortOrder);
+                    if(comparatorAttr instanceof DefaultValueScriptAttribute) {
+                        sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder).missing(((DefaultValueScriptAttribute) comparatorAttr).getDefaultVal());
+                    } else {
+                        ScriptSortBuilder.ScriptSortType scriptType = comparatorAttr.getType().equals("text") || comparatorAttr.getType().equals("keyword") ? ScriptSortBuilder.ScriptSortType.STRING : ScriptSortBuilder.ScriptSortType.NUMBER;
+                        sortBuilder = SortBuilders.scriptSort(((AbstractScriptAttribute) comparatorAttr).getSortScript(), scriptType).order(sortOrder);
+                    }
                 } else {
                     sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
                 }
@@ -186,10 +194,10 @@ public class DataSearcher {
                 if(debug)System.out.println("  attribute: " + attribute.getName());
                 if(attribute instanceof NestedAttribute) {
                     ((NestedAttribute) attribute).getAttributes().forEach(childAttr->{
-                        handleAttributesHelper(childAttr, comparator, isOverallScore, queryBuilder, request);
+                        handleAttributesHelper(childAttr, isOverallScore, queryBuilder, request);
                     });
                 } else {
-                    handleAttributesHelper(attribute, comparator, isOverallScore, queryBuilder, request);
+                    handleAttributesHelper(attribute, isOverallScore, queryBuilder, request);
                 }
 
             }
@@ -275,9 +283,9 @@ public class DataSearcher {
         }
     }
 
-    private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, @NonNull String comparator, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request) {
-        boolean componentOfScore = (usingScore && Constants.SIMILARITY.equals(attribute.getFullName()))
-                || (attribute.getFullName().equals(comparator) && (attribute instanceof AbstractScriptAttribute));
+    private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request) {
+        boolean componentOfScore = (usingScore && Constants.SIMILARITY.equals(attribute.getFullName()));
+
         if (attribute instanceof AbstractScriptAttribute) {
             AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute) attribute;
             Script script = scriptAttribute.getScript();
