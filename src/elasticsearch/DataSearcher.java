@@ -124,7 +124,7 @@ public class DataSearcher {
                             sortBuilder = SortBuilders.scriptSort(sortScript, scriptType).order(sortOrder);
                             if(comparator.equals(Constants.SIMILARITY)) {
                                 // need to rescore
-                                resortBuilder = QueryBuilders.scriptQuery(((AbstractScriptAttribute) comparatorAttr).getScript());
+                                resortBuilder = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(((AbstractScriptAttribute) comparatorAttr).getScript()));
                             }
                         } else {
                             throw new RuntimeException("Unable to create sort script for attribute "+ SimilarPatentServer.humanAttributeFor(comparator));
