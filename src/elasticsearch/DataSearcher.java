@@ -26,6 +26,7 @@ import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
+import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
@@ -120,8 +121,9 @@ public class DataSearcher {
                         if(sortScript!=null) {
                             sortBuilder = SortBuilders.scriptSort(sortScript, scriptType).order(sortOrder);
                         } else {
-                            System.out.println("WARNING:: DEFAULTING TO NO SORT!");
-                            sortBuilder = SortBuilders.fieldSort("_doc").order(SortOrder.ASC);
+                            throw new RuntimeException("Unable to create sort script for attribute "+ SimilarPatentServer.humanAttributeFor(comparator));
+                            //System.out.println("WARNING:: DEFAULTING TO NO SORT!");
+                            //sortBuilder = SortBuilders.fieldSort("_doc").order(SortOrder.ASC);
                         }
                     }
                 } else {
