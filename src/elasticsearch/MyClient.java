@@ -1,7 +1,5 @@
 package elasticsearch;
 
-import lombok.Getter;
-import org.elasticsearch.action.bulk.BackoffPolicy;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -34,8 +32,8 @@ public class MyClient {
             TransportClient client = new PreBuiltTransportClient(settings)
                     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300))
                     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9301))
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9302))
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9303));
+                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9302));
+                    //.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9303));
             CLIENT = client;
         } catch (UnknownHostException e) {
             e.printStackTrace();
