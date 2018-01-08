@@ -165,6 +165,7 @@ public class DataSearcher {
             }
 
             if(resortBuilder!=null) {
+                System.out.println("Rescoring by: "+resortBuilder.toString());
                 request.set(request.get().addRescorer(RescoreBuilder.queryRescorer(resortBuilder).setScoreMode(QueryRescoreMode.Total).setQueryWeight(0f).setRescoreQueryWeight(1f)));
             }
 
