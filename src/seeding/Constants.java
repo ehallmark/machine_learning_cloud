@@ -27,6 +27,7 @@ public class Constants {
 	public static final String GATHER_STAGE = "gatherStage";
 	public static final String GATHER_TECHNOLOGY = "gatherTechnology";
 	public static final String COMPDB = "compDB";
+	public static final String SCORE = "score";
 	public static final String COMPDB_TECHNOLOGY = "compDBTechnology";
 	public static final String COMPDB_DEAL_ID = "compDBDealId";
 	public static final String SMALL = "small";
@@ -220,7 +221,7 @@ public class Constants {
 		};
 	}
 
-	public static final List<Class> SIMILARITY_ATTRIBUTE_CLASSES = Arrays.asList(GatherTechnologyAttribute.class, CompDBTechnologyAttribute.class, WIPOTechnologyAttribute.class, TechnologyAttribute.class,ClaimTextAttribute.class, InventionTitleAttribute.class, AbstractTextAttribute.class);
+	public static final List<Class> SIMILARITY_ATTRIBUTE_CLASSES = Arrays.asList(GatherTechnologyAttribute.class, CompDBTechnologyAttribute.class, WIPOTechnologyAttribute.class, CPCTitleAttribute.class, CPCAttribute.class, TechnologyAttribute.class,ClaimTextAttribute.class, InventionTitleAttribute.class, AbstractTextAttribute.class);
 
 	public static final String[] RELATED_DOC_TYPES = new String[]{
 			"addition",
@@ -253,54 +254,6 @@ public class Constants {
 			NESTED_CPC_CODES
 	);
 
-	/*public static Collection<String> FILING_ATTRIBUTES_SET = Stream.of(
-			FILING_NAME,
-			FILING_COUNTRY,
-			FILING_DATE,
-			LATEST_ASSIGNEE,
-			ASSIGNEES,
-			APPLICANTS,
-			AGENTS,
-			INVENTORS,
-			REEL_FRAME,
-			CPC_CODES,
-			CITATIONS,
-			PRIORITY_DATE,
-			EXPIRATION_DATE,
-			ESTIMATED_EXPIRATION_DATE,
-			ESTIMATED_PRIORITY_DATE,
-			EXPIRED,
-			NUM_ASSIGNMENTS,
-			LAPSED,
-			ASSIGNEE_ENTITY_TYPE,
-			REMAINING_LIFE,
-			PATENT_TERM_ADJUSTMENT,
-			PATENT_FAMILY,
-			REINSTATED,
-			EXECUTION_DATE,
-			ASSIGNMENTS,
-			WIPO_TECHNOLOGY,
-			TECHNOLOGY,
-			NUM_BACKWARD_CITATIONS,
-			BACKWARD_CITATION,
-			NUM_RELATED_ASSETS,
-			ALL_RELATED_ASSETS,
-			SIMILARITY,
-			GATHER,
-			COMPDB,
-			SimilarityAttribute.VECTOR_NAME
-	).collect(Collectors.toSet());
-
-	static {
-		List<String> temp = new ArrayList<>();
-		NESTED_ATTRIBUTES.forEach(attr->{
-			if(FILING_ATTRIBUTES_SET.contains(attr)) {
-				temp.add(attr+COUNT_SUFFIX);
-			}
-		});
-		FILING_ATTRIBUTES_SET = Stream.of(FILING_ATTRIBUTES_SET,temp).flatMap(set->set.stream()).collect(Collectors.toSet());
-
-	}*/
 
 	public static final String GATHER_IS = "is";
 	public static final String GATHER_MA = "ma";

@@ -97,7 +97,8 @@ public class DataSearcher {
             String[] attrNames = attributes.stream().flatMap(attr->(attr instanceof NestedAttribute) ? Stream.of(((NestedAttribute)attr).getAttributes().stream().map(a->a.getFullName())) : Stream.of(attr.getFullName())).toArray(size->new String[size]);
             // Run elasticsearch
             String comparator = _comparator == null ? Constants.NO_SORT : _comparator;
-            boolean isOverallScore = comparator.equals(Constants.SIMILARITY);
+            boolean isOverallScore = comparator.equals(Constants.SCORE);
+
             SortBuilder sortBuilder;
             // only pull ids by setting first parameter to empty list
             if(isOverallScore) {
@@ -159,8 +160,6 @@ public class DataSearcher {
             }
             AtomicReference<BoolQueryBuilder> filterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             AtomicReference<BoolQueryBuilder> queryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
-            AtomicReference<BoolQueryBuilder> parentFilterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
-            AtomicReference<BoolQueryBuilder> parentQueryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             // filters
             if(debug)System.out.println("Starting ES filters...");
             for (AbstractFilter filter : filters) {
@@ -210,7 +209,6 @@ public class DataSearcher {
             System.out.println("Combining Query...");
             // Add filter to query
             queryBuilder.set(queryBuilder.get().filter(filterBuilder.get()));
-            parentQueryBuilder.set(parentQueryBuilder.get().filter(parentFilterBuilder.get()));
 
             if(comparator.equals(Constants.RANDOM_SORT)) {
                 queryBuilder.set(queryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.randomFunction(System.currentTimeMillis()))));
