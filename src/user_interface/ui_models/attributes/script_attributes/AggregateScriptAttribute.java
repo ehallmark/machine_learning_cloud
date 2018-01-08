@@ -6,7 +6,6 @@ import org.elasticsearch.script.ScriptType;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,9 +13,6 @@ import java.util.Map;
  * Created by ehallmark on 7/20/17.
  */
 public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
-    private static final Map<String,String> scriptMap = Collections.synchronizedMap(new HashMap<>());
-
-
     private String type;
     @Getter
     private Object defaultVal;
@@ -32,22 +28,15 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        String script = getOrCreateScriptFor(type,language,fieldName);
+        String script = createScriptFor(type,language,fieldName);
         Map<String,Object> params = new HashMap<>();
         params.put("defaultVal",defaultVal);
         System.out.println("Script: "+script);
         return new Script(ScriptType.INLINE,language,script, params);
     }
 
-    private String getOrCreateScriptFor(String type, String language, String field) {
-        synchronized (scriptMap) {
-            String key = type+"_"+language+"_"+field;
-            if (!scriptMap.containsKey(key)) {
-                String scriptStr = "("+emptyDocFieldCheck(language, field)+" ? ("+paramsFieldForLanguage(language,"defaultVal")+") : (doc['"+field+"']."+type+"))";
-                scriptMap.put(key,scriptStr);
-            }
-            return scriptMap.get(key);
-        }
+    private String createScriptFor(String type, String language, String field) {
+        return "("+emptyDocFieldCheck(language, field)+" ? ("+paramsFieldForLanguage(language,"defaultVal")+") : (doc['"+field+"']."+type+"))";
     }
 
     private static String paramsFieldForLanguage(String language, String param) {
