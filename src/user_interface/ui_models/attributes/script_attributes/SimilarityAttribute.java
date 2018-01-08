@@ -45,10 +45,10 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
         return getScriptHelper(EXPRESSION_SIMILARITY_SCRIPT);
     }
 
-    @Override
-    public Script getSortScript() {
-        return getScriptHelper(EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT);
-    }
+   // @Override
+   // public Script getSortScript() {
+   //     return getScriptHelper(EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT);
+   // }
 
     private Script getScriptHelper(String script) {
         Script searchScript = null;
