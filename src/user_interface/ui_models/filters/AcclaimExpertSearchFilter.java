@@ -1,20 +1,13 @@
 package user_interface.ui_models.filters;
 
-import elasticsearch.DataIngester;
 import j2html.tags.Tag;
-import lombok.Setter;
-import org.deeplearning4j.berkeley.Pair;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.join.query.HasParentQueryBuilder;
 import spark.Request;
 import user_interface.acclaim_compatibility.Parser;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
 
@@ -42,7 +35,7 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
             return QueryBuilders.boolQuery();
         } else {
             System.out.println("Acclaim query: "+query.toString());
-            return QueryBuilders.boolQuery().must(query);
+            return query;
         }
     }
 
