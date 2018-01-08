@@ -41,7 +41,7 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
 
     private String getOrCreateScriptFor(String type, String language, String field) {
         synchronized (scriptMap) {
-            String key = type+"_"+language;
+            String key = type+"_"+language+"_"+field;
             if (!scriptMap.containsKey(key)) {
                 String scriptStr = "("+emptyDocFieldCheck(language, field)+" ? ("+paramsFieldForLanguage(language,"defaultVal")+") : (doc['"+field+"']."+type+"))";
                 scriptMap.put(key,scriptStr);
