@@ -113,6 +113,7 @@ public class DataSearcher {
                 if(comparatorAttr != null && comparatorAttr instanceof AbstractScriptAttribute) {
                     ScriptSortBuilder.ScriptSortType scriptType = comparatorAttr.getType().equals("text") || comparatorAttr.getType().equals("keyword") ? ScriptSortBuilder.ScriptSortType.STRING : ScriptSortBuilder.ScriptSortType.NUMBER;
                     Script sortScript = ((AbstractScriptAttribute) comparatorAttr).getSortScript();
+                    System.out.println("Sort attr: "+comparatorAttr.getClass().getSimpleName());
                     if(sortScript!=null) {
                         sortBuilder = SortBuilders.scriptSort(sortScript, scriptType).order(sortOrder);
                     } else {

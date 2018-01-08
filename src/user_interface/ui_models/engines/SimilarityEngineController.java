@@ -93,7 +93,8 @@ public class SimilarityEngineController {
             throw new RuntimeException("Error: Maximum result limit is "+maxResultLimit+ " which is less than "+limit);
         }
 
-        String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
+        String comparator = extractString(req, COMPARATOR_FIELD, Constants.SCORE);
+        System.out.println("Comparing by: "+comparator);
         setPrefilters(req);
 
         Set<String> attributesRequired = new HashSet<>();
