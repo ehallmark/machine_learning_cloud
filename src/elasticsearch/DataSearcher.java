@@ -121,7 +121,12 @@ public class DataSearcher {
                         sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder).missing(((DefaultValueScriptAttribute) comparatorAttr).getDefaultVal());
                     } else {
                         ScriptSortBuilder.ScriptSortType scriptType = comparatorAttr.getType().equals("text") || comparatorAttr.getType().equals("keyword") ? ScriptSortBuilder.ScriptSortType.STRING : ScriptSortBuilder.ScriptSortType.NUMBER;
-                        sortBuilder = SortBuilders.scriptSort(((AbstractScriptAttribute) comparatorAttr).getSortScript(), scriptType).order(sortOrder);
+                        Script sortScript = ((AbstractScriptAttribute) comparatorAttr).getSortScript();
+                        if(sortScript!=null) {
+                            sortBuilder = SortBuilders.scriptSort(, scriptType).order(sortOrder);
+                        } else {
+                            sortBuilder = SortBuilders.fieldSort("_doc").order(SortOrder.ASC);
+                        }
                     }
                 } else {
                     sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
