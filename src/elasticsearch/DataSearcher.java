@@ -120,6 +120,7 @@ public class DataSearcher {
                         if(sortScript!=null) {
                             sortBuilder = SortBuilders.scriptSort(sortScript, scriptType).order(sortOrder);
                         } else {
+                            System.out.println("WARNING:: DEFAULTING TO NO SORT!");
                             sortBuilder = SortBuilders.fieldSort("_doc").order(SortOrder.ASC);
                         }
                     }
@@ -127,6 +128,7 @@ public class DataSearcher {
                     sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
                 }
             }
+            System.out.println("Sorting: "+sortBuilder.toString());
 
             System.out.println("Filtering by score: "+isOverallScore);
             float similarityThreshold = 0f;
