@@ -15,7 +15,6 @@ import lombok.Getter;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
 import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
 import models.kmeans.AssetKMeans;
-import models.similarity_models.AbstractSimilarityModel;
 import models.similarity_models.DefaultSimilarityModel;
 import models.similarity_models.Vectorizer;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
@@ -129,10 +128,7 @@ public class SimilarPatentServer {
     public static final String ANALYST_USER = "analyst";
     public static final String INTERNAL_USER = "internal";
     public static final List<String> USER_ROLES = Arrays.asList(ANALYST_USER,INTERNAL_USER);
-    private static RecursiveTask<AbstractSimilarityModel> DEFAULT_SIMILARITY_MODEL;
-    private static RecursiveTask<AbstractSimilarityModel> TEXT_SIMILARITY_MODEL;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
-    public static Map<String,RecursiveTask<AbstractSimilarityModel>> similarityModelMap = new HashMap<>();
     public static RecursiveTask<SimilarityEngineController> similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
@@ -397,7 +393,6 @@ public class SimilarPatentServer {
         if(!onlyAttributes) {
             loadFilterModels();
             loadChartModels();
-            loadSimilarityModels();
             keyphrasePredictionPipelineManagerTask = new RecursiveTask<KeyphrasePredictionPipelineManager>() {
                 @Override
                 protected KeyphrasePredictionPipelineManager compute() {
@@ -525,30 +520,6 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void loadSimilarityModels() {
-        if(similarityModelMap.isEmpty()) {
-            if(DEFAULT_SIMILARITY_MODEL==null) {
-                DEFAULT_SIMILARITY_MODEL = new RecursiveTask<AbstractSimilarityModel>() {
-                    @Override
-                    protected AbstractSimilarityModel compute() {
-                        return new DefaultSimilarityModel(Collections.emptyList());
-                    }
-                };
-                DEFAULT_SIMILARITY_MODEL.fork();
-            }
-            similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL, DEFAULT_SIMILARITY_MODEL);
-            if(TEXT_SIMILARITY_MODEL==null) {
-                TEXT_SIMILARITY_MODEL = new RecursiveTask<AbstractSimilarityModel>() {
-                    @Override
-                    protected AbstractSimilarityModel compute() {
-                        return new DefaultSimilarityModel(Collections.emptyList());
-                    }
-                };
-                TEXT_SIMILARITY_MODEL.fork();
-            }
-        }
-    }
-
     public static void loadAttributes(boolean loadHidden) {
         if(attributesMap.isEmpty()) {
             attributesMap.put(Constants.DATASET_NAME, new DatasetAttribute());
@@ -621,20 +592,13 @@ public class SimilarPatentServer {
             // nested attribute names
             buildJavaToHumanAttrMap();
 
-            if(DEFAULT_SIMILARITY_MODEL==null) {
-                DEFAULT_SIMILARITY_MODEL = new RecursiveTask<AbstractSimilarityModel>() {
-                    @Override
-                    protected AbstractSimilarityModel compute() {
-                        return new DefaultSimilarityModel(Collections.emptyList());
-                    }
-                };
-                DEFAULT_SIMILARITY_MODEL.fork();
-            }
+
             // similarity engine
             similarityEngine = new RecursiveTask<SimilarityEngineController>() {
                 @Override
                 protected SimilarityEngineController compute() {
                     // current word vectorizer
+                    new DefaultSimilarityModel(Collections.emptySet());
                     SimilarityEngineController.setAllEngines(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(), new CPCSimilarityEngine()));
                     return new SimilarityEngineController();
                 }
@@ -2618,12 +2582,6 @@ public class SimilarPatentServer {
         GatherClassificationServer.StartServer();
         if(preLoad) {
             Database.preLoad();
-            if(TEXT_SIMILARITY_MODEL!=null) {
-                TEXT_SIMILARITY_MODEL.join();
-            }
-            if(DEFAULT_SIMILARITY_MODEL!=null) {
-                DEFAULT_SIMILARITY_MODEL.join();
-            }
         }
         long t2 = System.currentTimeMillis();
         System.out.println("Time to start user_interface.server: "+ ((t2-t1)/(1000*60)) + " minutes");

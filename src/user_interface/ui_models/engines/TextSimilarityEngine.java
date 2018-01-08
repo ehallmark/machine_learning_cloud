@@ -36,14 +36,20 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     private static final int maxNumSamples = 30;
     private static final double numDocs = 18000000d;
 
-    private synchronized void loadSimilarityNetworks() {
-        if(wordToEncodingNet==null) {
-            String similarityModelName = CombinedSimilarityPipelineManager.MODEL_NAME;
-            CombinedSimilarityPipelineManager combinedSimilarityPipelineManager = new CombinedSimilarityPipelineManager(similarityModelName, null, null, null);
-            combinedSimilarityPipelineManager.initModel(false);
+    public TextSimilarityEngine() {
+        loadSimilarityNetworks();
+    }
 
-            CombinedModel<ComputationGraph> combinedModel = (CombinedModel<ComputationGraph>) combinedSimilarityPipelineManager.getModel().getNet();
-            wordToEncodingNet = combinedModel.getNameToNetworkMap().get(CombinedSimilarityModel.WORD_CPC_2_VEC);
+    private void loadSimilarityNetworks() {
+        synchronized (TextSimilarityEngine.class) {
+            if (wordToEncodingNet == null) {
+                String similarityModelName = CombinedSimilarityPipelineManager.MODEL_NAME;
+                CombinedSimilarityPipelineManager combinedSimilarityPipelineManager = new CombinedSimilarityPipelineManager(similarityModelName, null, null, null);
+                combinedSimilarityPipelineManager.initModel(false);
+
+                CombinedModel<ComputationGraph> combinedModel = (CombinedModel<ComputationGraph>) combinedSimilarityPipelineManager.getModel().getNet();
+                wordToEncodingNet = combinedModel.getNameToNetworkMap().get(CombinedSimilarityModel.WORD_CPC_2_VEC);
+            }
         }
     }
 

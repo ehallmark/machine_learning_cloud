@@ -34,6 +34,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         this.getAllAssetsFunction=getAllAssetsFunction;
         this.normalize=normalize;
         this.pipelineManager=pipelineManager;
+        getLookupTable();
     }
 
     public CPCSimilarityVectorizer(Map<String,INDArray> data, boolean binarize, boolean normalize, boolean probability) {
