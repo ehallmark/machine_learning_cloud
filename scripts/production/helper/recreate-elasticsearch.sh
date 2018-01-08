@@ -17,3 +17,4 @@ curl -XPUT 'localhost:9200/aidb2/_settings?pretty' -H 'Content-Type: application
     }
 }
 '
+

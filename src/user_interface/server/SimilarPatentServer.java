@@ -2473,7 +2473,7 @@ public class SimilarPatentServer {
     }
 
     public static List<String> allSortableAttributes() {
-        return Stream.of(Stream.of(Constants.SIMILARITY, Constants.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
+        return Stream.of(Stream.of(Constants.SCORE, Constants.SIMILARITY, Constants.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
                 getAllTopLevelAttributes().stream()
                         .flatMap(attr->{
                             if(attr instanceof NestedAttribute) {
