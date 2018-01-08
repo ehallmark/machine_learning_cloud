@@ -12,17 +12,13 @@ import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.InnerHitBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
-import org.elasticsearch.join.query.HasParentQueryBuilder;
 import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
@@ -33,7 +29,6 @@ import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
-import user_interface.ui_models.attributes.script_attributes.CountAttribute;
 import user_interface.ui_models.attributes.script_attributes.DefaultValueScriptAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractGreaterThanFilter;
@@ -123,7 +118,7 @@ public class DataSearcher {
                         ScriptSortBuilder.ScriptSortType scriptType = comparatorAttr.getType().equals("text") || comparatorAttr.getType().equals("keyword") ? ScriptSortBuilder.ScriptSortType.STRING : ScriptSortBuilder.ScriptSortType.NUMBER;
                         Script sortScript = ((AbstractScriptAttribute) comparatorAttr).getSortScript();
                         if(sortScript!=null) {
-                            sortBuilder = SortBuilders.scriptSort(, scriptType).order(sortOrder);
+                            sortBuilder = SortBuilders.scriptSort(sortScript, scriptType).order(sortOrder);
                         } else {
                             sortBuilder = SortBuilders.fieldSort("_doc").order(SortOrder.ASC);
                         }
