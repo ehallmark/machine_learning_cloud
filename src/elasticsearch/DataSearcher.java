@@ -94,7 +94,14 @@ public class DataSearcher {
 
     public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
         try {
-            String[] attrNames = attributes.stream().flatMap(attr->(attr instanceof NestedAttribute) ? Stream.of(((NestedAttribute)attr).getAttributes().stream().map(a->a.getFullName())) : Stream.of(attr.getFullName())).toArray(size->new String[size]);
+            String[] attrNames = (String[]) attributes.stream().map(attr->{
+                String name = attr.getFullName();
+                if(name.contains(".")) {
+                    return name.substring(0,name.indexOf("."))+".*";
+                } else {
+                    return name;
+                }
+            }).toArray(size->new String[size]);
             // Run elasticsearch
             String comparator = _comparator == null ? Constants.NO_SORT : _comparator;
             boolean isOverallScore = comparator.equals(Constants.SCORE);
