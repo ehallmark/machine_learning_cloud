@@ -64,6 +64,8 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
         final Random random = new Random(359);
         String text = extractString(req, TEXT_TO_SEARCH_FOR, "").toLowerCase().trim();
 
+        System.out.println("Running text similarity model...");
+
         List<VocabWord> vocabWords;
         List<INDArray> featureVecs = new ArrayList<>(maxNumSamples);
         Word2Vec word2Vec = CombinedSimilarityVAEPipelineManager.getOrLoadManager().getWord2Vec();
@@ -105,6 +107,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
                 avg = wordToEncodingNet.output(false, Transforms.unitVec(Nd4j.vstack(featureVecs).mean(0)))[0];
                 avg.divi(avg.norm2Number());
             }
+            System.out.println("Num features found: "+featureVecs.size());
         }
     }
     @Override
