@@ -371,7 +371,7 @@ public class DataSearcher {
         handleHighlightFields(item, hit.getHighlightFields(), foundInnerHits, false);
 
         if(isUsingScore) {
-            item.addData(Constants.SIMILARITY, hit.getScore());
+            item.addData(Constants.SCORE, hit.getScore());
         }
         return item;
     }
