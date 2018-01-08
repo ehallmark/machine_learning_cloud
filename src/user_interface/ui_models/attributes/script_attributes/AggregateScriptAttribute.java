@@ -36,6 +36,7 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
         Map<String,Object> params = new HashMap<>();
         params.put("defaultVal",defaultVal);
         params.put("field",fieldName);
+        System.out.println("Script: "+script);
         return new Script(ScriptType.INLINE,language,script, params);
     }
 
