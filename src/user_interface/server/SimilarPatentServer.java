@@ -604,12 +604,7 @@ public class SimilarPatentServer {
             // include count
             Constants.NESTED_ATTRIBUTES.forEach(attr->{
                 AbstractAttribute countAttr = new CountAttribute(attr + Constants.COUNT_SUFFIX);
-                AbstractAttribute parentAttr = attributesMap.get(attr);
-                if(parentAttr!=null && parentAttr instanceof NestedAttribute) {
-                    ((NestedAttribute) parentAttr).getAttributes().add(countAttr);
-                } else {
-                    attributesMap.put(attr + Constants.COUNT_SUFFIX, countAttr);
-                }
+                attributesMap.put(attr + Constants.COUNT_SUFFIX, countAttr);
             });
 
             if(loadHidden) {
