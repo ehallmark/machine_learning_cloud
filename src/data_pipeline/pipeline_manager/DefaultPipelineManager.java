@@ -95,7 +95,7 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
     @Override
     public void savePredictions(Map<String,T> predictions) {
         this.predictions=predictions;
-        System.out.println("Saving predictions...");
+        System.out.println("Saving predictions for "+this.getClass().getSimpleName()+"...");
         File predictionsDir = predictionsFile.getParentFile();
         if(!predictionsDir.exists()) predictionsDir.mkdirs();
         Database.trySaveObject(predictions,predictionsFile);
@@ -105,6 +105,7 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
     @Override
     public synchronized Map<String,T> loadPredictions() {
         if(predictions==null) {
+            System.out.println("Loading predictions for "+this.getClass().getSimpleName()+"...");
             predictions = (Map<String, T>) Database.tryLoadObject(predictionsFile);
             if(predictions==null) {
                 predictions = Collections.synchronizedMap(new HashMap<>());

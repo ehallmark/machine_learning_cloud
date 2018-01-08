@@ -6,7 +6,6 @@ import models.similarity_models.combined_similarity_model.CombinedSimilarityMode
 import models.similarity_models.combined_similarity_model.CombinedSimilarityPipelineManager;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEPipelineManager;
 import models.similarity_models.combined_similarity_model.Word2VecToCPCIterator;
-import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.nn.graph.ComputationGraph;
@@ -66,46 +65,50 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
 
         System.out.println("Running text similarity model...");
 
-        List<VocabWord> vocabWords;
         List<INDArray> featureVecs = new ArrayList<>(maxNumSamples);
         Word2Vec word2Vec = CombinedSimilarityVAEPipelineManager.getOrLoadManager().getWord2Vec();
         if(text.length()>0) {
             if(wordToEncodingNet==null) loadSimilarityNetworks();
             // get the input to the word to cpc network
-            String[] words = WordCPCIterator.defaultWordListFunction.apply(text);
-            for(int i = 0; i < maxNumSamples; i++) {
-                int wordLimit = Math.min(words.length, maxSampleLength);
-                int start = words.length > wordLimit ? random.nextInt(words.length - wordLimit) : 0;
-                vocabWords = Stream.of(text).filter(word -> !Constants.STOP_WORD_SET.contains(word)).skip(start).limit(wordLimit).flatMap(word -> {
-                    VocabWord vocabWord = new VocabWord(1, word);
-                    vocabWord.setSequencesCount(1);
-                    vocabWord.setElementFrequency(1);
-                    return Stream.of(vocabWord);
-                }).collect(Collectors.toList());
+            List<String> validWords = Stream.of(text.split("\\s+")).filter(word->!Constants.STOP_WORD_SET.contains(word)&&word2Vec.vocab().containsWord(word)).collect(Collectors.toList());
+            System.out.println(" Num valid words found: "+validWords.size());
+            if(validWords.size()>0) {
+                for (int i = 0; i < Math.min(maxNumSamples,Math.max(1,validWords.size()-maxSampleLength)); i++) {
+                    int wordLimit = Math.min(validWords.size(), maxSampleLength);
+                    int start = validWords.size() > wordLimit ? random.nextInt(validWords.size() - wordLimit) : 0;
+                    List<VocabWord> vocabWords = validWords.stream().skip(start).limit(wordLimit).flatMap(word -> {
+                        VocabWord vocabWord = new VocabWord(1, word);
+                        vocabWord.setSequencesCount(1);
+                        vocabWord.setElementFrequency(1);
+                        return Stream.of(vocabWord);
+                    }).collect(Collectors.toList());
 
-                Map<String, Integer> wordCounts = Word2VecToCPCIterator.groupingBOWFunction.apply(vocabWords);
-                List<INDArray> wordVectors = wordCounts.entrySet().stream().map(e -> {
-                    double tf = e.getValue();
-                    double idf = Math.log(1d + (numDocs / Math.max(30, word2Vec.getVocab().docAppearedIn(e.getKey()))));
-                    INDArray phraseVec = Word2VecToCPCIterator.getPhraseVector(word2Vec, e.getKey(), tf * idf);
-                    if (phraseVec != null) {
-                        return phraseVec;
+                    Map<String, Integer> wordCounts = Word2VecToCPCIterator.groupingBOWFunction.apply(vocabWords);
+                    List<INDArray> wordVectors = wordCounts.entrySet().stream().map(e -> {
+                        double tf = e.getValue();
+                        double idf = Math.log(1d + (numDocs / Math.max(30, word2Vec.getVocab().docAppearedIn(e.getKey()))));
+                        INDArray phraseVec = Word2VecToCPCIterator.getPhraseVector(word2Vec, e.getKey(), tf * idf);
+                        if (phraseVec != null) {
+                            return phraseVec;
+                        }
+                        return null;
+                    }).filter(vec -> vec != null).collect(Collectors.toList());
+                    if (wordVectors.isEmpty()) continue;
+
+                    INDArray featureVec = Nd4j.vstack(wordVectors).mean(0);
+
+                    if (featureVec != null && featureVec.sumNumber().doubleValue() > 0) {
+                        featureVec = Transforms.unitVec(featureVec);
+                        featureVecs.add(featureVec);
                     }
-                    return null;
-                }).filter(vec -> vec != null).collect(Collectors.toList());
-                if (wordVectors.isEmpty()) continue;
-
-                INDArray featureVec = Nd4j.vstack(wordVectors).mean(0);
-
-                if (featureVec != null && featureVec.sumNumber().doubleValue() > 0) {
-                    featureVec = Transforms.unitVec(featureVec);
-                    featureVecs.add(featureVec);
                 }
             }
             if(featureVecs.size()>0) {
                 // encode using word to cpc network
                 avg = wordToEncodingNet.output(false, Transforms.unitVec(Nd4j.vstack(featureVecs).mean(0)))[0];
                 avg.divi(avg.norm2Number());
+            } else {
+                throw new RuntimeException("Unable to find similarity from provided text.");
             }
             System.out.println("Num features found: "+featureVecs.size());
         }

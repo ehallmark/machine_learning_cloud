@@ -28,7 +28,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
     //public static final String EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT;
     static {
         //StringJoiner cosSort = new StringJoiner("+", "doc['"+VECTOR_NAME+".0'].empty ? _score : ((99.0 * (", ")) + _score)");
-        StringJoiner cos = new StringJoiner("+", "doc['"+VECTOR_NAME+".0'].empty ? 0.0 : ((100.0 * (", ")))");
+        StringJoiner cos = new StringJoiner("+", "doc['"+VECTOR_NAME+".0'].empty ? 0.0 : (100.0 * (", "))");
         for (int i = 0; i < vectorSize; i++) {
             String inner = "(doc['"+VECTOR_NAME+"." + i + "'].value*avg_vector" + i + ")";
             cos.add(inner);
