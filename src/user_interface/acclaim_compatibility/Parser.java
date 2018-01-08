@@ -1,36 +1,24 @@
 package user_interface.acclaim_compatibility;
 
 import data_pipeline.helpers.Function2;
-import elasticsearch.DataIngester;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.join.ScoreMode;
-import org.apache.lucene.search.spans.SpanWithinQuery;
-import org.deeplearning4j.berkeley.Pair;
-import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.index.query.*;
-import org.elasticsearch.join.query.HasParentQueryBuilder;
 import seeding.Constants;
-import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.attributes.script_attributes.CalculatedExpirationDateAttribute;
 import user_interface.ui_models.attributes.script_attributes.CalculatedPriorityDateAttribute;
 import user_interface.ui_models.attributes.script_attributes.ExpiredAttribute;
 import user_interface.ui_models.filters.AbstractBetweenFilter;
-import user_interface.ui_models.filters.AbstractBooleanExcludeFilter;
 import user_interface.ui_models.filters.AbstractBooleanIncludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 /**
  * Created by ehallmark on 1/5/18.
@@ -360,7 +348,9 @@ public class Parser {
         if(val==null) val = queryStr;
 
         if(query instanceof TermQuery) {
-            val = "\""+val+"\"";
+            if(val.contains(" ")) {
+                val = "\"" + val + "\"";
+            }
         }
 
         // check for transformation
