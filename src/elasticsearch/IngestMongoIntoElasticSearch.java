@@ -37,7 +37,7 @@ public class IngestMongoIntoElasticSearch {
 
     public static void deleteIndex() {
         try {
-            MyClient.get().delete(new DeleteRequest("ai_db")).get();
+            MyClient.get().delete(new DeleteRequest(DataIngester.INDEX_NAME)).get();
         } catch(Exception e) {
             e.printStackTrace();
         }
