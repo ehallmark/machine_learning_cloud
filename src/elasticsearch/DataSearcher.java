@@ -34,7 +34,6 @@ import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.attributes.script_attributes.DefaultValueScriptAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.filters.AbstractGreaterThanFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
 import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
@@ -140,23 +139,11 @@ public class DataSearcher {
             System.out.println("Sorting: "+sortBuilder.toString());
 
             System.out.println("Filtering by score: "+isOverallScore);
-            float similarityThreshold = 0f;
-            for(AbstractFilter filter : filters) {
-                if((filter instanceof AbstractGreaterThanFilter) && filter.getPrerequisite().equals(Constants.SIMILARITY)) {
-                    Number threshold = (Number)((AbstractGreaterThanFilter)filter).getLimit();
-                    if(threshold!=null) {
-                        similarityThreshold = threshold.floatValue();
-                        System.out.println("Setting custom minimum score: " + similarityThreshold);
-                        break;
-                    }
-                }
-            }
 
             //String[] attrArray = attributes.stream().flatMap(attr->SimilarPatentServer.attributeNameHelper(attr,"").stream()).toArray(size -> new String[size]);
             AtomicReference<SearchRequestBuilder> request = new AtomicReference<>(client.prepareSearch(INDEX_NAME)
                     .setTypes(TYPE_NAME)
                     .setFetchSource(attrNames,new String[]{})
-                    .setMinScore(isOverallScore&&similarityThreshold>0f?similarityThreshold:0f)
                     .setFrom(0));
 
             boolean scroll;
@@ -223,11 +210,6 @@ public class DataSearcher {
                 }
 
             }
-
-            // special case to handle similarity greater than filter without sorting by similarity
-            if(!isOverallScore && similarityThreshold > 0f) {
-                throw new RuntimeException("Unable to apply filter: Similarity Greater Than "+similarityThreshold+". Reason: Must sort by Similarity.");
-            } // end of special case
 
             System.out.println("Combining Query...");
             // Add filter to query

@@ -32,7 +32,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
         for (int i = 0; i < vectorSize; i++) {
             String inner = "(doc['"+VECTOR_NAME+"." + i + "'].value*avg_vector" + i + ")";
             cos.add(inner);
-            if(i<vectorSize/4) {
+            if(i<vectorSize/2) {
                 cosSort.add(inner);
             }
         }
