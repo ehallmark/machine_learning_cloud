@@ -29,6 +29,7 @@ import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
+import user_interface.ui_models.attributes.script_attributes.DefaultValueScriptAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractGreaterThanFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
@@ -111,14 +112,17 @@ public class DataSearcher {
             } else {
                 AbstractAttribute comparatorAttr = findAttribute(attributes,comparator);
                 if(comparatorAttr != null && comparatorAttr instanceof AbstractScriptAttribute) {
-                    ScriptSortBuilder.ScriptSortType scriptType = comparatorAttr.getType().equals("text") || comparatorAttr.getType().equals("keyword") ? ScriptSortBuilder.ScriptSortType.STRING : ScriptSortBuilder.ScriptSortType.NUMBER;
-                    Script sortScript = ((AbstractScriptAttribute) comparatorAttr).getSortScript();
-                    System.out.println("Sort attr: "+comparatorAttr.getClass().getSimpleName());
-                    if(sortScript!=null) {
-                        sortBuilder = SortBuilders.scriptSort(sortScript, scriptType).order(sortOrder);
+                    if(comparatorAttr instanceof DefaultValueScriptAttribute) {
+                        sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder).missing(((DefaultValueScriptAttribute) comparatorAttr).getDefaultVal());
                     } else {
-                        System.out.println("WARNING:: DEFAULTING TO NO SORT!");
-                        sortBuilder = SortBuilders.fieldSort("_doc").order(SortOrder.ASC);
+                        ScriptSortBuilder.ScriptSortType scriptType = comparatorAttr.getType().equals("text") || comparatorAttr.getType().equals("keyword") ? ScriptSortBuilder.ScriptSortType.STRING : ScriptSortBuilder.ScriptSortType.NUMBER;
+                        Script sortScript = ((AbstractScriptAttribute) comparatorAttr).getSortScript();
+                        if(sortScript!=null) {
+                            sortBuilder = SortBuilders.scriptSort(sortScript, scriptType).order(sortOrder);
+                        } else {
+                            System.out.println("WARNING:: DEFAULTING TO NO SORT!");
+                            sortBuilder = SortBuilders.fieldSort("_doc").order(SortOrder.ASC);
+                        }
                     }
                 } else {
                     sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
