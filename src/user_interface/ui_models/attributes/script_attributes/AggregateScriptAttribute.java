@@ -32,19 +32,18 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        String script = getOrCreateScriptFor(type,language);
+        String script = getOrCreateScriptFor(type,language,fieldName);
         Map<String,Object> params = new HashMap<>();
         params.put("defaultVal",defaultVal);
-        params.put("field",fieldName);
         System.out.println("Script: "+script);
         return new Script(ScriptType.INLINE,language,script, params);
     }
 
-    private String getOrCreateScriptFor(String type, String language) {
+    private String getOrCreateScriptFor(String type, String language, String field) {
         synchronized (scriptMap) {
             String key = type+"_"+language;
             if (!scriptMap.containsKey(key)) {
-                String scriptStr = "("+emptyDocFieldCheck(language)+" ? ("+paramsFieldForLanguage(language,"defaultVal")+") : (doc["+paramsFieldForLanguage(language,"field")+"]."+type+"))";
+                String scriptStr = "("+emptyDocFieldCheck(language, field)+" ? ("+paramsFieldForLanguage(language,"defaultVal")+") : (doc[\""+field+"\"]."+type+"))";
                 scriptMap.put(key,scriptStr);
             }
             return scriptMap.get(key);
@@ -59,12 +58,11 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
         }
     }
 
-    private static String emptyDocFieldCheck(String language) {
-        String name = paramsFieldForLanguage(language,"field");
+    private static String emptyDocFieldCheck(String language, String name) {
         if(language.equals("expression")) {
-            return "doc["+name+"].empty";
+            return "doc[\""+name+"\"].empty";
         } else {
-            return "doc.containsKey("+name+")";
+            return "doc.containsKey(\""+name+"\")";
         }
     }
 }
