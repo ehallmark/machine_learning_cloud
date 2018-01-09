@@ -31,6 +31,7 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Session;
+import user_interface.acclaim_compatibility.Parser;
 import user_interface.server.tools.AjaxChartMessage;
 import user_interface.server.tools.FileCacheMap;
 import user_interface.server.tools.PasswordHandler;
@@ -156,6 +157,11 @@ public class SimilarPatentServer {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
         { // Attributes
             humanAttrToJavaAttrMap = new HashMap<>();
+            humanAttrToJavaAttrMap.put("(eg. FIELD:isEmptyANO_F OR FIELD:isNotEmptyTTL)", "FIELD");
+            humanAttrToJavaAttrMap.put("Query by Research Folder/Dataset Name", "RFID");
+            humanAttrToJavaAttrMap.put("Independent Claim", "ICLM");
+            humanAttrToJavaAttrMap.put("Dependent Claim", "DCLM");
+            humanAttrToJavaAttrMap.put("Title + Abstract + Claims", "TAC");
             humanAttrToJavaAttrMap.put("Asset Number", Constants.NAME);
             humanAttrToJavaAttrMap.put("Similarity", Constants.SIMILARITY);
             humanAttrToJavaAttrMap.put("Technology Similarity", Constants.TECHNOLOGY_SIMILARITY);
@@ -2115,6 +2121,16 @@ public class SimilarPatentServer {
         res.type("text/html");
         String message = req.session().attribute("message");
         req.session().removeAttribute("message");
+        List<Pair<String,String>> acclaimAttrs = Collections.emptyList();
+        if(authorized) {
+            Map<String,String> primaryAcclaimMap = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP;
+            Set<String> values = new HashSet<>(primaryAcclaimMap.values());
+            Parser.transformationsForAttr.forEach((k,v)->{
+                if(!values.contains(k)) {
+                    primaryAcclaimMap.put(k,humanAttributeFor(k));
+                }
+            });
+        }
         return html().with(
                 head().with(
                         title("AI Search Platform"),
@@ -2143,8 +2159,8 @@ public class SimilarPatentServer {
                 body().with(
                         div().withId("acclaim-supported-fields").attr("style","display: none;").with(
                                 ul().attr("style","max-height: 300px; overflow-y: auto;").with(
-                                        Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.entrySet().stream().sorted(Comparator.comparing(e->e.getKey())).map(e->{
-                                            return li(e.getKey()+" -> "+fullHumanAttributeFor(e.getValue()));
+                                        acclaimAttrs.stream().sorted(Comparator.comparing(e->e.getFirst())).map(e->{
+                                            return li(e.getFirst()+" -> "+fullHumanAttributeFor(e.getSecond()));
                                         }).collect(Collectors.toList())
                                 )
                         ),

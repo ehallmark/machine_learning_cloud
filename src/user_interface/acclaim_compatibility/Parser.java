@@ -24,7 +24,7 @@ import java.util.*;
  * Created by ehallmark on 1/5/18.
  */
 public class Parser {
-    private static final Map<String,Function2<String,String,QueryBuilder>> transformationsForAttr;
+    public static final Map<String,Function2<String,String,QueryBuilder>> transformationsForAttr;
     private static final Function2<String,String,QueryBuilder> defaultTransformation;
     private static final Map<String,Float> defaultFields = Collections.synchronizedMap(new HashMap<>());
     static {
@@ -150,7 +150,7 @@ public class Parser {
             }
             return null;
         });
-        transformationsForAttr.put("PEND",(name,val)->{
+        transformationsForAttr.put(Constants.GRANTED,(name,val)->{
             if(val.toLowerCase().startsWith("t")) {
                 return QueryBuilders.boolQuery()
                         .must(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.applications.toString()))

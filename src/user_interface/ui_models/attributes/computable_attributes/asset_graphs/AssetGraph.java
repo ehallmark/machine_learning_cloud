@@ -4,13 +4,9 @@ import model.graphs.BayesianNet;
 import model.graphs.Graph;
 import model.graphs.MarkovNet;
 import model.nodes.Node;
-import seeding.Database;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.filters.AbstractFilter;
 
-import java.io.File;
-import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -22,11 +18,11 @@ import java.util.stream.Stream;
 public abstract class AssetGraph extends ComputableAttribute<List<String>> {
     private Graph graph;
     private boolean directed;
-    private ComputableAttribute<? extends Collection<String>> dependentAttribute;
-    protected AssetGraph(boolean directed, ComputableAttribute<? extends Collection<String>> dependentAttribute) {
+    protected ComputableAttribute<? extends Collection<String>>[] dependentAttributes;
+    protected AssetGraph(boolean directed, ComputableAttribute<? extends Collection<String>>... dependentAttributes) {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
         this.directed=directed;
-        this.dependentAttribute=dependentAttribute;
+        this.dependentAttributes=dependentAttributes;
     }
 
     @Override
@@ -41,28 +37,46 @@ public abstract class AssetGraph extends ComputableAttribute<List<String>> {
         return (directed ? node.getInBound() : node.getNeighbors()).stream().map(n->n.getLabel()).collect(Collectors.toList());
     }
 
-    public void initAndSave(boolean testing) {
-        System.out.println("Testing: "+getFullName());
-        System.out.println("  Num patents: "+dependentAttribute.getPatentDataMap().size());
-        System.out.println("  Num applications: "+dependentAttribute.getApplicationDataMap().size());
 
+    public void initAndSave(boolean testing) {
         graph = (directed) ? new BayesianNet() : new MarkovNet();
-        Map<String,Collection<String>> combinedMap = Stream.of(dependentAttribute.getPatentDataMap().entrySet(),dependentAttribute.getApplicationDataMap().entrySet())
-                .parallel()
-                .flatMap(set->set.stream())
-                .collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
-        constructGraph(combinedMap);
+
+        int numPatents = Stream.of(dependentAttributes).mapToInt(d->d.getPatentDataMap().size()).max().getAsInt();
+        int numApplications = Stream.of(dependentAttributes).mapToInt(d->d.getApplicationDataMap().size()).max().getAsInt();
+
+        System.out.println("Test : "+getFullName());
+        System.out.println("  Num patents: "+numPatents);
+        System.out.println("  Num applications: "+numApplications);
+
+        Set<String> patents = new HashSet<>();
+        Set<String> applications = new HashSet<>();
+
+        for(int i = 0; i < dependentAttributes.length; i++) {
+            Map<String,? extends Collection<String>> patentMap = dependentAttributes[i].getPatentDataMap();
+            Map<String,? extends Collection<String>> applicationMap = dependentAttributes[i].getApplicationDataMap();
+
+            patents.addAll(patentMap.keySet());
+            applications.addAll(applicationMap.keySet());
+
+            Map<String,Collection<String>> combinedMap = Stream.of(patentMap.entrySet(),applicationMap.entrySet())
+                    .parallel()
+                    .flatMap(set->set.stream())
+                    .collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+            constructGraph(combinedMap);
+        }
+
         // build maps
         patentDataMap = Collections.synchronizedMap(new HashMap<>());
         applicationDataMap = Collections.synchronizedMap(new HashMap<>());
 
-        addToMap(dependentAttribute.getPatentDataMap().keySet(),patentDataMap);
-        addToMap(dependentAttribute.getApplicationDataMap().keySet(),applicationDataMap);
+        addToMap(patents, patentDataMap);
+        addToMap(applications, applicationDataMap);
 
-        System.out.println("  Num patents before: " + dependentAttribute.getPatentDataMap().size());
-        System.out.println("  Num applications before: " + dependentAttribute.getApplicationDataMap().size());
+        System.out.println("  Num patents before: " + numPatents);
+        System.out.println("  Num applications before: " + numApplications);
         System.out.println("  Num patents after: " + patentDataMap.size());
         System.out.println("  Num applications after: " + applicationDataMap.size());
+
 
         if(!testing) {
             super.save();
