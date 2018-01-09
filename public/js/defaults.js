@@ -1174,6 +1174,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         };
                     }
                 }
+                var subMenu = {};
                 if(!topLevelFolder && deletable) {
                     items["Delete"] = {
                         "separator_before": false,
@@ -1206,7 +1207,6 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         }
                     };
                     if(!isFolder) {
-                        var subMenu = {};
                         var labelToFunctions = {};
                         for(var i = 0; i < jsNodeDataFunctions.length; i++) {
                             var jsNodeDataFunction = jsNodeDataFunctions[i];
@@ -1238,6 +1238,12 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                     }
                 }
                 if((node_type==='dataset') && !isFolder && deletable) {
+                    items["Add Assets"] = {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "Add Assets",
+                        "submenu": subMenu
+                    };
                     items["Cluster Dataset"] = {
                         "separator_before": false,
                         "separator_after": false,
