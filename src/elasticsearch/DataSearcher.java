@@ -33,6 +33,7 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.attributes.script_attributes.DefaultValueScriptAttribute;
+import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
 import user_interface.ui_models.portfolios.items.Item;
@@ -122,7 +123,7 @@ public class DataSearcher {
                         Script sortScript = ((AbstractScriptAttribute) comparatorAttr).getSortScript();
                         if(sortScript!=null) {
                             sortBuilder = SortBuilders.scriptSort(sortScript, scriptType).order(sortOrder);
-                            if(comparator.equals(Constants.SIMILARITY)) {
+                            if(comparator.equals(Constants.SIMILARITY)&& SimilarityAttribute.dimensionsForSort<SimilarityAttribute.vectorSize) {
                                 // need to rescore
                                 resortBuilder = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(((AbstractScriptAttribute) comparatorAttr).getScript()));
                             }
