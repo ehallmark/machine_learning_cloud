@@ -11,6 +11,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
+import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
@@ -25,6 +26,7 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
     @Getter
     protected INDArray avg;
     protected static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
+    protected static final FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
 
     public AbstractSimilarityEngine() {
         super(Collections.emptyList());

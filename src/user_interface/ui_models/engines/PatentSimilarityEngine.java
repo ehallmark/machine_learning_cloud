@@ -6,8 +6,10 @@ import spark.Request;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.textarea;
@@ -23,7 +25,7 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
         System.out.println("Collecting inputs to search for...");
         // get input data
         Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
-        patents = patents.stream().filter(patent->assetToFilingMap.getPatentDataMap().containsKey(patent)||assetToFilingMap.getApplicationDataMap().containsKey(patent)).collect(Collectors.toList());
+        patents = patents.stream().limit(1000).flatMap(patent-> Stream.of(assetToFilingMap.getPatentDataMap().getOrDefault(patent, patent),assetToFilingMap.getApplicationDataMap().getOrDefault(patent, patent))).distinct().collect(Collectors.toList());
         System.out.println("Found "+patents.size()+" patents...");
         return patents;
     }

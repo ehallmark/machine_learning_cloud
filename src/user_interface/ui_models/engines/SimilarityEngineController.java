@@ -62,7 +62,9 @@ public class SimilarityEngineController {
         assigneesToRemove.addAll(assignees);
 
         if(labelsToRemove.size()>0) {
-            preFilters.add(new AbstractExcludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, labelsToRemove.stream().collect(Collectors.toList())));
+            List<String> toRemove = labelsToRemove.stream().collect(Collectors.toList());
+            preFilters.add(new AbstractExcludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, toRemove));
+            preFilters.add(new AbstractExcludeFilter(new FilingNameAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, toRemove));
         }
         if(assigneesToRemove.size()>0) {
             // lazily create assignee name filter
