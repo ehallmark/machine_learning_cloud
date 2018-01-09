@@ -1,6 +1,7 @@
 package user_interface.acclaim_compatibility;
 
-import data_pipeline.helpers.Function2;
+import data_pipeline.helpers.Function3;
+import elasticsearch.DatasetIndex;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -8,12 +9,16 @@ import org.apache.lucene.search.*;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.*;
 import seeding.Constants;
+import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
+import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 import user_interface.ui_models.attributes.script_attributes.CalculatedExpirationDateAttribute;
 import user_interface.ui_models.attributes.script_attributes.CalculatedPriorityDateAttribute;
 import user_interface.ui_models.attributes.script_attributes.ExpiredAttribute;
 import user_interface.ui_models.filters.AbstractBetweenFilter;
 import user_interface.ui_models.filters.AbstractBooleanIncludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.filters.AbstractIncludeFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.time.LocalDate;
@@ -24,8 +29,8 @@ import java.util.*;
  * Created by ehallmark on 1/5/18.
  */
 public class Parser {
-    public static final Map<String,Function2<String,String,QueryBuilder>> transformationsForAttr;
-    private static final Function2<String,String,QueryBuilder> defaultTransformation;
+    public static final Map<String,Function3<String,String,String,QueryBuilder>> transformationsForAttr;
+    private static final Function3<String,String,String,QueryBuilder> defaultTransformation;
     private static final Map<String,Float> defaultFields = Collections.synchronizedMap(new HashMap<>());
     static {
         defaultFields.put(Constants.ABSTRACT,1f);
@@ -38,7 +43,7 @@ public class Parser {
         defaultFields.put(Constants.TECHNOLOGY,1f);
         defaultFields.put(Constants.NESTED_CPC_CODES+"."+Constants.CPC_TITLE,1f);
 
-        defaultTransformation = (name,val) -> {
+        defaultTransformation = (name,val,user) -> {
             if(name!=null && name.length()>0) {
                 if(name.endsWith("Date")) {
                     // try date formatting
@@ -52,15 +57,15 @@ public class Parser {
             }
         };
         transformationsForAttr = Collections.synchronizedMap(new HashMap<>());
-        transformationsForAttr.put(Constants.FILING_COUNTRY,(name,str)->QueryBuilders.termQuery(name,str.toUpperCase()));
-        transformationsForAttr.put(Constants.DOC_TYPE,(name,str)->{
+        transformationsForAttr.put(Constants.FILING_COUNTRY,(name,str,user)->QueryBuilders.termQuery(name,str.toUpperCase()));
+        transformationsForAttr.put(Constants.DOC_TYPE,(name,str,user)->{
             String ret;
             if(str.toLowerCase().equals("g")) ret = "patents";
             else if(str.toLowerCase().equals("a")) ret = "applications";
             else ret = str;
             return QueryBuilders.termQuery(name,ret);
         });
-        transformationsForAttr.put(Constants.DOC_KIND,(name,str) ->{
+        transformationsForAttr.put(Constants.DOC_KIND,(name,str,user) ->{
             QueryBuilder ret;
             str=str.toUpperCase();
             if(str.equals("U")) ret = QueryBuilders.termsQuery(name,"B1","B","B2");
@@ -72,7 +77,7 @@ public class Parser {
             else ret = QueryBuilders.queryStringQuery(name+":"+str).defaultOperator(Operator.AND);
             return ret;
         });
-        transformationsForAttr.put(Constants.EXPIRATION_DATE,(name,val)->{
+        transformationsForAttr.put(Constants.EXPIRATION_DATE,(name,val,user)->{
             if(val.equals("expired")) {
                 return new AbstractBooleanIncludeFilter(new ExpiredAttribute(), AbstractFilter.FilterType.BoolTrue).getFilterQuery();
             }
@@ -97,7 +102,7 @@ public class Parser {
             }
             return null;
         });
-        transformationsForAttr.put(Constants.PRIORITY_DATE,(name,val)->{
+        transformationsForAttr.put(Constants.PRIORITY_DATE,(name,val,user)->{
             if(val.length()>2) {
                 String[] vals = val.substring(1, val.length() - 1).split(" TO ");
                 LocalDate date1= null;
@@ -119,7 +124,7 @@ public class Parser {
             }
             return null;
         });
-        transformationsForAttr.put("FIELD",(name,val)->{
+        transformationsForAttr.put("FIELD",(name,val,user)->{
             String replace;
             if(val.startsWith("isEmpty")) {
                 replace="isEmpty";
@@ -150,7 +155,7 @@ public class Parser {
             }
             return null;
         });
-        transformationsForAttr.put(Constants.GRANTED,(name,val)->{
+        transformationsForAttr.put(Constants.GRANTED,(name,val,user)->{
             if(val.toLowerCase().startsWith("t")) {
                 return QueryBuilders.boolQuery()
                         .must(QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.applications.toString()))
@@ -161,27 +166,27 @@ public class Parser {
                         .must(QueryBuilders.termQuery(Constants.GRANTED, true));
             }
         });
-        transformationsForAttr.put("ICLM",(name,val)->{
+        transformationsForAttr.put("ICLM",(name,val,user)->{
             String attrName = Constants.CLAIMS+"."+Constants.CLAIM;
             QueryBuilder query = QueryBuilders.boolQuery()
                     .mustNot(QueryBuilders.existsQuery(Constants.CLAIMS+"."+Constants.PARENT_CLAIM_NUM))
                     .must(QueryBuilders.queryStringQuery(attrName+":"+val).defaultOperator(Operator.AND));
             return QueryBuilders.nestedQuery(Constants.CLAIMS,query,ScoreMode.Max);
         });
-        transformationsForAttr.put("DCLM",(name,val)->{
+        transformationsForAttr.put("DCLM",(name,val,user)->{
             String attrName = Constants.CLAIMS+"."+Constants.CLAIM;
             QueryBuilder query = QueryBuilders.boolQuery()
                     .must(QueryBuilders.existsQuery(Constants.CLAIMS+"."+Constants.PARENT_CLAIM_NUM))
                     .must(QueryBuilders.queryStringQuery(attrName+":"+val).defaultOperator(Operator.AND));
             return QueryBuilders.nestedQuery(Constants.CLAIMS,query,ScoreMode.Max);
         });
-        transformationsForAttr.put("TAC",(name,val)->{
+        transformationsForAttr.put("TAC",(name,val,user)->{
             return QueryBuilders.boolQuery()
                     .should(QueryBuilders.nestedQuery(Constants.CLAIMS, QueryBuilders.queryStringQuery(Constants.CLAIMS+"."+Constants.CLAIM+":"+val).defaultOperator(Operator.AND), ScoreMode.Max))
                     .should(QueryBuilders.queryStringQuery(Constants.ABSTRACT+":"+val).defaultOperator(Operator.AND))
                     .should(QueryBuilders.queryStringQuery(Constants.INVENTION_TITLE+":"+val).defaultOperator(Operator.AND));
         });
-        transformationsForAttr.put(Constants.NESTED_CPC_CODES+"."+Constants.CPC_CODES, (name,val)->{
+        transformationsForAttr.put(Constants.NESTED_CPC_CODES+"."+Constants.CPC_CODES, (name,val,user)->{
             if(val.endsWith("+")) {
                 BoolQueryBuilder builder = QueryBuilders.boolQuery();
                 if(val.length()>1) {
@@ -213,6 +218,33 @@ public class Parser {
                 return QueryBuilders.queryStringQuery(name+":"+val).defaultOperator(Operator.AND);
             }
         });
+        transformationsForAttr.put("RFID", (name,val,user)->{
+            TermsLookupAttribute termsLookupAttribute = new DatasetAttribute();
+            
+            // first try with current user
+            String[] parts = val.split("\\.");
+            String[] parentDirs = new String[parts.length-1];
+            for(int i = 0; i < parts.length-1; i++) {
+                parentDirs[i]=parts[i];
+            }
+            String dsName = parts[parts.length-1];
+            String id = DatasetIndex.idFromName(user,dsName,parentDirs);
+
+            // then try with shared user
+            if(id==null) {
+                user = SimilarPatentServer.SHARED_USER;
+                id = DatasetIndex.idFromName(user,dsName,parentDirs);
+            }
+            // and finally with form creator
+            if(id==null) {
+                user = SimilarPatentServer.SUPER_USER;
+                id = DatasetIndex.idFromName(user,dsName,parentDirs);
+            }
+            if(id==null) {
+                throw new RuntimeException("Unable to find dataset: "+val);
+            }
+            return new AbstractIncludeFilter(termsLookupAttribute, AbstractFilter.FilterType.Include, termsLookupAttribute.getFieldType(), Collections.singletonList(id+"_"+user)).getFilterQuery();
+        });
     }
 
     private static String tryCoerceDate(String val) {
@@ -229,7 +261,9 @@ public class Parser {
     }
 
     private QueryParser parser;
-    public Parser() {
+    private String user;
+    public Parser(String user) {
+        this.user=user;
         this.parser = new QueryParser("", new KeywordAnalyzer());
         parser.setDefaultOperator(QueryParser.Operator.AND);
     }
@@ -274,7 +308,7 @@ public class Parser {
         return val;
     }
 
-    private static QueryBuilder replaceAcclaimName(String queryStr, Query query) {
+    private static QueryBuilder replaceAcclaimName(String queryStr, Query query, String user) {
         String nestedPath = null;
         String fullAttr = null;
         String val = null;
@@ -355,10 +389,10 @@ public class Parser {
 
         // check for transformation
         if(fullAttr!=null) {
-            Function2<String, String, QueryBuilder> builder = transformationsForAttr.getOrDefault(fullAttr, defaultTransformation);
-            strQuery = builder.apply(fullAttr,val);
+            Function3<String, String, String, QueryBuilder> builder = transformationsForAttr.getOrDefault(fullAttr, defaultTransformation);
+            strQuery = builder.apply(fullAttr,val,user);
         } else {
-            strQuery = defaultTransformation.apply(null,val);
+            strQuery = defaultTransformation.apply(null,val,user);
         }
 
 
@@ -388,7 +422,7 @@ public class Parser {
             booleanQuery = (BooleanQuery)query;
             return parseAcclaimQueryHelper(booleanQuery);
         } else {
-            return replaceAcclaimName(query.toString(),query);
+            return replaceAcclaimName(query.toString(),query,user);
         }
     }
 
@@ -506,7 +540,7 @@ public class Parser {
                     }
 
                 } else {
-                    builder = replaceAcclaimName(queryStr,subQuery);
+                    builder = replaceAcclaimName(queryStr,subQuery,user);
                 }
                 if(builder!=null) {
                     if(isProximityQuery||c.isRequired()) {
@@ -535,9 +569,9 @@ public class Parser {
 
 
     public static void main(String[] args) throws Exception {
-        Parser parser = new Parser();
+        Parser parser = new Parser("ehallmark");
 
-        QueryBuilder res = parser.parseAcclaimQuery("blah near2 blah \"search everything\" CPC:A02F33+ AND CPC:A02301\\/32 (ANC_F:\"HTC CORP\" OR ANC_F:\"HTC\") AND (ANO_F:HTC || FIELD:isEmptyANO_F) AND TTL:one ADJ21 (TTL: three AND TTL:two) CC:US AND DT:G AND EXP:[NOW+5YEARS TO NOW+6YEARS] AND EXP:f AND NOT PEND:false AND (PT:U OR PT:RE)");
+        QueryBuilder res = parser.parseAcclaimQuery("RFID:id.somethin && blah near2 blah \"search everything\" CPC:A02F33+ AND CPC:A02301\\/32 (ANC_F:\"HTC CORP\" OR ANC_F:\"HTC\") AND (ANO_F:HTC || FIELD:isEmptyANO_F) AND TTL:one ADJ21 (TTL: three AND TTL:two) CC:US AND DT:G AND EXP:[NOW+5YEARS TO NOW+6YEARS] AND EXP:f AND NOT PEND:false AND (PT:U OR PT:RE)");
 
         System.out.println(" query: "+res);
     }

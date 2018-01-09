@@ -49,9 +49,12 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        String queryStr = String.join("", SimilarPatentServer.extractArray(req,getName()));
-        Parser parser = new Parser();
-        query = parser.parseAcclaimQuery(queryStr);
+        String queryStr = String.join("", SimilarPatentServer.extractArray(req, getName()));
+        String user = req.session(false).attribute("username");
+        if (user != null) {
+            Parser parser = new Parser(user);
+            query = parser.parseAcclaimQuery(queryStr);
+        }
     }
 
     @Override

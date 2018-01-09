@@ -1058,7 +1058,10 @@ public class SimilarPatentServer {
             String[] assets = (String[])formMap.get("assets");
             if(assets!=null&&file!=null) {
                 String username = shared ? SHARED_USER : user;
-                DatasetIndex.index(username,file.getName(),Arrays.asList(assets));
+                String name = (String)formMap.get("name");
+                String[] parentDirs = (String[])formMap.get("parentDirs[]");
+                if(parentDirs==null) parentDirs = new String[]{};
+                DatasetIndex.index(username,file.getName(),Arrays.asList(assets), name, parentDirs);
             }
             formMap.remove("assets");
             Database.trySaveObject(formMap,file);
