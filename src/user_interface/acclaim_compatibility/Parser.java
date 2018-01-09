@@ -220,7 +220,7 @@ public class Parser {
         });
         transformationsForAttr.put("RFID", (name,val,user)->{
             TermsLookupAttribute termsLookupAttribute = new DatasetAttribute();
-            
+
             // first try with current user
             String[] parts = val.split("\\.");
             String[] parentDirs = new String[parts.length-1];
