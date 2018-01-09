@@ -161,7 +161,7 @@ public class DataSearcher {
                 );
             }
 
-            if(!comparator.isEmpty() && sortBuilder!=null) {
+            if(!comparator.isEmpty()) {
                 request.set(request.get().addSort(sortBuilder));
             }
 
