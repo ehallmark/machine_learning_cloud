@@ -2,6 +2,7 @@ package elasticsearch;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -29,8 +30,8 @@ public class DatasetIndex {
         if(name!=null) {
             dataMap.put(NAME_FIELD, name);
         }
-        if(parentDirs!=null) {
-            dataMap.put(PARENT_DIRS_FIELD, Arrays.asList(parentDirs));
+        if(parentDirs!=null && parentDirs.length>0) {
+            dataMap.put(PARENT_DIRS_FIELD, Arrays.asList(convertParentDirs(parentDirs)));
         }
         client.prepareIndex(INDEX,TYPE,id+"_"+user).setSource(dataMap).get();
     }
@@ -56,20 +57,31 @@ public class DatasetIndex {
         return get(id+"_"+user);
     }
 
+    public static String[] convertParentDirs(String[] parentDirs) {
+        String[] parentDirsClone = parentDirs.clone();
+        for(int i = 0; i < parentDirsClone.length; i++) {
+            parentDirsClone[i] = String.valueOf(i) + "_" + parentDirs[i] + "_" + i;
+        }
+        return parentDirsClone;
+    }
+
     public static String idFromName(String user, String name, String... parentDirs) {
-        SearchResponse res = client.prepareSearch(INDEX).setTypes(TYPE).setFetchSource(new String[]{"_id"},new String[]{}).setSize(1).setFrom(0)
-                .setQuery(QueryBuilders.boolQuery()
-                        .filter(
-                                QueryBuilders.boolQuery()
-                                        .must(
-                                                QueryBuilders.termQuery(NAME_FIELD,name)
-                                        ).must(
-                                        QueryBuilders.termQuery(USER_FIELD, user)
-                                )
-                        ).should(
-                                QueryBuilders.termsQuery(PARENT_DIRS_FIELD, parentDirs)
+        BoolQueryBuilder query = QueryBuilders.boolQuery()
+                .filter(
+                        QueryBuilders.boolQuery()
+                                .must(
+                                        QueryBuilders.termQuery(NAME_FIELD,name)
+                                ).must(
+                                QueryBuilders.termQuery(USER_FIELD, user)
                         )
-                ).addSort(SortBuilders.scoreSort().order(SortOrder.DESC)).get();
+                );
+        if(parentDirs!=null&&parentDirs.length>0) {
+            query = query.must(
+                    QueryBuilders.termsQuery(PARENT_DIRS_FIELD, convertParentDirs(parentDirs))
+            );
+        }
+        SearchResponse res = client.prepareSearch(INDEX).setTypes(TYPE).setFetchSource(new String[]{"_id"},new String[]{}).setSize(1).setFrom(0)
+                .setQuery(query).addSort(SortBuilders.scoreSort().order(SortOrder.DESC)).get();
 
         if(res!=null) {
             SearchHits searchHits = res.getHits();
