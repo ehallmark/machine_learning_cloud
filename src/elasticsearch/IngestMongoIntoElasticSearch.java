@@ -57,7 +57,7 @@ public class IngestMongoIntoElasticSearch {
         iterateOverCollection(consumer,query,type);
     }
 
-    static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor, Consumer<Document> consumer, String type) {
+    private static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor, Consumer<Document> consumer, String type) {
         return (docList, t2) -> {
             //System.out.println("Ingesting batch of : "+docList.size());
             docList.parallelStream().forEach(doc->{
@@ -97,7 +97,7 @@ public class IngestMongoIntoElasticSearch {
         while(cnt.get()<total.get()) {
             System.out.println("Waiting for mongo db. Remaining "+type+": "+(total.get()-cnt.get()));
             try {
-                TimeUnit.SECONDS.sleep(10);
+                TimeUnit.SECONDS.sleep(1);
             } catch(Exception e) {
 
             }
