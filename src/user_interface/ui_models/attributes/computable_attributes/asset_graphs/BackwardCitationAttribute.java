@@ -8,7 +8,7 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToCitedAssetsM
  */
 public class BackwardCitationAttribute extends AssetGraph {
     public BackwardCitationAttribute() {
-        super(true,new AssetToCitedAssetsMap());
+        super(true,1,new AssetToCitedAssetsMap());
     }
 
     @Override

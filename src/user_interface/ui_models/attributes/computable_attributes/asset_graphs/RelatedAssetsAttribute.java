@@ -14,7 +14,7 @@ import java.util.*;
  */
 public class RelatedAssetsAttribute extends AssetGraph {
     public RelatedAssetsAttribute() {
-        super(false,new AssetToRelatedAssetsMap());
+        super(false,3,new AssetToRelatedAssetsMap());
     }
 
     @Override
@@ -43,6 +43,7 @@ public class RelatedAssetsAttribute extends AssetGraph {
             related.addAll(filingToAssetMap.getApplicationDataMap().getOrDefault(e.getValue(),Collections.emptyList()));
             related.addAll(filingToAssetMap.getPatentDataMap().getOrDefault(e.getValue(),Collections.emptyList()));
             related.addAll(newApplicationMap.getOrDefault(e.getKey(),Collections.emptyList()));
+            related.add(e.getValue());
             related.remove(e.getKey());
             newApplicationMap.put(e.getKey(), related);
         });
@@ -52,6 +53,7 @@ public class RelatedAssetsAttribute extends AssetGraph {
             related.addAll(filingToAssetMap.getApplicationDataMap().getOrDefault(e.getValue(),Collections.emptyList()));
             related.addAll(filingToAssetMap.getPatentDataMap().getOrDefault(e.getValue(),Collections.emptyList()));
             related.addAll(newPatentMap.getOrDefault(e.getKey(),Collections.emptyList()));
+            related.add(e.getValue());
             related.remove(e.getKey());
             newPatentMap.put(e.getKey(), related);
         });

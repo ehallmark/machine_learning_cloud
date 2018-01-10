@@ -13,7 +13,7 @@ public class UpdateAssetGraphs {
     public static void update(boolean test) {
         Collection<AssetGraph> assetGraphs = Arrays.asList(
                 new RelatedAssetsAttribute()//,
-            //    new BackwardCitationAttribute()
+              //  new BackwardCitationAttribute()
         );
 
         assetGraphs.forEach(graphAttr->{

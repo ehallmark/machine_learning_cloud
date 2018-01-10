@@ -19,9 +19,11 @@ public abstract class AssetGraph extends ComputableAttribute<List<String>> {
     private Graph graph;
     private boolean directed;
     protected ComputableAttribute<? extends Collection<String>>[] dependentAttributes;
-    protected AssetGraph(boolean directed, ComputableAttribute<? extends Collection<String>>... dependentAttributes) {
+    private int depth;
+    protected AssetGraph(boolean directed, int depth, ComputableAttribute<? extends Collection<String>>... dependentAttributes) {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
         this.directed=directed;
+        this.depth=depth;
         this.dependentAttributes=dependentAttributes;
     }
 
@@ -34,9 +36,13 @@ public abstract class AssetGraph extends ComputableAttribute<List<String>> {
     private List<String> relatives(String token) {
         Node node = graph.findNode(token);
         if(node==null)return Collections.emptyList();
-        return (directed ? node.getInBound() : node.getNeighbors()).stream().map(n->n.getLabel()).collect(Collectors.toList());
+        return relativeHelper(node,0).stream().map(d->d.getLabel()).collect(Collectors.toList());
     }
 
+    private List<Node> relativeHelper(Node node, int d) {
+        if(node==null || d >= depth)return Collections.emptyList();
+        return (directed ? node.getInBound() : node.getNeighbors()).stream().flatMap(n->relativeHelper(n,d+1).stream()).collect(Collectors.toList());
+    }
 
     public void initAndSave(boolean testing) {
         graph = (directed) ? new BayesianNet() : new MarkovNet();
