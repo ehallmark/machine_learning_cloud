@@ -30,7 +30,7 @@ public class UpdateExtraneousComputableAttributeData {
         List<ComputableAttribute<?>> computableAttributes = SimilarPatentServer.getAllComputableAttributes().stream().filter(a->!(a instanceof HiddenAttribute)).collect(Collectors.toCollection(ArrayList::new));
         computableAttributes.add(new NestedComputedCPCAttribute());
         computableAttributes.add(new TermAdjustmentAttribute());
-        
+
         // add cpc nested attr
         SimilarPatentServer.loadAndIngestAllItemsWithAttributes(computableAttributes,vectorizerMap,assets==null?null:Collections.synchronizedSet(new HashSet<>(assets)));
     }

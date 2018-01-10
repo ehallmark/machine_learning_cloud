@@ -99,7 +99,7 @@ public class IngestMongoIntoElasticSearch {
         while(cnt.get()<total.get()) {
             System.out.println("Waiting for mongo db. Remaining "+type+": "+(total.get()-cnt.get()));
             try {
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.SECONDS.sleep(20);
             } catch(Exception e) {
 
             }
