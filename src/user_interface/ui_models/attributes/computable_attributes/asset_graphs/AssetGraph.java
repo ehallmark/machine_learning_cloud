@@ -35,13 +35,12 @@ public abstract class AssetGraph extends ComputableAttribute<List<String>> {
 
     private List<String> relatives(String token) {
         Node node = graph.findNode(token);
-        if(node==null)return Collections.emptyList();
-        return relativeHelper(node,0).stream().map(d->d.getLabel()).collect(Collectors.toList());
+        return relativeHelper(node,0).stream().map(d->d.getLabel()).distinct().collect(Collectors.toList());
     }
 
     private List<Node> relativeHelper(Node node, int d) {
         if(node==null || d >= depth)return Collections.emptyList();
-        return (directed ? node.getInBound() : node.getNeighbors()).stream().flatMap(n->relativeHelper(n,d+1).stream()).collect(Collectors.toList());
+        return (directed ? node.getInBound() : node.getNeighbors()).stream().flatMap(n->Stream.of(Stream.of(n),relativeHelper(n,d+1).stream()).flatMap(s->s)).collect(Collectors.toList());
     }
 
     public void initAndSave(boolean testing) {
