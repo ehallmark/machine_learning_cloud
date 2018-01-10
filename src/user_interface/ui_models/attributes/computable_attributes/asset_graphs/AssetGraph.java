@@ -35,7 +35,9 @@ public abstract class AssetGraph extends ComputableAttribute<List<String>> {
 
     private List<String> relatives(String token) {
         Node node = graph.findNode(token);
-        return relativeHelper(node,0).stream().map(d->d.getLabel()).distinct().collect(Collectors.toList());
+        List<String> relatives = relativeHelper(node,0).stream().map(d->d.getLabel()).distinct().collect(Collectors.toCollection(ArrayList::new));
+        relatives.remove(token);
+        return relatives;
     }
 
     private List<Node> relativeHelper(Node node, int d) {
