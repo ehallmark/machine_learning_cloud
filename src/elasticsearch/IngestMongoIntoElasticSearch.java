@@ -63,6 +63,8 @@ public class IngestMongoIntoElasticSearch {
             docList.parallelStream().forEach(doc->{
                 try {
                     consumer.accept(doc);
+                } catch(Exception e) {
+                    e.printStackTrace();
                 } finally {
                     if (cnt.getAndIncrement() % 10000 == 9999) {
                         System.out.println("Ingested: " + cnt.get());

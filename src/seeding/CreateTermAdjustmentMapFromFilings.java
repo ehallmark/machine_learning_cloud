@@ -24,7 +24,7 @@ public class CreateTermAdjustmentMapFromFilings {
         AtomicInteger valid = new AtomicInteger(0);
         final Consumer<Document> consumer = doc -> {
             Object filing = doc.get("_id");
-            System.out.print("-");
+            //System.out.print("-");
             if(filing!=null) {
                 Object termAdjustment = doc.get(Constants.PATENT_TERM_ADJUSTMENT);
                 if(termAdjustment!=null) {
