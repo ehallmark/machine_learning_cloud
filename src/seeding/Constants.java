@@ -5,6 +5,7 @@ import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.GatherTechnologyAttribute;
 import user_interface.ui_models.attributes.computable_attributes.TechnologyAttribute;
+import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;

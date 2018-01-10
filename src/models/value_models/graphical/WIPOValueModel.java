@@ -10,6 +10,7 @@ import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
+import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.filters.AbstractExistsFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;

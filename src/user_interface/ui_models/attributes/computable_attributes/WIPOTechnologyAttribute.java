@@ -1,9 +1,10 @@
-package user_interface.ui_models.attributes;
+package user_interface.ui_models.attributes.computable_attributes;
 
 import models.classification_models.WIPOHelper;
 import seeding.Constants;
 import user_interface.ui_models.filters.AbstractFilter;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,9 +13,10 @@ import java.util.Map;
 /**
  * Created by Evan on 6/18/2017.
  */
-public class WIPOTechnologyAttribute extends AbstractAttribute {
+public class WIPOTechnologyAttribute extends ComputableFilingAttribute<String> {
+    private static final File wipoTechnologiesFile = new File(Constants.DATA_FOLDER+"patentWIPOTechnologiesByFilingMap.jobj");
     public WIPOTechnologyAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
+        super(wipoTechnologiesFile,Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword, AbstractFilter.FilterType.Regexp, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
 
     @Override

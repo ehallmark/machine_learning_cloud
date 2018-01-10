@@ -1,15 +1,7 @@
 package models.classification_models;
 
-import elasticsearch.DataSearcher;
 import org.nd4j.linalg.primitives.Pair;
-import org.elasticsearch.search.sort.SortOrder;
-import seeding.Constants;
-import user_interface.ui_models.attributes.AssetNumberAttribute;
-import user_interface.ui_models.attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
-import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.filters.AbstractIncludeFilter;
-import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.stream.Collectors;

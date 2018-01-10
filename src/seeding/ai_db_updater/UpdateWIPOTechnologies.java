@@ -1,14 +1,14 @@
 package seeding.ai_db_updater;
 
-import elasticsearch.DataIngester;
 import models.classification_models.WIPOHelper;
-import seeding.Constants;
 import seeding.data_downloader.WIPOTechnologyDownloader;
+import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class UpdateWIPOTechnologies {
     static final AtomicLong cnt = new AtomicLong(0);
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
 
         // Data loader
@@ -30,6 +30,8 @@ public class UpdateWIPOTechnologies {
         if(definitionMap==null) {
             throw new RuntimeException("Unable to create definition map... map is null");
         }
+
+        Map<String,String> wipoMap = Collections.synchronizedMap(new HashMap<>());
 
         // handle data
         Map<String,String> patentFilingMap = assetToFilingMap.getPatentDataMap();
@@ -52,9 +54,7 @@ public class UpdateWIPOTechnologies {
                             }
 
                             if (wipoTechnology != null) {
-                                Map<String, Object> data = new HashMap<>();
-                                data.put(Constants.WIPO_TECHNOLOGY, wipoTechnology);
-                                DataIngester.ingestBulkFromFiling(filing, data, false);
+                                wipoMap.put(filing,wipoTechnology);
                                 if (cnt.getAndIncrement() % 100000 == 99999) {
                                     System.out.println("Seen " + cnt.get() + " wipo technologies...");
                                 }
@@ -68,6 +68,8 @@ public class UpdateWIPOTechnologies {
                 e.printStackTrace();
             }
         });
+
+        new WIPOTechnologyAttribute().saveMap(wipoMap);
 
         downloader.cleanUp();
     }

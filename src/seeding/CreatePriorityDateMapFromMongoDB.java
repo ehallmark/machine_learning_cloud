@@ -62,7 +62,7 @@ public class CreatePriorityDateMapFromMongoDB {
         IngestMongoIntoElasticSearch.iterateOverCollection(consumer,query,type,Constants.FILING_DATE,Constants.PRIORITY_DATE,Constants.FILING_NAME);
 
         System.out.println("Saving...");
-        PriorityDateComputedAttribute.saveMap(map);
+        new PriorityDateComputedAttribute().saveMap(map);
         System.out.println("Saved.");
     }
 }

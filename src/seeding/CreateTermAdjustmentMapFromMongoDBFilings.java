@@ -40,7 +40,7 @@ public class CreateTermAdjustmentMapFromMongoDBFilings {
         IngestMongoIntoElasticSearch.iterateOverCollection(consumer,query,type,Constants.PATENT_TERM_ADJUSTMENT);
 
         System.out.println("Saving...");
-        TermAdjustmentAttribute.saveMap(map);
+        new TermAdjustmentAttribute().saveMap(map);
         System.out.println("Saved.");
     }
 }
