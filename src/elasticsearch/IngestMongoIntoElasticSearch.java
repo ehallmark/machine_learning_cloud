@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -48,6 +49,31 @@ public class IngestMongoIntoElasticSearch {
     }
 
     public static void ingestByType(String type, Document query) {
+        Consumer<Document> consumer = doc -> {
+            String id = doc.getString("_id");
+            DataIngester.ingestBulkFromMongoDB(type, id, addCountsToDoc(doc));
+        };
+
+        iterateOverCollection(consumer,query,type);
+    }
+
+    static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor, Consumer<Document> consumer, String type) {
+        return (docList, t2) -> {
+            //System.out.println("Ingesting batch of : "+docList.size());
+            docList.parallelStream().forEach(doc->{
+                try {
+                    consumer.accept(doc);
+                } finally {
+                    if (cnt.getAndIncrement() % 10000 == 9999) {
+                        System.out.println("Ingested: " + cnt.get());
+                    }
+                }
+            });
+            cursor.next(helper(cursor, consumer, type));
+        };
+    }
+
+    public static void iterateOverCollection(Consumer<Document> consumer, Document query, String type) {
         String index = DataIngester.INDEX_NAME;
         MongoCollection<Document> collection = MongoDBClient.get().getDatabase(index).getCollection(type);
         AtomicLong total = new AtomicLong(0);
@@ -65,7 +91,7 @@ public class IngestMongoIntoElasticSearch {
         FindIterable<Document> iterator = collection.find(query);
 
         iterator.batchSize(500).batchCursor((cursor,t)->{
-            cursor.next(helper(cursor, type));
+            cursor.next(helper(cursor, consumer, type));
         });
         System.out.println("Total count of "+type+": "+cnt.get());
         while(cnt.get()<total.get()) {
@@ -77,24 +103,6 @@ public class IngestMongoIntoElasticSearch {
             }
         }
         cnt.set(0);
-    }
-
-    static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor, String type) {
-        return (docList, t2) -> {
-            //System.out.println("Ingesting batch of : "+docList.size());
-            docList.parallelStream().forEach(doc->{
-                try {
-                    String id = doc.getString("_id");
-                    DataIngester.ingestBulkFromMongoDB(type, id, addCountsToDoc(doc));
-
-                } finally {
-                    if (cnt.getAndIncrement() % 10000 == 9999) {
-                        System.out.println("Ingested: " + cnt.get());
-                    }
-                }
-            });
-            cursor.next(helper(cursor, type));
-        };
     }
 
     private static Document addCountsToDoc(Document doc) {
