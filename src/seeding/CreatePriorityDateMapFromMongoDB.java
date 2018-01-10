@@ -29,7 +29,7 @@ public class CreatePriorityDateMapFromMongoDB {
         AtomicInteger valid = new AtomicInteger(0);
 
         final RelatedAssetsAttribute relatedAssetsAttribute = new RelatedAssetsAttribute();
-
+        final AtomicInteger epoch = new AtomicInteger(0);
         final Consumer<Document> consumer = doc -> {
             Object name = doc.get("_id");
             Object filing = doc.get(Constants.FILING_NAME);
@@ -50,13 +50,13 @@ public class CreatePriorityDateMapFromMongoDB {
                 map.put(filing.toString(),minPriority);
             }
             if(cnt.getAndIncrement()%10000==9999) {
-                System.out.println("Valid: "+valid.get());
+                System.out.println("Epoch "+epoch.get()+" Valid: "+valid.get());
             }
         };
 
         System.out.println("Starting first iteration...");
         IngestMongoIntoElasticSearch.iterateOverCollection(consumer,query,type,Constants.FILING_DATE,Constants.PRIORITY_DATE,Constants.FILING_NAME);
-
+        epoch.set(1);
         System.out.println("Iterating again to complete minimum priority dates...");
         // run it again to guarantee min priority date for all documents (not just some relatives)
         IngestMongoIntoElasticSearch.iterateOverCollection(consumer,query,type,Constants.FILING_DATE,Constants.PRIORITY_DATE,Constants.FILING_NAME);
