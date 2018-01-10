@@ -29,7 +29,7 @@ public class CreateTermAdjustmentMapFromFilings {
                 Object termAdjustment = doc.get(Constants.PATENT_TERM_ADJUSTMENT);
                 if(termAdjustment!=null) {
                     valid.getAndIncrement();
-                    map.put(filing.toString(),(Integer)termAdjustment);
+                    map.put(filing.toString(),Integer.valueOf(termAdjustment.toString()));
                 }
             }
             if(cnt.getAndIncrement()%10000==9999) {
