@@ -1,29 +1,19 @@
 package elasticsearch;
 
-import com.mongodb.MongoNamespace;
-import com.mongodb.ReadPreference;
 import com.mongodb.async.AsyncBatchCursor;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.FindIterable;
 import com.mongodb.async.client.MongoCollection;
-import com.mongodb.binding.AsyncReadBinding;
-import com.mongodb.binding.AsyncSingleConnectionReadBinding;
-import com.mongodb.binding.ReadBinding;
-import com.mongodb.connection.AsyncConnection;
-import com.mongodb.connection.ServerDescription;
-import com.mongodb.operation.ParallelCollectionScanOperation;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
-import org.bson.codecs.DocumentCodec;
 import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.client.transport.TransportClient;
 import seeding.Constants;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Created by ehallmark on 8/14/17.
@@ -75,7 +65,7 @@ public class IngestMongoIntoElasticSearch {
         };
     }
 
-    public static void iterateOverCollection(Consumer<Document> consumer, Document query, String type) {
+    public static void iterateOverCollection(Consumer<Document> consumer, Document query, String type, String... fields) {
         String index = DataIngester.INDEX_NAME;
         MongoCollection<Document> collection = MongoDBClient.get().getDatabase(index).getCollection(type);
         AtomicLong total = new AtomicLong(0);
@@ -91,6 +81,9 @@ public class IngestMongoIntoElasticSearch {
         }
         System.out.println("Total count of "+type+": "+total.get());
         FindIterable<Document> iterator = collection.find(query);
+        if(fields!=null&&fields.length>0) {
+            iterator = iterator.projection(Projections.include(fields));
+        }
 
         iterator.batchSize(500).batchCursor((cursor,t)->{
             cursor.next(helper(cursor, consumer, type));

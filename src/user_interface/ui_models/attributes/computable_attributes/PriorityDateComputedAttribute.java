@@ -6,6 +6,7 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -13,17 +14,17 @@ import java.util.Map;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class TermAdjustmentAttribute extends ComputableAttribute<Integer> {
+public class PriorityDateComputedAttribute extends ComputableAttribute<LocalDate> {
     private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
-    private static Map<String,Integer> termAdjustmentMap;
-    private static final File termAdjustmentMapFile = new File(Constants.DATA_FOLDER+"patentTermAdjustmentsByFilingMap.jobj");
+    private static Map<String,LocalDate> priorityDateMap;
+    private static final File priorityDateMapFile = new File(Constants.DATA_FOLDER+"patentPriorityDateByFilingMap.jobj");
 
-    public TermAdjustmentAttribute() {
+    public PriorityDateComputedAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }
 
     @Override
-    public Integer attributesFor(Collection<String> items, int limit, Boolean isApp) {
+    public LocalDate attributesFor(Collection<String> items, int limit, Boolean isApp) {
         String item = items.stream().findAny().get();
 
         String filing;
@@ -33,56 +34,56 @@ public class TermAdjustmentAttribute extends ComputableAttribute<Integer> {
 
         if(filing==null) return null;
 
-        if(termAdjustmentMap==null) {
-            synchronized (TermAdjustmentAttribute.class) {
-                termAdjustmentMap = loadMap();
+        if(priorityDateMap==null) {
+            synchronized (PriorityDateComputedAttribute.class) {
+                priorityDateMap = loadMap();
             }
         }
 
-        return termAdjustmentMap.get(filing);
+        return priorityDateMap.get(filing);
     }
 
     @Override
-    public Map<String,Integer> getPatentDataMap() {
+    public Map<String,LocalDate> getPatentDataMap() {
         return null;
     }
 
     @Override
-    public Map<String,Integer> getApplicationDataMap() {
+    public Map<String,LocalDate> getApplicationDataMap() {
         return null;
     }
 
     @Override
-    public Integer handleIncomingData(String item, Map<String, Object> data, Map<String,Integer> myData, boolean isApplication) {
+    public LocalDate handleIncomingData(String item, Map<String, Object> data, Map<String,LocalDate> myData, boolean isApplication) {
         return null;
     }
 
     @Override
     public String getName() {
-        return Constants.PATENT_TERM_ADJUSTMENT;
+        return Constants.PRIORITY_DATE;
     }
 
     @Override
     public String getType() {
-        return "integer";
+        return "date";
     }
 
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Integer;
+        return AbstractFilter.FieldType.Date;
     }
 
 
-    public static void saveMap(Map<String,Integer> map) {
-        termAdjustmentMap=map;
-        Database.trySaveObject(map,termAdjustmentMapFile);
+    public static void saveMap(Map<String,LocalDate> map) {
+        priorityDateMap=map;
+        Database.trySaveObject(map,priorityDateMapFile);
     }
 
-    public static Map<String,Integer> loadMap() {
-        if(termAdjustmentMap==null) {
-            termAdjustmentMap = (Map<String, Integer>) Database.tryLoadObject(termAdjustmentMapFile);
+    public static Map<String,LocalDate> loadMap() {
+        if(priorityDateMap==null) {
+            priorityDateMap = (Map<String, LocalDate>) Database.tryLoadObject(priorityDateMapFile);
         }
-        return termAdjustmentMap;
+        return priorityDateMap;
     }
 }

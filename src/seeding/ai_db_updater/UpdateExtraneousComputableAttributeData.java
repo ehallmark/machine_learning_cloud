@@ -6,6 +6,7 @@ import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.attributes.computable_attributes.NestedComputedCPCAttribute;
+import user_interface.ui_models.attributes.computable_attributes.PriorityDateComputedAttribute;
 import user_interface.ui_models.attributes.computable_attributes.TermAdjustmentAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
 import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
@@ -30,6 +31,7 @@ public class UpdateExtraneousComputableAttributeData {
         List<ComputableAttribute<?>> computableAttributes = SimilarPatentServer.getAllComputableAttributes().stream().filter(a->!(a instanceof HiddenAttribute)).collect(Collectors.toCollection(ArrayList::new));
         computableAttributes.add(new NestedComputedCPCAttribute());
         computableAttributes.add(new TermAdjustmentAttribute());
+        computableAttributes.add(new PriorityDateComputedAttribute());
 
         // add cpc nested attr
         SimilarPatentServer.loadAndIngestAllItemsWithAttributes(computableAttributes,vectorizerMap,assets==null?null:Collections.synchronizedSet(new HashSet<>(assets)));

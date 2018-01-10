@@ -1,6 +1,6 @@
-package models.assignee_normalization.name_correction;
+package models.assignee.normalization.name_correction;
 
-import models.assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
+import models.assignee.normalization.human_name_prediction.HumanNamePredictionPipelineManager;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharSequenceNodeFactory;

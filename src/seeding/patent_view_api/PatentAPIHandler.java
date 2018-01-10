@@ -1,6 +1,6 @@
 package seeding.patent_view_api;
 
-import models.assignee_normalization.name_correction.AssigneeTrimmer;
+import models.assignee.normalization.name_correction.AssigneeTrimmer;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;

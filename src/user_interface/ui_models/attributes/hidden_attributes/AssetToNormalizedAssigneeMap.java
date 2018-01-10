@@ -1,6 +1,6 @@
 package user_interface.ui_models.attributes.hidden_attributes;
 
-import models.assignee_normalization.name_correction.NormalizeAssignees;
+import models.assignee.normalization.name_correction.NormalizeAssignees;
 import seeding.Constants;
 
 import java.util.*;

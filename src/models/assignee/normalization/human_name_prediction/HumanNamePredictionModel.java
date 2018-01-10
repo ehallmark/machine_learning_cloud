@@ -1,4 +1,4 @@
-package models.assignee_normalization.human_name_prediction;
+package models.assignee.normalization.human_name_prediction;
 
 import data_pipeline.models.ComputationGraphPredictionModel;
 import data_pipeline.optimize.nn_optimization.LayerWrapper;

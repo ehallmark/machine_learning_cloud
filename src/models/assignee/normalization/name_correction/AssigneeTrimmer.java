@@ -1,4 +1,4 @@
-package models.assignee_normalization.name_correction;
+package models.assignee.normalization.name_correction;
 
 import java.util.*;
 

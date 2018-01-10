@@ -1,7 +1,7 @@
 package user_interface.server;
 
-import models.assignee_normalization.human_name_prediction.HumanNamePredictionModel;
-import models.assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
+import models.assignee.normalization.human_name_prediction.HumanNamePredictionModel;
+import models.assignee.normalization.human_name_prediction.HumanNamePredictionPipelineManager;
 import ch.qos.logback.classic.Level;
 import com.google.gson.Gson;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;

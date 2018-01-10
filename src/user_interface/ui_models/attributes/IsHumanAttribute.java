@@ -1,6 +1,6 @@
 package user_interface.ui_models.attributes;
 
-import models.assignee_normalization.human_name_prediction.HumanNamePredictionPipelineManager;
+import models.assignee.normalization.human_name_prediction.HumanNamePredictionPipelineManager;
 import lombok.NonNull;
 import seeding.Constants;
 import seeding.Database;

@@ -1,6 +1,6 @@
 package seeding;
 
-import models.assignee_normalization.name_correction.AssigneeTrimmer;
+import models.assignee.normalization.name_correction.AssigneeTrimmer;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
@@ -69,9 +69,11 @@ public class Database {
 	private static final String patentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=password&tcpKeepAlive=true";
 	private static final String compDBUrl = "jdbc:postgresql://localhost/compdb_production?user=postgres&password=password&tcpKeepAlive=true";
 	private static final String gatherDBUrl = "jdbc:postgresql://localhost/gather_production?user=postgres&password=password&tcpKeepAlive=true";
+	private static final String assigneeDBUrl = "jdbc:postgresql://localhost/assigneedb?user=postgres&password=password&tcpKeepAlive=true";
 	public static Connection seedConn;
 	private static Connection compDBConn;
 	private static Connection gatherDBConn;
+	private static Connection assigneeConn;
 
 	private static final String selectGatherRatingsQuery = "select a.patent_rating,array_agg(p.number) as avg_patent_rating from assessments as a join patents as p on (p.id=a.patent_id) where patent_rating is not null and a.type = 'PublishedAssessment'  group by a.patent_rating";
 	private static final String selectGatherTechnologiesQuery = "select array_agg(distinct(number)), upper(name) from (select case when t.name like '%rs' then substring(t.name from 1 for char_length(t.name)-1) else replace(t.name,'-','') end as name, (string_to_array(regexp_replace(p.number,'[^0-9 ]',''),' '))[1] as number from patents as p join assessments as a on (p.id=a.patent_id) join assessment_technologies as at on (a.id=at.assessment_id) join technologies as t on (at.technology_id=t.id) where char_length(coalesce(t.name,'')) > 0 and (not upper(t.name)='AUDIT')) as temp group by upper(name)";
@@ -255,6 +257,13 @@ public class Database {
 	public synchronized static void setupGatherConn() throws SQLException {
 		gatherDBConn = DriverManager.getConnection(gatherDBUrl);
 		gatherDBConn.setAutoCommit(false);
+	}
+
+	public synchronized static Connection getOrSetupAssigneeConn() throws SQLException {
+		if(assigneeConn==null||assigneeConn.isClosed()) {
+			assigneeConn = DriverManager.getConnection(assigneeDBUrl);
+		}
+		return assigneeConn;
 	}
 
 	public synchronized static Map<String,Set<String>> getPatentToClassificationMap() {

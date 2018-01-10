@@ -1,7 +1,7 @@
 package stocks;
 
-import models.assignee_normalization.name_correction.AssigneeTrimmer;
-import models.assignee_normalization.name_correction.NormalizeAssignees;
+import models.assignee.normalization.name_correction.AssigneeTrimmer;
+import models.assignee.normalization.name_correction.NormalizeAssignees;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import info.debatty.java.stringsimilarity.JaroWinkler;
 import org.nd4j.linalg.primitives.Pair;

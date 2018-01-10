@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 /**
  * Created by Evan on 1/10/2018.
  */
-public class CreateTermAdjustmentMapFromFilings {
+public class CreateTermAdjustmentMapFromMongoDBFilings {
 
     public static void main(String[] args) throws Exception {
         Map<String,Integer> map = Collections.synchronizedMap(new HashMap<>());
@@ -37,7 +37,7 @@ public class CreateTermAdjustmentMapFromFilings {
             }
         };
 
-        IngestMongoIntoElasticSearch.iterateOverCollection(consumer,query,type);
+        IngestMongoIntoElasticSearch.iterateOverCollection(consumer,query,type,Constants.PATENT_TERM_ADJUSTMENT);
 
         System.out.println("Saving...");
         TermAdjustmentAttribute.saveMap(map);
