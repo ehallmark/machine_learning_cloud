@@ -47,7 +47,7 @@ public class IngestMongoIntoElasticSearch {
         iterateOverCollection(consumer,query,type);
     }
 
-    private static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor, Consumer<Document> consumer, String type) {
+    private static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor, Consumer<Document> consumer) {
         return (docList, t2) -> {
             //System.out.println("Ingesting batch of : "+docList.size());
             docList.parallelStream().forEach(doc->{
@@ -61,7 +61,7 @@ public class IngestMongoIntoElasticSearch {
                     }
                 }
             });
-            cursor.next(helper(cursor, consumer, type));
+            cursor.next(helper(cursor, consumer));
         };
     }
 
@@ -86,7 +86,7 @@ public class IngestMongoIntoElasticSearch {
         }
 
         iterator.batchSize(500).batchCursor((cursor,t)->{
-            cursor.next(helper(cursor, consumer, type));
+            cursor.next(helper(cursor, consumer));
         });
         System.out.println("Total count of "+type+": "+cnt.get());
         while(cnt.get()<total.get()) {

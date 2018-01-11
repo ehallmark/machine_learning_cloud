@@ -103,7 +103,7 @@ public class USPTOHandler extends NestedHandler {
                                 }
                             } else {
                                 toIngest.put(endFlag.dbName, data.stream().filter(map -> map.size() > 0).map(d->{
-                                    if(d.containsKey(Constants.STATE)&&d.containsKey(Constants.CITY)&&!d.containsKey(Constants.COUNTRY)) {
+                                    if(d.containsKey(Constants.STATE)&&!d.containsKey(Constants.COUNTRY)) {
                                         d.put(Constants.COUNTRY,"US");
                                     }
                                     return d;
