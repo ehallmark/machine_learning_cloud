@@ -35,7 +35,7 @@ public class FillEmptyCountryFieldsWithUS {
                         valid.getAndIncrement();
                         AtomicBoolean change = new AtomicBoolean(false);
                         data = data.stream().map(d->{
-                            if(d.containsKey(Constants.STATE)&&!d.containsKey(Constants.COUNTRY)) {
+                            if((field.equals(Constants.CITATIONS)||d.containsKey(Constants.STATE))&&!d.containsKey(Constants.COUNTRY)) {
                                 d.put(Constants.COUNTRY,"US");
                                 change.set(true);
                             }
