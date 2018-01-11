@@ -96,7 +96,7 @@ public class Seed {
         }
     }
 
-    private static String toStringSafe(Object in) {
+    public static String toStringSafe(Object in) {
         return in==null||in.toString().length()==0?null:in.toString();
     }
 
