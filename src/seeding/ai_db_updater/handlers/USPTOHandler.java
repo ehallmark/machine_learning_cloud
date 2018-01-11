@@ -7,7 +7,6 @@ package seeding.ai_db_updater.handlers;
 import com.google.gson.Gson;
 import elasticsearch.DataIngester;
 import lombok.Setter;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Constants;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
@@ -16,7 +15,10 @@ import user_interface.ui_models.attributes.computable_attributes.ComputableAttri
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -100,7 +102,12 @@ public class USPTOHandler extends NestedHandler {
                                     }
                                 }
                             } else {
-                                toIngest.put(endFlag.dbName, data.stream().filter(map -> map.size() > 0).collect(Collectors.toList()));
+                                toIngest.put(endFlag.dbName, data.stream().filter(map -> map.size() > 0).map(d->{
+                                    if(d.containsKey(Constants.STATE)&&d.containsKey(Constants.CITY)&&!d.containsKey(Constants.COUNTRY)) {
+                                        d.put(Constants.COUNTRY,"US");
+                                    }
+                                    return d;
+                                }).collect(Collectors.toList()));
                             }
                         }
                     });
