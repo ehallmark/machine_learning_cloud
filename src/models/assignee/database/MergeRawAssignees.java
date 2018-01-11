@@ -1,8 +1,10 @@
 package models.assignee.database;
 
 import org.nd4j.linalg.primitives.Pair;
+import seeding.Constants;
 import seeding.Database;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,6 +30,7 @@ public class MergeRawAssignees {
                 Map<String, Map<String, Object>> map = Collections.synchronizedMap(new HashMap<>());
                 String query = baseQuery.replace("?", field);
                 PreparedStatement ps = conn.prepareStatement(query);
+                System.out.println("Query: "+ps.toString());
                 ps.setFetchSize(50);
                 ResultSet rs = ps.executeQuery();
                 boolean boolField = field.equals("human");
@@ -44,6 +47,8 @@ public class MergeRawAssignees {
                         System.out.println("Finished "+field.toUpperCase()+": "+cnt.get());
                     }
                 }
+                rs.close();
+                ps.close();
                 return map;
             } catch(Exception e) {
                 return null;
@@ -128,9 +133,13 @@ public class MergeRawAssignees {
 
         Map<String,Map<String,Object>> assigneeData = loadRawAssigneeData(conn);
 
+        System.out.println("Assignee data size: "+assigneeData.size());
+
+        Database.trySaveObject(assigneeData, new File(Constants.DATA_FOLDER+"all_assignee_data_map.jobj"));
+
         // upsert
         AtomicLong cnt = new AtomicLong(0);
-        assigneeData.entrySet().parallelStream().forEach(e->{
+        assigneeData.entrySet().stream().forEach(e->{
             if(cnt.getAndIncrement()%10000==9999) System.out.println("Finished ingesting: "+cnt.get());
             try {
                 addToQueue(conn, e.getKey(), e.getValue());
