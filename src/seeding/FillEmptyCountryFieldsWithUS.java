@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class FillEmptyCountryFieldsWithUS {
 
     public static void main(String[] args)  {
-        final String[] fields = new String[]{Constants.ASSIGNEES,Constants.INVENTORS,Constants.APPLICANTS,Constants.AGENTS,Constants.CITATIONS,Constants.PATENT_FAMILY};
+        final String[] fields = new String[]{Constants.ASSIGNEES,Constants.INVENTORS,Constants.APPLICANTS,Constants.AGENTS,Constants.PATENT_FAMILY};
 
         final String type = DataIngester.TYPE_NAME;
         final Document query = new Document();
@@ -35,7 +35,7 @@ public class FillEmptyCountryFieldsWithUS {
                         valid.getAndIncrement();
                         AtomicBoolean change = new AtomicBoolean(false);
                         data = data.stream().map(d->{
-                            if(!d.containsKey(Constants.COUNTRY)) {
+                            if(d.containsKey(Constants.STATE)&&!d.containsKey(Constants.COUNTRY)) {
                                 d.put(Constants.COUNTRY,"US");
                                 change.set(true);
                             }
