@@ -74,6 +74,7 @@ public class MergeRawAssignees {
         for(int j = 0; j < NUM_FIELDS; j++) {
             qs[j] = "?";
         }
+        qs[NUM_FIELDS-1]+="::boolean";
         qStr = "("+String.join(",",qs)+")";
 
         String pref = "insert into assignees (name,normalized_name,city,state,country,role,human) values ";
