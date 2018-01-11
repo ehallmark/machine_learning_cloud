@@ -129,7 +129,9 @@ public class MergeRawAssignees {
         Map<String,Map<String,Object>> assigneeData = loadRawAssigneeData(conn);
 
         // upsert
+        AtomicLong cnt = new AtomicLong(0);
         assigneeData.entrySet().parallelStream().forEach(e->{
+            if(cnt.getAndIncrement()%10000==9999) System.out.println("Finished ingesting: "+cnt.get());
             try {
                 addToQueue(conn, e.getKey(), e.getValue());
             } catch(Exception e2) {
