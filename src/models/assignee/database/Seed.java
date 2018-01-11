@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 /**
@@ -31,7 +32,9 @@ import java.util.function.Consumer;
 public class Seed {
     private static final int QUEUE_SIZE = 100;
     private static final int NUM_FIELDS = 7;
+    private static final int COMMIT_N_BATCHES = 100;
 
+    private static final AtomicLong cnt = new AtomicLong(0);
     private static final List<Assignee> updateQueue = Collections.synchronizedList(new ArrayList<>(QUEUE_SIZE));
 
     private static Date toSQLDate(LocalDate date) {
@@ -85,6 +88,9 @@ public class Seed {
             }
             ps.executeQuery();
             updateQueue.clear();
+            if(cnt.getAndIncrement()%COMMIT_N_BATCHES==COMMIT_N_BATCHES-1) {
+                conn.commit();
+            }
         }
     }
 
