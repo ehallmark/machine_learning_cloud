@@ -5,7 +5,7 @@ create table if not exists assignees_raw (
     normalized_name text,
     city text,
     state text,
-    country text,
+    country text not null default('US'),
     role text,
     human boolean
 );
