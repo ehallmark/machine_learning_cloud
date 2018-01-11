@@ -145,6 +145,7 @@ public class MergeRawAssignees {
                 addToQueue(conn, e.getKey(), e.getValue());
             } catch(Exception e2) {
                 e2.printStackTrace();
+                System.exit(1);
             }
         });
 
