@@ -132,8 +132,8 @@ public class MergeRawAssignees {
         assigneeData.entrySet().parallelStream().forEach(e->{
             try {
                 addToQueue(conn, e.getKey(), e.getValue());
-            } catch(Exception e) {
-                e.printStackTrace();
+            } catch(Exception e2) {
+                e2.printStackTrace();
             }
         });
 
