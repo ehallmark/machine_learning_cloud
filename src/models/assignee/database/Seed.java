@@ -113,7 +113,7 @@ public class Seed {
                     } else {
                         isHuman = false;
                     }
-                    if(name!=null) {
+                    if(name!=null&&name.toString().length()>0) {
                         Object city = assignee.get(Constants.CITY);
                         Object state = assignee.get(Constants.STATE);
                         Object country = assignee.get(Constants.COUNTRY);
