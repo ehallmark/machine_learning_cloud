@@ -1,5 +1,10 @@
 package models.assignee.database;
 
+import elasticsearch.DataIngester;
+import elasticsearch.IngestMongoIntoElasticSearch;
+import models.assignee.normalization.name_correction.NormalizeAssignees;
+import org.bson.Document;
+import seeding.Constants;
 import seeding.Database;
 
 import java.sql.Connection;
@@ -7,10 +12,8 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Created by ehallmark on 1/10/18.
@@ -85,11 +88,60 @@ public class Seed {
         }
     }
 
+    private static String toStringSafe(Object in) {
+        return in==null||in.toString().length()==0?null:in.toString();
+    }
+
 
     public static void main(String[] args) throws Exception {
         Connection conn = Database.getOrSetupAssigneeConn();
         conn.setAutoCommit(false);
 
+        NormalizeAssignees normalizer = new NormalizeAssignees();
+
+        Consumer<Document> consumer = doc -> {
+            List<Map<String,Object>> assignees = (List<Map<String,Object>>) doc.get(Constants.ASSIGNEES);
+            if(assignees!=null) {
+                assignees.forEach(assignee->{
+                    Object name = assignee.get(Constants.ASSIGNEE);
+                    Boolean isHuman = null;
+                    if(name == null) {
+                        if(assignee.containsKey(Constants.FIRST_NAME)&&assignee.containsKey(Constants.LAST_NAME)) {
+                            name = assignee.get(Constants.LAST_NAME)+", "+assignee.get(Constants.FIRST_NAME);
+                            isHuman = true;
+                        }
+                    } else {
+                        isHuman = false;
+                    }
+                    if(name!=null) {
+                        Object city = assignee.get(Constants.CITY);
+                        Object state = assignee.get(Constants.STATE);
+                        Object country = assignee.get(Constants.COUNTRY);
+                        Object role = assignee.get(Constants.ASSIGNEE_ROLE);
+
+                        String nameStr = name.toString();
+                        String normalizedName = normalizer.normalizedAssignee(nameStr);
+                        String cityStr = toStringSafe(city);
+                        String stateStr = toStringSafe(state);
+                        String countryStr = toStringSafe(country);
+                        String roleStr = toStringSafe(role);
+
+                        try {
+                            addToQueue(conn, nameStr, normalizedName, cityStr, stateStr, countryStr, roleStr, isHuman);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        };
+
+        String[] fields = new String[]{
+                Constants.ASSIGNEES
+        };
+
+
+        IngestMongoIntoElasticSearch.iterateOverCollection(consumer,new Document(), DataIngester.TYPE_NAME,fields);
 
         flush(conn);
         conn.commit();
