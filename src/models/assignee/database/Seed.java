@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
@@ -33,6 +34,7 @@ public class Seed {
     private static final int QUEUE_SIZE = 100;
     private static final int NUM_FIELDS = 7;
     private static final int COMMIT_N_BATCHES = 100;
+    private static final int ASSIGNEE_SAMPLE_LIMIT = 250;
 
     private static final AtomicLong cnt = new AtomicLong(0);
     private static final List<Assignee> updateQueue = Collections.synchronizedList(new ArrayList<>(QUEUE_SIZE));
@@ -104,6 +106,7 @@ public class Seed {
         conn.setAutoCommit(false);
 
         NormalizeAssignees normalizer = new NormalizeAssignees();
+        Map<String,AtomicInteger> assigneeCounts = Collections.synchronizedMap(new HashMap<>());
 
         Consumer<Document> consumer = doc -> {
             List<Map<String,Object>> assignees = (List<Map<String,Object>>) doc.get(Constants.ASSIGNEES);
@@ -120,22 +123,26 @@ public class Seed {
                         isHuman = false;
                     }
                     if(name!=null&&name.toString().length()>0) {
-                        Object city = assignee.get(Constants.CITY);
-                        Object state = assignee.get(Constants.STATE);
-                        Object country = assignee.get(Constants.COUNTRY);
-                        Object role = assignee.get(Constants.ASSIGNEE_ROLE);
-
                         String nameStr = name.toString();
-                        String normalizedName = normalizer.normalizedAssignee(nameStr);
-                        String cityStr = toStringSafe(city);
-                        String stateStr = toStringSafe(state);
-                        String countryStr = toStringSafe(country);
-                        String roleStr = toStringSafe(role);
+                        assigneeCounts.putIfAbsent(nameStr,new AtomicInteger(0));
 
-                        try {
-                            addToQueue(conn, nameStr, normalizedName, cityStr, stateStr, countryStr, roleStr, isHuman);
-                        } catch(Exception e) {
-                            e.printStackTrace();
+                        if(assigneeCounts.get(nameStr).getAndIncrement()<ASSIGNEE_SAMPLE_LIMIT) {
+                            Object city = assignee.get(Constants.CITY);
+                            Object state = assignee.get(Constants.STATE);
+                            Object country = assignee.get(Constants.COUNTRY);
+                            Object role = assignee.get(Constants.ASSIGNEE_ROLE);
+
+                            String normalizedName = normalizer.normalizedAssignee(nameStr);
+                            String cityStr = toStringSafe(city);
+                            String stateStr = toStringSafe(state);
+                            String countryStr = toStringSafe(country);
+                            String roleStr = toStringSafe(role);
+
+                            try {
+                                addToQueue(conn, nameStr, normalizedName, cityStr, stateStr, countryStr, roleStr, isHuman);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 });
