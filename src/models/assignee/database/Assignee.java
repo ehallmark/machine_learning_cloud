@@ -13,8 +13,7 @@ public class Assignee {
     String country;
     String role;
     boolean human;
-    LocalDate date;
-    public Assignee(String name, String normalizedName, String city, String state, String country, String role, boolean human, LocalDate date) {
+    public Assignee(String name, String normalizedName, String city, String state, String country, String role, boolean human) {
         this.name=name;
         this.normalizedName=normalizedName;
         this.city=city;
@@ -22,7 +21,6 @@ public class Assignee {
         this.country=country;
         this.role=role;
         this.human=human;
-        this.date=date;
     }
 
 }

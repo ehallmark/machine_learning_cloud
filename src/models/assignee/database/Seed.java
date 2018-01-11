@@ -22,12 +22,12 @@ import java.util.StringJoiner;
         state text,
         country text,
         role text,
-        human boolean,
-        execution_date date
+        human boolean
     );
  */
 public class Seed {
     private static final int QUEUE_SIZE = 100;
+    private static final int NUM_FIELDS = 7;
 
     private static final List<Assignee> updateQueue = Collections.synchronizedList(new ArrayList<>(QUEUE_SIZE));
 
@@ -38,22 +38,29 @@ public class Seed {
 
 
     private static String prepareInsertStatement(int size) {
-        String pref = "insert into assignees (name,normalized_name,city,state,country,role,human,execution_date) values ";
-        String suff = " on conflict(name) do update set (normalized_name,city,state,country,role,human,execution_date)=(?,?,?,?,?,?,?);";
+        String qStr;
+        String[] qs = new String[NUM_FIELDS];
+        for(int j = 0; j < NUM_FIELDS; j++) {
+            qs[j] = "?";
+        }
+        qStr = "("+String.join(",",qs)+")";
+
+        String pref = "insert into assignees_raw (name,normalized_name,city,state,country,role,human) values ";
+        String suff = ";";
         StringJoiner s = new StringJoiner(", ",pref,suff);
         for(int i = 0; i < size; i++) {
-            s.add("(?,?,?,?,?,?,?,?)");
+            s.add(qStr);
         }
         return s.toString();
     }
 
-    private static void addToQueue(Connection conn, String name, String normalizedName, String city, String state, String country, String role, boolean human, LocalDate date) throws SQLException {
+    private static void addToQueue(Connection conn, String name, String normalizedName, String city, String state, String country, String role, boolean human) throws SQLException {
         synchronized (updateQueue) {
             if(updateQueue.size()>=QUEUE_SIZE) {
                 flush(conn);
             }
         }
-        Assignee assignee = new Assignee(name,normalizedName,city,state,country,role,human,date);
+        Assignee assignee = new Assignee(name,normalizedName,city,state,country,role,human);
         synchronized (updateQueue) {
             updateQueue.add(assignee);
         }
@@ -63,7 +70,7 @@ public class Seed {
         synchronized (updateQueue) {
             PreparedStatement ps = conn.prepareStatement(prepareInsertStatement(updateQueue.size()));
             for(int i = 0; i < updateQueue.size(); i++) {
-                int j = (i*8);
+                int j = (i*NUM_FIELDS);
                 Assignee a = updateQueue.get(i);
                 ps.setString(j+1, a.name);
                 ps.setString(j+2, a.normalizedName);
@@ -72,7 +79,6 @@ public class Seed {
                 ps.setString(j+5, a.country);
                 ps.setString(j+6, a.role);
                 ps.setBoolean(j+7, a.human);
-                ps.setDate(j+8, toSQLDate(a.date));
             }
             ps.executeQuery();
             updateQueue.clear();
