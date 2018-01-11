@@ -86,7 +86,7 @@ public class Seed {
                 ps.setString(j+6, a.role);
                 ps.setBoolean(j+7, a.human);
             }
-            ps.executeQuery();
+            ps.executeUpdate();
             updateQueue.clear();
             if(cnt.getAndIncrement()%COMMIT_N_BATCHES==COMMIT_N_BATCHES-1) {
                 conn.commit();
