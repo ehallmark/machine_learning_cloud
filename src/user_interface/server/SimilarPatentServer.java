@@ -682,16 +682,22 @@ public class SimilarPatentServer {
                     Map<String,Object> assigneeMap = ((Map<String,Object>)item.getDataMap().get(Constants.LATEST_ASSIGNEE));
                     Object assignee = assigneeMap.get(Constants.ASSIGNEE);
                     if(assignee!=null) {
+                        double simThreshold = 0.9;
                         Map<String, Object> preComputed = MergeRawAssignees.get().get(assignee.toString());
                         if(preComputed==null) {
                             Iterator<String> iterator = Database.getAssigneePrefixTrie().getValuesForClosestKeys(assignee.toString()).iterator();
-                            if(iterator.hasNext()) {
-                                MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(1);
+                            MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(1);
+                            while(iterator.hasNext()) {
                                 String guess = iterator.next();
                                 if(MergeRawAssignees.get().containsKey(guess)) {
-                                    heap.add(new WordFrequencyPair<>(guess,new JaroWinkler().similarity(guess,assignee.toString())));
+                                    heap.add(new WordFrequencyPair<>(guess, new JaroWinkler().similarity(guess, assignee.toString())));
                                 }
-                                )
+                            }
+                            if(!heap.isEmpty()) {
+                                WordFrequencyPair<String,Double> bestGuess = heap.remove();
+                                if(bestGuess.getSecond()>=simThreshold) {
+                                    preComputed = MergeRawAssignees.get().get(bestGuess.getFirst());
+                                }
                             }
                         }
                         if(preComputed!=null) {
