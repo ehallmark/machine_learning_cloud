@@ -12,6 +12,7 @@ import elasticsearch.DatasetIndex;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
+import models.assignee.database.MergeRawAssignees;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
 import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
 import models.kmeans.AssetKMeans;
@@ -673,6 +674,19 @@ public class SimilarPatentServer {
                         attributesToRemove.add(model.getMongoDBName());
                     }
                 });
+                // handle assignee data
+                if(item.getDataMap().containsKey(Constants.LATEST_ASSIGNEE)) {
+                    Map<String,Object> assigneeMap = ((Map<String,Object>)item.getDataMap().get(Constants.LATEST_ASSIGNEE));
+                    Object assignee = assigneeMap.get(Constants.ASSIGNEE);
+                    if(assignee!=null) {
+                        Map<String, Object> preComputed = MergeRawAssignees.get().get(assignee.toString());
+                        preComputed.forEach((k,v)->{
+                            if(!assigneeMap.containsKey(k)) {
+                                assigneeMap.put(k,v);
+                            }
+                        });
+                    }
+                }
                 vectorizers.forEach((name,vectorizer)->{
                     INDArray vec = vectorizer.vectorFor(filing);
                     if(vec==null) {

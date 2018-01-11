@@ -17,6 +17,8 @@ public class MergeRawAssignees {
     private static final int QUEUE_SIZE = 100;
     private static final int NUM_FIELDS = 7;
     private static final int COMMIT_N_BATCHES = 100;
+    private static final File file = new File(Constants.DATA_FOLDER+"all_assignee_data_map.jobj");
+    private static Map<String,Map<String,Object>> MODEL;
 
     private static final AtomicLong cnt = new AtomicLong(0);
     private static final List<Pair<String,Map<String,Object>>> updateQueue = Collections.synchronizedList(new ArrayList<>(QUEUE_SIZE));
@@ -129,7 +131,6 @@ public class MergeRawAssignees {
     }
 
     public static void main(String[] args) throws Exception {
-        File file = new File(Constants.DATA_FOLDER+"all_assignee_data_map.jobj");
         Connection conn = Database.getOrSetupAssigneeConn();
         conn.setAutoCommit(false);
 
@@ -155,5 +156,12 @@ public class MergeRawAssignees {
 
         conn.commit();
         conn.close();
+    }
+
+    public static synchronized Map<String,Map<String,Object>> get() {
+        if(MODEL==null) {
+            MODEL = (Map<String,Map<String,Object>>) Database.tryLoadObject(file);
+        }
+        return MODEL;
     }
 }
