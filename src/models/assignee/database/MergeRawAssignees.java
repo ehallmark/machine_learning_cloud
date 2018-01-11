@@ -77,7 +77,7 @@ public class MergeRawAssignees {
         qStr = "("+String.join(",",qs)+")";
 
         String pref = "insert into assignees (name,normalized_name,city,state,country,role,human) values ";
-        String suff = ";";
+        String suff = "on conflict (name) do nothing;";
         StringJoiner s = new StringJoiner(", ",pref,suff);
         for(int i = 0; i < size; i++) {
             s.add(qStr);
