@@ -62,7 +62,7 @@ public class MergeRawAssignees {
                                     return v1;
                                 });
                             });
-                    return m1;
+                    return m2;
                 }).get();
 
     }
@@ -133,7 +133,7 @@ public class MergeRawAssignees {
         Connection conn = Database.getOrSetupAssigneeConn();
         conn.setAutoCommit(false);
 
-        Map<String,Map<String,Object>> assigneeData =(Map<String,Map<String,Object>>) Database.tryLoadObject(file);
+        Map<String,Map<String,Object>> assigneeData = null;  //(Map<String,Map<String,Object>>) Database.tryLoadObject(file);
         if(assigneeData==null) {
             assigneeData=loadRawAssigneeData(conn);
         }
