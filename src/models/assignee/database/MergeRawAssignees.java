@@ -128,14 +128,17 @@ public class MergeRawAssignees {
     }
 
     public static void main(String[] args) throws Exception {
+        File file = new File(Constants.DATA_FOLDER+"all_assignee_data_map.jobj");
         Connection conn = Database.getOrSetupAssigneeConn();
         conn.setAutoCommit(false);
 
-        Map<String,Map<String,Object>> assigneeData = loadRawAssigneeData(conn);
-
+        Map<String,Map<String,Object>> assigneeData =(Map<String,Map<String,Object>>) Database.tryLoadObject(file);
+        if(assigneeData==null) {
+            assigneeData=loadRawAssigneeData(conn);
+        }
         System.out.println("Assignee data size: "+assigneeData.size());
 
-        Database.trySaveObject(assigneeData, new File(Constants.DATA_FOLDER+"all_assignee_data_map.jobj"));
+        Database.trySaveObject(assigneeData, file);
 
         // upsert
         AtomicLong cnt = new AtomicLong(0);
