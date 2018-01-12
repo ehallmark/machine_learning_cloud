@@ -39,7 +39,7 @@ public class FillEmptyCountryFieldsWithUS {
             if(id!=null) {
                 for (String field : fields) {
                     List<Map<String,Object>> data = (List<Map<String,Object>>)doc.get(field);
-                    if(data==null) {
+                    if(testing&&data==null) {
                         System.out.println("NULL FOR "+field);
                     }
                     if (data != null) {
