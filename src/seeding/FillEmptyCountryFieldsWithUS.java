@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class FillEmptyCountryFieldsWithUS {
 
     public static void main(String[] args)  {
-        final boolean testing = true;
+        final boolean testing = false;
 
         final String[] fields = new String[]{Constants.ASSIGNEES,Constants.INVENTORS,Constants.APPLICANTS,Constants.AGENTS,Constants.PATENT_FAMILY,Constants.CITATIONS};
 
@@ -55,18 +55,19 @@ public class FillEmptyCountryFieldsWithUS {
                         if(change.get()) {
                             fieldToNumChanged.get(field).getAndIncrement();
                             if(testing)System.out.println("Updated "+field+" for "+id);
-                            if(!testing) {
-                                MongoDBClient.get().getDatabase(DataIngester.INDEX_NAME).getCollection(DataIngester.TYPE_NAME).updateOne(Filters.eq("_id", id), new Document("$set", new Document(field, data)), (v, t) -> {
-                                    if (t != null) {
-                                        System.out.println("Failed in update: " + t.getMessage());
-                                    }
-                                });
-                            }
+                            MongoDBClient.get().getDatabase(DataIngester.INDEX_NAME).getCollection(DataIngester.TYPE_NAME).updateOne(Filters.eq("_id", id), new Document("$set", new Document(field, data)), (v, t) -> {
+                                if (t != null) {
+                                    System.out.println("Failed in update: " + t.getMessage());
+                                }
+                            });
                         }
                     }
                 }
             }
-            if(cnt.getAndIncrement()%10000==9999) {
+            if(cnt.getAndIncrement()%100000==99999) {
+                fieldToNumChanged.entrySet().forEach(e->{
+                    System.out.println("Updated "+e.getKey()+": "+e.getValue().get());
+                });
                 System.out.println("Valid: "+valid.get());
             }
         };
