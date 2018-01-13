@@ -22,7 +22,7 @@ import java.util.function.Function;
 public class TestUpdateAll {
     public static void main(String[] args) throws Exception {
         boolean seedApplications = false;
-        Function<File,Boolean> orFunction = file -> {
+        Function<File,Boolean> orFunction = something->true; /*file -> {
             String name = file.getName();
             try {
                 LocalDate fileDate = LocalDate.parse(name, DateTimeFormatter.ISO_DATE);
@@ -30,7 +30,7 @@ public class TestUpdateAll {
             } catch(Exception e) {
             }
             return false;
-        };
+        };*/
 
         // test update patent grant
         SimilarPatentServer.loadAttributes(true);
