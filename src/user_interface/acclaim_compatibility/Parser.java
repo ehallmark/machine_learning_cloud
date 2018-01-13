@@ -223,6 +223,11 @@ public class Parser {
 
             // first try with current user
             String[] parts = val.split("\\.");
+            if(parts.length>0&&(parts[0].equals("Shared Datasets")||parts[0].equals("My Datasets"))) {
+                boolean shared = parts[0].equals("Shared Datasets");
+                parts = Arrays.copyOfRange(parts,1,parts.length);
+                if(shared) user = SimilarPatentServer.SHARED_USER;
+            }
             String[] parentDirs = new String[parts.length-1];
             for(int i = 0; i < parts.length-1; i++) {
                 parentDirs[i]=parts[i];
