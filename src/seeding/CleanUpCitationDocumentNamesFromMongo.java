@@ -6,7 +6,9 @@ import elasticsearch.IngestMongoIntoElasticSearch;
 import elasticsearch.MongoDBClient;
 import org.bson.Document;
 import seeding.ai_db_updater.handlers.flags.Flag;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToCitedAssetsMap;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -23,6 +25,9 @@ public class CleanUpCitationDocumentNamesFromMongo {
         final boolean testing = false;
 
         final String[] fields = new String[]{Constants.CITATIONS};
+        AssetToCitedAssetsMap assetToCitedAssetsMap = new AssetToCitedAssetsMap();
+        assetToCitedAssetsMap.getApplicationDataMap();
+        assetToCitedAssetsMap.getPatentDataMap();
 
         final String type = DataIngester.TYPE_NAME;
         final Document query = new Document();
@@ -44,12 +49,20 @@ public class CleanUpCitationDocumentNamesFromMongo {
                                 Object newDoc = Flag.filingDocumentHandler.apply(null).apply(docName.toString());
                                 if(newDoc!=null) {
                                     d.put(Constants.NAME, newDoc.toString());
+                                    change.set(true);
                                 }
                             }
                         }
-                        change.set(true);
                         return d;
                     }).collect(Collectors.toList());
+                    List<String> citedAssets = data.stream().map(d->d.get(Constants.NAME)).filter(d->d!=null).map(d->d.toString()).collect(Collectors.toList());
+                    if(change.get()&&citedAssets.size()>0) {
+                        if (assetToCitedAssetsMap.getPatentDataMap().containsKey(id.toString())) {
+                            assetToCitedAssetsMap.getPatentDataMap().put(id.toString(), citedAssets);
+                        } else if (assetToCitedAssetsMap.getApplicationDataMap().containsKey(id.toString())) {
+                            assetToCitedAssetsMap.getApplicationDataMap().put(id.toString(), citedAssets);
+                        }
+                    }
                     if(change.get()) {
                         if(testing)System.out.println("Updated "+fields[0]+" for "+id);
                         MongoDBClient.get().getDatabase(DataIngester.INDEX_NAME).getCollection(DataIngester.TYPE_NAME).updateOne(Filters.eq("_id", id), new Document("$set", new Document(fields[0], data)), (v, t) -> {
@@ -67,5 +80,7 @@ public class CleanUpCitationDocumentNamesFromMongo {
         };
 
         IngestMongoIntoElasticSearch.iterateOverCollection(consumer,query,type,fields);
+
+        assetToCitedAssetsMap.save();
     }
 }
