@@ -45,7 +45,7 @@ public class CleanUpCitationDocumentNamesFromMongo {
                         Object docKind = d.get(Constants.DOC_KIND);
                         if(docKind!=null&&docKind.equals("A")) {
                             Object docName = d.get(Constants.NAME);
-                            if(docName!=null) {
+                            if(docName!=null&&!docName.toString().contains("/")) {
                                 Object newDoc = Flag.filingDocumentHandler.apply(null).apply(docName.toString());
                                 if(newDoc!=null) {
                                     d.put(Constants.NAME, newDoc.toString());
