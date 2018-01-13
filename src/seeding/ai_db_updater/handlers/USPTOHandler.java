@@ -105,6 +105,9 @@ public class USPTOHandler extends NestedHandler {
                                 toIngest.put(endFlag.dbName, data.stream().filter(map -> map.size() > 0).map(d->{
                                     if((endFlag.dbName.equals(Constants.CITATIONS)||d.containsKey(Constants.STATE))&&!d.containsKey(Constants.COUNTRY)) {
                                         d.put(Constants.COUNTRY,"US");
+                                        if(testing&&endFlag.dbName.endsWith(Constants.CITATIONS)) {
+                                            System.out.println("Citation data: "+new Gson().toJson(d));
+                                        }
                                     }
                                     return d;
                                 }).collect(Collectors.toList()));
