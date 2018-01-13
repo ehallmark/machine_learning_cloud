@@ -281,7 +281,7 @@ $(document).ready(function() {
             window.location.href = '/secure/home'
         };
         var callback = function(data) {
-            saveJSNodeFunction(null,null,name,true,data,'template',true,true,postSaveCallback);
+            saveJSNodeFunction(null,null,name,true,data,'template',true,true,postSaveCallback,false);
         };
         return templateDataFunction(null,null,name,true,callback);
     });
@@ -1011,9 +1011,10 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     });
 };
 
-var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,create,skipSuccessFunction,callback){
+var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,create,skipSuccessFunction,callback,onlyUpdate){
     if(preData!==null) {
         preData['defaultFile'] = skipSuccessFunction;
+        preData['addToAssets'] = onlyUpdate;
         $.ajax({
             type: "POST",
             url: '/secure/save_'+node_type,
@@ -1157,7 +1158,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 "action": function(obj) {
                                     var name = 'New '+capitalize(node_type);
                                     var callback = function(data) {
-                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,true,false,null);
+                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,true,false,null,false);
                                     };
                                     labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
                                     return true;
@@ -1220,7 +1221,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 "action": function(obj) {
                                     var name = node.text;
                                     var callback = function(data) {
-                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false,null);
+                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false,null,false);
                                     };
                                     labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
                                     return true;
@@ -1238,11 +1239,33 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                     }
                 }
                 if((node_type==='dataset') && !isFolder && deletable) {
+                    var addAssetsSubmenu = {};
+                    var labelToFunctions = {};
+                    for(var i = 0; i < jsNodeDataFunctions.length; i++) {
+                        var jsNodeDataFunction = jsNodeDataFunctions[i];
+                        var newItemSubLabel = newItemSubLabels[i];
+                        labelToFunctions[newItemSubLabel]=jsNodeDataFunction;
+                        addAssetsSubmenu[newItemSubLabel] = {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": newItemSubLabel,
+                            "title": "Add assets to this dataset "+newItemSubLabel.toLowerCase()+".",
+                            "action": function(obj) {
+                                var name = node.text;
+                                var callback = function(data) {
+                                    saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false,null,true);
+                                };
+                                labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
+                                return true;
+                            }
+                        }
+                    }
                     items["Add Assets"] = {
                         "separator_before": false,
                         "separator_after": false,
                         "label": "Add Assets",
-                        "submenu": subMenu
+                        "title": "Add assets to this dataset.",
+                        "submenu": addAssetsSubmenu
                     };
                     items["Cluster Dataset"] = {
                         "separator_before": false,

@@ -1526,11 +1526,25 @@ public class SimilarPatentServer {
             if(assets==null) assets = req.session(false).attribute("assets"); // default to last seen report
             String name = req.queryParams("name");
             if(assets!=null&&name!=null&&name.length()>0) {
+                String file = req.queryParams("file");
                 Map<String, Object> formMap = new HashMap<>();
                 formMap.put("name", name);
                 formMap.put("assets", assets);
+                boolean addToAssets = Boolean.valueOf(req.queryParamOrDefault("addToAssets","false"));
+                if(addToAssets&&file!=null) {
+                    String[] parentDirs = req.queryParamsValues("parentDirs[]");
+                    boolean isShared = false;
+                    if(parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
+                        isShared = true;
+                    }
+                    String username = isShared ? SHARED_USER : req.session(false).attribute("username");
+                    List<String> prevAssets = DatasetIndex.get(username,file);
+                    if(prevAssets==null)prevAssets = Collections.emptyList();
+                    List<String> allAssets = Stream.of(prevAssets,Arrays.asList(assets)).flatMap(s->s.stream()).distinct().collect(Collectors.toList());
+                    formMap.put("assets", allAssets.toArray(new String[allAssets.size()]));
+                }
+
                 // check file
-                String file = req.queryParams("file");
                 if(file!=null) {
                     formMap.put("file",file);
                 }
