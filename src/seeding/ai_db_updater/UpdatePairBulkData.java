@@ -15,6 +15,7 @@ public class UpdatePairBulkData {
     public static void main(String[] args) {
         boolean updateElasticSearch = true;
         boolean updatePostgres = false;
+        boolean onlyUpdateTermAdjustments = true;
 
         PAIRDataDownloader downloader = new PAIRDataDownloader();
         downloader.pullMostRecentData();
@@ -25,7 +26,7 @@ public class UpdatePairBulkData {
                 return false;
             }
         });
-        PAIRHandler handler = new PAIRHandler(updatePostgres,updatePostgres,updateElasticSearch);
+        PAIRHandler handler = new PAIRHandler(updatePostgres,updatePostgres,updateElasticSearch,onlyUpdateTermAdjustments);
         handler.init();
         pairIterator.applyHandlers(handler);
 

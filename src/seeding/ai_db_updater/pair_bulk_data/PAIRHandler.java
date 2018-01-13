@@ -12,6 +12,7 @@ import seeding.ai_db_updater.handlers.CustomHandler;
 import seeding.ai_db_updater.handlers.NestedHandler;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
+import user_interface.ui_models.attributes.computable_attributes.TermAdjustmentAttribute;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,15 +22,20 @@ import java.util.stream.Collectors;
 
  */
 public class PAIRHandler extends NestedHandler {
+    static TermAdjustmentAttribute termAdjustmentAttribute = new TermAdjustmentAttribute();
 
     protected static AtomicInteger cnt = new AtomicInteger(0);
     protected int batchSize = 10000;
     protected boolean updatePostgres;
     protected boolean updateElasticSearch;
     protected boolean loadExternalAssignees;
-    public PAIRHandler(boolean loadExternalAssignees, boolean updatePostgres, boolean updateElasticSearch) {
+    protected Map<String,Integer> termAdjustmentMap;
+    private boolean onlyUpdateTermAdjustments;
+    public PAIRHandler(boolean loadExternalAssignees, boolean updatePostgres, boolean updateElasticSearch, boolean onlyUpdateTermAdjustments) {
         this.updatePostgres=updatePostgres;
+        this.termAdjustmentMap=termAdjustmentAttribute.loadMap();
         this.loadExternalAssignees=loadExternalAssignees;
+        this.onlyUpdateTermAdjustments=onlyUpdateTermAdjustments;
         this.updateElasticSearch=updateElasticSearch;
     }
 
@@ -77,8 +83,16 @@ public class PAIRHandler extends NestedHandler {
                     }
                     if(updateElasticSearch) {
                         Map<String,Object> cleanData = dataMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey().dbName,e->e.getValue()));
-                        if(dataMap.size() > 0) {
-                            DataIngester.ingestBulkFromFiling(filingNumber, cleanData,false);
+                        if(cleanData.size() > 0) {
+                            if(termAdjustmentMap!=null) {
+                                if(cleanData.containsKey(Constants.PATENT_TERM_ADJUSTMENT)) {
+                                    int adjustment = Integer.valueOf(cleanData.get(Constants.PATENT_TERM_ADJUSTMENT).toString());
+                                    termAdjustmentMap.put(filingNumber, adjustment);
+                                }
+                            }
+                            if(!onlyUpdateTermAdjustments) {
+                                DataIngester.ingestBulkFromFiling(filingNumber, cleanData, false);
+                            }
                         }
                     }
                 }
@@ -143,7 +157,7 @@ public class PAIRHandler extends NestedHandler {
 
     @Override
     public CustomHandler newInstance() {
-        PAIRHandler handler = new PAIRHandler(loadExternalAssignees,updatePostgres,updateElasticSearch);
+        PAIRHandler handler = new PAIRHandler(loadExternalAssignees,updatePostgres,updateElasticSearch,onlyUpdateTermAdjustments);
         handler.init();
         return handler;
     }
@@ -151,6 +165,9 @@ public class PAIRHandler extends NestedHandler {
     @Override
     public void save() {
         try {
+            if(termAdjustmentAttribute!=null) {
+                termAdjustmentAttribute.saveMap(termAdjustmentMap);
+            }
             if(updatePostgres) Database.commit();
         } catch(Exception e) {
             e.printStackTrace();

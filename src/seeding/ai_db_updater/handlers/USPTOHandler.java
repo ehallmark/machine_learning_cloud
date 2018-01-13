@@ -107,6 +107,7 @@ public class USPTOHandler extends NestedHandler {
                                         d.put(Constants.COUNTRY,"US");
                                         if(testing&&endFlag.dbName.endsWith(Constants.CITATIONS)) {
                                             System.out.println("Citation data: "+new Gson().toJson(d));
+
                                         }
                                     }
                                     return d;
@@ -128,14 +129,6 @@ public class USPTOHandler extends NestedHandler {
                         //queue.put(name.toString(), toIngest);
                         if(cnt.getAndIncrement() % batchSize == batchSize-1) {
                             System.out.println(cnt.get());
-                        }
-                        if(testing) {
-                            System.out.println("Data: "+new Gson().toJson(toIngest));
-                            if(toIngest.containsKey(Constants.CITATIONS)) {
-                                System.out.println("FOUND CITATIONS!!!");
-                            } else {
-                                System.out.println("No cites...");
-                            }
                         }
                         if(!testing) {
                             saveElasticSearch(name.toString(), toIngest);
