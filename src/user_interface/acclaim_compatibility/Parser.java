@@ -177,7 +177,7 @@ public class Parser {
             String attrName = Constants.CLAIMS+"."+Constants.CLAIM;
             QueryBuilder query = QueryBuilders.boolQuery()
                     .must(QueryBuilders.existsQuery(Constants.CLAIMS+"."+Constants.PARENT_CLAIM_NUM))
-                    .must(QueryBuilders.queryStringQuery(val).field(attrName).analyzeWildcard(true).defaultOperator(Operator.AND));
+                    .must( QueryBuilders.queryStringQuery(val).field(attrName).analyzeWildcard(true).defaultOperator(Operator.AND));
             return QueryBuilders.nestedQuery(Constants.CLAIMS,query,ScoreMode.Max);
         });
         transformationsForAttr.put("TAC",(name,val,user)->{

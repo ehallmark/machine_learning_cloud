@@ -30,16 +30,25 @@ import java.util.Map;
  */
 public class CombinedSimilarityVAEPipelineManager extends AbstractCombinedSimilarityPipelineManager {
     public static final String MODEL_NAME = "combined_similarity_vae";
+    public static final String MODEL_NAME_SMALL = "combined_compact16_similarity_vae";
+    public static final Map<String,Integer> NAME_TO_VECTOR_SIZE_MAP = Collections.synchronizedMap(new HashMap<>());
+    public static final Map<String,File> NAME_TO_PREDICTION_FILE_MAP = Collections.synchronizedMap(new HashMap<>());
+    static {
+        NAME_TO_VECTOR_SIZE_MAP.put(MODEL_NAME,32);
+        NAME_TO_VECTOR_SIZE_MAP.put(MODEL_NAME_SMALL,16);
+        NAME_TO_PREDICTION_FILE_MAP.put(MODEL_NAME,new File(Constants.DATA_FOLDER+"combined_similarity_vae_predictions/predictions_map.jobj"));
+        NAME_TO_PREDICTION_FILE_MAP.put(MODEL_NAME_SMALL,new File(Constants.DATA_FOLDER+"combined_similarity_small_vae_predictions/predictions_map.jobj"));
+
+    }
     private static final File INPUT_DATA_FOLDER = new File("combined_similarity_model_input_data");
-    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"combined_similarity_vae_predictions/predictions_map.jobj");
     private static CombinedSimilarityVAEPipelineManager MANAGER;
     public CombinedSimilarityVAEPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, CPCVAEPipelineManager cpcvaePipelineManager) {
-        super(INPUT_DATA_FOLDER,PREDICTION_DATA_FILE,modelName,word2Vec,wordCPC2VecPipelineManager,cpcvaePipelineManager);
+        super(INPUT_DATA_FOLDER,NAME_TO_PREDICTION_FILE_MAP.get(modelName),modelName,word2Vec,wordCPC2VecPipelineManager,cpcvaePipelineManager);
     }
 
     public void initModel(boolean forceRecreateModels) {
         if(model==null) {
-            model = new CombinedVariationalAutoencoder(this,modelName);
+            model = new CombinedVariationalAutoencoder(this,modelName,NAME_TO_VECTOR_SIZE_MAP.get(modelName));
         }
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
@@ -55,7 +64,7 @@ public class CombinedSimilarityVAEPipelineManager extends AbstractCombinedSimila
         if(MANAGER==null) {
             Nd4j.setDataType(DataBuffer.Type.DOUBLE);
 
-            String modelName = MODEL_NAME;
+            String modelName = MODEL_NAME_SMALL;
             String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
             String wordCpc2VecModel = WordCPC2VecPipelineManager.SMALL_MODEL_NAME;
 
@@ -74,7 +83,7 @@ public class CombinedSimilarityVAEPipelineManager extends AbstractCombinedSimila
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
         boolean rebuildDatasets = false;
-        boolean runModels = false;
+        boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
         boolean rebuildPrerequisites = false;

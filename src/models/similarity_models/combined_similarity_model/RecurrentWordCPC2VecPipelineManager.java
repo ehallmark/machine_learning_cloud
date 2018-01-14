@@ -36,7 +36,7 @@ public class RecurrentWordCPC2VecPipelineManager extends AbstractCombinedSimilar
     }
 
     public void initModel(boolean forceRecreateModels) {
-        CombinedSimilarityVAEPipelineManager vaePipelineManager = new CombinedSimilarityVAEPipelineManager(CombinedSimilarityVAEPipelineManager.MODEL_NAME,word2Vec,wordCPC2VecPipelineManager,cpcvaePipelineManager);
+        CombinedSimilarityVAEPipelineManager vaePipelineManager = CombinedSimilarityVAEPipelineManager.getOrLoadManager();
         combinedVaePredictionsMap = vaePipelineManager.loadPredictions();
 
         if(model==null) model = new RecurrentWordCPC2VecModel(this,modelName);

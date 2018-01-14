@@ -63,8 +63,10 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
     private ComputationGraph vaeNetwork;
     int encodingIdx = 22;
 
-    public CombinedVariationalAutoencoder(CombinedSimilarityVAEPipelineManager pipelineManager, String modelName) {
+    private int vectorSize;
+    public CombinedVariationalAutoencoder(CombinedSimilarityVAEPipelineManager pipelineManager, String modelName, int vectorSize) {
         super(pipelineManager,ComputationGraph.class,modelName);
+        this.vectorSize=vectorSize;
     }
 
     @Override
@@ -324,10 +326,10 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
             conf = conf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
         }
 
-        org.deeplearning4j.nn.conf.layers.Layer.Builder encoding = NNOptimizer.newDenseLayer(hiddenLayerSize+hiddenLayerSize,32);
+        org.deeplearning4j.nn.conf.layers.Layer.Builder encoding = NNOptimizer.newDenseLayer(hiddenLayerSize+hiddenLayerSize,vectorSize);
         conf = conf.addLayer(String.valueOf(i),encoding.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
         i++;
-        org.deeplearning4j.nn.conf.layers.Layer.Builder decoding = NNOptimizer.newDenseLayer(32,hiddenLayerSize);
+        org.deeplearning4j.nn.conf.layers.Layer.Builder decoding = NNOptimizer.newDenseLayer(vectorSize,hiddenLayerSize);
         conf = conf.addLayer(String.valueOf(i),decoding.build(), String.valueOf(i-increment));
         i++;
 
@@ -335,7 +337,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
         //  hidden layers
         for(; i < t + numHiddenLayers*increment; i+=increment) {
-            org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(i==t?(hiddenLayerSize+32):(hiddenLayerSize+hiddenLayerSize),hiddenLayerSize);
+            org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(i==t?(hiddenLayerSize+vectorSize):(hiddenLayerSize+hiddenLayerSize),hiddenLayerSize);
             conf = conf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
         }
 
