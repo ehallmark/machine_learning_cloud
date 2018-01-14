@@ -170,21 +170,20 @@ public class Parser {
             String attrName = Constants.CLAIMS+"."+Constants.CLAIM;
             QueryBuilder query = QueryBuilders.boolQuery()
                     .mustNot(QueryBuilders.existsQuery(Constants.CLAIMS+"."+Constants.PARENT_CLAIM_NUM))
-                    .must(QueryBuilders.queryStringQuery(attrName+":"+val).defaultOperator(Operator.AND));
+                    .must(QueryBuilders.queryStringQuery(val).field(attrName).analyzeWildcard(true).defaultOperator(Operator.AND));
             return QueryBuilders.nestedQuery(Constants.CLAIMS,query,ScoreMode.Max);
         });
         transformationsForAttr.put("DCLM",(name,val,user)->{
             String attrName = Constants.CLAIMS+"."+Constants.CLAIM;
             QueryBuilder query = QueryBuilders.boolQuery()
                     .must(QueryBuilders.existsQuery(Constants.CLAIMS+"."+Constants.PARENT_CLAIM_NUM))
-                    .must(QueryBuilders.queryStringQuery(attrName+":"+val).defaultOperator(Operator.AND));
+                    .must(QueryBuilders.queryStringQuery(val).field(attrName).analyzeWildcard(true).defaultOperator(Operator.AND));
             return QueryBuilders.nestedQuery(Constants.CLAIMS,query,ScoreMode.Max);
         });
         transformationsForAttr.put("TAC",(name,val,user)->{
             return QueryBuilders.boolQuery()
-                    .should(QueryBuilders.nestedQuery(Constants.CLAIMS, QueryBuilders.queryStringQuery(Constants.CLAIMS+"."+Constants.CLAIM+":"+val).defaultOperator(Operator.AND), ScoreMode.Max))
-                    .should(QueryBuilders.queryStringQuery(Constants.ABSTRACT+":"+val).defaultOperator(Operator.AND))
-                    .should(QueryBuilders.queryStringQuery(Constants.INVENTION_TITLE+":"+val).defaultOperator(Operator.AND));
+                    .should(QueryBuilders.nestedQuery(Constants.CLAIMS, QueryBuilders.queryStringQuery(val).field(Constants.CLAIMS+"."+Constants.CLAIM).analyzeWildcard(true).defaultOperator(Operator.AND), ScoreMode.Max))
+                    .should(QueryBuilders.queryStringQuery(val).field(Constants.ABSTRACT).field(Constants.INVENTION_TITLE).analyzeWildcard(true).defaultOperator(Operator.AND));
         });
         transformationsForAttr.put(Constants.NESTED_CPC_CODES+"."+Constants.CPC_CODES, (name,val,user)->{
             if(val.endsWith("+")) {
@@ -404,7 +403,7 @@ public class Parser {
         //if(queryStr.equals("near")||queryStr.equals("+near")) {
         //    System.out.println("Foound near!!!!!");
         //}
-        if(nestedPath!=null && strQuery!=null) {
+        if(nestedPath!=null && strQuery!=null && ! (strQuery instanceof NestedQueryBuilder)) {
             strQuery = QueryBuilders.nestedQuery(nestedPath,strQuery, ScoreMode.Max);
         }
         return strQuery;
