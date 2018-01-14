@@ -73,7 +73,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         final int numSamples = 4;
         final int sampleLength = 4;
-        final int assigneeSamples = 32;
+        final int assigneeSamples = 64;
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         Collection<String> filings = Collections.synchronizedSet(new HashSet<>());
         for(String asset : assets) {
