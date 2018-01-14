@@ -30,6 +30,7 @@ import java.util.Map;
  */
 public class CombinedSimilarityPipelineManager extends AbstractCombinedSimilarityPipelineManager {
     public static final String MODEL_NAME = "combined_similarity_model_small";
+    public static final String MODEL_NAME_SMALL = "combined_similarity_model_compact16_small";
     private static final File INPUT_DATA_FOLDER = new File("combined_similarity_model_input_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"combined_similarity_model_predictions/predictions_map.jobj");
 
@@ -69,7 +70,7 @@ public class CombinedSimilarityPipelineManager extends AbstractCombinedSimilarit
         boolean rebuildPrerequisites = false;
 
         int nEpochs = 5;
-        String modelName = MODEL_NAME;
+        String modelName = MODEL_NAME_SMALL;
         String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
         String wordCpc2VecModel = WordCPC2VecPipelineManager.SMALL_MODEL_NAME;
 
