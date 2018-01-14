@@ -411,6 +411,7 @@ public class Parser {
     }
 
     public QueryBuilder parseAcclaimQuery(String text) {
+        if(text==null || text.isEmpty()) return null;
         Query query;
         try {
             query = parser.parse(text.replace(" to "," TO "));
