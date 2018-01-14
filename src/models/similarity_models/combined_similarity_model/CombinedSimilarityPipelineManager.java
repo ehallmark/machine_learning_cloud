@@ -41,6 +41,7 @@ public class CombinedSimilarityPipelineManager extends AbstractCombinedSimilarit
 
     public void initModel(boolean forceRecreateModels) {
         CombinedSimilarityVAEPipelineManager vaePipelineManager = CombinedSimilarityVAEPipelineManager.getOrLoadManager();
+        vaePipelineManager.runPipeline(false,false,false,false,-1,false,false);
 
         if(model==null) model = new CombinedSimilarityComputationGraph(this,modelName,(CombinedVariationalAutoencoder)vaePipelineManager.getModel());
         if(!forceRecreateModels) {
