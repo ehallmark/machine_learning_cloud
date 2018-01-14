@@ -21,8 +21,8 @@ import static user_interface.server.SimilarPatentServer.extractArray;
  * Created by ehallmark on 6/15/17.
  */
 public class SimilarityAttribute extends AbstractScriptAttribute implements DependentAttribute<AbstractScriptAttribute> {
-    public static final int vectorSize = 32;
-    public static final int dimensionsForSort = 32;
+    public static final int vectorSize = 16;
+    public static final int dimensionsForSort = 16;
     public static final String VECTOR_NAME = "cvec";
 
     public static final String EXPRESSION_SIMILARITY_SCRIPT;
