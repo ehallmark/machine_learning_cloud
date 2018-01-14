@@ -51,7 +51,7 @@ public class RecurrentWordCPC2VecModel extends AbstractCombinedSimilarityModel<C
     protected Map<String, ComputationGraph> buildNetworksForTraining() {
         int hiddenLayerSize = 48;
         int inputSize = 32;
-        int outputSize = 32;
+        int outputSize = pipelineManager.getDatasetManager().getTrainingIterator().totalOutcomes();
         int numHiddenLayers = 4;
 
         Updater updater = Updater.RMSPROP;
