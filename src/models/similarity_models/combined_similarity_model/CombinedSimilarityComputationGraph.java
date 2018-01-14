@@ -51,10 +51,11 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
 
     @Override
     protected Map<String, ComputationGraph> buildNetworksForTraining() {
-        int hiddenLayerSize = 48;
+        int hiddenLayerSize1 = 48;
+        int hiddenLayerSize2 = 32;
         int input1 = 32;
         int input2 = 32;
-        int numHiddenLayers = 30;
+        int numHiddenLayers = 32;
 
         Updater updater = Updater.RMSPROP;
 
@@ -69,8 +70,8 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
                 .graphBuilder()
                 .addInputs("x")
                 .setOutputs("y")
-                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build(), "x")
-                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
+                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1,hiddenLayerSize1).build(), "x")
+                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize1,hiddenLayerSize1).build(), String.valueOf(i), "x");
 
         ComputationGraphConfiguration.GraphBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
@@ -79,8 +80,8 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
                 .graphBuilder()
                 .addInputs("x")
                 .setOutputs("y")
-                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build(), "x")
-                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input2+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
+                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input2,hiddenLayerSize1).build(), "x")
+                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input2+hiddenLayerSize1,hiddenLayerSize1).build(), String.valueOf(i), "x");
 
         int increment = 1;
 
@@ -88,15 +89,35 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
 
         int t = i;
         //  hidden layers
-        for(; i < t + numHiddenLayers*increment; i+=increment) {
-            org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize+hiddenLayerSize,hiddenLayerSize);
+        for(; i < t + (numHiddenLayers*increment)/2; i+=increment) {
+            org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize1+hiddenLayerSize1,hiddenLayerSize1);
+            wordCPC2VecConf = wordCPC2VecConf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+            cpcVecNetConf = cpcVecNetConf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+        }
+
+        org.deeplearning4j.nn.conf.layers.Layer.Builder hiddenLayerSizeSwitch1 = NNOptimizer.newDenseLayer(hiddenLayerSize1+hiddenLayerSize1,hiddenLayerSize2);
+        org.deeplearning4j.nn.conf.layers.Layer.Builder hiddenLayerSizeSwitch2 = NNOptimizer.newDenseLayer(hiddenLayerSize2+hiddenLayerSize1,hiddenLayerSize2);
+        wordCPC2VecConf = wordCPC2VecConf.addLayer(String.valueOf(i),hiddenLayerSizeSwitch1.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+        cpcVecNetConf = cpcVecNetConf.addLayer(String.valueOf(i),hiddenLayerSizeSwitch1.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+
+        i++;
+
+        wordCPC2VecConf = wordCPC2VecConf.addLayer(String.valueOf(i),hiddenLayerSizeSwitch2.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+        cpcVecNetConf = cpcVecNetConf.addLayer(String.valueOf(i),hiddenLayerSizeSwitch2.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+
+        i++;
+
+        t = i;
+        //  hidden layers
+        for(; i < t + (numHiddenLayers*increment)/2; i+=increment) {
+            org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(hiddenLayerSize2+hiddenLayerSize2,hiddenLayerSize2);
             wordCPC2VecConf = wordCPC2VecConf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
             cpcVecNetConf = cpcVecNetConf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
         }
 
         // output layers
-        OutputLayer.Builder outputLayer1 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,32).lossFunction(lossFunction);
-        OutputLayer.Builder outputLayer2 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,32).lossFunction(lossFunction);
+        OutputLayer.Builder outputLayer1 = NNOptimizer.newOutputLayer(hiddenLayerSize2+hiddenLayerSize2,autoencoder.getVectorSize()).lossFunction(lossFunction);
+        OutputLayer.Builder outputLayer2 = NNOptimizer.newOutputLayer(hiddenLayerSize2+hiddenLayerSize2,autoencoder.getVectorSize()).lossFunction(lossFunction);
 
         wordCPC2VecConf = wordCPC2VecConf.addLayer("y",outputLayer1.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
         cpcVecNetConf = cpcVecNetConf.addLayer("y",outputLayer2.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));

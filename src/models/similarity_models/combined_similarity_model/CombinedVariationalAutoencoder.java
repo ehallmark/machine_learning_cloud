@@ -69,6 +69,10 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         this.vectorSize=vectorSize;
     }
 
+    public int getVectorSize() {
+        return vectorSize;
+    }
+
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         final int numSamples = 4;
