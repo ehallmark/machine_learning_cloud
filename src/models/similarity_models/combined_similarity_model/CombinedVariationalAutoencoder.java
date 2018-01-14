@@ -102,7 +102,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         AtomicInteger nullVae = new AtomicInteger(0);
         final List<String> filingsWithVecs = filings.parallelStream().filter(filing->filingCpcVaeEncoderPredictions.containsKey(filing)).collect(Collectors.toList());
         int batchSize = 1000;
-        final INDArray sampleVec = Nd4j.create(sampleLength,32);
+        final INDArray sampleVec = Nd4j.create(sampleLength,getVectorSize());
         INDArray features = Nd4j.create(sampleLength*batchSize,64);
         IntStream.range(0,1+(filingsWithVecs.size()/batchSize)).forEach(i->{
             int start = i*batchSize;
@@ -147,9 +147,6 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                     for (int j = 0; j < allFeatures.size(); j++) {
                         String label = featureNames.get(j);
                         INDArray averageEncoding = Transforms.unitVec(encoding.get(NDArrayIndex.interval(j*numSamples, j*numSamples+numSamples), NDArrayIndex.all()).mean(0));
-                        if (averageEncoding.length() != 32) {
-                            throw new RuntimeException("Average encoding has length: " + averageEncoding.length());
-                        }
                         finalPredictionsMap.put(label, averageEncoding);
                         if(cnt.get()%50000==49999) {
                             System.gc();
