@@ -141,20 +141,7 @@ public class MergeRawAssignees {
         System.out.println("Assignee data size: "+assigneeData.size());
 
         Database.trySaveObject(assigneeData, file);
-
-        // upsert
-        AtomicLong cnt = new AtomicLong(0);
-        assigneeData.entrySet().stream().forEach(e->{
-            if(cnt.getAndIncrement()%10000==9999) System.out.println("Finished ingesting: "+cnt.get());
-            try {
-                addToQueue(conn, e.getKey(), e.getValue());
-            } catch(Exception e2) {
-                e2.printStackTrace();
-                System.exit(1);
-            }
-        });
-
-        conn.commit();
+        
         conn.close();
     }
 
