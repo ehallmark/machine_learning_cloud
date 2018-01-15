@@ -71,7 +71,7 @@ public class CombinedSimilarityPipelineManager extends AbstractCombinedSimilarit
         boolean rebuildPrerequisites = false;
 
         int nEpochs = 5;
-        String modelName = MODEL_NAME_SMALL;
+        String modelName = MODEL_NAME;//MODEL_NAME_SMALL;
         String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
         String wordCpc2VecModel = WordCPC2VecPipelineManager.SMALL_MODEL_NAME;
 
