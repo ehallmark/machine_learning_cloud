@@ -731,6 +731,7 @@ public class SimilarPatentServer {
             if(cnt.getAndIncrement()%100000==99999) {
                 System.out.println("Seen "+cnt.get());
             }
+            if(cnt.get()%1000000==999999) System.gc();
         });
     }
 
