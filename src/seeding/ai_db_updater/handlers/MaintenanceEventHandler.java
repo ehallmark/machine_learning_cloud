@@ -39,16 +39,16 @@ public class MaintenanceEventHandler implements LineHandler {
                         // reminder
                     } else if (maintenanceCode.startsWith("M2") || maintenanceCode.startsWith("SM") || maintenanceCode.equals("LTOS") || maintenanceCode.equals("MTOS")) {
                         entityTypeAttribute.getTypeToFilingMap().get(Constants.SMALL).add(filing);
-                        entityTypeAttribute.getTypeToFilingMap().remove(Constants.MICRO).add(filing);
-                        entityTypeAttribute.getTypeToFilingMap().remove(Constants.LARGE).add(filing);
+                        entityTypeAttribute.getTypeToFilingMap().get(Constants.MICRO).remove(filing);
+                        entityTypeAttribute.getTypeToFilingMap().get(Constants.LARGE).remove(filing);
                     } else if (maintenanceCode.startsWith("M1") || maintenanceCode.startsWith("LSM")) {
                         entityTypeAttribute.getTypeToFilingMap().get(Constants.LARGE).add(filing);
-                        entityTypeAttribute.getTypeToFilingMap().remove(Constants.SMALL).add(filing);
-                        entityTypeAttribute.getTypeToFilingMap().remove(Constants.MICRO).add(filing);
+                        entityTypeAttribute.getTypeToFilingMap().get(Constants.SMALL).remove(filing);
+                        entityTypeAttribute.getTypeToFilingMap().get(Constants.MICRO).remove(filing);
                     } else if (maintenanceCode.startsWith("M3") || maintenanceCode.equals("STOM")) {
                         entityTypeAttribute.getTypeToFilingMap().get(Constants.MICRO).add(filing);
-                        entityTypeAttribute.getTypeToFilingMap().remove(Constants.SMALL).add(filing);
-                        entityTypeAttribute.getTypeToFilingMap().remove(Constants.LARGE).add(filing);
+                        entityTypeAttribute.getTypeToFilingMap().get(Constants.SMALL).remove(filing);
+                        entityTypeAttribute.getTypeToFilingMap().get(Constants.LARGE).remove(filing);
                     }
                 }
 
