@@ -141,7 +141,7 @@ public class MergeRawAssignees {
         System.out.println("Assignee data size: "+assigneeData.size());
 
         Database.trySaveObject(assigneeData, file);
-        
+
         conn.close();
     }
 
