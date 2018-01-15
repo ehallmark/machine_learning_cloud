@@ -54,8 +54,14 @@ public class Seed {
     }
 
     private static void addToQueue(Connection conn, String name, String city, String state, String country, String role, String entityStatus, boolean human) throws SQLException {
-        synchronized (updateQueue) {
-            if(updateQueue.size()>=QUEUE_SIZE) {
+        if(updateQueue.size()>=QUEUE_SIZE) {
+            boolean shouldFlush = true;
+            synchronized (updateQueue) {
+                if(updateQueue.size()>=QUEUE_SIZE) {
+                    shouldFlush = true;
+                }
+            }
+            if(shouldFlush) {
                 flush(conn);
             }
         }
@@ -66,35 +72,37 @@ public class Seed {
     }
 
     private static void flush(Connection conn) throws SQLException {
+        List<Assignee> updateQueueCopy;
         synchronized (updateQueue) {
-            PreparedStatement ps = conn.prepareStatement(prepareInsertStatement(updateQueue.size()));
-            for(int i = 0; i < updateQueue.size(); i++) {
-                int j = (i*NUM_FIELDS);
-                Assignee a = updateQueue.get(i);
-                ps.setString(j+1, a.name);
-                ps.setString(j+2, a.city);
-                ps.setString(j+3, a.state);
-                ps.setString(j+4, a.country);
-                ps.setString(j+5, a.role);
-                ps.setString(j+6, a.entityStatus);
-                ps.setBoolean(j+7, a.human);
-            }
-            try {
-                ps.executeUpdate();
-            } catch(Exception e) {
-                e.printStackTrace();
-                System.out.println("Failed on query: "+ps.toString());
-                System.exit(1);
-            } finally {
-                ps.close();
-            }
+            updateQueueCopy = new ArrayList<>(updateQueue);
             updateQueue.clear();
-            if(cnt.getAndIncrement()%COMMIT_N_BATCHES==COMMIT_N_BATCHES-1) {
-                conn.commit();
-            }
-            ps.close();
-
         }
+
+        PreparedStatement ps = conn.prepareStatement(prepareInsertStatement(updateQueueCopy.size()));
+        for(int i = 0; i < updateQueueCopy.size(); i++) {
+            int j = (i*NUM_FIELDS);
+            Assignee a = updateQueueCopy.get(i);
+            ps.setString(j+1, a.name);
+            ps.setString(j+2, a.city);
+            ps.setString(j+3, a.state);
+            ps.setString(j+4, a.country);
+            ps.setString(j+5, a.role);
+            ps.setString(j+6, a.entityStatus);
+            ps.setBoolean(j+7, a.human);
+        }
+        try {
+            ps.executeUpdate();
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed on query: "+ps.toString());
+            System.exit(1);
+        } finally {
+            ps.close();
+        }
+        if(cnt.getAndIncrement()%COMMIT_N_BATCHES==COMMIT_N_BATCHES-1) {
+            conn.commit();
+        }
+        ps.close();
     }
 
     public static String toStringSafe(Object in) {
