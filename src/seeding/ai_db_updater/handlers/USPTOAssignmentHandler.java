@@ -134,14 +134,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                         }
                         // for each patent or application
                         if(allAssets.size()>0) {
-                            // get all filings
-                            List<String> allFilings = allAssets.stream()
-                                    .map(asset->assetToFilingMap.getApplicationDataMap().getOrDefault(asset,assetToFilingMap.getPatentDataMap().get(asset)))
-                                    .filter(filing->filing!=null)
-                                    .collect(Collectors.toList());
-                            if(allFilings.size()>0) {
-                                saveElasticSearch(allFilings, toIngest);
-                            }
+                            saveElasticSearch(allAssets, toIngest);
                         }
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
