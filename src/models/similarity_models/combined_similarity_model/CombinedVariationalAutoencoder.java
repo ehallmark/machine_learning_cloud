@@ -90,8 +90,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
 
         Map<String,INDArray> filingCpcVaeEncoderPredictions = pipelineManager.getAssetToEncodingMap();
-        Map<String,Collection<CPC>> cpcMap = pipelineManager.wordCPC2VecPipelineManager.getCPCMap();
         Map<String,INDArray> cpc2VecMap = pipelineManager.wordCPC2VecPipelineManager.getOrLoadCPCVectors();
+        Map<String,List<String>> cpcMap = pipelineManager.wordCPC2VecPipelineManager.getCPCMap().entrySet().parallelStream().map(e ->new Pair<>(e.getKey(),e.getValue().stream().filter(cpc->cpc.getNumParts() > 3 && cpc2VecMap.containsKey(cpc.getName())).limit(100).map(cpc -> cpc.getName()).collect(Collectors.toList())))
+                .collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
 
         final Random rand = new Random(32);
 
@@ -101,39 +102,42 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger nullVae = new AtomicInteger(0);
         final List<String> filingsWithVecs = filings.parallelStream().filter(filing->filingCpcVaeEncoderPredictions.containsKey(filing)).collect(Collectors.toList());
-        int batchSize = 10000;
-        IntStream.range(0,1+(filingsWithVecs.size()/batchSize)).parallel().forEach(i->{
-            INDArray features = Nd4j.create(sampleLength*batchSize,64);
+        int batchSize = 1000;
+        final INDArray sampleVec = Nd4j.create(sampleLength,32);
+        INDArray features = Nd4j.create(sampleLength*batchSize,64);
+        IntStream.range(0,1+(filingsWithVecs.size()/batchSize)).forEach(i->{
             int start = i*batchSize;
             int end = Math.min(start+batchSize,filingsWithVecs.size());
             if(start<end) {
                 List<String> range = filingsWithVecs.subList(start,end);
+                List<INDArray> allFeatures = new ArrayList<>();
                 List<String> featureNames = new ArrayList<>();
 
-                AtomicInteger jIdx = new AtomicInteger(0);
                 range.forEach(filing-> {
                     INDArray cpcVaeVec = filingCpcVaeEncoderPredictions.get(filing);
 
                     // word info
-                    List<String> cpcNames = cpcMap.getOrDefault(filing, Collections.emptySet()).stream().filter(cpc -> cpc.getNumParts() > 3 && cpc2VecMap.containsKey(cpc.getName())).limit(100).map(cpc -> cpc.getName()).collect(Collectors.toList());
+                    List<String> cpcNames = cpcMap.getOrDefault(filing,Collections.emptyList());
                     if (cpcNames.isEmpty()) {
                         incomplete.getAndIncrement();
                     } else {
                         final INDArray featuresVec = Nd4j.create(numSamples, 64);
-                        final INDArray sampleVec = Nd4j.create(sampleLength,32);
                         for (int j = 0; j < numSamples; j++) {
                             IntStream.range(0, sampleLength).forEach(h -> sampleVec.putRow(h,cpc2VecMap.get(cpcNames.get(rand.nextInt(cpcNames.size())))));
                             INDArray cpc2Vec = sampleVec.mean(0);
                             featuresVec.putRow(j, Nd4j.hstack(cpc2Vec, cpcVaeVec));
                         }
 
-                        features.putRow(jIdx.getAndIncrement(),featuresVec.mean(0));
+                        allFeatures.add(featuresVec);
                         featureNames.add(filing);
                     }
                 });
 
-                if(jIdx.get()>0) {
-                    INDArray featuresView = features.get(NDArrayIndex.interval(0,jIdx.get()),NDArrayIndex.all());
+                if(allFeatures.size()>0) {
+                    for(int j = 0; j < allFeatures.size(); j++) {
+                        features.get(NDArrayIndex.interval(j*numSamples,j*numSamples+numSamples),NDArrayIndex.all()).assign(allFeatures.get(j));
+                    }
+                    INDArray featuresView = features.get(NDArrayIndex.interval(0,allFeatures.size()*numSamples),NDArrayIndex.all());
                     INDArray f1 = featuresView.get(NDArrayIndex.all(),NDArrayIndex.interval(0,32));
                     f1.diviColumnVector(f1.norm2(1));
                     INDArray f2 = featuresView.get(NDArrayIndex.all(),NDArrayIndex.interval(32,64));
@@ -141,9 +145,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
                     INDArray encoding = encode(featuresView);
 
-                    for (int j = 0; j < jIdx.get(); j++) {
+                    for (int j = 0; j < allFeatures.size(); j++) {
                         String label = featureNames.get(j);
-                        INDArray averageEncoding = Transforms.unitVec(encoding.getRow(j));
+                        INDArray averageEncoding = Transforms.unitVec(encoding.get(NDArrayIndex.interval(j*numSamples, j*numSamples+numSamples), NDArrayIndex.all()).mean(0));
                         if(averageEncoding.length()!=getVectorSize()) {
                             throw new RuntimeException("Wrong vector size: "+averageEncoding.length()+" != "+getVectorSize());
                         }
@@ -211,8 +215,8 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                         assigneeFeatures.putRow(i,Transforms.unitVec(cpcVector));
                         assigneeVae.putRow(i,Transforms.unitVec(vaeVec));
                     }
-                    INDArray encoding = encode(Nd4j.vstack(Transforms.unitVec(assigneeFeatures.mean(0)),Transforms.unitVec(assigneeVae.mean(0))));
-                    finalPredictionsMap.put(assignee, Transforms.unitVec(encoding));
+                    INDArray encoding = encode(Nd4j.hstack(Transforms.unitVec(assigneeFeatures.mean(0)),Transforms.unitVec(assigneeVae.mean(0))));
+                    finalPredictionsMap.put(assignee, Transforms.unitVec(encoding.mean(0)));
 
                 } else {
                     incomplete.getAndIncrement();
