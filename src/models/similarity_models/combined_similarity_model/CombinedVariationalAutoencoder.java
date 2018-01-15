@@ -75,8 +75,8 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        final int numSamples = 8;
-        final int sampleLength = 8;
+        final int numSamples = 4;
+        final int sampleLength = 4;
         final int assigneeSamples = 32;
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         Collection<String> filings = Collections.synchronizedSet(new HashSet<>());
@@ -112,6 +112,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                 List<INDArray> allFeatures = new ArrayList<>();
                 List<String> featureNames = new ArrayList<>();
 
+                AtomicInteger jIdx = new AtomicInteger(0);
                 range.forEach(filing-> {
                     INDArray cpcVaeVec = filingCpcVaeEncoderPredictions.get(filing);
 
@@ -127,15 +128,12 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                             featuresVec.putRow(j, Nd4j.hstack(cpc2Vec, cpcVaeVec));
                         }
 
-                        allFeatures.add(featuresVec);
+                        features.putRow(jIdx.getAndIncrement(),featuresVec.mean(0));
                         featureNames.add(filing);
                     }
                 });
 
                 if(allFeatures.size()>0) {
-                    for(int j = 0; j < allFeatures.size(); j++) {
-                        features.putRow(j,allFeatures.get(j).mean(0));
-                    }
                     INDArray featuresView = features.get(NDArrayIndex.interval(0,allFeatures.size()),NDArrayIndex.all());
                     INDArray f1 = featuresView.get(NDArrayIndex.all(),NDArrayIndex.interval(0,32));
                     f1.diviColumnVector(f1.norm2(1));
