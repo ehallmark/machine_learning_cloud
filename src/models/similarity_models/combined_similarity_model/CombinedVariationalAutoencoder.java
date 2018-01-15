@@ -147,6 +147,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                     for (int j = 0; j < allFeatures.size(); j++) {
                         String label = featureNames.get(j);
                         INDArray averageEncoding = Transforms.unitVec(encoding.get(NDArrayIndex.interval(j*numSamples, j*numSamples+numSamples), NDArrayIndex.all()).mean(0));
+                        if(averageEncoding.length()!=getVectorSize()) {
+                            throw new RuntimeException("Wrong vector size: "+averageEncoding.length()+" != "+getVectorSize());
+                        }
                         finalPredictionsMap.put(label, averageEncoding);
                         if(cnt.get()%50000==49999) {
                             System.gc();
