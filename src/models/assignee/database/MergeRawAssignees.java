@@ -21,7 +21,7 @@ public class MergeRawAssignees {
     private static final String baseQuery = "select name, top[1] from (select name, array_agg(?) as top from assignees_raw where ? is not null group by name,? order by name,count(*) desc) as temp;";
 
     private static Map<String,Map<String,Object>> loadRawAssigneeData(Connection conn) {
-        String[] fields = new String[]{"normalized_name","city","state","country","role","entity_status","human"};
+        String[] fields = new String[]{"city","state","country","role","entity_status","human"};
         return Stream.of(fields).parallel().map(field->{
             try {
                 Map<String, Map<String, Object>> map = Collections.synchronizedMap(new HashMap<>());

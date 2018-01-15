@@ -9,7 +9,6 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import elasticsearch.DatasetIndex;
-import info.debatty.java.stringsimilarity.JaroWinkler;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
@@ -19,7 +18,6 @@ import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
 import models.kmeans.AssetKMeans;
 import models.similarity_models.DefaultSimilarityModel;
 import models.similarity_models.Vectorizer;
-import models.similarity_models.paragraph_vectors.WordFrequencyPair;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
@@ -34,7 +32,6 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Session;
-import tools.MinHeap;
 import user_interface.acclaim_compatibility.Parser;
 import user_interface.server.tools.AjaxChartMessage;
 import user_interface.server.tools.FileCacheMap;
@@ -683,32 +680,15 @@ public class SimilarPatentServer {
                     Map<String,Object> assigneeMap = ((Map<String,Object>)item.getDataMap().get(Constants.LATEST_ASSIGNEE));
                     Object assignee = assigneeMap.get(Constants.ASSIGNEE);
                     if(assignee!=null) {
-                        double simThreshold = 0.9;
                         Map<String, Object> preComputed = MergeRawAssignees.get().get(assignee.toString());
-                        if(preComputed==null) {
-                            Iterator<String> iterator = Database.getAssigneePrefixTrie().getValuesForClosestKeys(assignee.toString()).iterator();
-                            MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(1);
-                            while(iterator.hasNext()) {
-                                String guess = iterator.next();
-                                if(MergeRawAssignees.get().containsKey(guess)) {
-                                    heap.add(new WordFrequencyPair<>(guess, new JaroWinkler().similarity(guess, assignee.toString())));
-                                }
-                            }
-                            if(!heap.isEmpty()) {
-                                WordFrequencyPair<String,Double> bestGuess = heap.remove();
-                                if(bestGuess.getSecond()>=simThreshold) {
-                                    preComputed = MergeRawAssignees.get().get(bestGuess.getFirst());
-                                }
-                            }
-                        }
                         if(preComputed!=null) {
                             preComputed.forEach((k, v) -> {
-                                if (!assigneeMap.containsKey(k)) {
-                                    assigneeMap.put(k, v);
-                                }
+                                assigneeMap.put(k, v);
                             });
                         }
                     }
+                } else {
+                    attributesToRemove.add(Constants.LATEST_ASSIGNEE);
                 }
                 vectorizers.forEach((name,vectorizer)->{
                     INDArray vec = vectorizer.vectorFor(filing);
