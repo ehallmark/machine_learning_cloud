@@ -75,9 +75,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        final int numSamples = 4;
-        final int sampleLength = 4;
-        final int assigneeSamples = 64;
+        final int numSamples = 8;
+        final int sampleLength = 8;
+        final int assigneeSamples = 32;
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         Collection<String> filings = Collections.synchronizedSet(new HashSet<>());
         for(String asset : assets) {
@@ -134,9 +134,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
                 if(allFeatures.size()>0) {
                     for(int j = 0; j < allFeatures.size(); j++) {
-                        features.get(NDArrayIndex.interval(j*numSamples,j*numSamples+numSamples),NDArrayIndex.all()).assign(allFeatures.get(j));
+                        features.putRow(j,allFeatures.get(j).mean(0));
                     }
-                    INDArray featuresView = features.get(NDArrayIndex.interval(0,allFeatures.size()*numSamples),NDArrayIndex.all());
+                    INDArray featuresView = features.get(NDArrayIndex.interval(0,allFeatures.size()),NDArrayIndex.all());
                     INDArray f1 = featuresView.get(NDArrayIndex.all(),NDArrayIndex.interval(0,32));
                     f1.diviColumnVector(f1.norm2(1));
                     INDArray f2 = featuresView.get(NDArrayIndex.all(),NDArrayIndex.interval(32,64));
@@ -146,7 +146,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
                     for (int j = 0; j < allFeatures.size(); j++) {
                         String label = featureNames.get(j);
-                        INDArray averageEncoding = Transforms.unitVec(encoding.get(NDArrayIndex.interval(j*numSamples, j*numSamples+numSamples), NDArrayIndex.all()).mean(0));
+                        INDArray averageEncoding = Transforms.unitVec(encoding.getRow(j));
                         if(averageEncoding.length()!=getVectorSize()) {
                             throw new RuntimeException("Wrong vector size: "+averageEncoding.length()+" != "+getVectorSize());
                         }
@@ -202,19 +202,20 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         }));
         cnt.set(0);
         incomplete.set(0);
-        INDArray assigneeFeatures = Nd4j.create(assigneeSamples,64);
+        INDArray assigneeFeatures = Nd4j.create(assigneeSamples,32);
+        INDArray assigneeVae = Nd4j.create(assigneeSamples,32);
         assignees.forEach(assignee->{
             INDArray vaeVec = cpcVaeEncoderPredictions.get(assignee);
             if(vaeVec!=null) {
                 List<String> cpcs = assigneeToCpcMap.getOrDefault(assignee, Collections.emptyList()).stream().filter(cpc->cpc2VecMap.containsKey(cpc)).collect(Collectors.toList());
                 if(cpcs.size()>0) {
                     for(int i = 0; i < assigneeSamples; i++) {
-                        List<INDArray> cpcVectors = IntStream.range(0, sampleLength).mapToObj(j -> cpc2VecMap.get(cpcs.get(rand.nextInt(cpcs.size())))).filter(vec -> vec != null).collect(Collectors.toList());
-                        INDArray feature = Nd4j.hstack(Transforms.unitVec(Nd4j.vstack(cpcVectors).mean(0)), Transforms.unitVec(vaeVec)).reshape(new int[]{1, 64});
-                        assigneeFeatures.putRow(i,feature);
+                        INDArray cpcVector = cpc2VecMap.get(cpcs.get(rand.nextInt(cpcs.size())));
+                        assigneeFeatures.putRow(i,Transforms.unitVec(cpcVector));
+                        assigneeVae.putRow(i,Transforms.unitVec(vaeVec));
                     }
-                    INDArray encoding = encode(assigneeFeatures);
-                    finalPredictionsMap.put(assignee, Transforms.unitVec(encoding.mean(0)));
+                    INDArray encoding = encode(Nd4j.vstack(Transforms.unitVec(assigneeFeatures.mean(0)),Transforms.unitVec(assigneeVae.mean(0))));
+                    finalPredictionsMap.put(assignee, Transforms.unitVec(encoding));
 
                 } else {
                     incomplete.getAndIncrement();
