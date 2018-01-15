@@ -90,11 +90,11 @@ public class Seed {
                 ps.setString(j+7, a.entityStatus);
                 ps.setBoolean(j+8, a.human);
             }
-            System.out.println(ps);
             try {
                 ps.executeUpdate();
             } catch(Exception e) {
                 e.printStackTrace();
+                System.out.println("Failed on query: "+ps.toString());
                 System.exit(1);
             } finally {
                 ps.close();
