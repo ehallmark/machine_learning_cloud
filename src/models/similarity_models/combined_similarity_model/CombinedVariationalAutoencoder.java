@@ -152,7 +152,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                             throw new RuntimeException("Wrong vector size: "+averageEncoding.length()+" != "+getVectorSize());
                         }
                         finalPredictionsMap.put(label, averageEncoding);
-                        if(cnt.get()%50000==49999) {
+                        if(cnt.get()%100000==99999) {
                             System.gc();
                         }
                         if(cnt.getAndIncrement()%10000==9999) {
