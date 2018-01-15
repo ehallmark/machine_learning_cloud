@@ -109,7 +109,6 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
             int end = Math.min(start+batchSize,filingsWithVecs.size());
             if(start<end) {
                 List<String> range = filingsWithVecs.subList(start,end);
-                List<INDArray> allFeatures = new ArrayList<>();
                 List<String> featureNames = new ArrayList<>();
 
                 AtomicInteger jIdx = new AtomicInteger(0);
@@ -133,8 +132,8 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                     }
                 });
 
-                if(allFeatures.size()>0) {
-                    INDArray featuresView = features.get(NDArrayIndex.interval(0,allFeatures.size()),NDArrayIndex.all());
+                if(jIdx.get()>0) {
+                    INDArray featuresView = features.get(NDArrayIndex.interval(0,jIdx.get()),NDArrayIndex.all());
                     INDArray f1 = featuresView.get(NDArrayIndex.all(),NDArrayIndex.interval(0,32));
                     f1.diviColumnVector(f1.norm2(1));
                     INDArray f2 = featuresView.get(NDArrayIndex.all(),NDArrayIndex.interval(32,64));
@@ -142,7 +141,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
                     INDArray encoding = encode(featuresView);
 
-                    for (int j = 0; j < allFeatures.size(); j++) {
+                    for (int j = 0; j < jIdx.get(); j++) {
                         String label = featureNames.get(j);
                         INDArray averageEncoding = Transforms.unitVec(encoding.getRow(j));
                         if(averageEncoding.length()!=getVectorSize()) {
