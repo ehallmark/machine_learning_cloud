@@ -39,7 +39,7 @@ public class EntityTypeAttribute extends ComputableFilingAttribute<String> {
     }
 
     @Override
-    protected String handleFiling(String filing) {
+    public String handleFiling(String filing) {
 
         if(typeToFilingMap==null) {
             typeToFilingMap = getTypeToFilingMap();

@@ -6,6 +6,7 @@ import models.assignee.normalization.name_correction.NormalizeAssignees;
 import org.bson.Document;
 import seeding.Constants;
 import seeding.Database;
+import user_interface.ui_models.attributes.computable_attributes.EntityTypeAttribute;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -62,13 +63,13 @@ public class Seed {
         return s.toString();
     }
 
-    private static void addToQueue(Connection conn, String name, String normalizedName, String city, String state, String country, String role, boolean human) throws SQLException {
+    private static void addToQueue(Connection conn, String name, String normalizedName, String city, String state, String country, String role, String entityStatus, boolean human) throws SQLException {
         synchronized (updateQueue) {
             if(updateQueue.size()>=QUEUE_SIZE) {
                 flush(conn);
             }
         }
-        Assignee assignee = new Assignee(name,normalizedName,city,state,country,role,human);
+        Assignee assignee = new Assignee(name,normalizedName,city,state,country,role,entityStatus,human);
         synchronized (updateQueue) {
             updateQueue.add(assignee);
         }
@@ -104,11 +105,17 @@ public class Seed {
     public static void main(String[] args) throws Exception {
         Connection conn = Database.getOrSetupAssigneeConn();
         conn.setAutoCommit(false);
+        EntityTypeAttribute entityTypeAttribute = new EntityTypeAttribute();
 
         NormalizeAssignees normalizer = new NormalizeAssignees();
         Map<String,AtomicInteger> assigneeCounts = Collections.synchronizedMap(new HashMap<>());
 
         Consumer<Document> consumer = doc -> {
+            String filing = doc.getString(Constants.FILING_NAME);
+            if(filing==null)return;
+
+            String entityType = entityTypeAttribute.handleFiling(filing);
+
             List<Map<String,Object>> assignees = (List<Map<String,Object>>) doc.get(Constants.ASSIGNEES);
             if(assignees!=null) {
                 assignees.forEach(assignee->{
@@ -139,7 +146,7 @@ public class Seed {
                             String roleStr = toStringSafe(role);
 
                             try {
-                                addToQueue(conn, nameStr, normalizedName, cityStr, stateStr, countryStr, roleStr, isHuman);
+                                addToQueue(conn, nameStr, normalizedName, cityStr, stateStr, countryStr, roleStr, entityType, isHuman);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

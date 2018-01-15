@@ -1,11 +1,9 @@
 package seeding.ai_db_updater;
 
-import org.apache.commons.io.FileUtils;
 import seeding.ai_db_updater.iterators.FileIterator;
 import seeding.ai_db_updater.pair_bulk_data.PAIRHandler;
 import seeding.data_downloader.PAIRDataDownloader;
 
-import java.io.File;
 import java.time.LocalDate;
 
 /**
@@ -18,7 +16,7 @@ public class UpdatePairBulkData {
         boolean onlyUpdateTermAdjustments = true;
 
         PAIRDataDownloader downloader = new PAIRDataDownloader();
-        downloader.pullMostRecentData();
+        //downloader.pullMostRecentData();
         FileIterator pairIterator = new FileIterator(downloader.getDestinationFile(),(dir, name) -> {
             try {
                 return Integer.valueOf(name.substring(0,4)) >= LocalDate.now().minusYears(30).getYear();
@@ -29,6 +27,8 @@ public class UpdatePairBulkData {
         PAIRHandler handler = new PAIRHandler(updatePostgres,updatePostgres,updateElasticSearch,onlyUpdateTermAdjustments);
         handler.init();
         pairIterator.applyHandlers(handler);
+
+        handler.save();
 
         downloader.cleanUp();
 

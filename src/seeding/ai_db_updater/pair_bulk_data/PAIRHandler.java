@@ -164,11 +164,16 @@ public class PAIRHandler extends NestedHandler {
 
     @Override
     public void save() {
+        if(termAdjustmentAttribute!=null) {
+            termAdjustmentAttribute.saveMap(termAdjustmentMap);
+        }
+        commit();
+    }
+
+    public void commit() {
         try {
-            if(termAdjustmentAttribute!=null) {
-                termAdjustmentAttribute.saveMap(termAdjustmentMap);
-            }
-            if(updatePostgres) Database.commit();
+            if (updatePostgres) Database.commit();
+
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -181,7 +186,7 @@ public class PAIRHandler extends NestedHandler {
         if(localName.equals("PatentData")) {
             if(cnt.getAndIncrement() % batchSize == batchSize-1) {
                 System.out.println("Commit of pair data: "+cnt.get());
-                save();
+                commit();
             }
         }
     }

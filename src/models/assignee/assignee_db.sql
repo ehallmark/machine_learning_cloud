@@ -18,7 +18,7 @@ create table if not exists assignees (
     city text,
     state text,
     country text,
-    entit_status text,
+    entity_status text,
     role text,
     human boolean
 );
