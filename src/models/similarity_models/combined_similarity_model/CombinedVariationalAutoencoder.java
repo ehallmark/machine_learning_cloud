@@ -101,10 +101,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger nullVae = new AtomicInteger(0);
         final List<String> filingsWithVecs = filings.parallelStream().filter(filing->filingCpcVaeEncoderPredictions.containsKey(filing)).collect(Collectors.toList());
-        int batchSize = 1000;
-        final INDArray sampleVec = Nd4j.create(sampleLength,32);
-        INDArray features = Nd4j.create(sampleLength*batchSize,64);
-        IntStream.range(0,1+(filingsWithVecs.size()/batchSize)).forEach(i->{
+        int batchSize = 10000;
+        IntStream.range(0,1+(filingsWithVecs.size()/batchSize)).parallel().forEach(i->{
+            INDArray features = Nd4j.create(sampleLength*batchSize,64);
             int start = i*batchSize;
             int end = Math.min(start+batchSize,filingsWithVecs.size());
             if(start<end) {
@@ -121,6 +120,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                         incomplete.getAndIncrement();
                     } else {
                         final INDArray featuresVec = Nd4j.create(numSamples, 64);
+                        final INDArray sampleVec = Nd4j.create(sampleLength,32);
                         for (int j = 0; j < numSamples; j++) {
                             IntStream.range(0, sampleLength).forEach(h -> sampleVec.putRow(h,cpc2VecMap.get(cpcNames.get(rand.nextInt(cpcNames.size())))));
                             INDArray cpc2Vec = sampleVec.mean(0);
