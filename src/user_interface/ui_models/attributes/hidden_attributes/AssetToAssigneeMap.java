@@ -95,16 +95,12 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
         AssigneeToAssetsMap assigneeToAssetsMap = new AssigneeToAssetsMap();
         assigneeToAssetsMap.initMaps();
         if(patentDataMap!=null && patentDataMap.size()>0) {
-            synchronized (AssetToAssigneeMap.class) {
-                safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER, getName(), getType()));
-                assigneeToAssetHelper(patentDataMap,assigneeToAssetsMap.getPatentDataMap());
-            }
+            safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER, getName(), getType()));
+            assigneeToAssetHelper(patentDataMap,assigneeToAssetsMap.getPatentDataMap());
         }
         if(applicationDataMap!=null && applicationDataMap.size()>0) {
-            synchronized (AssetToAssigneeMap.class) {
-                safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
-                assigneeToAssetHelper(applicationDataMap,assigneeToAssetsMap.getApplicationDataMap());
-            }
+            safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
+            assigneeToAssetHelper(applicationDataMap,assigneeToAssetsMap.getApplicationDataMap());
         }
         assigneeToAssetsMap.save();
         // save normalizations

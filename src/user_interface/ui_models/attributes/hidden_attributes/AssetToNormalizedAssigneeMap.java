@@ -42,16 +42,12 @@ public class AssetToNormalizedAssigneeMap extends AssetToAssigneeMap {
         NormalizedAssigneeToAssetsMap assigneeToAssetsMap = new NormalizedAssigneeToAssetsMap();
         assigneeToAssetsMap.initMaps();
         if(patentDataMap!=null && patentDataMap.size()>0) {
-            synchronized (patentDataMap) {
-                safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER, getName(), getType()));
-                assigneeToAssetHelper(patentDataMap,assigneeToAssetsMap.getPatentDataMap());
-            }
+            safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER, getName(), getType()));
+            assigneeToAssetHelper(patentDataMap,assigneeToAssetsMap.getPatentDataMap());
         }
         if(applicationDataMap!=null && applicationDataMap.size()>0) {
-            synchronized (applicationDataMap) {
-                safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
-                assigneeToAssetHelper(applicationDataMap,assigneeToAssetsMap.getApplicationDataMap());
-            }
+            safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
+            assigneeToAssetHelper(applicationDataMap,assigneeToAssetsMap.getApplicationDataMap());
         }
         assigneeToAssetsMap.save();
     }
