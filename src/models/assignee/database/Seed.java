@@ -33,7 +33,7 @@ import java.util.function.Consumer;
  */
 public class Seed {
     private static final int QUEUE_SIZE = 100;
-    private static final int NUM_FIELDS = 7;
+    public static final int NUM_FIELDS = 8;
     private static final int COMMIT_N_BATCHES = 100;
     private static final int ASSIGNEE_SAMPLE_LIMIT = 250;
 
@@ -54,7 +54,7 @@ public class Seed {
         }
         qStr = "("+String.join(",",qs)+")";
 
-        String pref = "insert into assignees_raw (name,normalized_name,city,state,country,role,human) values ";
+        String pref = "insert into assignees_raw (name,normalized_name,city,state,country,role,entity_status,human) values ";
         String suff = ";";
         StringJoiner s = new StringJoiner(", ",pref,suff);
         for(int i = 0; i < size; i++) {
@@ -87,7 +87,8 @@ public class Seed {
                 ps.setString(j+4, a.state);
                 ps.setString(j+5, a.country);
                 ps.setString(j+6, a.role);
-                ps.setBoolean(j+7, a.human);
+                ps.setString(j+7, a.entityStatus);
+                ps.setBoolean(j+8, a.human);
             }
             ps.executeUpdate();
             updateQueue.clear();
@@ -157,7 +158,8 @@ public class Seed {
         };
 
         String[] fields = new String[]{
-                Constants.ASSIGNEES
+                Constants.ASSIGNEES,
+                Constants.FILING_NAME
         };
 
 

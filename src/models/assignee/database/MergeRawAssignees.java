@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 public class MergeRawAssignees {
     private static final int QUEUE_SIZE = 100;
-    private static final int NUM_FIELDS = 7;
+    private static final int NUM_FIELDS = Seed.NUM_FIELDS;
     private static final int COMMIT_N_BATCHES = 100;
     private static final File file = new File(Constants.DATA_FOLDER+"all_assignee_data_map.jobj");
     private static Map<String,Map<String,Object>> MODEL;
@@ -26,7 +26,7 @@ public class MergeRawAssignees {
     private static final String baseQuery = "select name, top[1] from (select name, array_agg(?) as top from assignees_raw where ? is not null group by name,? order by name,count(*) desc) as temp;";
 
     private static Map<String,Map<String,Object>> loadRawAssigneeData(Connection conn) {
-        String[] fields = new String[]{"normalized_name","city","state","country","role","human"};
+        String[] fields = new String[]{"normalized_name","city","state","country","role","entity_status","human"};
         return Stream.of(fields).parallel().map(field->{
             try {
                 Map<String, Map<String, Object>> map = Collections.synchronizedMap(new HashMap<>());
@@ -79,7 +79,7 @@ public class MergeRawAssignees {
         qs[NUM_FIELDS-1]+="::boolean";
         qStr = "("+String.join(",",qs)+")";
 
-        String pref = "insert into assignees (name,normalized_name,city,state,country,role,human) values ";
+        String pref = "insert into assignees (name,normalized_name,city,state,country,role,entity_status,human) values ";
         String suff = "on conflict (name) do nothing;";
         StringJoiner s = new StringJoiner(", ",pref,suff);
         for(int i = 0; i < size; i++) {
