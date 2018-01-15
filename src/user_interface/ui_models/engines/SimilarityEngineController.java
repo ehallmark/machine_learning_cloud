@@ -89,14 +89,14 @@ public class SimilarityEngineController {
         System.out.println("Beginning extract relevant info...");
         // init
         int limit = extractInt(req, LIMIT_FIELD, 10);
-        if(limit <= 0) limit = 1; // VERY IMPORTANT!!!!! limit < 0 means it will scroll through EVERYTHING
+        if (limit <= 0) limit = 1; // VERY IMPORTANT!!!!! limit < 0 means it will scroll through EVERYTHING
         int maxResultLimit = 100000;
-        if(limit > maxResultLimit) {
-            throw new RuntimeException("Error: Maximum result limit is "+maxResultLimit+ " which is less than "+limit);
+        if (limit > maxResultLimit) {
+            throw new RuntimeException("Error: Maximum result limit is " + maxResultLimit + " which is less than " + limit);
         }
 
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SCORE);
-        System.out.println("Comparing by: "+comparator);
+        System.out.println("Comparing by: " + comparator);
         setPrefilters(req);
 
         Set<String> attributesRequired = new HashSet<>();
@@ -104,13 +104,17 @@ public class SimilarityEngineController {
 
         List<String> attributesFromUser = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
         attributesRequired.addAll(attributesFromUser);
-        attributesFromUser.forEach(attr->{
-            attributesRequired.addAll(extractArray(req, attr+"[]"));
+        attributesFromUser.forEach(attr -> {
+            attributesRequired.addAll(extractArray(req, attr + "[]"));
         });
 
         // add chart prerequisites
-        if(chartPrerequisites!=null) {
+        if (chartPrerequisites != null) {
             attributesRequired.addAll(chartPrerequisites);
+        }
+
+        if (comparator.equals(Constants.SCORE)) {
+            attributesRequired.add(Constants.SIMILARITY);
         }
 
         System.out.println("Required attributes: "+String.join("; ",attributesRequired));
