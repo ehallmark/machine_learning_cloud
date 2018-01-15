@@ -28,13 +28,13 @@ import java.util.function.Consumer;
     );
  */
 public class Seed {
-    private static final int QUEUE_SIZE = 100;
+    private static final int QUEUE_SIZE = 1000;
     public static final int NUM_FIELDS = 7;
-    private static final int COMMIT_N_BATCHES = 100;
-    private static final int ASSIGNEE_SAMPLE_LIMIT = 250;
+    private static final int COMMIT_N_BATCHES = 1000;
+    private static final int ASSIGNEE_SAMPLE_LIMIT = 500;
 
     private static final AtomicLong cnt = new AtomicLong(0);
-    private static final List<Assignee> updateQueue = Collections.synchronizedList(new ArrayList<>(QUEUE_SIZE));
+    private static List<Assignee> updateQueue = Collections.synchronizedList(new ArrayList<>(QUEUE_SIZE));
 
     private static String prepareInsertStatement(int size) {
         String qStr;
@@ -53,29 +53,19 @@ public class Seed {
         return s.toString();
     }
 
-    private static void addToQueue(Connection conn, String name, String city, String state, String country, String role, String entityStatus, boolean human) throws SQLException {
-        if(updateQueue.size()>=QUEUE_SIZE) {
-            boolean shouldFlush = false;
-            synchronized (updateQueue) {
-                if(updateQueue.size()>=QUEUE_SIZE) {
-                    shouldFlush = true;
-                }
-            }
-            if(shouldFlush) {
-                flush(conn);
-            }
-        }
+    private static void addToQueue(String name, String city, String state, String country, String role, String entityStatus, boolean human) throws SQLException {
         Assignee assignee = new Assignee(name,city,state,country,role,entityStatus,human);
-        synchronized (updateQueue) {
+        synchronized (Seed.class) {
             updateQueue.add(assignee);
         }
     }
 
     private static void flush(Connection conn) throws SQLException {
         List<Assignee> updateQueueCopy;
-        synchronized (updateQueue) {
+        synchronized (Seed.class) {
+            if (updateQueue.isEmpty()) return;
             updateQueueCopy = new ArrayList<>(updateQueue);
-            updateQueue.clear();
+            updateQueue = Collections.synchronizedList(new ArrayList<>(QUEUE_SIZE));
         }
 
         PreparedStatement ps = conn.prepareStatement(prepareInsertStatement(updateQueueCopy.size()));
@@ -102,7 +92,6 @@ public class Seed {
         if(cnt.getAndIncrement()%COMMIT_N_BATCHES==COMMIT_N_BATCHES-1) {
             conn.commit();
         }
-        ps.close();
     }
 
     public static String toStringSafe(Object in) {
@@ -152,7 +141,8 @@ public class Seed {
                             String roleStr = toStringSafe(role);
 
                             try {
-                                addToQueue(conn, nameStr, cityStr, stateStr, countryStr, roleStr, entityType, isHuman);
+                                addToQueue(nameStr, cityStr, stateStr, countryStr, roleStr, entityType, isHuman);
+                                if(updateQueue.size()>=QUEUE_SIZE) flush(conn);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
