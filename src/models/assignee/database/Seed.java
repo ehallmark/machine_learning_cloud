@@ -90,11 +90,21 @@ public class Seed {
                 ps.setString(j+7, a.entityStatus);
                 ps.setBoolean(j+8, a.human);
             }
-            ps.executeUpdate();
+            System.out.println(ps);
+            try {
+                ps.executeUpdate();
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.exit(1);
+            } finally {
+                ps.close();
+            }
             updateQueue.clear();
             if(cnt.getAndIncrement()%COMMIT_N_BATCHES==COMMIT_N_BATCHES-1) {
                 conn.commit();
             }
+            ps.close();
+
         }
     }
 
