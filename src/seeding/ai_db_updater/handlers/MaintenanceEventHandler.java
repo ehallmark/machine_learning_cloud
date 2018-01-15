@@ -1,19 +1,19 @@
 package seeding.ai_db_updater.handlers;
 
-import elasticsearch.DataIngester;
 import seeding.Constants;
-import user_interface.ui_models.attributes.hidden_attributes.*;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Stream;
+import user_interface.ui_models.attributes.computable_attributes.EntityTypeAttribute;
+import user_interface.ui_models.attributes.computable_attributes.LapsedAttribute;
+import user_interface.ui_models.attributes.computable_attributes.ReinstatedAttribute;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 /**
  * Created by ehallmark on 7/12/17.
  */
 public class MaintenanceEventHandler implements LineHandler {
-    protected AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
+    protected static AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
+    protected static LapsedAttribute lapsedAttribute = new LapsedAttribute();
+    protected static ReinstatedAttribute reinstatedAttribute = new ReinstatedAttribute();
+    protected static EntityTypeAttribute entityTypeAttribute = new EntityTypeAttribute();
     public MaintenanceEventHandler() {
     }
 
@@ -26,30 +26,29 @@ public class MaintenanceEventHandler implements LineHandler {
                 String filing = assetToFilingMap.getPatentDataMap().get(patNum);
 
                 if(filing!=null) {
-                    Map<String, Object> data = new HashMap<>();
                     if (maintenanceCode.equals("EXP.")) {
-                        data.put(Constants.LAPSED, true);
-                        data.put(Constants.REINSTATED, false);
+                        lapsedAttribute.getFilings().add(filing);
+                        reinstatedAttribute.getFilings().remove(filing);
 
                     } else if (maintenanceCode.equals("EXPX")) {
                         // reinstated
-                        data.put(Constants.REINSTATED, true);
-                        data.put(Constants.LAPSED, false);
-
+                        lapsedAttribute.getFilings().remove(filing);
+                        reinstatedAttribute.getFilings().add(filing);
 
                     } else if (maintenanceCode.equals("REM.")) {
                         // reminder
                     } else if (maintenanceCode.startsWith("M2") || maintenanceCode.startsWith("SM") || maintenanceCode.equals("LTOS") || maintenanceCode.equals("MTOS")) {
-                        data.put(Constants.ASSIGNEE_ENTITY_TYPE, Constants.SMALL.toString());
+                        entityTypeAttribute.getTypeToFilingMap().get(Constants.SMALL).add(filing);
+                        entityTypeAttribute.getTypeToFilingMap().remove(Constants.MICRO).add(filing);
+                        entityTypeAttribute.getTypeToFilingMap().remove(Constants.LARGE).add(filing);
                     } else if (maintenanceCode.startsWith("M1") || maintenanceCode.startsWith("LSM")) {
-                        data.put(Constants.ASSIGNEE_ENTITY_TYPE, Constants.LARGE.toString());
+                        entityTypeAttribute.getTypeToFilingMap().get(Constants.LARGE).add(filing);
+                        entityTypeAttribute.getTypeToFilingMap().remove(Constants.SMALL).add(filing);
+                        entityTypeAttribute.getTypeToFilingMap().remove(Constants.MICRO).add(filing);
                     } else if (maintenanceCode.startsWith("M3") || maintenanceCode.equals("STOM")) {
-                        data.put(Constants.ASSIGNEE_ENTITY_TYPE, Constants.MICRO.toString());
-                    }
-
-                    if (data.size() > 0) {
-                        DataIngester.ingestBulkFromFiling(filing, data, false);
-
+                        entityTypeAttribute.getTypeToFilingMap().get(Constants.MICRO).add(filing);
+                        entityTypeAttribute.getTypeToFilingMap().remove(Constants.SMALL).add(filing);
+                        entityTypeAttribute.getTypeToFilingMap().remove(Constants.LARGE).add(filing);
                     }
                 }
 
@@ -59,7 +58,9 @@ public class MaintenanceEventHandler implements LineHandler {
 
     @Override
     public void save() {
-
+        lapsedAttribute.save();
+        reinstatedAttribute.save();
+        entityTypeAttribute.save();
     }
 
 }

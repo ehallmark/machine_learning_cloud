@@ -6,6 +6,7 @@ create table if not exists assignees_raw (
     city text,
     state text,
     country text not null default('US'),
+    entity_status text,
     role text,
     human boolean
 );
@@ -17,6 +18,7 @@ create table if not exists assignees (
     city text,
     state text,
     country text,
+    entit_status text,
     role text,
     human boolean
 );

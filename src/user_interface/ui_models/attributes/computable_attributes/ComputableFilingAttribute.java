@@ -34,6 +34,10 @@ public abstract class ComputableFilingAttribute<T> extends ComputableAttribute<T
         else filing = assetToFilingMap.getPatentDataMap().get(item);
 
         if(filing==null) return null;
+        return handleFiling(filing);
+    }
+
+    protected T handleFiling(String filing) {
 
         if(map==null) {
             synchronized (ComputableFilingAttribute.class) {
