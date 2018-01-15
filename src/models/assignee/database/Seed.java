@@ -55,7 +55,7 @@ public class Seed {
 
     private static void addToQueue(Connection conn, String name, String city, String state, String country, String role, String entityStatus, boolean human) throws SQLException {
         if(updateQueue.size()>=QUEUE_SIZE) {
-            boolean shouldFlush = true;
+            boolean shouldFlush = false;
             synchronized (updateQueue) {
                 if(updateQueue.size()>=QUEUE_SIZE) {
                     shouldFlush = true;
