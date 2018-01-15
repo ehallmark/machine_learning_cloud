@@ -17,7 +17,7 @@ public class Assignee {
         this.normalizedName=normalizedName;
         this.city=city;
         this.state=state;
-        this.country=country;
+        this.country=country==null?"US":country;
         this.entityStatus=entityStatus;
         this.role=role;
         this.human=human;
