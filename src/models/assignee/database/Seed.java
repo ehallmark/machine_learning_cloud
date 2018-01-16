@@ -28,9 +28,9 @@ import java.util.function.Consumer;
     );
  */
 public class Seed {
-    private static final int QUEUE_SIZE = 100;
+    private static final int QUEUE_SIZE = 1000;
     public static final int NUM_FIELDS = 7;
-    private static final int COMMIT_N_BATCHES = 100;
+    private static final int COMMIT_N_BATCHES = 1000;
     private static final int ASSIGNEE_SAMPLE_LIMIT = 500;
 
     private static final AtomicLong cnt = new AtomicLong(0);
