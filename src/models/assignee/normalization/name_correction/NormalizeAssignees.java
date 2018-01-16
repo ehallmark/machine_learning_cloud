@@ -117,9 +117,14 @@ public class NormalizeAssignees {
                 }
             }
 
-            // check for manual changes
-            cleanIsh = manualMerge(cleanIsh);
+
         }
+        while(cleanIsh.endsWith(".")||cleanIsh.endsWith(",")) {
+            if(cleanIsh.length()==1) return null;
+            cleanIsh = cleanIsh.substring(0,cleanIsh.length()-1).trim();
+        }
+        // check for manual changes
+        cleanIsh = manualMerge(cleanIsh);
         return cleanIsh;
     }
 
@@ -371,6 +376,7 @@ public class NormalizeAssignees {
             }
             JaroWinkler distance = new JaroWinkler();
             String[] words = name.split(" ");
+            int size = cleansedToSizeMap.getOrDefault(name,0);
             Pair<String,Double> best = copyOfCleansed.stream().map(other->{
                 if(!other.contains(" ")&&!name.contains(" ")&&Math.abs(other.length()-name.length())>1) return null;
                 if(name.equals(other)) return null;
@@ -388,7 +394,7 @@ public class NormalizeAssignees {
                 String combinedName = String.join("___",Stream.of(name,other).sorted().collect(Collectors.toList()));
                 Double simCache = similarityCache.get(combinedName);
                 if(simCache==null) {
-                    score += distance.similarity(name, other);
+                    score += (1d+score) * distance.similarity(name, other) * Math.log(Math.E+Math.abs(cleansedToSizeMap.getOrDefault(other,0)-size));
                     similarityCache.put(combinedName,score);
                 } else {
                     score = simCache;
