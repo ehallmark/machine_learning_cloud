@@ -394,19 +394,21 @@ public class NormalizeAssignees {
                 String combinedName = String.join("___",Stream.of(name,other).sorted().collect(Collectors.toList()));
                 Double simCache = similarityCache.get(combinedName);
                 if(simCache==null) {
-                    score += (1d+score) * distance.similarity(name, other) * Math.log(Math.E+Math.abs(cleansedToSizeMap.getOrDefault(other,0)-size));
+                    score += distance.similarity(name, other);
                     similarityCache.put(combinedName,score);
                 } else {
                     score = simCache;
                 }
 
                 if(score>=matchThreshold) {
+                    // adjust score for portfolio size
+                    score *= Math.log(Math.E+Math.abs(cleansedToSizeMap.getOrDefault(other,0)-size));
                     return new Pair<>(other,score);
                 }
                 return null;
             }).filter(p->p!=null).max(Comparator.comparing(p->p._2)).orElse(null);
             if(best!=null) {
-                int sizeThis = cleansedToSizeMap.getOrDefault(name,0);
+                int sizeThis = size;
                 int sizeThat = cleansedToSizeMap.getOrDefault(best._1,0);
                 if(sizeThat > sizeThis) {
                     if(test) {
