@@ -70,6 +70,12 @@ public class NormalizeAssignees {
             " SA",
             " KG",
             " &",
+            " SAS",
+            " S.A.S",
+            " B.V",
+            " E.V",
+            " CO.,LTD.",
+            " CO.,LTD",
             " CO"," CORP"," CORPS"," CORPORATION"," LLP", " CO.", " I", " II", " III", " IV", " V", " AG", " AB", " OY"," INCORPORATED"," LTD", " LIMITED", " INC", " CO LTD", " LLC"
     );
 
