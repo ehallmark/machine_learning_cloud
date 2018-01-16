@@ -72,6 +72,9 @@ public class NormalizeAssignees {
             " &",
             " SAS",
             " AS",
+            " NV",
+            " N.V",
+            " EUROPE",
             " S.A.S",
             " B.V",
             " E.V",
@@ -371,7 +374,7 @@ public class NormalizeAssignees {
     }
 
     private static Map<String,String> initialCleanse(Collection<String> assignees) {
-        return assignees.parallelStream().collect(Collectors.toMap(a->a,a->manualCleanse(a)));
+        return assignees.parallelStream().map(a->new Pair<>(a,manualCleanse(a))).filter(p->p._2!=null).collect(Collectors.toMap(p->p._1,p->p._2));
     }
 
     private static Map<String,Integer> createPortfolioSizeMap(Collection<String> cleansed, Map<String,String> rawToCleansed, Map<String,Integer> portfolioSizeMap) {
