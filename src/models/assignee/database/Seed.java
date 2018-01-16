@@ -142,7 +142,9 @@ public class Seed {
 
                             try {
                                 addToQueue(nameStr, cityStr, stateStr, countryStr, roleStr, entityType, isHuman);
-                                if(updateQueue.size()>=QUEUE_SIZE) flush(conn);
+                                synchronized (Seed.class) {
+                                    if (updateQueue.size() >= QUEUE_SIZE) flush(conn);
+                                }
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
