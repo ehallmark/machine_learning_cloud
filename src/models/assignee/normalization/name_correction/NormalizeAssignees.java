@@ -363,16 +363,17 @@ public class NormalizeAssignees {
         final AtomicInteger cnt = new AtomicInteger(0);
         final AtomicInteger matched = new AtomicInteger(0);
         boolean test = true;
-        Map<String,Double> similarityCache = Collections.synchronizedMap(new ConcurrentHashMap<>());
+        Map<String,Double> similarityCache = new ConcurrentHashMap<>();
 
-        Collection<String> copyOfCleansed = Collections.synchronizedSet(new HashSet<>(cleansed));
+        Collection<String> copyOfCleansed = new ArrayList<>(cleansed);
         return cleansed.parallelStream().map(name->{
             if(cnt.getAndIncrement()%10000==9999) {
                 System.out.println("Finished "+cnt.get()+" / "+copyOfCleansed.size()+" with "+matched.get()+" matches.");
             }
             JaroWinkler distance = new JaroWinkler();
-            Collection<String> newCopyOfCleansed = new ArrayList<>(copyOfCleansed);
-            Pair<String,Double> best = newCopyOfCleansed.stream().map(other->{
+            Pair<String,Double> best = copyOfCleansed.stream().map(other->{
+                if(!other.contains(" ")&&!name.contains(" ")) return null;
+                
                 if(name.equals(other)) return null;
                 String combinedName = String.join("___",Stream.of(name,other).sorted().collect(Collectors.toList()));
                 Double simCache = similarityCache.get(combinedName);
@@ -423,7 +424,7 @@ public class NormalizeAssignees {
 
         System.out.println("Portfolio map size: "+cleansedToSize.size());
 
-        System.out.println("Starting to normalized...");
+        System.out.println("Starting to normalize...");
         // match cleansed
         Map<String,String> cleansedToNormalized = match(cleansed,cleansedToSize);
         System.out.println("Normalized map size: "+cleansedToNormalized.size());
