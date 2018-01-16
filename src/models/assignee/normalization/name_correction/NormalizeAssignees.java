@@ -15,7 +15,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -386,8 +385,6 @@ public class NormalizeAssignees {
     private static Map<String,String> match(Collection<String> cleansed, Map<String,Integer> cleansedToSizeMap) {
         final AtomicInteger cnt = new AtomicInteger(0);
         final AtomicInteger matched = new AtomicInteger(0);
-        boolean test = true;
-        Map<String,Double> similarityCache = new ConcurrentHashMap<>();
 
         Collection<String> copyOfCleansed = new ArrayList<>(cleansed);
         return cleansed.parallelStream().map(name->{
@@ -434,9 +431,7 @@ public class NormalizeAssignees {
                 int sizeThis = size;
                 int sizeThat = cleansedToSizeMap.getOrDefault(best._1,0);
                 if(sizeThat > sizeThis) {
-                    if(test) {
-                        System.out.println(" MATCH: "+name+" => "+best._1);
-                    }
+                    //    System.out.println(" MATCH: "+name+" => "+best._1);
                     matched.getAndIncrement();
                     return new Pair<>(name,best._1);
                 }
@@ -478,12 +473,8 @@ public class NormalizeAssignees {
     public static void main(String[] args) {
         run(MergeRawAssignees.get());
 
-        boolean test = true;
-
-        if(!test) {
-            System.out.println("Saving assignee map...");
-            new AssetToAssigneeMap().save();
-        }
+        System.out.println("Saving assignee map...");
+        new AssetToAssigneeMap().save();
 
     }
 
