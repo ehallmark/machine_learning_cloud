@@ -121,7 +121,7 @@ public class NormalizeAssignees {
             // clean suffixes
             boolean suffixProblem = true;
             while(suffixProblem) {
-                while(!Character.isAlphabetic(cleanIsh.charAt(cleanIsh.length()-1))) {
+                while(cleanIsh.charAt(cleanIsh.length()-1)!=')'&&!Character.isAlphabetic(cleanIsh.charAt(cleanIsh.length()-1))) {
                     if(cleanIsh.length()==1) return null;
                     cleanIsh = cleanIsh.substring(0,cleanIsh.length()-1).trim();
                 }
@@ -137,7 +137,7 @@ public class NormalizeAssignees {
 
 
         }
-        while(!Character.isAlphabetic(cleanIsh.charAt(cleanIsh.length()-1))) {
+        while(cleanIsh.charAt(cleanIsh.length()-1)!=')'&&!Character.isAlphabetic(cleanIsh.charAt(cleanIsh.length()-1))) {
             if(cleanIsh.length()==1) return null;
             cleanIsh = cleanIsh.substring(0,cleanIsh.length()-1).trim();
         }
