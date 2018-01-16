@@ -31,9 +31,9 @@ import java.util.function.Consumer;
     );
  */
 public class Seed {
-    private static final int QUEUE_SIZE = 1000;
+    private static final int QUEUE_SIZE = 100;
     public static final int NUM_FIELDS = 7;
-    private static final int COMMIT_N_BATCHES = 1000;
+    private static final int COMMIT_N_BATCHES = 100;
     private static final int ASSIGNEE_SAMPLE_LIMIT = 500;
 
     private static final AtomicLong cnt = new AtomicLong(0);
@@ -92,6 +92,7 @@ public class Seed {
         }
         if(cnt.getAndIncrement()%COMMIT_N_BATCHES==COMMIT_N_BATCHES-1) {
             conn.commit();
+            System.out.println("Commit...");
         }
     }
 
@@ -101,7 +102,6 @@ public class Seed {
 
 
     public static void main(String[] args) throws Exception {
-        List<RecursiveAction> actions = Collections.synchronizedList(new ArrayList<>());
         Connection conn = Database.getOrSetupAssigneeConn();
         conn.setAutoCommit(false);
         EntityTypeAttribute entityTypeAttribute = new EntityTypeAttribute();
@@ -168,8 +168,7 @@ public class Seed {
                                             }
                                         }
                                     };
-                                    action.fork();
-                                    actions.add(action);
+                                    action.fork().join();
                                 }
 
 
@@ -189,7 +188,6 @@ public class Seed {
 
         IngestMongoIntoElasticSearch.iterateOverCollection(consumer,new Document(), DataIngester.TYPE_NAME,fields);
 
-        actions.forEach(action->action.join());
         if(updateQueue.size()>0) flush(conn, new ArrayList<>(updateQueue));
         conn.commit();
         conn.close();
