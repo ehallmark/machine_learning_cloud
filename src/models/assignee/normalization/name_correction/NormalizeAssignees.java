@@ -411,7 +411,7 @@ public class NormalizeAssignees {
                 double score;
 
                 score = distance.similarity(strippedName, stripPrefixesAndSuffixes(other));
-                
+
                 if(score>=matchThreshold) {
                     // adjust score for portfolio size
                     score *= Math.log(Math.E+Math.abs(cleansedToSizeMap.getOrDefault(other,0)-size));
@@ -473,8 +473,7 @@ public class NormalizeAssignees {
     }
 
     public static void run(Map<String,Map<String,Object>> assigneeData) {
-        Set<String> foreignCompanies = Collections.synchronizedSet(new HashSet<>());
-        Set<String> domesticCompanies = Collections.synchronizedSet(new HashSet<>());
+        Map<String,Set<String>> companyGroupsMap = Collections.synchronizedMap(new HashMap<>());
 
         // collect companies that are not business organizations or humans
         Collection<String> allCompanies = Collections.synchronizedList(assigneeData.entrySet().parallelStream()
@@ -484,14 +483,19 @@ public class NormalizeAssignees {
                     Boolean isHuman = (Boolean)data.get(Constants.IS_HUMAN);
                     if(isHuman==null||isHuman) return false;
                     String role = (String)data.get(Constants.ASSIGNEE_ROLE);
-                    if(role==null) return false;
+                    String status = (String)data.get(Constants.ASSIGNEE_ENTITY_TYPE);
+                    if(role==null||status==null) return false;
                     if(role.endsWith("2")) {
                         // us
-                        domesticCompanies.add(assignee);
+                        String group = "domestic"+status;
+                        companyGroupsMap.putIfAbsent(group, Collections.synchronizedSet(new HashSet<>()));
+                        companyGroupsMap.get(group).add(assignee);
                         return true;
                     } else if(role.endsWith("3")) {
                         // foreign
-                        foreignCompanies.add(assignee);
+                        String group = "foreign"+status;
+                        companyGroupsMap.putIfAbsent(group, Collections.synchronizedSet(new HashSet<>()));
+                        companyGroupsMap.get(group).add(assignee);
                         return true;
                     }
                     return false;
@@ -499,8 +503,10 @@ public class NormalizeAssignees {
                 .map(e->e.getKey())
                 .collect(Collectors.toList()));
 
-        System.out.println("Num foreign companies: "+foreignCompanies.size());
-        System.out.println("Num domestic companies: "+domesticCompanies.size());
+        companyGroupsMap.forEach((group,set)->{
+            System.out.println("Num "+group+" companies: "+set.size());
+        });
+        System.out.println("Num groups: "+companyGroupsMap.size());
 
         Map<String,Integer> assigneeToPortfolioSizeMap = Collections.synchronizedMap(new HashMap<>(allCompanies
                 .parallelStream()
@@ -508,12 +514,11 @@ public class NormalizeAssignees {
         System.out.println("Num assignees with portfolio size: "+assigneeToPortfolioSizeMap.size());
 
         // regroup with raw names
-        Map<String,String> rawToNormalizedForeign = performIteration(foreignCompanies,assigneeToPortfolioSizeMap);
-        Map<String,String> rawToNormalizedDomestic = performIteration(domesticCompanies,assigneeToPortfolioSizeMap);
-
-        Map<String,String> rawToNormalized = Collections.synchronizedMap(new HashMap<>(rawToNormalizedDomestic.size()+rawToNormalizedForeign.size()));
-        rawToNormalized.putAll(rawToNormalizedForeign);
-        rawToNormalized.putAll(rawToNormalizedDomestic);
+        Map<String,String> rawToNormalized = Collections.synchronizedMap(new HashMap<>(assigneeToPortfolioSizeMap.size()));
+        companyGroupsMap.forEach((group,companies)->{
+            Map<String,String> rawToNormalizedGroup = performIteration(companies,assigneeToPortfolioSizeMap);
+            rawToNormalized.putAll(rawToNormalizedGroup);
+        });
 
         save(rawToNormalized);
     }
