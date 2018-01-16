@@ -1,12 +1,11 @@
 package models.assignee.normalization.name_correction;
 
-import models.assignee.database.MergeRawAssignees;
-import models.assignee.normalization.human_name_prediction.HumanNamePredictionPipelineManager;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharSequenceNodeFactory;
 import info.debatty.java.stringsimilarity.JaroWinkler;
 import info.debatty.java.stringsimilarity.interfaces.StringDistance;
+import models.assignee.database.MergeRawAssignees;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
@@ -347,11 +346,91 @@ public class NormalizeAssignees {
         return allAssignees;
     }
 
+    private static Map<String,String> initialCleanse(Collection<String> assignees) {
+        return assignees.parallelStream().collect(Collectors.toMap(a->a,a->manualCleanse(a)));
+    }
+
+    private static Map<String,Integer> createPortfolioSizeMap(Collection<String> cleansed, Map<String,String> rawToCleansed, Map<String,Integer> portfolioSizeMap) {
+         return rawToCleansed.entrySet().parallelStream().map(e->{
+            return new Pair<>(portfolioSizeMap.getOrDefault(e.getKey(),0),e.getValue());
+        }).collect(Collectors.groupingBy(e->e._2,Collectors.collectingAndThen(Collectors.reducing((e1,e2)->e1._1>e2._1?e1:e2),e->e.get()._1)));
+    }
+
+    private static Map<String,String> match(Collection<String> cleansed, Map<String,Integer> cleansedToSizeMap) {
+        double matchThreshold = 0.9;
+        final AtomicInteger cnt = new AtomicInteger(0);
+        final AtomicInteger matched = new AtomicInteger(0);
+        boolean test = true;
+
+        Collection<String> copyOfCleansed = Collections.synchronizedSet(new HashSet<>(cleansed));
+        return cleansed.parallelStream().map(name->{
+            if(cnt.getAndIncrement()%10000==9999) {
+                System.out.println("Finished "+cnt.get()+" / "+copyOfCleansed.size()+" with "+matched.get()+" matches.");
+            }
+            JaroWinkler distance = new JaroWinkler();
+            Collection<String> newCopyOfCleansed = new ArrayList<>(copyOfCleansed);
+            Pair<String,Double> best = newCopyOfCleansed.stream().map(other->{
+                if(name.equals(other)) return null;
+                double d = distance.similarity(name,other);
+                if(d>=matchThreshold) {
+                    return new Pair<>(other,d);
+                }
+                return null;
+            }).filter(p->p!=null).max(Comparator.comparing(p->p._2)).orElse(null);
+            if(best!=null) {
+                int sizeThis = cleansedToSizeMap.getOrDefault(name,0);
+                int sizeThat = cleansedToSizeMap.getOrDefault(best._1,0);
+                if(sizeThat > sizeThis) {
+                    if(test) {
+                        System.out.println(" MATCH: "+name+" => "+best._1);
+                    }
+                    matched.getAndIncrement();
+                    return new Pair<>(name,best._1);
+                }
+            }
+            return null;
+        }).filter(p->p!=null).collect(Collectors.toMap(p->p._1,p->p._2));
+    }
+
+    private static Map<String,String> groupBy(Map<String,String> rawToCleansed, Map<String,String> cleansedToNormalized) {
+        return rawToCleansed.entrySet().parallelStream()
+                .map(e->new Pair<>(e.getKey(),cleansedToNormalized.getOrDefault(e.getValue(),e.getValue())))
+                .collect(Collectors.toMap(e->e._1,e->e._2));
+    }
+
+    private static Map<String,String> performIteration(Collection<String> companies, Map<String,Integer> assigneeToPortfolioSizeMap) {
+        // initial cleanse
+        System.out.println("Starting initial cleanse...");
+        System.out.println("Non cleansed: "+companies.size());
+        Map<String,String> rawToCleansed = initialCleanse(companies);
+
+        Set<String> cleansed = Collections.synchronizedSet(new HashSet<>(rawToCleansed.values()));
+        System.out.println("Cleansed: "+cleansed.size());
+
+        System.out.println("Building portfolio size map...");
+        Map<String,Integer> cleansedToSize = createPortfolioSizeMap(cleansed,rawToCleansed,assigneeToPortfolioSizeMap);
+
+        System.out.println("Portfolio map size: "+cleansedToSize.size());
+
+        System.out.println("Starting to normalized...");
+        // match cleansed
+        Map<String,String> cleansedToNormalized = match(cleansed,cleansedToSize);
+        System.out.println("Normalized map size: "+cleansedToNormalized.size());
+
+        System.out.println("Starting final grouping...");
+        // regroup with raw names
+        return groupBy(rawToCleansed,cleansedToNormalized);
+    }
+
     public static void main(String[] args) {
         run(MergeRawAssignees.get());
 
-        System.out.println("Saving assignee map...");
-        new AssetToAssigneeMap().save();
+        boolean test = true;
+
+        if(!test) {
+            System.out.println("Saving assignee map...");
+            new AssetToAssigneeMap().save();
+        }
 
     }
 
@@ -390,7 +469,14 @@ public class NormalizeAssignees {
                 .collect(Collectors.toMap(a->a,a->Math.max(Database.getAssetCountFor(a),Database.getNormalizedAssetCountFor(a))))));
         System.out.println("Num assignees with portfolio size: "+assigneeToPortfolioSizeMap.size());
 
-        // need graphical model
+        // regroup with raw names
+        Map<String,String> rawToNormalizedForeign = performIteration(foreignCompanies,assigneeToPortfolioSizeMap);
+        Map<String,String> rawToNormalizedDomestic = performIteration(domesticCompanies,assigneeToPortfolioSizeMap);
 
+        Map<String,String> rawToNormalized = Collections.synchronizedMap(new HashMap<>(rawToNormalizedDomestic.size()+rawToNormalizedForeign.size()));
+        rawToNormalized.putAll(rawToNormalizedForeign);
+        rawToNormalized.putAll(rawToNormalizedDomestic);
+
+        save(rawToNormalized);
     }
 }
