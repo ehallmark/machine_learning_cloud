@@ -145,7 +145,7 @@ public class NormalizeAssignees {
         }
         // check for manual changes
         cleanIsh = manualMerge(cleanIsh);
-        System.out.println("Starting: "+orig+" => "+cleanIsh);
+        //System.out.println("Starting: "+orig+" => "+cleanIsh);
         return cleanIsh;
     }
 
