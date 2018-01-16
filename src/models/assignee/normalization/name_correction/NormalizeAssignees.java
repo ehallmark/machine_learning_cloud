@@ -56,6 +56,7 @@ public class NormalizeAssignees {
 
     static final Collection<String> manualBadPrefixes = Arrays.asList(
             "KABUSHIKI KAISHA ",
+            "NTT ",
             "SK ",
             "UNITED STATES OF AMERICA AS REPRESENTED BY ",
             "THE "
