@@ -88,6 +88,7 @@ public class NormalizeAssignees {
     }
 
     public static String manualCleanse(String cleanIsh) {
+        String orig = cleanIsh;
         cleanIsh = cleanIsh.trim();
 
         if(cleanIsh.length() > MIN_ASSIGNEE_LENGTH && cleanIsh.contains(" ")) {
@@ -127,6 +128,7 @@ public class NormalizeAssignees {
         }
         // check for manual changes
         cleanIsh = manualMerge(cleanIsh);
+        System.out.println("Starting: "+orig+" => "+cleanIsh);
         return cleanIsh;
     }
 
