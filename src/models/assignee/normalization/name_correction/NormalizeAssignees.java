@@ -474,7 +474,9 @@ public class NormalizeAssignees {
         run(MergeRawAssignees.get());
 
         System.out.println("Saving assignee map...");
-        new AssetToAssigneeMap().save();
+        AssetToAssigneeMap assetToAssigneeMap = new AssetToAssigneeMap();
+        assetToAssigneeMap.initMaps();
+        assetToAssigneeMap.save();
 
     }
 
