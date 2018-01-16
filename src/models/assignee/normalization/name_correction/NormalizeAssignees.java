@@ -19,7 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by Evan on 10/8/2017.
@@ -396,29 +395,32 @@ public class NormalizeAssignees {
             }
             JaroWinkler distance = new JaroWinkler();
             String[] words = name.split(" ");
+            String strippedName = stripPrefixesAndSuffixes(name);
+
             int size = cleansedToSizeMap.getOrDefault(name,0);
+
             Pair<String,Double> best = copyOfCleansed.stream().map(other->{
-                if(!other.contains(" ")&&!name.contains(" ")&&Math.abs(other.length()-name.length())>1) return null;
+                if(!other.contains(" ")&&!name.contains(" ")) return null;
                 if(name.equals(other)) return null;
 
                 String[] otherWords = other.split(" ");
 
-                double matchThreshold = 0.96-(0.01*Math.min(words.length,otherWords.length));
+                double matchThreshold = 0.95;
                 double score = 0d;
 
                 if(words[0].equals(otherWords[0])) {
                     matchThreshold-=0.05;
-                    score+=0.1;
+                    score+=0.05;
                 }
 
-                String combinedName = String.join("___",Stream.of(name,other).sorted().collect(Collectors.toList()));
-                Double simCache = similarityCache.get(combinedName);
-                if(simCache==null) {
-                    score += distance.similarity(name, other);
-                    similarityCache.put(combinedName,score);
-                } else {
-                    score = simCache;
-                }
+               // String combinedName = String.join("___",Stream.of(name,other).sorted().collect(Collectors.toList()));
+               // Double simCache = similarityCache.get(combinedName);
+               // if(simCache==null) {
+                    score += distance.similarity(strippedName, stripPrefixesAndSuffixes(other));
+               //     similarityCache.put(combinedName,score);
+               // } else {
+               //     score = simCache;
+               // }
 
                 if(score>=matchThreshold) {
                     // adjust score for portfolio size
