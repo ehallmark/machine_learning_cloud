@@ -484,16 +484,17 @@ public class NormalizeAssignees {
                     if(isHuman==null||isHuman) return false;
                     String role = (String)data.get(Constants.ASSIGNEE_ROLE);
                     String status = (String)data.get(Constants.ASSIGNEE_ENTITY_TYPE);
-                    if(role==null||status==null) return false;
+                    String country = (String)data.get(Constants.COUNTRY);
+                    if(role==null||status==null||country==null) return false;
                     if(role.endsWith("2")) {
                         // us
-                        String group = "domestic"+status;
+                        String group = "domestic"+status+country;
                         companyGroupsMap.putIfAbsent(group, Collections.synchronizedSet(new HashSet<>()));
                         companyGroupsMap.get(group).add(assignee);
                         return true;
                     } else if(role.endsWith("3")) {
                         // foreign
-                        String group = "foreign"+status;
+                        String group = "foreign"+status+country;
                         companyGroupsMap.putIfAbsent(group, Collections.synchronizedSet(new HashSet<>()));
                         companyGroupsMap.get(group).add(assignee);
                         return true;
