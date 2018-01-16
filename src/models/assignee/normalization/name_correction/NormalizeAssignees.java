@@ -71,6 +71,7 @@ public class NormalizeAssignees {
             " KG",
             " &",
             " SAS",
+            " AS",
             " S.A.S",
             " B.V",
             " E.V",
