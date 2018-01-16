@@ -14,6 +14,9 @@ public class EntityTypeAttribute extends ComputableFilingAttribute<String> {
     public static final File filingsByEntityTypeMapFile = new File(Constants.DATA_FOLDER+"filings_by_entity_type_map.jobj");
 
     private Map<String,Set<String>> typeToFilingMap;
+    private Set<String> micro;
+    private Set<String> small;
+    private Set<String> large;
     public EntityTypeAttribute() {
         super(filingsByEntityTypeMapFile,Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
@@ -45,9 +48,9 @@ public class EntityTypeAttribute extends ComputableFilingAttribute<String> {
             typeToFilingMap = getTypeToFilingMap();
         }
 
-        if(typeToFilingMap.get(Constants.MICRO).contains(filing)) return Constants.MICRO;
-        else if(typeToFilingMap.get(Constants.SMALL).contains(filing)) return Constants.SMALL;
-        else if(typeToFilingMap.get(Constants.LARGE).contains(filing)) return Constants.LARGE;
+        if(micro.contains(filing)) return Constants.MICRO;
+        else if(small.contains(filing)) return Constants.SMALL;
+        else if(large.contains(filing)) return Constants.LARGE;
         return null;
     }
 
@@ -64,6 +67,11 @@ public class EntityTypeAttribute extends ComputableFilingAttribute<String> {
                     }
                 }
             }
+        }
+        if(typeToFilingMap!=null) {
+            large = typeToFilingMap.get(Constants.LARGE);
+            small = typeToFilingMap.get(Constants.SMALL);
+            micro = typeToFilingMap.get(Constants.MICRO);
         }
         return typeToFilingMap;
     }
