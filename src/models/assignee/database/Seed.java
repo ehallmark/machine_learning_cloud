@@ -13,6 +13,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 /**
@@ -35,6 +37,7 @@ public class Seed {
 
     private static final AtomicLong cnt = new AtomicLong(0);
     private static List<Assignee> updateQueue = Collections.synchronizedList(new ArrayList<>(QUEUE_SIZE));
+    private static Lock lock = new ReentrantLock();
 
     private static String prepareInsertStatement(int size) {
         String qStr;
@@ -55,18 +58,15 @@ public class Seed {
 
     private static void addToQueue(String name, String city, String state, String country, String role, String entityStatus, boolean human) throws SQLException {
         Assignee assignee = new Assignee(name,city,state,country,role,entityStatus,human);
-        synchronized (Seed.class) {
+        lock.lock();
+        try {
             updateQueue.add(assignee);
+        } finally {
+            lock.unlock();
         }
     }
 
-    private static void flush(Connection conn) throws SQLException {
-        List<Assignee> updateQueueCopy;
-        synchronized (Seed.class) {
-            if (updateQueue.isEmpty()) return;
-            updateQueueCopy = new ArrayList<>(updateQueue);
-            updateQueue = Collections.synchronizedList(new ArrayList<>(QUEUE_SIZE));
-        }
+    private static void flush(Connection conn, List<Assignee> updateQueueCopy) throws SQLException {
 
         PreparedStatement ps = conn.prepareStatement(prepareInsertStatement(updateQueueCopy.size()));
         for(int i = 0; i < updateQueueCopy.size(); i++) {
@@ -142,9 +142,21 @@ public class Seed {
 
                             try {
                                 addToQueue(nameStr, cityStr, stateStr, countryStr, roleStr, entityType, isHuman);
-                                synchronized (Seed.class) {
-                                    if (updateQueue.size() >= QUEUE_SIZE) flush(conn);
+
+                                List<Assignee> updateQueueCopy = null;
+                                lock.lock();
+                                try {
+                                    if(updateQueue.size()>=QUEUE_SIZE) {
+                                        updateQueueCopy = new ArrayList<>(updateQueue);
+                                        updateQueue = Collections.synchronizedList(new ArrayList<>(QUEUE_SIZE));
+                                    }
+                                } finally {
+                                    lock.unlock();
                                 }
+
+                                flush(conn, updateQueueCopy);
+                                   
+
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -159,10 +171,9 @@ public class Seed {
                 Constants.FILING_NAME
         };
 
-
         IngestMongoIntoElasticSearch.iterateOverCollection(consumer,new Document(), DataIngester.TYPE_NAME,fields);
 
-        flush(conn);
+        if(updateQueue.size()>0) flush(conn, new ArrayList<>(updateQueue));
         conn.commit();
         conn.close();
     }
