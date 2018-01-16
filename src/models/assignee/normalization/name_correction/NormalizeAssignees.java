@@ -55,6 +55,8 @@ public class NormalizeAssignees {
 
     static final Collection<String> manualBadPrefixes = Arrays.asList(
             "KABUSHIKI KAISHA ",
+            "KABUSHIKIA KAISHA",
+            "KABUSHIIKI KAISHA",
             "NTT ",
             "SK ",
             "UNITED STATES OF AMERICA AS REPRESENTED BY ",
@@ -253,7 +255,10 @@ public class NormalizeAssignees {
         String[] badStrings = new String[]{
                 "UNIVERSITY COURT OF THE ",
                 "UNIVERSITY OF ",
-                "NATIONAL INSTITUTE OF "
+                "NATIONAL INSTITUTE OF ",
+                "NATIONAL CENTRE FOR",
+                "NATIONAL CENTER FOR",
+                "THE UNIVERSITY OF ",
         };
         for(String badString : badStrings) {
             if (raw.startsWith(badString) && raw.length() > badString.length()) {
@@ -401,25 +406,12 @@ public class NormalizeAssignees {
                 if(!other.contains(" ")&&!name.contains(" ")) return null;
                 if(name.equals(other)) return null;
 
-                String[] otherWords = other.split(" ");
 
                 double matchThreshold = 0.95;
-                double score = 0d;
+                double score;
 
-                if(words[0].equals(otherWords[0])) {
-                    matchThreshold-=0.05;
-                    score+=0.05;
-                }
-
-               // String combinedName = String.join("___",Stream.of(name,other).sorted().collect(Collectors.toList()));
-               // Double simCache = similarityCache.get(combinedName);
-               // if(simCache==null) {
-                    score += distance.similarity(strippedName, stripPrefixesAndSuffixes(other));
-               //     similarityCache.put(combinedName,score);
-               // } else {
-               //     score = simCache;
-               // }
-
+                score = distance.similarity(strippedName, stripPrefixesAndSuffixes(other));
+                
                 if(score>=matchThreshold) {
                     // adjust score for portfolio size
                     score *= Math.log(Math.E+Math.abs(cleansedToSizeMap.getOrDefault(other,0)-size));
