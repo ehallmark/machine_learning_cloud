@@ -488,13 +488,13 @@ public class NormalizeAssignees {
                     if(role==null||status==null||country==null) return false;
                     if(role.endsWith("2")) {
                         // us
-                        String group = "domestic"+status+country;
+                        String group = ("domestic"+status+country).toUpperCase();
                         companyGroupsMap.putIfAbsent(group, Collections.synchronizedSet(new HashSet<>()));
                         companyGroupsMap.get(group).add(assignee);
                         return true;
                     } else if(role.endsWith("3")) {
                         // foreign
-                        String group = "foreign"+status+country;
+                        String group = ("foreign"+status+country).toUpperCase();
                         companyGroupsMap.putIfAbsent(group, Collections.synchronizedSet(new HashSet<>()));
                         companyGroupsMap.get(group).add(assignee);
                         return true;
