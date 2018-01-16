@@ -75,6 +75,7 @@ public class NormalizeAssignees {
             " S.A.S",
             " B.V",
             " E.V",
+            " PTY",
             " CO.,LTD.",
             " CO.,LTD",
             " CO"," CORP"," CORPS"," CORPORATION"," LLP", " CO.", " I", " II", " III", " IV", " V", " AG", " AB", " OY"," INCORPORATED"," LTD", " LIMITED", " INC", " CO LTD", " LLC"
@@ -118,7 +119,7 @@ public class NormalizeAssignees {
             // clean suffixes
             boolean suffixProblem = true;
             while(suffixProblem) {
-                while(cleanIsh.endsWith(".")||cleanIsh.endsWith(",")) {
+                while(!Character.isAlphabetic(cleanIsh.charAt(cleanIsh.length()-1))) {
                     if(cleanIsh.length()==1) return null;
                     cleanIsh = cleanIsh.substring(0,cleanIsh.length()-1).trim();
                 }
@@ -134,7 +135,7 @@ public class NormalizeAssignees {
 
 
         }
-        while(cleanIsh.endsWith(".")||cleanIsh.endsWith(",")) {
+        while(!Character.isAlphabetic(cleanIsh.charAt(cleanIsh.length()-1))) {
             if(cleanIsh.length()==1) return null;
             cleanIsh = cleanIsh.substring(0,cleanIsh.length()-1).trim();
         }
