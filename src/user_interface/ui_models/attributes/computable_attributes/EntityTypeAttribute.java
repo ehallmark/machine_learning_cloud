@@ -66,12 +66,12 @@ public class EntityTypeAttribute extends ComputableFilingAttribute<String> {
                         });
                     }
                 }
+                if(typeToFilingMap!=null) {
+                    large = Collections.synchronizedSet(new HashSet<>(typeToFilingMap.get(Constants.LARGE)));
+                    small = Collections.synchronizedSet(new HashSet<>(typeToFilingMap.get(Constants.SMALL)));
+                    micro = Collections.synchronizedSet(new HashSet<>(typeToFilingMap.get(Constants.MICRO)));
+                }
             }
-        }
-        if(typeToFilingMap!=null) {
-            large = typeToFilingMap.get(Constants.LARGE);
-            small = typeToFilingMap.get(Constants.SMALL);
-            micro = typeToFilingMap.get(Constants.MICRO);
         }
         return typeToFilingMap;
     }

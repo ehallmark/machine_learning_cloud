@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
@@ -100,6 +101,7 @@ public class Seed {
 
 
     public static void main(String[] args) throws Exception {
+        List<RecursiveAction> actions = Collections.synchronizedList(new ArrayList<>());
         Connection conn = Database.getOrSetupAssigneeConn();
         conn.setAutoCommit(false);
         EntityTypeAttribute entityTypeAttribute = new EntityTypeAttribute();
@@ -155,7 +157,19 @@ public class Seed {
                                 }
 
                                 if(updateQueueCopy!=null) {
-                                    flush(conn, updateQueueCopy);
+                                    final List<Assignee> finalUpdateQueueCopy = updateQueueCopy;
+                                    RecursiveAction action = new RecursiveAction() {
+                                        @Override
+                                        protected void compute() {
+                                            try {
+                                                flush(conn, finalUpdateQueueCopy);
+                                            } catch(Exception e) {
+
+                                            }
+                                        }
+                                    };
+                                    action.fork();
+                                    actions.add(action);
                                 }
 
 
@@ -175,6 +189,7 @@ public class Seed {
 
         IngestMongoIntoElasticSearch.iterateOverCollection(consumer,new Document(), DataIngester.TYPE_NAME,fields);
 
+        actions.forEach(action->action.join());
         if(updateQueue.size()>0) flush(conn, new ArrayList<>(updateQueue));
         conn.commit();
         conn.close();
