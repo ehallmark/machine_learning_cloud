@@ -154,8 +154,10 @@ public class Seed {
                                     lock.unlock();
                                 }
 
-                                flush(conn, updateQueueCopy);
-                                   
+                                if(updateQueueCopy!=null) {
+                                    flush(conn, updateQueueCopy);
+                                }
+
 
                             } catch (Exception e) {
                                 e.printStackTrace();
