@@ -359,7 +359,6 @@ public class NormalizeAssignees {
     }
 
     private static Map<String,String> match(Collection<String> cleansed, Map<String,Integer> cleansedToSizeMap) {
-        double matchThreshold = 0.95;
         final AtomicInteger cnt = new AtomicInteger(0);
         final AtomicInteger matched = new AtomicInteger(0);
         boolean test = true;
@@ -367,25 +366,36 @@ public class NormalizeAssignees {
 
         Collection<String> copyOfCleansed = new ArrayList<>(cleansed);
         return cleansed.parallelStream().map(name->{
-            if(cnt.getAndIncrement()%10000==9999) {
+            if(cnt.getAndIncrement()%1000==999) {
                 System.out.println("Finished "+cnt.get()+" / "+copyOfCleansed.size()+" with "+matched.get()+" matches.");
             }
             JaroWinkler distance = new JaroWinkler();
+            String[] words = name.split(" ");
             Pair<String,Double> best = copyOfCleansed.stream().map(other->{
-                if(!other.contains(" ")&&!name.contains(" ")) return null;
-                
+                if(!other.contains(" ")&&!name.contains(" ")&&Math.abs(other.length()-name.length())>1) return null;
                 if(name.equals(other)) return null;
+
+                String[] otherWords = other.split(" ");
+
+                double matchThreshold = 0.96-(0.01*Math.min(words.length,otherWords.length));
+                double score = 0d;
+
+                if(words[0].equals(otherWords[0])) {
+                    matchThreshold-=0.05;
+                    score+=0.1;
+                }
+
                 String combinedName = String.join("___",Stream.of(name,other).sorted().collect(Collectors.toList()));
                 Double simCache = similarityCache.get(combinedName);
-                double d;
                 if(simCache==null) {
-                    d = distance.similarity(name, other);
-                    similarityCache.put(combinedName,d);
+                    score += distance.similarity(name, other);
+                    similarityCache.put(combinedName,score);
                 } else {
-                    d = simCache;
+                    score = simCache;
                 }
-                if(d>=matchThreshold) {
-                    return new Pair<>(other,d);
+
+                if(score>=matchThreshold) {
+                    return new Pair<>(other,score);
                 }
                 return null;
             }).filter(p->p!=null).max(Comparator.comparing(p->p._2)).orElse(null);
