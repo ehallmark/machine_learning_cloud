@@ -15,9 +15,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Evan on 10/8/2017.
@@ -357,10 +359,11 @@ public class NormalizeAssignees {
     }
 
     private static Map<String,String> match(Collection<String> cleansed, Map<String,Integer> cleansedToSizeMap) {
-        double matchThreshold = 0.9;
+        double matchThreshold = 0.95;
         final AtomicInteger cnt = new AtomicInteger(0);
         final AtomicInteger matched = new AtomicInteger(0);
         boolean test = true;
+        Map<String,Double> similarityCache = Collections.synchronizedMap(new ConcurrentHashMap<>());
 
         Collection<String> copyOfCleansed = Collections.synchronizedSet(new HashSet<>(cleansed));
         return cleansed.parallelStream().map(name->{
@@ -371,7 +374,15 @@ public class NormalizeAssignees {
             Collection<String> newCopyOfCleansed = new ArrayList<>(copyOfCleansed);
             Pair<String,Double> best = newCopyOfCleansed.stream().map(other->{
                 if(name.equals(other)) return null;
-                double d = distance.similarity(name,other);
+                String combinedName = String.join("___",Stream.of(name,other).sorted().collect(Collectors.toList());
+                Double simCache = similarityCache.get(combinedName);
+                double d;
+                if(simCache==null) {
+                    d = distance.similarity(name, other);
+                    similarityCache.put(combinedName,d);
+                } else {
+                    d = simCache;
+                }
                 if(d>=matchThreshold) {
                     return new Pair<>(other,d);
                 }
