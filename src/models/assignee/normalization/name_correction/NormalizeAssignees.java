@@ -65,6 +65,11 @@ public class NormalizeAssignees {
     static final Collection<String> manualBadSuffixes = Arrays.asList(
             " KABUSHIKI KAISHA",
             " LP",
+            " GMBH",
+            " S.A",
+            " SA",
+            " KG",
+            " &",
             " CO"," CORP"," CORPS"," CORPORATION"," LLP", " CO.", " I", " II", " III", " IV", " V", " AG", " AB", " OY"," INCORPORATED"," LTD", " LIMITED", " INC", " CO LTD", " LLC"
     );
 
@@ -98,7 +103,7 @@ public class NormalizeAssignees {
                 prefixProblem = false;
                 for (String pref : manualBadPrefixes) {
                     if (cleanIsh.startsWith(pref) && cleanIsh.length() > pref.length() + MIN_ASSIGNEE_LENGTH) {
-                        cleanIsh = cleanIsh.substring(pref.length());
+                        cleanIsh = cleanIsh.substring(pref.length()).trim();
                         prefixProblem = true;
                     }
                 }
