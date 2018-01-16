@@ -89,10 +89,7 @@ public class NormalizeAssignees {
 
     public static String manualCleanse(String cleanIsh) {
         cleanIsh = cleanIsh.trim();
-        while(cleanIsh.endsWith(".")||cleanIsh.endsWith(",")) {
-            if(cleanIsh.length()==1) return null;
-            cleanIsh = cleanIsh.substring(0,cleanIsh.length()-1).trim();
-        }
+
         if(cleanIsh.length() > MIN_ASSIGNEE_LENGTH && cleanIsh.contains(" ")) {
             // clean prefixes
             boolean prefixProblem = true;
@@ -108,6 +105,11 @@ public class NormalizeAssignees {
             // clean suffixes
             boolean suffixProblem = true;
             while(suffixProblem) {
+                while(cleanIsh.endsWith(".")||cleanIsh.endsWith(",")) {
+                    if(cleanIsh.length()==1) return null;
+                    cleanIsh = cleanIsh.substring(0,cleanIsh.length()-1).trim();
+                }
+
                 suffixProblem = false;
                 for (String suff : manualBadSuffixes) {
                     if (cleanIsh.endsWith(suff) && cleanIsh.length() > suff.length() + MIN_ASSIGNEE_LENGTH) {
