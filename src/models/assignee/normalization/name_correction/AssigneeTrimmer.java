@@ -6,7 +6,7 @@ import java.util.*;
  * Created by Evan on 1/22/2017.
  */
 public class AssigneeTrimmer {
-    private static List<String> suffixes = Arrays.asList(" CO"," CORP"," CORPS"," CORPORATION"," LLP", " CO.", " I", " II", " III", " IV", " V", " AG", " AB", " OY"," INCORPORATED"," LTD", " LIMITED", " INC", " CO LTD", " LLC");
+    public static final List<String> suffixes = Arrays.asList(" CO"," CORP"," CORPS"," CORPORATION"," LLP", " CO.", " I", " II", " III", " IV", " V", " AG", " AB", " OY"," INCORPORATED"," LTD", " LIMITED", " INC", " CO LTD", " LLC");
     private static Map<String,String> standardizedAssigneeMap = new HashMap<>();
 
 

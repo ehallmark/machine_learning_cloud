@@ -22,26 +22,34 @@ public class MergeRawAssignees {
 
     private static Map<String,Map<String,Object>> loadRawAssigneeData(Connection conn) {
         String[] fields = new String[]{"city","state","country","role","entity_status","human"};
-        return Stream.of(fields).parallel().map(field->{
+        Map<String,String> postgresFieldToESFieldMap = Collections.synchronizedMap(new HashMap<>());
+        postgresFieldToESFieldMap.put("city",Constants.CITY);
+        postgresFieldToESFieldMap.put("state",Constants.STATE);
+        postgresFieldToESFieldMap.put("country",Constants.COUNTRY);
+        postgresFieldToESFieldMap.put("role",Constants.ASSIGNEE_ROLE);
+        postgresFieldToESFieldMap.put("entity_status",Constants.ASSIGNEE_ENTITY_TYPE);
+        postgresFieldToESFieldMap.put("human",Constants.IS_HUMAN);
+        return Stream.of(fields).parallel().map(pgField->{
             try {
+                String esField = postgresFieldToESFieldMap.get(pgField);
                 Map<String, Map<String, Object>> map = Collections.synchronizedMap(new HashMap<>());
-                String query = baseQuery.replace("?", field);
+                String query = baseQuery.replace("?", pgField);
                 PreparedStatement ps = conn.prepareStatement(query);
                 System.out.println("Query: "+ps.toString());
                 ps.setFetchSize(50);
                 ResultSet rs = ps.executeQuery();
-                boolean boolField = field.equals("human");
+                boolean boolField = pgField.equals("human");
                 AtomicLong cnt = new AtomicLong(0);
                 while (rs.next()) {
                     Map<String,Object> assigneeMap = Collections.synchronizedMap(new HashMap<>());
                     Object obj = boolField ? rs.getBoolean(2) : rs.getString(2);
                     String name = rs.getString(1);
                     if(obj!=null) {
-                        assigneeMap.put(field,obj);
+                        assigneeMap.put(esField,obj);
                     }
                     map.put(name,assigneeMap);
                     if(cnt.getAndIncrement()%10000==9999) {
-                        System.out.println("Finished "+field.toUpperCase()+": "+cnt.get());
+                        System.out.println("Finished "+pgField.toUpperCase()+": "+cnt.get());
                     }
                 }
                 rs.close();

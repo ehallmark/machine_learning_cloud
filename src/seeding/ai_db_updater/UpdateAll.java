@@ -77,9 +77,7 @@ public class UpdateAll {
                     List<String> allClassCodes = new ArrayList<>(Database.getClassCodes());
                     Map<String,Boolean> predictions = pipelineManager.updatePredictions(allAssets,allAssignees,allClassCodes);
                     pipelineManager.savePredictions(predictions);
-                    NormalizeAssignees.run(predictions);
-                    new AssetToAssigneeMap().save();
-                    Database.main(args);
+
                 } else if (arg.equals("10")) {
                     UpdateAssetGraphs.update(false);
                 } else if (arg.equals("11")) {
