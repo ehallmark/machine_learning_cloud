@@ -374,7 +374,7 @@ public class NormalizeAssignees {
             Collection<String> newCopyOfCleansed = new ArrayList<>(copyOfCleansed);
             Pair<String,Double> best = newCopyOfCleansed.stream().map(other->{
                 if(name.equals(other)) return null;
-                String combinedName = String.join("___",Stream.of(name,other).sorted().collect(Collectors.toList());
+                String combinedName = String.join("___",Stream.of(name,other).sorted().collect(Collectors.toList()));
                 Double simCache = similarityCache.get(combinedName);
                 double d;
                 if(simCache==null) {
