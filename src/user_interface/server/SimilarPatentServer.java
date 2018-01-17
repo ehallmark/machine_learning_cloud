@@ -63,6 +63,7 @@ import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
@@ -141,6 +142,7 @@ public class SimilarPatentServer {
     private static AbstractNestedFilter allFilters;
     private static NestedAttribute allCharts;
     private static RecursiveTask<KeyphrasePredictionPipelineManager> keyphrasePredictionPipelineManagerTask;
+    private static final ForkJoinPool pool = new ForkJoinPool();
 
     static {
         roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.startsWith("gather"));
@@ -414,7 +416,6 @@ public class SimilarPatentServer {
                     return keyphrasePredictionPipelineManager;
                 }
             };
-            keyphrasePredictionPipelineManagerTask.fork();
 
         }
     }
@@ -612,7 +613,6 @@ public class SimilarPatentServer {
                     return new SimilarityEngineController();
                 }
             };
-            similarityEngine.fork();
 
             allTopLevelAttributes = new ArrayList<>(attributesMap.values());
 
@@ -1878,6 +1878,7 @@ public class SimilarPatentServer {
                                             try {
                                                 task.cancel(true);
                                                 task.quietlyComplete();
+
                                             }catch(Exception e) {
 
                                             }
@@ -1902,7 +1903,7 @@ public class SimilarPatentServer {
                                         return chart.create(portfolioList, idx);
                                     }
                                 };
-                                chartTask.fork();
+                                pool.execute(chartTask);
                                 String chartId = "chart-" + totalChartCnt.getAndIncrement();
                                 sessionIds.add(chartId);
                                 otherTasks.add(chartTask);
@@ -1969,7 +1970,8 @@ public class SimilarPatentServer {
             }
         };
 
-        handleReportTask.fork();
+        pool.execute(handleReportTask);
+
         long maxTimeMillis =  180 * 1000;
         try {
             String html = handleReportTask.get(maxTimeMillis, TimeUnit.MILLISECONDS);
@@ -2677,5 +2679,9 @@ public class SimilarPatentServer {
         }
         long t2 = System.currentTimeMillis();
         System.out.println("Time to start user_interface.server: "+ ((t2-t1)/(1000*60)) + " minutes");
+
+        pool.execute(keyphrasePredictionPipelineManagerTask);
+        pool.execute(similarityEngine);
+
     }
 }
