@@ -2676,13 +2676,10 @@ public class SimilarPatentServer {
         //    System.out.println("Error during presearch: "+e.getMessage());
         //}
 
-        pool.execute(new RecursiveAction() {
-            @Override
-            protected void compute() {
-                server();
-                System.out.println("Finished starting server.");
-            }
-        });
+
+        server();
+        System.out.println("Finished starting server.");
+
 
         pool.execute(keyphrasePredictionPipelineManagerTask);
         pool.execute(similarityEngine);
