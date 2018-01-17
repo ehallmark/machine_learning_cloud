@@ -249,7 +249,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Filters", AbstractFilter.FilterType.Nested.toString());
             humanAttrToJavaAttrMap.put("Exists Filter", AbstractFilter.FilterType.Exists.toString());
             humanAttrToJavaAttrMap.put("Include All With Related Assets", AbstractFilter.FilterType.IncludeWithRelated.toString());
-            humanAttrToJavaAttrMap.put("Exclude All With Related Assets", AbstractFilter.FilterType.Ex.toString());
+            humanAttrToJavaAttrMap.put("Exclude All With Related Assets", AbstractFilter.FilterType.ExcludeWithRelated.toString());
             humanAttrToJavaAttrMap.put("Does Not Exist Filter", AbstractFilter.FilterType.DoesNotExist.toString());
             humanAttrToJavaAttrMap.put("Latest Execution Date", Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("Execution Date", Constants.ASSIGNMENTS+"."+Constants.EXECUTION_DATE);
