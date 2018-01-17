@@ -60,7 +60,7 @@ public class DatasetIndex {
     public static void rename(String user, String id, String newName, String[] newParentDirs) {
         Map<String,Object> data = new HashMap<>();
         data.put(NAME_FIELD,newName);
-        data.put(PARENT_DIRS_FIELD,newParentDirs);
+        data.put(PARENT_DIRS_FIELD,convertParentDirs(newParentDirs));
         client.prepareUpdate(INDEX,TYPE,id+"_"+user)
                 .setDoc(data).get();
     }

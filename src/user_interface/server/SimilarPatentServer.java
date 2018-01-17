@@ -1307,6 +1307,13 @@ public class SimilarPatentServer {
         String message;
         Map<String,Object> responseMap = new HashMap<>();
         if(filename!=null&&name!=null&&name.length()>0) {
+            name = decodeURLString(name);
+            if(parentDirs!=null) {
+                for(int i = 0; i < parentDirs.length; i++) {
+                    parentDirs[i]=decodeURLString(parentDirs[i]);
+                }
+            }
+
             boolean isShared = false;
             if(parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
                 isShared = true;
@@ -1490,6 +1497,9 @@ public class SimilarPatentServer {
             String name = req.queryParams("name");
             if(attributesMap!=null&&searchOptionsMap!=null&&chartsMap!=null&&highlightMap!=null&&filtersMap!=null&&name!=null&&name.length()>0) {
                 Map<String, Object> formMap = new HashMap<>();
+
+                name = decodeURLString(name);
+
                 formMap.put("name", name);
                 formMap.put("attributesMap", attributesMap);
                 formMap.put("searchOptionsMap", searchOptionsMap);
@@ -1506,12 +1516,27 @@ public class SimilarPatentServer {
         };
     }
 
+    public static String decodeURLString(String in) {
+        try {
+            System.out.println("Name before: "+in);
+            in = in.replace("&amp;","&");
+            in = in.replace("&lt;","<");
+            in = in.replace("&gt;",">");
+            in = in.replace("&quot;","\"");
+            System.out.println("Name after: "+in);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return in;
+    }
+
     private static Function<Request,Map<String,Object>> datasetFormMapFunction() {
         return req -> {
             String[] assets = req.queryParamsValues("assets[]");
             if(assets==null) assets = req.session(false).attribute("assets"); // default to last seen report
             String name = req.queryParams("name");
             if(assets!=null&&name!=null&&name.length()>0) {
+                name = decodeURLString(name);
                 String file = req.queryParams("file");
                 Map<String, Object> formMap = new HashMap<>();
                 formMap.put("name", name);
@@ -1561,7 +1586,13 @@ public class SimilarPatentServer {
         if(formMap!=null) {
             if(debug) System.out.println("Form "+name+" attributes: "+new Gson().toJson(formMap));
 
-            if (parentDirs != null && parentDirs.length > 1) formMap.put("parentDirs", Arrays.copyOfRange(parentDirs,1,parentDirs.length));
+            if (parentDirs != null && parentDirs.length > 1) {
+                for(int i = 1; i < parentDirs.length; i++) {
+                    parentDirs[i]=decodeURLString(parentDirs[i]);
+                }
+                formMap.put("parentDirs", Arrays.copyOfRange(parentDirs,1,parentDirs.length));
+            }
+
             boolean isShared = false;
             if(parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
                 isShared = true;
@@ -1629,8 +1660,16 @@ public class SimilarPatentServer {
         if(parentDirs==null) {
             System.out.println("Parent dirs is null...");
         } else {
+            for(int i = 0; i < parentDirs.length; i++) {
+                parentDirs[i] = decodeURLString(parentDirs[i]);
+            }
             System.out.println("Parent dirs: "+Arrays.toString(parentDirs));
         }
+
+        if(name!=null) {
+            name = decodeURLString(name);
+        }
+
         String actualUsername = req.session().attribute("username");
         Map<String,Object> formMap = formMapFunction.apply(req);
 
