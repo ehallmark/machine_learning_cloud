@@ -61,10 +61,7 @@ import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
-import java.util.concurrent.RecursiveTask;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
@@ -2679,12 +2676,17 @@ public class SimilarPatentServer {
         //    System.out.println("Error during presearch: "+e.getMessage());
         //}
 
+        pool.execute(new RecursiveAction() {
+            @Override
+            protected void compute() {
+                server();
+                System.out.println("Finished starting server.");
+            }
+        });
+
         pool.execute(keyphrasePredictionPipelineManagerTask);
         pool.execute(similarityEngine);
 
-        server();
-
-        System.out.println("Finished starting server.");
         GatherClassificationServer.StartServer();
         if(preLoad) {
             Database.preLoad();
