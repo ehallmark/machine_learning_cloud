@@ -925,7 +925,7 @@ public class SimilarPatentServer {
 
         post(RENAME_TEMPLATE_URL, (req, res) -> {
             authorize(req,res);
-            return handleRenameForm(req,res,Constants.USER_TEMPLATE_FOLDER,true);
+            return handleRenameForm(req,res,Constants.USER_TEMPLATE_FOLDER,true,false);
         });
 
         post(SAVE_DATASET_URL, (req, res) -> {
@@ -951,7 +951,7 @@ public class SimilarPatentServer {
 
         post(RENAME_DATASET_URL, (req, res) -> {
             authorize(req,res);
-            return handleRenameForm(req,res,Constants.USER_DATASET_FOLDER,false);
+            return handleRenameForm(req,res,Constants.USER_DATASET_FOLDER,false,true);
         });
 
         get(SHOW_DATATABLE_URL, (req, res) -> {
@@ -1300,7 +1300,7 @@ public class SimilarPatentServer {
         }
     }
 
-    private static Object handleRenameForm(Request req, Response res, String baseFolder, boolean useUpdatesFile) {
+    private static Object handleRenameForm(Request req, Response res, String baseFolder, boolean useUpdatesFile, boolean isDataset) {
         String filename = req.queryParams("file");
         String name = req.queryParams("name");
         String[] parentDirs = req.queryParamsValues("parentDirs[]");
@@ -1329,6 +1329,9 @@ public class SimilarPatentServer {
 
                     sync.lock();
                     try {
+                        if(isDataset) {
+                            DatasetIndex.rename(username,filename,name,parentDirs);
+                        }
                         if(useUpdatesFile) {
                             fileCache.put(updatesFile.getAbsolutePath(), updates);
                             Database.trySaveObject(updates, updatesFile);

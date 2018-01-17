@@ -57,6 +57,14 @@ public class DatasetIndex {
         return get(id+"_"+user);
     }
 
+    public static void rename(String user, String id, String newName, String[] newParentDirs) {
+        Map<String,Object> data = new HashMap<>();
+        data.put(NAME_FIELD,newName);
+        data.put(PARENT_DIRS_FIELD,newParentDirs);
+        client.prepareUpdate(INDEX,TYPE,id+"_"+user)
+                .setDoc(data).get();
+    }
+
     public static String[] convertParentDirs(String[] parentDirs) {
         String[] parentDirsClone = parentDirs.clone();
         for(int i = 0; i < parentDirsClone.length; i++) {
