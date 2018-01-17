@@ -21,7 +21,6 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
-import seeding.Database;
 import tools.MinHeap;
 
 import java.io.File;
@@ -144,7 +143,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     public Map<String,Set<String>> predict(Collection<String> keywords, Map<String,INDArray> toPredictMap, int maxTags, double minScore) {
         List<MultiStem> keywordStems = keywords.stream().map(keyword->findOrCreateByLabel(keyword)).filter(mul->mul!=null).collect(Collectors.toList());
-        System.out.println("In keyphrase manager, num keyword stems found: "+keywordStems.size()+ " out of "+keywords.size());
+        System.out.println("In key phrase manager, num keyword stems found: "+keywordStems.size()+ " out of "+keywords.size());
         return predict(keywordStems, toPredictMap, maxTags, minScore);
     }
 

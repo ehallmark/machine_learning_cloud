@@ -7,10 +7,12 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Database;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Evan on 1/2/2018.
@@ -22,6 +24,8 @@ public class AssetKMeans {
     private static final int MAX_K = 20;
     private static final int APPROX_PER_GROUP = 100;
     private static final int B = 10;
+    private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
+
 
     private KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager;
     private UnitCosineKMeans kMeans;
@@ -64,12 +68,19 @@ public class AssetKMeans {
         List<Set<String>> clusters = kMeans.getClusters();
         System.out.println("Found "+clusters.size()+" clusters.");
         AtomicInteger cnt = new AtomicInteger(0);
+
+
         clusters.forEach(cluster->{
             if(cluster.isEmpty()) return;
 
+            Set<String> related = cluster.stream().flatMap(r->{
+                return Stream.of(r,assetToFilingMap.getPatentDataMap().getOrDefault(r,assetToFilingMap.getApplicationDataMap().get(r))).filter(f->f!=null);
+            }).collect(Collectors.toSet());
+
             // tag
             String tag = null;
-            Collection<String> keywords = cluster.stream().flatMap(asset->techPredictions.getOrDefault(asset,Collections.emptySet()).stream()).collect(Collectors.toList());
+            Collection<String> keywords = related.stream().flatMap(asset->techPredictions.getOrDefault(asset,Collections.emptySet()).stream()).collect(Collectors.toList());
+            System.out.println("keywords: "+keywords.size());
             Map<String,INDArray> toPredict = Collections.singletonMap("cluster", Transforms.unitVec(Nd4j.vstack(cluster.stream().map(asset->assetEncodingMap.get(asset)).collect(Collectors.toList())).mean(0)));
             if(keywords.size()>0){
                 Map<String,Set<String>> results = keyphrasePredictionPipelineManager.predict(keywords,toPredict,1,minScore);
