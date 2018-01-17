@@ -1793,11 +1793,14 @@ public class SimilarPatentServer {
                         }
                     });
 
+                    if(Thread.currentThread().isInterrupted()) return null;
+
                     SimilarityEngineController engine = similarityEngine.join().dup();
                     engine.setChartPrerequisites(chartPreReqs);
                     engine.extractRelevantInformationFromParams(req);
                     PortfolioList portfolioList = engine.getPortfolioList();
 
+                    if(Thread.currentThread().isInterrupted()) return null;
 
                     res.type("application/json");
 
@@ -1831,6 +1834,7 @@ public class SimilarPatentServer {
                         tableHeaders.add(Math.min(1,tableHeaders.size()),Constants.SCORE);
                     }
 
+                    if(Thread.currentThread().isInterrupted()) return null;
 
                     System.out.println("Rendering table...");
                     boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
@@ -1852,6 +1856,8 @@ public class SimilarPatentServer {
                     excelRequestMap.put("numericAttrNames", getNumericAttributes());
                     req.session().attribute(EXCEL_SESSION, excelRequestMap);
                     req.session().attribute("assets", portfolioList.getIds());
+
+                    if(Thread.currentThread().isInterrupted()) return null;
 
                     if (onlyExcel) {
                         System.out.println("ONLY EXCEL:: Skipping chart building and html building...");
@@ -1890,6 +1896,8 @@ public class SimilarPatentServer {
                         } catch(Exception e) {
                             e.printStackTrace();
                         }
+
+                        if(Thread.currentThread().isInterrupted()) return null;
 
                         List<String> sessionIds = new ArrayList<>();
                         // add chart futures
@@ -1984,8 +1992,11 @@ public class SimilarPatentServer {
                 if(!handleReportTask.isDone()){
                     // clean up other tasks
                     otherTasks.forEach(task->{
-                        task.cancel(true);
-                        task.quietlyComplete();
+                        try {
+                            task.cancel(true);
+                            task.quietlyComplete();
+                        } catch(Exception e) {
+                        }
                     });
                     handleReportTask.cancel(true);
                     handleReportTask.quietlyComplete();
