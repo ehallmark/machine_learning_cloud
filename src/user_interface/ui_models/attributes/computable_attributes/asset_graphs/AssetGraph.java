@@ -21,7 +21,7 @@ public abstract class AssetGraph extends ComputableAttribute<List<String>> {
     protected ComputableAttribute<? extends Collection<String>>[] dependentAttributes;
     private int depth;
     protected AssetGraph(boolean directed, int depth, ComputableAttribute<? extends Collection<String>>... dependentAttributes) {
-        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.IncludeWithRelated, AbstractFilter.FilterType.ExcludeWithRelated));
         this.directed=directed;
         this.depth=depth;
         this.dependentAttributes=dependentAttributes;

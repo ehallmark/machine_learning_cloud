@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public class FilingNameAttribute extends AbstractAttribute {
     public FilingNameAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.ExcludeWithRelated, AbstractFilter.FilterType.IncludeWithRelated));
     }
     @Override
     public String getType() {

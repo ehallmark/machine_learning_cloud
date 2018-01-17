@@ -1,21 +1,16 @@
 package user_interface.ui_models.attributes;
 
-import j2html.tags.Tag;
 import seeding.Constants;
-import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
-import java.util.Collection;
-
-import static j2html.TagCreator.div;
 
 /**
  * Created by ehallmark on 6/15/17.
  */
 public class AssetNumberAttribute extends AbstractAttribute {
     public AssetNumberAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.IncludeWithRelated, AbstractFilter.FilterType.ExcludeWithRelated));
     }
     @Override
     public String getName() {

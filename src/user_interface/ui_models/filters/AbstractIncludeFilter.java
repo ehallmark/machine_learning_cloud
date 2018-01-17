@@ -45,7 +45,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
     public String getMinShouldMatchId() {
         if(filterType.equals(FilterType.PrefixInclude)||filterType.equals(FilterType.Include)) {
             return getId()+Constants.MINIMUM_SHOULD_MATCH_SUFFIX;
-        }else {
+        } else {
             return null;
         }
     }

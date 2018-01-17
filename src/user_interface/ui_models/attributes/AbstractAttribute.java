@@ -212,6 +212,14 @@ public abstract class AbstractAttribute {
                     filter = new AbstractNestedFilter((NestedAttribute)this);
                     break;
                 }
+                case IncludeWithRelated: {
+                    filter = new AbstractIncludeWithRelatedFilter(this,filterType,getFieldType(),null);
+                    break;
+                }
+                case ExcludeWithRelated: {
+                    filter = new AbstractExcludeWithRelatedFilter(this,filterType,getFieldType(),null);
+                    break;
+                }
                 default: {
                     filter = null;
                 }
