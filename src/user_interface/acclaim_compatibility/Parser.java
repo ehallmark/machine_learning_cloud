@@ -323,6 +323,7 @@ public class Parser {
             System.out.println("Querystr: "+queryStr);
             String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(prefix, prefix.endsWith("_F")&&prefix.length()>2 ? Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(prefix.substring(0,prefix.length()-2)):null);
             if(attr!=null && prefix.equals(prefix.toUpperCase())&&queryStr.length()>colIdx+1) {
+                System.out.println("Found attr: "+attr);
                 fullAttr = attr;
                 val = queryStr.substring(colIdx+1);
                 // check filing
