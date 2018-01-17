@@ -7,7 +7,6 @@ import data_pipeline.helpers.Function2;
 import data_pipeline.helpers.Function3;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import elasticsearch.DataIngester;
-import elasticsearch.DataSearcher;
 import elasticsearch.DatasetIndex;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
@@ -21,7 +20,6 @@ import models.similarity_models.Vectorizer;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -497,7 +495,7 @@ public class SimilarPatentServer {
 
                 buildJavaToHumanAttrMap();
                 List<AbstractAttribute> nestedAttributes = new ArrayList<>(allAttributes.getAttributes());
-                nestedAttributes.addAll(similarityEngine.join().getEngineMap().values().stream().map(engine->(AbstractAttribute)engine).collect(Collectors.toList()));
+                nestedAttributes.addAll(SimilarityEngineController.getAllEngines().stream().map(engine->(AbstractAttribute)engine).collect(Collectors.toList()));
                 NestedAttribute attributeWithSimilarity = new NestedAttribute(nestedAttributes,false) {
                     @Override
                     public String getName() {
@@ -602,6 +600,7 @@ public class SimilarPatentServer {
             // nested attribute names
             buildJavaToHumanAttrMap();
 
+            SimilarityEngineController.setAllEngines(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(), new CPCSimilarityEngine()));
 
             // similarity engine
             similarityEngine = new RecursiveTask<SimilarityEngineController>() {
@@ -609,7 +608,6 @@ public class SimilarPatentServer {
                 protected SimilarityEngineController compute() {
                     // current word vectorizer
                     new DefaultSimilarityModel(Collections.emptySet());
-                    SimilarityEngineController.setAllEngines(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(), new CPCSimilarityEngine()));
                     return new SimilarityEngineController();
                 }
             };

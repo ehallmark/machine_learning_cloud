@@ -32,7 +32,6 @@ public class SimilarityEngineController {
     @Getter @Setter
     private static List<AbstractSimilarityEngine> allEngines;
     public SimilarityEngineController() {
-        if(allEngines==null) throw new NullPointerException("allEngines list (static)");
     }
 
     public SimilarityEngineController dup() {
@@ -165,6 +164,7 @@ public class SimilarityEngineController {
     }
 
     public Map<String,AbstractSimilarityEngine> getEngineMap() {
+        if(allEngines==null) throw new NullPointerException("allEngines list (static)");
         return allEngines.stream().collect(Collectors.toMap(e->e.getName(),e->e));
     }
 }
