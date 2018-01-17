@@ -320,6 +320,7 @@ public class Parser {
         if(colIdx>0) {
             String prefix = queryStr.substring(0,colIdx);
             System.out.println("Prefix: "+prefix);
+            System.out.println("Querystr: "+queryStr);
             String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(prefix, prefix.endsWith("_F")&&prefix.length()>2 ? Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(prefix.substring(0,prefix.length()-2)):null);
             if(attr!=null && prefix.equals(prefix.toUpperCase())&&queryStr.length()>colIdx+1) {
                 fullAttr = attr;
@@ -338,6 +339,7 @@ public class Parser {
                 val = queryStr.substring(colIdx+1);
             } else {
                 // warning
+                System.out.println("Warning...");
             }
         }
 
