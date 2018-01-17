@@ -32,7 +32,6 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Session;
-import user_interface.acclaim_compatibility.Parser;
 import user_interface.server.tools.AjaxChartMessage;
 import user_interface.server.tools.FileCacheMap;
 import user_interface.server.tools.PasswordHandler;

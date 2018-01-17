@@ -231,8 +231,12 @@ public class Parser {
             for(int i = 0; i < parts.length-1; i++) {
                 parentDirs[i]=parts[i];
             }
+
             String dsName = parts[parts.length-1];
             String id = DatasetIndex.idFromName(user,dsName,parentDirs);
+
+            System.out.println("Parent dirs: "+String.join(".",parentDirs));
+            System.out.println("ds Name: "+dsName);
 
             // then try with shared user
             if(id==null) {
@@ -483,6 +487,12 @@ public class Parser {
                     if(attr!=null) {
                         String val = fields[1];
                         return new SpanTermQueryBuilder(attr, val);
+                    } else if(field.equals("TAC")) {
+                        // special case
+                        SpanOrQueryBuilder orBuilder = new SpanOrQueryBuilder(new SpanTermQueryBuilder(Constants.INVENTION_TITLE,fields[1]));
+                        orBuilder.addClause(new SpanTermQueryBuilder(Constants.ABSTRACT,fields[1]));
+                        // need way to get nested claim text
+                        return orBuilder;
                     }
                 }
             }

@@ -80,6 +80,8 @@ public class DatasetIndex {
                     QueryBuilders.termsQuery(PARENT_DIRS_FIELD, convertParentDirs(parentDirs))
             );
         }
+
+        System.out.println(" DS Lookup query: "+query.toString());
         SearchResponse res = client.prepareSearch(INDEX).setTypes(TYPE).setFetchSource(new String[]{"_id"},new String[]{}).setSize(1).setFrom(0)
                 .setQuery(query).addSort(SortBuilders.scoreSort().order(SortOrder.DESC)).get();
 
