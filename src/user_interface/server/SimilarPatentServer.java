@@ -2160,16 +2160,11 @@ public class SimilarPatentServer {
         res.type("text/html");
         String message = req.session().attribute("message");
         req.session().removeAttribute("message");
-        List<Pair<String,String>> acclaimAttrs = Collections.emptyList();
+        List<Pair<String,String>> acclaimAttrs;
         if(authorized) {
-            Map<String,String> primaryAcclaimMap = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP;
-            primaryAcclaimMap.forEach((k,v)->acclaimAttrs.add(new Pair<>(k,v)));
-            Set<String> values = new HashSet<>(primaryAcclaimMap.values());
-            Parser.transformationsForAttr.forEach((k,v)->{
-                if(!values.contains(k)&&!primaryAcclaimMap.containsKey(k)) {
-                    acclaimAttrs.add(new Pair<>(k,humanAttributeFor(k)));
-                }
-            });
+            acclaimAttrs = Constants.acclaimAttrs;
+        } else {
+            acclaimAttrs = Collections.emptyList();
         }
         return html().with(
                 head().with(

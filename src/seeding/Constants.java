@@ -1,7 +1,10 @@
 package seeding;
 
 
+import org.nd4j.linalg.primitives.Pair;
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
+import user_interface.acclaim_compatibility.Parser;
+import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.GatherTechnologyAttribute;
 import user_interface.ui_models.attributes.computable_attributes.TechnologyAttribute;
@@ -411,4 +414,16 @@ public class Constants {
 			Arrays.asList("ANRE_CUR",LATEST_ASSIGNEE+"."+ASSIGNEE),
 			Arrays.asList("SFAM", PATENT_FAMILY+"."+NAME)
 	).collect(Collectors.toMap(e->e.get(0),e->e.get(1)));
+
+	public static final List<Pair<String,String>> acclaimAttrs = Collections.synchronizedList(new ArrayList<>());
+	static {
+		Map<String, String> primaryAcclaimMap = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP;
+		primaryAcclaimMap.forEach((k, v) -> acclaimAttrs.add(new Pair<>(k, v)));
+		Set<String> values = new HashSet<>(primaryAcclaimMap.values());
+		Parser.transformationsForAttr.forEach((k, v) -> {
+			if (!values.contains(k) && !primaryAcclaimMap.containsKey(k)) {
+				acclaimAttrs.add(new Pair<>(k, SimilarPatentServer.humanAttributeFor(k)));
+			}
+		});
+	}
 }
