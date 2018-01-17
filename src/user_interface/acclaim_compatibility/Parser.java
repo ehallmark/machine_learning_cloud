@@ -49,9 +49,9 @@ public class Parser {
                     // try date formatting
                     val = tryCoerceDate(val);
                 }
-                return QueryBuilders.queryStringQuery(name + ":" + val).defaultOperator(Operator.AND);
+                return QueryBuilders.queryStringQuery(name + ":" + val.toLowerCase()).defaultOperator(Operator.AND);
             } else {
-                QueryBuilder query = QueryBuilders.queryStringQuery(val).fields(defaultFields).defaultOperator(Operator.AND);
+                QueryBuilder query = QueryBuilders.queryStringQuery(val.toLowerCase()).fields(defaultFields).defaultOperator(Operator.AND);
                 return QueryBuilders.boolQuery()
                         .must(query);
             }
@@ -319,6 +319,7 @@ public class Parser {
         int colIdx = queryStr.indexOf(":");
         if(colIdx>0) {
             String prefix = queryStr.substring(0,colIdx);
+            System.out.println("Prefix: "+prefix);
             String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(prefix, prefix.endsWith("_F")&&prefix.length()>2 ? Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(prefix.substring(0,prefix.length()-2)):null);
             if(attr!=null && prefix.equals(prefix.toUpperCase())&&queryStr.length()>colIdx+1) {
                 fullAttr = attr;
@@ -332,6 +333,7 @@ public class Parser {
                 queryStr = fullAttr+":"+val;
 
             } else if(transformationsForAttr.containsKey(prefix)&&queryStr.length()>colIdx+1) {
+                System.out.println("Found prefix: "+prefix);
                 fullAttr = prefix;
                 val = queryStr.substring(colIdx+1);
             } else {
