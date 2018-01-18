@@ -415,7 +415,7 @@ public class NormalizeAssignees {
                 if(name.equals(other)) return null;
 
 
-                double matchThreshold = 0.95;
+                double matchThreshold = 0.93;
                 double score;
 
                 score = distance.similarity(strippedName, stripPrefixesAndSuffixes(other));
