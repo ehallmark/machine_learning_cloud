@@ -66,6 +66,8 @@ public class NormalizeAssignees {
     static final Collection<String> manualBadSuffixes = Arrays.asList(
             " KABUSHIKI KAISHA",
             " LP",
+            " L.P",
+            " L.P.",
             " GMBH",
             " S.A",
             " SA",
@@ -109,6 +111,11 @@ public class NormalizeAssignees {
         cleanIsh = cleanIsh.trim();
 
         if(cleanIsh.length() > MIN_ASSIGNEE_LENGTH && cleanIsh.contains(" ")) {
+            int idx = cleanIsh.indexOf("(");
+            if(idx > MIN_ASSIGNEE_LENGTH) {
+                cleanIsh = cleanIsh.substring(0,idx);
+            }
+
             // clean prefixes
             boolean prefixProblem = true;
             while(prefixProblem) {
@@ -120,6 +127,7 @@ public class NormalizeAssignees {
                     }
                 }
             }
+
             // clean suffixes
             boolean suffixProblem = true;
             while(suffixProblem) {
@@ -484,17 +492,17 @@ public class NormalizeAssignees {
                     if(isHuman==null||isHuman) return false;
                     String role = (String)data.get(Constants.ASSIGNEE_ROLE);
                     String status = (String)data.get(Constants.ASSIGNEE_ENTITY_TYPE);
-                    String country = (String)data.get(Constants.COUNTRY);
-                    if(role==null||status==null||country==null) return false;
+                    //String country = (String)data.get(Constants.COUNTRY);
+                    if(role==null||status==null/*||country==null*/) return false;
                     if(role.endsWith("2")) {
                         // us
-                        String group = ("domestic"+status+country).toUpperCase();
+                        String group = ("domestic"+status/*+country*/).toUpperCase();
                         companyGroupsMap.putIfAbsent(group, Collections.synchronizedSet(new HashSet<>()));
                         companyGroupsMap.get(group).add(assignee);
                         return true;
                     } else if(role.endsWith("3")) {
                         // foreign
-                        String group = ("foreign"+status+country).toUpperCase();
+                        String group = ("foreign"+status/*+country*/).toUpperCase();
                         companyGroupsMap.putIfAbsent(group, Collections.synchronizedSet(new HashSet<>()));
                         companyGroupsMap.get(group).add(assignee);
                         return true;
