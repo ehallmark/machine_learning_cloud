@@ -1,23 +1,24 @@
 package user_interface.ui_models.excel;
 
 import jxl.Workbook;
-import jxl.format.*;
 import jxl.format.Alignment;
 import jxl.format.Border;
 import jxl.format.BorderLineStyle;
 import jxl.format.Colour;
+import jxl.format.*;
 import jxl.format.VerticalAlignment;
 import jxl.write.*;
 import jxl.write.Number;
-import user_interface.server.SimilarPatentServer;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -152,7 +153,7 @@ public class ExcelHandler {
         BufferedImage logoImage = ImageIO.read(logoFile);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(logoImage, "PNG", baos);
-        WritableImage img = new WritableImage(1.0,0.3,30.0*new Double(logoImage.getWidth()) / sheet.getColumnView(1).getSize(),
+        WritableImage img = new WritableImage(1.0,0.3,32.0*new Double(logoImage.getWidth()) / sheet.getColumnView(1).getSize(),
                 1.3 * new Double(logoImage.getHeight()) / CELL_DEFAULT_HEIGHT,baos.toByteArray());
         sheet.addImage(img);
 
