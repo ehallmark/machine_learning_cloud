@@ -189,7 +189,7 @@ public class AssigneePortfolioSizes {
                 }
                 if (choices.size()>0) {
                     System.out.println(assignee+" => "+String.join("; ",choices));
-                    writer.write("\"" + assignee + "\",\"" + String.join("; ",choices) + "\"," + choices.stream().mapToInt(choice->Database.getAssetCountFor(choice)).sum() + "\n");
+                    writer.write("\"" + assignee + "\",\"" + String.join("; ",choices).replace(",","").replace("\"","") + "\"," + choices.stream().mapToInt(choice->Database.getAssetCountFor(choice)).sum() + "\n");
                 } else {
                     writer.write("\"" + assignee + "\",(NOT FOUND),0\n");
                 }
