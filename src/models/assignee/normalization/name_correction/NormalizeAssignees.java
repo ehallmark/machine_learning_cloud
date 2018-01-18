@@ -79,6 +79,7 @@ public class NormalizeAssignees {
             " N.V",
             " EUROPE",
             " S.A.S",
+            " PTE",
             " B.V",
             " E.V",
             " PTY",
