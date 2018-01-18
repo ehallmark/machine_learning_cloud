@@ -1,24 +1,12 @@
 package models.similarity_models.combined_similarity_model;
 
 import ch.qos.logback.classic.Level;
-import data_pipeline.pipeline_manager.DefaultPipelineManager;
-import data_pipeline.vectorize.DataSetManager;
-import data_pipeline.vectorize.NoSaveDataSetManager;
-import lombok.Getter;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
-import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
-import models.text_streaming.FileTextDataSetIterator;
-import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
-import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
-import seeding.Database;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
 import java.util.Collections;
@@ -64,7 +52,7 @@ public class CombinedSimilarityVAEPipelineManager extends AbstractCombinedSimila
         if(MANAGER==null) {
             Nd4j.setDataType(DataBuffer.Type.DOUBLE);
 
-            String modelName = MODEL_NAME;//MODEL_NAME_SMALL;
+            String modelName = MODEL_NAME_SMALL;
             String cpcEncodingModel = CPCVAEPipelineManager.MODEL_NAME;
             String wordCpc2VecModel = WordCPC2VecPipelineManager.SMALL_MODEL_NAME;
 
