@@ -171,12 +171,20 @@ public class AssigneePortfolioSizes {
                 Iterator<String> closest = assigneeTrie.getValuesForClosestKeys(assignee).iterator();
                 JaroWinkler jaroWinkler = new JaroWinkler();
                 List<String> choices = new ArrayList<>();
-                double threshold = 0.85;
+                double threshold = 0.95;
                 while (closest.hasNext()) {
                     String option = closest.next();
-                    double score = jaroWinkler.similarity(assignee, option);
-                    if (score > threshold) {
+                    if(option.equals(assignee)) {
                         choices.add(option);
+                    } else if(assignee.contains(" ") && assignee.startsWith(option+" ")) {
+                        choices.add(option);
+                    } else if(option.contains(" ") && option.startsWith(assignee+" ")) {
+                        choices.add(option);
+                    } else if(option.contains( " ") && assignee.contains(" ")) {
+                        double score = jaroWinkler.similarity(assignee, option);
+                        if (score > threshold) {
+                            choices.add(option);
+                        }
                     }
                 }
                 if (choices.size()>0) {
