@@ -61,6 +61,10 @@ public class AssetKMeans {
 
         int startingK = Math.max(MIN_K, Math.min(MAX_K/2,numAssets/APPROX_PER_GROUP));
         int endingK = Math.min(MAX_K, Math.max(startingK+1,numAssets/APPROX_PER_GROUP));
+        if(numAssets>1000) {
+            startingK = MAX_K-1;
+            endingK = MAX_K;
+        }
 
         kMeans.optimize(assetEncodingMap,startingK,endingK,B,maxEpochs);
 

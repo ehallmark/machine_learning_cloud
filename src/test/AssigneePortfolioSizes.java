@@ -158,7 +158,7 @@ public class AssigneePortfolioSizes {
                 "Garmin\n" +
                 "Sierra Wireless";
 
-        String[] assignees = assigneesStr.split("\\n");
+        String[] assignees = assigneesStr.toUpperCase().split("\\n");
 
         System.out.println(assignees.length);
 
