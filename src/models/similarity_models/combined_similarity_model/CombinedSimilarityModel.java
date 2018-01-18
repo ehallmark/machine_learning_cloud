@@ -114,8 +114,8 @@ public class CombinedSimilarityModel extends AbstractCombinedSimilarityModel<Mul
 
     @Override
     protected Map<String, MultiLayerNetwork> updateNetworksBeforeTraining(Map<String, MultiLayerNetwork> networkMap) {
-        double newLearningRate = 0.0001;
-        double newRegularization = 1e-4;
+        double newLearningRate = 0.00001;
+        double newRegularization = -1;//1e-4;
         wordCpc2Vec = NNRefactorer.updateNetworkRegularization(NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(WORD_CPC_2_VEC),newLearningRate,false),newRegularization>0,newRegularization,false);
         cpcVecNet = NNRefactorer.updateNetworkRegularization(NNRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(CPC_VEC_NET),newLearningRate,false),newRegularization>0,newRegularization,false);
         Map<String,MultiLayerNetwork> updates = Collections.synchronizedMap(new HashMap<>());
