@@ -6,7 +6,9 @@ import seeding.Database;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class AssigneePortfolioSizes {
     public static void main(String[] args) {
@@ -56,7 +58,7 @@ public class AssigneePortfolioSizes {
                 "ParkNow\n" +
                 "Qualcomm\n" +
                 "Amazon\n" +
-                "Alphabet Inc / Google\n" +
+                "Google\n" +
                 "Wink\n" +
                 "GE\n" +
                 "August\n" +
@@ -168,19 +170,18 @@ public class AssigneePortfolioSizes {
             for (String assignee : assignees) {
                 Iterator<String> closest = assigneeTrie.getValuesForClosestKeys(assignee).iterator();
                 JaroWinkler jaroWinkler = new JaroWinkler();
-                double best = Double.MIN_VALUE;
-                String choice = null;
+                List<String> choices = new ArrayList<>();
+                double threshold = 0.85;
                 while (closest.hasNext()) {
                     String option = closest.next();
                     double score = jaroWinkler.similarity(assignee, option);
-                    if (score > best) {
-                        choice = option;
-                        best = score;
+                    if (score > threshold) {
+                        choices.add(option);
                     }
                 }
-                if (choice != null) {
-                    System.out.println(assignee+" => "+choice);
-                    writer.write("\"" + assignee + "\",\"" + choice + "\"," + Database.getAssetCountFor(choice) + "\n");
+                if (choices.size()>0) {
+                    System.out.println(assignee+" => "+String.join("; ",choices));
+                    writer.write("\"" + assignee + "\",\"" + String.join("; ",choices) + "\"," + choices.stream().mapToInt(choice->Database.getAssetCountFor(choice)).sum() + "\n");
                 } else {
                     writer.write("\"" + assignee + "\",(NOT FOUND),0\n");
                 }
