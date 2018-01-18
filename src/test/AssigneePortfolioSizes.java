@@ -180,7 +180,7 @@ public class AssigneePortfolioSizes {
                         choices.add(option);
                     } else if(option.contains(" ") && option.startsWith(assignee+" ")) {
                         choices.add(option);
-                    } else if(option.contains( " ") && assignee.contains(" ")) {
+                    } else if(option.contains(" ") && assignee.contains(" ")) {
                         double score = jaroWinkler.similarity(assignee, option);
                         if (score > threshold) {
                             choices.add(option);
