@@ -1,5 +1,6 @@
 package user_interface.ui_models.attributes.script_attributes;
 
+import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEPipelineManager;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -21,7 +22,8 @@ import static user_interface.server.SimilarPatentServer.extractArray;
  * Created by ehallmark on 6/15/17.
  */
 public class SimilarityAttribute extends AbstractScriptAttribute implements DependentAttribute<AbstractScriptAttribute> {
-    public static final int vectorSize = 32;
+    private static final String similarityModelName = CombinedSimilarityVAEPipelineManager.MODEL_NAME_SMALL;
+    public static final int vectorSize = CombinedSimilarityVAEPipelineManager.NAME_TO_VECTOR_SIZE_MAP.get(similarityModelName);
     public static final int dimensionsForSort = vectorSize;
     public static final String VECTOR_NAME = "cvec";
 
