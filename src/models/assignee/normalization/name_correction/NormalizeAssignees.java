@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 10/8/2017.
  */
 public class NormalizeAssignees {
-    private static final boolean test = true;
+    private static final boolean test = false;
    // private static Map<String,Pair<String,Double>> rawToNormalizedAssigneeNameMapWithScores;
     private static final File rawToNormalizedAssigneeNameFile = new File(Constants.DATA_FOLDER+"raw_to_normalized_assignee_name_map.jobj");
 
@@ -275,6 +275,7 @@ public class NormalizeAssignees {
                 "NATIONAL CENTRE FOR",
                 "NATIONAL CENTER FOR",
                 "THE UNIVERSITY OF ",
+                "BOARD OF REGENTS OF THE UNIVERSITY OF"
         };
         for(String badString : badStrings) {
             if (raw.startsWith(badString) && raw.length() > badString.length()) {
