@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 10/8/2017.
  */
 public class NormalizeAssignees {
+    private static final boolean test = true;
    // private static Map<String,Pair<String,Double>> rawToNormalizedAssigneeNameMapWithScores;
     private static final File rawToNormalizedAssigneeNameFile = new File(Constants.DATA_FOLDER+"raw_to_normalized_assignee_name_map.jobj");
 
@@ -70,6 +71,7 @@ public class NormalizeAssignees {
             " L.P.",
             " GMBH",
             " S.A",
+            " S.A.",
             " SA",
             " KG",
             " &",
@@ -81,6 +83,8 @@ public class NormalizeAssignees {
             " S.A.S",
             " PTE",
             " B.V",
+            " S.R.L",
+            " S.R.I",
             " COMPANY",
             " E.V",
             " PTY",
@@ -403,10 +407,13 @@ public class NormalizeAssignees {
         final AtomicInteger cnt = new AtomicInteger(0);
         final AtomicInteger matched = new AtomicInteger(0);
 
+        if(test) cleansed = cleansed.stream().limit(1000).collect(Collectors.toSet());
+
         Collection<String> copyOfCleansed = new ArrayList<>(cleansed);
+        final int cleansedSize = copyOfCleansed.size();
         return cleansed.parallelStream().map(name->{
             if(cnt.getAndIncrement()%1000==999) {
-                System.out.println("Finished "+cnt.get()+" / "+copyOfCleansed.size()+" with "+matched.get()+" matches.");
+                System.out.println("Finished "+cnt.get()+" / "+cleansedSize+" with "+matched.get()+" matches.");
             }
             JaroWinkler distance = new JaroWinkler();
             String[] words = name.split(" ");
@@ -425,8 +432,6 @@ public class NormalizeAssignees {
                 score = distance.similarity(strippedName, stripPrefixesAndSuffixes(other));
 
                 if(score>=matchThreshold) {
-                    // adjust score for portfolio size
-                    score *= Math.log(Math.E+Math.abs(cleansedToSizeMap.getOrDefault(other,0)-size));
                     return new Pair<>(other,score);
                 }
                 return null;
@@ -435,7 +440,7 @@ public class NormalizeAssignees {
                 int sizeThis = size;
                 int sizeThat = cleansedToSizeMap.getOrDefault(best._1,0);
                 if(sizeThat > sizeThis) {
-                    //    System.out.println(" MATCH: "+name+" => "+best._1);
+                    if(test)System.out.println(" MATCH: "+name+" => "+best._1);
                     matched.getAndIncrement();
                     return new Pair<>(name,best._1);
                 }
@@ -450,37 +455,46 @@ public class NormalizeAssignees {
                 .collect(Collectors.toMap(e->e._1,e->e._2));
     }
 
-    private static Map<String,String> performIteration(Collection<String> companies, Map<String,Integer> assigneeToPortfolioSizeMap) {
+
+    private static Map<String,String> performIteration(Collection<String> companies, Map<String,Integer> assigneeToPortfolioSizeMap, final int totalIterations) {
         // initial cleanse
         System.out.println("Starting initial cleanse...");
-        System.out.println("Non cleansed: "+companies.size());
+        System.out.println("Non cleansed: " + companies.size());
+
         Map<String,String> rawToCleansed = initialCleanse(companies);
+        Map<String,Integer> cleansedToSize = assigneeToPortfolioSizeMap;
+        for(int i = 0; i < totalIterations; i++) {
 
-        Set<String> cleansed = Collections.synchronizedSet(new HashSet<>(rawToCleansed.values()));
-        System.out.println("Cleansed: "+cleansed.size());
+            Set<String> cleansed = Collections.synchronizedSet(new HashSet<>(rawToCleansed.values()));
+            System.out.println("Cleansed: " + cleansed.size());
 
-        System.out.println("Building portfolio size map...");
-        Map<String,Integer> cleansedToSize = createPortfolioSizeMap(cleansed,rawToCleansed,assigneeToPortfolioSizeMap);
+            System.out.println("Building portfolio size map...");
+            cleansedToSize = createPortfolioSizeMap(cleansed, rawToCleansed, cleansedToSize);
 
-        System.out.println("Portfolio map size: "+cleansedToSize.size());
+            System.out.println("Portfolio map size: " + cleansedToSize.size());
 
-        System.out.println("Starting to normalize...");
-        // match cleansed
-        Map<String,String> cleansedToNormalized = match(cleansed,cleansedToSize);
-        System.out.println("Normalized map size: "+cleansedToNormalized.size());
+            System.out.println("Starting to normalize...");
+            // match cleansed
+            Map<String, String> cleansedToNormalized = match(cleansed, cleansedToSize);
+            System.out.println("Normalized map size: " + cleansedToNormalized.size());
 
-        System.out.println("Starting final grouping...");
-        // regroup with raw names
-        return groupBy(rawToCleansed,cleansedToNormalized);
+            System.out.println("Starting final grouping...");
+
+            // regroup with raw names
+            rawToCleansed = groupBy(rawToCleansed, cleansedToNormalized);
+        }
+        return rawToCleansed;
     }
 
     public static void main(String[] args) {
         run(MergeRawAssignees.get());
 
-        System.out.println("Saving assignee map...");
-        AssetToAssigneeMap assetToAssigneeMap = new AssetToAssigneeMap();
-        assetToAssigneeMap.initMaps();
-        assetToAssigneeMap.save();
+        if(!test) {
+            System.out.println("Saving assignee map...");
+            AssetToAssigneeMap assetToAssigneeMap = new AssetToAssigneeMap();
+            assetToAssigneeMap.initMaps();
+            assetToAssigneeMap.save();
+        }
 
     }
 
@@ -529,10 +543,10 @@ public class NormalizeAssignees {
         // regroup with raw names
         Map<String,String> rawToNormalized = Collections.synchronizedMap(new HashMap<>(assigneeToPortfolioSizeMap.size()));
         companyGroupsMap.forEach((group,companies)->{
-            Map<String,String> rawToNormalizedGroup = performIteration(companies,assigneeToPortfolioSizeMap);
+            Map<String,String> rawToNormalizedGroup = performIteration(companies,assigneeToPortfolioSizeMap,3);
             rawToNormalized.putAll(rawToNormalizedGroup);
         });
 
-        save(rawToNormalized);
+        if(!test)save(rawToNormalized);
     }
 }

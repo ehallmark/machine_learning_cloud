@@ -3,13 +3,12 @@ package elasticsearch;
 import com.google.gson.Gson;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
-import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
+import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
 import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
-import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,7 +29,7 @@ public class CreatePatentDBIndex {
 
         Map<String,Object> vectorProperties = new HashMap<>();
         for(int i = 0; i < SimilarityAttribute.vectorSize; i++) {
-            vectorProperties.put(String.valueOf(i),typeMap("double",null,null));
+            vectorProperties.put(String.valueOf(i),typeMap("float",null,null));
         }
         properties.put(SimilarityAttribute.VECTOR_NAME,typeMap("object",vectorProperties,null));
 
