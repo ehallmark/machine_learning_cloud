@@ -403,11 +403,11 @@ public class NormalizeAssignees {
         }).collect(Collectors.groupingBy(e->e._2,Collectors.collectingAndThen(Collectors.reducing((e1,e2)->e1._1>e2._1?e1:e2),e->e.get()._1)));
     }
 
-    private static Map<String,String> match(Collection<String> cleansed, Map<String,Integer> cleansedToSizeMap) {
+    private static Map<String,String> match(Collection<String> cleansed, Map<String,Integer> cleansedToSizeMap,double threshold) {
         final AtomicInteger cnt = new AtomicInteger(0);
         final AtomicInteger matched = new AtomicInteger(0);
 
-        if(test) cleansed = cleansed.stream().limit(1000).collect(Collectors.toSet());
+        if(test) cleansed = cleansed.stream().limit(10000).collect(Collectors.toSet());
 
         Collection<String> copyOfCleansed = new ArrayList<>(cleansed);
         final int cleansedSize = copyOfCleansed.size();
@@ -416,22 +416,27 @@ public class NormalizeAssignees {
                 System.out.println("Finished "+cnt.get()+" / "+cleansedSize+" with "+matched.get()+" matches.");
             }
             JaroWinkler distance = new JaroWinkler();
-            String[] words = name.split(" ");
             String strippedName = stripPrefixesAndSuffixes(name);
+            String[] words = strippedName.split(" ");
 
             int size = cleansedToSizeMap.getOrDefault(name,0);
 
             Pair<String,Double> best = copyOfCleansed.stream().map(other->{
-                if(!other.contains(" ")&&!name.contains(" ")) return null;
                 if(name.equals(other)) return null;
 
+                if(!other.contains(" ")&&!name.contains(" ")) return null;
 
-                double matchThreshold = 0.93;
+                String otherStrippedName = stripPrefixesAndSuffixes(other);
+
+                if(words[0].length()<=5&&!otherStrippedName.split(" ")[0].equals(words[0])) {
+                    return null;
+                }
+
                 double score;
 
-                score = distance.similarity(strippedName, stripPrefixesAndSuffixes(other));
+                score = distance.similarity(strippedName, otherStrippedName);
 
-                if(score>=matchThreshold) {
+                if(score>=threshold) {
                     return new Pair<>(other,score);
                 }
                 return null;
@@ -464,6 +469,7 @@ public class NormalizeAssignees {
         Map<String,String> rawToCleansed = initialCleanse(companies);
         Map<String,Integer> cleansedToSize = assigneeToPortfolioSizeMap;
         for(int i = 0; i < totalIterations; i++) {
+            double threshold = 0.95 + (0.04/totalIterations)*(i);
 
             Set<String> cleansed = Collections.synchronizedSet(new HashSet<>(rawToCleansed.values()));
             System.out.println("Cleansed: " + cleansed.size());
@@ -475,7 +481,7 @@ public class NormalizeAssignees {
 
             System.out.println("Starting to normalize...");
             // match cleansed
-            Map<String, String> cleansedToNormalized = match(cleansed, cleansedToSize);
+            Map<String, String> cleansedToNormalized = match(cleansed, cleansedToSize, threshold);
             System.out.println("Normalized map size: " + cleansedToNormalized.size());
 
             System.out.println("Starting final grouping...");
