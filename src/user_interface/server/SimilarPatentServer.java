@@ -1513,12 +1513,12 @@ public class SimilarPatentServer {
 
     public static String decodeURLString(String in) {
         try {
-            System.out.println("Name before: "+in);
+            //System.out.println("Name before: "+in);
             in = in.replace("&amp;","&");
             in = in.replace("&lt;","<");
             in = in.replace("&gt;",">");
             in = in.replace("&quot;","\"");
-            System.out.println("Name after: "+in);
+            //System.out.println("Name after: "+in);
         } catch(Exception e) {
             e.printStackTrace();
         }

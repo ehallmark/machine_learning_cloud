@@ -111,7 +111,7 @@ public class NormalizeAssignees {
                 }
             }
         }
-        return rawToNormalizedMap.getOrDefault(assignee,assignee);
+        return rawToNormalizedMap.getOrDefault(assignee,manualCleanse(assignee));
     }
 
     public static String manualCleanse(String cleanIsh) {

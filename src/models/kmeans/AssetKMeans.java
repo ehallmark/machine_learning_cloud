@@ -36,6 +36,7 @@ public class AssetKMeans {
         this.keyphrasePredictionPipelineManager=keyphrasePredictionPipelineManager;
         this.techPredictions = keyphrasePredictionPipelineManager.loadPredictions();
         this.assetEncodingMap = assetToEncodingMap;
+        System.out.println("Num tech predictions: "+techPredictions.size());
     }
 
     public AssetKMeans(List<String> assets, KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager) {
