@@ -1,6 +1,7 @@
 package models.kmeans;
 
 import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
+import models.keyphrase_prediction.PredictKeyphraseForFilings;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -31,11 +32,11 @@ public class AssetKMeans {
     private KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager;
     private UnitCosineKMeans kMeans;
     private Map<String,INDArray> assetEncodingMap;
-    private Map<String,Set<String>> techPredictions;
+    private Map<String,List<String>> techPredictions;
     public AssetKMeans(Map<String,INDArray> assetToEncodingMap, KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager) {
         this.kMeans = new UnitCosineKMeans();
         this.keyphrasePredictionPipelineManager=keyphrasePredictionPipelineManager;
-        this.techPredictions = keyphrasePredictionPipelineManager.loadPredictions();
+        this.techPredictions = PredictKeyphraseForFilings.loadOrGetTechnologyMap();
         this.assetEncodingMap = assetToEncodingMap;
         System.out.println("Num tech predictions: "+techPredictions.size());
     }
@@ -85,7 +86,7 @@ public class AssetKMeans {
 
             // tag
             String tag = null;
-            Collection<String> keywords = related.stream().flatMap(asset->techPredictions.getOrDefault(asset,Collections.emptySet()).stream()).collect(Collectors.toList());
+            Collection<String> keywords = related.stream().flatMap(asset->techPredictions.getOrDefault(asset,Collections.emptyList()).stream()).collect(Collectors.toList());
             System.out.println("keywords: "+keywords.size());
             Map<String,INDArray> toPredict = Collections.singletonMap("cluster", Transforms.unitVec(Nd4j.vstack(cluster.stream().map(asset->assetEncodingMap.get(asset)).collect(Collectors.toList())).mean(0)));
             if(keywords.size()>0){
