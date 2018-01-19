@@ -2,15 +2,12 @@ package models.keyphrase_prediction;
 
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
-import data_pipeline.helpers.CombinedModel;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import lombok.Getter;
 import models.keyphrase_prediction.models.DefaultModel;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
-import models.similarity_models.combined_similarity_model.CombinedSimilarityModel;
-import models.similarity_models.combined_similarity_model.CombinedSimilarityPipelineManager;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
@@ -249,17 +246,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         return predict(keywords,wordCPC2VecPipelineManager.getOrLoadCPCVectors(),maxTags,minScore);
     }
 
-    private void loadSimilarityNetworks() {
-        String similarityModelName = CombinedSimilarityPipelineManager.MODEL_NAME;
-        CombinedSimilarityPipelineManager combinedSimilarityPipelineManager = new CombinedSimilarityPipelineManager(similarityModelName,null,null,null);
-        combinedSimilarityPipelineManager.initModel(false);
-
-        CombinedModel<MultiLayerNetwork> combinedModel = (CombinedModel<MultiLayerNetwork>)combinedSimilarityPipelineManager.getModel().getNet();
-
-        filingToEncodingNet = combinedModel.getNameToNetworkMap().get(CombinedSimilarityModel.CPC_VEC_NET);
-        wordToEncodingNet = combinedModel.getNameToNetworkMap().get(CombinedSimilarityModel.WORD_CPC_2_VEC);
-
-    }
 
     private void buildKeywordToLookupTableMap() {
         // get vectors

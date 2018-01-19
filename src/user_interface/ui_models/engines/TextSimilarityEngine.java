@@ -33,7 +33,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     private static ComputationGraph wordToEncodingNet;
     private static final int maxSampleLength = 15;
     private static final int maxNumSamples = 30;
-    private static final double numDocs = 18000000d;
+    private static final double numDocs = 1000000;
 
     public TextSimilarityEngine() {
         loadSimilarityNetworks();
@@ -42,7 +42,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     private void loadSimilarityNetworks() {
         synchronized (TextSimilarityEngine.class) {
             if (wordToEncodingNet == null) {
-                String similarityModelName = CombinedSimilarityPipelineManager.MODEL_NAME;
+                String similarityModelName = CombinedSimilarityPipelineManager.MODEL_NAME_SMALL;
                 CombinedSimilarityPipelineManager combinedSimilarityPipelineManager = new CombinedSimilarityPipelineManager(similarityModelName, null, null, null);
                 combinedSimilarityPipelineManager.initModel(false);
 

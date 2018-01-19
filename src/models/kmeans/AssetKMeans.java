@@ -9,6 +9,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Database;
+import user_interface.ui_models.attributes.computable_attributes.TechnologyAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.util.*;
@@ -26,6 +27,7 @@ public class AssetKMeans {
     private static final int MAX_K = 20;
     private static final int APPROX_PER_GROUP = 100;
     private static final int B = 10;
+    private static final int KEYWORD_SAMPLES = 100;
     private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
 
 
@@ -77,25 +79,35 @@ public class AssetKMeans {
         AtomicInteger cnt = new AtomicInteger(0);
 
 
+        final Random rand = new Random(5629);
+
         clusters.forEach(cluster->{
             if(cluster.isEmpty()) return;
 
-            Set<String> related = cluster.stream().flatMap(r->{
+            List<String> related = cluster.stream().flatMap(r->{
                 return Stream.of(r,assetToFilingMap.getPatentDataMap().getOrDefault(r,assetToFilingMap.getApplicationDataMap().get(r))).filter(f->f!=null);
-            }).collect(Collectors.toSet());
+            }).collect(Collectors.toList());
+
+            List<String> keywords = related.stream().flatMap(asset->techPredictions.getOrDefault(asset,Collections.emptyList()).stream()).collect(Collectors.toList());
+            List<String> keywordSamples = new ArrayList<>(KEYWORD_SAMPLES);
+            for(int i = 0; i < KEYWORD_SAMPLES; i++) {
+                keywordSamples.add(keywords.get(rand.nextInt(keywords.size())));
+            }
 
             // tag
             String tag = null;
-            Collection<String> keywords = related.stream().flatMap(asset->techPredictions.getOrDefault(asset,Collections.emptyList()).stream()).collect(Collectors.toList());
-            System.out.println("keywords: "+keywords.size());
+            System.out.println("keywords: "+keywordSamples.size());
             Map<String,INDArray> toPredict = Collections.singletonMap("cluster", Transforms.unitVec(Nd4j.vstack(cluster.stream().map(asset->assetEncodingMap.get(asset)).collect(Collectors.toList())).mean(0)));
             if(keywords.size()>0){
-                Map<String,Set<String>> results = keyphrasePredictionPipelineManager.predict(keywords,toPredict,1,minScore);
+                System.out.println("starting prediction...");
+                Map<String,Set<String>> results = keyphrasePredictionPipelineManager.predict(keywordSamples,toPredict,1,minScore);
                 if(results.size()>0) {
                     tag = results.values().stream().findAny().orElse(Collections.emptySet()).stream().findAny().orElse(null);
                 }
             }
             if(tag==null) tag = "other "+cnt.getAndIncrement();
+
+            tag = TechnologyAttribute.formatTechnologyString(tag);
 
             map.putIfAbsent(tag,Collections.synchronizedList(new ArrayList<>()));
             map.get(tag).addAll(cluster);

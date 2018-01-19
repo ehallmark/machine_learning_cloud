@@ -1,11 +1,7 @@
 package user_interface.ui_models.attributes.computable_attributes;
 
-import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.PredictKeyphraseForFilings;
-import models.keyphrase_prediction.models.Model;
 import seeding.Constants;
-import seeding.Database;
-import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -80,7 +76,13 @@ public class TechnologyAttribute extends ComputableAttribute<List<String>> {
         }
         List<String> techList = modelMap.getOrDefault(asset, filing==null?null:modelMap.get(filing));
         if(techList==null) return null;
-        return techList.stream().map(tech->titleize(tech)).filter(t->t!=null).map(t->technologyCorrectionsMap.getOrDefault(t,t)).collect(Collectors.toList());
+        return techList.stream().map(tech->formatTechnologyString(tech)).filter(t->t!=null).collect(Collectors.toList());
+    }
+
+    public static String formatTechnologyString(String in) {
+        String titleized = titleize(in);
+        if(titleized==null) return null;
+        return technologyCorrectionsMap.getOrDefault(titleized,titleized);
     }
 
     private static String titleize(String str) {
