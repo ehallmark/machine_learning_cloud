@@ -119,7 +119,7 @@ public class AssetKMeans {
         Map<String,List<String>> clusters = kMeans.clusterAssets();
 
         clusters.forEach((name,cluster)->{
-            System.out.println("Cluster "+name+": "+String.join(", ",cluster));
+            System.out.println("Cluster "+name+": "+cluster.size());
         });
     }
 }
