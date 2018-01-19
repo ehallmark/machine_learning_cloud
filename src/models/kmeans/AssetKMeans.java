@@ -2,6 +2,7 @@ package models.kmeans;
 
 import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
+import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
@@ -107,6 +108,7 @@ public class AssetKMeans {
     public static void main(String[] args) {
         // test
         final int k = 10;
+        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.MODEL_NAME,-1,-1,-1);
         KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(wordCPC2VecPipelineManager);
         keyphrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
