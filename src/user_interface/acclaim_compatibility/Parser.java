@@ -8,6 +8,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.*;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
@@ -405,7 +406,7 @@ public class Parser {
         }
     }
 
-    private SpanQueryBuilder spanQueryFrom(BooleanClause clause, String defaultField) {
+    private Pair<SpanQueryBuilder,String> spanQueryFrom(BooleanClause clause, String defaultField) {
         Query query = clause.getQuery();
         if(query instanceof BooleanQuery) {
             SpanOrQueryBuilder orBuilder = null;
@@ -413,37 +414,44 @@ public class Parser {
 
             SpanQueryBuilder lastInner = null;
             boolean useAnd = ((BooleanQuery) query).clauses().stream().findFirst().orElseThrow(()->new RuntimeException("Parse Error: No boolean clause found in NEAR or ADJ search.")).isRequired();
+            String nestedAttr = null;
             for(int i = 0; i < ((BooleanQuery) query).clauses().size(); i++) {
                 BooleanClause c = ((BooleanQuery) query).clauses().get(i);
-                SpanQueryBuilder inner = spanQueryFrom(c,defaultField);
+                Pair<SpanQueryBuilder,String> inner = spanQueryFrom(c,defaultField);
                 if(inner!=null) {
+                    nestedAttr = inner.getSecond();
                     if(c.isProhibited()) {
                         throw new RuntimeException("Parse Error: Cannot use NOT with NEAR or ADJ.");
                     } else {
                         if(useAnd) {
                             if(andBuilder==null) {
                                 if(lastInner!=null) {
-                                    andBuilder = new SpanContainingQueryBuilder(lastInner, inner);
+                                    andBuilder = new SpanContainingQueryBuilder(lastInner, inner.getFirst());
                                 }
                             } else {
-                                andBuilder = new SpanContainingQueryBuilder(andBuilder,inner);
+                                andBuilder = new SpanContainingQueryBuilder(andBuilder,inner.getFirst());
                             }
                         } else {
                             if (orBuilder == null) {
-                                orBuilder = new SpanOrQueryBuilder(inner);
+                                orBuilder = new SpanOrQueryBuilder(inner.getFirst());
                             } else {
-                                orBuilder = orBuilder.addClause(inner);
+                                orBuilder = orBuilder.addClause(inner.getFirst());
                             }
                         }
                     }
-                    lastInner = inner;
+                    lastInner = inner.getFirst();
                 }
             }
-            if(useAnd) return andBuilder;
-            else return orBuilder;
+            if(useAnd) return new Pair<>(andBuilder,nestedAttr);
+            else return new Pair<>(orBuilder,nestedAttr);
         } else {
             if(defaultField!=null) {
-                return new SpanTermQueryBuilder(defaultField, query.toString());
+                // check nested
+                String nestedAttr = null;
+                if(Constants.NESTED_ATTRIBUTES.contains(defaultField)||(defaultField.contains(".")&&Constants.NESTED_ATTRIBUTES.contains(defaultField.substring(0,defaultField.indexOf("."))))) {
+                    nestedAttr = defaultField.substring(0,defaultField.indexOf("."));
+                }
+                return new Pair<>(new SpanTermQueryBuilder(defaultField, query.toString()),nestedAttr);
             } else {
                 String[] fields = query.toString().split(":",2);
                 String field = fields[0];
@@ -451,13 +459,12 @@ public class Parser {
                     String attr = Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.getOrDefault(field, field.length() > 2 && field.endsWith("_F") ? Constants.ACCLAIM_IP_TO_ATTR_NAME_MAP.get(field.substring(0, field.length() - 2)) : null);
                     if(attr!=null) {
                         String val = fields[1];
-                        return new SpanTermQueryBuilder(attr, val);
-                    } else if(field.equals("TAC")) {
-                        // special case
-                        SpanOrQueryBuilder orBuilder = new SpanOrQueryBuilder(new SpanTermQueryBuilder(Constants.INVENTION_TITLE,fields[1]));
-                        orBuilder.addClause(new SpanTermQueryBuilder(Constants.ABSTRACT,fields[1]));
-                        // need way to get nested claim text
-                        return orBuilder;
+                        // check nested
+                        String nestedAttr = null;
+                        if(Constants.NESTED_ATTRIBUTES.contains(attr)||(attr.contains(".")&&Constants.NESTED_ATTRIBUTES.contains(attr.substring(0,attr.indexOf("."))))) {
+                            nestedAttr = attr.substring(0,attr.indexOf("."));
+                        }
+                        return new Pair<>(new SpanTermQueryBuilder(attr, val),nestedAttr);
                     }
                 }
             }
@@ -470,6 +477,8 @@ public class Parser {
         for(int i = 0; i < booleanQuery.clauses().size(); i++) {
             BooleanClause c = booleanQuery.clauses().get(i);
             Query subQuery = c.getQuery();
+            String queryStr = subQuery.toString();
+
             if(subQuery instanceof BooleanQuery) {
                 QueryBuilder query = parseAcclaimQueryHelper((BooleanQuery)subQuery);
                 if (query != null) {
@@ -485,10 +494,13 @@ public class Parser {
                 QueryBuilder builder;
                 Integer preIdx = i > 0 ? i-1 : null;
                 Integer postIdx = i < booleanQuery.clauses().size()-1 ? i+1 : null;
-                String queryStr = subQuery.toString();
 
                 boolean isProximityQuery = false;
-                if((queryStr.toLowerCase().startsWith("near") || queryStr.toLowerCase().startsWith("adj")) && !queryStr.contains(" ") && !queryStr.contains(":") && preIdx!=null&&postIdx!=null) {
+                String queryStrEnd = queryStr.toLowerCase();
+                if(queryStrEnd.contains(":")&&queryStrEnd.length()>queryStrEnd.indexOf(":")+1) {
+                    queryStrEnd = queryStrEnd.substring(queryStrEnd.indexOf(":")+1);
+                }
+                if((queryStrEnd.startsWith("near") || queryStrEnd.startsWith("adj")) && !queryStrEnd.contains(" ") && !queryStrEnd.contains(":") && preIdx!=null&&postIdx!=null) {
                     isProximityQuery = true;
                     int slop;
                     boolean useOrder = queryStr.toLowerCase().startsWith("adj");
@@ -502,23 +514,26 @@ public class Parser {
                     if(!booleanQuery.clauses().get(preIdx).getQuery().toString().contains(":")) {
                         matchAll = true;
                     }
-                    BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
                     if(matchAll) {
+                        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
                         for(String field : defaultFields.keySet()) {
-                            SpanQueryBuilder builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx),field);
-                            SpanQueryBuilder builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),field);
-                            QueryBuilder innerQuery =  new SpanNearQueryBuilder(builder1, slop).inOrder(useOrder)
-                                    .addClause(builder2);
+                            Pair<SpanQueryBuilder,String> builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx),field);
+                            Pair<SpanQueryBuilder,String> builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),field);
+                            QueryBuilder innerQuery =  new SpanNearQueryBuilder(builder1.getFirst(), slop).inOrder(useOrder)
+                                    .addClause(builder2.getFirst());
                             boolQueryBuilder = boolQueryBuilder.should(innerQuery);
                         }
                         builder = boolQueryBuilder;
                     } else {
-                        SpanQueryBuilder builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx),null);
-                        SpanQueryBuilder builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),null);
+                        Pair<SpanQueryBuilder,String> builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx),null);
+                        Pair<SpanQueryBuilder,String> builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),null);
                         if(builder1!=null&&builder2!=null) {
-                            builder = new SpanNearQueryBuilder(builder1, slop).inOrder(useOrder)
-                                    .addClause(builder2);
+                            builder = new SpanNearQueryBuilder(builder1.getFirst(), slop).inOrder(useOrder)
+                                    .addClause(builder2.getFirst());
+                            if(builder1.getSecond()!=null) {
+                                builder = QueryBuilders.nestedQuery(builder1.getSecond(),builder,ScoreMode.Max);
+                            }
                         } else {
                             builder = null;
                         }
