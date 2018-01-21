@@ -451,7 +451,11 @@ public class Parser {
                 if(Constants.NESTED_ATTRIBUTES.contains(defaultField)||(defaultField.contains(".")&&Constants.NESTED_ATTRIBUTES.contains(defaultField.substring(0,defaultField.indexOf("."))))) {
                     nestedAttr = defaultField.substring(0,defaultField.indexOf("."));
                 }
-                return new Pair<>(new SpanTermQueryBuilder(defaultField, query.toString()),nestedAttr);
+                String queryStr = query.toString();
+                if(queryStr.startsWith("TAC:")) {
+                    queryStr = queryStr.substring(4);
+                }
+                return new Pair<>(new SpanTermQueryBuilder(defaultField, queryStr),nestedAttr);
             } else {
                 String[] fields = query.toString().split(":",2);
                 String field = fields[0];
