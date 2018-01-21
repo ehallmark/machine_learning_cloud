@@ -68,7 +68,7 @@ public class DatasetIndex {
     public static String[] convertParentDirs(String[] parentDirs) {
         String[] parentDirsClone = parentDirs.clone();
         for(int i = 0; i < parentDirsClone.length; i++) {
-            parentDirsClone[i] = String.valueOf(i) + "_" + parentDirs[i] + "_" + i;
+            parentDirsClone[i] = parentDirs[i];
         }
         return parentDirsClone;
     }

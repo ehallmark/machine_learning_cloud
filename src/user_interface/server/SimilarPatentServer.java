@@ -1330,14 +1330,7 @@ public class SimilarPatentServer {
                 if(formFile.exists()) {
                     Map<String,Object> updates = new HashMap<>();
                     updates.put("name", name);
-                    if (parentDirs != null) {
-                        if(parentDirs.length==1) {
-                            parentDirs = new String[]{};
-                        } else if(parentDirs.length > 1) {
-                            parentDirs = Arrays.copyOfRange(parentDirs,1,parentDirs.length);
-                        }
-                        updates.put("parentDirs", parentDirs);
-                    }
+                    if (parentDirs != null && parentDirs.length > 0) updates.put("parentDirs", Arrays.copyOfRange(parentDirs,1,parentDirs.length));
 
                     Lock sync;
                     synchronized (fileSynchronizationMap) {
@@ -1446,7 +1439,8 @@ public class SimilarPatentServer {
                 String username = shared ? SHARED_USER : user;
                 List<String> assets = DatasetIndex.get(username, file);
 
-                String[] parentParentDirs = (String[]) data.getOrDefault("parentDirs",new String[]{});
+                String[] parentParentDirs = Stream.of(new String[]{shared ? "Shared Datasets":"My Datasets"},(String[]) data.getOrDefault("parentDirs",new String[]{}))
+                        .flatMap(array->Stream.of(array)).toArray(size->new String[size]);
 
                 if (assets == null) {
                     message.add("assets are null");
@@ -1479,6 +1473,8 @@ public class SimilarPatentServer {
 
                             formMap.put("name",name);
                             formMap.put("assets", cluster.toArray(new String[cluster.size()]));
+
+                            System.out.println("Parent dirs of cluster: "+Arrays.toString(parentDirs));
 
                             Pair<String, Map<String, Object>> pair = saveFormToFile(formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user), saveDatasetUpdatesFunction());
 
