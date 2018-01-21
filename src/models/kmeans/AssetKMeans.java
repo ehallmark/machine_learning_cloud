@@ -27,7 +27,7 @@ public class AssetKMeans {
     private static final int MAX_K = 20;
     private static final int APPROX_PER_GROUP = 100;
     private static final int B = 10;
-    private static final int KEYWORD_SAMPLES = 100;
+    private static final int KEYWORD_SAMPLES = 30;
     private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
 
 
@@ -89,10 +89,9 @@ public class AssetKMeans {
             }).collect(Collectors.toList());
 
             List<String> keywords = related.stream().flatMap(asset->techPredictions.getOrDefault(asset,Collections.emptyList()).stream()).collect(Collectors.toList());
-            List<String> keywordSamples = new ArrayList<>(KEYWORD_SAMPLES);
-            for(int i = 0; i < KEYWORD_SAMPLES; i++) {
-                keywordSamples.add(keywords.get(rand.nextInt(keywords.size())));
-            }
+            List<String> keywordSamples = keywords.stream().collect(Collectors.groupingBy(keyword->keyword,Collectors.counting()))
+                    .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(KEYWORD_SAMPLES)
+                    .map(e->e.getKey()).collect(Collectors.toList());
 
             // tag
             String tag = null;
