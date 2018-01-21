@@ -15,6 +15,7 @@ import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
@@ -76,13 +77,27 @@ public abstract class TableAttribute extends AbstractChartAttribute {
                 }));
             }).collect(Collectors.toList());
             // handle nested objects
-            int[] assignments = rs.stream().mapToInt(r->Math.max(1,r.values().stream().mapToInt(val->val.size()).max().orElse(1))).toArray();
+            int[] assignments = rs.stream().mapToInt(r->r.values().stream().mapToInt(val->val.size()).max().orElse(0)).toArray();
+            Map<Integer,Integer> postIdxToPreIdx = new HashMap<>();
+            AtomicInteger validIdx = new AtomicInteger(0);
+            int[] validAssignments = IntStream.range(0,assignments.length).map(i->{
+                if(assignments[i]==0) {
+                    // handle
+                    return 0;
+                } else {
+                    postIdxToPreIdx.put(validIdx.getAndIncrement(),i);
+                    return assignments[i];
+                }
+            }).filter(v->v>0).toArray();
+
             //System.out.println("Factors for attrs "+String.join(", ",topLevelAttrsArray)+": "+ Arrays.toString(assignments));
             FactorNode factor = new FactorNode(null,topLevelAttrsArray,assignments);
             return factor.assignmentPermutationsStream().map(assignment->{
                 return new Pair<>(item,
                         new DeepList<>(
-                                IntStream.range(0,assignment.length).mapToObj(i->{
+                                IntStream.range(0,validAssignments.length).mapToObj(j->{
+                                    int i = postIdxToPreIdx.get(j);
+
                                     if(i>=rs.size()) System.out.println("WARNING 1: "+factor.toString());
                                     String topLevelAttr = topLevelAttrsArray[i];
                                     Map<String,List<?>> r = rs.get(i);
