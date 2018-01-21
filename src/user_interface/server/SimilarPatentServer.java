@@ -408,6 +408,13 @@ public class SimilarPatentServer {
                     keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadWordVectors();
                     keyphrasePredictionPipelineManager.loadPredictions();
                     keyphrasePredictionPipelineManager.getCPCMap();
+                    try {
+                        AssetKMeans kMeans = new AssetKMeans(Collections.emptyList(), keyphrasePredictionPipelineManager);
+                        kMeans.clusterAssets();
+                    } catch(Exception e) {
+                        System.out.println("Error while initializing asset K Means");
+                        e.printStackTrace();
+                    }
                     return keyphrasePredictionPipelineManager;
                 }
             };
