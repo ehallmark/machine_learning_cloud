@@ -951,7 +951,9 @@ var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable,callbac
     }
     var nodeData = node;
     while(typeof nodeData.text !== 'undefined') {
-        preData["parentDirs"].unshift(nodeData.text);
+        if(nodeData.type==='folder') {
+            preData["parentDirs"].unshift(nodeData.text);
+        }
         var currId = nodeData.parent;
         nodeData = tree.get_node(currId);
     }
