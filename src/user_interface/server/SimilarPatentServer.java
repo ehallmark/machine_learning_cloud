@@ -1158,6 +1158,7 @@ public class SimilarPatentServer {
         Map<String,Object> response = new HashMap<>();
         final String paramIdx = req.queryParamOrDefault("tableId","");
         long timeLimit = 180 * 1000;
+        Lock lock;
         try {
 
             // try to get custom data
@@ -1168,9 +1169,12 @@ public class SimilarPatentServer {
                 TableResponse tableResponse = req.session().attribute("table-"+paramIdx);
                 if(tableResponse!=null) {
                     System.out.println("Found tableResponse...");
+                    lock=tableResponse.lock;
                     try {
                         data = tableResponse.computeAttributesTask.get(timeLimit, TimeUnit.MILLISECONDS);
                         headers = tableResponse.headers;
+                        lock = tableResponse.lock;
+
                     } catch(Exception e) {
                         Map<String,String> noDataMap = new HashMap<>();
                         noDataMap.put("Could not compute data in time", "Max time limit: "+(timeLimit/(1000*60)+" minutes."));
@@ -1184,6 +1188,7 @@ public class SimilarPatentServer {
                     System.out.println("WARNING:: Could not find tableResponse...");
                     headers = Collections.emptyList();
                     data = Collections.emptyList();
+                    lock = new ReentrantLock();
                     numericAttrNames = Collections.emptySet();
                 }
             } else {
@@ -1195,81 +1200,91 @@ public class SimilarPatentServer {
                 headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
                 data = (List<Map<String,String>>)map.getOrDefault("rows-highlighted",Collections.emptyList());
                 numericAttrNames = (Set<String>)map.getOrDefault("numericAttrNames",Collections.emptySet());
+                lock = (Lock)map.getOrDefault("lock",new ReentrantLock());
             }
             System.out.println("Number of headers: "+headers.size());
 
-            int perPage = extractInt(req,"perPage",10);
-            int page = extractInt(req, "page", 1);
-            int offset = extractInt(req,"offset",0);
+            lock.lock();
+            try {
+                int perPage = extractInt(req, "perPage", 10);
+                int page = extractInt(req, "page", 1);
+                int offset = extractInt(req, "offset", 0);
 
-            long totalCount = data.size();
-            // check for search
-            List<Map<String,String>> queriedData;
-            String searchStr;
-            if(req.queryMap("queries")!=null&&req.queryMap("queries").hasKey("search")) {
-                String previousSearch = req.session().attribute("previousSearch"+paramIdx);
-                searchStr = req.queryMap("queries").value("search").toLowerCase();
-                if(searchStr==null||searchStr.trim().isEmpty()) {
-                    queriedData = data;
-                } else if(previousSearch!=null&&previousSearch.toLowerCase().equals(searchStr.toLowerCase())) {
-                    queriedData = req.session().attribute("queriedData"+paramIdx);
+                long totalCount = data.size();
+                // check for search
+                List<Map<String, String>> queriedData;
+                String searchStr;
+                if (req.queryMap("queries") != null && req.queryMap("queries").hasKey("search")) {
+                    String previousSearch = req.session().attribute("previousSearch" + paramIdx);
+                    searchStr = req.queryMap("queries").value("search").toLowerCase();
+                    if (searchStr == null || searchStr.trim().isEmpty()) {
+                        queriedData = data;
+                    } else if (previousSearch != null && previousSearch.toLowerCase().equals(searchStr.toLowerCase())) {
+                        queriedData = req.session().attribute("queriedData" + paramIdx);
 
+                    } else {
+                        queriedData = new ArrayList<>(data.stream().filter(m -> m.values().stream().anyMatch(val -> val.toLowerCase().contains(searchStr))).collect(Collectors.toList()));
+                        req.session().attribute("previousSearch" + paramIdx, searchStr);
+                        req.session().attribute("queriedData" + paramIdx, queriedData);
+                    }
                 } else {
-                    queriedData = new ArrayList<>(data.stream().filter(m -> m.values().stream().anyMatch(val -> val.toLowerCase().contains(searchStr))).collect(Collectors.toList()));
-                    req.session().attribute("previousSearch"+paramIdx,searchStr);
-                    req.session().attribute("queriedData"+paramIdx, queriedData);
+                    searchStr = "";
+                    queriedData = data;
                 }
-            } else {
-                searchStr = "";
-                queriedData = data;
-            }
-            long queriedCount = queriedData.size();
-            // check for sorting
-            if(req.queryMap("sorts")!=null) {
-                req.queryMap("sorts").toMap().forEach((k,v)->{
-                    System.out.println("Sorting "+k+": "+v);
-                    if(v==null||k==null) return;
-                    boolean isNumericField = numericAttrNames.contains(k);
-                    boolean reversed = (v.length > 0 && v[0].equals("-1"));
+                long queriedCount = queriedData.size();
+                // check for sorting
+                if (req.queryMap("sorts") != null) {
+                    req.queryMap("sorts").toMap().forEach((k, v) -> {
+                        System.out.println("Sorting " + k + ": " + v);
+                        if (v == null || k == null) return;
+                        boolean isNumericField = numericAttrNames.contains(k);
+                        boolean reversed = (v.length > 0 && v[0].equals("-1"));
 
-                    String directionStr = reversed ? "-1" : "1";
+                        String directionStr = reversed ? "-1" : "1";
 
-                    String sortStr = k+directionStr+searchStr;
-                    System.out.println("New sort string: "+sortStr);
+                        String sortStr = k + directionStr + searchStr;
+                        System.out.println("New sort string: " + sortStr);
 
-                    Comparator<Map<String, String>> comp = (d1, d2) -> {
-                        if(isNumericField) {
-                            Double v1 = null;
-                            Double v2 = null;
-                            try {
-                                v1 = Double.valueOf(d1.get(k));
-                            } catch (Exception nfe) {
+                        Comparator<Map<String, String>> comp = (d1, d2) -> {
+                            if (isNumericField) {
+                                Double v1 = null;
+                                Double v2 = null;
+                                try {
+                                    v1 = Double.valueOf(d1.get(k));
+                                } catch (Exception nfe) {
+                                }
+                                try {
+                                    v2 = Double.valueOf(d2.get(k));
+                                } catch (Exception e) {
+                                }
+                                if (v1 == null && v2 == null) return 0;
+                                if (v1 == null) return 1;
+                                if (v2 == null) return -1;
+                                return v1.compareTo(v2) * (reversed ? -1 : 1);
+                            } else {
+                                return d1.get(k).compareTo(d2.get(k)) * (reversed ? -1 : 1);
                             }
-                            try {
-                                v2 = Double.valueOf(d2.get(k));
-                            } catch(Exception e) {
-                            }
-                            if(v1==null&&v2==null) return 0;
-                            if(v1==null) return 1;
-                            if(v2==null) return -1;
-                            return v1.compareTo(v2) * (reversed ? -1 : 1);
-                        } else {
-                            return d1.get(k).compareTo(d2.get(k)) * (reversed ? -1 : 1);
-                        }
-                    };
-                    queriedData.sort(comp);
+                        };
+                        queriedData.sort(comp);
 
-                });
+                    });
+                }
+                List<Map<String, String>> dataPage;
+                if (offset < totalCount) {
+                    dataPage = queriedData.subList(offset, Math.min(queriedData.size(), offset + perPage));
+                } else {
+                    dataPage = Collections.emptyList();
+                }
+                response.put("totalRecordCount",totalCount);
+                response.put("queryRecordCount",queriedCount);
+                response.put("records", dataPage);
+
+            } catch(Exception e) {
+                e.printStackTrace();
+            } finally {
+                lock.unlock();
             }
-            List<Map<String,String>> dataPage;
-            if(offset < totalCount) {
-                dataPage = queriedData.subList(offset, Math.min(queriedData.size(), offset + perPage));
-            } else {
-                dataPage = Collections.emptyList();
-            }
-            response.put("totalRecordCount",totalCount);
-            response.put("queryRecordCount",queriedCount);
-            response.put("records", dataPage);
+
             return new Gson().toJson(response);
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
@@ -1857,6 +1872,7 @@ public class SimilarPatentServer {
                     excelRequestMap.put("rows", tableData);
                     excelRequestMap.put("rows-highlighted", tableDataHighlighted);
                     excelRequestMap.put("numericAttrNames", getNumericAttributes());
+                    excelRequestMap.put("lock", new ReentrantLock());
                     req.session().attribute(EXCEL_SESSION, excelRequestMap);
                     req.session().attribute("assets", portfolioList.getIds());
 
