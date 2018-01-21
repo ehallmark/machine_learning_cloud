@@ -522,6 +522,9 @@ public class Parser {
                             Pair<SpanQueryBuilder,String> builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),field);
                             QueryBuilder innerQuery =  new SpanNearQueryBuilder(builder1.getFirst(), slop).inOrder(useOrder)
                                     .addClause(builder2.getFirst());
+                            if(builder1.getSecond()!=null) {
+                                innerQuery = QueryBuilders.nestedQuery(builder1.getSecond(),innerQuery,ScoreMode.Max);
+                            }
                             boolQueryBuilder = boolQueryBuilder.should(innerQuery);
                         }
                         builder = boolQueryBuilder;
