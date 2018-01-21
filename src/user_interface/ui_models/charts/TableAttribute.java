@@ -91,7 +91,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
             }).filter(v->v>0).toArray();
 
             //System.out.println("Factors for attrs "+String.join(", ",topLevelAttrsArray)+": "+ Arrays.toString(assignments));
-            FactorNode factor = new FactorNode(null,topLevelAttrsArray,assignments);
+            FactorNode factor = new FactorNode(null,topLevelAttrsArray,validAssignments);
             return factor.assignmentPermutationsStream().map(assignment->{
                 return new Pair<>(item,
                         new DeepList<>(
