@@ -51,7 +51,6 @@ public abstract class AbstractPivotChart extends TableAttribute {
         TableResponse response = new TableResponse();
         response.type=getType();
         response.title=yTitle + (subTitle!=null&&subTitle.length()>0 ? (" (Grouped by "+subTitle+")") : "");
-        response.numericAttrNames = Collections.singleton(collectorType.toString());
 
 
         List<Pair<Item,DeepList<Object>>> columnGroups = columnAttrs == null ? Collections.emptyList() : groupTableData(data,columnAttrs);
@@ -70,6 +69,8 @@ public abstract class AbstractPivotChart extends TableAttribute {
         response.headers = new ArrayList<>();
         response.headers.addAll(rowAttrs);
         String collectorHeader = "Column-wise "+collectorType.toString();
+        response.numericAttrNames = new HashSet<>(Arrays.asList(collectorType.toString(),collectorType.toString()));
+        if(columnAttrs!=null)response.numericAttrNames.addAll(columnAttrs);
         response.headers.add(collectorHeader);
         response.nonHumanAttrs = columnData.stream().map(d->{
             AtomicBoolean containsBlank = new AtomicBoolean(false);

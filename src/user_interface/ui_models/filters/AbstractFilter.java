@@ -111,10 +111,12 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
         AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
         Script searchScript = scriptAttribute.getScript();
         if(searchScript==null) return null;
+        String transformedScript = transformAttributeScript(searchScript.getIdOrCode());
+        System.out.println("Transformed script for: "+attribute.getFullName()+": "+transformedScript);
         Script filterScript = new Script(
                 searchScript.getType(),
                 searchScript.getLang(),
-                transformAttributeScript(searchScript.getIdOrCode()),
+                transformedScript,
                 searchScript.getParams()
         );
         return filterScript;
