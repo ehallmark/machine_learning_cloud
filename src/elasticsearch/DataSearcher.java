@@ -35,6 +35,7 @@ import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttri
 import user_interface.ui_models.attributes.script_attributes.DefaultValueScriptAttribute;
 import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.filters.AbstractGreaterThanFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
 import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
@@ -137,6 +138,7 @@ public class DataSearcher {
                     sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
                 }
             }
+
             System.out.println("Sorting: "+sortBuilder.toString());
 
             System.out.println("Filtering by score: "+isOverallScore);
@@ -164,6 +166,22 @@ public class DataSearcher {
             if(!comparator.isEmpty()) {
                 request.set(request.get().addSort(sortBuilder));
             }
+
+
+            filters.forEach(filter->{
+                if(filter instanceof AbstractGreaterThanFilter && filter.getAttribute().getName().equals(Constants.SIMILARITY)) {
+                    AbstractGreaterThanFilter simFilter = (AbstractGreaterThanFilter)filter;
+                    if(simFilter.isActive()) {
+                        if(comparator.equals(Constants.SIMILARITY)) {
+                            request.set(request.get().setMinScore(((Number) simFilter.getLimit()).floatValue()));
+                        } else {
+                            request.set(request.get().setPostFilter(simFilter.getScriptFilter()));
+                        }
+                    }
+
+                }
+            });
+
 
             if(resortBuilder!=null) {
                 System.out.println("Rescoring by: "+resortBuilder.toString());
