@@ -69,9 +69,6 @@ public abstract class AbstractPivotChart extends TableAttribute {
         response.headers = new ArrayList<>();
         response.headers.addAll(rowAttrs);
         String collectorHeader = "Column-wise "+collectorType.toString();
-        response.numericAttrNames = new HashSet<>(Arrays.asList(collectorHeader,collectorType.toString()));
-        if(columnAttrs!=null)response.numericAttrNames.addAll(columnAttrs);
-        System.out.println("Numeric Attrs: "+response.numericAttrNames.toString());
 
         response.headers.add(collectorHeader);
         response.nonHumanAttrs = columnData.stream().map(d->{
@@ -91,6 +88,12 @@ public abstract class AbstractPivotChart extends TableAttribute {
             }
         }).filter(label->label!=null).collect(Collectors.toCollection(ArrayList::new));
         response.headers.addAll(response.nonHumanAttrs);
+
+        response.numericAttrNames = new HashSet<>(Arrays.asList(collectorHeader,collectorType.toString()));
+        response.numericAttrNames.addAll(response.nonHumanAttrs);
+        System.out.println("Numeric Attrs: "+response.numericAttrNames.toString());
+
+
         response.nonHumanAttrs.add(collectorHeader);
         System.out.println("Row attrs: "+rowAttrs);
         System.out.println("Column colAttrs: "+columnAttrs);
