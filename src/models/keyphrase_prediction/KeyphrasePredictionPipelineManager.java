@@ -247,21 +247,23 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     }
 
 
-    private void buildKeywordToLookupTableMap() {
-        // get vectors
-        wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
-        Map<String,INDArray> wordVectorMap = wordCPC2VecPipelineManager.getOrLoadWordVectors();
-        keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
+    public void buildKeywordToLookupTableMap() {
+        if(keywordToVectorLookupTable==null) {
+            // get vectors
+            wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
+            Map<String, INDArray> wordVectorMap = wordCPC2VecPipelineManager.getOrLoadWordVectors();
+            keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
 
-        multiStemSet.stream().forEach(stem->{
-            String[] words = stem.getBestPhrase().toLowerCase().split(" ");
-            List<INDArray> wordVectors = Stream.of(words).map(word->wordVectorMap.get(word)).filter(vec->vec!=null).collect(Collectors.toList());
-            if(wordVectors.size()>=Math.max(1,words.length-1)) {
-                INDArray vec = Transforms.unitVec(Nd4j.vstack(wordVectors).mean(0));
-                keywordToVectorLookupTable.put(stem, vec);
-            }
-        });
+            multiStemSet.stream().forEach(stem -> {
+                String[] words = stem.getBestPhrase().toLowerCase().split(" ");
+                List<INDArray> wordVectors = Stream.of(words).map(word -> wordVectorMap.get(word)).filter(vec -> vec != null).collect(Collectors.toList());
+                if (wordVectors.size() >= Math.max(1, words.length - 1)) {
+                    INDArray vec = Transforms.unitVec(Nd4j.vstack(wordVectors).mean(0));
+                    keywordToVectorLookupTable.put(stem, vec);
+                }
+            });
 
+        }
         System.out.println("Stem lookup table size: "+keywordToVectorLookupTable.size());
     }
 

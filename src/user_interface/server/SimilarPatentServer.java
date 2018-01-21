@@ -417,6 +417,7 @@ public class SimilarPatentServer {
                         System.out.println("Error while initializing asset K Means");
                         e.printStackTrace();
                     }
+                    keyphrasePredictionPipelineManager.buildKeywordToLookupTableMap();
                     return keyphrasePredictionPipelineManager;
                 }
             };
