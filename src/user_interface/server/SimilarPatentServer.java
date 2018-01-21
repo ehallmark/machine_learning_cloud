@@ -1330,7 +1330,14 @@ public class SimilarPatentServer {
                 if(formFile.exists()) {
                     Map<String,Object> updates = new HashMap<>();
                     updates.put("name", name);
-                    if (parentDirs != null && parentDirs.length > 1) updates.put("parentDirs", Arrays.copyOfRange(parentDirs,1,parentDirs.length));
+                    if (parentDirs != null) {
+                        if(parentDirs.length==1) {
+                            parentDirs = new String[]{};
+                        } else if(parentDirs.length > 1) {
+                            parentDirs = Arrays.copyOfRange(parentDirs,1,parentDirs.length);
+                        }
+                        updates.put("parentDirs", parentDirs);
+                    }
 
                     Lock sync;
                     synchronized (fileSynchronizationMap) {
