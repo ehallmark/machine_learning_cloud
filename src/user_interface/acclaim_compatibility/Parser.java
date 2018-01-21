@@ -511,13 +511,25 @@ public class Parser {
                     }
                     // valid near query
                     boolean matchAll = false;
+                    boolean matchTAC = false;
                     if(!booleanQuery.clauses().get(preIdx).getQuery().toString().contains(":")) {
                         matchAll = true;
                     }
+                    if(booleanQuery.clauses().get(preIdx).getQuery().toString().startsWith("TAC:")) {
+                        System.out.println("MATCH TAC!!");
+                        matchTAC = true;
+                    }
 
-                    if(matchAll) {
+                    if(matchAll||matchTAC) {
+                        Collection<String> fields;
+                        if(matchAll) {
+                            fields = defaultFields.keySet();
+                        } else {
+                            // TAC
+                            fields = Arrays.asList(Constants.CLAIMS+"."+Constants.CLAIM,Constants.INVENTION_TITLE,Constants.ABSTRACT);
+                        }
                         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-                        for(String field : defaultFields.keySet()) {
+                        for(String field : fields) {
                             Pair<SpanQueryBuilder,String> builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx),field);
                             Pair<SpanQueryBuilder,String> builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),field);
                             QueryBuilder innerQuery =  new SpanNearQueryBuilder(builder1.getFirst(), slop).inOrder(useOrder)
