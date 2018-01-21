@@ -2154,7 +2154,7 @@ public class SimilarPatentServer {
                 String[] parentDirs = (String[])templateMap.get("parentDirs");
                 Pair<Map<String, Object>, List<FormTemplate>> currentDirectory = directoryStructure;
                 if (parentDirs != null) { // build directory as necessary
-                    System.out.println("Parent Dirs for "+file.getName()+": "+Arrays.toString(parentDirs));
+                    //System.out.println("Parent Dirs for "+file.getName()+": "+Arrays.toString(parentDirs));
                     for (String dir : parentDirs) {
                         currentDirectory.getFirst().putIfAbsent(dir, new Pair<>(new HashMap<>(), new ArrayList<>()));
                         currentDirectory = (Pair<Map<String, Object>, List<FormTemplate>>) currentDirectory.getFirst().get(dir);
