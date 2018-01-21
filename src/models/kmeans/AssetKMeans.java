@@ -79,25 +79,45 @@ public class AssetKMeans {
         AtomicInteger cnt = new AtomicInteger(0);
 
 
-        final Random rand = new Random(5629);
-
-        clusters.forEach(cluster->{
-            if(cluster.isEmpty()) return;
+        Map<String,Long> overallTagFrequencyMap = new HashMap<>();
+        Map<Integer,Map<String,Long>> clusterIdxToTagFrequencyMap = new HashMap<>();
+        for(int i = 0; i < clusters.size(); i++) {
+            Set<String> cluster = clusters.get(i);
 
             List<String> related = cluster.stream().flatMap(r->{
                 return Stream.of(r,assetToFilingMap.getPatentDataMap().getOrDefault(r,assetToFilingMap.getApplicationDataMap().get(r))).filter(f->f!=null);
             }).collect(Collectors.toList());
 
             List<String> keywords = related.stream().flatMap(asset->techPredictions.getOrDefault(asset,Collections.emptyList()).stream()).collect(Collectors.toList());
-            List<String> keywordSamples = keywords.stream().collect(Collectors.groupingBy(keyword->keyword,Collectors.counting()))
-                    .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(KEYWORD_SAMPLES)
-                    .map(e->e.getKey()).collect(Collectors.toList());
+
+            Map<String,Long> freqMap = keywords.stream().collect(Collectors.groupingBy(keyword->keyword,Collectors.counting()));
+            freqMap.forEach((k,v)->{
+                if(overallTagFrequencyMap.containsKey(k)) {
+                    overallTagFrequencyMap.put(k,overallTagFrequencyMap.get(k)+v);
+                } else {
+                    overallTagFrequencyMap.put(k,v);
+                }
+            });
+
+            clusterIdxToTagFrequencyMap.put(i,freqMap);
+        }
+
+
+        for(int i = 0; i < clusters.size(); i++) {
+            Set<String> cluster = clusters.get(i);
+            if(cluster.isEmpty()) continue;
+
+            List<String> keywordSamples = clusterIdxToTagFrequencyMap.get(i)
+                    .entrySet().stream().map(e->{
+                        double tfidf = e.getValue().doubleValue()*Math.log(1d/overallTagFrequencyMap.get(e.getKey()).doubleValue());
+                        return new Pair<>(e.getKey(),tfidf);
+                    }).sorted((e1,e2)->e2.getSecond().compareTo(e1.getSecond())).limit(KEYWORD_SAMPLES).map(e->e.getFirst()).collect(Collectors.toList());
 
             // tag
             String tag = null;
             System.out.println("keywords: "+keywordSamples.size());
             Map<String,INDArray> toPredict = Collections.singletonMap("cluster", Transforms.unitVec(Nd4j.vstack(cluster.stream().map(asset->assetEncodingMap.get(asset)).collect(Collectors.toList())).mean(0)));
-            if(keywords.size()>0){
+            if(keywordSamples.size()>0){
                 System.out.println("starting prediction...");
                 Map<String,Set<String>> results = keyphrasePredictionPipelineManager.predict(keywordSamples,toPredict,1,minScore);
                 if(results.size()>0) {
@@ -110,7 +130,7 @@ public class AssetKMeans {
 
             map.putIfAbsent(tag,Collections.synchronizedList(new ArrayList<>()));
             map.get(tag).addAll(cluster);
-        });
+        }
 
         System.out.println("Num assets to cluster: "+assetEncodingMap.size());
         return map;
