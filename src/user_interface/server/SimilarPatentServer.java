@@ -330,7 +330,8 @@ public class SimilarPatentServer {
         if(numericAttributes==null) {
             List<AbstractAttribute> allAttrs = new ArrayList<>();
             getAttributesHelper(allAttributes,allAttrs);
-            numericAttributes = allAttrs.stream().filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Integer)||attr.getFieldType().equals(AbstractFilter.FieldType.Double)).map(attr->attr.getFullName()).collect(Collectors.toSet());
+            numericAttributes = allAttrs.stream().filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Integer)||attr.getFieldType().equals(AbstractFilter.FieldType.Double)).map(attr->attr.getFullName()).collect(Collectors.toCollection(HashSet::new));
+            numericAttributes.add(Constants.SCORE);
         }
         return numericAttributes;
     }
