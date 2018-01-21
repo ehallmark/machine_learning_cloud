@@ -168,17 +168,6 @@ public class DataSearcher {
             }
 
 
-            filters.forEach(filter->{
-                if(filter instanceof AbstractGreaterThanFilter && filter.getAttribute().getName().equals(Constants.SIMILARITY)) {
-                    AbstractGreaterThanFilter simFilter = (AbstractGreaterThanFilter)filter;
-                    if(simFilter.isActive()) {
-                        request.set(request.get().setPostFilter(simFilter.getScriptFilter()));
-                    }
-
-                }
-            });
-
-
             if(resortBuilder!=null) {
                 System.out.println("Rescoring by: "+resortBuilder.toString());
                 request.set(request.get().addRescorer(RescoreBuilder.queryRescorer(resortBuilder).setScoreMode(QueryRescoreMode.Total).setQueryWeight(0f).setRescoreQueryWeight(1f)));
@@ -186,6 +175,27 @@ public class DataSearcher {
 
             AtomicReference<BoolQueryBuilder> filterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             AtomicReference<BoolQueryBuilder> queryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
+
+            System.out.println("Looking for similarity greater than...");
+            filters.forEach(filter->{
+                if(filter instanceof AbstractGreaterThanFilter && filter.getAttribute().getFullName().equals(Constants.SIMILARITY)) {
+                    AbstractGreaterThanFilter simFilter = (AbstractGreaterThanFilter)filter;
+                    attributes.forEach(attr->{
+                        if(attr.getFullName().equals(Constants.SIMILARITY)) {
+                            System.out.println("Found and setting similarity attribute for filter...");
+                            simFilter.setAttribute(attr);
+                        }
+                    });
+                    if(simFilter.isActive()) {
+                        System.out.println("Sim greater than filter is active...");
+                        QueryBuilder scriptFilter = simFilter.getScriptFilter();
+                        System.out.println(scriptFilter.toString());
+                        filterBuilder.set(filterBuilder.get().must(scriptFilter));
+                    }
+
+                }
+            });
+
             // filters
             if(debug)System.out.println("Starting ES filters...");
             for (AbstractFilter filter : filters) {
