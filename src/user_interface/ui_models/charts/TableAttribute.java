@@ -78,14 +78,14 @@ public abstract class TableAttribute extends AbstractChartAttribute {
             }).collect(Collectors.toList());
             // handle nested objects
             int[] assignments = rs.stream().mapToInt(r->r.values().stream().mapToInt(val->val.size()).max().orElse(0)).toArray();
-            Map<Integer,Integer> postIdxToPreIdx = new HashMap<>();
+            Map<Integer,Integer> preIdxToPostIdx = new HashMap<>();
             AtomicInteger validIdx = new AtomicInteger(0);
             int[] validAssignments = IntStream.range(0,assignments.length).map(i->{
                 if(assignments[i]==0) {
                     // handle
                     return 0;
                 } else {
-                    postIdxToPreIdx.put(validIdx.getAndIncrement(),i);
+                    preIdxToPostIdx.put(i,validIdx.getAndIncrement());
                     return assignments[i];
                 }
             }).filter(v->v>0).toArray();
@@ -95,16 +95,22 @@ public abstract class TableAttribute extends AbstractChartAttribute {
             return factor.assignmentPermutationsStream().map(assignment->{
                 return new Pair<>(item,
                         new DeepList<>(
-                                IntStream.range(0,validAssignments.length).mapToObj(j->{
-                                    int i = postIdxToPreIdx.get(j);
-
+                                IntStream.range(0,assignments.length).mapToObj(i->{
                                     if(i>=rs.size()) System.out.println("WARNING 1: "+factor.toString());
+
+                                    int j;
+                                    if(preIdxToPostIdx.containsKey(i)) {
+                                        j = preIdxToPostIdx.get(i);
+                                    } else {
+                                        j = -1;
+                                    }
+
                                     String topLevelAttr = topLevelAttrsArray[i];
                                     Map<String,List<?>> r = rs.get(i);
                                     return parentAttrToChildMap.getOrDefault(topLevelAttr,Collections.singletonList(topLevelAttr)).stream()
                                             .map(attr->{
                                                 List<?> v = r.get(attr);
-                                                int a = assignment[i];
+                                                int a = j>=0 ? assignment[j] : 0;
                                                 if(v!=null&&v.size()>a) return v.get(a);
                                                 else return "";
                                             });
