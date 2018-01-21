@@ -534,6 +534,10 @@ $(document).ready(function() {
         $(this).on('select2:opening',datasetMultiselect);
     });
 
+    $('.dataset-multiselect').each(function() {
+       createDatasetSelect2(this);
+    });
+
     function cleanArray(actual) {
       var newArray = new Array();
       for (var i = 0; i < actual.length; i++) {
