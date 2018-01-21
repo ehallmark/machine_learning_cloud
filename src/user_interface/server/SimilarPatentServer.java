@@ -1446,8 +1446,7 @@ public class SimilarPatentServer {
                 String username = shared ? SHARED_USER : user;
                 List<String> assets = DatasetIndex.get(username, file);
 
-                String[] parentParentDirs = Stream.of(new String[]{shared ? "Shared Datasets":"My Datasets"},(String[]) data.getOrDefault("parentDirs",new String[]{}))
-                        .flatMap(array->Stream.of(array)).toArray(size->new String[size]);
+                String[] parentParentDirs = (String[]) data.getOrDefault("parentDirs",new String[]{});
 
                 if (assets == null) {
                     message.add("assets are null");
