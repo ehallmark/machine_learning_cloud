@@ -527,27 +527,6 @@ $(document).ready(function() {
         }
     };
 
-    $('.dataset-multiselect').on('select2:opening',datasetMultiselect);
-
-    $('.dataset-multiselect').on('select2:open',function(e) {
-        $(this).off('select2:opening');
-        $(this).on('select2:opening',datasetMultiselect);
-    });
-
-    $('.dataset-multiselect').each(function() {
-       createDatasetSelect2(this);
-    });
-
-    function cleanArray(actual) {
-      var newArray = new Array();
-      for (var i = 0; i < actual.length; i++) {
-        if (actual[i]) {
-          newArray.push(actual[i]);
-        }
-      }
-      return newArray;
-    }
-
     var createDatasetSelect2 = function(elem) {
         // get datasets
         var $this = $(elem);
@@ -568,6 +547,18 @@ $(document).ready(function() {
         $this.select2('open');
         return $this;
     };
+
+    $('.dataset-multiselect').on('select2:opening',datasetMultiselect);
+
+    $('.dataset-multiselect').on('select2:open',function(e) {
+        $(this).off('select2:opening');
+        $(this).on('select2:opening',datasetMultiselect);
+    });
+
+    $('.dataset-multiselect').each(function() {
+       createDatasetSelect2(this);
+    });
+
 
     $('.single-select2').select2({
         minimumResultsForSearch: 10,
@@ -1110,6 +1101,17 @@ var loadEvent = function(){
 function capitalize(string)
 {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+
+function cleanArray(actual) {
+  var newArray = new Array();
+  for (var i = 0; i < actual.length; i++) {
+    if (actual[i]) {
+      newArray.push(actual[i]);
+    }
+  }
+  return newArray;
 }
 
 var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunctions, newItemSubLabels) {
