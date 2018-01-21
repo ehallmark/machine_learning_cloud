@@ -157,7 +157,6 @@ public class SimilarPatentServer {
         { // Attributes
             humanAttrToJavaAttrMap = new HashMap<>();
             humanAttrToJavaAttrMap.put("(eg. FIELD:isEmptyANO_F OR FIELD:isNotEmptyTTL)", "FIELD");
-            humanAttrToJavaAttrMap.put("Query by Research Folder/Dataset Name", "RFID");
             humanAttrToJavaAttrMap.put("Independent Claim", "ICLM");
             humanAttrToJavaAttrMap.put("Dependent Claim", "DCLM");
             humanAttrToJavaAttrMap.put("Title + Abstract + Claims", "TAC");
@@ -1082,10 +1081,7 @@ public class SimilarPatentServer {
             String[] assets = (String[])formMap.get("assets");
             if(assets!=null&&file!=null) {
                 String username = shared ? SHARED_USER : user;
-                String name = (String)formMap.get("name");
-                String[] parentDirs = (String[])formMap.get("parentDirs[]");
-                if(parentDirs==null) parentDirs = new String[]{};
-                DatasetIndex.index(username,file.getName(),Arrays.asList(assets), name, parentDirs);
+                DatasetIndex.index(username,file.getName(),Arrays.asList(assets));
             }
             formMap.remove("assets");
             Database.trySaveObject(formMap,file);
@@ -1342,7 +1338,7 @@ public class SimilarPatentServer {
                     sync.lock();
                     try {
                         if(isDataset) {
-                            DatasetIndex.rename(username,filename,name,parentDirs);
+                            DatasetIndex.rename(username,filename);
                         }
                         if(useUpdatesFile) {
                             fileCache.put(updatesFile.getAbsolutePath(), updates);
@@ -1593,7 +1589,7 @@ public class SimilarPatentServer {
         if(formMap!=null) {
             if(debug) System.out.println("Form "+name+" attributes: "+new Gson().toJson(formMap));
 
-            if (parentDirs != null && parentDirs.length > 1) {
+            if (parentDirs != null && parentDirs.length > 0) {
                 for(int i = 1; i < parentDirs.length; i++) {
                     parentDirs[i]=decodeURLString(parentDirs[i]);
                 }
@@ -2158,6 +2154,7 @@ public class SimilarPatentServer {
                 String[] parentDirs = (String[])templateMap.get("parentDirs");
                 Pair<Map<String, Object>, List<FormTemplate>> currentDirectory = directoryStructure;
                 if (parentDirs != null) { // build directory as necessary
+                    System.out.println("Parent Dirs for "+file.getName()+": "+Arrays.toString(parentDirs));
                     for (String dir : parentDirs) {
                         currentDirectory.getFirst().putIfAbsent(dir, new Pair<>(new HashMap<>(), new ArrayList<>()));
                         currentDirectory = (Pair<Map<String, Object>, List<FormTemplate>>) currentDirectory.getFirst().get(dir);

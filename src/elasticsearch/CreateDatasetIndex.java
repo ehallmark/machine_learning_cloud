@@ -19,9 +19,6 @@ public class CreateDatasetIndex {
         Map<String,Object> type = new HashMap<>();
         type.put("type","keyword");
         properties.put(DatasetIndex.DATA_FIELD, type);
-        properties.put(DatasetIndex.NAME_FIELD, type);
-        properties.put(DatasetIndex.PARENT_DIRS_FIELD, type);
-        properties.put(DatasetIndex.USER_FIELD,type);
         Map<String,Object> indexType = new HashMap<>();
         indexType.put("properties",properties);
         mapping.put(DatasetIndex.TYPE, indexType);

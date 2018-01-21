@@ -217,42 +217,7 @@ public class Parser {
                 return QueryBuilders.queryStringQuery(name+":"+val).defaultOperator(Operator.AND);
             }
         });
-        transformationsForAttr.put("RFID", (name,val,user)->{
-            TermsLookupAttribute termsLookupAttribute = new DatasetAttribute();
 
-            // first try with current user
-            String[] parts = val.split("\\.");
-            if(parts.length>0&&(parts[0].equals("Shared Datasets")||parts[0].equals("My Datasets"))) {
-                boolean shared = parts[0].equals("Shared Datasets");
-                parts = Arrays.copyOfRange(parts,1,parts.length);
-                if(shared) user = SimilarPatentServer.SHARED_USER;
-            }
-            String[] parentDirs = new String[parts.length-1];
-            for(int i = 0; i < parts.length-1; i++) {
-                parentDirs[i]=parts[i];
-            }
-
-            String dsName = parts[parts.length-1];
-            String id = DatasetIndex.idFromName(user,dsName,parentDirs);
-
-            System.out.println("Parent dirs: "+String.join(".",parentDirs));
-            System.out.println("ds Name: "+dsName);
-
-            // then try with shared user
-            if(id==null) {
-                user = SimilarPatentServer.SHARED_USER;
-                id = DatasetIndex.idFromName(user,dsName,parentDirs);
-            }
-            // and finally with form creator
-            if(id==null) {
-                user = SimilarPatentServer.SUPER_USER;
-                id = DatasetIndex.idFromName(user,dsName,parentDirs);
-            }
-            if(id==null) {
-                throw new RuntimeException("Unable to find dataset: "+val);
-            }
-            return new AbstractIncludeFilter(termsLookupAttribute, AbstractFilter.FilterType.Include, termsLookupAttribute.getFieldType(), Collections.singletonList(id+"_"+user)).getFilterQuery();
-        });
     }
 
     private static String tryCoerceDate(String val) {
