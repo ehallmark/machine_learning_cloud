@@ -18,6 +18,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import seeding.Database;
 import tools.MinHeap;
 
 import java.io.File;
@@ -37,9 +38,8 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyphrase_prediction_model_predictions/predictions_map.jobj");
     @Getter
     private static Map<MultiStem,INDArray> keywordToVectorLookupTable;
+    private static final File keywordToVectorLookupTableFile = new File(Constants.DATA_FOLDER+"keyword_to_vector_predictions_lookup_table.jobj");
     private Set<MultiStem> multiStemSet;
-    private static MultiLayerNetwork filingToEncodingNet;
-    private static MultiLayerNetwork wordToEncodingNet;
     private static Map<String,Collection<CPC>> cpcMap;
     private static Map<String,MultiStem> labelToKeywordMap;
     public KeyphrasePredictionPipelineManager(WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
@@ -247,21 +247,31 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     }
 
 
-    public void buildKeywordToLookupTableMap() {
+    public synchronized void buildKeywordToLookupTableMap() {
         if(keywordToVectorLookupTable==null) {
-            // get vectors
-            wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
-            Map<String, INDArray> wordVectorMap = wordCPC2VecPipelineManager.getOrLoadWordVectors();
-            keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
+            keywordToVectorLookupTable = (Map<MultiStem, INDArray>) Database.tryLoadObject(keywordToVectorLookupTableFile);
 
-            multiStemSet.stream().forEach(stem -> {
-                String[] words = stem.getBestPhrase().toLowerCase().split(" ");
-                List<INDArray> wordVectors = Stream.of(words).map(word -> wordVectorMap.get(word)).filter(vec -> vec != null).collect(Collectors.toList());
-                if (wordVectors.size() >= Math.max(1, words.length - 1)) {
-                    INDArray vec = Transforms.unitVec(Nd4j.vstack(wordVectors).mean(0));
-                    keywordToVectorLookupTable.put(stem, vec);
-                }
-            });
+            if(keywordToVectorLookupTable==null) {
+
+                // get vectors
+                wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
+                Map<String, INDArray> wordVectorMap = wordCPC2VecPipelineManager.getOrLoadWordVectors();
+                keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
+
+                multiStemSet.stream().forEach(stem -> {
+                    String[] words = stem.getBestPhrase().toLowerCase().split(" ");
+                    List<INDArray> wordVectors = Stream.of(words).map(word -> wordVectorMap.get(word)).filter(vec -> vec != null).collect(Collectors.toList());
+                    if (wordVectors.size() >= Math.max(1, words.length - 1)) {
+                        INDArray vec = Transforms.unitVec(Nd4j.vstack(wordVectors).mean(0));
+                        keywordToVectorLookupTable.put(stem, vec);
+                    }
+                });
+
+                Database.trySaveObject(keywordToVectorLookupTable,keywordToVectorLookupTableFile);
+
+            } else {
+                System.out.println("Using previous keyword to vector lookup table...");
+            }
 
         }
         System.out.println("Stem lookup table size: "+keywordToVectorLookupTable.size());
