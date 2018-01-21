@@ -503,9 +503,9 @@ public class Parser {
                 if((queryStrEnd.startsWith("near") || queryStrEnd.startsWith("adj")) && !queryStrEnd.contains(" ") && !queryStrEnd.contains(":") && preIdx!=null&&postIdx!=null) {
                     isProximityQuery = true;
                     int slop;
-                    boolean useOrder = queryStr.toLowerCase().startsWith("adj");
+                    boolean useOrder = queryStrEnd.toLowerCase().startsWith("adj");
                     try {
-                        slop = Integer.valueOf(queryStr.toLowerCase().replace("near","").replace("adj",""));
+                        slop = Integer.valueOf(queryStrEnd.toLowerCase().replace("near","").replace("adj",""));
                     } catch(Exception e) {
                         slop = 1;
                     }
