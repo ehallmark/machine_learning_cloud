@@ -89,6 +89,10 @@ public abstract class TableAttribute extends AbstractChartAttribute {
                     return assignments[i];
                 }
             }).filter(v->v>0).toArray();
+            if(validAssignments.length==0) {
+                return Stream.of(new Pair<>(item,new DeepList<Object>(Collections.singletonList(""))));
+            }
+
             String[] validAttrsArray = IntStream.range(0,assignments.length).filter(i->preIdxToPostIdx.containsKey(i)).mapToObj(i->topLevelAttrsArray[i]).toArray(size->new String[size]);
 
             //System.out.println("Factors for attrs "+String.join(", ",topLevelAttrsArray)+": "+ Arrays.toString(assignments));
