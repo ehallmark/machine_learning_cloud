@@ -69,8 +69,10 @@ public abstract class AbstractPivotChart extends TableAttribute {
         response.headers = new ArrayList<>();
         response.headers.addAll(rowAttrs);
         String collectorHeader = "Column-wise "+collectorType.toString();
-        response.numericAttrNames = new HashSet<>(Arrays.asList(collectorType.toString(),collectorType.toString()));
+        response.numericAttrNames = new HashSet<>(Arrays.asList(collectorHeader,collectorType.toString()));
         if(columnAttrs!=null)response.numericAttrNames.addAll(columnAttrs);
+        System.out.println("Numeric Attrs: "+response.numericAttrNames.toString());
+
         response.headers.add(collectorHeader);
         response.nonHumanAttrs = columnData.stream().map(d->{
             AtomicBoolean containsBlank = new AtomicBoolean(false);
