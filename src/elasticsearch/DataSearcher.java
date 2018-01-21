@@ -172,11 +172,7 @@ public class DataSearcher {
                 if(filter instanceof AbstractGreaterThanFilter && filter.getAttribute().getName().equals(Constants.SIMILARITY)) {
                     AbstractGreaterThanFilter simFilter = (AbstractGreaterThanFilter)filter;
                     if(simFilter.isActive()) {
-                        if(comparator.equals(Constants.SIMILARITY)) {
-                            request.set(request.get().setMinScore(((Number) simFilter.getLimit()).floatValue()));
-                        } else {
-                            request.set(request.get().setPostFilter(simFilter.getScriptFilter()));
-                        }
+                        request.set(request.get().setPostFilter(simFilter.getScriptFilter()));
                     }
 
                 }
