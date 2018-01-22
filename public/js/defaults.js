@@ -1299,7 +1299,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         "title": "Apply child datasets to current template.",
                         "action": function(obj) {
                             showMultipleDatasetFunction(node.data,tree,node);
-                            return false;
+                            return true;
                         }
 
                     };
