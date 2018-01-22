@@ -516,21 +516,36 @@ public class Parser {
                     // valid near query
                     boolean matchAll = false;
                     boolean matchTAC = false;
-                    if(!booleanQuery.clauses().get(preIdx).getQuery().toString().contains(":")) {
+                    boolean matchICLM = false;
+                    boolean matchDCLM = false;
+                    String preQueryStr = booleanQuery.clauses().get(preIdx).getQuery().toString();
+                    if(!preQueryStr.contains(":")) {
                         matchAll = true;
-                    }
-                    if(booleanQuery.clauses().get(preIdx).getQuery().toString().startsWith("TAC:")) {
-                        System.out.println("MATCH TAC!!");
+                    } else if(preQueryStr.startsWith("TAC:")) {
                         matchTAC = true;
+                    } else if(preQueryStr.startsWith("ICLM:")) {
+                        matchICLM = true;
+                    } else if(preQueryStr.startsWith("DCLM:")) {
+                        matchDCLM=true;
                     }
 
-                    if(matchAll||matchTAC) {
+                    if(matchAll||matchTAC||matchICLM||matchDCLM) {
                         Collection<String> fields;
+                        QueryBuilder additionalFilter = null;
                         if(matchAll) {
                             fields = defaultFields.keySet();
                         } else {
-                            // TAC
-                            fields = Arrays.asList(Constants.CLAIMS+"."+Constants.CLAIM,Constants.INVENTION_TITLE,Constants.ABSTRACT);
+                            if(matchTAC) {
+                                // TAC
+                                fields = Arrays.asList(Constants.CLAIMS + "." + Constants.CLAIM, Constants.INVENTION_TITLE, Constants.ABSTRACT);
+                            } else {
+                                fields = Collections.singleton(Constants.CLAIMS+"."+Constants.CLAIM);
+                                if(matchDCLM) {
+                                    additionalFilter = QueryBuilders.existsQuery(Constants.CLAIMS+"."+Constants.PARENT_CLAIM_NUM);
+                                } else {
+                                    additionalFilter = QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(Constants.CLAIMS+"."+Constants.PARENT_CLAIM_NUM));
+                                }
+                            }
                         }
                         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
                         for(String field : fields) {
@@ -538,6 +553,11 @@ public class Parser {
                             Pair<SpanQueryBuilder,String> builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),field);
                             QueryBuilder innerQuery =  new SpanNearQueryBuilder(builder1.getFirst(), slop).inOrder(useOrder)
                                     .addClause(builder2.getFirst());
+                            if(additionalFilter!=null) {
+                                innerQuery = QueryBuilders.boolQuery()
+                                        .must(innerQuery)
+                                        .filter(additionalFilter);
+                            }
                             if(builder1.getSecond()!=null) {
                                 innerQuery = QueryBuilders.nestedQuery(builder1.getSecond(),innerQuery,ScoreMode.Max);
                             }
