@@ -452,8 +452,8 @@ public class Parser {
                     nestedAttr = defaultField.substring(0,defaultField.indexOf("."));
                 }
                 String queryStr = query.toString();
-                if(queryStr.startsWith("TAC:")) {
-                    queryStr = queryStr.substring(4);
+                if(queryStr.startsWith("TAC:")||queryStr.startsWith("ICLM:")||queryStr.startsWith("DCLM:")) {
+                    queryStr = queryStr.substring(queryStr.indexOf(":"));
                 }
                 return new Pair<>(new SpanTermQueryBuilder(defaultField, queryStr),nestedAttr);
             } else {
