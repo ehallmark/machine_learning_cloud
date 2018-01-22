@@ -20,7 +20,7 @@ $(document).ready(function() {
     $('.miniTip2').miniTip({
         title: 'Acclaim Expert Search Syntax',
         event: 'click',
-        content: "<div>Supports most functionality available in the Acclaim Expert Search form.</div><div>Supported Fields: </div>"+$('#acclaim-supported-fields').html()
+        content: "<div>Supports most functionality available in the Acclaim Expert Search form.</div><div>Note: To query by research folder (RFID), please use the Dataset Name Filter.</div><div>Supported Fields: </div>"+$('#acclaim-supported-fields').html()
     });
 
     var submitFormFunction = function(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successFunction) {
@@ -524,7 +524,7 @@ $(document).ready(function() {
     var datasetMultiselect = function(e,returnFalse,name) {
         var $select = createDatasetSelect2(this);
         if(returnFalse==true) {
-            $(this).val([name]).trigger('change');
+            $(this).val(name).trigger('change');
             $('#generate-reports-form').trigger('submit');
             e.preventDefault();
             $select.select2('close');
@@ -813,7 +813,43 @@ var showDatasetFunction = function(data,tree,node){
     var $filter = $('#multiselect-nested-filter-select-attributesNested_filter');
     $filter.val([$datasetInput.attr('name')]).trigger('change');
     var name = data.file+"_"+data.user;
-    $datasetInput.trigger('select2:opening', [true,name]);
+    $datasetInput.trigger('select2:opening', [true,[name]]);
+    return false;
+};
+
+var showMultipleDatasetFunction = function(data,tree,node){
+    // need to get data
+    var nodeData = node;
+    var parents = [];
+    while(typeof nodeData.text !== 'undefined') {
+        if(nodeData.type==='folder') {
+            parents.unshift(nodeData.text);
+        }
+        var currId = nodeData.parent;
+        nodeData = tree.get_node(currId);
+    }
+    var shared = parents.length > 0 && parents[0].startsWith("Shared");
+    $('#filters-row .attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
+    $('#filters-row div.attribute').addClass("disabled");
+    var $datasetInput = $('#multiselect-multiselect-datasetNameInclude_filter');
+    var $filter = $('#multiselect-nested-filter-select-attributesNested_filter');
+    $filter.val([$datasetInput.attr('name')]).trigger('change');
+    var names = [];
+    if(node.children) {
+        if(node.children.length > 0) {
+            for(var i = 0; i < node.children.length; i++) {
+                var child = node.children[i];
+                child = tree.get_node(child);
+                    if(child.type==='file') {
+                    var file = child.data.file;
+                    var user = child.data.user;
+                    var name = file + "_" + user;
+                    names.push(name);
+                }
+            }
+        }
+    }
+    $datasetInput.trigger('select2:opening', [true,names]);
     return false;
 };
 
@@ -1252,6 +1288,22 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                             "submenu": subMenu
                         };
                     }
+                }
+                if((node_type==='dataset') && isFolder) {
+                    // plot children
+                    var menuName = "Apply Children";
+                    items[menuName] = {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": menuName,
+                        "title": "Apply child datasets to current template.",
+                        "action": function(obj) {
+                            showMultipleDatasetFunction(node.data,tree,node);
+                            return false;
+                        }
+
+                    };
+
                 }
                 if((node_type==='dataset') && !isFolder && deletable) {
                     var addAssetsSubmenu = {};
