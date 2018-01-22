@@ -8,6 +8,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import spark.Request;
 import user_interface.ui_models.attributes.DependentAttribute;
+import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.engines.AbstractSimilarityEngine;
 import user_interface.ui_models.engines.SimilarityEngineController;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -21,7 +22,7 @@ import static user_interface.server.SimilarPatentServer.extractArray;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class SimilarityAttribute extends AbstractScriptAttribute implements DependentAttribute<AbstractScriptAttribute> {
+public class SimilarityAttribute extends AbstractScriptAttribute implements DependentAttribute<AbstractScriptAttribute>, RangeAttribute {
     private static final String similarityModelName = CombinedSimilarityVAEPipelineManager.MODEL_NAME_SMALL;
     public static final int vectorSize = CombinedSimilarityVAEPipelineManager.NAME_TO_VECTOR_SIZE_MAP.get(similarityModelName);
     public static final int dimensionsForSort = vectorSize;
@@ -110,5 +111,25 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
     @Override
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Double;
+    }
+
+    @Override
+    public Number min() {
+        return -100;
+    }
+
+    @Override
+    public Number max() {
+        return 100;
+    }
+
+    @Override
+    public int nBins() {
+        return 10;
+    }
+
+    @Override
+    public String valueSuffix() {
+        return "%";
     }
 }
