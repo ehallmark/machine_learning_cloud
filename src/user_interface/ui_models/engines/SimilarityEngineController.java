@@ -8,10 +8,12 @@ import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.*;
+import user_interface.ui_models.attributes.computable_attributes.asset_graphs.RelatedAssetsAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
+import user_interface.ui_models.filters.AssetDedupFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -81,6 +83,7 @@ public class SimilarityEngineController {
             }
         }
 
+
         preFilters = preFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());
     }
 
@@ -142,6 +145,16 @@ public class SimilarityEngineController {
 
         List<Item> scope = DataSearcher.searchForAssets(topLevelAttributes, preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap(), useHighlighter, filterNestedObjects);
 
+        // asset dedupe
+        for(AbstractFilter preFilter : preFilters) {
+            if(preFilter instanceof AssetDedupFilter) {
+                System.out.println("Asset dedupe!");
+                scope = assetDedupe(scope);
+                break;
+            }
+        }
+
+        // dataset names
         List<TermsLookupAttribute> terms = Collections.synchronizedList(new ArrayList<>());
         topLevelAttributes.forEach(attr->{
             if(attr instanceof TermsLookupAttribute) {
@@ -163,8 +176,20 @@ public class SimilarityEngineController {
         portfolioList = new PortfolioList(scope);
     }
 
-    public Map<String,AbstractSimilarityEngine> getEngineMap() {
-        if(allEngines==null) throw new NullPointerException("allEngines list (static)");
-        return allEngines.stream().collect(Collectors.toMap(e->e.getName(),e->e));
+    public static List<Item> assetDedupe(List<Item> items) {
+        RelatedAssetsAttribute attribute = new RelatedAssetsAttribute();
+        Set<String> namesSeenSoFar = new HashSet<>();
+        return items.stream().map(item->{
+            Item toRet;
+            if(namesSeenSoFar.contains(item.getName())) {
+                toRet = null;
+            } else {
+                toRet = item;
+            }
+            namesSeenSoFar.add(item.getName());
+            namesSeenSoFar.addAll(attribute.getPatentDataMap().getOrDefault(item.getName(),Collections.emptyList()));
+            namesSeenSoFar.addAll(attribute.getApplicationDataMap().getOrDefault(item.getName(),Collections.emptyList()));
+            return toRet;
+        }).filter(item->item!=null).collect(Collectors.toList());
     }
 }

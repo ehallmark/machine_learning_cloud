@@ -51,6 +51,7 @@ import user_interface.ui_models.excel.ExcelHandler;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
 import user_interface.ui_models.filters.AcclaimExpertSearchFilter;
+import user_interface.ui_models.filters.AssetDedupFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.templates.FormTemplate;
@@ -197,6 +198,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Pivot Function Table", Constants.PIVOT_FUNCTION_TABLE_CHART);
             humanAttrToJavaAttrMap.put("Cited Date", Constants.CITED_DATE);
             humanAttrToJavaAttrMap.put("Forward Citation", Constants.BACKWARD_CITATION);
+            humanAttrToJavaAttrMap.put("Duplicate Related Assets",AssetDedupFilter.NAME);
             humanAttrToJavaAttrMap.put("Means Present", Constants.MEANS_PRESENT);
             humanAttrToJavaAttrMap.put("Gather", Constants.GATHER);
             humanAttrToJavaAttrMap.put("Stage Complete", Constants.GATHER_STAGE);
@@ -499,6 +501,7 @@ public class SimilarPatentServer {
                 });
 
                 preFilterModelMap.put(AcclaimExpertSearchFilter.NAME,new AcclaimExpertSearchFilter());
+                preFilterModelMap.put(AssetDedupFilter.NAME, new AssetDedupFilter());
 
                 buildJavaToHumanAttrMap();
                 List<AbstractAttribute> nestedAttributes = new ArrayList<>(allAttributes.getAttributes());
@@ -509,7 +512,7 @@ public class SimilarPatentServer {
                         return allAttributes.getName();
                     }
                 };
-                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false, new AcclaimExpertSearchFilter());
+                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false, new AcclaimExpertSearchFilter(), new AssetDedupFilter());
             } catch(Exception e) {
                 e.printStackTrace();
             }

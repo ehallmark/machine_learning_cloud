@@ -1,7 +1,6 @@
 package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
-import lombok.NonNull;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import spark.Request;
@@ -18,7 +17,7 @@ import static j2html.TagCreator.div;
  */
 public class AbstractBooleanIncludeFilter extends AbstractFilter {
     protected List<String> filters;
-    public AbstractBooleanIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
+    public AbstractBooleanIncludeFilter(AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
     }
 
