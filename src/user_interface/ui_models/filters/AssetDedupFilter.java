@@ -2,11 +2,14 @@ package user_interface.ui_models.filters;
 
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import user_interface.ui_models.attributes.AbstractAttribute;
+
+import java.util.Collections;
 
 public class AssetDedupFilter extends AbstractBooleanExcludeFilter {
     public static final String NAME = "assetDedupFilter";
     public AssetDedupFilter() {
-        super(null, FilterType.BoolFalse);
+        super(new AssetDedupAttribute(), FilterType.BoolFalse);
     }
 
     @Override
@@ -52,5 +55,28 @@ public class AssetDedupFilter extends AbstractBooleanExcludeFilter {
     @Override
     public AbstractFilter dup() {
         return new AssetDedupFilter();
+    }
+
+
+}
+
+class AssetDedupAttribute extends AbstractAttribute {
+    public AssetDedupAttribute() {
+        super(Collections.emptyList());
+    }
+
+    @Override
+    public String getName() {
+        return AssetDedupFilter.NAME;
+    }
+
+    @Override
+    public String getType() {
+        return "boolean";
+    }
+
+    @Override
+    public AbstractFilter.FieldType getFieldType() {
+        return AbstractFilter.FieldType.Boolean;
     }
 }
