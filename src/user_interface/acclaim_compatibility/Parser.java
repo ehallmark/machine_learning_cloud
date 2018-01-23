@@ -1,7 +1,6 @@
 package user_interface.acclaim_compatibility;
 
 import data_pipeline.helpers.Function3;
-import elasticsearch.DatasetIndex;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -10,16 +9,12 @@ import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.*;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
-import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
-import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 import user_interface.ui_models.attributes.script_attributes.CalculatedExpirationDateAttribute;
 import user_interface.ui_models.attributes.script_attributes.CalculatedPriorityDateAttribute;
 import user_interface.ui_models.attributes.script_attributes.ExpiredAttribute;
 import user_interface.ui_models.filters.AbstractBetweenFilter;
 import user_interface.ui_models.filters.AbstractBooleanIncludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.filters.AbstractIncludeFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.time.LocalDate;
@@ -453,7 +448,7 @@ public class Parser {
                 }
                 String queryStr = query.toString();
                 if(queryStr.startsWith("TAC:")||queryStr.startsWith("ICLM:")||queryStr.startsWith("DCLM:")) {
-                    queryStr = queryStr.substring(queryStr.indexOf(":"));
+                    queryStr = queryStr.substring(queryStr.indexOf(":")+1);
                 }
                 return new Pair<>(new SpanTermQueryBuilder(defaultField, queryStr),nestedAttr);
             } else {
@@ -500,11 +495,14 @@ public class Parser {
                 Integer postIdx = i < booleanQuery.clauses().size()-1 ? i+1 : null;
 
                 boolean isProximityQuery = false;
-                String queryStrEnd = queryStr.toLowerCase();
+                String queryStrEnd = queryStr;
                 if(queryStrEnd.contains(":")&&queryStrEnd.length()>queryStrEnd.indexOf(":")+1) {
                     queryStrEnd = queryStrEnd.substring(queryStrEnd.indexOf(":")+1);
                 }
-                if((queryStrEnd.startsWith("near") || queryStrEnd.startsWith("adj")) && !queryStrEnd.contains(" ") && !queryStrEnd.contains(":") && preIdx!=null&&postIdx!=null) {
+                while(queryStrEnd.length()>0&&Character.isDigit(queryStrEnd.charAt(queryStrEnd.length()-1))) {
+                    queryStrEnd = queryStrEnd.substring(0,queryStrEnd.length()-1);
+                }
+                if((queryStrEnd.equals("NEAR") || queryStrEnd.equals("ADJ")) && !queryStrEnd.contains(" ") && !queryStrEnd.contains(":") && preIdx!=null&&postIdx!=null) {
                     isProximityQuery = true;
                     int slop;
                     boolean useOrder = queryStrEnd.toLowerCase().startsWith("adj");
