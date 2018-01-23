@@ -2706,6 +2706,13 @@ public class SimilarPatentServer {
 
         pool.execute(keyphrasePredictionPipelineManagerTask);
         pool.execute(similarityEngine);
+        pool.execute(new RecursiveAction() {
+            @Override
+            protected void compute() {
+                new RelatedAssetsAttribute().getPatentDataMap();
+                new RelatedAssetsAttribute().getApplicationDataMap();
+            }
+        });
 
         GatherClassificationServer.StartServer();
         if(preLoad) {
