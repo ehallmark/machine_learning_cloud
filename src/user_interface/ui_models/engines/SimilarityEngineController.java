@@ -192,7 +192,11 @@ public class SimilarityEngineController {
                 }
                 namesSeenSoFar.add(filing);
             } else {
-                toRet = null;
+                if(namesSeenSoFar.contains(item.getName())) {
+                    toRet = null;
+                } else {
+                    toRet = item;
+                }
                 System.out.println("No filing info for asset: "+item.getName());
             }
             namesSeenSoFar.add(item.getName());
