@@ -174,7 +174,7 @@ public class Database {
 		File originalFile = file;
 		if(LOAD_LOCAL_FLAG) {
 			file = fileCopyFor(file);
-			if(file==null) {
+			if(file==null||!file.exists()) {
 				file = originalFile;
 			}
 		}

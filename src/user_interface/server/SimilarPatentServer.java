@@ -2716,13 +2716,9 @@ public class SimilarPatentServer {
             }
         });
 
-        server();
-        System.out.println("Finished starting server.");
-
-
-        pool.execute(keyphrasePredictionPipelineManagerTask);
-        pool.execute(similarityEngine);
-        pool.execute(new RecursiveAction() {
+        pool.invoke(keyphrasePredictionPipelineManagerTask);
+        pool.invoke(similarityEngine);
+        pool.invoke(new RecursiveAction() {
             @Override
             protected void compute() {
                 new RelatedAssetsAttribute().getPatentDataMap();
@@ -2731,8 +2727,13 @@ public class SimilarPatentServer {
                 new AssetToFilingMap().getApplicationDataMap();
                 new FilingToAssetMap().getApplicationDataMap();
                 new FilingToAssetMap().getPatentDataMap();
+                new AssetToCPCMap().getApplicationDataMap();
+                new AssetToCPCMap().getPatentDataMap();
             }
         });
+
+        server();
+        System.out.println("Finished starting server.");
 
         GatherClassificationServer.StartServer();
         if(preLoad) {
