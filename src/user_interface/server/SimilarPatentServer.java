@@ -2677,7 +2677,7 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void loadStuff() throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         DefaultPipelineManager.setLoggingLevel(Level.INFO);
         boolean testFilterNames = false;
@@ -2724,7 +2724,16 @@ public class SimilarPatentServer {
         }
         long t2 = System.currentTimeMillis();
         System.out.println("Time to start user_interface.server: "+ ((t2-t1)/(1000*60)) + " minutes");
+    }
 
+    public static void awaitTermination() throws Exception {
+        pool.shutdown();
+        pool.awaitTermination(Long.MAX_VALUE,TimeUnit.MICROSECONDS);
+    }
+
+    public static void main(String[] args) throws Exception {
+        Database.setLoadLocalFlag(true); // loads stuff locally (use CopyFilesToLocalMachines program)
+        loadStuff();
 
         // perform quick search
         try {
@@ -2732,7 +2741,5 @@ public class SimilarPatentServer {
         } catch(Exception e) {
             System.out.println("Error during presearch: "+e.getMessage());
         }
-
-
     }
 }
