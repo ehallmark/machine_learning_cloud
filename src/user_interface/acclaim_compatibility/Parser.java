@@ -501,7 +501,7 @@ public class Parser {
                 }
                 String slopStr = "";
                 while(queryStrEnd.length()>0&&Character.isDigit(queryStrEnd.charAt(queryStrEnd.length()-1))) {
-                    slopStr = slopStr + queryStrEnd.substring(queryStrEnd.length()-1);
+                    slopStr = queryStrEnd.substring(queryStrEnd.length()-1) + slopStr;
                     queryStrEnd = queryStrEnd.substring(0,queryStrEnd.length()-1);
                 }
                 if((queryStrEnd.equals("NEAR") || queryStrEnd.equals("ADJ")) && !queryStrEnd.contains(" ") && !queryStrEnd.contains(":") && preIdx!=null&&postIdx!=null) {
