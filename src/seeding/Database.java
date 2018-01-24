@@ -171,8 +171,12 @@ public class Database {
 	}
 
 	public static Object tryLoadObject(File file, boolean print) {
+		File originalFile = file;
 		if(LOAD_LOCAL_FLAG) {
 			file = fileCopyFor(file);
+			if(!file.exists()&&originalFile.exists()) {
+				file = originalFile;
+			}
 		}
 		if(print)System.out.println("Starting to load file: "+file.getName()+"...");
 		try {
