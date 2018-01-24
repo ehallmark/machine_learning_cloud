@@ -87,7 +87,7 @@ public class Database {
 	private static Map<String,Integer> gatherValueMap;
 	private static volatile boolean init=false;
 
-	private static final String DATA_COPY_FOLDER = "data_copy/";
+	public static final String DATA_COPY_FOLDER = "data_copy/";
 	private static volatile boolean COPY_DATA_FLAG = false;
 	private static volatile boolean LOAD_LOCAL_FLAG = false;
 	public static void setCopyDataFlag(boolean copy) {
@@ -171,12 +171,12 @@ public class Database {
 	}
 
 	public static Object tryLoadObject(File file, boolean print) {
-		File originalFile = file;
+		//File originalFile = file;
 		if(LOAD_LOCAL_FLAG) {
 			file = fileCopyFor(file);
-			if(!file.exists()&&originalFile.exists()) {
-				file = originalFile;
-			}
+			//if(!file.exists()&&originalFile.exists()) {
+			//	file = originalFile;
+			//}
 		}
 		if(print)System.out.println("Starting to load file: "+file.getName()+"...");
 		try {

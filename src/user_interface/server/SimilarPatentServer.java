@@ -2698,7 +2698,23 @@ public class SimilarPatentServer {
         System.out.println("Finished loading base finder.");
         System.out.println("Starting user_interface.server...");
 
+        getAllTopLevelAttributes().forEach(attr->{
+            if(attr instanceof NestedAttribute) {
+                ((NestedAttribute) attr).getAttributes().forEach(child->{
+                    try {
+                        child.getAllValues();
+                    } catch(Exception e) {
 
+                    }
+                });
+            } else {
+                try {
+                    attr.getAllValues();
+                } catch(Exception e) {
+
+                }
+            }
+        });
 
         server();
         System.out.println("Finished starting server.");
