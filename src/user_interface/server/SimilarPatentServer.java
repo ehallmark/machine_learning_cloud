@@ -198,7 +198,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Pivot Function Table", Constants.PIVOT_FUNCTION_TABLE_CHART);
             humanAttrToJavaAttrMap.put("Cited Date", Constants.CITED_DATE);
             humanAttrToJavaAttrMap.put("Forward Citation", Constants.BACKWARD_CITATION);
-            humanAttrToJavaAttrMap.put("Duplicate Related Assets",AssetDedupFilter.NAME);
+            humanAttrToJavaAttrMap.put("Remove Duplicate Related Assets",AssetDedupFilter.NAME);
             humanAttrToJavaAttrMap.put("Means Present", Constants.MEANS_PRESENT);
             humanAttrToJavaAttrMap.put("Gather", Constants.GATHER);
             humanAttrToJavaAttrMap.put("Stage Complete", Constants.GATHER_STAGE);
