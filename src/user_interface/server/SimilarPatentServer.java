@@ -140,7 +140,7 @@ public class SimilarPatentServer {
     private static AbstractNestedFilter allFilters;
     private static NestedAttribute allCharts;
     private static RecursiveTask<KeyphrasePredictionPipelineManager> keyphrasePredictionPipelineManagerTask;
-    private static final ForkJoinPool pool = new ForkJoinPool();
+    private static final ForkJoinPool pool = new ForkJoinPool(Math.max(10,Runtime.getRuntime().availableProcessors()/2));
 
     static {
         roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.startsWith("gather"));
