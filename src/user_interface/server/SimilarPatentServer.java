@@ -2716,9 +2716,9 @@ public class SimilarPatentServer {
             }
         });
 
-        pool.invoke(keyphrasePredictionPipelineManagerTask);
-        pool.invoke(similarityEngine);
-        pool.invoke(new RecursiveAction() {
+        pool.execute(keyphrasePredictionPipelineManagerTask);
+        pool.execute(similarityEngine);
+        pool.execute(new RecursiveAction() {
             @Override
             protected void compute() {
                 new RelatedAssetsAttribute().getPatentDataMap();
@@ -2729,16 +2729,19 @@ public class SimilarPatentServer {
                 new FilingToAssetMap().getPatentDataMap();
                 new AssetToCPCMap().getApplicationDataMap();
                 new AssetToCPCMap().getPatentDataMap();
+                if(preLoad) {
+                    Database.preLoad();
+                }
             }
         });
+
+        pool.awaitQuiescence(60L, TimeUnit.SECONDS);
 
         server();
         System.out.println("Finished starting server.");
 
         GatherClassificationServer.StartServer();
-        if(preLoad) {
-            Database.preLoad();
-        }
+
         long t2 = System.currentTimeMillis();
         System.out.println("Time to start user_interface.server: "+ ((t2-t1)/(1000*60)) + " minutes");
     }
