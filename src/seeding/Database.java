@@ -184,8 +184,9 @@ public class Database {
 				// copy
 				File fileCopy = fileCopyFor(file);
 				if(fileCopy!=null) {
-					if(!fileCopy.exists()) {
-						fileCopy.mkdirs();
+					File parent = fileCopy.getParentFile();
+					if(!parent.exists()) {
+						parent.mkdirs();
 					}
 					FileUtils.copyFile(file,fileCopy);
 				}
