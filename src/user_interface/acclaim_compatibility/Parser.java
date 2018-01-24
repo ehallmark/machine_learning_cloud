@@ -499,18 +499,21 @@ public class Parser {
                 if(queryStrEnd.contains(":")&&queryStrEnd.length()>queryStrEnd.indexOf(":")+1) {
                     queryStrEnd = queryStrEnd.substring(queryStrEnd.indexOf(":")+1);
                 }
+                String slopStr = "";
                 while(queryStrEnd.length()>0&&Character.isDigit(queryStrEnd.charAt(queryStrEnd.length()-1))) {
+                    slopStr = slopStr + queryStrEnd.substring(queryStrEnd.length()-1);
                     queryStrEnd = queryStrEnd.substring(0,queryStrEnd.length()-1);
                 }
                 if((queryStrEnd.equals("NEAR") || queryStrEnd.equals("ADJ")) && !queryStrEnd.contains(" ") && !queryStrEnd.contains(":") && preIdx!=null&&postIdx!=null) {
                     isProximityQuery = true;
                     int slop;
-                    boolean useOrder = queryStrEnd.toLowerCase().startsWith("adj");
+                    boolean useOrder = queryStrEnd.startsWith("ADJ");
                     try {
-                        slop = Integer.valueOf(queryStrEnd.toLowerCase().replace("near","").replace("adj",""));
+                        slop = Integer.valueOf(slopStr);
                     } catch(Exception e) {
                         slop = 1;
                     }
+                    if(slop<=0) slop = 1;
                     // valid near query
                     boolean matchAll = false;
                     boolean matchTAC = false;
