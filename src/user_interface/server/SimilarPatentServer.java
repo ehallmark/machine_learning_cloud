@@ -2713,6 +2713,8 @@ public class SimilarPatentServer {
                 new RelatedAssetsAttribute().getApplicationDataMap();
                 new AssetToFilingMap().getPatentDataMap();
                 new AssetToFilingMap().getApplicationDataMap();
+                new FilingToAssetMap().getApplicationDataMap();
+                new FilingToAssetMap().getPatentDataMap();
             }
         });
 
