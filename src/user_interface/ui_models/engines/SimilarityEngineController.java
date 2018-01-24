@@ -185,7 +185,7 @@ public class SimilarityEngineController {
             Item toRet;
             String filing = assetToFilingMap.getPatentDataMap().getOrDefault(item.getName(),assetToFilingMap.getApplicationDataMap().get(item.getName()));
             if(filing!=null) {
-                if(namesSeenSoFar.contains(filing)) {
+                if(namesSeenSoFar.contains(filing)||namesSeenSoFar.contains(item.getName())) {
                     toRet = null;
                 } else {
                     toRet = item;
@@ -195,6 +195,9 @@ public class SimilarityEngineController {
                 toRet = null;
                 System.out.println("No filing info for asset: "+item.getName());
             }
+            namesSeenSoFar.add(item.getName());
+            namesSeenSoFar.addAll(relatedAssetsAttribute.getPatentDataMap().getOrDefault(item.getName(),Collections.emptyList()));
+            namesSeenSoFar.addAll(relatedAssetsAttribute.getApplicationDataMap().getOrDefault(item.getName(),Collections.emptyList()));
             namesSeenSoFar.addAll(relatedAssetsAttribute.getPatentDataMap().getOrDefault(item.getName(),Collections.emptyList()).stream().map(asset->assetToFilingMap.getPatentDataMap().getOrDefault(asset,assetToFilingMap.getApplicationDataMap().get(asset))).filter(asset->asset!=null).collect(Collectors.toList()));
             namesSeenSoFar.addAll(relatedAssetsAttribute.getApplicationDataMap().getOrDefault(item.getName(),Collections.emptyList()).stream().map(asset->assetToFilingMap.getPatentDataMap().getOrDefault(asset,assetToFilingMap.getApplicationDataMap().get(asset))).filter(asset->asset!=null).collect(Collectors.toList()));
             return toRet;
