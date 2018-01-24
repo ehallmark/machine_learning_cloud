@@ -377,7 +377,7 @@ public class Constants {
 			Arrays.asList("CC", FILING_COUNTRY),
 			Arrays.asList("PT", DOC_KIND),
 			Arrays.asList("DT", DOC_TYPE),
-			Arrays.asList("SMALLENT", ASSIGNEE_ENTITY_TYPE),
+			Arrays.asList("SMALLENT", Constants.LATEST_ASSIGNEE+"."+ASSIGNEE_ENTITY_TYPE),
 			Arrays.asList("CPC", NESTED_CPC_CODES+"."+CPC_CODES),
 			Arrays.asList("IN", INVENTORS+"."+LAST_NAME),
 			Arrays.asList("IC", INVENTORS+"."+CITY),

@@ -2711,6 +2711,8 @@ public class SimilarPatentServer {
             protected void compute() {
                 new RelatedAssetsAttribute().getPatentDataMap();
                 new RelatedAssetsAttribute().getApplicationDataMap();
+                new AssetToFilingMap().getPatentDataMap();
+                new AssetToFilingMap().getApplicationDataMap();
             }
         });
 

@@ -10,6 +10,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.RelatedAssetsAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
@@ -177,18 +178,25 @@ public class SimilarityEngineController {
     }
 
     public static List<Item> assetDedupe(List<Item> items) {
-        RelatedAssetsAttribute attribute = new RelatedAssetsAttribute();
+        RelatedAssetsAttribute relatedAssetsAttribute = new RelatedAssetsAttribute();
+        AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         Set<String> namesSeenSoFar = new HashSet<>();
         return items.stream().map(item->{
             Item toRet;
-            if(namesSeenSoFar.contains(item.getName())) {
-                toRet = null;
+            String filing = assetToFilingMap.getPatentDataMap().getOrDefault(item.getName(),assetToFilingMap.getApplicationDataMap().get(item.getName()));
+            if(filing!=null) {
+                if(namesSeenSoFar.contains(filing)) {
+                    toRet = null;
+                } else {
+                    toRet = item;
+                }
+                namesSeenSoFar.add(filing);
             } else {
-                toRet = item;
+                toRet = null;
+                System.out.println("No filing info for asset: "+item.getName());
             }
-            namesSeenSoFar.add(item.getName());
-            namesSeenSoFar.addAll(attribute.getPatentDataMap().getOrDefault(item.getName(),Collections.emptyList()));
-            namesSeenSoFar.addAll(attribute.getApplicationDataMap().getOrDefault(item.getName(),Collections.emptyList()));
+            namesSeenSoFar.addAll(relatedAssetsAttribute.getPatentDataMap().getOrDefault(item.getName(),Collections.emptyList()).stream().map(asset->assetToFilingMap.getPatentDataMap().getOrDefault(asset,assetToFilingMap.getApplicationDataMap().get(asset))).filter(asset->asset!=null).collect(Collectors.toList()));
+            namesSeenSoFar.addAll(relatedAssetsAttribute.getApplicationDataMap().getOrDefault(item.getName(),Collections.emptyList()).stream().map(asset->assetToFilingMap.getPatentDataMap().getOrDefault(asset,assetToFilingMap.getApplicationDataMap().get(asset))).filter(asset->asset!=null).collect(Collectors.toList()));
             return toRet;
         }).filter(item->item!=null).collect(Collectors.toList());
     }
