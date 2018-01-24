@@ -14,6 +14,7 @@ import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
+import seeding.Database;
 import tools.ClassCodeHandler;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
@@ -30,6 +31,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     public static final String LARGE_MODEL_NAME = "wordcpc2vec_model_large";
     public static final String MODEL_NAME = "wordcpc2vec2_model";
     public static final String OLD_MODEL_NAME = "wordcpc2vec_filing_model";
+    public static final File cpcMapFile = new File(Constants.DATA_FOLDER+"word_cpc_2_vec_cpcmap_file.jobj");
     private static final int SMALL_VECTOR_SIZE = 32;
     private static final int LARGE_VECTOR_SIZE = 128;
     public static final Map<String,Integer> modelNameToVectorSizeMap = Collections.synchronizedMap(new HashMap<>());
@@ -109,26 +111,34 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
 
     public synchronized Map<String,Collection<CPC>> getCPCMap() {
         if(cpcMap==null) {
-            Map<String,String> patentToFiling = new AssetToFilingMap().getPatentDataMap();
-            Map<String,String> appToFiling = new AssetToFilingMap().getApplicationDataMap();
-            getHierarchy();
-            Map<String,Set<String>> assetToCPCStringMap = new HashMap<>();
-            new AssetToCPCMap().getApplicationDataMap().entrySet().forEach(e->{
-                assetToCPCStringMap.put(appToFiling.get(e.getKey()),e.getValue());
-            });
-            new AssetToCPCMap().getPatentDataMap().entrySet().forEach(e->{
-                assetToCPCStringMap.put(patentToFiling.get(e.getKey()),e.getValue());
-            });
-            cpcMap = assetToCPCStringMap.entrySet().parallelStream()
-                    .filter(e->assetToCPCStringMap.containsKey(e.getKey()))
-                    .collect(Collectors.toMap(e->e.getKey(), e->e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
-                            .filter(cpc->cpc!=null)
-                            .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
-                            .distinct()
-                            .collect(Collectors.toSet())))
-                    .entrySet().parallelStream()
-                    .filter(e->e.getValue().size()>0)
-                    .collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+
+            cpcMap = (Map<String,Collection<CPC>>) Database.tryLoadObject(cpcMapFile);
+
+            if(cpcMap == null) {
+                Map<String, String> patentToFiling = new AssetToFilingMap().getPatentDataMap();
+                Map<String, String> appToFiling = new AssetToFilingMap().getApplicationDataMap();
+                getHierarchy();
+                Map<String, Set<String>> assetToCPCStringMap = new HashMap<>();
+                new AssetToCPCMap().getApplicationDataMap().entrySet().forEach(e -> {
+                    assetToCPCStringMap.put(appToFiling.get(e.getKey()), e.getValue());
+                });
+                new AssetToCPCMap().getPatentDataMap().entrySet().forEach(e -> {
+                    assetToCPCStringMap.put(patentToFiling.get(e.getKey()), e.getValue());
+                });
+                cpcMap = assetToCPCStringMap.entrySet().parallelStream()
+                        .filter(e -> assetToCPCStringMap.containsKey(e.getKey()))
+                        .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().stream().map(label -> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
+                                .filter(cpc -> cpc != null)
+                                .flatMap(cpc -> hierarchy.cpcWithAncestors(cpc).stream())
+                                .distinct()
+                                .collect(Collectors.toSet())))
+                        .entrySet().parallelStream()
+                        .filter(e -> e.getValue().size() > 0)
+                        .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+
+                Database.trySaveObject(cpcMap,cpcMapFile);
+            }
+
         }
         return cpcMap;
     }
