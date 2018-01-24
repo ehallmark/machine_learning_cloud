@@ -2696,7 +2696,7 @@ public class SimilarPatentServer {
         System.out.println("Starting to load base finder...");
         initialize(false,false);
         System.out.println("Finished loading base finder.");
-        System.out.println("Starting user_interface.server...");
+        System.out.println("Starting server...");
 
         getAllTopLevelAttributes().forEach(attr->{
             if(attr instanceof NestedAttribute) {
@@ -2735,7 +2735,8 @@ public class SimilarPatentServer {
             }
         });
 
-        pool.awaitQuiescence(60L, TimeUnit.SECONDS);
+        final int numMinutes = 3;
+        pool.awaitQuiescence(60L*numMinutes, TimeUnit.SECONDS);
 
         server();
         System.out.println("Finished starting server.");
@@ -2743,7 +2744,7 @@ public class SimilarPatentServer {
         GatherClassificationServer.StartServer();
 
         long t2 = System.currentTimeMillis();
-        System.out.println("Time to start user_interface.server: "+ ((t2-t1)/(1000*60)) + " minutes");
+        System.out.println("Time to start server: "+ ((t2-t1)/(1000*60)) + " minutes");
     }
 
     public static void awaitTermination() throws Exception {
