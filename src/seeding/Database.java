@@ -176,21 +176,25 @@ public class Database {
 		}
 		if(print)System.out.println("Starting to load file: "+file.getName()+"...");
 		try {
-			ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
-			Object toReturn = ois.readObject();
-			ois.close();
+			Object toReturn = null;
+			if(!COPY_DATA_FLAG) {
+				ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
+				toReturn = ois.readObject();
+				ois.close();
+			}
 			if(print)System.out.println("Successfully loaded "+file.getName()+".");
 			if(COPY_DATA_FLAG) {
-				// copy
-				File fileCopy = fileCopyFor(file);
-				if(fileCopy!=null) {
-					File parent = fileCopy.getParentFile();
-					if(!parent.exists()) {
-						parent.mkdirs();
+				if(file.exists()) {
+					// copy
+					File fileCopy = fileCopyFor(file);
+					if(fileCopy!=null) {
+						File parent = fileCopy.getParentFile();
+						if(!parent.exists()) {
+							parent.mkdirs();
+						}
+						FileUtils.copyFile(file,fileCopy);
 					}
-					FileUtils.copyFile(file,fileCopy);
 				}
-
 			}
 			return toReturn;
 		} catch(Exception e) {

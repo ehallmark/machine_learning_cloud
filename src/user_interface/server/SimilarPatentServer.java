@@ -2727,6 +2727,7 @@ public class SimilarPatentServer {
     }
 
     public static void awaitTermination() throws Exception {
+        System.out.println("Awaiting termination...");
         pool.shutdown();
         pool.awaitTermination(Long.MAX_VALUE,TimeUnit.MICROSECONDS);
     }
