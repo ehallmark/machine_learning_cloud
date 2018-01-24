@@ -2735,7 +2735,7 @@ public class SimilarPatentServer {
             }
         });
 
-        final int numMinutes = 3;
+        final int numMinutes = 5;
         pool.awaitQuiescence(60L*numMinutes, TimeUnit.SECONDS);
 
         server();
