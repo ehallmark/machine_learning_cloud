@@ -10,4 +10,9 @@ public class NumCompDBAssignmentsAttribute extends CountAttribute {
     public NumCompDBAssignmentsAttribute() {
         super(Constants.COMPDB+"."+Constants.NUM_ASSIGNMENTS);
     }
+
+    @Override
+    public String getName() {
+        return Constants.NUM_ASSIGNMENTS;
+    }
 }
