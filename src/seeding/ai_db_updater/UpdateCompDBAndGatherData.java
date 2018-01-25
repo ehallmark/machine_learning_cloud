@@ -92,4 +92,8 @@ public class UpdateCompDBAndGatherData {
             }
         }
     }
+
+    public static void main(String[] args) {
+        update();
+    }
 }
