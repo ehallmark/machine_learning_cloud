@@ -5,14 +5,10 @@ import elasticsearch.IngestMongoIntoElasticSearch;
 import org.bson.Document;
 import seeding.Constants;
 import seeding.Database;
-import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.CompDBNestedAttribute;
 import user_interface.ui_models.attributes.GatherNestedAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
-import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,6 +46,7 @@ public class UpdateCompDBAndGatherData {
             Document query = new Document("_id", idMap);
             IngestMongoIntoElasticSearch.ingestByType(DataIngester.TYPE_NAME, query);
         }
+        Database.main(null);
         return Stream.of(gatherAssets,compDBAssets).flatMap(list->list.stream()).collect(Collectors.toList());
     }
 
