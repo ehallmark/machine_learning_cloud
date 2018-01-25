@@ -8,6 +8,6 @@ import user_interface.ui_models.attributes.script_attributes.CountAttribute;
  */
 public class NumCompDBAssignmentsAttribute extends CountAttribute {
     public NumCompDBAssignmentsAttribute() {
-        super(Constants.NUM_ASSIGNMENTS);
+        super(Constants.COMPDB+"."+Constants.NUM_ASSIGNMENTS);
     }
 }
