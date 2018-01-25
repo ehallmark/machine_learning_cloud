@@ -153,7 +153,7 @@ public class ExcelHandler {
         BufferedImage logoImage = ImageIO.read(logoFile);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(logoImage, "PNG", baos);
-        WritableImage img = new WritableImage(1.0,0.3,32.0*new Double(logoImage.getWidth()) / sheet.getColumnView(1).getSize(),
+        WritableImage img = new WritableImage(1.0,0.3,28d*new Double(logoImage.getWidth()) / sheet.getColumnView(1).getSize(),
                 1.3 * new Double(logoImage.getHeight()) / CELL_DEFAULT_HEIGHT,baos.toByteArray());
         sheet.addImage(img);
 
