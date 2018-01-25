@@ -1421,13 +1421,15 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
     });
 
     $(tree_id).bind("dblclick.jstree", function(event) {
-        var tree = $(this).jstree(true);
-        var node = tree.get_node(event.target);
-        if(node.type==='file') {
-            event.preventDefault();
-            event.stopPropagation();
-            dblclickFunction(node.data,tree,node);
-            return false;
+        if( $('input:focus').length == 0 ) {
+            var tree = $(this).jstree(true);
+            var node = tree.get_node(event.target);
+            if(node.type==='file') {
+                event.preventDefault();
+                event.stopPropagation();
+                dblclickFunction(node.data,tree,node);
+                return false;
+            }
         }
         return true;
     });
