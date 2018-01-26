@@ -6,7 +6,7 @@
     display: none;
 }
 
-#new-dataset-from-asset-list-overlay {
+#new-dataset-from-asset-list-overlay,#k-for-clustering-overlay {
     position: fixed;
     display: none;
     width: 100%;
@@ -20,7 +20,7 @@
     cursor: pointer;
 }
 
-#new-dataset-from-asset-list-inside {
+#new-dataset-from-asset-list-inside,#k-for-clustering-inside {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -30,7 +30,7 @@
     -ms-transform: translate(-50%,-50%);
 }
 
-#new-dataset-from-asset-list {
+#new-dataset-from-asset-list,#k-for-clustering {
     font-size: 15;
     width: 300px;
     height: 200px;
