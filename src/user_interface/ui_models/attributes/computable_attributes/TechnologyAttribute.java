@@ -102,5 +102,7 @@ public class TechnologyAttribute extends ComputableAttribute<List<String>> {
     private static Map<String,String> technologyCorrectionsMap = new HashMap<>();
     static {
         technologyCorrectionsMap.put("Electrical Circuits Surrounding","Electrical Circuits");
+        technologyCorrectionsMap.put("Reproduction","Content Reproduction");
+        technologyCorrectionsMap.put("Reproducing","Content Reproducing");
     }
 }
