@@ -868,7 +868,7 @@ var addMultipleDatasetFunction = function(data,tree,node){
         nodeData = tree.get_node(currId);
     }
     var shared = parents.length > 0 && parents[0].startsWith("Shared");
-    
+
     var $filter = $('#multiselect-nested-filter-select-attributesNested_filter');
     var prevFilters = $filter.val();
     if(!prevFilters.includes($datasetInput.attr('name'))) {
@@ -1333,9 +1333,9 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                 }
                 if((node_type==='dataset') && isFolder) {
                     // plot children
-                    var menuName = "Apply Children To Form";
+                    var menuName = "Apply Children";
                     items[menuName] = {
-                        "separator_before": false,
+                        "separator_before": true,
                         "separator_after": false,
                         "label": menuName,
                         "title": "Apply child datasets to current template.",
@@ -1346,7 +1346,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
 
                     };
                     // plot children
-                    var menuName = "Add Children To Form";
+                    var menuName = "Add Children";
                     items[menuName] = {
                         "separator_before": false,
                         "separator_after": false,
