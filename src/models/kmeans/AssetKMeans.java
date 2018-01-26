@@ -62,8 +62,8 @@ public class AssetKMeans {
     }
 
     public Map<String,List<String>> clusterAssets() {
-        int startingK = 2;
-        int endingK = MAX_K;
+        int startingK = Math.min(assetEncodingMap.size(),MIN_K);
+        int endingK = Math.min(assetEncodingMap.size(),MAX_K);
 
         kMeans.optimize(assetEncodingMap,startingK,endingK,B,maxEpochs);
 
