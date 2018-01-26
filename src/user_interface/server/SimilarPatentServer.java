@@ -1442,6 +1442,7 @@ public class SimilarPatentServer {
         } catch(Exception e) {
 
         }
+        System.out.println("Number of clusters: "+k);
 
         StringJoiner message = new StringJoiner("; ", "Messages: ", ".");
 
