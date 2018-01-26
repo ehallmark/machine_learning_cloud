@@ -413,7 +413,7 @@ public class SimilarPatentServer {
                     keyphrasePredictionPipelineManager.loadPredictions();
                     keyphrasePredictionPipelineManager.getCPCMap();
                     try {
-                        AssetKMeans kMeans = new AssetKMeans(Collections.emptyList(), keyphrasePredictionPipelineManager);
+                        AssetKMeans kMeans = new AssetKMeans(Collections.emptyList(), keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors());
                         kMeans.clusterAssets();
                     } catch(Exception e) {
                         System.out.println("Error while initializing asset K Means");
@@ -1462,7 +1462,7 @@ public class SimilarPatentServer {
                     message.add("assets are null");
                 } else {
 
-                    AssetKMeans kMeans = new AssetKMeans(assets, keyphrasePredictionPipelineManagerTask.join());
+                    AssetKMeans kMeans = new AssetKMeans(assets, keyphrasePredictionPipelineManagerTask.join().getWordCPC2VecPipelineManager().getOrLoadCPCVectors());
 
                     Map<String, List<String>> clusters = kMeans.clusterAssets();
 

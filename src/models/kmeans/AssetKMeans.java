@@ -27,28 +27,24 @@ public class AssetKMeans {
     private static final int MAX_K = 50;
     private static final int APPROX_PER_GROUP = 100;
     private static final int B = 10;
-    private static final int KEYWORD_SAMPLES = 100;
     private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
 
 
-    private KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager;
     private UnitCosineKMeans kMeans;
     private Map<String,INDArray> assetEncodingMap;
     private Map<String,List<String>> techPredictions;
-    public AssetKMeans(Map<String,INDArray> assetToEncodingMap, KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager) {
+    public AssetKMeans(Map<String,INDArray> assetToEncodingMap) {
         this.kMeans = new UnitCosineKMeans();
-        this.keyphrasePredictionPipelineManager=keyphrasePredictionPipelineManager;
         this.techPredictions = PredictKeyphraseForFilings.loadOrGetTechnologyMap();
         this.assetEncodingMap = assetToEncodingMap;
         System.out.println("Num tech predictions: "+techPredictions.size());
     }
 
-    public AssetKMeans(List<String> assets, KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager) {
-        this(computeEncodingsForAssets(assets,keyphrasePredictionPipelineManager),keyphrasePredictionPipelineManager);
+    public AssetKMeans(List<String> assets, Map<String,INDArray> cpcVectors) {
+        this(computeEncodingsForAssets(assets,cpcVectors));
     }
 
-    public static Map<String,INDArray> computeEncodingsForAssets(List<String> assets, KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager) {
-        Map<String,INDArray> cpcVectors = keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors();
+    public static Map<String,INDArray> computeEncodingsForAssets(List<String> assets, Map<String,INDArray> cpcVectors) {
 
         return assets.stream().distinct().map(asset->{
             Collection<String> cpcs = Database.classificationsFor(asset);
@@ -101,23 +97,15 @@ public class AssetKMeans {
             Set<String> cluster = clusters.get(i);
             if(cluster.isEmpty()) continue;
 
-            List<String> keywordSamples = clusterIdxToTagFrequencyMap.get(i)
+            String tag = clusterIdxToTagFrequencyMap.get(i)
                     .entrySet().stream().map(e->{
                         double tfidf = e.getValue().doubleValue()*Math.log(1d/overallTagFrequencyMap.get(e.getKey()).doubleValue());
                         return new Pair<>(e.getKey(),tfidf);
-                    }).sorted((e1,e2)->e2.getSecond().compareTo(e1.getSecond())).limit(KEYWORD_SAMPLES).map(e->e.getFirst()).collect(Collectors.toList());
+                    }).max(Comparator.comparing(e->e.getSecond())).orElse(new Pair<>(null,null)).getFirst();
+
 
             // tag
-            String tag = null;
-            System.out.println("keywords: "+keywordSamples.size());
-            Map<String,INDArray> toPredict = Collections.singletonMap("cluster", Transforms.unitVec(Nd4j.vstack(cluster.stream().map(asset->assetEncodingMap.get(asset)).collect(Collectors.toList())).mean(0)));
-            if(keywordSamples.size()>0){
-                System.out.println("starting prediction...");
-                Map<String,Set<String>> results = keyphrasePredictionPipelineManager.predict(keywordSamples,toPredict,1,minScore);
-                if(results.size()>0) {
-                    tag = results.values().stream().findAny().orElse(Collections.emptySet()).stream().findAny().orElse(null);
-                }
-            }
+
             if(tag==null) tag = "other "+cnt.getAndIncrement();
 
             tag = TechnologyAttribute.formatTechnologyString(tag);
@@ -140,7 +128,7 @@ public class AssetKMeans {
         keyphrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
 
         List<String> assets = Database.getAllPatentsAndApplications().stream().limit(10000).collect(Collectors.toList());
-        AssetKMeans kMeans = new AssetKMeans(assets,keyphrasePredictionPipelineManager);
+        AssetKMeans kMeans = new AssetKMeans(assets,keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors());
         Map<String,List<String>> clusters = kMeans.clusterAssets();
 
         clusters.forEach((name,cluster)->{
