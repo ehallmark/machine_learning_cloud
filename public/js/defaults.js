@@ -1058,11 +1058,13 @@ var getKFromClusterInputFunction = function(callbackWithValue) {
     $submit.off('click');
     $cancel.off('click');
     $input.off('click');
+    $inner.off('click');
 
     $inner.click(function(e){
         e.stopPropagation();
     });
     $submit.click(function() {
+        $container.hide();
         callbackWithValue($input.val());
     });
     $cancel.click(function() {
@@ -1087,6 +1089,7 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     $submit.off('click');
     $cancel.off('click');
     $input.off('click');
+    $inner.off('click');
 
     $inner.click(function(e){
         e.stopPropagation();
