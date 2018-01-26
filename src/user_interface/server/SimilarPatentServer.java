@@ -1438,6 +1438,7 @@ public class SimilarPatentServer {
         Integer k = null;
         try {
             k = Integer.valueOf(req.queryParams("k"));
+            if(k!=null && (k<2||k>500)) throw new RuntimeException("Number of clusters must be between 2 and 500");
         } catch(Exception e) {
 
         }
@@ -2328,7 +2329,7 @@ public class SimilarPatentServer {
                                                                         )
                                                                 ),div().withId("k-for-clustering-overlay").with(
                                                                         div().withId("k-for-clustering-inside").attr("style","background-color: lightgray; padding: 5px;").with(
-                                                                                label("Number of Clusters").with(div().withText("(or leave blank to automatically find optimal number)"),input().withType("number").attr("style","float: left;").withId("k-for-clustering")),
+                                                                                label("Number of Clusters").with(div().withText("(or leave blank to automatically find optimal number)"),input().withType("number").attr("min","2").attr("style","float: left;").withId("k-for-clustering")),
                                                                                 button("Cluster").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-submit"),
                                                                                 button("Cancel").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-cancel")
                                                                         )
