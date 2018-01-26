@@ -1049,6 +1049,7 @@ var getKFromClusterInputFunction = function(callbackWithValue) {
     // get user input
     var $input = $('#k-for-clustering');
     var $container = $('#k-for-clustering-overlay');
+    var $inner = $('#k-for-clustering-inside');
     var $submit = $('#k-for-clustering-submit');
     var $cancel = $('#k-for-clustering-cancel');
 
@@ -1058,7 +1059,7 @@ var getKFromClusterInputFunction = function(callbackWithValue) {
     $cancel.off('click');
     $input.off('click');
 
-    $input.click(function(e){
+    $inner.click(function(e){
         e.stopPropagation();
     });
     $submit.click(function() {
@@ -1079,6 +1080,7 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     var $container = $('#new-dataset-from-asset-list-overlay');
     var $submit = $('#new-dataset-from-asset-list-submit');
     var $cancel = $('#new-dataset-from-asset-list-cancel');
+    var $inner = $('#new-dataset-from-asset-list-inside');
 
     $input.val('');
     $container.show();
@@ -1086,7 +1088,7 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     $cancel.off('click');
     $input.off('click');
 
-    $input.click(function(e){
+    $inner.click(function(e){
         e.stopPropagation();
     });
     $submit.click(function() {
