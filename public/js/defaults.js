@@ -868,13 +868,13 @@ var addMultipleDatasetFunction = function(data,tree,node){
         nodeData = tree.get_node(currId);
     }
     var shared = parents.length > 0 && parents[0].startsWith("Shared");
-    $('#filters-row .attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
-    $('#filters-row div.attribute').addClass("disabled");
+    
     var $filter = $('#multiselect-nested-filter-select-attributesNested_filter');
-    $filter.val([$datasetInput.attr('name')]).trigger('change');
-    if(! Array.isArray(names)) {
-        names = [names];
+    var prevFilters = $filter.val();
+    if(!prevFilters.includes($datasetInput.attr('name'))) {
+        prevFilters.add($datasetInput.attr('name'));
     }
+    $filter.val(prevFilters).trigger('change');
     if(node.children) {
         if(node.children.length > 0) {
             for(var i = 0; i < node.children.length; i++) {
