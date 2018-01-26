@@ -33,15 +33,16 @@ public class AssetKMeans {
     private UnitCosineKMeans kMeans;
     private Map<String,INDArray> assetEncodingMap;
     private Map<String,List<String>> techPredictions;
-    public AssetKMeans(Map<String,INDArray> assetToEncodingMap) {
+    private Integer k;
+    public AssetKMeans(Map<String,INDArray> assetToEncodingMap, Integer k) {
         this.kMeans = new UnitCosineKMeans();
         this.techPredictions = PredictKeyphraseForFilings.loadOrGetTechnologyMap();
         this.assetEncodingMap = assetToEncodingMap;
         System.out.println("Num tech predictions: "+techPredictions.size());
     }
 
-    public AssetKMeans(List<String> assets, Map<String,INDArray> cpcVectors) {
-        this(computeEncodingsForAssets(assets,cpcVectors));
+    public AssetKMeans(List<String> assets, Map<String,INDArray> cpcVectors, Integer k) {
+        this(computeEncodingsForAssets(assets,cpcVectors), k);
     }
 
     public static Map<String,INDArray> computeEncodingsForAssets(List<String> assets, Map<String,INDArray> cpcVectors) {
@@ -58,8 +59,10 @@ public class AssetKMeans {
     }
 
     public Map<String,List<String>> clusterAssets() {
-        int startingK = Math.min(assetEncodingMap.size(),MIN_K);
-        int endingK = Math.min(assetEncodingMap.size(),MAX_K);
+        int minK = k==null?MIN_K:k;
+        int maxK = k==null?MAX_K:(k+1);
+        int startingK = Math.min(assetEncodingMap.size(),minK);
+        int endingK = Math.min(assetEncodingMap.size(),maxK);
 
         kMeans.optimize(assetEncodingMap,startingK,endingK,B,maxEpochs);
 
@@ -128,7 +131,7 @@ public class AssetKMeans {
         keyphrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
 
         List<String> assets = Database.getAllPatentsAndApplications().stream().limit(10000).collect(Collectors.toList());
-        AssetKMeans kMeans = new AssetKMeans(assets,keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors());
+        AssetKMeans kMeans = new AssetKMeans(assets,keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors(),null);
         Map<String,List<String>> clusters = kMeans.clusterAssets();
 
         clusters.forEach((name,cluster)->{

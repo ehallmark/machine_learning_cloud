@@ -1435,6 +1435,13 @@ public class SimilarPatentServer {
         String file = req.queryParams("file");
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
 
+        Integer k = null;
+        try {
+            k = Integer.valueOf(req.queryParams("k"));
+        } catch(Exception e) {
+
+        }
+
         StringJoiner message = new StringJoiner("; ", "Messages: ", ".");
 
         String user = req.session().attribute("username");
@@ -1462,7 +1469,7 @@ public class SimilarPatentServer {
                     message.add("assets are null");
                 } else {
 
-                    AssetKMeans kMeans = new AssetKMeans(assets, keyphrasePredictionPipelineManagerTask.join().getWordCPC2VecPipelineManager().getOrLoadCPCVectors());
+                    AssetKMeans kMeans = new AssetKMeans(assets, keyphrasePredictionPipelineManagerTask.join().getWordCPC2VecPipelineManager().getOrLoadCPCVectors(), k);
 
                     Map<String, List<String>> clusters = kMeans.clusterAssets();
 
