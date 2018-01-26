@@ -24,7 +24,7 @@ public class AssetKMeans {
     private static final int maxEpochs = 200;
     private static final double minScore = 0.3;
     private static final int MIN_K = 2;
-    private static final int MAX_K = 20;
+    private static final int MAX_K = 50;
     private static final int APPROX_PER_GROUP = 100;
     private static final int B = 10;
     private static final int KEYWORD_SAMPLES = 30;
