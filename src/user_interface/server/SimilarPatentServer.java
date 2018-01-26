@@ -2319,6 +2319,12 @@ public class SimilarPatentServer {
                                                                                 button("Create").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-submit"),
                                                                                 button("Cancel").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-cancel")
                                                                         )
+                                                                ),div().withId("k-for-clustering-overlay").with(
+                                                                        div().withId("k-for-clustering-inside").with(
+                                                                                label("Number of Clusters").with(span("(or leave blank to automatically find optimal number)"),input().withType("number").withId("k-for-clustering")),
+                                                                                button("Cluster").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-submit"),
+                                                                                button("Cancel").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-cancel")
+                                                                        )
                                                                 )
                                                         )
                                                 )

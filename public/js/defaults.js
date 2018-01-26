@@ -1045,6 +1045,34 @@ var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable,callbac
     callback(preData);
 };
 
+var getKFromClusterInputFunction = function(callbackWithValue) {
+    // get user input
+    var $input = $('#k-for-clustering');
+    var $container = $('#k-for-clustering-overlay');
+    var $submit = $('#k-for-clustering-submit');
+    var $cancel = $('#k-for-clustering-cancel');
+
+    $input.val('');
+    $container.show();
+    $submit.off('click');
+    $cancel.off('click');
+    $input.off('click');
+
+    $input.click(function(e){
+        e.stopPropagation();
+    });
+    $submit.click(function() {
+        callbackWithValue($input.val());
+    });
+    $cancel.click(function() {
+        $container.hide();
+    });
+    $container.click(function() {
+        $container.hide();
+    });
+
+}
+
 var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     // get user input
     var $input = $('#new-dataset-from-asset-list');
@@ -1395,68 +1423,74 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         "label": "Cluster Dataset",
                         "title": "Cluster this dataset into technology categories.",
                         "action": function(obj) {
-                            // need to get data
-                            var nodeData = node;
-                            var parents = [];
-                            while(typeof nodeData.text !== 'undefined') {
-                                if(nodeData.type==='folder') {
-                                    parents.unshift(nodeData.text);
-                                }
-                                var currId = nodeData.parent;
-                                nodeData = tree.get_node(currId);
-                            }
-                            var shared = parents.length > 0 && parents[0].startsWith("Shared");
-                            $.ajax({
-                                type: "POST",
-                                url: '/secure/cluster_dataset',
-                                data: {
-                                    file: node.data.file,
-                                    shared: shared
-                                },
-                                success: function(clusters) {
-                                    if(!clusters.hasOwnProperty('clusters')) {
-                                         alert('Error saving template: '+clusters.message);
-                                    } else {
-                                        var folderData = {
-                                            'text': node.text,
-                                            'deletable': true,
-                                            'type': 'folder',
-                                            'icon': 'jstree-folder',
-                                            'jstree': {'type':'folder'}
-                                        };
-                                        tree.create_node(
-                                            tree.get_node(node.parent),
-                                            {'data' : folderData, 'text': node.text},
-                                            'first',
-                                            function(newFolder) {
-                                                newFolder.data=folderData;
-                                                $.each(clusters.clusters, function(idx,data){
-                                                    if(data.hasOwnProperty('file')&&data.hasOwnProperty('user')&&data.hasOwnProperty('name')) {
-                                                        var newData = {
-                                                            'text': data.name,
-                                                            'deletable': true,
-                                                            'type': 'file',
-                                                            'icon': 'jstree-file',
-                                                            'jstree': {'type': 'file'},
-                                                        };
-                                                        $.each(data, function(k,v) { newData[k] = v; });
-                                                        var newNode = tree.create_node(
-                                                            newFolder,
-                                                            { 'data' : newData, 'text': data.name},
-                                                            'first',
-                                                            function(newNode) {
-                                                                newNode.data=newData;
-                                                            }
-                                                        );
-                                                    }
-                                                });
-                                            }
-                                        );
-
+                            // num clusters
+                            var callback = function(k) {
+                                // need to get data
+                                var nodeData = node;
+                                var parents = [];
+                                while(typeof nodeData.text !== 'undefined') {
+                                    if(nodeData.type==='folder') {
+                                        parents.unshift(nodeData.text);
                                     }
-                                },
-                                dataType: "json"
-                            });
+                                    var currId = nodeData.parent;
+                                    nodeData = tree.get_node(currId);
+                                }
+                                var shared = parents.length > 0 && parents[0].startsWith("Shared");
+                                $.ajax({
+                                    type: "POST",
+                                    url: '/secure/cluster_dataset',
+                                    data: {
+                                        file: node.data.file,
+                                        shared: shared,
+                                        k: k
+                                    },
+                                    success: function(clusters) {
+                                        if(!clusters.hasOwnProperty('clusters')) {
+                                             alert('Error saving template: '+clusters.message);
+                                        } else {
+                                            var folderData = {
+                                                'text': node.text,
+                                                'deletable': true,
+                                                'type': 'folder',
+                                                'icon': 'jstree-folder',
+                                                'jstree': {'type':'folder'}
+                                            };
+                                            tree.create_node(
+                                                tree.get_node(node.parent),
+                                                {'data' : folderData, 'text': node.text},
+                                                'first',
+                                                function(newFolder) {
+                                                    newFolder.data=folderData;
+                                                    $.each(clusters.clusters, function(idx,data){
+                                                        if(data.hasOwnProperty('file')&&data.hasOwnProperty('user')&&data.hasOwnProperty('name')) {
+                                                            var newData = {
+                                                                'text': data.name,
+                                                                'deletable': true,
+                                                                'type': 'file',
+                                                                'icon': 'jstree-file',
+                                                                'jstree': {'type': 'file'},
+                                                            };
+                                                            $.each(data, function(k,v) { newData[k] = v; });
+                                                            var newNode = tree.create_node(
+                                                                newFolder,
+                                                                { 'data' : newData, 'text': data.name},
+                                                                'first',
+                                                                function(newNode) {
+                                                                    newNode.data=newData;
+                                                                }
+                                                            );
+                                                        }
+                                                    });
+                                                }
+                                            );
+
+                                        }
+                                    },
+                                    dataType: "json"
+                                });
+                            };
+
+                            getKFromClusterInputFunction(callback);
                             return true;
                         }
                     };
