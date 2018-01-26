@@ -855,6 +855,8 @@ var showMultipleDatasetFunction = function(data,tree,node){
 
 var addMultipleDatasetFunction = function(data,tree,node){
     // need to get data
+    var names = $datasetInput.val();
+    alert(names);
     var nodeData = node;
     var parents = [];
     while(typeof nodeData.text !== 'undefined') {
@@ -870,7 +872,6 @@ var addMultipleDatasetFunction = function(data,tree,node){
     var $datasetInput = $('#multiselect-multiselect-datasetNameInclude_filter');
     var $filter = $('#multiselect-nested-filter-select-attributesNested_filter');
     $filter.val([$datasetInput.attr('name')]).trigger('change');
-    var names = $datasetInput.val();
     if(! Array.isArray(names)) {
         names = [names];
     }
@@ -1350,7 +1351,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         "separator_before": false,
                         "separator_after": false,
                         "label": menuName,
-                        "title": "Apply child datasets to current template.",
+                        "title": "Add child datasets to current template.",
                         "action": function(obj) {
                             addMultipleDatasetFunction(node.data,tree,node);
                             return true;
