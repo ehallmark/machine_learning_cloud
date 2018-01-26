@@ -27,7 +27,7 @@ public class AssetKMeans {
     private static final int MAX_K = 50;
     private static final int APPROX_PER_GROUP = 100;
     private static final int B = 10;
-    private static final int KEYWORD_SAMPLES = 30;
+    private static final int KEYWORD_SAMPLES = 100;
     private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
 
 
