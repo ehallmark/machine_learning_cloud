@@ -854,6 +854,8 @@ var showMultipleDatasetFunction = function(data,tree,node){
 };
 
 var addMultipleDatasetFunction = function(data,tree,node){
+    var $datasetInput = $('#multiselect-multiselect-datasetNameInclude_filter');
+
     // need to get data
     var names = $datasetInput.val();
     alert(names);
@@ -869,7 +871,6 @@ var addMultipleDatasetFunction = function(data,tree,node){
     var shared = parents.length > 0 && parents[0].startsWith("Shared");
     $('#filters-row .attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
     $('#filters-row div.attribute').addClass("disabled");
-    var $datasetInput = $('#multiselect-multiselect-datasetNameInclude_filter');
     var $filter = $('#multiselect-nested-filter-select-attributesNested_filter');
     $filter.val([$datasetInput.attr('name')]).trigger('change');
     if(! Array.isArray(names)) {
