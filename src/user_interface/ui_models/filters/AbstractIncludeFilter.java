@@ -86,18 +86,22 @@ public class AbstractIncludeFilter extends AbstractFilter {
         }
 
 
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().minimumShouldMatch(this.minimumShouldMatch);
-        for (String label : labels) {
-            if(attribute instanceof TermsLookupAttribute) {
-                TermsLookupAttribute termsLookupAttribute = (TermsLookupAttribute)attribute;
-                boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.termsLookupQuery(termsLookupAttribute.getTermsName(),new TermsLookup(termsLookupAttribute.getTermsIndex(),termsLookupAttribute.getTermsType(),label,termsLookupAttribute.getTermsPath())));
-            } else if(termQuery) {
-                boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.termQuery(preReq, label));
-            } else {
-                boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.matchPhraseQuery(preReq, label));
+        if(minimumShouldMatch<=1 && !(attribute instanceof TermsLookupAttribute) && termQuery) {
+            return QueryBuilders.termsQuery(preReq,labels);
+        } else {
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().minimumShouldMatch(this.minimumShouldMatch);
+            for (String label : labels) {
+                if (attribute instanceof TermsLookupAttribute) {
+                    TermsLookupAttribute termsLookupAttribute = (TermsLookupAttribute) attribute;
+                    boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.termsLookupQuery(termsLookupAttribute.getTermsName(), new TermsLookup(termsLookupAttribute.getTermsIndex(), termsLookupAttribute.getTermsType(), label, termsLookupAttribute.getTermsPath())));
+                } else if (termQuery) {
+                    boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.termQuery(preReq, label));
+                } else {
+                    boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.matchPhraseQuery(preReq, label));
+                }
             }
+            return boolQueryBuilder;
         }
-        return boolQueryBuilder;
     }
 
     public boolean isActive() { return labels!=null && labels.size() > 0; }
