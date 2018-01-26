@@ -85,11 +85,11 @@ public class AssetKMeans {
             List<String> keywords = related.stream().flatMap(asset->techPredictions.getOrDefault(asset,Collections.emptyList()).stream()).collect(Collectors.toList());
 
             Map<String,Long> freqMap = keywords.stream().collect(Collectors.groupingBy(keyword->keyword,Collectors.counting()));
-            freqMap.forEach((k,v)->{
+            freqMap.keySet().forEach(k->{
                 if(overallTagFrequencyMap.containsKey(k)) {
-                    overallTagFrequencyMap.put(k,overallTagFrequencyMap.get(k)+v);
+                    overallTagFrequencyMap.put(k,overallTagFrequencyMap.get(k)+1);
                 } else {
-                    overallTagFrequencyMap.put(k,v);
+                    overallTagFrequencyMap.put(k,1L);
                 }
             });
 
