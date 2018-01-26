@@ -858,7 +858,6 @@ var addMultipleDatasetFunction = function(data,tree,node){
 
     // need to get data
     var names = $datasetInput.val();
-    alert(names);
     var nodeData = node;
     var parents = [];
     while(typeof nodeData.text !== 'undefined') {
