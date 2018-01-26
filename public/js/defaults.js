@@ -853,6 +853,47 @@ var showMultipleDatasetFunction = function(data,tree,node){
     return false;
 };
 
+var addMultipleDatasetFunction = function(data,tree,node){
+    // need to get data
+    var nodeData = node;
+    var parents = [];
+    while(typeof nodeData.text !== 'undefined') {
+        if(nodeData.type==='folder') {
+            parents.unshift(nodeData.text);
+        }
+        var currId = nodeData.parent;
+        nodeData = tree.get_node(currId);
+    }
+    var shared = parents.length > 0 && parents[0].startsWith("Shared");
+    $('#filters-row .attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
+    $('#filters-row div.attribute').addClass("disabled");
+    var $datasetInput = $('#multiselect-multiselect-datasetNameInclude_filter');
+    var $filter = $('#multiselect-nested-filter-select-attributesNested_filter');
+    $filter.val([$datasetInput.attr('name')]).trigger('change');
+    var names = $datasetInput.val();
+    if(! Array.isArray(names)) {
+        names = [names];
+    }
+    if(node.children) {
+        if(node.children.length > 0) {
+            for(var i = 0; i < node.children.length; i++) {
+                var child = node.children[i];
+                child = tree.get_node(child);
+                    if(child.type==='file') {
+                    var file = child.data.file;
+                    var user = child.data.user;
+                    var name = file + "_" + user;
+                    if(!names.includes(name)) {
+                        names.push(name);
+                    }
+                }
+            }
+        }
+    }
+    $datasetInput.trigger('select2:opening', [true,names]);
+    return false;
+};
+
 var select2SelectedFunction = function(item) {
   var $option = $(item.element);
   var $optGroup = $option.parent();
@@ -1291,7 +1332,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                 }
                 if((node_type==='dataset') && isFolder) {
                     // plot children
-                    var menuName = "Apply Children";
+                    var menuName = "Apply Children To Form";
                     items[menuName] = {
                         "separator_before": false,
                         "separator_after": false,
@@ -1299,6 +1340,19 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         "title": "Apply child datasets to current template.",
                         "action": function(obj) {
                             showMultipleDatasetFunction(node.data,tree,node);
+                            return true;
+                        }
+
+                    };
+                    // plot children
+                    var menuName = "Add Children To Form";
+                    items[menuName] = {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": menuName,
+                        "title": "Apply child datasets to current template.",
+                        "action": function(obj) {
+                            addMultipleDatasetFunction(node.data,tree,node);
                             return true;
                         }
 
