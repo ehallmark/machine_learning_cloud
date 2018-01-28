@@ -55,8 +55,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
 
     @Override
     protected void setDatasetManager() {
-        datasetManager = new PreSaveDataSetManager(
-                dataFolder,
+        datasetManager = new NoSaveDataSetManager<>(
                 getRawIterator(trainAssets, false),
                 getRawIterator(testAssets,true),
                 getRawIterator(validationAssets, true)
@@ -74,7 +73,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder);
+            setDatasetManager();
         }
         return datasetManager;
     }
@@ -167,7 +166,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildPrerequisites = false;
-        boolean rebuildDatasets = true;
+        boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = true;
         boolean runPredictions = true;
