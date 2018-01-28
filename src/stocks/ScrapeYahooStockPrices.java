@@ -69,9 +69,9 @@ public class ScrapeYahooStockPrices {
 
     public static void main(String[] args) throws Exception {
         long to = System.currentTimeMillis()/1000;
-        long from = LocalDateTime.of(2005,1,1,0,0).atZone(ZoneId.of("America/Los_Angeles")).toInstant().toEpochMilli()/1000;
+        long from = LocalDateTime.of(1970,1,1,0,0).atZone(ZoneId.of("America/Los_Angeles")).toInstant().toEpochMilli()/1000;
 
         //test
-        System.out.println(getStocksFromSymbols("GOOG",from,to));
+        System.out.println(getStocksFromSymbols("KR",from,to));
     }
 }
