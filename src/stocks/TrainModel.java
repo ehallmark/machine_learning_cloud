@@ -41,7 +41,7 @@ public class TrainModel {
                 .activation(Activation.TANH)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .list()
-                .layer(0, NNOptimizer.newDenseLayer(numInputs, 50).build())
+                .layer(0, NNOptimizer.newDenseLayer(numInputs, 100).build())
                 .layer(1, NNOptimizer.newBatchNormLayer(100,100).build())
                 .layer(2, NNOptimizer.newDenseLayer(100,100).build())
                 .layer(3, NNOptimizer.newBatchNormLayer(100,100).build())
