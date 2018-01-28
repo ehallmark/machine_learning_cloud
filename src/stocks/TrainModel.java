@@ -1,5 +1,7 @@
 package stocks;
 
+import data_pipeline.optimize.nn_optimization.NNOptimizer;
+import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import org.deeplearning4j.datasets.iterator.impl.ListDataSetIterator;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -30,21 +32,17 @@ public class TrainModel {
     private static final File modelFile = new File(Constants.DATA_FOLDER+"stock_model_nn.jobj");
     public static void main(String[] args) throws Exception {
         final int nEpochs = 10;
-        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .learningRate(0.00001)
-                .regularization(true).l2(1e-4)
-                .weightInit(WeightInit.XAVIER)
-                .updater(Updater.ADAM)
-                .activation(Activation.TANH)
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
+                .updater(Updater.RMSPROP)
+                .rmsDecay(0.95)
+                .learningRate(0.0001)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .list()
-                .layer(0, new DenseLayer.Builder().nIn(33).nOut(100).dropOut(0.5).build())
-                .layer(1, new BatchNormalization.Builder().nIn(100).nOut(100).minibatch(true).build())
-                .layer(2, new DenseLayer.Builder().nIn(100).nOut(50).dropOut(0.5).build())
-                .layer(3, new BatchNormalization.Builder().nIn(50).nOut(50).minibatch(true).build())
-                .layer(4, new DenseLayer.Builder().nIn(50).nOut(25).dropOut(0.5).build())
-                .layer(5, new BatchNormalization.Builder().nIn(25).nOut(25).minibatch(true).build())
-                .layer(6, new OutputLayer.Builder(LossFunctions.LossFunction.MSE).nIn(25).nOut(1).activation(Activation.TANH).build())
+                .layer(0, NNOptimizer.newGravesLSTMLayer(13, 50).build())
+                .layer(1, NNOptimizer.newGravesLSTMLayer(50,50).build())
+                .layer(2, NNOptimizer.newRNNOutputLayer(50,1).build())
+                .backprop(true)
+                .pretrain(false)
                 .build();
 
         MultiLayerNetwork net = new MultiLayerNetwork(conf);
