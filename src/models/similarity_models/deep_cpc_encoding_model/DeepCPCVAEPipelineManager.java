@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.vectorize.DataSetManager;
+import data_pipeline.vectorize.NoSaveDataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
@@ -27,7 +28,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     public static final String MODEL_NAME = "deep_cpc_autoencoder";
     public static final int MAX_CPC_DEPTH = 5;
     private static final int BATCH_SIZE = 128;
-    private static final int MIN_CPC_APPEARANCES = 200;
+    private static final int MIN_CPC_APPEARANCES = 30;
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_vae_predictions/predictions_map.jobj");
 
@@ -50,7 +51,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
 
     @Override
     protected void setDatasetManager() {
-        datasetManager = new PreSaveDataSetManager(dataFolder,
+        datasetManager = new NoSaveDataSetManager<>(
                 getRawIterator(trainAssets, false),
                 getRawIterator(testAssets,true),
                 getRawIterator(validationAssets, true)
@@ -68,7 +69,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder);
+            setDatasetManager();
         }
         return datasetManager;
     }
@@ -110,7 +111,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     protected void splitData() {
         System.out.println("Starting to recreate datasets...");
-        int limit = 1000000;
+        int limit = 3000000;
         int numTest = 20000;
         getCPCMap();
         System.out.println("Loaded cpcMap");
@@ -153,11 +154,11 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     }
 
     public static void main(String[] args) throws Exception {
-        Nd4j.setDataType(DataBuffer.Type.FLOAT);
-        boolean rebuildPrerequisites = false;
+        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
+        boolean rebuildPrerequisites = true;
         boolean rebuildDatasets = false;
-        boolean runModels = false;
-        boolean forceRecreateModels = false;
+        boolean runModels = true;
+        boolean forceRecreateModels = true;
         boolean runPredictions = true;
         int nEpochs = 5;
         String modelName = MODEL_NAME;

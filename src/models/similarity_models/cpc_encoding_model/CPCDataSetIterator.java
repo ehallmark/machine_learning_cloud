@@ -26,7 +26,7 @@ public class CPCDataSetIterator implements DataSetIterator {
     private Map<String,Integer> cpcToIdxMap;
     private Map<String,? extends Collection<CPC>> cpcMap;
     private int numInputs;
-    private Random rand = new Random(83);
+    private Random rand = new Random();
     @Getter
     private Stream<INDArray> stream;
     private Iterator<INDArray> iterator;
