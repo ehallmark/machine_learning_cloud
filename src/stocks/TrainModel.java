@@ -63,7 +63,7 @@ public class TrainModel {
                 System.out.println("Testing...");
                 double error = devData.stream().mapToDouble(ds->{
                     INDArray prediction = net.activateSelectedLayers(0,net.getnLayers()-1,ds.getFeatures().reshape(1,numInputs));
-                    return prediction.distance2(ds.getLabels().reshape(1,numInputs));
+                    return prediction.distance2(ds.getLabels().reshape(1,numOutputs));
                 }).average().orElse(Double.MAX_VALUE);
                 System.out.println("Average error: "+error);
             }
@@ -75,7 +75,7 @@ public class TrainModel {
         for(int i = 0; i < nEpochs; i++) {
             trainData.forEach(ds -> {
                 ds.setFeatures(ds.getFeatures().reshape(1,numInputs));
-                ds.setLabels(ds.getLabels().reshape(1,numInputs));
+                ds.setLabels(ds.getLabels().reshape(1,numOutputs));
                 net.fit(ds);
             });
         }
