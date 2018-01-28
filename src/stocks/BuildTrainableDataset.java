@@ -95,10 +95,16 @@ public class BuildTrainableDataset {
                 int outputEnd = inputEnd + windowSizeMonthsAfter;
 
                 // compute outputs
-                INDArray inputs = createFeatures(data,inputStart,inputEnd);
-                INDArray outputs = createLabels(data,inputEnd,outputEnd);
+                try {
+                    INDArray inputs = createFeatures(data, inputStart, inputEnd);
+                    INDArray outputs = createLabels(data, inputEnd, outputEnd);
+                    dataSets.add(new DataSet(inputs,outputs));
 
-                dataSets.add(new DataSet(inputs,outputs));
+                } catch(Exception e2) {
+                    e2.printStackTrace();
+
+                }
+
             }
         });
 
