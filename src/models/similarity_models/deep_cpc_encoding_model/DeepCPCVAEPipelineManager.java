@@ -17,6 +17,7 @@ import seeding.Database;
 import tools.ClassCodeHandler;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
+import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 
 import java.io.File;
 import java.util.*;
@@ -95,8 +96,10 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
 
             cpcMap = allAssets.parallelStream()
                     .map(filing->new Pair<>(filing,
-                            Stream.of(new AssetToFilingMap().getPatentDataMap().get(filing),new AssetToFilingMap().getApplicationDataMap().get(filing))
-                            .filter(asset->asset!=null).flatMap(asset->assetToCPCStringMap.getOrDefault(asset,Collections.emptySet()).stream()).collect(Collectors.toSet()))
+                            Stream.of(new FilingToAssetMap().getPatentDataMap().getOrDefault(filing,Collections.emptyList()),new FilingToAssetMap().getApplicationDataMap().getOrDefault(filing,Collections.emptyList()))
+                                    .flatMap(list->list.stream()).filter(asset->asset!=null)
+                                    .flatMap(asset->assetToCPCStringMap.getOrDefault(asset,Collections.emptySet()).stream()).collect(Collectors.toSet())
+                            )
                     ).filter(p->p!=null&&p.getSecond().size()>0)
                     .collect(Collectors.toMap(e->e.getFirst(), e ->
                                     e.getSecond().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
@@ -163,7 +166,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
 
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
-        boolean rebuildPrerequisites = true;
+        boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = true;
         boolean runModels = true;
         boolean forceRecreateModels = true;
