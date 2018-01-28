@@ -32,8 +32,8 @@ public class TrainModel {
     private static final File modelFile = new File(Constants.DATA_FOLDER+"stock_model_nn.jobj");
     public static void main(String[] args) throws Exception {
         final int nEpochs = 10;
-        final int numInputs = BuildTrainableDataset.windowSizeMonthsBefore*13;
-        final int numOutputs = BuildTrainableDataset.windowSizeMonthsAfter*1;
+        final int numInputs = (BuildTrainableDataset.windowSizeMonthsBefore-1)*13;
+        final int numOutputs = (BuildTrainableDataset.windowSizeMonthsAfter-1)*1;
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(Updater.RMSPROP)
                 .rmsDecay(0.95)
