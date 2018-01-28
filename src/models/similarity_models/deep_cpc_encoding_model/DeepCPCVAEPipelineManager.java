@@ -11,15 +11,18 @@ import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import tools.ClassCodeHandler;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 11/7/17.
@@ -51,7 +54,8 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
 
     @Override
     protected void setDatasetManager() {
-        datasetManager = new NoSaveDataSetManager<>(
+        datasetManager = new PreSaveDataSetManager(
+                dataFolder,
                 getRawIterator(trainAssets, false),
                 getRawIterator(testAssets,true),
                 getRawIterator(validationAssets, true)
@@ -69,7 +73,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            setDatasetManager();
+            datasetManager = new PreSaveDataSetManager(dataFolder);
         }
         return datasetManager;
     }
@@ -85,14 +89,17 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
             getHierarchy();
             getCpcToIdxMap();
 
-            Set<String> allAssets = new HashSet<>(Database.getAllPatentsAndApplications());
+            Set<String> allAssets = new HashSet<>(Database.getAllFilings());
             Map<String,Set<String>> assetToCPCStringMap = Collections.synchronizedMap(new HashMap<>(new AssetToCPCMap().getApplicationDataMap()));
             assetToCPCStringMap.putAll(new AssetToCPCMap().getPatentDataMap());
 
-            cpcMap = assetToCPCStringMap.entrySet().parallelStream()
-                    .filter(e->allAssets.contains(e.getKey()))
-                    .collect(Collectors.toMap(e->e.getKey(), e ->
-                                    e.getValue().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
+            cpcMap = allAssets.parallelStream()
+                    .map(filing->new Pair<>(filing,
+                            Stream.of(new AssetToFilingMap().getPatentDataMap().get(filing),new AssetToFilingMap().getApplicationDataMap().get(filing))
+                            .filter(asset->asset!=null).flatMap(asset->assetToCPCStringMap.getOrDefault(asset,Collections.emptySet()).stream()).collect(Collectors.toSet()))
+                    ).filter(p->p!=null&&p.getSecond().size()>0)
+                    .collect(Collectors.toMap(e->e.getFirst(), e ->
+                                    e.getSecond().stream().map(label-> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
                                     .filter(cpc->cpc!=null)
                                     .flatMap(cpc->hierarchy.cpcWithAncestors(cpc).stream())
                                     .distinct()
@@ -105,14 +112,15 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
                     .filter(e->e.getValue().size()>0)
                     .collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
         }
+        System.out.println("CPC Map size: "+cpcMap.size());
         return cpcMap;
     }
 
     @Override
     protected void splitData() {
         System.out.println("Starting to recreate datasets...");
-        int limit = 3000000;
-        int numTest = 20000;
+        int limit = 5000000;
+        int numTest = 30000;
         getCPCMap();
         System.out.println("Loaded cpcMap");
         List<String> allAssets = new ArrayList<>(cpcMap.keySet().parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
@@ -156,11 +164,11 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildPrerequisites = true;
-        boolean rebuildDatasets = false;
+        boolean rebuildDatasets = true;
         boolean runModels = true;
         boolean forceRecreateModels = true;
         boolean runPredictions = true;
-        int nEpochs = 5;
+        int nEpochs = 10;
         String modelName = MODEL_NAME;
 
         setLoggingLevel(Level.INFO);
