@@ -55,6 +55,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
 
     @Override
     protected void setDatasetManager() {
+        if(trainAssets==null) splitData();
         datasetManager = new NoSaveDataSetManager<>(
                 getRawIterator(trainAssets, false),
                 getRawIterator(testAssets,true),
