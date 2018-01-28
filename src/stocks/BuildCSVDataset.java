@@ -33,11 +33,9 @@ public class BuildCSVDataset {
         }
 
         StringJoiner headers = new StringJoiner(",","","\n");
-        headers.add("Assignee");
+        headers.add("symbol");
         allDates.forEach(date->{
             headers.add(date.toString()+"-stockprice");
-            headers.add(date.toString()+"-numpatents");
-            headers.add(date.toString()+"-patents");
         });
         bw.write(headers.toString());
         AtomicInteger cnt = new AtomicInteger(0);

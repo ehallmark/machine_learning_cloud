@@ -5,15 +5,18 @@ import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -30,69 +33,72 @@ public class BuildTrainableDataset {
         if(!trainFolder.getParentFile().exists())trainFolder.getParentFile().mkdirs();
     }
 
+    private static INDArray createFeatures(List<Pair<LocalDate,Double>> data, int start, int end) {
+        double[][] x = new double[(end-start)-1][];
+        int xIdx = 0;
+        for(int i = start; i < end-1; i++) {
+            LocalDate date = data.get(i).getFirst();
+            double xi = data.get(i).getSecond();
+            double xi_2 = data.get(i+1).getSecond();
+            double t = xi+xi_2;
+            double diff;
+            if(t==0) diff = 0d;
+            else diff = (xi_2-xi)/t;
+            double[] d = new double[13];
+            d[0] = diff;
+            // month dummy
+            d[date.getMonthValue()] = 1d;
+
+            x[xIdx]=d;
+            xIdx++;
+        }
+        return Nd4j.create(x);
+    }
+
+    private static INDArray createLabels(List<Pair<LocalDate,Double>> data, int start, int end) {
+        double[][] x = new double[(end-start)-1][];
+        int xIdx = 0;
+        for(int i = start; i < end-1; i++) {
+            LocalDate date = data.get(i).getFirst();
+            double xi = data.get(i).getSecond();
+            double xi_2 = data.get(i+1).getSecond();
+            double t = xi+xi_2;
+            double diff;
+            if(t==0) diff = 0d;
+            else diff = (xi_2-xi)/t;
+            double[] d = new double[1];
+            d[0] = diff;
+
+            x[xIdx]=d;
+            xIdx++;
+        }
+        return Nd4j.create(x);
+    }
+
     public static void main(String[] args) throws Exception {
-        File csvFile = BuildCSVDataset.csvOutputFile;
-        CPCSimilarityVectorizer vectorizer = new CPCSimilarityVectorizer(new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME),false,false,false,null);
+        Map<String,List<Pair<LocalDate,Double>>> stockOverTimeMap = ScrapeCompanyTickers.getAssigneeToStockPriceOverTimeMap();
 
         // define constants
-        final int nMonths = 3;
-        final int kYears = 7;
-        final int kMonths = kYears*12;
-        final int yMonths = 20*12 - kMonths;
+        final int windowSizeMonthsBefore = 12;
+        final int windowSizeMonthsAfter = 4;
+        final int totalWindowSize = windowSizeMonthsBefore+windowSizeMonthsAfter;
 
-        BufferedReader br = new BufferedReader(new FileReader(csvFile));
         List<DataSet> dataSets = Collections.synchronizedList(new ArrayList<>());
         AtomicInteger cnt = new AtomicInteger(0);
-        br.lines().sequential().skip(1).parallel().forEach(line->{
-            System.out.println(""+(cnt.getAndIncrement()+1)+" out of 4262");
-            String[] cells = line.split(",");
-            int numEntries = (cells.length-1)/3;
+        stockOverTimeMap.entrySet().parallelStream().forEach(e->{
+            System.out.println(""+(cnt.getAndIncrement()+1));
+            List<Pair<LocalDate,Double>> data = e.getValue();
+            final int numEntries = data.size()/totalWindowSize;
             for(int q = 0; q < numEntries; q++) {
-                int inputStart = 1 + (3*q);
-                int outputStart = inputStart + kMonths;
-                if(outputStart >= cells.length-nMonths) continue;
-
-                // compute inputs
-                double numFilings = IntStream.range(0,nMonths).map(i->Integer.valueOf(cells[inputStart+1+(3*i)])).sum();
-
-                List<String> patents = IntStream.range(0,nMonths).mapToObj(i->cells[inputStart+2+(3*i)]).flatMap(text->{
-                    return text==null||text.isEmpty() ? Stream.empty() : Stream.of(text.split("; "));
-                }).collect(Collectors.toList());
-
-                List<INDArray> vectors = patents.stream().map(p->vectorizer.vectorFor(p)).filter(v->v!=null).collect(Collectors.toList());
-
-                if(vectors.isEmpty()) continue;
-
-                double[] avgCPCEncoding = Nd4j.vstack(vectors).mean(0).data().asDouble();
-                double[] inputs = new double[avgCPCEncoding.length+1];
-                for(int i = 0; i < avgCPCEncoding.length; i++) {
-                    inputs[i] = avgCPCEncoding[i];
-                }
-                inputs[inputs.length-1] = numFilings;
+                int inputStart = q * totalWindowSize;
+                int inputEnd = inputStart + windowSizeMonthsBefore;
+                int outputEnd = inputEnd + windowSizeMonthsAfter;
 
                 // compute outputs
-                AtomicInteger validCount = new AtomicInteger(0);
-                double stockIncreaseTplusK = IntStream.range(1,yMonths).mapToDouble(i->{
-                    int idx1 = outputStart + (3*(i-1));
-                    int idx2 = idx1 + 3;
-                    if(cells.length<=idx2) {
-                        return 0d;
-                    } else {
-                        validCount.getAndIncrement();
-                        double v2 = Double.valueOf(cells[idx2]);
-                        double v1 = Double.valueOf(cells[idx1]);
-                        if(v1<=0&&v2<=0) return 0d;
-                        return (v2-v1)/((v1+v2)/2d);
-                    }
-                }).sum();
+                INDArray inputs = createFeatures(data,inputStart,inputEnd);
+                INDArray outputs = createLabels(data,inputEnd,outputEnd);
 
-                if(validCount.get()>0) {
-                    stockIncreaseTplusK /= validCount.get();
-                }
-
-                INDArray features = Nd4j.create(inputs);
-                INDArray labels = Nd4j.create(new double[]{stockIncreaseTplusK});
-                dataSets.add(new DataSet(features,labels));
+                dataSets.add(new DataSet(inputs,outputs));
             }
         });
 
