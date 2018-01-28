@@ -29,6 +29,9 @@ public class BuildTrainableDataset {
     public static final File trainFolder = new File(Constants.DATA_FOLDER+"stock_data/train.jobj");
     public static final File valFolder = new File(Constants.DATA_FOLDER+"stock_data/dev.jobj");
     public static final File testFolder = new File(Constants.DATA_FOLDER+"stock_data/test.jobj");
+    // define constants
+    public static final int windowSizeMonthsBefore = 12;
+    public static final int windowSizeMonthsAfter = 4;
     static {
         if(!trainFolder.getParentFile().exists())trainFolder.getParentFile().mkdirs();
     }
@@ -78,9 +81,7 @@ public class BuildTrainableDataset {
     public static void main(String[] args) throws Exception {
         Map<String,List<Pair<LocalDate,Double>>> stockOverTimeMap = ScrapeCompanyTickers.getAssigneeToStockPriceOverTimeMap();
 
-        // define constants
-        final int windowSizeMonthsBefore = 12;
-        final int windowSizeMonthsAfter = 4;
+
         final int totalWindowSize = windowSizeMonthsBefore+windowSizeMonthsAfter;
 
         List<DataSet> dataSets = Collections.synchronizedList(new ArrayList<>());
