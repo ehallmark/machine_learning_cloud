@@ -41,11 +41,11 @@ public class TrainModel {
                 .activation(Activation.TANH)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .list()
-                .layer(0, NNOptimizer.newDenseLayer(numInputs, 100).build())
-                .layer(1, NNOptimizer.newBatchNormLayer(100,100).build())
-                .layer(2, NNOptimizer.newDenseLayer(100,100).build())
-                .layer(3, NNOptimizer.newBatchNormLayer(100,100).build())
-                .layer(4, NNOptimizer.newOutputLayer(100,numOutputs).activation(Activation.IDENTITY).lossFunction(LossFunctions.LossFunction.MSE).build())
+                .layer(0, NNOptimizer.newGravesLSTMLayer(numInputs, 100).build())
+                .layer(1, NNOptimizer.newGravesLSTMLayer(100,100).build())
+                .layer(2, NNOptimizer.newGravesLSTMLayer(100,100).build())
+                .layer(3, NNOptimizer.newGravesLSTMLayer(100,100).build())
+                .layer(4, NNOptimizer.newRNNOutputLayer(100,numOutputs).activation(Activation.IDENTITY).lossFunction(LossFunctions.LossFunction.MEAN_ABSOLUTE_PERCENTAGE_ERROR).build())
                 .backprop(true)
                 .pretrain(false)
                 .build();
@@ -74,8 +74,8 @@ public class TrainModel {
         System.out.println("Loaded.");
         for(int i = 0; i < nEpochs; i++) {
             trainData.forEach(ds -> {
-                ds.setFeatures(ds.getFeatures().reshape(1,numInputs));
-                ds.setLabels(ds.getLabels().reshape(1,numOutputs));
+                ds.setFeatures(ds.getFeatures().reshape(1,numInputs+numOutputs,13));
+                ds.setLabels(ds.getLabels().reshape(1,numInputs+numOutputs,1));
                 net.fit(ds);
             });
         }
