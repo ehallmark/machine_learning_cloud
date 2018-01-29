@@ -3,6 +3,8 @@ package models.similarity_models.combined_similarity_model;
 import data_pipeline.optimize.nn_optimization.CGRefactorer;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import lombok.Getter;
+import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
+import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.nn.api.layers.IOutputLayer;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -281,10 +283,22 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
     @Override
     protected Map<String, ComputationGraph> buildNetworksForTraining() {
         System.out.println("Build model....");
-        int hiddenLayerSize = CombinedSimilarityVAEPipelineManager.USE_DEEP_MODEL ? 128 : 48;
-        int input1 = 32;
-        int input2 = 32;
-        int numHiddenLayers = 20;
+        int hiddenLayerSize;
+        int input1;
+        int input2;
+        int numHiddenLayers;
+
+        if(CombinedSimilarityVAEPipelineManager.USE_DEEP_MODEL) {
+            hiddenLayerSize = 128;
+            input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
+            input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
+            numHiddenLayers = 20;
+        } else {
+            hiddenLayerSize = 48;
+            input1 = 32;
+            input2 = 32;
+            numHiddenLayers = 20;
+        }
 
         Updater updater = Updater.RMSPROP;
 
