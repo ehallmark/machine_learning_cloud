@@ -126,7 +126,7 @@ public class AssetKMeans {
         // test
         final int k = 10;
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
-        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.MODEL_NAME,-1,-1,-1);
+        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.SMALL_MODEL_NAME,-1,-1,-1);
         KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(wordCPC2VecPipelineManager);
         keyphrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
 

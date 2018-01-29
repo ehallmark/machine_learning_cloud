@@ -38,7 +38,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         return content.split(" ");
     };
 
-    private static Random rand = new Random(56923);
+    private static Random rand = new Random();
     private ArrayBlockingQueue<Sequence<VocabWord>> queue;
     private RecursiveAction task;
     private boolean vocabPass;
@@ -111,7 +111,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         if(fullText) {
             String[] text = defaultWordListFunction.apply(document.getContent());
             int wordLimit = maxSamples > 0 ? Math.min(text.length,maxSamples) : text.length;
-            int start = text.length>wordLimit ? random.nextInt(text.length-wordLimit) : 0;
+            int start = text.length>wordLimit&&maxSamples>0 ? random.nextInt(text.length-wordLimit) : 0;
             words = Stream.of(text).filter(word-> !Constants.STOP_WORD_SET.contains(word)).skip(start).limit(wordLimit).flatMap(word->{
                 VocabWord vocabWord = new VocabWord(1, word);
                 vocabWord.setSequencesCount(1);
@@ -221,7 +221,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         finished.set(false);
         queue.clear();
         final int finalNumEpochs = vocabPass ? 1 : numEpochs;
-        final int finalNumSamples = vocabPass && vocabSampling > 0 ? vocabSampling : maxSamples;
+        final int finalNumSamples = vocabPass ? vocabSampling : maxSamples;
         task = new RecursiveAction() {
             @Override
             protected void compute() {

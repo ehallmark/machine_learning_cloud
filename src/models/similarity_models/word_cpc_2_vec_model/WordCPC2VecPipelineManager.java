@@ -28,20 +28,20 @@ import java.util.stream.Collectors;
  */
 public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIterator,Map<String,INDArray>> {
     public static final String SMALL_MODEL_NAME = "32smallwordcpc2vec_model";
-    public static final String LARGE_MODEL_NAME = "wordcpc2vec_model_large";
-    public static final String MODEL_NAME = "wordcpc2vec2_model";
-    public static final String OLD_MODEL_NAME = "wordcpc2vec_filing_model";
+    public static final String DEEP_MODEL_NAME = "wordcpc2vec_model_deep";
     public static final File cpcMapFile = new File(Constants.DATA_FOLDER+"word_cpc_2_vec_cpcmap_file.jobj");
     private static final int SMALL_VECTOR_SIZE = 32;
-    private static final int LARGE_VECTOR_SIZE = 128;
+    private static final int LARGE_VECTOR_SIZE = 256;
     public static final Map<String,Integer> modelNameToVectorSizeMap = Collections.synchronizedMap(new HashMap<>());
+    public static final Map<String,File> modelNameToPredictionFileMap = Collections.synchronizedMap(new HashMap<>());
     static {
         modelNameToVectorSizeMap.put(SMALL_MODEL_NAME,SMALL_VECTOR_SIZE);
-        modelNameToVectorSizeMap.put(LARGE_MODEL_NAME,LARGE_VECTOR_SIZE);
-        modelNameToVectorSizeMap.put(MODEL_NAME,LARGE_VECTOR_SIZE);
+        modelNameToVectorSizeMap.put(DEEP_MODEL_NAME,LARGE_VECTOR_SIZE);
+        modelNameToPredictionFileMap.put(SMALL_MODEL_NAME,new File(Constants.DATA_FOLDER+"wordcpc2vec_predictions/predictions_map.jobj"));
+        modelNameToPredictionFileMap.put(DEEP_MODEL_NAME,new File(Constants.DATA_FOLDER+"wordcpc2vec_deep_predictions/predictions_map.jobj"));
+
     }
     private static final File INPUT_DATA_FOLDER = new File("wordcpc2vec_input_data");
-    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"wordcpc2vec_predictions/predictions_map.jobj");
     protected Map<String,Collection<CPC>> cpcMap;
     private CPCHierarchy hierarchy;
     private String modelName;
@@ -54,7 +54,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     @Getter
     private int windowSize;
     public WordCPC2VecPipelineManager(String modelName, int numEpochs, int windowSize, int maxSamples) {
-        super(INPUT_DATA_FOLDER, PREDICTION_DATA_FILE);
+        super(INPUT_DATA_FOLDER, modelNameToPredictionFileMap.get(modelName));
         this.numEpochs=numEpochs;
         this.maxSamples=maxSamples;
         this.modelName=modelName;
@@ -181,7 +181,6 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
 
 
     public static void main(String[] args) throws Exception {
-        boolean runSmallModel = true;
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         final int maxSamples;
         final int windowSize;
@@ -192,15 +191,18 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         boolean runPredictions = true;
         int nEpochs = 5;
 
+        boolean runDeepModel = true;
+
         String modelName;
-        if(runSmallModel) {
+
+        if(runDeepModel) {
+            windowSize = 8;
+            modelName = DEEP_MODEL_NAME;
+            maxSamples = 100;
+        } else {
             windowSize = 6;
             modelName = SMALL_MODEL_NAME;
             maxSamples = 20;
-        } else {
-            windowSize = 4;
-            modelName = MODEL_NAME;
-            maxSamples = 300;
         }
 
         WordCPC2VecPipelineManager pipelineManager = new WordCPC2VecPipelineManager(modelName,nEpochs,windowSize,maxSamples);

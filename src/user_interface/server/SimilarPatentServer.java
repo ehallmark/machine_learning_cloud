@@ -406,7 +406,7 @@ public class SimilarPatentServer {
             keyphrasePredictionPipelineManagerTask = new RecursiveTask<KeyphrasePredictionPipelineManager>() {
                 @Override
                 protected KeyphrasePredictionPipelineManager compute() {
-                    KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.MODEL_NAME,-1,-1,-1));
+                    KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.SMALL_MODEL_NAME,-1,-1,-1));
                     keyphrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
                     keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors();
                     keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadWordVectors();

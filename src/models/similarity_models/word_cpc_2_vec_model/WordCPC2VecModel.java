@@ -71,18 +71,18 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
 
     @Override
     public void train(int nEpochs) {
-        int vocabSampling = 100;
+        int vocabSampling = -1;
 
         WordCPCIterator iterator = pipelineManager.getDatasetManager().getTrainingIterator();
         iterator.setVocabSampling(vocabSampling);
 
         Collection<String> words = pipelineManager.getTestWords();
         int windowSize = pipelineManager.getWindowSize();
-        int minWordFrequency = 10;
+        int minWordFrequency = 5;
         double negativeSampling = -1;
         double sampling = -1;
-        double learningRate = 0.0001;//0.001;//0.01;
-        double minLearningRate = 0.00001;//0.0001;//0.001;
+        double learningRate = 0.01;
+        double minLearningRate = 0.0001;
         int testIterations = 2000000;
 
         AtomicInteger nTestsCounter = new AtomicInteger(0);
