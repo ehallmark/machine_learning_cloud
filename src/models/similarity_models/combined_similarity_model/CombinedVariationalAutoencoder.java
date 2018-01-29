@@ -1,31 +1,15 @@
 package models.similarity_models.combined_similarity_model;
 
-import cpc_normalization.CPC;
 import data_pipeline.optimize.nn_optimization.CGRefactorer;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
-import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import lombok.Getter;
-import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
-import models.text_streaming.ESTextDataSetIterator;
-import org.deeplearning4j.berkeley.Triple;
-import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.api.layers.IOutputLayer;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
-import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
-import org.deeplearning4j.nn.conf.graph.GraphVertex;
-import org.deeplearning4j.nn.conf.graph.LayerVertex;
-import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
-import org.deeplearning4j.nn.conf.layers.RBM;
-import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
-import org.deeplearning4j.nn.conf.layers.variational.LossFunctionWrapper;
-import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.graph.vertex.VertexIndices;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -40,13 +24,10 @@ import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
-import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 
 import java.io.File;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -300,7 +281,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
     @Override
     protected Map<String, ComputationGraph> buildNetworksForTraining() {
         System.out.println("Build model....");
-        int hiddenLayerSize = 48;
+        int hiddenLayerSize = CombinedSimilarityVAEPipelineManager.USE_DEEP_MODEL ? 128 : 48;
         int input1 = 32;
         int input2 = 32;
         int numHiddenLayers = 20;
