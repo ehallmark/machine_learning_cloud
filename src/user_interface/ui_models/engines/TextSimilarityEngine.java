@@ -2,7 +2,7 @@ package user_interface.ui_models.engines;
 
 import data_pipeline.helpers.CombinedModel;
 import j2html.tags.Tag;
-import models.similarity_models.combined_similarity_model.CombinedSimilarityModel;
+import models.similarity_models.combined_similarity_model.CombinedSimilarityComputationGraph;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityPipelineManager;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEPipelineManager;
 import models.similarity_models.combined_similarity_model.Word2VecToCPCIterator;
@@ -47,7 +47,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
                 combinedSimilarityPipelineManager.initModel(false);
 
                 CombinedModel<ComputationGraph> combinedModel = (CombinedModel<ComputationGraph>) combinedSimilarityPipelineManager.getModel().getNet();
-                wordToEncodingNet = combinedModel.getNameToNetworkMap().get(CombinedSimilarityModel.WORD_CPC_2_VEC);
+                wordToEncodingNet = combinedModel.getNameToNetworkMap().get(CombinedSimilarityComputationGraph.WORD_CPC_2_VEC);
             }
         }
     }

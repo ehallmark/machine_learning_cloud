@@ -1,22 +1,17 @@
 package models.similarity_models.combined_similarity_model;
 
-import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
 import lombok.Getter;
-import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
 import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
-import org.nd4j.linalg.factory.Nd4j;
-import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
@@ -35,10 +30,10 @@ public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultP
     protected String modelName;
     protected Map<String,INDArray> assetToEncodingMap;
     protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
-    protected CPCVAEPipelineManager cpcvaePipelineManager;
+    protected DefaultPipelineManager<DataSetIterator,INDArray> cpcvaePipelineManager;
     @Getter
     protected Word2Vec word2Vec;
-    public AbstractCombinedSimilarityPipelineManager(File inputDataFolder, File predictionsDataFile, String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, CPCVAEPipelineManager cpcvaePipelineManager) {
+    public AbstractCombinedSimilarityPipelineManager(File inputDataFolder, File predictionsDataFile, String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, DefaultPipelineManager<DataSetIterator,INDArray> cpcvaePipelineManager) {
         super(inputDataFolder,predictionsDataFile);
         this.word2Vec=word2Vec;
         this.modelName=modelName;

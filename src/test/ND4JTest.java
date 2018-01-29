@@ -1,6 +1,6 @@
 package test;
 
-import models.similarity_models.combined_similarity_model.CombinedSimilarityModel;
+import models.similarity_models.combined_similarity_model.CombinedSimilarityComputationGraph;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -25,7 +25,7 @@ public class ND4JTest {
                         11,12
                 }
         });
-        INDArray v3 = CombinedSimilarityModel.DEFAULT_LABEL_FUNCTION.apply(v1,v2);
+        INDArray v3 = CombinedSimilarityComputationGraph.DEFAULT_LABEL_FUNCTION.apply(v1,v2);
         System.out.println(v3.toString());
     }
 }

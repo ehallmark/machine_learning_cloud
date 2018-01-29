@@ -180,7 +180,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     }
 
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         final int maxSamples;
         final int windowSize;
@@ -191,7 +191,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         boolean runPredictions = true;
         int nEpochs = 5;
 
-        boolean runDeepModel = true;
+        boolean runDeepModel = true;// CombinedSimilarityVAEPipelineManager.USE_DEEP_MODEL;
 
         String modelName;
 
