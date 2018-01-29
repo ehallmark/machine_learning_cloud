@@ -73,7 +73,6 @@ public class AssetKMeans {
 
         final int keywordSamples = 30;
 
-
         Map<String,Long> overallTagFrequencyMap = new HashMap<>();
         Map<Integer,Map<String,Long>> clusterIdxToTagFrequencyMap = new HashMap<>();
         for(int i = 0; i < clusters.size(); i++) {
