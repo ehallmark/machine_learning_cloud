@@ -9,6 +9,8 @@ import org.deeplearning4j.text.documentiterator.LabelsSource;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,6 +53,7 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
     private File dataFile;
     private LineIterator lineIterator;
     private boolean containsDate;
+    private LocalDate currentDate;
     public FileTextDataSetIterator(Type type) {
         this(typeToFileMap.get(type));
     }
@@ -79,6 +82,7 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
 
     @Override
     public void reset() {
+        currentDate = null;
         System.out.println("Resetting file text dataset iterator...");
         if(this.lineIterator!=null) {
             shutdown();
@@ -113,6 +117,7 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
             text = data[2];
             labels.add(label);
             labels.add(text);
+            currentDate = LocalDate.parse(date,DateTimeFormatter.ISO_DATE);
         } else {
             data = line.split(",", 2);
             String label = data[0];
@@ -125,6 +130,9 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
         return doc;
     }
 
+    public LocalDate getCurrentDate() {
+        return currentDate;
+    }
 
     public static void transformData(File newBaseDir, Function<LabelledDocument,String> transformFunction) {
         if(!newBaseDir.exists()) newBaseDir.mkdirs();

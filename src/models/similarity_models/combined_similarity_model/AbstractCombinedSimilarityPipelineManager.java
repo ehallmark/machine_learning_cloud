@@ -12,6 +12,7 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
@@ -23,7 +24,7 @@ import java.util.Map;
 /**
  * Created by ehallmark on 11/7/17.
  */
-public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
+public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultPipelineManager<MultiDataSetIterator,INDArray> {
     public static final String MODEL_NAME = "combined_similarity_model_small";
     protected static final int BATCH_SIZE = 16;
 
@@ -50,7 +51,7 @@ public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultP
 
 
     @Override
-    public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
+    public synchronized DataSetManager<MultiDataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
             //datasetManager = new PreSaveDataSetManager(dataFolder);
             setDatasetManager();
@@ -127,7 +128,7 @@ public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultP
     }
 
 
-    protected DataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, long numDocs, int batch) {
+    protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, long numDocs, int batch) {
         return new Word2VecToCPCIterator(iterator,numDocs,getAssetToEncodingMap(),word2Vec,batch);
     }
 

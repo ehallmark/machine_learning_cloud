@@ -11,6 +11,7 @@ import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.RecursiveAction;
@@ -231,13 +232,15 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                         System.out.println("Starting epoch: " + (i + 1));
                         while (iterator.hasNext()) {
                             LabelledDocument document = iterator.next();
+                            LocalDate date = iterator.getCurrentDate();
                             if (document.getLabels() == null || document.getContent() == null) continue;
 
                             List<String> cpcs = document.getLabels().stream().flatMap(asset -> cpcMap.getOrDefault(asset, Collections.emptyList()).stream()).flatMap(cpc -> IntStream.range(0,cpc.getNumParts()).mapToObj(c->cpc.getName())).collect(Collectors.toList());
 
                             // extract sequence
                             Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document, cpcs, rand, minSequenceLength, finalNumSamples, fullText);
-                            if (sequence != null) {
+                            if (date!=null&&sequence != null) {
+                                sequence.addSequenceLabel(new VocabWord(1,date.toString()));
                                 //System.out.print("-");
                                 try {
                                     queue.put(sequence);

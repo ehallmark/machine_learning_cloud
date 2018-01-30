@@ -12,8 +12,8 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.MultiDataSet;
+import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
@@ -145,13 +145,19 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
 
     @Override
     protected Function<Void, Double> getTestFunction() {
-        DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
-        List<DataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
+        MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
+        List<Pair<MultiDataSet,MultiDataSet>> validationDataSets = Collections.synchronizedList(new ArrayList<>());
         int valCount = 0;
         while(validationIterator.hasNext()&&valCount<20000) {
-            DataSet ds = validationIterator.next();
-            validationDataSets.add(ds);
-            valCount+=ds.getFeatures().rows();
+            MultiDataSet dataSet = validationIterator.next();
+            INDArray features = dataSet.getFeatures(0);
+            INDArray labels = dataSet.getFeatures(1);
+            INDArray dates = dataSet.getFeatures(2);
+            INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(features,labels));
+            MultiDataSet ds1 = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{features},new INDArray[]{encoding,dates});
+            MultiDataSet ds2 = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{labels},new INDArray[]{encoding,dates});
+            validationDataSets.add(new Pair<>(ds1,ds2));
+            valCount+=ds1.getFeatures()[0].rows();
             //System.gc();
         }
 
@@ -165,19 +171,15 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
         };
     }
 
-    public static double test(ComputationGraph net, INDArray features, INDArray labels) {
-        return 1d+net.score(new DataSet(features,labels));
-    }
 
-
-    public Pair<Double,Double> test(ComputationGraph net1, ComputationGraph net2, Iterator<DataSet> iterator) {
+    public Pair<Double,Double> test(ComputationGraph net1, ComputationGraph net2, Iterator<Pair<MultiDataSet,MultiDataSet>> iterator) {
         double d1 = 0;
         double d2 = 0;
         long count = 0;
         while(iterator.hasNext()) {
-            DataSet ds = iterator.next();
-            INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(ds.getFeatureMatrix(),ds.getLabels()));
-            Pair<Double,Double> test = new Pair<>(test(net1,ds.getFeatures(),encoding),test(net2,ds.getLabels(),encoding));
+            Pair<MultiDataSet,MultiDataSet> dataSets = iterator.next();
+
+            Pair<Double,Double> test = new Pair<>(test(net1,dataSets.getFirst()),test(net2,dataSets.getSecond()));
             d1+=test.getFirst();
             d2+=test.getSecond();
             count++;
@@ -190,10 +192,15 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
     }
 
     @Override
-    protected void train(INDArray features, INDArray labels) {
+    protected void train(MultiDataSet dataSet) {
+        INDArray features = dataSet.getFeatures(0);
+        INDArray labels = dataSet.getFeatures(1);
+        INDArray dates = dataSet.getFeatures(2);
         INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(features,labels));
-        train(wordCpc2Vec, features, encoding);
-        train(cpcVecNet,labels,encoding);
+        MultiDataSet ds1 = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{features},new INDArray[]{encoding,dates});
+        MultiDataSet ds2 = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{labels},new INDArray[]{encoding,dates});
+        train(wordCpc2Vec, ds1);
+        train(cpcVecNet, ds2);
     }
 
     @Override

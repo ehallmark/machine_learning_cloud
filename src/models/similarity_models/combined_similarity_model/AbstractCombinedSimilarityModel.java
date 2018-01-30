@@ -12,14 +12,15 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.dataset.MultiDataSet;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.MultiDataSet;
+import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.primitives.Pair;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -49,7 +50,7 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
     protected abstract Map<String,T> buildNetworksForTraining();
     protected abstract Map<String,T> updateNetworksBeforeTraining(Map<String,T> networkMap);
     protected abstract Function<Void,Double> getTestFunction();
-    protected abstract void train(INDArray features, INDArray labels);
+    protected abstract void train(MultiDataSet dataSet);
     protected abstract Function<IterationListener,Void> setListenerFunction();
 
     public Map<String,T> getNetworks() {
@@ -58,6 +59,10 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
 
     public int printIterations() {
         return 500;
+    }
+
+    public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
+        return 1d+net.score(finalDataSet)/finalDataSet.getLabels().length;
     }
 
     @Override
@@ -91,7 +96,7 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
         System.gc();
         System.gc();
 
-        DataSetIterator dataSetIterator = pipelineManager.getDatasetManager().getTrainingIterator();
+        MultiDataSetIterator dataSetIterator = pipelineManager.getDatasetManager().getTrainingIterator();
 
         Function<Void,Double> testErrorFunction = getTestFunction();
 
@@ -108,13 +113,11 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
             for (int i = 0; i < nEpochs; i++) {
                 while (dataSetIterator.hasNext()) {
                    // if((gcIter++)%printIterations/10==0) System.gc();
-                    DataSet ds = dataSetIterator.next();
-                    if(this instanceof RecurrentModel) {
-                        ((RecurrentModel)this).train(ds.getFeatureMatrix(),ds.getLabels(),ds.getFeaturesMaskArray(),ds.getLabelsMaskArray());
-                    } else {
-                        train(ds.getFeatures(), ds.getLabels());
-                    }
-                    totalSeenThisEpoch.getAndAdd(ds.getFeatures().shape()[0]);
+                    MultiDataSet ds = dataSetIterator.next();
+
+                    train(ds);
+
+                    totalSeenThisEpoch.getAndAdd(ds.getFeatures(0).shape()[0]);
                     if (stoppingCondition.get()) break;
                 }
                 totalSeen.getAndAdd(totalSeenThisEpoch.get());
@@ -167,19 +170,12 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
         net2.setParams(net2Params);
     }
 
-    public static void train(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2, boolean train1, boolean train2) {
-        INDArray labels = DEFAULT_LABEL_FUNCTION.apply(features1, features2);
-        if(net1!=null&&train1)net1.fit(new DataSet(features1, labels));
-        if(net2!=null&&train2)net2.fit(new DataSet(features2, labels));
-    }
-
-    public static void train(ComputationGraph net, INDArray features, INDArray labels) {
-        MultiDataSet dataSet = new MultiDataSet(new INDArray[]{features}, new INDArray[]{labels});
+    public static void train(ComputationGraph net, MultiDataSet dataSet) {
         if(net!=null)net.fit(dataSet);
     }
 
     public static void train(ComputationGraph net, INDArray features, INDArray labels, INDArray featuresMask, INDArray labelsMask) {
-        if(net!=null)net.fit(new MultiDataSet(new INDArray[]{features},new INDArray[]{labels}, new INDArray[]{featuresMask},new INDArray[]{labelsMask}));
+        if(net!=null)net.fit(new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{features},new INDArray[]{labels}, new INDArray[]{featuresMask},new INDArray[]{labelsMask}));
     }
 
     public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, INDArray features1, INDArray features2) {
@@ -188,11 +184,8 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
     }
 
 
-    public static Pair<Double,Double> test(ComputationGraph net1, ComputationGraph net2, INDArray features1, INDArray features2, INDArray labels) {
-        INDArray[] label = new INDArray[]{labels};
-        MultiDataSet dataSet1 = new MultiDataSet(new INDArray[]{features1}, label);
-        MultiDataSet dataSet2 = new MultiDataSet(new INDArray[]{features2}, label);
-        return new Pair<>(1d+net1.score(dataSet1)/label.length,1d+net2.score(dataSet2)/label.length);
+    public static Pair<Double,Double> test(ComputationGraph net1, ComputationGraph net2, MultiDataSet dataSet1, MultiDataSet dataSet2) {
+        return new Pair<>(1d+net1.score(dataSet1)/dataSet1.getLabels().length,1d+net2.score(dataSet2)/dataSet2.getLabels().length);
     }
 
     public static Pair<Double,Double> test(MultiLayerNetwork net1, MultiLayerNetwork net2, Iterator<DataSet> iterator) {

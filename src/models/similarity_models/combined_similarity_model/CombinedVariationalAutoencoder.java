@@ -15,8 +15,8 @@ import org.deeplearning4j.nn.graph.vertex.VertexIndices;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.MultiDataSet;
+import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -58,9 +58,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        final int numSamples = 4;
-        final int sampleLength = 4;
-        final int assigneeSamples = 32;
+        final int numSamples = 8;
+        final int sampleLength = 8;
+        final int assigneeSamples = 128;
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         Collection<String> filings = Collections.synchronizedSet(new HashSet<>());
         for(String asset : assets) {
@@ -227,11 +227,14 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
             vaeNetwork = getNetworks().get(VAE_NETWORK);
         }
         // Map<String,INDArray> activations = vaeNetwork.feedForward(input,false);
-        return feedForwardToVertex(vaeNetwork,input,String.valueOf(encodingIdx)); // activations.get(String.valueOf(encodingIdx));
+        return feedForwardToVertex(vaeNetwork,String.valueOf(encodingIdx),input); // activations.get(String.valueOf(encodingIdx));
     }
 
-    public static INDArray feedForwardToVertex(ComputationGraph encoder, INDArray input, String vertexName) {
-        encoder.setInput(0, input);
+    public static INDArray feedForwardToVertex(ComputationGraph encoder, String vertexName, INDArray... inputs) {
+        for(int i = 0; i < inputs.length; i++) {
+            encoder.setInput(i, inputs[i]);
+        }
+
         boolean excludeOutputLayers = false;
         boolean train = false;
         for(int i = 0; i < encoder.topologicalSortOrder().length; ++i) {
@@ -368,13 +371,16 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
     @Override
     protected Function<Void, Double> getTestFunction() {
-        DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
-        List<DataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
+        MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
+        List<MultiDataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
         int valCount = 0;
         while(validationIterator.hasNext()&&valCount<20000) {
-            DataSet ds = validationIterator.next();
-            validationDataSets.add(ds);
-            valCount+=ds.getFeatures().rows();
+            MultiDataSet dataSet = validationIterator.next();
+            INDArray vec = DEFAULT_LABEL_FUNCTION.apply(dataSet.getFeatures(0),dataSet.getFeatures(1));
+            INDArray dates = dataSet.getFeatures(2);
+            MultiDataSet finalDataSet = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{vec}, new INDArray[]{vec,dates});
+            validationDataSets.add(finalDataSet);
+            valCount+=finalDataSet.getFeatures()[0].rows();
             //System.gc();
         }
 
@@ -382,19 +388,18 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
         return (v) -> {
             System.gc();
-            return validationDataSets.stream().mapToDouble(ds->test(vaeNetwork,ds.getFeatures(),ds.getLabels())).average().orElse(Double.NaN);
+            return validationDataSets.stream().mapToDouble(ds->test(vaeNetwork,ds)).average().orElse(Double.NaN);
         };
     }
 
-    public static double test(ComputationGraph net, INDArray features1, INDArray features2) {
-        INDArray labels = DEFAULT_LABEL_FUNCTION.apply(features1, features2);
-        return 1d+net.score(new DataSet(labels,labels));
-    }
+
 
     @Override
-    protected void train(INDArray features, INDArray labels) {
-        INDArray vec = DEFAULT_LABEL_FUNCTION.apply(features,labels);
-        vaeNetwork.fit(new DataSet(vec,vec));
+    protected void train(MultiDataSet dataSet) {
+        INDArray vec = DEFAULT_LABEL_FUNCTION.apply(dataSet.getFeatures(0),dataSet.getFeatures(1));
+        INDArray dates = dataSet.getFeatures(2);
+        MultiDataSet finalDataSet = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{vec,dates}, new INDArray[]{vec,dates});
+        vaeNetwork.fit(finalDataSet);
     }
 
     @Override

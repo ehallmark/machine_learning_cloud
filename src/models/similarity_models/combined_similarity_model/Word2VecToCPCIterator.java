@@ -7,13 +7,14 @@ import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.MultiDataSet;
+import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
+import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
-import org.nd4j.linalg.ops.transforms.Transforms;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 10/27/17.
  */
-public class Word2VecToCPCIterator implements DataSetIterator {
+public class Word2VecToCPCIterator implements MultiDataSetIterator {
     public static final Function<List<VocabWord>,Map<String,Integer>> groupingBOWFunction = sequence -> {
         return sequence.stream().collect(Collectors.groupingBy(word->word.getLabel(), Collectors.summingInt(label->(int)label.getElementFrequency())));
     };
@@ -36,7 +37,7 @@ public class Word2VecToCPCIterator implements DataSetIterator {
     private Vectorizer vectorizer;
     private Word2Vec word2Vec;
     private int batch;
-    private DataSet currentDataSet;
+    private MultiDataSet currentDataSet;
     private int numDimensions;
     private double numDocs;
     public Word2VecToCPCIterator(SequenceIterator<VocabWord> documentIterator, long numDocs, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize) {
@@ -50,21 +51,19 @@ public class Word2VecToCPCIterator implements DataSetIterator {
     }
 
     @Override
-    public DataSet next(int batch) {
+    public MultiDataSet next(int batch) {
         return currentDataSet;
     }
 
     @Override
-    public int totalExamples() {
-        return -1;
+    public void setPreProcessor(MultiDataSetPreProcessor multiDataSetPreProcessor) {
+
     }
 
-    @Override
     public int inputColumns() {
         return word2Vec.getLayerSize();
     }
 
-    @Override
     public int totalOutcomes() {
         return numDimensions;
     }
@@ -84,34 +83,8 @@ public class Word2VecToCPCIterator implements DataSetIterator {
         documentIterator.reset();
     }
 
-    @Override
     public int batch() {
         return batch;
-    }
-
-    @Override
-    public int cursor() {
-        throw new UnsupportedOperationException("cursor()");
-    }
-
-    @Override
-    public int numExamples() {
-        return 0;
-    }
-
-    @Override
-    public void setPreProcessor(DataSetPreProcessor dataSetPreProcessor) {
-
-    }
-
-    @Override
-    public DataSetPreProcessor getPreProcessor() {
-        return null;
-    }
-
-    @Override
-    public List<String> getLabels() {
-        throw new UnsupportedOperationException("labels()");
     }
 
     @Override
@@ -120,14 +93,17 @@ public class Word2VecToCPCIterator implements DataSetIterator {
         int idx = 0;
         INDArray labels = Nd4j.create(batch,totalOutcomes());
         INDArray features = Nd4j.create(batch,inputColumns());
+        INDArray dates = Nd4j.create(batch,1);
         AtomicInteger wordsFoundPerBatch = new AtomicInteger(0);
         AtomicInteger totalWordsPerBatch = new AtomicInteger(0);
+        LocalDate today = LocalDate.now();
         while(documentIterator.hasMoreSequences()&&idx<batch) {
             Sequence<VocabWord> document = documentIterator.nextSequence();
             String label = document.getSequenceLabel().getLabel();
+            if(document.getSequenceLabels().size()<2) continue;
+            LocalDate date = LocalDate.parse(document.getSequenceLabels().get(1).getLabel(), DateTimeFormatter.ISO_DATE);
             INDArray labelVec = vectorizer.vectorFor(label);
             if (labelVec == null) continue;
-            labelVec = Transforms.unitVec(labelVec);
             Map<String, Integer> wordCounts = groupingBOWFunction.apply(document.getElements());
             totalWordsPerBatch.getAndAdd(wordCounts.size());
             List<INDArray> wordVectors = wordCounts.entrySet().stream().map(e -> {
@@ -141,8 +117,11 @@ public class Word2VecToCPCIterator implements DataSetIterator {
                 return null;
             }).filter(vec->vec!=null).collect(Collectors.toList());
             if(wordVectors.isEmpty()) continue;
-            INDArray featureVec = Transforms.unitVec(Nd4j.vstack(wordVectors).mean(0));
+            INDArray featureVec = Nd4j.vstack(wordVectors).mean(0);
             labels.putRow(idx,labelVec);
+            double remainingLife = (((double)today.getYear()+((double)today.getMonthValue()-1)/12) - ((double)date.getYear()+((double)date.getMonthValue()-1)/12));
+            double remainingLifeNorm = (remainingLife-10d)/10d;
+            dates.putScalar(idx,0, remainingLifeNorm);
             features.putRow(idx,featureVec);
             idx++;
         }
@@ -153,14 +132,18 @@ public class Word2VecToCPCIterator implements DataSetIterator {
             if(idx < batch) {
                 features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
                 labels = labels.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+                dates = dates.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
             }
-            currentDataSet = new DataSet(features,labels);
+            features.diviColumnVector(features.norm2(1));
+            labels.diviColumnVector(labels.norm2(1));
+            INDArray[] allFeatures = new INDArray[]{features,labels,dates};
+            currentDataSet = new MultiDataSet(allFeatures,allFeatures);
         }
         return currentDataSet!=null;
     }
 
     @Override
-    public DataSet next() {
+    public MultiDataSet next() {
         return next(batch());
     }
 
