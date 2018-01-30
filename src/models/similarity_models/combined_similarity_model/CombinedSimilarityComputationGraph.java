@@ -76,7 +76,7 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
                 .activation(Activation.TANH)
                 .graphBuilder()
                 .addInputs("x")
-                .setOutputs("y")
+                .setOutputs("y","d")
                 .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build(), "x")
                 .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
@@ -86,7 +86,7 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
                 .activation(Activation.TANH)
                 .graphBuilder()
                 .addInputs("x")
-                .setOutputs("y")
+                .setOutputs("y","d")
                 .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build(), "x")
                 .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input2+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
@@ -114,9 +114,14 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
         // output layers
         OutputLayer.Builder outputLayer1 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,autoencoder.getVectorSize()).lossFunction(lossFunction);
         OutputLayer.Builder outputLayer2 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,autoencoder.getVectorSize()).lossFunction(lossFunction);
+        OutputLayer.Builder dateLayer1 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,1).lossFunction(LossFunctions.LossFunction.MSE);
+        OutputLayer.Builder dateLayer2 = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,1).lossFunction(LossFunctions.LossFunction.MSE);
 
         wordCPC2VecConf = wordCPC2VecConf.addLayer("y",outputLayer1.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
         cpcVecNetConf = cpcVecNetConf.addLayer("y",outputLayer2.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+
+        wordCPC2VecConf = wordCPC2VecConf.addLayer("d",dateLayer1.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+        cpcVecNetConf = cpcVecNetConf.addLayer("d",dateLayer2.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
 
         wordCpc2Vec = new ComputationGraph(wordCPC2VecConf.build());
         cpcVecNet = new ComputationGraph(cpcVecNetConf.build());

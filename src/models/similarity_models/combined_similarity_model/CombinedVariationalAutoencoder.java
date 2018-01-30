@@ -315,7 +315,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                 .activation(Activation.TANH)
                 .graphBuilder()
                 .addInputs("x")
-                .setOutputs("y")
+                .setOutputs("y","d")
                 .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1+input2,hiddenLayerSize).build(), "x")
                 .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+input2+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
@@ -347,8 +347,10 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
 
         // output layers
         OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input1+input2).lossFunction(lossFunction);
+        OutputLayer.Builder dateLayer = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,1).lossFunction(LossFunctions.LossFunction.MSE);
 
         conf = conf.addLayer("y",outputLayer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+        conf = conf.addLayer("d",dateLayer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
 
         vaeNetwork = new ComputationGraph(conf.build());
         vaeNetwork.init();
@@ -398,7 +400,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
     protected void train(MultiDataSet dataSet) {
         INDArray vec = DEFAULT_LABEL_FUNCTION.apply(dataSet.getFeatures(0),dataSet.getFeatures(1));
         INDArray dates = dataSet.getFeatures(2);
-        MultiDataSet finalDataSet = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{vec,dates}, new INDArray[]{vec,dates});
+        MultiDataSet finalDataSet = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{vec}, new INDArray[]{vec,dates});
         vaeNetwork.fit(finalDataSet);
     }
 
