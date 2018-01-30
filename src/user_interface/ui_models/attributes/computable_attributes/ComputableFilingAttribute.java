@@ -84,6 +84,9 @@ public abstract class ComputableFilingAttribute<T> extends ComputableAttribute<T
                 map = (Map<String, T>) filingMapCache.get(getFullName());
                 if (map == null) {
                     map = (Map<String, T>) Database.tryLoadObject(file);
+                    if(map==null) {
+                        map = Collections.synchronizedMap(new HashMap<>());
+                    }
                     filingMapCache.put(getFullName(), map);
                 }
             }
