@@ -3,8 +3,12 @@ package seeding.ai_db_updater.handlers;
 import seeding.Constants;
 import user_interface.ui_models.attributes.computable_attributes.EntityTypeAttribute;
 import user_interface.ui_models.attributes.computable_attributes.LapsedAttribute;
+import user_interface.ui_models.attributes.computable_attributes.MaintenanceEventAttribute;
 import user_interface.ui_models.attributes.computable_attributes.ReinstatedAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
+
+import java.util.Collections;
+import java.util.HashSet;
 
 /**
  * Created by ehallmark on 7/12/17.
@@ -14,6 +18,7 @@ public class MaintenanceEventHandler implements LineHandler {
     protected static LapsedAttribute lapsedAttribute = new LapsedAttribute();
     protected static ReinstatedAttribute reinstatedAttribute = new ReinstatedAttribute();
     protected static EntityTypeAttribute entityTypeAttribute = new EntityTypeAttribute();
+    protected static final MaintenanceEventAttribute maintenanceEventAttribute = new MaintenanceEventAttribute();
     public MaintenanceEventHandler() {
     }
 
@@ -26,6 +31,10 @@ public class MaintenanceEventHandler implements LineHandler {
                 String filing = assetToFilingMap.getPatentDataMap().get(patNum);
 
                 if(filing!=null) {
+                    synchronized (maintenanceEventAttribute) {
+                        maintenanceEventAttribute.loadMap().putIfAbsent(filing, Collections.synchronizedSet(new HashSet<>()));
+                        maintenanceEventAttribute.loadMap().get(filing).add(maintenanceCode);
+                    }
                     if (maintenanceCode.equals("EXP.")) {
                         lapsedAttribute.getFilings().add(filing);
                         reinstatedAttribute.getFilings().remove(filing);
@@ -58,6 +67,7 @@ public class MaintenanceEventHandler implements LineHandler {
 
     @Override
     public void save() {
+        maintenanceEventAttribute.save();
         lapsedAttribute.save();
         reinstatedAttribute.save();
         entityTypeAttribute.save();

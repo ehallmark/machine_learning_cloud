@@ -63,12 +63,19 @@ public abstract class ComputableFilingAttribute<T> extends ComputableAttribute<T
         return null;
     }
 
+    @Override
+    public void save() {
+        saveMap(this.map);
+    }
+
     public void saveMap(Map<String,T> map) {
-        synchronized (ComputableFilingAttribute.class) {
-            this.map = map;
-            filingMapCache.put(getFullName(), this.map);
+        if(map!=null&&map.size()>0) {
+            synchronized (ComputableFilingAttribute.class) {
+                this.map = map;
+                filingMapCache.put(getFullName(), this.map);
+            }
+            Database.trySaveObject(this.map, file);
         }
-        Database.trySaveObject(this.map, file);
     }
 
     public  Map<String,T> loadMap() {

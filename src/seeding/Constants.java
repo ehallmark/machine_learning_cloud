@@ -29,6 +29,7 @@ public class Constants {
 	public static final String GATHER_TECHNOLOGY = "gatherTechnology";
 	public static final String COMPDB = "compDB";
 	public static final String SCORE = "score";
+	public static final String MAINTENANCE_EVENT = "maintenanceEvent";
 	public static final String COMPDB_TECHNOLOGY = "compDBTechnology";
 	public static final String COMPDB_DEAL_ID = "compDBDealId";
 	public static final String SMALL = "small";
@@ -407,6 +408,7 @@ public class Constants {
 			Arrays.asList("ANRE_EXE_DT", LATEST_ASSIGNEE+"."+EXECUTION_DATE),
 			Arrays.asList("REFN",NAME),
 			Arrays.asList("REF",NAME),
+			Arrays.asList("EVENTCODE",MAINTENANCE_EVENT),
 			Arrays.asList("RVI", AI_VALUE),
 			Arrays.asList("TTL", INVENTION_TITLE),
 			Arrays.asList("ABST", ABSTRACT),

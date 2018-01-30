@@ -161,6 +161,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Independent Claim", "ICLM");
             humanAttrToJavaAttrMap.put("Dependent Claim", "DCLM");
             humanAttrToJavaAttrMap.put("Title + Abstract + Claims", "TAC");
+            humanAttrToJavaAttrMap.put("Maintenance Fee Event Code", Constants.MAINTENANCE_EVENT);
             humanAttrToJavaAttrMap.put("Asset Number", Constants.NAME);
             humanAttrToJavaAttrMap.put("Similarity", Constants.SIMILARITY);
             humanAttrToJavaAttrMap.put("Technology Similarity", Constants.TECHNOLOGY_SIMILARITY);
@@ -540,6 +541,7 @@ public class SimilarPatentServer {
 
     public static void loadAttributes(boolean loadHidden) {
         if(attributesMap.isEmpty()) {
+            attributesMap.put(Constants.MAINTENANCE_EVENT, new MaintenanceEventAttribute());
             attributesMap.put(Constants.DATASET_NAME, new DatasetAttribute());
             attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
