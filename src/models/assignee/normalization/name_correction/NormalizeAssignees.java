@@ -155,6 +155,9 @@ public class NormalizeAssignees {
 
 
         }
+        if(cleanIsh.length()==0) {
+            return null;
+        }
         while(cleanIsh.charAt(cleanIsh.length()-1)!=')'&&!Character.isAlphabetic(cleanIsh.charAt(cleanIsh.length()-1))) {
             if(cleanIsh.length()==1) return null;
             cleanIsh = cleanIsh.substring(0,cleanIsh.length()-1).trim();
