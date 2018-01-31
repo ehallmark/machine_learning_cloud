@@ -74,8 +74,8 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
                     1028,
-                    1028//,
-                    //1028
+                    1028,
+                    1028
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
@@ -86,7 +86,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             Nd4j.getRandom().setSeed(rngSeed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)
-                    .learningRate(0.05)
+                    .learningRate(0.01)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                     .updater(Updater.RMSPROP).rmsDecay(0.95)
                     //.updater(Updater.ADAM)
@@ -112,8 +112,8 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             net = new MultiLayerNetwork(conf);
             net.init();
         } else {
-            double learningRate = 0.01;
-            //double learningRate = 0.001;
+            double learningRate = 0.001;
+            //double learningRate = 0.0001;
             net = NNRefactorer.updateNetworkLearningRate(net,learningRate,false);
             net = NNRefactorer.updatePretrainAndBackprop(net,true,false,false);
             System.out.println("new learning rates: ");
