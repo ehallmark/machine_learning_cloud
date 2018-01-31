@@ -5,6 +5,7 @@ import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
+import data_pipeline.vectorize.PreSaveDataSetManager;
 import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import org.nd4j.linalg.api.buffer.DataBuffer;
@@ -54,7 +55,8 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     protected void setDatasetManager() {
         if(trainAssets==null) splitData();
-        datasetManager = new NoSaveDataSetManager<>(
+        datasetManager = new PreSaveDataSetManager(
+                dataFolder,
                 getRawIterator(trainAssets, false),
                 getRawIterator(testAssets,true),
                 getRawIterator(validationAssets, true)
@@ -72,7 +74,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            setDatasetManager();
+            datasetManager = new PreSaveDataSetManager(dataFolder);
         }
         return datasetManager;
     }
