@@ -36,6 +36,7 @@ public class AssetKMeans {
     private Integer k;
     public AssetKMeans(Map<String,INDArray> assetToEncodingMap, Integer k) {
         this.kMeans = new UnitCosineKMeans();
+        this.k=k;
         this.techPredictions = PredictKeyphraseForFilings.loadOrGetTechnologyMap();
         this.assetEncodingMap = assetToEncodingMap;
         System.out.println("Num tech predictions: "+techPredictions.size());
