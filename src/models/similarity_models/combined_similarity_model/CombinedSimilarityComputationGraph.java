@@ -75,9 +75,9 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
                 .learningRate(0.001)
                 .activation(Activation.TANH)
                 .graphBuilder()
-                .addInputs("x")
+                .addInputs("x","d")
                 .setOutputs("y","d")
-                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build(), "x")
+                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1+1,hiddenLayerSize).build(), "x","d")
                 .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
         ComputationGraphConfiguration.GraphBuilder cpcVecNetConf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
@@ -87,7 +87,7 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
                 .graphBuilder()
                 .addInputs("x")
                 .setOutputs("y","d")
-                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input2,hiddenLayerSize).build(), "x")
+                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input2+1,hiddenLayerSize).build(), "x", "d")
                 .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input2+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
         int increment = 1;
@@ -159,8 +159,8 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
             INDArray labels = dataSet.getFeatures(1);
             INDArray dates = dataSet.getFeatures(2);
             INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(features,labels));
-            MultiDataSet ds1 = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{features},new INDArray[]{encoding,dates});
-            MultiDataSet ds2 = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{labels},new INDArray[]{encoding,dates});
+            MultiDataSet ds1 = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{features,dates},new INDArray[]{encoding,dates});
+            MultiDataSet ds2 = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{labels,dates},new INDArray[]{encoding,dates});
             validationDataSets.add(new Pair<>(ds1,ds2));
             valCount+=ds1.getFeatures()[0].rows();
             //System.gc();
@@ -202,8 +202,8 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
         INDArray labels = dataSet.getFeatures(1);
         INDArray dates = dataSet.getFeatures(2);
         INDArray encoding = autoencoder.encode(DEFAULT_LABEL_FUNCTION.apply(features,labels));
-        MultiDataSet ds1 = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{features},new INDArray[]{encoding,dates});
-        MultiDataSet ds2 = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{labels},new INDArray[]{encoding,dates});
+        MultiDataSet ds1 = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{features,dates},new INDArray[]{encoding,dates});
+        MultiDataSet ds2 = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{labels,dates},new INDArray[]{encoding,dates});
         train(wordCpc2Vec, ds1);
         train(cpcVecNet, ds2);
     }

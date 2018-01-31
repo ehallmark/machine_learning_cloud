@@ -314,9 +314,9 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
                 .learningRate(0.001)
                 .activation(Activation.TANH)
                 .graphBuilder()
-                .addInputs("x")
+                .addInputs("x","d")
                 .setOutputs("y","d")
-                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1+input2,hiddenLayerSize).build(), "x")
+                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1+input2+1,hiddenLayerSize).build(), "x", "d")
                 .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+input2+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
         int increment = 1;
