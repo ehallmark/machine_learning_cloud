@@ -163,7 +163,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
                 while(trainIter.hasNext()) {
                     DataSet ds = trainIter.next();
                     net.fit(ds);
-                    //System.gc();
+                    System.gc();
                 }
             } catch(StoppingConditionMetException s) {
                 System.out.println("Stopping condition met");
