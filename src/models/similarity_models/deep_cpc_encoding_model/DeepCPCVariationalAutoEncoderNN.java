@@ -68,7 +68,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
         final int numInputs = getCpcToIdxMap().size();
-        final int printIterations = 100;
+        final int printIterations = 500;
 
         if(net==null) {
             //Neural net configuration
@@ -165,7 +165,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
                 while(trainIter.hasNext()) {
                     DataSet ds = trainIter.next();
                     net.fit(ds);
-                    if(gcIter.getAndIncrement()%20==0)System.gc();
+                    if(gcIter.getAndIncrement()%100==0)System.gc();
                 }
             } catch(StoppingConditionMetException s) {
                 System.out.println("Stopping condition met");
