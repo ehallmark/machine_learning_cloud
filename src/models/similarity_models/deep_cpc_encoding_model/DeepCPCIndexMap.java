@@ -42,7 +42,7 @@ public class DeepCPCIndexMap {
                 AtomicInteger idx = new AtomicInteger(0);
                 System.out.println("Could not find cpc idx map... creating new one now.");
                 cpcIdxMap = hierarchyTask.invoke().getLabelToCPCMap().entrySet().stream().filter(e->e.getValue().getNumParts()<=depth)
-                        .filter(e->prevalentCPCs.contains(e.getKey()))
+                        .filter(e->e.getValue().getNumParts()<depth||prevalentCPCs.contains(e.getKey()))
                         .sorted(Comparator.comparing(e->e.getKey())).sequential().collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
                 System.out.println("Input size: " + cpcIdxMap.size());
                 System.out.println("Saving cpc idx map...");

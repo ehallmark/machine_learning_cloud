@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -73,8 +74,8 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
                     1028,
-                    1028,
-                    1028
+                    1028//,
+                    //1028
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
@@ -157,13 +158,14 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
         net.setListeners(listener);
 
+        AtomicInteger gcIter = new AtomicInteger(0);
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
             try {
                 while(trainIter.hasNext()) {
                     DataSet ds = trainIter.next();
                     net.fit(ds);
-                    System.gc();
+                    if(gcIter.getAndIncrement()%20==0)System.gc();
                 }
             } catch(StoppingConditionMetException s) {
                 System.out.println("Stopping condition met");
