@@ -128,14 +128,17 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
 
         System.out.println("Building validation matrix...");
         DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
-        List<INDArray> partialValidationMatrices = new ArrayList<>();
-        while(validationIterator.hasNext()) {
-            INDArray features = validationIterator.next().getFeatures();
-            partialValidationMatrices.add(features);
-        }
-        INDArray validationMatrix = Nd4j.vstack(partialValidationMatrices);
         Function<Void,Double> testErrorFunction = (v) -> {
-            return test(validationMatrix, vae);
+            double total = 0d;
+            int count = 0;
+            while(validationIterator.hasNext()) {
+                INDArray features = validationIterator.next().getFeatures();
+                double score = test(features, vae);
+                count++;
+                total+=score;
+            }
+            validationIterator.reset();
+            return total/count;
         };
 
         Function<Void,Double> trainErrorFunction = (v) -> {
