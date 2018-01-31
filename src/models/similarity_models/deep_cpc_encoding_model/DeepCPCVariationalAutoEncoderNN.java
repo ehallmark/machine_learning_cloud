@@ -17,6 +17,7 @@ import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
@@ -71,10 +72,9 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
-                    2056,
-                    2056,
-                    2056,
-                    2056
+                    1028,
+                    1028,
+                    1028
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
@@ -111,9 +111,9 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             net = new MultiLayerNetwork(conf);
             net.init();
         } else {
-            //double learningRate1 = 0.01;
-            double learningRate2 = 0.001;
-            net = NNRefactorer.updateNetworkLearningRate(net,learningRate2,false);
+            double learningRate = 0.01;
+            //double learningRate = 0.001;
+            net = NNRefactorer.updateNetworkLearningRate(net,learningRate,false);
             net = NNRefactorer.updatePretrainAndBackprop(net,true,false,false);
             System.out.println("new learning rates: ");
             net.getLayerWiseConfigurations().getConfs().forEach((conf)->{
@@ -160,7 +160,11 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
             try {
-                net.fit(trainIter);
+                while(trainIter.hasNext()) {
+                    DataSet ds = trainIter.next();
+                    net.fit(ds);
+                    System.gc();
+                }
             } catch(StoppingConditionMetException s) {
                 System.out.println("Stopping condition met");
             }
