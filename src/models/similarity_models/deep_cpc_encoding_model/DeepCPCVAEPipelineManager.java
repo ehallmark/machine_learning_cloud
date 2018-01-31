@@ -167,12 +167,13 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildPrerequisites = false;
-        boolean rebuildDatasets = false;
+        boolean rebuildDatasets = !INPUT_DATA_FOLDER.exists();
         boolean runModels = true;
         boolean forceRecreateModels = true;
         boolean runPredictions = true;
         int nEpochs = 10;
         String modelName = MODEL_NAME;
+
 
         setLoggingLevel(Level.INFO);
         DeepCPCVAEPipelineManager pipelineManager = new DeepCPCVAEPipelineManager(modelName);
