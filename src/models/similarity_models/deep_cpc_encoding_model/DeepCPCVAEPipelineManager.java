@@ -30,7 +30,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     public static final String MODEL_NAME = "deep256_cpc_autoencoder";
     public static final int MAX_CPC_DEPTH = 5;
     private static final int BATCH_SIZE = 16;
-    private static final int MIN_CPC_APPEARANCES = 30;
+    private static final int MIN_CPC_APPEARANCES = 100;
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_vae_predictions/predictions_map.jobj");
 

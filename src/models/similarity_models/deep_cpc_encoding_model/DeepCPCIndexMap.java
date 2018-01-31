@@ -24,7 +24,7 @@ public class DeepCPCIndexMap {
             // try loading from file
             Map<String,Integer> cpcIdxMap;
             try {
-                cpcIdxMap = (Map<String,Integer>)Database.tryLoadObject(new File(CPC_TO_INDEX_FILENAME+depth));
+                cpcIdxMap = (Map<String,Integer>)Database.tryLoadObject(new File(CPC_TO_INDEX_FILENAME+depth+"_"+minOccurrences));
             } catch(Exception e) {
                 cpcIdxMap = null;
             }
