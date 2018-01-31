@@ -186,7 +186,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         final int windowSize;
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
-        boolean runModels = true;
+        boolean runModels = false;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
         int nEpochs = 3;
