@@ -167,7 +167,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildPrerequisites = false;
-        boolean rebuildDatasets = !INPUT_DATA_FOLDER.exists();
+        boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = true;
         boolean runPredictions = true;
