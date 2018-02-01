@@ -73,9 +73,10 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
-                    1028,
-                    1028,
-                    1028
+                    2056,
+                    2056,
+                    2056,
+                    2056
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
@@ -162,11 +163,13 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
             try {
+                net.fit(trainIter);
+                /*
                 while(trainIter.hasNext()) {
                     DataSet ds = trainIter.next();
                     net.fit(ds);
                    // if(gcIter.getAndIncrement()%100==0)System.gc();
-                }
+                }*/
             } catch(StoppingConditionMetException s) {
                 System.out.println("Stopping condition met");
             }
