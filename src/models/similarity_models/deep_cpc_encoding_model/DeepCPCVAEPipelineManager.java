@@ -56,11 +56,16 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     protected void setDatasetManager() {
         if(trainAssets==null) splitData();
-        datasetManager = new PreSaveDataSetManager(
+        /*datasetManager = new PreSaveDataSetManager(
                 dataFolder,
                 getRawIterator(trainAssets, false),
                 getRawIterator(testAssets,true),
                 getRawIterator(validationAssets, true)
+        );*/
+        datasetManager = new NoSaveDataSetManager<>(
+                getRawIterator(trainAssets,false),
+                getRawIterator(testAssets,true),
+                getRawIterator(validationAssets,true)
         );
     }
     public int getMinCPCOccurrences() {
@@ -75,7 +80,8 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder);
+           // datasetManager = new PreSaveDataSetManager(dataFolder);
+            setDatasetManager();
         }
         return datasetManager;
     }
