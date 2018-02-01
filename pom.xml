@@ -206,7 +206,6 @@
         <dependency>
             <groupId>org.nd4j</groupId>
             <artifactId>${nd4j.backend}</artifactId>
-            <classifier>linux-x86_64</classifier>
             <version>${nd4j.version}</version>
         </dependency>
         <dependency>
