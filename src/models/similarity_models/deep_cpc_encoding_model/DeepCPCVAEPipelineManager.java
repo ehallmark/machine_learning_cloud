@@ -8,6 +8,7 @@ import data_pipeline.vectorize.NoSaveDataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
+import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
@@ -174,6 +175,14 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
         int nEpochs = 10;
         String modelName = MODEL_NAME;
 
+
+        // setup cuda env
+        Nd4j.getMemoryManager().setAutoGcWindow(1000);
+        CudaEnvironment.getInstance().getConfiguration().setMaximumGridSize(512).setMaximumBlockSize(512)
+                .setMaximumDeviceCacheableLength(1024 * 1024 * 1024L)
+                .setMaximumDeviceCache(8L * 1024 * 1024 * 1024L)
+                .setMaximumHostCacheableLength(1024 * 1024 * 1024L)
+                .setMaximumHostCache(8L * 1024 * 1024 * 1024L);
 
         setLoggingLevel(Level.INFO);
         DeepCPCVAEPipelineManager pipelineManager = new DeepCPCVAEPipelineManager(modelName);
