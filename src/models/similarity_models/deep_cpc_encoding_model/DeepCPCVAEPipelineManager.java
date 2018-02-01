@@ -56,16 +56,11 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     protected void setDatasetManager() {
         if(trainAssets==null) splitData();
-        /*datasetManager = new PreSaveDataSetManager(
+        datasetManager = new PreSaveDataSetManager(
                 dataFolder,
                 getRawIterator(trainAssets, false),
                 getRawIterator(testAssets,true),
                 getRawIterator(validationAssets, true)
-        );*/
-        datasetManager = new NoSaveDataSetManager<>(
-                getRawIterator(trainAssets,false),
-                getRawIterator(testAssets,true),
-                getRawIterator(validationAssets,true)
         );
     }
     public int getMinCPCOccurrences() {
@@ -80,8 +75,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-           // datasetManager = new PreSaveDataSetManager(dataFolder);
-            setDatasetManager();
+            datasetManager = new PreSaveDataSetManager(dataFolder);
         }
         return datasetManager;
     }
@@ -183,12 +177,12 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
 
 
         // setup cuda env
-        Nd4j.getMemoryManager().setAutoGcWindow(1000);
-        CudaEnvironment.getInstance().getConfiguration().setMaximumGridSize(512).setMaximumBlockSize(512)
-                .setMaximumDeviceCacheableLength(1024 * 1024 * 1024L)
-                .setMaximumDeviceCache(8L * 1024 * 1024 * 1024L)
-                .setMaximumHostCacheableLength(1024 * 1024 * 1024L)
-                .setMaximumHostCache(8L * 1024 * 1024 * 1024L);
+        Nd4j.getMemoryManager().setAutoGcWindow(2000);
+        CudaEnvironment.getInstance().getConfiguration().setMaximumGridSize(1024).setMaximumBlockSize(1024)
+                .setMaximumDeviceCacheableLength(2L * 1024 * 1024 * 1024L)
+                .setMaximumDeviceCache(10L * 1024 * 1024 * 1024L)
+                .setMaximumHostCacheableLength(2L * 1024 * 1024 * 1024L)
+                .setMaximumHostCache(10L * 1024 * 1024 * 1024L);
 
         setLoggingLevel(Level.INFO);
         DeepCPCVAEPipelineManager pipelineManager = new DeepCPCVAEPipelineManager(modelName);
