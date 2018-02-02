@@ -3,6 +3,7 @@ package models.similarity_models.word_cpc_2_vec_model;
 import data_pipeline.models.WordVectorPredictionModel;
 import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
+import org.deeplearning4j.models.embeddings.learning.impl.elements.CBOW;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.sequencevectors.SequenceVectors;
@@ -23,9 +24,9 @@ import java.util.function.Function;
 public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDArray>> {
     public static final String WORD_VECTORS = "wordVectors";
     public static final String CLASS_VECTORS = "cpcVectors";
-    private static final int BATCH_SIZE = 1024;
+    private static final int BATCH_SIZE = 2048;
     private static Type MODEL_TYPE = Type.Word2Vec;
-    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"wordcpc2vec_model_data");
+    public static final File BASE_DIR = new File("wordcpc2vec_model_data");
 
     private WordCPC2VecPipelineManager pipelineManager;
     private final int vectorSize;
@@ -80,10 +81,10 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
         int windowSize = pipelineManager.getWindowSize();
         int minWordFrequency = 5;
         double negativeSampling = -1;
-        double sampling = -1;
-        double learningRate = 0.0001; //0.01;
-        double minLearningRate = 0.00001;//0.0001;
-        int testIterations = 2000000;
+        double sampling = 0.0001;
+        double learningRate = 0.01;
+        double minLearningRate = 0.0001;
+        int testIterations = 4000000;
 
         AtomicInteger nTestsCounter = new AtomicInteger(0);
         final int saveEveryNTests = 5;
@@ -115,7 +116,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
                 .useAdaGrad(true)
                 .resetModel(newModel)
                 .minWordFrequency(minWordFrequency)
-                .workers(Math.max(1,Runtime.getRuntime().availableProcessors()/2))
+                .workers(Math.max(1,Runtime.getRuntime().availableProcessors()))
                 .iterations(1)
                 .setVectorsListeners(Collections.singleton(new CustomWordVectorListener(saveFunction,modelName,testIterations,words.toArray(new String[]{}))))
                 .useHierarchicSoftmax(true)
@@ -123,7 +124,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
                 //.trainElementsRepresentation(true)
                 //.trainSequencesRepresentation(true)
                 //.sequenceLearningAlgorithm(new DBOW<>())
-                .elementsLearningAlgorithm(new SkipGram<>())
+                .elementsLearningAlgorithm(new CBOW<>())
                 .iterate(iterator);
 
         if(!newModel) {
