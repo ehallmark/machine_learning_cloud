@@ -37,7 +37,7 @@ import java.util.function.Function;
  * Created by ehallmark on 10/26/17.
  */
 public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN {
-    public static final int VECTOR_SIZE = 256;
+    public static final int VECTOR_SIZE = 64;
     public static final File BASE_DIR = new File("deep_cpc_deep_vae_nn_model_data");
 
     public DeepCPCVariationalAutoEncoderNN(DeepCPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {

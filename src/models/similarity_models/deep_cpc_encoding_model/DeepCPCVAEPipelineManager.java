@@ -10,6 +10,9 @@ import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.api.DataSet;
+import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.primitives.Pair;
@@ -56,12 +59,19 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     protected void setDatasetManager() {
         if(trainAssets==null) splitData();
-        datasetManager = new PreSaveDataSetManager(
+        PreSaveDataSetManager manager = new PreSaveDataSetManager(
                 dataFolder,
                 getRawIterator(trainAssets, false),
                 getRawIterator(testAssets,true),
                 getRawIterator(validationAssets, true)
         );
+        manager.setDataSetPreProcessor(new DataSetPreProcessor() {
+            @Override
+            public void preProcess(DataSet dataSet) {
+                dataSet.setLabels(null);
+            }
+        });
+        datasetManager=manager;
     }
     public int getMinCPCOccurrences() {
         return MIN_CPC_APPEARANCES;
@@ -75,7 +85,14 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder);
+            PreSaveDataSetManager manager = new PreSaveDataSetManager(dataFolder);
+            manager.setDataSetPreProcessor(new DataSetPreProcessor() {
+                @Override
+                public void preProcess(DataSet dataSet) {
+                    dataSet.setLabels(dataSet.getFeatures());
+                }
+            });
+            datasetManager = manager;
         }
         return datasetManager;
     }
