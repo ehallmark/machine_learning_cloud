@@ -69,7 +69,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
         final int numInputs = getCpcToIdxMap().size();
-        final int printIterations = 100;
+        final int printIterations = 50;
 
         if(net==null) {
             //Neural net configuration
