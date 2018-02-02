@@ -34,7 +34,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     private static final int BATCH_SIZE = 32;
     private static final int MIN_CPC_APPEARANCES = 350;
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_vae_data");
-    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_vae_predictions/predictions_map.jobj");
+    private static final File PREDICTION_DATA_FILE = new File("deep_cpc_vae_predictions/predictions_map.jobj");
 
     public DeepCPCVAEPipelineManager(String modelName) {
         super(modelName,INPUT_DATA_FOLDER,PREDICTION_DATA_FILE,MAX_CPC_DEPTH);
