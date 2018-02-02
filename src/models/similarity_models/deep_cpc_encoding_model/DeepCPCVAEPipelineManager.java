@@ -8,7 +8,6 @@ import data_pipeline.vectorize.NoSaveDataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
-import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.DataSet;
