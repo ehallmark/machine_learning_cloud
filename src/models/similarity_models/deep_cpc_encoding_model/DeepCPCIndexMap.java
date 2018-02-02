@@ -1,5 +1,6 @@
 package models.similarity_models.deep_cpc_encoding_model;
 
+import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
@@ -42,7 +43,19 @@ public class DeepCPCIndexMap {
                 AtomicInteger idx = new AtomicInteger(0);
                 System.out.println("Could not find cpc idx map... creating new one now.");
                 cpcIdxMap = hierarchyTask.invoke().getLabelToCPCMap().entrySet().stream().filter(e->e.getValue().getNumParts()<=depth)
-                        .filter(e->e.getValue().getNumParts()<depth||prevalentCPCs.contains(e.getKey()))
+                        .filter(e->{
+                            if(e.getValue().getNumParts()<depth-1) return true;
+                            if(prevalentCPCs.contains(e.getKey())) return true;
+                            // check children for prevalence
+                            if(e.getValue().getNumParts()==depth-1) {
+                                for(CPC child : e.getValue().getChildren()) {
+                                    if(prevalentCPCs.contains(ClassCodeHandler.convertToLabelFormat(child.getName()))) {
+                                        return true;
+                                    }
+                                }
+                            }
+                            return false;
+                        })
                         .sorted(Comparator.comparing(e->e.getKey())).sequential().collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
                 System.out.println("Input size: " + cpcIdxMap.size());
                 System.out.println("Saving cpc idx map...");

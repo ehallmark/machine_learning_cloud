@@ -240,7 +240,12 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                             if(cpcs.size()>0) {
                                 Collections.shuffle(cpcs);
                                 try {
-                                    queue.put(new Sequence<>(cpcs.stream().map(cpc->new VocabWord(1f,cpc)).collect(Collectors.toList())));
+                                    if(date!=null) {
+                                        Sequence<VocabWord> sequence = new Sequence<>(cpcs.stream().map(cpc -> new VocabWord(1f, cpc)).collect(Collectors.toList()));
+                                        sequence.addSequenceLabel(new VocabWord(1f,document.getLabels().get(0)));
+                                        sequence.addSequenceLabel(new VocabWord(1, date.toString()));
+                                        queue.put(sequence);
+                                    }
                                 } catch(Exception e) {
                                     e.printStackTrace();
                                 }
