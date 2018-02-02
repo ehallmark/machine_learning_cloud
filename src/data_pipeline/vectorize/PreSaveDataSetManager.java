@@ -1,7 +1,10 @@
 package data_pipeline.vectorize;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.io.FileUtils;
 import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
 import java.io.File;
@@ -18,6 +21,8 @@ public class PreSaveDataSetManager implements DataSetManager<DataSetIterator> {
     private double testRatio;
     private double valRatio;
     private File baseDir;
+    @Setter @Getter
+    private DataSetPreProcessor dataSetPreProcessor;
     public PreSaveDataSetManager(File baseDir, DataSetIterator rawTrain, DataSetIterator rawTest, DataSetIterator rawVal) {
         if(!baseDir.exists()) baseDir.mkdir();
         if(!baseDir.isDirectory()) throw new RuntimeException("Must be a directory...");
@@ -69,7 +74,11 @@ public class PreSaveDataSetManager implements DataSetManager<DataSetIterator> {
     }
 
     protected DataSetIterator getIterator(String kind, int limit) {
-        return new FileMinibatchIterator(new File(baseDir,kind),limit);
+        FileMinibatchIterator iterator = new FileMinibatchIterator(new File(baseDir,kind),limit);
+        if(dataSetPreProcessor!=null) {
+            iterator.setDataSetPreProcessor(dataSetPreProcessor);
+        }
+        return iterator;
     }
 
     protected DataSetIterator getIterator(String kind) {
@@ -106,6 +115,9 @@ public class PreSaveDataSetManager implements DataSetManager<DataSetIterator> {
             String filename = EXAMPLE+idx+BINARY_SUFFIX;
             DataSet ds = iterator.next();
             if(ds!=null) {
+                if(dataSetPreProcessor!=null) {
+                    dataSetPreProcessor.preProcess(ds);
+                }
                 ds.save(new File(folder, filename));
                 idx++;
                 System.out.println("Saved [" + idx + " / " + total + "] to " + filename);

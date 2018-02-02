@@ -182,23 +182,25 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
 
     public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
+        setCudaEnvironment();
+
         final int maxSamples;
         final int windowSize;
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
-        boolean runModels = false;
+        boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
-        int nEpochs = 3;
+        int nEpochs = 5;
 
         boolean runDeepModel = true;// CombinedSimilarityVAEPipelineManager.USE_DEEP_MODEL;
 
         String modelName;
 
         if(runDeepModel) {
-            windowSize = 8;
+            windowSize = 6;
             modelName = DEEP_MODEL_NAME;
-            maxSamples = 100;
+            maxSamples = 500;
         } else {
             windowSize = 6;
             modelName = SMALL_MODEL_NAME;

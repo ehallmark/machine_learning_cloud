@@ -10,6 +10,7 @@ import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import data_pipeline.helpers.ShuffleArray;
+import lombok.Setter;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -20,6 +21,7 @@ public class FileMinibatchIterator implements DataSetIterator {
     private AtomicInteger currIdx;
     private File rootDir;
     private int totalBatches;
+    @Setter
     private DataSetPreProcessor dataSetPreProcessor;
     private final String pattern;
     private boolean async;

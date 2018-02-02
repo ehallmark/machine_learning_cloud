@@ -9,6 +9,9 @@ import data_pipeline.vectorize.PreSaveDataSetManager;
 import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.api.DataSet;
+import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.primitives.Pair;
@@ -30,10 +33,10 @@ import java.util.stream.Stream;
 public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     public static final String MODEL_NAME = "deep256_cpc_autoencoder";
     public static final int MAX_CPC_DEPTH = 5;
-    private static final int BATCH_SIZE = 32;
-    private static final int MIN_CPC_APPEARANCES = 350;
+    private static final int BATCH_SIZE = 1024;
+    private static final int MIN_CPC_APPEARANCES = 450;
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_vae_data");
-    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_vae_predictions/predictions_map.jobj");
+    private static final File PREDICTION_DATA_FILE = new File("deep_cpc_vae_predictions/predictions_map.jobj");
 
     public DeepCPCVAEPipelineManager(String modelName) {
         super(modelName,INPUT_DATA_FOLDER,PREDICTION_DATA_FILE,MAX_CPC_DEPTH);
@@ -55,12 +58,19 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     protected void setDatasetManager() {
         if(trainAssets==null) splitData();
-        datasetManager = new PreSaveDataSetManager(
+        PreSaveDataSetManager manager = new PreSaveDataSetManager(
                 dataFolder,
                 getRawIterator(trainAssets, false),
                 getRawIterator(testAssets,true),
                 getRawIterator(validationAssets, true)
         );
+        manager.setDataSetPreProcessor(new DataSetPreProcessor() {
+            @Override
+            public void preProcess(DataSet dataSet) {
+                dataSet.setLabels(null);
+            }
+        });
+        datasetManager=manager;
     }
     public int getMinCPCOccurrences() {
         return MIN_CPC_APPEARANCES;
@@ -74,7 +84,14 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder);
+            PreSaveDataSetManager manager = new PreSaveDataSetManager(dataFolder);
+            manager.setDataSetPreProcessor(new DataSetPreProcessor() {
+                @Override
+                public void preProcess(DataSet dataSet) {
+                    dataSet.setLabels(dataSet.getFeatures());
+                }
+            });
+            datasetManager = manager;
         }
         return datasetManager;
     }
@@ -169,11 +186,12 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = true;
+        boolean forceRecreateModels = false;
         boolean runPredictions = true;
         int nEpochs = 10;
         String modelName = MODEL_NAME;
 
+        setCudaEnvironment();
 
         setLoggingLevel(Level.INFO);
         DeepCPCVAEPipelineManager pipelineManager = new DeepCPCVAEPipelineManager(modelName);

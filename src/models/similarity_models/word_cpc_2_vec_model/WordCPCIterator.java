@@ -103,7 +103,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     }
 
     private static Sequence<VocabWord> extractSequenceFromDocumentAndTokens(LabelledDocument document, List<String> tokens, Random random, int minSequenceLength, int maxSamples, boolean fullText) {
-        if(document.getContent()==null||document.getLabels()==null||tokens.isEmpty()||document.getContent().isEmpty() || document.getLabels().isEmpty()) {
+        if(document.getContent()==null||document.getLabels()==null||document.getContent().isEmpty() || document.getLabels().isEmpty()) {
             //System.out.println("Returning NULL because content or labels are null");
             return null;
         }
@@ -113,11 +113,12 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
             String[] text = defaultWordListFunction.apply(document.getContent());
             int wordLimit = maxSamples > 0 ? Math.min(text.length,maxSamples) : text.length;
             int start = text.length>wordLimit&&maxSamples>0 ? random.nextInt(text.length-wordLimit) : 0;
+            final double cpcProb = random.nextDouble();
             words = Stream.of(text).filter(word-> !Constants.STOP_WORD_SET.contains(word)).skip(start).limit(wordLimit).flatMap(word->{
                 VocabWord vocabWord = new VocabWord(1, word);
                 vocabWord.setSequencesCount(1);
                 vocabWord.setElementFrequency(1);
-                if(random.nextBoolean()) {
+                if(tokens.size()>0 && random.nextDouble()<cpcProb) {
                     VocabWord cpc = new VocabWord(1, tokens.get(random.nextInt(tokens.size())));
                     cpc.setSequencesCount(1);
                     cpc.setElementFrequency(1);
@@ -235,7 +236,20 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                             LocalDate date = iterator.getCurrentDate();
                             if (document.getLabels() == null || document.getContent() == null) continue;
 
-                            List<String> cpcs = document.getLabels().stream().flatMap(asset -> cpcMap.getOrDefault(asset, Collections.emptyList()).stream()).flatMap(cpc -> IntStream.range(0,cpc.getNumParts()).mapToObj(c->cpc.getName())).collect(Collectors.toList());
+                            List<String> cpcs = document.getLabels().stream().flatMap(asset -> cpcMap.getOrDefault(asset, Collections.emptyList()).stream()).flatMap(cpc -> IntStream.range(0,cpc.getNumParts()).mapToObj(c->cpc.getName())).collect(Collectors.toCollection(ArrayList::new));
+                            if(cpcs.size()>0) {
+                                Collections.shuffle(cpcs);
+                                try {
+                                    if(date!=null) {
+                                        Sequence<VocabWord> sequence = new Sequence<>(cpcs.stream().map(cpc -> new VocabWord(1f, cpc)).collect(Collectors.toList()));
+                                        sequence.addSequenceLabel(new VocabWord(1f,document.getLabels().get(0)));
+                                        sequence.addSequenceLabel(new VocabWord(1, date.toString()));
+                                        queue.put(sequence);
+                                    }
+                                } catch(Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
 
                             // extract sequence
                             Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document, cpcs, rand, minSequenceLength, finalNumSamples, fullText);
