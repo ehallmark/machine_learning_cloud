@@ -1,22 +1,21 @@
 package data_pipeline.vectorize;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.RecursiveTask;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import data_pipeline.helpers.ShuffleArray;
 import lombok.Setter;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class FileMinibatchIterator implements DataSetIterator {
-    private static final boolean DEFAULT_ASYNC = false;
     public static final String DEFAULT_PATTERN = "dataset-%d.bin";
     private AtomicInteger currIdx;
     private File rootDir;
@@ -24,26 +23,17 @@ public class FileMinibatchIterator implements DataSetIterator {
     @Setter
     private DataSetPreProcessor dataSetPreProcessor;
     private final String pattern;
-    private boolean async;
     private int[] shuffledIndices;
-    private final List<RecursiveTask<DataSet>> dataSetQueue;
-    public FileMinibatchIterator(File rootDir) {
-        this(rootDir,DEFAULT_ASYNC);
+    private final List<RecursiveTask<List<DataSet>>> dataSetQueue;
+    private Iterator<DataSet> currentIterator;
+    private int miniBatch;
+
+
+    public FileMinibatchIterator(File rootDir, int limit, int miniBatch) {
+        this(rootDir, DEFAULT_PATTERN, limit, miniBatch);
     }
 
-    public FileMinibatchIterator(File rootDir, boolean async) {
-        this(rootDir,-1,async);
-    }
-
-    public FileMinibatchIterator(File rootDir, int limit) {
-        this(rootDir,limit,DEFAULT_ASYNC);
-    }
-
-    public FileMinibatchIterator(File rootDir, int limit, boolean async) {
-        this(rootDir, DEFAULT_PATTERN, limit,async);
-    }
-
-    public FileMinibatchIterator(File rootDir, String pattern, int limit, boolean async) {
+    public FileMinibatchIterator(File rootDir, String pattern, int limit, int miniBatch) {
         this.totalBatches = -1;
         this.rootDir = rootDir;
         int numFiles = rootDir.list().length;
@@ -51,7 +41,7 @@ public class FileMinibatchIterator implements DataSetIterator {
         this.pattern = pattern;
         this.dataSetQueue = new ArrayList<>();
         this.currIdx = new AtomicInteger(0);
-        this.async=async;
+        this.miniBatch=miniBatch;
         this.shuffledIndices=new int[totalBatches];
         for(int i = 0; i < totalBatches; i++) {
             shuffledIndices[i]=i;
@@ -80,7 +70,7 @@ public class FileMinibatchIterator implements DataSetIterator {
     }
 
     public boolean asyncSupported() {
-        return async;
+        return false;
     }
 
     public void reset() {
@@ -113,28 +103,32 @@ public class FileMinibatchIterator implements DataSetIterator {
     }
 
     public boolean hasNext(){
-        int nWorkers = 2;
+        int nWorkers = 3;
         while(dataSetQueue.size()<nWorkers && this.currIdx.get()<shuffledIndices.length) {
             final int readIdx = shuffledIndices[this.currIdx.getAndIncrement()];
-            RecursiveTask<DataSet> task = new RecursiveTask<DataSet>() {
+            RecursiveTask<List<DataSet>> task = new RecursiveTask<List<DataSet>>() {
                 @Override
-                protected DataSet compute() {
+                protected List<DataSet> compute() {
                     try {
                         DataSet e = read(readIdx);
                         if (dataSetPreProcessor != null) {
                             dataSetPreProcessor.preProcess(e);
                         }
-                        return e;
+                        // split
+                        if(miniBatch>0) {
+                            return e.batchBy(miniBatch);
+                        } else {
+                            return Collections.singletonList(e);
+                        }
                     } catch (Exception var2) {
                         throw new IllegalStateException("Unable to read dataset");
                     }
                 }
             };
             task.fork();
-            System.gc();
             dataSetQueue.add(task);
         }
-        return dataSetQueue.size()>0;
+        return (currentIterator!=null&&currentIterator.hasNext())||dataSetQueue.size()>0;
     }
 
     public DataSet next() {
@@ -142,7 +136,10 @@ public class FileMinibatchIterator implements DataSetIterator {
     }
 
     private DataSet nextDataSet() {
-        return dataSetQueue.remove(0).join();
+        if(currentIterator==null||!currentIterator.hasNext()) {
+            currentIterator = dataSetQueue.remove(0).join().iterator();
+        }
+        return currentIterator.next();
     }
 
     private DataSet read(int idx) throws IOException {

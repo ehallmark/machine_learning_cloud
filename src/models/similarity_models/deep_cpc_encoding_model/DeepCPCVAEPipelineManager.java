@@ -4,18 +4,15 @@ import ch.qos.logback.classic.Level;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.vectorize.DataSetManager;
-import data_pipeline.vectorize.NoSaveDataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import org.nd4j.linalg.api.buffer.DataBuffer;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.primitives.Pair;
-import seeding.Constants;
 import seeding.Database;
 import tools.ClassCodeHandler;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
@@ -31,10 +28,11 @@ import java.util.stream.Stream;
  * Created by ehallmark on 11/7/17.
  */
 public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
-    public static final String MODEL_NAME = "deep256_cpc_autoencoder";
+    public static final String MODEL_NAME = "deep64_cpc_autoencoder";
     public static final int MAX_CPC_DEPTH = 5;
     private static final int BATCH_SIZE = 1024;
-    private static final int MIN_CPC_APPEARANCES = 450;
+    private static final int MINI_BATCH_SIZE = 128;
+    private static final int MIN_CPC_APPEARANCES = 125;
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File("deep_cpc_vae_predictions/predictions_map.jobj");
 
@@ -84,7 +82,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            PreSaveDataSetManager manager = new PreSaveDataSetManager(dataFolder);
+            PreSaveDataSetManager manager = new PreSaveDataSetManager(dataFolder,MINI_BATCH_SIZE);
             manager.setDataSetPreProcessor(new DataSetPreProcessor() {
                 @Override
                 public void preProcess(DataSet dataSet) {
@@ -139,7 +137,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     protected void splitData() {
         System.out.println("Starting to recreate datasets...");
-        int limit = 1000000;
+        int limit = 5000000;
         int numTest = 25000;
         getCPCMap();
         System.out.println("Loaded cpcMap");

@@ -25,7 +25,8 @@ import java.util.Map;
 public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<DataSetIterator,INDArray> {
     public static final String MODEL_NAME = "deep_word_to_cpc_encoder";
     public static final File currentVocabMapFile = new File(Constants.DATA_FOLDER+"deep_word_to_cpc_encoding_word_idx_map.jobj");
-    private static final int BATCH_SIZE = 128;
+    private static final int BATCH_SIZE = 1024;
+    private static final int MINI_BATCH_SIZE = 128;
     private static final File INPUT_DATA_FOLDER = new File("deep_word_to_cpc_encoding_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deep_word_to_cpc_encoding_predictions/predictions_map.jobj");
     @Getter
@@ -78,7 +79,7 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<DataSet
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder);
+            datasetManager = new PreSaveDataSetManager(dataFolder,MINI_BATCH_SIZE);
             //setDatasetManager();
         }
         return datasetManager;
@@ -116,7 +117,7 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<DataSet
     }
 
     public static void main(String[] args) throws Exception {
-        Nd4j.setDataType(DataBuffer.Type.FLOAT);
+        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = false;

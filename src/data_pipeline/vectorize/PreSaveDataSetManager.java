@@ -20,6 +20,7 @@ public class PreSaveDataSetManager implements DataSetManager<DataSetIterator> {
     private DataSetIterator fullIter;
     private double testRatio;
     private double valRatio;
+    private int miniBatch;
     private File baseDir;
     @Setter @Getter
     private DataSetPreProcessor dataSetPreProcessor;
@@ -41,8 +42,9 @@ public class PreSaveDataSetManager implements DataSetManager<DataSetIterator> {
         this.fullIter=fullIter;
     }
 
-    public PreSaveDataSetManager(File baseDir) {
+    public PreSaveDataSetManager(File baseDir, int miniBatch) {
         this.baseDir=baseDir;
+        this.miniBatch=miniBatch;
         if(!this.baseDir.exists()) throw new RuntimeException("Please use other constructor and call saveDatasets()");
     }
 
@@ -58,31 +60,31 @@ public class PreSaveDataSetManager implements DataSetManager<DataSetIterator> {
     }
 
     public DataSetIterator getTrainingIterator() {
-        return getIterator(TRAIN);
+        return getIterator(TRAIN,miniBatch);
     }
 
     public DataSetIterator getTrainingIterator(int limit) {
-        return getIterator(TRAIN,limit);
+        return getIterator(TRAIN,limit,miniBatch);
     }
 
     public DataSetIterator getTestIterator() {
-        return getIterator(TEST);
+        return getIterator(TEST,-1);
     }
 
     public DataSetIterator getValidationIterator() {
-        return getIterator(VALIDATION);
+        return getIterator(VALIDATION,-1);
     }
 
-    protected DataSetIterator getIterator(String kind, int limit) {
-        FileMinibatchIterator iterator = new FileMinibatchIterator(new File(baseDir,kind),limit);
+    protected DataSetIterator getIterator(String kind, int limit, int miniBatch) {
+        FileMinibatchIterator iterator = new FileMinibatchIterator(new File(baseDir,kind),limit,miniBatch);
         if(dataSetPreProcessor!=null) {
             iterator.setDataSetPreProcessor(dataSetPreProcessor);
         }
         return iterator;
     }
 
-    protected DataSetIterator getIterator(String kind) {
-        return getIterator(kind,-1);
+    protected DataSetIterator getIterator(String kind, int miniBatch) {
+        return getIterator(kind,-1,miniBatch);
     }
 
     public void saveDataSets() {

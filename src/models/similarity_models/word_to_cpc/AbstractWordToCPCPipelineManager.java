@@ -59,7 +59,7 @@ public abstract class AbstractWordToCPCPipelineManager extends DefaultPipelineMa
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder);
+            datasetManager = new PreSaveDataSetManager(dataFolder ,-1);
         }
         return datasetManager;
     }

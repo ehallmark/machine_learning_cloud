@@ -18,15 +18,11 @@ import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import seeding.Constants;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -74,10 +70,8 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
-                    1024,
-                    1024,
-                    1024,
-                    1024
+                    4096,
+                    4096
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
@@ -90,7 +84,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
                     .seed(rngSeed)
                     .learningRate(0.01)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                    .updater(Updater.RMSPROP).rmsDecay(0.95)
+                    .updater(Updater.ADAM)
                     //.updater(Updater.ADAM)
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)

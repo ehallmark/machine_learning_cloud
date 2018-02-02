@@ -75,7 +75,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<DataSetIterato
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder);
+            datasetManager = new PreSaveDataSetManager(dataFolder,-1);
         }
         return datasetManager;
     }
