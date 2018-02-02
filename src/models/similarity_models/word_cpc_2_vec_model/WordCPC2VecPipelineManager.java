@@ -182,6 +182,8 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
 
     public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
+        setCudaEnvironment();
+
         final int maxSamples;
         final int windowSize;
         boolean rebuildPrerequisites = false;

@@ -175,14 +175,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
         int nEpochs = 10;
         String modelName = MODEL_NAME;
 
-
-        // setup cuda env
-        Nd4j.getMemoryManager().setAutoGcWindow(2000);
-        CudaEnvironment.getInstance().getConfiguration().setMaximumGridSize(512).setMaximumBlockSize(512)
-                .setMaximumDeviceCacheableLength(2L * 1024 * 1024 * 1024L)
-                .setMaximumDeviceCache(10L * 1024 * 1024 * 1024L)
-                .setMaximumHostCacheableLength(2L * 1024 * 1024 * 1024L)
-                .setMaximumHostCache(10L * 1024 * 1024 * 1024L);
+        setCudaEnvironment();
 
         setLoggingLevel(Level.INFO);
         DeepCPCVAEPipelineManager pipelineManager = new DeepCPCVAEPipelineManager(modelName);
