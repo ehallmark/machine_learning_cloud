@@ -183,13 +183,13 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
-        boolean runModels = true;
+        boolean runModels = false;
         boolean forceRecreateModels = false;
-        boolean runPredictions = true;
+        boolean runPredictions = false;
         int nEpochs = 10;
         String modelName = MODEL_NAME;
 
-        setCudaEnvironment();
+      //  setCudaEnvironment();
 
         setLoggingLevel(Level.INFO);
         DeepCPCVAEPipelineManager pipelineManager = new DeepCPCVAEPipelineManager(modelName);
