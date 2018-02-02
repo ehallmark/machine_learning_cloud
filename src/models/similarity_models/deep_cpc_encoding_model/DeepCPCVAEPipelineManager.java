@@ -170,7 +170,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = true;
+        boolean forceRecreateModels = false;
         boolean runPredictions = true;
         int nEpochs = 10;
         String modelName = MODEL_NAME;
