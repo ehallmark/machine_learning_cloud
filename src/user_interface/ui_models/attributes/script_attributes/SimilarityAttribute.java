@@ -23,7 +23,7 @@ import static user_interface.server.SimilarPatentServer.extractArray;
  * Created by ehallmark on 6/15/17.
  */
 public class SimilarityAttribute extends AbstractScriptAttribute implements DependentAttribute<AbstractScriptAttribute>, RangeAttribute {
-    private static final String similarityModelName = CombinedSimilarityVAEPipelineManager.MODEL_NAME_SMALL;
+    private static final String similarityModelName = CombinedSimilarityVAEPipelineManager.USE_DEEP_MODEL?CombinedSimilarityVAEPipelineManager.DEEP_MODEL_NAME_SMALL:CombinedSimilarityVAEPipelineManager.MODEL_NAME_SMALL;
     public static final int vectorSize = CombinedSimilarityVAEPipelineManager.NAME_TO_VECTOR_SIZE_MAP.get(similarityModelName);
     public static final int dimensionsForSort = vectorSize;
     public static final String VECTOR_NAME = "cvec";
