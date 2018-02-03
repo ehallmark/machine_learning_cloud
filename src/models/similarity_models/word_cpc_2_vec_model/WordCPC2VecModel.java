@@ -82,8 +82,8 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
         int minWordFrequency = 5;
         double negativeSampling = -1;
         double sampling = 0.0001;
-        double learningRate = 0.01;
-        double minLearningRate = 0.0001;
+        double learningRate = 0.0001;//0.01;
+        double minLearningRate = 0.00001;//0.0001;
         int testIterations = 4000000;
 
         AtomicInteger nTestsCounter = new AtomicInteger(0);
