@@ -5,6 +5,7 @@ import data_pipeline.helpers.Function2;
 import data_pipeline.models.CombinedNeuralNetworkPredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
+import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.graph.ComputationGraph;
@@ -30,7 +31,7 @@ import java.util.stream.IntStream;
 /**
  * Created by Evan on 12/24/2017.
  */
-public abstract class AbstractCombinedSimilarityModel<T extends Model> extends CombinedNeuralNetworkPredictionModel<INDArray,T> {
+public abstract class AbstractCombinedSimilarityModel<T extends Model,V extends DefaultPipelineManager<MultiDataSetIterator,INDArray>> extends CombinedNeuralNetworkPredictionModel<INDArray,T> {
 
     public static final Function2<INDArray,INDArray,INDArray> AVERAGE_LABEL_FUNCTION = (f1,f2) -> {
         INDArray n1 = f1.divColumnVector(f1.norm2(1));
@@ -39,9 +40,9 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model> extends C
     };
     public static final Function2<INDArray,INDArray,INDArray> DEFAULT_LABEL_FUNCTION = (f1,f2) -> Nd4j.hstack(f1,f2);
 
-    protected AbstractCombinedSimilarityPipelineManager pipelineManager;
+    protected V pipelineManager;
     private Class<T> clazz;
-    public AbstractCombinedSimilarityModel(AbstractCombinedSimilarityPipelineManager pipelineManager, Class<T> clazz, String modelName) {
+    public AbstractCombinedSimilarityModel(V pipelineManager, Class<T> clazz, String modelName) {
         super(modelName);
         this.clazz=clazz;
         this.pipelineManager=pipelineManager;
