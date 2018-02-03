@@ -64,7 +64,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     }
 
     protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, long numDocs, int batch) {
-        return new Word2VecToCPCIterator(iterator,numDocs,null,word2Vec,batch,false);
+        return new Word2VecToCPCIterator(iterator,numDocs,null,word2Vec,batch,false,VECTOR_SIZE);
     }
 
     @Override

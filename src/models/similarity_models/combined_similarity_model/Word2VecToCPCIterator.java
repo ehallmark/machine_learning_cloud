@@ -41,14 +41,14 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
     private int numDimensions;
     private double numDocs;
     private boolean requireLabel;
-    public Word2VecToCPCIterator(SequenceIterator<VocabWord> documentIterator, long numDocs, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize, boolean requireLabel) {
+    public Word2VecToCPCIterator(SequenceIterator<VocabWord> documentIterator, long numDocs, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize, boolean requireLabel, int numOutcomes) {
         this.documentIterator=documentIterator;
         this.requireLabel=requireLabel;
         this.vectorizer = cpcEncodings==null?null: new CPCSimilarityVectorizer(cpcEncodings,false,false,false);
         this.word2Vec=word2Vec;
         this.batch=batchSize;
         this.numDocs = numDocs;
-        this.numDimensions=cpcEncodings.values().stream().findAny().get().length();
+        this.numDimensions=numOutcomes;
         reset();
     }
 

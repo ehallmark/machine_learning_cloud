@@ -129,7 +129,8 @@ public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultP
 
 
     protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, long numDocs, int batch) {
-        return new Word2VecToCPCIterator(iterator,numDocs,getAssetToEncodingMap(),word2Vec,batch,true);
+        int dimensions = getAssetToEncodingMap().values().stream().findAny().get().length();;
+        return new Word2VecToCPCIterator(iterator,numDocs,getAssetToEncodingMap(),word2Vec,batch,true,dimensions);
     }
 
 }
