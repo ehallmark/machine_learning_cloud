@@ -109,6 +109,7 @@ public class FileMinibatchIterator implements DataSetIterator {
             RecursiveTask<List<DataSet>> task = new RecursiveTask<List<DataSet>>() {
                 @Override
                 protected List<DataSet> compute() {
+                    System.gc();
                     try {
                         DataSet e = read(readIdx);
                         if (dataSetPreProcessor != null) {
@@ -126,6 +127,7 @@ public class FileMinibatchIterator implements DataSetIterator {
                 }
             };
             task.fork();
+
             dataSetQueue.add(task);
         }
         return (currentIterator!=null&&currentIterator.hasNext())||dataSetQueue.size()>0;
