@@ -32,7 +32,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     public static final int MAX_CPC_DEPTH = 5;
     private static final int BATCH_SIZE = 1024;
     private static final int MINI_BATCH_SIZE = 128;
-    private static final int MIN_CPC_APPEARANCES = 125;
+    private static final int MIN_CPC_APPEARANCES = 225;
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File("deep_cpc_vae_predictions/predictions_map.jobj");
 
@@ -137,7 +137,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     protected void splitData() {
         System.out.println("Starting to recreate datasets...");
-        int limit = 5000000;
+        int limit = 3000000;
         int numTest = 25000;
         getCPCMap();
         System.out.println("Loaded cpcMap");
