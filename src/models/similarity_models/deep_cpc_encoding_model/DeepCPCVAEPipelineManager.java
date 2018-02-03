@@ -189,7 +189,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
         int nEpochs = 10;
         String modelName = MODEL_NAME;
 
-      //  setCudaEnvironment();
+        setCudaEnvironment();
 
         setLoggingLevel(Level.INFO);
         DeepCPCVAEPipelineManager pipelineManager = new DeepCPCVAEPipelineManager(modelName);
