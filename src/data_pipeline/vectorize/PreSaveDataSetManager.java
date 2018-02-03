@@ -120,14 +120,14 @@ public class PreSaveDataSetManager<T extends Iterator> implements DataSetManager
         if(fullIter== null) {
             // training data
             if(rawTrain instanceof MultiDataSetIterator) {
-                iterate((MultiDataSetIterator)rawTrain, trainFolder);
                 iterate((MultiDataSetIterator)rawTest, testFolder);
                 iterate((MultiDataSetIterator)rawVal, valFolder);
+                iterate((MultiDataSetIterator)rawTrain, trainFolder);
 
             } else {
-                iterate((DataSetIterator) rawTrain, trainFolder);
                 iterate((DataSetIterator)rawTest, testFolder);
                 iterate((DataSetIterator)rawVal, valFolder);
+                iterate((DataSetIterator) rawTrain, trainFolder);
             }
 
         } else {
