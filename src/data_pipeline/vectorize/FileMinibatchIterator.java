@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class FileMinibatchIterator implements DataSetIterator {
     public static final String DEFAULT_PATTERN = "dataset-%d.bin";
@@ -117,7 +120,17 @@ public class FileMinibatchIterator implements DataSetIterator {
                         }
                         // split
                         if(miniBatch>0) {
-                            return e.batchBy(miniBatch);
+                            return IntStream.range(0, e.getFeatureMatrix().rows()/miniBatch).mapToObj(i->{
+                                int start = i*miniBatch;
+                                int end = Math.min(e.getFeatureMatrix().rows(),start+miniBatch);
+                                if(start<end) {
+                                    return new DataSet(
+                                            e.getFeatureMatrix().get(NDArrayIndex.interval(start,end),NDArrayIndex.all()),
+                                            e.getLabels().get(NDArrayIndex.interval(start,end),NDArrayIndex.all())
+                                    );
+                                }
+                                return null;
+                            }).filter(d->d!=null).collect(Collectors.toList());
                         } else {
                             return Collections.singletonList(e);
                         }
