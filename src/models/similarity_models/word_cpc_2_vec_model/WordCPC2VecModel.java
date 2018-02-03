@@ -116,7 +116,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
                 .useAdaGrad(true)
                 .resetModel(newModel)
                 .minWordFrequency(minWordFrequency)
-                .workers(Math.max(1,Runtime.getRuntime().availableProcessors()))
+                .workers(Math.max(1,Runtime.getRuntime().availableProcessors()/2))
                 .iterations(1)
                 .setVectorsListeners(Collections.singleton(new CustomWordVectorListener(saveFunction,modelName,testIterations,words.toArray(new String[]{}))))
                 .useHierarchicSoftmax(true)
