@@ -51,7 +51,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
     public void initModel(boolean forceRecreateModels) {
         if(model==null) {
-           // model = new CombinedVariationalAutoencoder(this,modelName,VECTOR_SIZE);
+            model = new DeepCPC2VecEncodingModel(this,modelName,VECTOR_SIZE);
         }
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");

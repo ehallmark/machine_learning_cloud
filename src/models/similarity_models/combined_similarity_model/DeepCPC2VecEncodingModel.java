@@ -40,12 +40,12 @@ import java.util.stream.Stream;
  */
 public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<ComputationGraph,DeepCPC2VecEncodingPipelineManager> {
     public static final String VAE_NETWORK = "vaeNet";
-    public static final File BASE_DIR = new File(Constants.DATA_FOLDER + "combined_similarity_vae_data");
+    public static final File BASE_DIR = new File("deep_cpc_2_vec_encoding_data");
 
     @Getter
     private ComputationGraph vaeNetwork;
-    int encodingIdx = 22;
 
+    int encodingIdx = 22;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
         super(pipelineManager,ComputationGraph.class,modelName);
@@ -275,18 +275,11 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         System.out.println("Build model....");
         int hiddenLayerSize;
         int input1;
-        int input2;
         int numHiddenLayers;
 
-        if(CombinedSimilarityVAEPipelineManager.USE_DEEP_MODEL) {
+        {
             hiddenLayerSize = 128;
             input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
-            input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
-            numHiddenLayers = 20;
-        } else {
-            hiddenLayerSize = 48;
-            input1 = 32;
-            input2 = 32;
             numHiddenLayers = 20;
         }
 
@@ -303,8 +296,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .graphBuilder()
                 .addInputs("x","d")
                 .setOutputs("y","d")
-                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1+input2+1,hiddenLayerSize).build(), "x", "d")
-                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+input2+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
+                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1+1,hiddenLayerSize).build(), "x", "d")
+                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
 
         int increment = 1;
 
@@ -333,7 +326,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         }
 
         // output layers
-        OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input1+input2).lossFunction(lossFunction);
+        OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input1).lossFunction(lossFunction);
         OutputLayer.Builder dateLayer = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,1).lossFunction(LossFunctions.LossFunction.MSE);
 
         conf = conf.addLayer("y",outputLayer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
@@ -363,11 +356,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
         List<MultiDataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
         int valCount = 0;
-        while(validationIterator.hasNext()&&valCount<20000) {
+        while(validationIterator.hasNext()) {
             MultiDataSet dataSet = validationIterator.next();
-            INDArray vec = DEFAULT_LABEL_FUNCTION.apply(dataSet.getFeatures(0),dataSet.getFeatures(1));
-            INDArray dates = dataSet.getFeatures(2);
-            MultiDataSet finalDataSet = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{vec}, new INDArray[]{vec,dates});
+            MultiDataSet finalDataSet = new org.nd4j.linalg.dataset.MultiDataSet(dataSet.getFeatures(),dataSet.getFeatures());
             validationDataSets.add(finalDataSet);
             valCount+=finalDataSet.getFeatures()[0].rows();
             //System.gc();
@@ -385,9 +376,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     protected void train(MultiDataSet dataSet) {
-        INDArray vec = DEFAULT_LABEL_FUNCTION.apply(dataSet.getFeatures(0),dataSet.getFeatures(1));
-        INDArray dates = dataSet.getFeatures(2);
-        MultiDataSet finalDataSet = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{vec}, new INDArray[]{vec,dates});
+        MultiDataSet finalDataSet = new org.nd4j.linalg.dataset.MultiDataSet(dataSet.getFeatures(), dataSet.getFeatures());
         vaeNetwork.fit(finalDataSet);
     }
 
