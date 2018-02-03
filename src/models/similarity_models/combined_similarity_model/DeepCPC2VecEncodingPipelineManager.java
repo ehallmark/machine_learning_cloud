@@ -84,7 +84,8 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
                 @Override
                 public void preProcess(MultiDataSet dataSet) {
-                    dataSet.setLabels(null);
+                    dataSet.getFeatures(1).reshape(dataSet.getFeatures(1).length(),1);
+                    dataSet.setLabels(dataSet.getFeatures());
                 }
             });
             datasetManager = manager;
@@ -141,8 +142,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
             @Override
             public void preProcess(MultiDataSet dataSet) {
-                dataSet.getFeatures(1).reshape(dataSet.getFeatures(1).length(),1);
-                dataSet.setLabels(dataSet.getFeatures());
+                dataSet.setLabels(null);
             }
         });
         datasetManager = manager;
