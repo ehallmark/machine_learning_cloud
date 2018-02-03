@@ -33,7 +33,7 @@ import java.util.function.Function;
  * Created by ehallmark on 10/26/17.
  */
 public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN {
-    public static final int VECTOR_SIZE = 64;
+    public static final int VECTOR_SIZE = 128;
     public static final File BASE_DIR = new File("deep_cpc_deep_vae_nn_model_data");
 
     public DeepCPCVariationalAutoEncoderNN(DeepCPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {
@@ -70,8 +70,10 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
-                    2560,
-                    2560
+                    1024,
+                    1024,
+                    1024,
+                    1024
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
