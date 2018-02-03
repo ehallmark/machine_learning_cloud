@@ -5,7 +5,7 @@ import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.vectorize.DataSetManager;
 import lombok.Getter;
 import lombok.Setter;
-import org.nd4j.jita.conf.CudaEnvironment;
+//import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
 
