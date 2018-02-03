@@ -294,10 +294,10 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .learningRate(0.001)
                 .activation(Activation.TANH)
                 .graphBuilder()
-                .addInputs("x","d")
-                .setOutputs("y","d")
-                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1+1,hiddenLayerSize).build(), "x", "d")
-                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x");
+                .addInputs("x1","x2")
+                .setOutputs("y1","y2")
+                .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1+1,hiddenLayerSize).build(), "x1", "x2")
+                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i), "x1");
 
         int increment = 1;
 
@@ -329,8 +329,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,input1).lossFunction(lossFunction);
         OutputLayer.Builder dateLayer = NNOptimizer.newOutputLayer(hiddenLayerSize+hiddenLayerSize,1).lossFunction(LossFunctions.LossFunction.MSE);
 
-        conf = conf.addLayer("y",outputLayer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
-        conf = conf.addLayer("d",dateLayer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+        conf = conf.addLayer("y1",outputLayer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+        conf = conf.addLayer("y2",dateLayer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
 
         vaeNetwork = new ComputationGraph(conf.build());
         vaeNetwork.init();
