@@ -170,14 +170,14 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
-        boolean rebuildDatasets = true;
+        boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
         int nEpochs = 5;
 
-        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(true);
+        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(false);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
