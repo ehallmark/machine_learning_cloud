@@ -103,7 +103,7 @@ public class FileMinibatchIterator implements DataSetIterator {
     }
 
     public boolean hasNext(){
-        int nWorkers = 3;
+        int nWorkers = 2;
         while(dataSetQueue.size()<nWorkers && this.currIdx.get()<shuffledIndices.length) {
             final int readIdx = shuffledIndices[this.currIdx.getAndIncrement()];
             RecursiveTask<List<DataSet>> task = new RecursiveTask<List<DataSet>>() {
