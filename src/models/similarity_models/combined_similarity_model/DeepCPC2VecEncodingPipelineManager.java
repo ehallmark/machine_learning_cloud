@@ -96,7 +96,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     }
 
     protected int getMaxSamples() {
-        return 20;
+        return 8;
     }
 
     @Override

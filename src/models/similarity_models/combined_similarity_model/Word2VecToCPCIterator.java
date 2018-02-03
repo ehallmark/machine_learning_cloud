@@ -96,7 +96,6 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
         INDArray labels = requireLabel?Nd4j.create(batch,totalOutcomes()):null;
         INDArray features = Nd4j.create(batch,inputColumns());
         INDArray dates;
-        AtomicInteger wordsFoundPerBatch = new AtomicInteger(0);
         AtomicInteger totalWordsPerBatch = new AtomicInteger(0);
         LocalDate today = LocalDate.now();
         double[] datesArray = new double[batch];
