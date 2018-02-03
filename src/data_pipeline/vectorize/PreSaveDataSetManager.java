@@ -5,45 +5,55 @@ import lombok.Setter;
 import org.apache.commons.io.FileUtils;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
+import org.nd4j.linalg.dataset.api.MultiDataSet;
+import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.Random;
 
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class PreSaveDataSetManager implements DataSetManager<DataSetIterator> {
-    private DataSetIterator rawTrain;
-    private DataSetIterator rawTest;
-    private DataSetIterator rawVal;
-    private DataSetIterator fullIter;
+public class PreSaveDataSetManager<T extends Iterator> implements DataSetManager<T> {
+    private T rawTrain;
+    private T rawTest;
+    private T rawVal;
+    private T fullIter;
     private double testRatio;
     private double valRatio;
     private int miniBatch;
     private File baseDir;
     @Setter @Getter
     private DataSetPreProcessor dataSetPreProcessor;
-    public PreSaveDataSetManager(File baseDir, DataSetIterator rawTrain, DataSetIterator rawTest, DataSetIterator rawVal) {
+    @Getter @Setter
+    private MultiDataSetPreProcessor multiDataSetPreProcessor;
+    private boolean multi;
+    public PreSaveDataSetManager(File baseDir, T rawTrain, T rawTest, T rawVal, boolean multi) {
         if(!baseDir.exists()) baseDir.mkdir();
         if(!baseDir.isDirectory()) throw new RuntimeException("Must be a directory...");
         this.rawTrain=rawTrain;
         this.rawTest=rawTest;
         this.baseDir=baseDir;
         this.rawVal=rawVal;
+        this.multi=multi;
     }
 
-    public PreSaveDataSetManager(File baseDir, DataSetIterator fullIter, double testRatio, double valRatio) {
+    public PreSaveDataSetManager(File baseDir, T fullIter, double testRatio, double valRatio, boolean multi) {
         if(!baseDir.exists()) baseDir.mkdir();
         if(!baseDir.isDirectory()) throw new RuntimeException("Must be a directory...");
         this.testRatio=testRatio;
+        this.multi=multi;
         this.valRatio=valRatio;
         this.baseDir=baseDir;
         this.fullIter=fullIter;
     }
 
-    public PreSaveDataSetManager(File baseDir, int miniBatch) {
+    public PreSaveDataSetManager(File baseDir, int miniBatch, boolean multi) {
         this.baseDir=baseDir;
+        this.multi=multi;
         this.miniBatch=miniBatch;
         if(!this.baseDir.exists()) throw new RuntimeException("Please use other constructor and call saveDatasets()");
     }
@@ -59,31 +69,39 @@ public class PreSaveDataSetManager implements DataSetManager<DataSetIterator> {
         baseDir.mkdir();
     }
 
-    public DataSetIterator getTrainingIterator() {
+    public T getTrainingIterator() {
         return getIterator(TRAIN,miniBatch);
     }
 
-    public DataSetIterator getTrainingIterator(int limit) {
+    public T getTrainingIterator(int limit) {
         return getIterator(TRAIN,limit,miniBatch);
     }
 
-    public DataSetIterator getTestIterator() {
+    public T getTestIterator() {
         return getIterator(TEST,-1);
     }
 
-    public DataSetIterator getValidationIterator() {
+    public T getValidationIterator() {
         return getIterator(VALIDATION,-1);
     }
 
-    protected DataSetIterator getIterator(String kind, int limit, int miniBatch) {
-        FileMinibatchIterator iterator = new FileMinibatchIterator(new File(baseDir,kind),limit,miniBatch);
-        if(dataSetPreProcessor!=null) {
-            iterator.setDataSetPreProcessor(dataSetPreProcessor);
+    protected T getIterator(String kind, int limit, int miniBatch) {
+        T iterator;
+        if(multi) {
+            iterator = (T) new FileMultiMinibatchIterator(new File(baseDir,kind),limit,miniBatch);
+            if(multiDataSetPreProcessor!=null) {
+                ((MultiDataSetIterator)iterator).setPreProcessor(multiDataSetPreProcessor);
+            }
+        } else {
+            iterator = (T)new FileMinibatchIterator(new File(baseDir,kind),limit,miniBatch);
+            if(dataSetPreProcessor!=null) {
+                ((DataSetIterator)iterator).setPreProcessor(dataSetPreProcessor);
+            }
         }
         return iterator;
     }
 
-    protected DataSetIterator getIterator(String kind, int miniBatch) {
+    protected T getIterator(String kind, int miniBatch) {
         return getIterator(kind,-1,miniBatch);
     }
 
@@ -101,9 +119,17 @@ public class PreSaveDataSetManager implements DataSetManager<DataSetIterator> {
 
         if(fullIter== null) {
             // training data
-            iterate(rawTrain, trainFolder);
-            iterate(rawTest, testFolder);
-            iterate(rawVal, valFolder);
+            if(rawTrain instanceof MultiDataSetIterator) {
+                iterate((MultiDataSetIterator)rawTrain, trainFolder);
+                iterate((MultiDataSetIterator)rawTest, testFolder);
+                iterate((MultiDataSetIterator)rawVal, valFolder);
+
+            } else {
+                iterate((DataSetIterator) rawTrain, trainFolder);
+                iterate((DataSetIterator)rawTest, testFolder);
+                iterate((DataSetIterator)rawVal, valFolder);
+            }
+
         } else {
             iterateFull(trainFolder,testFolder,valFolder);
         }
@@ -127,14 +153,30 @@ public class PreSaveDataSetManager implements DataSetManager<DataSetIterator> {
         }
     }
 
+    private void iterate(MultiDataSetIterator iterator, File folder) {
+        int idx = 0;
+        while(iterator.hasNext()) {
+            String filename = EXAMPLE+idx+BINARY_SUFFIX;
+            MultiDataSet ds = iterator.next();
+            if(ds!=null) {
+                try {
+                    ds.save(new File(folder, filename));
+                } catch(Exception e) {
+
+                }
+                idx++;
+                System.out.println("Saved [" + idx + "] to " + filename);
+            }
+        }
+    }
+
     private void iterateFull(File trainFolder, File testFolder, File valFolder) {
         int trainIdx = 0;
         int testIdx = 0;
         int valIdx = 0;
-        final int total = fullIter.numExamples()/fullIter.batch();
         Random rand = new Random(62359);
         while(fullIter.hasNext()) {
-            DataSet ds = fullIter.next();
+            Object ds = fullIter.next();
             if(ds!=null) {
                 int idx;
                 double r = rand.nextDouble();
@@ -156,8 +198,16 @@ public class PreSaveDataSetManager implements DataSetManager<DataSetIterator> {
                     folder = trainFolder;
                 }
                 String filename = EXAMPLE+idx+BINARY_SUFFIX;
-                ds.save(new File(folder, filename));
-                System.out.println("Saved [" + idx + " / " + total + "] to " + filename);
+                if(ds instanceof MultiDataSet) {
+                    try {
+                        ((MultiDataSet) ds).save(new File(folder, filename));
+                    } catch(Exception e) {
+
+                    }
+                } else {
+                    ((DataSet)ds).save(new File(folder, filename));
+                }
+                System.out.println("Saved [" + idx + "] to " + filename);
             }
         }
     }

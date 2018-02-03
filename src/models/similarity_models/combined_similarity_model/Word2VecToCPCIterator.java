@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 10/27/17.
  */
 public class Word2VecToCPCIterator implements MultiDataSetIterator {
+    private static Random rand = new Random(23);
     public static final Function<List<VocabWord>,Map<String,Integer>> groupingBOWFunction = sequence -> {
         return sequence.stream().collect(Collectors.groupingBy(word->word.getLabel(), Collectors.summingInt(label->(int)label.getElementFrequency())));
     };
@@ -108,9 +110,15 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
             if (labelVec == null && requireLabel) continue;
             Map<String, Integer> wordCounts = groupingBOWFunction.apply(document.getElements());
             totalWordsPerBatch.getAndAdd(wordCounts.size());
-            List<String> sequence = document.getElements().stream().map(v->v.getLabel()).collect(Collectors.toList());
+            int maxSamples = document.getElements().size();
+            List<String> sequence = document.getElements().stream().map(v->v.getLabel()).limit(rand.nextInt(maxSamples)+1).collect(Collectors.toList());
             if(sequence.size()==0) continue;
-            INDArray featureVec = word2Vec.getWordVectors(sequence);
+            INDArray featureVec;
+            try {
+                featureVec = word2Vec.getWordVectors(sequence);
+            } catch(Exception e) {
+                continue;
+            }
             if(featureVec.shape().length!=2||featureVec.rows()==0) continue;
             featureVec = featureVec.mean(0);
             if(labels!=null)labels.putRow(idx,labelVec);

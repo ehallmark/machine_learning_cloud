@@ -56,11 +56,12 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     protected void setDatasetManager() {
         if(trainAssets==null) splitData();
-        PreSaveDataSetManager manager = new PreSaveDataSetManager(
+        PreSaveDataSetManager manager = new PreSaveDataSetManager<>(
                 dataFolder,
                 getRawIterator(trainAssets, false),
                 getRawIterator(testAssets,true),
-                getRawIterator(validationAssets, true)
+                getRawIterator(validationAssets, true),
+                false
         );
         manager.setDataSetPreProcessor(new DataSetPreProcessor() {
             @Override
@@ -82,7 +83,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            PreSaveDataSetManager manager = new PreSaveDataSetManager(dataFolder,MINI_BATCH_SIZE);
+            PreSaveDataSetManager manager = new PreSaveDataSetManager<>(dataFolder,MINI_BATCH_SIZE,false);
             manager.setDataSetPreProcessor(new DataSetPreProcessor() {
                 @Override
                 public void preProcess(DataSet dataSet) {

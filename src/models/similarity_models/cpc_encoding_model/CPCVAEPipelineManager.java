@@ -60,10 +60,11 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<DataSetIterato
 
     @Override
     protected void setDatasetManager() {
-        datasetManager = new PreSaveDataSetManager(dataFolder,
+        datasetManager = new PreSaveDataSetManager<>(dataFolder,
                 getRawIterator(trainAssets, false),
                 getRawIterator(testAssets,true),
-                getRawIterator(validationAssets, true)
+                getRawIterator(validationAssets, true),
+                false
         );
     }
 
@@ -75,7 +76,7 @@ public class CPCVAEPipelineManager extends DefaultPipelineManager<DataSetIterato
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder,-1);
+            datasetManager = new PreSaveDataSetManager<>(dataFolder,-1,false);
         }
         return datasetManager;
     }

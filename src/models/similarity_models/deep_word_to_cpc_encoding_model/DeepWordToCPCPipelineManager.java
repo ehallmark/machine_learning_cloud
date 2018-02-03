@@ -79,7 +79,7 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<DataSet
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder,MINI_BATCH_SIZE);
+            datasetManager = new PreSaveDataSetManager<>(dataFolder,MINI_BATCH_SIZE,false);
             //setDatasetManager();
         }
         return datasetManager;
@@ -97,10 +97,11 @@ public class DeepWordToCPCPipelineManager extends DefaultPipelineManager<DataSet
 
     @Override
     protected void setDatasetManager() {
-        datasetManager = new PreSaveDataSetManager(dataFolder,
+        datasetManager = new PreSaveDataSetManager<>(dataFolder,
                 getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN)),
                 getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.DEV1)),
-                getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TEST))
+                getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TEST)),
+                false
         );
     }
 

@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
+import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
@@ -15,6 +16,10 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.api.MultiDataSet;
+import org.nd4j.linalg.dataset.api.DataSet;
+import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
+import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
@@ -35,7 +40,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_2_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 24;
-    protected static final int BATCH_SIZE = 64;
+    protected static final int BATCH_SIZE = 256;
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
     protected String modelName;
     protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
@@ -75,8 +80,15 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     @Override
     public synchronized DataSetManager<MultiDataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            //datasetManager = new PreSaveDataSetManager(dataFolder);
-            setDatasetManager();
+            PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,-1,true);
+            manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
+                @Override
+                public void preProcess(MultiDataSet dataSet) {
+                    dataSet.setLabels(null);
+                }
+            });
+            datasetManager = manager;
+            //setDatasetManager();
         }
         return datasetManager;
     }
@@ -96,7 +108,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     }
 
     protected int getMaxSamples() {
-        return 8;
+        return 12;
     }
 
     @Override
@@ -119,11 +131,20 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
         long numDocs = Database.getAllPatentsAndApplications().size()*3;
 
-        datasetManager = new NoSaveDataSetManager<>(
+        PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
+                dataFolder,
                 getRawIterator(trainIter,numDocs,getBatchSize()),
                 getRawIterator(testIter,numDocs, 1024),
-                getRawIterator(devIter,numDocs, 1024)
+                getRawIterator(devIter,numDocs, 1024),
+                true
         );
+        manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
+            @Override
+            public void preProcess(MultiDataSet dataSet) {
+                dataSet.setLabels(dataSet.getFeatures());
+            }
+        });
+        datasetManager = manager;
     }
 
 

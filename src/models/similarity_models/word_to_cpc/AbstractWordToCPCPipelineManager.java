@@ -59,7 +59,7 @@ public abstract class AbstractWordToCPCPipelineManager extends DefaultPipelineMa
     @Override
     public synchronized DataSetManager<DataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            datasetManager = new PreSaveDataSetManager(dataFolder ,-1);
+            datasetManager = new PreSaveDataSetManager<>(dataFolder ,-1,false);
         }
         return datasetManager;
     }
@@ -76,10 +76,11 @@ public abstract class AbstractWordToCPCPipelineManager extends DefaultPipelineMa
 
     @Override
     protected void setDatasetManager() {
-        datasetManager = new PreSaveDataSetManager(dataFolder,
+        datasetManager = new PreSaveDataSetManager<>(dataFolder,
                 getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TRAIN)),
                 getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.DEV1)),
-                getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TEST))
+                getRawIterator(new FileTextDataSetIterator(FileTextDataSetIterator.Type.TEST)),
+                false
         );
     }
 
