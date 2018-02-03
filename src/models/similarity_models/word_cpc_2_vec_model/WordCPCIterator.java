@@ -224,6 +224,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         queue.clear();
         final int finalNumEpochs = vocabPass ? 1 : numEpochs;
         final int finalNumSamples = vocabPass ? vocabSampling : maxSamples;
+        final boolean finalVocabPass = vocabPass;
         task = new RecursiveAction() {
             @Override
             protected void compute() {
@@ -237,7 +238,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                             if (document.getLabels() == null || document.getContent() == null) continue;
 
                             List<String> cpcs = document.getLabels().stream().flatMap(asset -> cpcMap.getOrDefault(asset, Collections.emptyList()).stream()).flatMap(cpc -> IntStream.range(0,cpc.getNumParts()).mapToObj(c->cpc.getName())).collect(Collectors.toCollection(ArrayList::new));
-                            if(cpcs.size()>0) {
+                            if(!finalVocabPass && cpcs.size()>0) {
                                 Collections.shuffle(cpcs);
                                 try {
                                     if(date!=null) {

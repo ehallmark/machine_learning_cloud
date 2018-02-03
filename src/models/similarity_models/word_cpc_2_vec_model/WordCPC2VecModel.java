@@ -24,7 +24,7 @@ import java.util.function.Function;
 public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDArray>> {
     public static final String WORD_VECTORS = "wordVectors";
     public static final String CLASS_VECTORS = "cpcVectors";
-    private static final int BATCH_SIZE = 4096;
+    private static final int BATCH_SIZE = 512;
     private static Type MODEL_TYPE = Type.Word2Vec;
     public static final File BASE_DIR = new File("wordcpc2vec_model_data");
 
