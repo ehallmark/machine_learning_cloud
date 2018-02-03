@@ -148,7 +148,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     }
 
 
-    public static synchronized DeepCPC2VecEncodingPipelineManager getOrLoadManager() {
+    public static synchronized DeepCPC2VecEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec) {
         if(MANAGER==null) {
             Nd4j.setDataType(DataBuffer.Type.DOUBLE);
 
@@ -157,10 +157,10 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
 
             WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(wordCpc2VecModel, -1, -1, -1);
-            wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
+            if(loadWord2Vec) wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
 
             setLoggingLevel(Level.INFO);
-            MANAGER = new DeepCPC2VecEncodingPipelineManager(modelName, (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet(), wordCPC2VecPipelineManager);
+            MANAGER = new DeepCPC2VecEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, wordCPC2VecPipelineManager);
         }
         return MANAGER;
     }
@@ -174,10 +174,10 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
-        boolean rebuildPrerequisites = false;
+        boolean rebuildPrerequisites = true;
         int nEpochs = 5;
 
-        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager();
+        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(true);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
