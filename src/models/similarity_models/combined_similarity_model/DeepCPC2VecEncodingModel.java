@@ -421,7 +421,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         List<MultiDataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
 
         int valCount = 0;
-        while(validationIterator.hasNext()&&valCount<30000) {
+        while(validationIterator.hasNext()&&valCount<3000) {
             MultiDataSet dataSet = validationIterator.next();
             validationDataSets.add(dataSet);
             valCount+=dataSet.getFeatures()[0].shape()[0];
