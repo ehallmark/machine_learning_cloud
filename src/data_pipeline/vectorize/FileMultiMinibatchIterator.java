@@ -159,6 +159,8 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
                             return Collections.singletonList(e);
                         }
                     } catch (Exception var2) {
+                        var2.printStackTrace();
+                        System.out.println("Reading file: "+readIdx);
                         throw new IllegalStateException("Unable to read dataset");
                     }
                 }
