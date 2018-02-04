@@ -338,8 +338,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         //  hidden layers
         for (; i < t + numHiddenLayers * increment; i += increment) {
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
-            int nIn = hiddenLayerSize + hiddenLayerSize;
-            layer = NNOptimizer.newGravesLSTMLayer(nIn, hiddenLayerSize);
+            layer = NNOptimizer.newGravesLSTMLayer(hiddenLayerSize, hiddenLayerSize);
             if(useVAE&&i+increment>t+numHiddenLayers*increment) {
                 layer = layer.activation(Activation.SIGMOID);
             }
@@ -379,8 +378,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         //  hidden layers
         for (; i < t + numHiddenLayers * increment; i += increment) {
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
-            int nIn = hiddenLayerSize;
-            layer = NNOptimizer.newGravesLSTMLayer(nIn, hiddenLayerSize);
+            layer = NNOptimizer.newGravesLSTMLayer(hiddenLayerSize, hiddenLayerSize);
 
             org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
             conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
