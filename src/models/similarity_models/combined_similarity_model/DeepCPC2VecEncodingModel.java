@@ -299,7 +299,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
-        Activation activation = useVAE ? Activation.RELU : Activation.TANH;
+        Activation activation = useVAE ? Activation.SIGMOID : Activation.TANH;
         Activation preActivation = useVAE ? Activation.SIGMOID : Activation.TANH;
 
         // build networks
