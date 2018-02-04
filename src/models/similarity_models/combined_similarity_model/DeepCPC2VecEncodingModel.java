@@ -294,7 +294,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         boolean useVAE = false;
 
         {
-            hiddenLayerSize = 200;
+            hiddenLayerSize = 128;
             input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
         }
 
@@ -313,7 +313,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             int i = 0;
             ComputationGraphConfiguration.GraphBuilder conf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
-                    .learningRate(0.0001)
+                    .learningRate(0.001)
                     //.dropOut(0.5)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                     .activation(activation)
@@ -382,8 +382,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             }
 
             // output layers
-            OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize + hiddenLayerSize, input1).lossFunction(lossFunction).activation(Activation.IDENTITY);
-            OutputLayer.Builder dateLayer = NNOptimizer.newOutputLayer(hiddenLayerSize + hiddenLayerSize, 1).lossFunction(LossFunctions.LossFunction.MSE).activation(Activation.IDENTITY);
+            OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize + hiddenLayerSize, input1).lossFunction(lossFunction).activation(Activation.TANH);
+            OutputLayer.Builder dateLayer = NNOptimizer.newOutputLayer(hiddenLayerSize + hiddenLayerSize, 1).lossFunction(LossFunctions.LossFunction.MSE).activation(Activation.TANH);
 
             conf = conf.addLayer("y1", outputLayer.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
             conf = conf.addLayer("y2", dateLayer.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
