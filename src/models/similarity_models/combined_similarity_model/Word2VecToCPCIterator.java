@@ -152,7 +152,7 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
             //dates = Nd4j.create(datesArray).reshape(datesArray.length,1);
             if(idx < batch) {
                 features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all(),NDArrayIndex.all());
-                masks = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+                masks = masks.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
                 if(labels!=null)labels = labels.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
              //   dates = dates.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
             }
