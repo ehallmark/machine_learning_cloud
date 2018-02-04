@@ -314,7 +314,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             ComputationGraphConfiguration.GraphBuilder conf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                     .updater(updater)
                     .learningRate(0.0001)
-                    .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
+                    .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                     .activation(activation)
                     .graphBuilder()
                     .addInputs("x1", "x2")
@@ -329,7 +329,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             } else {
                 conf = conf
                         .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1 + 1, hiddenLayerSize).build(), "x1", "x2")
-                        .addLayer(String.valueOf(i + 1), NNOptimizer.newDenseLayer(input1 + hiddenLayerSize + 1, hiddenLayerSize).build(), String.valueOf(i), "x1", "x2");
+                        .addLayer(String.valueOf(i + 1), NNOptimizer.newDenseLayer(input1 + hiddenLayerSize*2 + 1, hiddenLayerSize*2).build(), String.valueOf(i), "x1", "x2");
             }
 
             int increment = useBatchNorm ? 2 : 1;
@@ -340,7 +340,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             //  hidden layers
             for (; i < t + numHiddenLayers * increment; i += increment) {
                 org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
-                layer = NNOptimizer.newDenseLayer(hiddenLayerSize + hiddenLayerSize, hiddenLayerSize);
+                int nIn = i==t ? (hiddenLayerSize+hiddenLayerSize+hiddenLayerSize) : (hiddenLayerSize + hiddenLayerSize);
+                layer = NNOptimizer.newDenseLayer(nIn, hiddenLayerSize);
 
                 org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
                 conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
