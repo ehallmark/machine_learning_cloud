@@ -86,8 +86,8 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                 @Override
                 public void preProcess(MultiDataSet dataSet) {
                     dataSet.getFeatures()[1]=dataSet.getFeatures(1).reshape(dataSet.getFeatures(1).length(),1);
+                    dataSet.setFeatures(new INDArray[]{dataSet.getFeatures(0)});
                     dataSet.setLabels(dataSet.getFeatures().clone());
-                  //  dataSet.setFeatures(new INDArray[]{dataSet.getFeatures(0)});
                 }
             });
             datasetManager = manager;

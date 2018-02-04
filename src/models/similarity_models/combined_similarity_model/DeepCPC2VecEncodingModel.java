@@ -302,13 +302,33 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
-        //Activation activation = useVAE ? Activation.SIGMOID : Activation.TANH;
-        List<Activation> activations = Arrays.asList(Activation.TANH);
-        //Activation preActivation = useVAE ? Activation.SIGMOID : Activation.TANH;
+        Activation activation = Activation.TANH;
 
         networks = new ArrayList<>();
 
-        for(Activation activation : activations){
+        ComputationGraphConfiguration.GraphBuilder conf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
+                .updater(updater)
+                .learningRate(0.01)
+                //.dropOut(0.5)
+                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                .activation(activation)
+                .graphBuilder()
+                .addInputs("x1")
+                .setOutputs("y1")
+                .addLayer("0", new VariationalAutoencoder.Builder()
+                        .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize)
+                        .decoderLayerSizes(hiddenLayerSize,hiddenLayerSize)
+                        //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                        .activation(activation)
+                        .pzxActivationFunction(Activation.IDENTITY)
+                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
+                        .nIn(input1)
+                        .lossFunction(lossFunction)
+                        .nOut(vectorSize).build(), "x1")
+                .backprop(false)
+                .pretrain(true);
+
+        /*for(Activation activation : activations){
             // build networks
             int i = 0;
             ComputationGraphConfiguration.GraphBuilder conf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
@@ -397,7 +417,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             conf = conf.addLayer("y1", outputLayer.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
             conf = conf.addLayer("y2", dateLayer.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
 
-            conf = conf.pretrain(false).backprop(true);
+            conf = conf;
+
+            */
 
             ComputationGraph vaeNetwork = new ComputationGraph(conf.build());
             vaeNetwork.init();
@@ -408,7 +430,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             nameToNetworkMap.put(VAE_NETWORK, vaeNetwork);
 
             networks.add(vaeNetwork);
-        }
+        //}
 
         return nameToNetworkMap;
     }
