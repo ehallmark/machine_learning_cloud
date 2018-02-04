@@ -50,7 +50,7 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model,V extends 
 
     protected abstract Map<String,T> buildNetworksForTraining();
     protected abstract Map<String,T> updateNetworksBeforeTraining(Map<String,T> networkMap);
-    protected abstract Function<Void,Double> getTestFunction();
+    protected abstract Function<Object,Double> getTestFunction();
     protected abstract void train(MultiDataSet dataSet);
     protected abstract Function<IterationListener,Void> setListenerFunction();
 
@@ -78,7 +78,7 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model,V extends 
             });
         }
 
-        Function<Void,Double> trainErrorFunction = (v) -> {
+        Function<Object,Double> trainErrorFunction = (v) -> {
             return 0d;
         };
 
@@ -99,7 +99,7 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model,V extends 
 
         MultiDataSetIterator dataSetIterator = pipelineManager.getDatasetManager().getTrainingIterator();
 
-        Function<Void,Double> testErrorFunction = getTestFunction();
+        Function<Object,Double> testErrorFunction = getTestFunction();
 
         IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
         setListenerFunction().apply(listener);

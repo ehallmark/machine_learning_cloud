@@ -149,7 +149,7 @@ public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilari
     }
 
     @Override
-    protected Function<Void, Double> getTestFunction() {
+    protected Function<Object, Double> getTestFunction() {
         MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
         List<Pair<MultiDataSet,MultiDataSet>> validationDataSets = Collections.synchronizedList(new ArrayList<>());
         int valCount = 0;

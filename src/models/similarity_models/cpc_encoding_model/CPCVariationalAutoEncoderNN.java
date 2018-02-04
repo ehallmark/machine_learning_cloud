@@ -210,11 +210,11 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
             cnt+=features.rows();
         }
         INDArray validationMatrix = Nd4j.vstack(partialValidationMatrices);
-        Function<Void,Double> testErrorFunction = (v) -> {
+        Function<Object,Double> testErrorFunction = (v) -> {
             return test(validationMatrix, vae);
         };
 
-        Function<Void,Double> trainErrorFunction = (v) -> {
+        Function<Object,Double> trainErrorFunction = (v) -> {
             return 0d;//test(pipelineManager.getDatasetManager().getTrainingIterator(10000/pipelineManager.getBatchSize()), vae);
         };
 

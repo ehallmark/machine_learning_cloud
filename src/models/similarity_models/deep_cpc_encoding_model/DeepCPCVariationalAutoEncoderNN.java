@@ -126,7 +126,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
 
         System.out.println("Building validation matrix...");
         DataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
-        Function<Void,Double> testErrorFunction = (v) -> {
+        Function<Object,Double> testErrorFunction = (v) -> {
             double total = 0d;
             int count = 0;
             while(validationIterator.hasNext()) {
@@ -139,7 +139,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             return total/count;
         };
 
-        Function<Void,Double> trainErrorFunction = (v) -> {
+        Function<Object,Double> trainErrorFunction = (v) -> {
             return 0d;//test(pipelineManager.getDatasetManager().getTrainingIterator(10000/pipelineManager.getBatchSize()), vae);
         };
 

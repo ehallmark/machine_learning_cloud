@@ -29,10 +29,10 @@ public class DefaultScoreListener implements IterationListener {
     private final int averagePeriod = 10;
     private Function2<LocalDateTime,Double,Void> saveFunction;
     private AtomicBoolean stoppingConditionFlag;
-    private  Function<Void,Double> testErrorFunction;
-    private Function<Void,Double> trainErrorFunction;
+    private  Function<Object,Double> testErrorFunction;
+    private Function<Object,Double> trainErrorFunction;
     private Long lastTime;
-    public DefaultScoreListener(int printIterations, Function<Void,Double> testErrorFunction, Function<Void,Double> trainErrorFunction, Function2<LocalDateTime,Double,Void> saveFunction, AtomicBoolean stoppingConditionFlag) {
+    public DefaultScoreListener(int printIterations, Function<Object,Double> testErrorFunction, Function<Object,Double> trainErrorFunction, Function2<LocalDateTime,Double,Void> saveFunction, AtomicBoolean stoppingConditionFlag) {
         this.printIterations = printIterations;
         this.trainErrorFunction=trainErrorFunction;
         this.testErrorFunction=testErrorFunction;
@@ -64,9 +64,9 @@ public class DefaultScoreListener implements IterationListener {
             lastTime = newTime;
             System.out.print("Testing...");
             System.out.print(" Model Score: "+model.score());
-            double error = testErrorFunction.apply(null);
+            double error = testErrorFunction.apply(model);
             System.out.print(", Test Error: "+error);
-            double trainError = trainErrorFunction.apply(null);
+            double trainError = trainErrorFunction.apply(model);
             System.out.println(", (Sample) Train Error: "+trainError);
             movingAverage.add(error);
             if(movingAverage.size()==averagePeriod) {
