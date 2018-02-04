@@ -29,6 +29,7 @@ import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -89,6 +90,8 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                 public void preProcess(MultiDataSet dataSet) {
                     //dataSet.getFeatures()[1]=dataSet.getFeatures(1).reshape(dataSet.getFeatures(1).length(),1);
                     //dataSet.setFeatures(new INDArray[]{dataSet.getFeatures(0)});
+                    System.out.println("Features: "+ Arrays.toString(dataSet.getFeatures(0).shape())+", Mask: "+Arrays.toString(dataSet.getFeaturesMaskArray(0).shape()));
+
                     if(dataSet.getFeatures(0).shape()[0]<dataSet.getFeaturesMaskArray(0).shape()[0]) {
                         System.out.println("Adjusting features mask from "+dataSet.getFeaturesMaskArray(0).shape()[0]+" to "+dataSet.getFeatures(0).shape()[0]);
                         dataSet.setFeaturesMaskArray(0, dataSet.getFeaturesMaskArray(0).get(NDArrayIndex.interval(0,dataSet.getFeatures(0).shape()[0]),NDArrayIndex.all()));
