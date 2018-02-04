@@ -9,6 +9,7 @@ import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
+import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import java.io.File;
@@ -123,18 +124,29 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
 
                         // split
                         if(miniBatch>0) {
-                            return IntStream.range(0, e.getFeatures(0).rows()/miniBatch).mapToObj(i->{
+                            return IntStream.range(0, e.getFeatures(0).shape()[0]/miniBatch).mapToObj(i->{
                                 int start = i*miniBatch;
                                 int end = Math.min(e.getFeatures(0).rows(),start+miniBatch);
                                 if(start<end) {
                                     INDArray[] features = e.getFeatures().clone();
                                     for(int j = 0; j < features.length; j++) {
-                                        features[j]=features[j].get(NDArrayIndex.interval(start,end),NDArrayIndex.all());
-
+                                        int nDims = features[j].shape().length;
+                                        INDArrayIndex[] indices = new INDArrayIndex[nDims];
+                                        indices[0] = NDArrayIndex.interval(start,end);
+                                        for(int k = 1; k < indices.length; k++) {
+                                            indices[k] = NDArrayIndex.all();
+                                        }
+                                        features[j]=features[j].get(indices);
                                     }
                                     INDArray[] labels = e.getLabels().clone();
                                     for(int j = 0; j < labels.length; j++) {
-                                        labels[j]=labels[j].get(NDArrayIndex.interval(start,end),NDArrayIndex.all());
+                                        int nDims = labels[j].shape().length;
+                                        INDArrayIndex[] indices = new INDArrayIndex[nDims];
+                                        indices[0] = NDArrayIndex.interval(start,end);
+                                        for(int k = 1; k < indices.length; k++) {
+                                            indices[k] = NDArrayIndex.all();
+                                        }
+                                        labels[j]=labels[j].get(indices);
                                     }
                                     return new org.nd4j.linalg.dataset.MultiDataSet(
                                             features,

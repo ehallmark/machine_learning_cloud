@@ -36,9 +36,9 @@ import java.util.Map;
  */
 public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<MultiDataSetIterator,INDArray>  {
 
-    public static final String MODEL_NAME = "deep_cpc2_2_vec_encoding_model";
+    public static final String MODEL_NAME = "deep_cpc_recurrent_2_vec_encoding_model";
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
-    private static final File INPUT_DATA_FOLDER = new File("deep_cpc_2_vec_encoding3_input_data");
+    private static final File INPUT_DATA_FOLDER = new File("deep_cpc_2_vec_encoding_recurrent_input_data");
     private static final int VECTOR_SIZE = 24;
     protected static final int BATCH_SIZE = 256;
     protected static final int MINI_BATCH_SIZE = 64;
@@ -81,7 +81,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     @Override
     public synchronized DataSetManager<MultiDataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            /*PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,MINI_BATCH_SIZE,true);
+            PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,MINI_BATCH_SIZE,true);
             manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
                 @Override
                 public void preProcess(MultiDataSet dataSet) {
@@ -91,8 +91,8 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                     dataSet.setLabelsMaskArray(dataSet.getFeaturesMaskArrays());
                 }
             });
-            datasetManager = manager; */
-            setDatasetManager();
+            datasetManager = manager;
+            //setDatasetManager();
         }
         return datasetManager;
     }
@@ -135,20 +135,20 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
         long numDocs = Database.getAllPatentsAndApplications().size()*3;
 
-        NoSaveDataSetManager<MultiDataSetIterator> manager = new NoSaveDataSetManager<>(
-               // dataFolder,
+        PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
+                dataFolder,
                 getRawIterator(trainIter,numDocs,getBatchSize()),
                 getRawIterator(testIter,numDocs, 1024),
-                getRawIterator(devIter,numDocs, 1024)//,
-               // true
+                getRawIterator(devIter,numDocs, 1024),
+                true
         );
-       /* manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
+        manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
             @Override
             public void preProcess(MultiDataSet dataSet) {
                 dataSet.setLabels(null);
                 dataSet.setLabelsMaskArray(null);
             }
-        });*/
+        });
         datasetManager = manager;
     }
 
@@ -179,12 +179,12 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = true; // TODO Change back to false
+        boolean forceRecreateModels = false;
         boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
         int nEpochs = 5;
 
-        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(forceRecreateModels||!INPUT_DATA_FOLDER.exists());
+        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets||!INPUT_DATA_FOLDER.exists());
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
