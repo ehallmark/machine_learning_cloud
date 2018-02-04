@@ -372,7 +372,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         conf = conf.addLayer("y1",outputLayer.build(), String.valueOf(i-1), String.valueOf(i-1-increment));
         conf = conf.addLayer("y2",dateLayer.build(), String.valueOf(i-1), String.valueOf(i-1-increment));
 
-        conf = conf.pretrain(useVAE).backprop(true);
+        conf = conf.pretrain(false).backprop(true);
 
         vaeNetwork = new ComputationGraph(conf.build());
         vaeNetwork.init();
