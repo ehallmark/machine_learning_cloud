@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  */
 public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIterator,Map<String,INDArray>> {
     public static final String SMALL_MODEL_NAME = "32smallwordcpc2vec_model";
-    public static final String DEEP_MODEL_NAME = "wordcpc2vec_model_deep";
+    public static final String DEEP_MODEL_NAME = "wordcpc2vec2_model_deep"; //"wordcpc2vec_model_deep";
     public static final File cpcMapFile = new File(Constants.DATA_FOLDER+"word_cpc_2_vec_cpcmap_file.jobj");
     private static final int SMALL_VECTOR_SIZE = 32;
     private static final int LARGE_VECTOR_SIZE = 256;
