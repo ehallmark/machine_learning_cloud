@@ -136,7 +136,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                     INDArray f2 = featuresView.get(NDArrayIndex.all(),NDArrayIndex.interval(32,64));
                     f2.diviColumnVector(f2.norm2(1));
 
-                    INDArray encoding = encode(featuresView);
+                    INDArray encoding = null;// = encode(featuresView);
 
                     for (int j = 0; j < allFeatures.size(); j++) {
                         String label = featureNames.get(j);
@@ -169,7 +169,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             INDArray cpc2Vec = cpc2VecMap.get(cpc);
             if(cpc2Vec!=null) {
                 INDArray feature = Transforms.unitVec(cpc2Vec);
-                INDArray encoding = encode(feature);
+                INDArray encoding = null;//encode(feature);
                 finalPredictionsMap.put(cpc, Transforms.unitVec(encoding));
             }
 
@@ -200,7 +200,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                     INDArray cpcVector = cpc2VecMap.get(cpcs.get(rand.nextInt(cpcs.size())));
                     assigneeFeatures.putRow(i,Transforms.unitVec(cpcVector));
                 }
-                INDArray encoding = encode(Nd4j.hstack(Transforms.unitVec(assigneeFeatures.mean(0)),Transforms.unitVec(assigneeVae.mean(0))));
+                INDArray encoding = null;//encode(Nd4j.hstack(Transforms.unitVec(assigneeFeatures.mean(0)),Transforms.unitVec(assigneeVae.mean(0))));
                 finalPredictionsMap.put(assignee, Transforms.unitVec(encoding.mean(0)));
 
             } else {
@@ -220,12 +220,15 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         return finalPredictionsMap;
     }
 
-    public synchronized INDArray encode(INDArray input) {
+    public synchronized INDArray encode(INDArray input, INDArray mask) {
         if(vaeNetwork==null) {
             vaeNetwork = getNetworks().get(VAE_NETWORK);
         }
         // Map<String,INDArray> activations = vaeNetwork.feedForward(input,false);
-        return feedForwardToVertex(vaeNetwork,String.valueOf(encodingIdx),input); // activations.get(String.valueOf(encodingIdx));
+        vaeNetwork.setLayerMaskArrays(new INDArray[]{mask},new INDArray[]{mask});
+        INDArray res = feedForwardToVertex(vaeNetwork,String.valueOf(encodingIdx),input); // activations.get(String.valueOf(encodingIdx));
+        vaeNetwork.clearLayerMaskArrays();
+        return res;
     }
 
     public static INDArray feedForwardToVertex(ComputationGraph encoder, String vertexName, INDArray... inputs) {
@@ -437,6 +440,10 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         };
     }
 
+    public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
+        net.setLayerMaskArrays(finalDataSet.getFeaturesMaskArrays(),finalDataSet.getLabelsMaskArrays());
+        return 1d+net.score(finalDataSet)/finalDataSet.getLabels().length;
+    }
 
 
     @Override
