@@ -290,8 +290,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         int hiddenLayerSize;
         int input1;
 
-        boolean useBatchNorm = false;
-        boolean useVAE = true;
+        boolean useBatchNorm = true;
+        boolean useVAE = false;
 
         {
             hiddenLayerSize = 128;
