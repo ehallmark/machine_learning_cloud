@@ -290,7 +290,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         Map<String, ComputationGraph> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
 
         System.out.println("Build model....");
-        int hiddenLayerSize = 256;
+        int hiddenLayerSize = 512;
         int hiddenLayerSize2 = 128;
         int hiddenLayerSize3 = 64;
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
@@ -315,16 +315,15 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .graphBuilder()
                 .addInputs("x1")
                 .setOutputs("0")
-                .addLayer("0", NNOptimizer.newBatchNormLayer(input1,input1).build(),"x1")
-                .addLayer("1", new VariationalAutoencoder.Builder()
+                .addLayer("0", new VariationalAutoencoder.Builder()
                         .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize,hiddenLayerSize)
                         .decoderLayerSizes(hiddenLayerSize,hiddenLayerSize,hiddenLayerSize)
                         .lossFunction(lossFunction)
                         .activation(activation)
                         .pzxActivationFunction(Activation.IDENTITY)
-                        .reconstructionDistribution(new GaussianReconstructionDistribution(Activation.SIGMOID))
+                        .lossFunction(activation,lossFunction)
                         .nIn(input1)
-                        .nOut(hiddenLayerSize2).build(), "0")
+                        .nOut(vectorSize).build(), "x1")
                 .backprop(false)
                 .pretrain(true);
 
@@ -449,7 +448,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
         List<MultiDataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
-                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) vaeNetwork.getLayer(1);
+                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) vaeNetwork.getLayer(0);
 
         int valCount = 0;
         while(validationIterator.hasNext()&&valCount<30000) {
@@ -470,12 +469,11 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     }
 
     public double test(INDArray inputs, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
-        INDArray latentValues = feedForwardToVertex(vaeNetwork,"1", inputs);
-        INDArray normInputs = feedForwardToVertex(vaeNetwork,"0", inputs);
+        INDArray latentValues = feedForwardToVertex(vaeNetwork,"0", inputs);
         //INDArray latentValues = model.activate(inputs,false);
         INDArray normOutputs = model.generateAtMeanGivenZ(latentValues);
-        double similarity = NDArrayHelper.sumOfCosineSimByRow(normInputs,normOutputs);
-        return 1d - (similarity/normInputs.rows());
+        double similarity = NDArrayHelper.sumOfCosineSimByRow(inputs,normOutputs);
+        return 1d - (similarity/inputs.rows());
     }
 
 
