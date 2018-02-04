@@ -387,8 +387,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     protected void train(MultiDataSet dataSet) {
-        MultiDataSet finalDataSet = new org.nd4j.linalg.dataset.MultiDataSet(dataSet.getFeatures(), dataSet.getFeatures());
-        vaeNetwork.fit(finalDataSet);
+        vaeNetwork.fit(dataSet);
     }
 
     @Override
