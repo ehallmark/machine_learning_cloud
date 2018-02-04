@@ -288,16 +288,13 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         Map<String, ComputationGraph> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
 
         System.out.println("Build model....");
-        int hiddenLayerSize;
-        int input1;
+        int hiddenLayerSize = 256;
+        int hiddenLayerSize2 = 128;
+        int hiddenLayerSize3 = 64;
+        int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
 
         boolean useBatchNorm = false;
         boolean useVAE = true;
-
-        {
-            hiddenLayerSize = 128;
-            input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
-        }
 
         Updater updater = Updater.RMSPROP;
 
@@ -315,17 +312,28 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .activation(activation)
                 .graphBuilder()
                 .addInputs("x1")
-                .setOutputs("0")
-                .addLayer("0", new VariationalAutoencoder.Builder()
-                        .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize)
-                        .decoderLayerSizes(hiddenLayerSize,hiddenLayerSize)
+                .setOutputs("2")
+                .addLayer("0", NNOptimizer.newBatchNormLayer(input1,input1).build())
+                .addLayer("1", new VariationalAutoencoder.Builder()
+                        .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize,hiddenLayerSize)
+                        .decoderLayerSizes(hiddenLayerSize,hiddenLayerSize,hiddenLayerSize)
                         //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
                         .activation(activation)
                         .pzxActivationFunction(Activation.IDENTITY)
                         //.reconstructionDistribution(new LossFunctionWrapper(Activation.TANH,LossFunctions.LossFunction.COSINE_PROXIMITY)new BernoulliReconstructionDistribution(Activation.SIGMOID))
                         .nIn(input1)
                         .lossFunction(activation,lossFunction)
-                        .nOut(vectorSize).build(), "x1")
+                        .nOut(hiddenLayerSize2).build(), "x1")
+                .addLayer("2", new VariationalAutoencoder.Builder()
+                        .encoderLayerSizes(hiddenLayerSize3,hiddenLayerSize3,hiddenLayerSize3)
+                        .decoderLayerSizes(hiddenLayerSize3,hiddenLayerSize3,hiddenLayerSize3)
+                        //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                        .activation(activation)
+                        .pzxActivationFunction(Activation.IDENTITY)
+                        //.reconstructionDistribution(new LossFunctionWrapper(Activation.TANH,LossFunctions.LossFunction.COSINE_PROXIMITY)new BernoulliReconstructionDistribution(Activation.SIGMOID))
+                        .nIn(hiddenLayerSize2)
+                        .lossFunction(activation,lossFunction)
+                        .nOut(vectorSize).build(), "0")
                 .backprop(false)
                 .pretrain(true);
 
