@@ -81,17 +81,18 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     @Override
     public synchronized DataSetManager<MultiDataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,MINI_BATCH_SIZE,true);
+            /*PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,MINI_BATCH_SIZE,true);
             manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
                 @Override
                 public void preProcess(MultiDataSet dataSet) {
                     dataSet.getFeatures()[1]=dataSet.getFeatures(1).reshape(dataSet.getFeatures(1).length(),1);
-                    dataSet.setFeatures(new INDArray[]{dataSet.getFeatures(0)});
-                    dataSet.setLabels(dataSet.getFeatures().clone());
+                    //dataSet.setFeatures(new INDArray[]{dataSet.getFeatures(0)});
+                    //dataSet.setLabels(dataSet.getFeatures().clone());
+                    dataSet.setLabelsMaskArray(dataSet.getFeaturesMaskArrays());
                 }
             });
-            datasetManager = manager;
-            //setDatasetManager();
+            datasetManager = manager; */
+            setDatasetManager();
         }
         return datasetManager;
     }
@@ -111,7 +112,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     }
 
     protected int getMaxSamples() {
-        return 12;
+        return 16;
     }
 
     @Override
@@ -134,19 +135,20 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
         long numDocs = Database.getAllPatentsAndApplications().size()*3;
 
-        PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
-                dataFolder,
+        NoSaveDataSetManager<MultiDataSetIterator> manager = new NoSaveDataSetManager<>(
+               // dataFolder,
                 getRawIterator(trainIter,numDocs,getBatchSize()),
                 getRawIterator(testIter,numDocs, 1024),
-                getRawIterator(devIter,numDocs, 1024),
-                true
+                getRawIterator(devIter,numDocs, 1024)//,
+               // true
         );
-        manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
+       /* manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
             @Override
             public void preProcess(MultiDataSet dataSet) {
                 dataSet.setLabels(null);
+                dataSet.setLabelsMaskArray(null);
             }
-        });
+        });*/
         datasetManager = manager;
     }
 
