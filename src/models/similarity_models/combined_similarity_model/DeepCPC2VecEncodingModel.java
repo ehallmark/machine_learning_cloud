@@ -45,7 +45,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Getter
     private ComputationGraph vaeNetwork;
 
-    int numHiddenLayers = 8;
+    int numHiddenLayers = 3;
     int encodingIdx = numHiddenLayers*2+5;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
@@ -282,7 +282,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         int input1;
 
         {
-            hiddenLayerSize = 256;
+            hiddenLayerSize = 512;
             input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
         }
 
