@@ -449,7 +449,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
         List<MultiDataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
-                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) vaeNetwork.getLayer(0);
+                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) vaeNetwork.getLayer(1);
 
         int valCount = 0;
         while(validationIterator.hasNext()&&valCount<30000) {
