@@ -179,7 +179,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = false;
+        boolean forceRecreateModels = true; // TODO Change back to false
         boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
         int nEpochs = 5;
