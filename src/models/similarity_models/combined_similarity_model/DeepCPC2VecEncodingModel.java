@@ -55,7 +55,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Getter
     private ComputationGraph vaeNetwork;
 
-    int numHiddenLayers = 5;
+    int numHiddenLayers = 4;
     int encodingIdx = numHiddenLayers*2+5;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
@@ -284,7 +284,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     public int printIterations() {
-        return 2000;
+        return 500;
     }
 
 
@@ -301,7 +301,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
         Updater updater = Updater.RMSPROP;
 
-        LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
+        LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.MSE;
 
         Activation activation = Activation.TANH;
 
@@ -327,8 +327,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                     .addLayer(String.valueOf(i + 4), NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize).build(), String.valueOf(i + 3));
         } else {
             conf = conf
-                    .addLayer(String.valueOf(i), NNOptimizer.newGravesLSTMLayer(input1 , hiddenLayerSize*2).build(), "x1")
-                    .addLayer(String.valueOf(i + 1), NNOptimizer.newGravesLSTMLayer(input1 + hiddenLayerSize*2, hiddenLayerSize).build(), String.valueOf(i), "x1");
+                    .addLayer(String.valueOf(i), NNOptimizer.newGravesLSTMLayer(input1 , hiddenLayerSize).build(), "x1")
+                    .addLayer(String.valueOf(i + 1), NNOptimizer.newGravesLSTMLayer(input1 + hiddenLayerSize, hiddenLayerSize).build(), String.valueOf(i), "x1");
         }
 
         int increment = useBatchNorm ? 2 : 1;
@@ -339,7 +339,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         //  hidden layers
         for (; i < t + numHiddenLayers * increment; i += increment) {
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
-            int nIn = i==t ? (hiddenLayerSize+hiddenLayerSize*2) : (hiddenLayerSize + hiddenLayerSize);
+            int nIn = hiddenLayerSize + hiddenLayerSize;
             layer = NNOptimizer.newGravesLSTMLayer(nIn, hiddenLayerSize);
             if(useVAE&&i+increment>t+numHiddenLayers*increment) {
                 layer = layer.activation(Activation.SIGMOID);
@@ -424,7 +424,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         List<MultiDataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
 
         int valCount = 0;
-        while(validationIterator.hasNext()&&valCount<30000) {
+        while(validationIterator.hasNext()&&valCount<20000) {
             MultiDataSet dataSet = validationIterator.next();
             validationDataSets.add(dataSet);
             valCount+=dataSet.getFeatures()[0].shape()[0];
