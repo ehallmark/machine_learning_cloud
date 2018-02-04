@@ -317,8 +317,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .setOutputs("y1");
 
         if (useBatchNorm) {
-            conf = conf.addLayer(String.valueOf(i), NNOptimizer.newBatchNormLayer(input1 + 1, input1 + 1).build(), "x1")
-                    .addLayer(String.valueOf(i + 1), NNOptimizer.newGravesLSTMLayer(input1 + 1, hiddenLayerSize*2).build(), String.valueOf(i))
+            conf = conf.addLayer(String.valueOf(i), NNOptimizer.newBatchNormLayer(input1, input1 + 1).build(), "x1")
+                    .addLayer(String.valueOf(i + 1), NNOptimizer.newGravesLSTMLayer(input1, hiddenLayerSize*2).build(), String.valueOf(i))
                     .addLayer(String.valueOf(i + 2), NNOptimizer.newBatchNormLayer(hiddenLayerSize*2, hiddenLayerSize*2).build(), String.valueOf(i + 1))
                     .addLayer(String.valueOf(i + 3), NNOptimizer.newGravesLSTMLayer(input1 + hiddenLayerSize *2 + 1, hiddenLayerSize).build(), String.valueOf(i + 2), String.valueOf(i))
                     .addLayer(String.valueOf(i + 4), NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize).build(), String.valueOf(i + 3));
