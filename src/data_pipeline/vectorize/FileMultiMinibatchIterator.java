@@ -14,10 +14,7 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -156,6 +153,7 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
                                 return null;
                             }).filter(d->d!=null).collect(Collectors.toList());
                         } else {*/
+                        System.out.println("Shape: "+ Arrays.toString(e.getFeatures(0).shape()));
                             return Collections.singletonList(e);
                         //}
                     } catch (Exception var2) {
