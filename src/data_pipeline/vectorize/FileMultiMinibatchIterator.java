@@ -113,7 +113,7 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
             RecursiveTask<List<MultiDataSet>> task = new RecursiveTask<List<MultiDataSet>>() {
                 @Override
                 protected List<MultiDataSet> compute() {
-                    System.gc();
+                   // System.gc();
                     try {
                         MultiDataSet e = read(readIdx);
                         if (dataSetPreProcessor != null) {
