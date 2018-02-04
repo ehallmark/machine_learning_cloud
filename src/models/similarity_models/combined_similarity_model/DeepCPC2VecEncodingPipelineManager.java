@@ -38,7 +38,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
     public static final String MODEL_NAME = "deep_cpc2_2_vec_encoding_model";
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
-    private static final File INPUT_DATA_FOLDER = new File("deep_cpc_2_vec_encoding_input_data");
+    private static final File INPUT_DATA_FOLDER = new File("deep_cpc_2_vec_encoding3_input_data");
     private static final int VECTOR_SIZE = 24;
     protected static final int BATCH_SIZE = 256;
     protected static final int MINI_BATCH_SIZE = 64;
