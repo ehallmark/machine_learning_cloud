@@ -99,7 +99,7 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
         INDArray features = Nd4j.create(batch,inputColumns());
         INDArray dates;
         AtomicInteger totalWordsPerBatch = new AtomicInteger(0);
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.of(2018,2,3);
         double[] datesArray = new double[batch];
         while(documentIterator.hasMoreSequences()&&idx<batch) {
             Sequence<VocabWord> document = documentIterator.nextSequence();
