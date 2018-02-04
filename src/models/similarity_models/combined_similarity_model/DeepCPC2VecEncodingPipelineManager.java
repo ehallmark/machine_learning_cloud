@@ -16,6 +16,7 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.cpu.nativecpu.NDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
@@ -23,6 +24,7 @@ import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import seeding.Constants;
 import seeding.Database;
 
@@ -87,6 +89,10 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                 public void preProcess(MultiDataSet dataSet) {
                     //dataSet.getFeatures()[1]=dataSet.getFeatures(1).reshape(dataSet.getFeatures(1).length(),1);
                     //dataSet.setFeatures(new INDArray[]{dataSet.getFeatures(0)});
+                    if(dataSet.getFeatures(0).shape()[0]<dataSet.getFeaturesMaskArray(0).shape()[0]) {
+                        System.out.println("Adjusting features mask from "+dataSet.getFeaturesMaskArray(0).shape()[0]+" to "+dataSet.getFeatures(0).shape()[0]);
+                        dataSet.setFeaturesMaskArray(0, dataSet.getFeaturesMaskArray(0).get(NDArrayIndex.interval(0,dataSet.getFeatures(0).shape()[0]),NDArrayIndex.all()));
+                    }
                     dataSet.setLabels(dataSet.getFeatures());
                     dataSet.setLabelsMaskArray(dataSet.getFeaturesMaskArrays());
                 }
