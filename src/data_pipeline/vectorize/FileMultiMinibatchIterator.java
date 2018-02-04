@@ -126,7 +126,7 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
                         if(miniBatch>0) {
                             return IntStream.range(0, e.getFeatures(0).shape()[0]/miniBatch).mapToObj(i->{
                                 int start = i*miniBatch;
-                                int end = Math.min(e.getFeatures(0).rows(),start+miniBatch);
+                                int end = Math.min(e.getFeatures(0).shape()[0],start+miniBatch);
                                 if(start<end) {
                                     INDArray[] features = e.getFeatures().clone();
                                     for(int j = 0; j < features.length; j++) {
