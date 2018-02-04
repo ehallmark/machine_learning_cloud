@@ -40,7 +40,7 @@ import java.util.stream.Stream;
  */
 public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<ComputationGraph,DeepCPC2VecEncodingPipelineManager> {
     public static final String VAE_NETWORK = "vaeNet";
-    public static final File BASE_DIR = new File("deep_cpc_2_vec_encoding_data");
+    public static final File BASE_DIR = new File("deep_cpc_2_vec2_encoding_data"); //new File("deep_cpc_2_vec_encoding_data");
 
     @Getter
     private ComputationGraph vaeNetwork;
