@@ -14,6 +14,7 @@ import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
+import org.deeplearning4j.nn.conf.layers.variational.LossFunctionWrapper;
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.graph.vertex.VertexIndices;
@@ -321,9 +322,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                         //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
                         .activation(activation)
                         .pzxActivationFunction(Activation.IDENTITY)
-                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
+                        //.reconstructionDistribution(new LossFunctionWrapper(Activation.TANH,LossFunctions.LossFunction.COSINE_PROXIMITY)new BernoulliReconstructionDistribution(Activation.SIGMOID))
                         .nIn(input1)
-                        .lossFunction(lossFunction)
+                        .lossFunction(activation,lossFunction)
                         .nOut(vectorSize).build(), "x1")
                 .backprop(false)
                 .pretrain(true);
