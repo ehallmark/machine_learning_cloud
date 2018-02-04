@@ -2,6 +2,7 @@ package data_pipeline.vectorize;
 
 import data_pipeline.helpers.ShuffleArray;
 import lombok.Setter;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
@@ -120,8 +121,31 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
                             dataSetPreProcessor.preProcess(e);
                         }
 
-                        return Collections.singletonList(e);
+                        // split
+                        if(miniBatch>0) {
+                            return IntStream.range(0, e.getFeatures(0).rows()/miniBatch).mapToObj(i->{
+                                int start = i*miniBatch;
+                                int end = Math.min(e.getFeatures(0).rows(),start+miniBatch);
+                                if(start<end) {
+                                    INDArray[] features = e.getFeatures().clone();
+                                    for(int j = 0; j < features.length; j++) {
+                                        features[j]=features[j].get(NDArrayIndex.interval(start,end),NDArrayIndex.all());
 
+                                    }
+                                    INDArray[] labels = e.getLabels().clone();
+                                    for(int j = 0; j < labels.length; j++) {
+                                        labels[j]=labels[j].get(NDArrayIndex.interval(start,end),NDArrayIndex.all());
+                                    }
+                                    return new org.nd4j.linalg.dataset.MultiDataSet(
+                                            features,
+                                            labels
+                                    );
+                                }
+                                return null;
+                            }).filter(d->d!=null).collect(Collectors.toList());
+                        } else {
+                            return Collections.singletonList(e);
+                        }
                     } catch (Exception var2) {
                         throw new IllegalStateException("Unable to read dataset");
                     }

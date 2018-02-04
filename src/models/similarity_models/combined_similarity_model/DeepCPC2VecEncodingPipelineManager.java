@@ -41,6 +41,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_2_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 24;
     protected static final int BATCH_SIZE = 256;
+    protected static final int MINI_BATCH_SIZE = 64;
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
     protected String modelName;
     protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
@@ -80,7 +81,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     @Override
     public synchronized DataSetManager<MultiDataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,-1,true);
+            PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,MINI_BATCH_SIZE,true);
             manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
                 @Override
                 public void preProcess(MultiDataSet dataSet) {
