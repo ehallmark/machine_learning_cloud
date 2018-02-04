@@ -4,6 +4,7 @@ import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.optimize.nn_optimization.CGRefactorer;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import lombok.Getter;
+import models.NDArrayHelper;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -313,7 +314,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .activation(activation)
                 .graphBuilder()
                 .addInputs("x1")
-                .setOutputs("3")
+                .setOutputs("0")
                 .addLayer("0", NNOptimizer.newBatchNormLayer(input1,input1).build(),"x1")
                 .addLayer("1", new VariationalAutoencoder.Builder()
                         .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize,hiddenLayerSize)
@@ -324,17 +325,6 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                         .reconstructionDistribution(new GaussianReconstructionDistribution(Activation.SIGMOID))
                         .nIn(input1)
                         .nOut(hiddenLayerSize2).build(), "0")
-                .addLayer("2", NNOptimizer.newBatchNormLayer(hiddenLayerSize2,hiddenLayerSize2).build(),"1")
-                .addLayer("3", new VariationalAutoencoder.Builder()
-                        .encoderLayerSizes(hiddenLayerSize3,hiddenLayerSize3,hiddenLayerSize3)
-                        .decoderLayerSizes(hiddenLayerSize3,hiddenLayerSize3,hiddenLayerSize3)
-                        .lossFunction(lossFunction)
-                        .activation(activation)
-                        .pzxActivationFunction(Activation.IDENTITY)
-                        .reconstructionDistribution(new GaussianReconstructionDistribution(Activation.SIGMOID))
-                        .nIn(hiddenLayerSize2)
-                        .lossFunction(activation,lossFunction)
-                        .nOut(vectorSize).build(), "2")
                 .backprop(false)
                 .pretrain(true);
 
@@ -475,10 +465,18 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         return (v) -> {
             System.gc();
             //return validationDataSets.stream().mapToDouble(ds->test((ComputationGraph)v,ds)).average().orElse(Double.NaN);
-            return validationDataSets.stream().mapToDouble(ds->DeepCPCVariationalAutoEncoderNN.test(ds.getFeatures(0),vae)).average().orElse(Double.NaN);
+            return validationDataSets.stream().mapToDouble(ds->test(ds.getFeatures(0),vae)).average().orElse(Double.NaN);
         };
     }
 
+    public double test(INDArray inputs, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
+        INDArray latentValues = feedForwardToVertex(vaeNetwork,"1", inputs);
+        INDArray normInputs = feedForwardToVertex(vaeNetwork,"0", inputs);
+        //INDArray latentValues = model.activate(inputs,false);
+        INDArray normOutputs = model.generateAtMeanGivenZ(latentValues);
+        double similarity = NDArrayHelper.sumOfCosineSimByRow(normInputs,normOutputs);
+        return 1d - (similarity/normInputs.rows());
+    }
 
 
     @Override
