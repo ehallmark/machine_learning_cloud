@@ -355,7 +355,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
             org.deeplearning4j.nn.conf.layers.Layer.Builder encoding;
             if (useVAE) {
-                encoding = new RBM.Builder(RBM.HiddenUnit.BINARY, RBM.VisibleUnit.BINARY).activation(activation).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                encoding = new RBM.Builder(RBM.HiddenUnit.BINARY, RBM.VisibleUnit.BINARY).activation(Activation.SIGMOID).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
                         .nIn(hiddenLayerSize + hiddenLayerSize)
                         .nOut(vectorSize);
             } else {
