@@ -115,7 +115,7 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
             totalWordsPerBatch.getAndAdd(sequence.size());
 
             if(sequence.size()==0) continue;
-            INDArray featureVec = Nd4j.zeros(sequence.size(),inputColumns());
+            INDArray featureVec = Nd4j.zeros(maxSamples,inputColumns());
             {
                 List<Integer> indexes = new ArrayList<>();
                 for (int i = 0; i < sequence.size(); i++) {
@@ -132,7 +132,7 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
                 }
 
                 INDArray vec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(), 1, indexes.stream().mapToInt(i -> i).toArray());
-                featureVec.diviColumnVector(featureVec.norm2(1));
+                vec.diviColumnVector(vec.norm2(1));
                 featureVec.get(NDArrayIndex.interval(0,vec.rows()),NDArrayIndex.all()).assign(vec);
                 masks.get(NDArrayIndex.point(idx),NDArrayIndex.interval(0,vec.rows())).assign(1);
             }
@@ -142,7 +142,7 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
             double remainingLife = (((double)today.getYear()+((double)today.getMonthValue()-1)/12) - ((double)date.getYear()+((double)date.getMonthValue()-1)/12));
             double remainingLifeNorm = (remainingLife-10d)/10d;
             datesArray[idx] = remainingLifeNorm;
-            features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()).assign(featureVec);
+            features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()).assign(featureVec.transposei());
             idx++;
         }
 
@@ -151,7 +151,8 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
         if(idx>0) {
             dates = Nd4j.create(datesArray).reshape(datesArray.length,1);
             if(idx < batch) {
-                features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+                features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all(),NDArrayIndex.all());
+                masks = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
                 if(labels!=null)labels = labels.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
                 dates = dates.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
             }
