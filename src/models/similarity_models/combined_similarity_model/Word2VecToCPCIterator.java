@@ -2,6 +2,7 @@ package models.similarity_models.combined_similarity_model;
 
 import models.similarity_models.Vectorizer;
 import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
+import org.apache.commons.lang.ArrayUtils;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.VocabWord;
@@ -15,9 +16,7 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -111,11 +110,25 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
             Map<String, Integer> wordCounts = groupingBOWFunction.apply(document.getElements());
             totalWordsPerBatch.getAndAdd(wordCounts.size());
             int maxSamples = document.getElements().size();
-            List<String> sequence = document.getElements().stream().map(v->v.getLabel()).limit(rand.nextInt(maxSamples)+1).collect(Collectors.toList());
+            List<String> sequence = wordCounts.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(rand.nextInt(maxSamples)+1).map(e->e.getKey()).collect(Collectors.toList());
             if(sequence.size()==0) continue;
             INDArray featureVec;
             try {
-                featureVec = word2Vec.getWordVectors(sequence);
+
+                List<Integer> indexes = new ArrayList<>();
+                List<Double> tfidfs = new ArrayList<>();
+                for(int i = 0; i < sequence.size(); i++) {
+                    String l = sequence.get(i);
+                    if(word2Vec.getVocab().containsWord(l)) {
+                        indexes.add(word2Vec.getVocab().indexOf(l));
+                        tfidfs.add(Math.max(1d,wordCounts.get(l).doubleValue()) * Math.log(Math.E+(numDocs/Math.max(word2Vec.getVocab().docAppearedIn(l),30))));
+                    }
+                }
+
+
+                if(indexes.size()==0) continue;
+
+                featureVec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(), 1, indexes.stream().mapToInt(i->i).toArray()).mulColumnVector(Nd4j.create(tfidfs.stream().mapToDouble(d->d).toArray()));
             } catch(Exception e) {
                 continue;
             }
