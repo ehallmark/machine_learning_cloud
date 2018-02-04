@@ -14,6 +14,7 @@ import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
+import org.deeplearning4j.nn.conf.layers.variational.GaussianReconstructionDistribution;
 import org.deeplearning4j.nn.conf.layers.variational.LossFunctionWrapper;
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.graph.ComputationGraph;
@@ -312,28 +313,28 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .activation(activation)
                 .graphBuilder()
                 .addInputs("x1")
-                .setOutputs("1")
-               // .addLayer("0", NNOptimizer.newBatchNormLayer(input1,input1).build(),"x1")
-                .addLayer("0", new VariationalAutoencoder.Builder()
+                .setOutputs("3")
+                .addLayer("0", NNOptimizer.newBatchNormLayer(input1,input1).build(),"x1")
+                .addLayer("1", new VariationalAutoencoder.Builder()
                         .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize,hiddenLayerSize)
                         .decoderLayerSizes(hiddenLayerSize,hiddenLayerSize,hiddenLayerSize)
-                        //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                        .lossFunction(lossFunction)
                         .activation(activation)
                         .pzxActivationFunction(Activation.IDENTITY)
-                        //.reconstructionDistribution(new LossFunctionWrapper(Activation.TANH,LossFunctions.LossFunction.COSINE_PROXIMITY)new BernoulliReconstructionDistribution(Activation.SIGMOID))
+                        .reconstructionDistribution(new GaussianReconstructionDistribution(Activation.SIGMOID))
                         .nIn(input1)
-                        .lossFunction(activation,lossFunction)
-                        .nOut(hiddenLayerSize2).build(), "x1")
-                .addLayer("1", new VariationalAutoencoder.Builder()
+                        .nOut(hiddenLayerSize2).build(), "0")
+                .addLayer("2", NNOptimizer.newBatchNormLayer(hiddenLayerSize2,hiddenLayerSize2).build(),"1")
+                .addLayer("3", new VariationalAutoencoder.Builder()
                         .encoderLayerSizes(hiddenLayerSize3,hiddenLayerSize3,hiddenLayerSize3)
                         .decoderLayerSizes(hiddenLayerSize3,hiddenLayerSize3,hiddenLayerSize3)
-                        //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                        .lossFunction(lossFunction)
                         .activation(activation)
                         .pzxActivationFunction(Activation.IDENTITY)
-                        //.reconstructionDistribution(new LossFunctionWrapper(Activation.TANH,LossFunctions.LossFunction.COSINE_PROXIMITY)new BernoulliReconstructionDistribution(Activation.SIGMOID))
+                        .reconstructionDistribution(new GaussianReconstructionDistribution(Activation.SIGMOID))
                         .nIn(hiddenLayerSize2)
                         .lossFunction(activation,lossFunction)
-                        .nOut(vectorSize).build(), "0")
+                        .nOut(vectorSize).build(), "2")
                 .backprop(false)
                 .pretrain(true);
 
