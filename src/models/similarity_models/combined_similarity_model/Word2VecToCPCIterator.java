@@ -149,15 +149,15 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
         //System.out.println("Words found: "+wordsFoundPerBatch.get() + " / "+totalWordsPerBatch.get());
 
         if(idx>0) {
-            dates = Nd4j.create(datesArray).reshape(datesArray.length,1);
+            //dates = Nd4j.create(datesArray).reshape(datesArray.length,1);
             if(idx < batch) {
                 features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all(),NDArrayIndex.all());
                 masks = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
                 if(labels!=null)labels = labels.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
-                dates = dates.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+             //   dates = dates.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
             }
             if(labels!=null)labels.diviColumnVector(labels.norm2(1));
-            INDArray[] allFeatures = labels!=null ? new INDArray[]{features,labels,dates} : new INDArray[]{features,dates};
+            INDArray[] allFeatures = labels!=null ? new INDArray[]{features,labels} : new INDArray[]{features};
             currentDataSet = new MultiDataSet(allFeatures,allFeatures,new INDArray[]{masks},new INDArray[]{masks});
         }
         return currentDataSet!=null;
