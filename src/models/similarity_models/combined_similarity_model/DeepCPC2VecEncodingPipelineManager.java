@@ -170,7 +170,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         setCudaEnvironment();
-        
+
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
         boolean rebuildDatasets = false;
@@ -180,7 +180,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         boolean rebuildPrerequisites = false;
         int nEpochs = 5;
 
-        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(false);
+        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(forceRecreateModels||!INPUT_DATA_FOLDER.exists());
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
