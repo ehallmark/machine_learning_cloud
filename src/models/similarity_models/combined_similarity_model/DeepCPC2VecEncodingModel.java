@@ -435,7 +435,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         return (v) -> {
             System.gc();
             return validationDataSets.stream().mapToDouble(ds->{
-                System.out.println("Test shape: "+Arrays.toString(ds.getFeatures(0).shape()));
+               // System.out.println("Test shape: "+Arrays.toString(ds.getFeatures(0).shape()));
                 return test((ComputationGraph)v,ds);
             }).average().orElse(Double.NaN);
         };
