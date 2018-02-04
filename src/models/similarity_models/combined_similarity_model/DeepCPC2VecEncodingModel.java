@@ -293,12 +293,12 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .learningRate(0.01)
                 .activation(Activation.TANH)
                 .graphBuilder()
-                .addInputs("x1")
+                .addInputs("x1","x2")
                 .setOutputs("y1","y2")
-                .addLayer(String.valueOf(i), NNOptimizer.newBatchNormLayer(input1,input1).build(), "x1")
-                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1,hiddenLayerSize).build(), String.valueOf(i))
+                .addLayer(String.valueOf(i), NNOptimizer.newBatchNormLayer(input1+1,input1+1).build(), "x1","x2")
+                .addLayer(String.valueOf(i+1), NNOptimizer.newDenseLayer(input1+1,hiddenLayerSize).build(), String.valueOf(i))
                 .addLayer(String.valueOf(i+2), NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i+1))
-                .addLayer(String.valueOf(i+3), NNOptimizer.newDenseLayer(input1+hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i+2), String.valueOf(i))
+                .addLayer(String.valueOf(i+3), NNOptimizer.newDenseLayer(input1+hiddenLayerSize+1,hiddenLayerSize).build(), String.valueOf(i+2), String.valueOf(i))
                 .addLayer(String.valueOf(i+4), NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize).build(), String.valueOf(i+3));
 
         int increment = 2;
