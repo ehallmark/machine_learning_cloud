@@ -130,7 +130,7 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
                     continue;
                 }
 
-                featureVec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(), 1, indexes.stream().mapToInt(i -> i).toArray()).mulColumnVector(Nd4j.create(tfidfs.stream().mapToDouble(d -> d).toArray()));
+                featureVec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(), 1, indexes.stream().mapToInt(i -> i).toArray()).mulColumnVector(Nd4j.create(tfidfs.stream().mapToDouble(d -> d).toArray()).transposei());
             }
             if(featureVec.shape().length!=2||featureVec.rows()==0) {
                 System.out.print("no dims or rows...");
