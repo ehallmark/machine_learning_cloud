@@ -291,7 +291,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         int i = 0;
         ComputationGraphConfiguration.GraphBuilder conf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
-                .learningRate(0.0005)
+                .learningRate(0.001)
                 .activation(Activation.TANH)
                 .graphBuilder()
                 .addInputs("x1","x2")
