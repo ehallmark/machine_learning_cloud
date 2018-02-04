@@ -10,6 +10,7 @@ import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.graph.ComputationGraph;
@@ -304,6 +305,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .graphBuilder()
                 .addInputs("x1","x2")
                 .setOutputs("y1","y2");
+
         if(useBatchNorm) {
                 conf = conf.addLayer(String.valueOf(i), NNOptimizer.newBatchNormLayer(input1 + 1, input1 + 1).build(), "x1", "x2")
                     .addLayer(String.valueOf(i + 1), NNOptimizer.newDenseLayer(input1 + 1, hiddenLayerSize).build(), String.valueOf(i))
@@ -330,28 +332,23 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             if(useBatchNorm)conf = conf.addLayer(String.valueOf(i+1),norm.build(), String.valueOf(i));
         }
 
-        if(useVAE) {
-            org.deeplearning4j.nn.conf.layers.Layer.Builder encoding = new VariationalAutoencoder.Builder()
-                    .nIn(hiddenLayerSize+hiddenLayerSize)
-                    .nOut(vectorSize)
-                    .pzxActivationFunction(Activation.IDENTITY)
-                    .activation(Activation.TANH)
-                    .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
-                    .decoderLayerSizes(hiddenLayerSize,hiddenLayerSize)
-                    .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize);
-            conf = conf.addLayer(String.valueOf(i), encoding.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
 
+        org.deeplearning4j.nn.conf.layers.Layer.Builder encoding;
+        if(useVAE) {
+            encoding = new RBM.Builder(RBM.HiddenUnit.BINARY, RBM.VisibleUnit.BINARY).activation(Activation.SIGMOID).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                    .nIn(hiddenLayerSize+hiddenLayerSize)
+                    .nOut(vectorSize);
         } else {
-            org.deeplearning4j.nn.conf.layers.Layer.Builder encoding = NNOptimizer.newDenseLayer(hiddenLayerSize + hiddenLayerSize, vectorSize);
-            org.deeplearning4j.nn.conf.layers.Layer.Builder eNorm = NNOptimizer.newBatchNormLayer(vectorSize, vectorSize);
-            conf = conf.addLayer(String.valueOf(i), encoding.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
-            if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), eNorm.build(), String.valueOf(i));
-            i += increment;
-            org.deeplearning4j.nn.conf.layers.Layer.Builder decoding = NNOptimizer.newDenseLayer(vectorSize, hiddenLayerSize);
-            org.deeplearning4j.nn.conf.layers.Layer.Builder dNorm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
-            conf = conf.addLayer(String.valueOf(i), decoding.build(), String.valueOf(i - 1));
-            if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), dNorm.build(), String.valueOf(i));
+            encoding = NNOptimizer.newDenseLayer(hiddenLayerSize + hiddenLayerSize, vectorSize);
         }
+        org.deeplearning4j.nn.conf.layers.Layer.Builder eNorm = NNOptimizer.newBatchNormLayer(vectorSize, vectorSize);
+        conf = conf.addLayer(String.valueOf(i), encoding.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
+        if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), eNorm.build(), String.valueOf(i));
+        i += increment;
+        org.deeplearning4j.nn.conf.layers.Layer.Builder decoding = NNOptimizer.newDenseLayer(vectorSize, hiddenLayerSize);
+        org.deeplearning4j.nn.conf.layers.Layer.Builder dNorm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
+        conf = conf.addLayer(String.valueOf(i), decoding.build(), String.valueOf(i - 1));
+        if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), dNorm.build(), String.valueOf(i));
         i+=increment;
 
         t=i;
