@@ -284,7 +284,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         boolean useBatchNorm = false;
 
         {
-            hiddenLayerSize = 64;
+            hiddenLayerSize = 128;
             input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
         }
 
