@@ -108,12 +108,20 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model,V extends 
         System.gc();
         System.gc();
 
+        train(dataSetIterator,nEpochs,stoppingCondition);
+
+        if (!isSaved()) {
+            saveFunction.apply(LocalDateTime.now(), testErrorFunction.apply(null));
+        }
+    }
+
+    protected void train(MultiDataSetIterator dataSetIterator, int nEpochs, AtomicBoolean stoppingCondition) {
         AtomicInteger totalSeenThisEpoch = new AtomicInteger(0);
         AtomicInteger totalSeen = new AtomicInteger(0);
         try {
             for (int i = 0; i < nEpochs; i++) {
                 while (dataSetIterator.hasNext()) {
-                   // if((gcIter++)%printIterations/10==0) System.gc();
+                    // if((gcIter++)%printIterations/10==0) System.gc();
                     MultiDataSet ds = dataSetIterator.next();
 
                     train(ds);
@@ -130,9 +138,7 @@ public abstract class AbstractCombinedSimilarityModel<T extends Model,V extends 
             if (stoppingCondition.get()) {
                 System.out.println("Stopping condition reached...");
             }
-            if (!isSaved()) {
-                saveFunction.apply(LocalDateTime.now(), testErrorFunction.apply(null));
-            }
+
         } catch(StoppingConditionMetException e) {
             System.out.println("Stopping condition met: "+e.getMessage());
         }

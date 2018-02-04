@@ -1,5 +1,6 @@
 package models.similarity_models.combined_similarity_model;
 
+import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.optimize.nn_optimization.CGRefactorer;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import lombok.Getter;
@@ -33,6 +34,7 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,7 +51,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Getter
     private ComputationGraph vaeNetwork;
 
-    int numHiddenLayers = 8;
+    int numHiddenLayers = 6;
     int encodingIdx = numHiddenLayers*2+5;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
@@ -289,7 +291,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         boolean useVAE = true;
 
         {
-            hiddenLayerSize = 256;
+            hiddenLayerSize = 128;
             input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
         }
 
@@ -370,7 +372,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         conf = conf.addLayer("y1",outputLayer.build(), String.valueOf(i-1), String.valueOf(i-1-increment));
         conf = conf.addLayer("y2",dateLayer.build(), String.valueOf(i-1), String.valueOf(i-1-increment));
 
-        conf = conf.pretrain(false).backprop(true);
+        conf = conf.pretrain(useVAE).backprop(true);
 
         vaeNetwork = new ComputationGraph(conf.build());
         vaeNetwork.init();
@@ -417,7 +419,25 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     protected void train(MultiDataSet dataSet) {
-        vaeNetwork.fit(dataSet);
+        throw new RuntimeException("Please use other train method.");
+    }
+
+    @Override
+    protected void train(MultiDataSetIterator dataSetIterator, int nEpochs, AtomicBoolean stoppingCondition) {
+        try {
+            for (int i = 0; i < nEpochs; i++) {
+                vaeNetwork.fit(dataSetIterator);
+
+                if (stoppingCondition.get()) break;
+                dataSetIterator.reset();
+            }
+            if (stoppingCondition.get()) {
+                System.out.println("Stopping condition reached...");
+            }
+
+        } catch(StoppingConditionMetException e) {
+            System.out.println("Stopping condition met: "+e.getMessage());
+        }
     }
 
     @Override
