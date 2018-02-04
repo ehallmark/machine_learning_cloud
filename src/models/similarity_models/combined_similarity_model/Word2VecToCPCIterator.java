@@ -113,26 +113,29 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
             List<String> sequence = wordCounts.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(rand.nextInt(maxSamples)+1).map(e->e.getKey()).collect(Collectors.toList());
             if(sequence.size()==0) continue;
             INDArray featureVec;
-            try {
-
+            {
                 List<Integer> indexes = new ArrayList<>();
                 List<Double> tfidfs = new ArrayList<>();
-                for(int i = 0; i < sequence.size(); i++) {
+                for (int i = 0; i < sequence.size(); i++) {
                     String l = sequence.get(i);
-                    if(word2Vec.getVocab().containsWord(l)) {
+                    if (word2Vec.getVocab().containsWord(l)) {
                         indexes.add(word2Vec.getVocab().indexOf(l));
-                        tfidfs.add(Math.max(1d,wordCounts.get(l).doubleValue()) * Math.log(Math.E+(numDocs/Math.max(word2Vec.getVocab().docAppearedIn(l),30))));
+                        tfidfs.add(Math.max(1d, wordCounts.get(l).doubleValue()) * Math.log(Math.E + (numDocs / Math.max(word2Vec.getVocab().docAppearedIn(l), 30))));
                     }
                 }
 
 
-                if(indexes.size()==0) continue;
+                if (indexes.size() == 0) {
+                    System.out.print("no indices...");
+                    continue;
+                }
 
-                featureVec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(), 1, indexes.stream().mapToInt(i->i).toArray()).mulColumnVector(Nd4j.create(tfidfs.stream().mapToDouble(d->d).toArray()));
-            } catch(Exception e) {
+                featureVec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(), 1, indexes.stream().mapToInt(i -> i).toArray()).mulColumnVector(Nd4j.create(tfidfs.stream().mapToDouble(d -> d).toArray()));
+            }
+            if(featureVec.shape().length!=2||featureVec.rows()==0) {
+                System.out.print("no dims or rows...");
                 continue;
             }
-            if(featureVec.shape().length!=2||featureVec.rows()==0) continue;
             featureVec = featureVec.mean(0);
             if(labels!=null)labels.putRow(idx,labelVec);
             double remainingLife = (((double)today.getYear()+((double)today.getMonthValue()-1)/12) - ((double)date.getYear()+((double)date.getMonthValue()-1)/12));
