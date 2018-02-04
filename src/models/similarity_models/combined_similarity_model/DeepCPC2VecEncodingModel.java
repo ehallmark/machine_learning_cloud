@@ -422,7 +422,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
             */
 
-            ComputationGraph vaeNetwork = new ComputationGraph(conf.build());
+            vaeNetwork = new ComputationGraph(conf.build());
             vaeNetwork.init();
 
             System.out.println("Conf: " + conf.toString());
@@ -449,6 +449,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     protected Function<Object, Double> getTestFunction() {
         MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
         List<MultiDataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
+        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
+                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) vaeNetwork.getLayer(0);
+
         int valCount = 0;
         while(validationIterator.hasNext()&&valCount<30000) {
             MultiDataSet dataSet = validationIterator.next();
@@ -462,7 +465,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
         return (v) -> {
             System.gc();
-            return validationDataSets.stream().mapToDouble(ds->test((ComputationGraph)v,ds)).average().orElse(Double.NaN);
+            //return validationDataSets.stream().mapToDouble(ds->test((ComputationGraph)v,ds)).average().orElse(Double.NaN);
+            return validationDataSets.stream().mapToDouble(ds->DeepCPCVariationalAutoEncoderNN.test(ds.getFeatures(0),vae)).average().orElse(Double.NaN);
         };
     }
 
