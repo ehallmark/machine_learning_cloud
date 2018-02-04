@@ -52,7 +52,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Getter
     private ComputationGraph vaeNetwork;
 
-    int numHiddenLayers = 12;
+    int numHiddenLayers = 5;
     int encodingIdx = numHiddenLayers*2+5;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
@@ -290,8 +290,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         int hiddenLayerSize;
         int input1;
 
-        boolean useBatchNorm = true;
-        boolean useVAE = false;
+        boolean useBatchNorm = false;
+        boolean useVAE = true;
 
         {
             hiddenLayerSize = 128;
@@ -355,7 +355,13 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
             org.deeplearning4j.nn.conf.layers.Layer.Builder encoding;
             if (useVAE) {
-                encoding = new RBM.Builder(RBM.HiddenUnit.BINARY, RBM.VisibleUnit.BINARY).activation(Activation.RELU).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                encoding = new VariationalAutoencoder.Builder()
+                        .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize)
+                        .decoderLayerSizes(hiddenLayerSize,hiddenLayerSize)
+                        //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
+                        .activation(activation)
+                        .pzxActivationFunction(Activation.IDENTITY)
+                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
                         .nIn(hiddenLayerSize + hiddenLayerSize)
                         .nOut(vectorSize);
             } else {
