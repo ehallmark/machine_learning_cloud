@@ -331,7 +331,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         for(; i < t + numHiddenLayers*increment; i+=increment) {
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer = NNOptimizer.newDenseLayer(i==t?(hiddenLayerSize+vectorSize):(hiddenLayerSize+hiddenLayerSize),hiddenLayerSize);
             org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize,hiddenLayerSize);
-            conf = conf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-increment), String.valueOf(i-2*increment));
+            conf = conf.addLayer(String.valueOf(i),layer.build(), String.valueOf(i-1), String.valueOf(i-1-increment));
             conf = conf.addLayer(String.valueOf(i+1),norm.build(), String.valueOf(i));
         }
 
@@ -345,6 +345,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         vaeNetwork = new ComputationGraph(conf.build());
         vaeNetwork.init();
 
+        System.out.println("Conf: "+conf.toString());
         //syncParams(wordCpc2Vec,cpcVecNet,encodingIdx);
 
         Map<String,ComputationGraph> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
