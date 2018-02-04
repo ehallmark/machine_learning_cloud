@@ -315,7 +315,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .activation(activation)
                 .graphBuilder()
                 .addInputs("x1")
-                .setOutputs("x1")
+                .setOutputs("0")
                 .addLayer("0", new VariationalAutoencoder.Builder()
                         .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize)
                         .decoderLayerSizes(hiddenLayerSize,hiddenLayerSize)
