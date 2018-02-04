@@ -303,7 +303,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
         //Activation activation = useVAE ? Activation.SIGMOID : Activation.TANH;
-        List<Activation> activations = Arrays.asList(Activation.LEAKYRELU);
+        List<Activation> activations = Arrays.asList(Activation.TANH);
         //Activation preActivation = useVAE ? Activation.SIGMOID : Activation.TANH;
 
         networks = new ArrayList<>();
