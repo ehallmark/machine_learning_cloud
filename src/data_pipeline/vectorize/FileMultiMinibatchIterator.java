@@ -123,7 +123,7 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
                         }
 
                         // split
-                        if(miniBatch>0) {
+                        /*if(miniBatch>0) {
                             return IntStream.range(0, e.getFeatures(0).shape()[0]/miniBatch).mapToObj(i->{
                                 int start = i*miniBatch;
                                 int end = Math.min(e.getFeatures(0).shape()[0],start+miniBatch);
@@ -155,9 +155,9 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
                                 }
                                 return null;
                             }).filter(d->d!=null).collect(Collectors.toList());
-                        } else {
+                        } else {*/
                             return Collections.singletonList(e);
-                        }
+                        //}
                     } catch (Exception var2) {
                         var2.printStackTrace();
                         System.out.println("Reading file: "+readIdx);
