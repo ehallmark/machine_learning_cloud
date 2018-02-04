@@ -291,7 +291,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         int input1;
 
         boolean useBatchNorm = false;
-        boolean useVAE = false;
+        boolean useVAE = true;
 
         {
             hiddenLayerSize = 128;
@@ -343,6 +343,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
                 int nIn = i==t ? (hiddenLayerSize+hiddenLayerSize*2) : (hiddenLayerSize + hiddenLayerSize);
                 layer = NNOptimizer.newDenseLayer(nIn, hiddenLayerSize);
+                if(useVAE&&i+increment>t+numHiddenLayers*increment) {
+                    layer = layer.activation(Activation.SIGMOID);
+                }
 
                 org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
                 conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
