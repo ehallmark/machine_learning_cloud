@@ -327,13 +327,13 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                     .addLayer(String.valueOf(i + 4), NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize).build(), String.valueOf(i + 3));
         } else {
             conf = conf
-                    .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1 , hiddenLayerSize).build(), "x1")
+                    .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1 , hiddenLayerSize).build(), "x1");
                     //.addLayer(String.valueOf(i + 1), NNOptimizer.newDenseLayer(input1, hiddenLayerSize).build(), String.valueOf(i), "x1");
         }
 
         int increment = useBatchNorm ? 2 : 1;
 
-        i += useBatchNorm ? 5 : 1
+        i += useBatchNorm ? 5 : 1;
 
         int t = i;
         //  hidden layers
