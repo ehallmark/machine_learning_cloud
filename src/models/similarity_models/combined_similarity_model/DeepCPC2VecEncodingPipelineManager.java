@@ -116,9 +116,9 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
     @Override
     protected void setDatasetManager() {
-        int trainLimit = 1000000;
-        int testLimit = 20000;
-        int devLimit = 20000;
+        int trainLimit = 10000000;
+        int testLimit = 30000;
+        int devLimit = 30000;
         final double testRatio = 0.1;
         Random rand = new Random(235);
 

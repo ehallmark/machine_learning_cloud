@@ -55,7 +55,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Getter
     private ComputationGraph vaeNetwork;
 
-    int numHiddenLayers = 12;
+    int numHiddenLayers = 20;
     int encodingIdx = numHiddenLayers*2+5;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
@@ -293,13 +293,13 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         Map<String, ComputationGraph> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
 
         System.out.println("Build model....");
-        int hiddenLayerSize = 128;
+        int hiddenLayerSize = 64;
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
 
         boolean useBatchNorm = false;
         boolean useVAE = false;
 
-        Updater updater = Updater.RMSPROP;
+        Updater updater = Updater.ADAM;
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
