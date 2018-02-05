@@ -191,7 +191,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
-        int nEpochs = 3;//5
+        int nEpochs = 2;//3;//5
 
         boolean runDeepModel = true;// CombinedSimilarityVAEPipelineManager.USE_DEEP_MODEL;
 
