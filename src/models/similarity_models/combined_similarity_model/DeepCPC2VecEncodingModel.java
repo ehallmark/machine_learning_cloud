@@ -55,7 +55,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Getter
     private ComputationGraph vaeNetwork;
 
-    int numHiddenLayers = 12;
+    int numHiddenLayers = 6;
     int encodingIdx = numHiddenLayers*2+5;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
@@ -297,7 +297,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
 
         boolean useBatchNorm = false;
-        boolean useVAE = false;
+        boolean useVAE = true;
 
         Updater updater = Updater.RMSPROP;
 
@@ -311,7 +311,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         int i = 0;
         ComputationGraphConfiguration.GraphBuilder conf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
-                .learningRate(0.01)
+                .learningRate(0.001)
                 //.dropOut(0.5)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .activation(activation)
@@ -357,9 +357,10 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                     .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize)
                     .decoderLayerSizes(hiddenLayerSize,hiddenLayerSize)
                     //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
-                    .activation(activation)
+                    //.activation(activation)
                     .pzxActivationFunction(Activation.IDENTITY)
-                    .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
+                    //.reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
+                    .lossFunction(activation,lossFunction)
                     .nIn(hiddenLayerSize + hiddenLayerSize)
                     .nOut(vectorSize);
         } else {
