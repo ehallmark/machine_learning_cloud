@@ -72,6 +72,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             int[] hiddenLayerEncoder = new int[]{
                     1024,
                     1024,
+                    1024,
                     1024
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
