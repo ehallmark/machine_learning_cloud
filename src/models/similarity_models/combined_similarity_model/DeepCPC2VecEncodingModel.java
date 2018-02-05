@@ -301,7 +301,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
         Updater updater = Updater.RMSPROP;
 
-        LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
+        LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.MSE;
 
         Activation activation = Activation.TANH;
 
@@ -445,7 +445,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
         net.setLayerMaskArrays(finalDataSet.getFeaturesMaskArrays(),finalDataSet.getLabelsMaskArrays());
-        return 1d+net.score(finalDataSet)/finalDataSet.getLabels().length;
+        return net.score(finalDataSet)/(Stream.of(finalDataSet.getFeatures()).mapToInt(d->d.shape()[1]).sum());
     }
 
 
