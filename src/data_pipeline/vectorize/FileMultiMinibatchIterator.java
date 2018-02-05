@@ -27,7 +27,7 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
     private int totalBatches;
     private final String pattern;
     private int[] shuffledIndices;
-
+    private boolean testing;
     private MultiDataSetPreProcessor dataSetPreProcessor;
     @Override
     public void setPreProcessor(MultiDataSetPreProcessor multiDataSetPreProcessor) {
@@ -39,11 +39,12 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
     private int miniBatch;
 
 
-    public FileMultiMinibatchIterator(File rootDir, int limit, int miniBatch) {
-        this(rootDir, DEFAULT_PATTERN, limit, miniBatch);
+    public FileMultiMinibatchIterator(File rootDir, int limit, int miniBatch, boolean testing) {
+        this(rootDir, DEFAULT_PATTERN, limit, miniBatch,testing);
     }
 
-    public FileMultiMinibatchIterator(File rootDir, String pattern, int limit, int miniBatch) {
+
+    public FileMultiMinibatchIterator(File rootDir, String pattern, int limit, int miniBatch, boolean testing) {
         this.totalBatches = -1;
         this.rootDir = rootDir;
         int numFiles = rootDir.list().length;
@@ -56,7 +57,8 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
         for(int i = 0; i < totalBatches; i++) {
             shuffledIndices[i]=i;
         }
-        ShuffleArray.shuffleArray(shuffledIndices); // randomizes mini batch order
+        this.testing=testing;
+        if(!testing)ShuffleArray.shuffleArray(shuffledIndices); // randomizes mini batch order
     }
 
     public MultiDataSet next(int num) {
@@ -85,7 +87,7 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
 
     public void reset() {
         this.currIdx.set(0);
-        ShuffleArray.shuffleArray(shuffledIndices); // randomizes mini batch order
+        if(!testing)ShuffleArray.shuffleArray(shuffledIndices); // randomizes mini batch order
     }
 
     public int batch() {

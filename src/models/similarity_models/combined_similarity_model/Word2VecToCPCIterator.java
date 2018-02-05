@@ -94,34 +94,25 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
     public boolean hasNext() {
         currentDataSet=null;
         int idx = 0;
-        int maxSamples = 16; // TODO get this from the pipeline manager
-        INDArray labels = requireLabel?Nd4j.create(batch,totalOutcomes()):null;
-        INDArray features = Nd4j.create(batch,inputColumns(),maxSamples);
-        INDArray dates;
-        INDArray masks = Nd4j.zeros(batch,maxSamples);
+        INDArray features = Nd4j.create(batch,inputColumns());
         AtomicInteger totalWordsPerBatch = new AtomicInteger(0);
-        LocalDate today = LocalDate.of(2018,2,3);
-        double[] datesArray = new double[batch];
         while(documentIterator.hasMoreSequences()&&idx<batch) {
             Sequence<VocabWord> document = documentIterator.nextSequence();
-            String label = document.getSequenceLabel().getLabel();
-            if(document.getSequenceLabels().size()<2) continue;
-            LocalDate date = LocalDate.parse(document.getSequenceLabels().get(1).getLabel(), DateTimeFormatter.ISO_DATE);
-            INDArray labelVec = labels==null||vectorizer==null?null:vectorizer.vectorFor(label);
-            if (labelVec == null && requireLabel) continue;
-            //Map<String, Integer> wordCounts = groupingBOWFunction.apply(document.getElements());
 
-            List<String> sequence = document.getElements().stream().limit(Math.min(maxSamples,rand.nextInt(document.getElements().size())+1)).map(e->e.getLabel()).collect(Collectors.toList());
-            totalWordsPerBatch.getAndAdd(sequence.size());
+            Map<String, Integer> wordCounts = groupingBOWFunction.apply(document.getElements());
+            totalWordsPerBatch.getAndAdd(wordCounts.size());
 
+            List<String> sequence = wordCounts.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(1).map(e->e.getKey()).collect(Collectors.toList());
             if(sequence.size()==0) continue;
-            INDArray featureVec = Nd4j.zeros(maxSamples,inputColumns());
+            INDArray featureVec;
             {
                 List<Integer> indexes = new ArrayList<>();
+                List<Double> tfidfs = new ArrayList<>();
                 for (int i = 0; i < sequence.size(); i++) {
                     String l = sequence.get(i);
                     if (word2Vec.getVocab().containsWord(l)) {
                         indexes.add(word2Vec.getVocab().indexOf(l));
+                        tfidfs.add(Math.max(1d, wordCounts.get(l).doubleValue()) * Math.log(Math.E + (numDocs / Math.max(word2Vec.getVocab().docAppearedIn(l), 30))));
                     }
                 }
 
@@ -131,34 +122,20 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
                     continue;
                 }
 
-                INDArray vec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(), 1, indexes.stream().mapToInt(i -> i).toArray());
-                vec.diviColumnVector(vec.norm2(1));
-                featureVec.get(NDArrayIndex.interval(0,vec.rows()),NDArrayIndex.all()).assign(vec);
-                masks.get(NDArrayIndex.point(idx),NDArrayIndex.interval(0,vec.rows())).assign(1);
-            }
+                featureVec = word2Vec.getLookupTable().getWeights().getRow(indexes.get(0));
 
-            //featureVec = featureVec.mean(0);
-            if(labels!=null)labels.putRow(idx,labelVec);
-            double remainingLife = (((double)today.getYear()+((double)today.getMonthValue()-1)/12) - ((double)date.getYear()+((double)date.getMonthValue()-1)/12));
-            double remainingLifeNorm = (remainingLife-10d)/10d;
-            datesArray[idx] = remainingLifeNorm;
-            features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()).assign(featureVec.transposei());
+            }
+            features.putRow(idx,featureVec);
             idx++;
         }
 
-        //System.out.println("Words found: "+wordsFoundPerBatch.get() + " / "+totalWordsPerBatch.get());
-
         if(idx>0) {
-            //dates = Nd4j.create(datesArray).reshape(datesArray.length,1);
             if(idx < batch) {
-                features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all(),NDArrayIndex.all());
-                masks = masks.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
-                if(labels!=null)labels = labels.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
-             //   dates = dates.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+                features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
             }
-            if(labels!=null)labels.diviColumnVector(labels.norm2(1));
-            INDArray[] allFeatures = labels!=null ? new INDArray[]{features,labels} : new INDArray[]{features};
-            currentDataSet = new MultiDataSet(allFeatures,allFeatures,new INDArray[]{masks},new INDArray[]{masks});
+            features.diviColumnVector(features.norm2(1));
+            INDArray[] allFeatures = new INDArray[]{features};
+            currentDataSet = new MultiDataSet(allFeatures,allFeatures);
         }
         return currentDataSet!=null;
     }
