@@ -339,7 +339,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         //  hidden layers
         for (; i < t + numHiddenLayers * increment; i += increment) {
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
-            int nIn = i==t ? (hiddenLayerSize) : (hiddenLayerSize + hiddenLayerSize);
+            int nIn = hiddenLayerSize;//i==t ? (hiddenLayerSize) : (hiddenLayerSize + hiddenLayerSize);
             layer = NNOptimizer.newDenseLayer(nIn, hiddenLayerSize);
             //if(useVAE&&i+increment>t+numHiddenLayers*increment) {
             //    layer = layer.activation(Activation.SIGMOID);
