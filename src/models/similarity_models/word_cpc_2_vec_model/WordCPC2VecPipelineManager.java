@@ -28,10 +28,10 @@ import java.util.stream.Collectors;
  */
 public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIterator,Map<String,INDArray>> {
     public static final String SMALL_MODEL_NAME = "32smallwordcpc2vec_model";
-    public static final String DEEP_MODEL_NAME = "wordcpc2vec_model_deep";
+    public static final String DEEP_MODEL_NAME = "wordcpc2vec32_model_deep";
     public static final File cpcMapFile = new File(Constants.DATA_FOLDER+"word_cpc_2_vec_cpcmap_file.jobj");
     private static final int SMALL_VECTOR_SIZE = 32;
-    private static final int LARGE_VECTOR_SIZE = 256;
+    private static final int LARGE_VECTOR_SIZE = 32;
     public static final Map<String,Integer> modelNameToVectorSizeMap = Collections.synchronizedMap(new HashMap<>());
     public static final Map<String,File> modelNameToPredictionFileMap = Collections.synchronizedMap(new HashMap<>());
     static {
@@ -189,9 +189,9 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = false;
+        boolean forceRecreateModels = true;
         boolean runPredictions = true;
-        int nEpochs = 2;//5
+        int nEpochs = 3;//5
 
         boolean runDeepModel = true;// CombinedSimilarityVAEPipelineManager.USE_DEEP_MODEL;
 
