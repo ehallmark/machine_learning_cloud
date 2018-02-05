@@ -297,7 +297,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
 
         boolean useBatchNorm = false;
-        boolean useVAE = false;
+        boolean useVAE = true;
 
         Updater updater = Updater.ADAM;
 
@@ -354,8 +354,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         org.deeplearning4j.nn.conf.layers.Layer.Builder encoding;
         if (useVAE) {
             encoding = new VariationalAutoencoder.Builder()
-                    .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize)
-                    .decoderLayerSizes(hiddenLayerSize,hiddenLayerSize)
+                    .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize,hiddenLayerSize)
+                    .decoderLayerSizes(hiddenLayerSize,hiddenLayerSize,hiddenLayerSize)
                     //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
                     //.activation(activation)
                     .pzxActivationFunction(Activation.IDENTITY)
