@@ -55,7 +55,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Getter
     private ComputationGraph vaeNetwork;
 
-    int numHiddenLayers = 4;
+    int numHiddenLayers = 12;
     int encodingIdx = numHiddenLayers*2+5;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
@@ -284,7 +284,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     public int printIterations() {
-        return 500;
+        return 5000;
     }
 
 
@@ -311,7 +311,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         int i = 0;
         ComputationGraphConfiguration.GraphBuilder conf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
-                .learningRate(0.001)
+                .learningRate(0.01)
                 //.dropOut(0.5)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .activation(activation)
@@ -321,9 +321,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
         if (useBatchNorm) {
             conf = conf.addLayer(String.valueOf(i), NNOptimizer.newBatchNormLayer(input1, input1).build(), "x1")
-                    .addLayer(String.valueOf(i + 1), NNOptimizer.newDenseLayer(input1, hiddenLayerSize*2).build(), String.valueOf(i))
-                    .addLayer(String.valueOf(i + 2), NNOptimizer.newBatchNormLayer(hiddenLayerSize*2, hiddenLayerSize*2).build(), String.valueOf(i + 1))
-                    .addLayer(String.valueOf(i + 3), NNOptimizer.newDenseLayer(input1 + hiddenLayerSize *2, hiddenLayerSize).build(), String.valueOf(i + 2), String.valueOf(i))
+                    .addLayer(String.valueOf(i + 1), NNOptimizer.newDenseLayer(input1, hiddenLayerSize).build(), String.valueOf(i))
+                    .addLayer(String.valueOf(i + 2), NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize).build(), String.valueOf(i + 1))
+                    .addLayer(String.valueOf(i + 3), NNOptimizer.newDenseLayer(input1 + hiddenLayerSize , hiddenLayerSize).build(), String.valueOf(i + 2), String.valueOf(i))
                     .addLayer(String.valueOf(i + 4), NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize).build(), String.valueOf(i + 3));
         } else {
             conf = conf
@@ -424,7 +424,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         List<MultiDataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
 
         int valCount = 0;
-        while(validationIterator.hasNext()&&valCount<20000) {
+        while(validationIterator.hasNext()&&valCount<30000) {
             MultiDataSet dataSet = validationIterator.next();
             validationDataSets.add(dataSet);
             valCount+=dataSet.getFeatures()[0].shape()[0];

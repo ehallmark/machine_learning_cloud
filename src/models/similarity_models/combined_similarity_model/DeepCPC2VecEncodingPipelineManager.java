@@ -136,7 +136,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             } else {
                 trainLabels.add(word);
             }
-            System.out.println(word+": "+word2Vec.getVocab().docAppearedIn(word));
+          //  System.out.println(word+": "+word2Vec.getVocab().docAppearedIn(word));
         });
 
         NoSaveDataSetManager<MultiDataSetIterator> manager = new NoSaveDataSetManager<>(
