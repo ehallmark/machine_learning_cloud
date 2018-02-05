@@ -3,6 +3,7 @@ package models.similarity_models.word_cpc_2_vec_model;
 import data_pipeline.models.WordVectorPredictionModel;
 import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
+import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.CBOW;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
@@ -130,8 +131,8 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
         if(!newModel) {
             iterator.setRunVocab(false);
             builder = builder
-                    .vocabCache(net.vocab())
-                    .lookupTable(net.lookupTable());
+                    .vocabCache(net.vocab());
+                    //.lookupTable(new InMemoryLookupTable<>()net.lookupTable());
         }
 
         net = builder.build();
