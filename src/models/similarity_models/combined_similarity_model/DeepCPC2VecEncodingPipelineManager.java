@@ -40,8 +40,8 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_single_2_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
-    protected static final int BATCH_SIZE = 64;
-    protected static final int MINI_BATCH_SIZE = 32;
+    protected static final int BATCH_SIZE = 1024;
+    protected static final int MINI_BATCH_SIZE = 64;
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
     protected String modelName;
     protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
@@ -81,7 +81,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     @Override
     public synchronized DataSetManager<MultiDataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            /*PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,MINI_BATCH_SIZE,true);
+            PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,MINI_BATCH_SIZE,true);
             manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
                 @Override
                 public void preProcess(MultiDataSet dataSet) {
@@ -90,8 +90,8 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                     dataSet.setLabels(dataSet.getFeatures());
                 }
             });
-            datasetManager = manager;*/
-            setDatasetManager();
+            datasetManager = manager;
+            //setDatasetManager();
         }
         return datasetManager;
     }
@@ -139,19 +139,19 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
           //  System.out.println(word+": "+word2Vec.getVocab().docAppearedIn(word));
         });
 
-        NoSaveDataSetManager<MultiDataSetIterator> manager = new NoSaveDataSetManager<>(
-                //dataFolder,
+        PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
+                dataFolder,
                 new VocabSamplingIterator(word2Vec,trainLabels,getBatchSize(),trainLimit),
                 new VocabSamplingIterator(word2Vec,testLabels,1024,testLimit),
-                new VocabSamplingIterator(word2Vec,devLabels,1024,devLimit)
-                //true
+                new VocabSamplingIterator(word2Vec,devLabels,1024,devLimit),
+                true
         );
-        /*manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
+        manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
             @Override
             public void preProcess(MultiDataSet dataSet) {
                 dataSet.setLabels(null);
             }
-        });*/
+        });
         datasetManager = manager;
     }
 
@@ -180,7 +180,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
-        boolean rebuildDatasets = true;
+        boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
