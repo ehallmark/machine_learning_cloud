@@ -55,7 +55,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Getter
     private ComputationGraph vaeNetwork;
 
-    int numHiddenLayers = 8;
+    int numHiddenLayers = 2;
     int encodingIdx = numHiddenLayers*2+5;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
@@ -293,7 +293,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         Map<String, ComputationGraph> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
 
         System.out.println("Build model....");
-        int hiddenLayerSize = 128;
+        int hiddenLayerSize = 1024;
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
 
         boolean useBatchNorm = false;
@@ -328,25 +328,25 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         } else {
             conf = conf
                     .addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(input1 , hiddenLayerSize).build(), "x1")
-                    .addLayer(String.valueOf(i + 1), NNOptimizer.newDenseLayer(input1 + hiddenLayerSize, hiddenLayerSize).build(), String.valueOf(i), "x1");
+                    //.addLayer(String.valueOf(i + 1), NNOptimizer.newDenseLayer(input1, hiddenLayerSize).build(), String.valueOf(i), "x1");
         }
 
         int increment = useBatchNorm ? 2 : 1;
 
-        i += useBatchNorm ? 5 : 2;
+        i += useBatchNorm ? 5 : 1
 
         int t = i;
         //  hidden layers
         for (; i < t + numHiddenLayers * increment; i += increment) {
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
-            int nIn = i==t ? (hiddenLayerSize+hiddenLayerSize) : (hiddenLayerSize + hiddenLayerSize);
+            int nIn = i==t ? (hiddenLayerSize) : (hiddenLayerSize + hiddenLayerSize);
             layer = NNOptimizer.newDenseLayer(nIn, hiddenLayerSize);
             //if(useVAE&&i+increment>t+numHiddenLayers*increment) {
             //    layer = layer.activation(Activation.SIGMOID);
             //}
 
             org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
-            conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
+            conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
             if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), norm.build(), String.valueOf(i));
         }
 
@@ -367,7 +367,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             encoding = NNOptimizer.newDenseLayer(hiddenLayerSize + hiddenLayerSize, vectorSize);
         }
         org.deeplearning4j.nn.conf.layers.Layer.Builder eNorm = NNOptimizer.newBatchNormLayer(vectorSize, vectorSize);
-        conf = conf.addLayer(String.valueOf(i), encoding.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
+        conf = conf.addLayer(String.valueOf(i), encoding.build(), String.valueOf(i - 1));
         if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), eNorm.build(), String.valueOf(i));
         i += increment;
         org.deeplearning4j.nn.conf.layers.Layer.Builder decoding = NNOptimizer.newDenseLayer(vectorSize, hiddenLayerSize);
@@ -381,16 +381,16 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         //  hidden layers
         for (; i < t + numHiddenLayers * increment; i += increment) {
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
-            int nIn = i == t ? (hiddenLayerSize + vectorSize) : (hiddenLayerSize + hiddenLayerSize);
+            int nIn = hiddenLayerSize; //i == t ? (hiddenLayerSize + vectorSize) : (hiddenLayerSize + hiddenLayerSize);
             layer = NNOptimizer.newDenseLayer(nIn, hiddenLayerSize);
 
             org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
-            conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
+            conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
             if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), norm.build(), String.valueOf(i));
         }
 
         // output layers
-        OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize + hiddenLayerSize, input1).lossFunction(lossFunction).activation(Activation.TANH);
+        OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize, input1).lossFunction(lossFunction).activation(Activation.TANH);
        // OutputLayer.Builder dateLayer = NNOptimizer.newOutputLayer(hiddenLayerSize + hiddenLayerSize, 1).lossFunction(LossFunctions.LossFunction.MSE).activation(Activation.TANH);
 
         conf = conf.addLayer("y1", outputLayer.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
