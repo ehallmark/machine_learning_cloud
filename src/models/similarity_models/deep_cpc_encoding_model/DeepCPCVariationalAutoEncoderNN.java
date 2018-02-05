@@ -70,16 +70,16 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
-                    2048,
-                    2048,
-                    2048
+                    512,
+                    512,
+                    512
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
                 hiddenLayerDecoder[i] = hiddenLayerEncoder[hiddenLayerEncoder.length-1-i];
             }
             int rngSeed = 69;
-            Activation activation = Activation.LEAKYRELU;
+            Activation activation = Activation.TANH;
             Nd4j.getRandom().setSeed(rngSeed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)
