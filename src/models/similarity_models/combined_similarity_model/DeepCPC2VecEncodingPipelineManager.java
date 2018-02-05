@@ -116,7 +116,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
     @Override
     protected void setDatasetManager() {
-        int trainLimit = 10000000;
+        int trainLimit = 5000000;
         int testLimit = 30000;
         int devLimit = 30000;
         final double testRatio = 0.1;
@@ -126,7 +126,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         List<String> testLabels = Collections.synchronizedList(new ArrayList<>(testLimit));
         List<String> devLabels = Collections.synchronizedList(new ArrayList<>(devLimit));
 
-        word2Vec.getVocab().words().stream().sorted().forEach(word->{
+        word2Vec.getVocab().words().stream().filter(v->v.equals(v.toUpperCase())||word2Vec.getVocab().docAppearedIn(v)<1000).sorted().forEach(word->{
             if(rand.nextDouble()<testRatio) {
                 if(rand.nextBoolean()) {
                     devLabels.add(word);
@@ -138,6 +138,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             }
           //  System.out.println(word+": "+word2Vec.getVocab().docAppearedIn(word));
         });
+        System.out.println("Filtered vocab from "+(trainLabels.size()+testLabels.size()+devLabels.size())+" out of "+word2Vec.getVocab().words().size());
 
         PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
                 dataFolder,
