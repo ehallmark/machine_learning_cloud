@@ -79,14 +79,14 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
                 hiddenLayerDecoder[i] = hiddenLayerEncoder[hiddenLayerEncoder.length-1-i];
             }
             int rngSeed = 69;
-            Activation activation = Activation.TANH;
+            Activation activation = Activation.LEAKYRELU;
             Nd4j.getRandom().setSeed(rngSeed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)
                     .learningRate(0.001)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                    //.updater(Updater.RMSPROP)
-                    .updater(Updater.ADAM)
+                    .updater(Updater.RMSPROP)
+                    //.updater(Updater.ADAM)
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)
                     //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
