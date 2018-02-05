@@ -198,7 +198,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         String modelName;
 
         if(runDeepModel) {
-            windowSize = 4;
+            windowSize = 6;//4;
             modelName = DEEP_MODEL_NAME;
             maxSamples = 500;
         } else {
