@@ -35,6 +35,7 @@ public class VocabSamplingIterator implements MultiDataSetIterator {
         int num = Math.min(n,limit-cnt.get());
         int[] indices = new int[num];
         for(int i = 0; i < num; i++) {
+            cnt.getAndIncrement();
             indices[i] = sample();
         }
         INDArray features = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(), 1, indices);
