@@ -297,7 +297,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
 
         boolean useBatchNorm = false;
-        boolean useVAE = true;
+        boolean useVAE = false;
 
         Updater updater = Updater.ADAM;
 
