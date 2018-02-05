@@ -393,7 +393,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         OutputLayer.Builder outputLayer = NNOptimizer.newOutputLayer(hiddenLayerSize, input1).lossFunction(lossFunction).activation(Activation.TANH);
        // OutputLayer.Builder dateLayer = NNOptimizer.newOutputLayer(hiddenLayerSize + hiddenLayerSize, 1).lossFunction(LossFunctions.LossFunction.MSE).activation(Activation.TANH);
 
-        conf = conf.addLayer("y1", outputLayer.build(), String.valueOf(i - 1), String.valueOf(i - 1 - increment));
+        conf = conf.addLayer("y1", outputLayer.build(), String.valueOf(i - 1));
        // conf = conf.addLayer("y2", dateLayer.build(), new RnnToFeedForwardPreProcessor(), String.valueOf(i - 1),  String.valueOf(i - 1 - increment));
 
         vaeNetwork = new ComputationGraph(conf.build());
