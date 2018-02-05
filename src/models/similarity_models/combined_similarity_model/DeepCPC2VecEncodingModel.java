@@ -416,6 +416,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         vaeNetwork = CGRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(VAE_NETWORK),newLearningRate,false);
         Map<String,ComputationGraph> updates = Collections.synchronizedMap(new HashMap<>());
         updates.put(VAE_NETWORK,vaeNetwork);
+        networks = new ArrayList<>();
+        networks.add(vaeNetwork);
         return updates;
     }
 
