@@ -1,15 +1,12 @@
 package models.similarity_models.combined_similarity_model;
 
-import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,55 +14,40 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by Evan on 2/4/2018.
  */
 public class VocabSamplingIterator implements MultiDataSetIterator {
-    private Word2Vec word2Vec;
-    private List<String> labels;
-    private final int limit;
     private final Random rand;
     private AtomicInteger cnt = new AtomicInteger(0);
     private int batchSize;
-    private double[] probabilities;
-    public VocabSamplingIterator(Word2Vec word2Vec, List<String> labels, double[] probabilities, int batchSize, int limit, boolean testing) {
-        this.word2Vec=word2Vec;
-        this.probabilities=probabilities;
-        this.labels=labels;
-        this.batchSize=batchSize;
+    private int[] indices;
+    private INDArray[] allVectors;
+    private INDArray allMasks;
+    private int limit;
+    public VocabSamplingIterator(int[] indices, INDArray[] allVectors, INDArray allMasks, int limit, int batchSize, boolean randomize) {
+        if(limit <= 0) limit = allVectors.length;
+        this.allVectors=allVectors;
         this.limit=limit;
-        this.rand = new Random(testing ? 69 : System.currentTimeMillis());
+        this.allMasks=allMasks;
+        this.batchSize=batchSize;
+        this.indices=indices;
+        this.rand = !randomize ? null : new Random(System.currentTimeMillis());
     }
 
     @Override
     public MultiDataSet next(int n) {
         int num = Math.min(n,limit-cnt.get());
-        int[] indices = new int[num];
+        INDArray features = Nd4j.create(num,allVectors[0].rows(),allVectors[0].columns());
+        int[] maskIndices = new int[num];
         for(int i = 0; i < num; i++) {
+            int idx = rand == null ? cnt.get() : indices[rand.nextInt(indices.length)];
+            maskIndices[i]=idx;
+            features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()).assign(allVectors[idx].dup());
             cnt.getAndIncrement();
-            indices[i] = sample();
         }
-        INDArray features = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(), 1, indices);
-        return new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{features},new INDArray[]{features});
+        INDArray featureMask = Nd4j.pullRows(allMasks.getRows(),0,maskIndices);
+        INDArray[] fArray = new INDArray[]{features};
+        INDArray[] mArray = new INDArray[]{featureMask};
+        return new org.nd4j.linalg.dataset.MultiDataSet(fArray,fArray,mArray,mArray);
     }
 
-    public int sample() {
-        Integer sample = null;
-        int notFoundCount = 0;
-        while(sample==null&&notFoundCount<100) {
-            double r = rand.nextDouble();
-            double p = 0d;
-            for(int i = 0; i < labels.size(); i++) {
-                p+=probabilities[i];
-                if(p>=r) {
-                    sample = word2Vec.getVocab().indexOf(labels.get(i));
-                    break;
-                }
-            }
-            System.out.println("Warning no sampling found...");
-            notFoundCount++;
-        }
-        if(sample==null) {
-            throw new RuntimeException("Sample is null. Please check that probabilities are valid (i.e. sum to 1.0).");
-        }
-        return sample;
-    }
 
     @Override
     public void setPreProcessor(MultiDataSetPreProcessor multiDataSetPreProcessor) {
