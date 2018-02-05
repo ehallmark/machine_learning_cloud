@@ -20,14 +20,17 @@ public class VocabSamplingIterator implements MultiDataSetIterator {
     private Word2Vec word2Vec;
     private List<String> labels;
     private final int limit;
-    private final Random rand = new Random(432);
+    private final Random rand;
     private AtomicInteger cnt = new AtomicInteger(0);
     private int batchSize;
-    public VocabSamplingIterator(Word2Vec word2Vec, List<String> labels, int batchSize, int limit) {
+    private double[] probabilities;
+    public VocabSamplingIterator(Word2Vec word2Vec, List<String> labels, double[] probabilities, int batchSize, int limit, boolean testing) {
         this.word2Vec=word2Vec;
+        this.probabilities=probabilities;
         this.labels=labels;
         this.batchSize=batchSize;
         this.limit=limit;
+        this.rand = new Random(testing ? 69 : System.currentTimeMillis());
     }
 
     @Override
@@ -43,7 +46,25 @@ public class VocabSamplingIterator implements MultiDataSetIterator {
     }
 
     public int sample() {
-        return word2Vec.getVocab().indexOf(labels.get(rand.nextInt(labels.size())));
+        Integer sample = null;
+        int notFoundCount = 0;
+        while(sample==null&&notFoundCount<100) {
+            double r = rand.nextDouble();
+            double p = 0d;
+            for(int i = 0; i < labels.size(); i++) {
+                p+=probabilities[i];
+                if(p>=r) {
+                    sample = word2Vec.getVocab().indexOf(labels.get(i));
+                    break;
+                }
+            }
+            System.out.println("Warning no sampling found...");
+            notFoundCount++;
+        }
+        if(sample==null) {
+            throw new RuntimeException("Sample is null. Please check that probabilities are valid (i.e. sum to 1.0).");
+        }
+        return sample;
     }
 
     @Override

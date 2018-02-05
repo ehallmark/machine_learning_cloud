@@ -30,6 +30,7 @@ import seeding.Database;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by ehallmark on 11/7/17.
@@ -40,7 +41,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_single_2_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
-    protected static final int BATCH_SIZE = 1024;
+    protected static final int BATCH_SIZE = 128;
     protected static final int MINI_BATCH_SIZE = 64;
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
     protected String modelName;
@@ -81,7 +82,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     @Override
     public synchronized DataSetManager<MultiDataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,MINI_BATCH_SIZE,true);
+            /*PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,MINI_BATCH_SIZE,true);
             manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
                 @Override
                 public void preProcess(MultiDataSet dataSet) {
@@ -90,8 +91,8 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                     dataSet.setLabels(dataSet.getFeatures());
                 }
             });
-            datasetManager = manager;
-            //setDatasetManager();
+            datasetManager = manager; */
+            setDatasetManager();
         }
         return datasetManager;
     }
@@ -116,6 +117,8 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
     @Override
     protected void setDatasetManager() {
+        boolean debug = true;
+
         int trainLimit = 5000000;
         int testLimit = 30000;
         int devLimit = 30000;
@@ -126,33 +129,59 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         List<String> testLabels = Collections.synchronizedList(new ArrayList<>(testLimit));
         List<String> devLabels = Collections.synchronizedList(new ArrayList<>(devLimit));
 
+        List<Double> trainProbs = Collections.synchronizedList(new ArrayList<>(trainLimit));
+        List<Double> testProbs = Collections.synchronizedList(new ArrayList<>(testLimit));
+        List<Double> devProbs = Collections.synchronizedList(new ArrayList<>(devLimit));
+
+
+        int maxWordCount = Math.round(0.05f*word2Vec.getVocab().totalNumberOfDocs());
+        System.out.println("Max word frequency for inclusion: "+maxWordCount);
         word2Vec.getVocab().words().stream().filter(v->v.equals(v.toUpperCase())||word2Vec.getVocab().docAppearedIn(v)<1000).sorted().forEach(word->{
+            double appearedIn = word2Vec.getVocab().docAppearedIn(word);
+            double totalAppearances = word2Vec.getVocab().wordFrequency(word);
+            double score = totalAppearances / Math.log(Math.E+appearedIn);
+            if(debug) {
+                System.out.println("Appeared: "+appearedIn+", Appearances: "+totalAppearances);
+                System.out.println("Score "+score);
+            }
             if(rand.nextDouble()<testRatio) {
                 if(rand.nextBoolean()) {
                     devLabels.add(word);
+                    devProbs.add(score);
                 } else {
                     testLabels.add(word);
+                    testProbs.add(score);
                 }
             } else {
                 trainLabels.add(word);
+                trainProbs.add(score);
             }
           //  System.out.println(word+": "+word2Vec.getVocab().docAppearedIn(word));
         });
         System.out.println("Filtered vocab from "+(trainLabels.size()+testLabels.size()+devLabels.size())+" out of "+word2Vec.getVocab().words().size());
 
-        PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
-                dataFolder,
-                new VocabSamplingIterator(word2Vec,trainLabels,getBatchSize(),trainLimit),
-                new VocabSamplingIterator(word2Vec,testLabels,1024,testLimit),
-                new VocabSamplingIterator(word2Vec,devLabels,1024,devLimit),
-                true
+        // normalize probabilities
+        double trainProbSum = trainProbs.parallelStream().mapToDouble(d->d).sum();
+        double testProbSum = testProbs.parallelStream().mapToDouble(d->d).sum();
+        double devProbSum = devProbs.parallelStream().mapToDouble(d->d).sum();
+
+        double[] trainProbArray = trainProbs.stream().mapToDouble(d->d/trainProbSum).toArray();
+        double[] testProbArray = testProbs.stream().mapToDouble(d->d/testProbSum).toArray();
+        double[] devProbArray = devProbs.stream().mapToDouble(d->d/devProbSum).toArray();
+
+        NoSaveDataSetManager<MultiDataSetIterator> manager = new NoSaveDataSetManager<>(
+                //dataFolder,
+                new VocabSamplingIterator(word2Vec,trainLabels,trainProbArray,getBatchSize(),trainLimit,false),
+                new VocabSamplingIterator(word2Vec,testLabels,testProbArray,1024,testLimit,true),
+                new VocabSamplingIterator(word2Vec,devLabels,devProbArray,1024,devLimit,true)//,
+                //true
         );
-        manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
+        /*manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
             @Override
             public void preProcess(MultiDataSet dataSet) {
                 dataSet.setLabels(null);
             }
-        });
+        });*/
         datasetManager = manager;
     }
 
