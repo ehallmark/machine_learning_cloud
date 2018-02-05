@@ -189,7 +189,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;
-        boolean forceRecreateModels = true;
+        boolean forceRecreateModels = false;
         boolean runPredictions = true;
         int nEpochs = 3;//5
 
@@ -198,7 +198,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         String modelName;
 
         if(runDeepModel) {
-            windowSize = 6;
+            windowSize = 4;
             modelName = DEEP_MODEL_NAME;
             maxSamples = 500;
         } else {
