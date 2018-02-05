@@ -88,7 +88,7 @@ public class PreSaveDataSetManager<T extends Iterator> implements DataSetManager
     protected T getIterator(String kind, int limit, int miniBatch) {
         T iterator;
         if(multi) {
-            iterator = (T) new FileMultiMinibatchIterator(new File(baseDir,kind),limit,miniBatch);
+            iterator = (T) new FileMultiMinibatchIterator(new File(baseDir,kind),limit,miniBatch,!kind.equals(TRAIN));
             if(multiDataSetPreProcessor!=null) {
                 ((MultiDataSetIterator)iterator).setPreProcessor(multiDataSetPreProcessor);
             }
