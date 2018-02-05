@@ -133,7 +133,8 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
             if(idx < batch) {
                 features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
             }
-            features.diviColumnVector(features.norm2(1));
+            //features.diviColumnVector(features.norm2(1));
+            features.diviColumnVector(features.normmax(1));
             INDArray[] allFeatures = new INDArray[]{features};
             currentDataSet = new MultiDataSet(allFeatures,allFeatures);
         }
