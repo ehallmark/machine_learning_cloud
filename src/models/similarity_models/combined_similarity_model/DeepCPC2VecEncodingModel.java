@@ -364,7 +364,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                     .nIn(hiddenLayerSize + hiddenLayerSize)
                     .nOut(vectorSize);
         } else {
-            encoding = NNOptimizer.newDenseLayer(hiddenLayerSize + hiddenLayerSize, vectorSize);
+            encoding = NNOptimizer.newDenseLayer(hiddenLayerSize, vectorSize);
         }
         org.deeplearning4j.nn.conf.layers.Layer.Builder eNorm = NNOptimizer.newBatchNormLayer(vectorSize, vectorSize);
         conf = conf.addLayer(String.valueOf(i), encoding.build(), String.valueOf(i - 1));
