@@ -42,7 +42,7 @@ public class VocabSamplingIterator implements MultiDataSetIterator {
             features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()).assign(allVectors[idx].dup());
             cnt.getAndIncrement();
         }
-        INDArray featureMask = Nd4j.pullRows(allMasks,1,maskIndices);
+        INDArray featureMask = allMasks.getRows(maskIndices);// Nd4j.pullRows(allMasks,1,maskIndices);
         INDArray[] fArray = new INDArray[]{features};
         INDArray[] mArray = new INDArray[]{featureMask};
         return new org.nd4j.linalg.dataset.MultiDataSet(fArray,fArray,mArray,mArray);
