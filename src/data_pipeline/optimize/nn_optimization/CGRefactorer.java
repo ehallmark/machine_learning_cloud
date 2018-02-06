@@ -1,6 +1,7 @@
 package data_pipeline.optimize.nn_optimization;
 
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
+import org.deeplearning4j.nn.conf.InputPreProcessor;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
@@ -25,6 +26,15 @@ public class CGRefactorer {
             return null;
         };
         return updateNetwork(orig,cgApplier,netApplier,layerApplier,false,true,dup);
+    }
+
+    public static ComputationGraph setInputPreprocessor(ComputationGraph orig, InputPreProcessor preProcessor, int layerIdx,  InputPreProcessor preProcessor2, int layerIdx2, boolean dup) {
+        Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier = builder -> builder;
+        Function<ComputationGraphConfiguration.GraphBuilder,ComputationGraphConfiguration.GraphBuilder> cgApplier = builder -> builder;
+        Function<Layer,Void> layerApplier = layer -> {
+            return null;
+        };
+        return updateNetwork(orig,cgApplier,netApplier,layerApplier,false,true,dup,preProcessor,layerIdx,preProcessor2,layerIdx2);
     }
 
     public static ComputationGraph updatePretrainAndBackprop(ComputationGraph orig, boolean pretrain, boolean backprop, boolean dup) {
@@ -56,6 +66,10 @@ public class CGRefactorer {
     }
 
     public static ComputationGraph updateNetwork(ComputationGraph orig, Function<ComputationGraphConfiguration.GraphBuilder,ComputationGraphConfiguration.GraphBuilder> cgApplier, Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier, Function<Layer,Void> layerApplier, boolean pretrain, boolean backprop, boolean duplicateParameters) {
+        return updateNetwork(orig,cgApplier,netApplier,layerApplier,pretrain,backprop,duplicateParameters,null,-1,null,-1);
+    }
+
+    public static ComputationGraph updateNetwork(ComputationGraph orig, Function<ComputationGraphConfiguration.GraphBuilder,ComputationGraphConfiguration.GraphBuilder> cgApplier, Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier, Function<Layer,Void> layerApplier, boolean pretrain, boolean backprop, boolean duplicateParameters, InputPreProcessor inputPreProcessor, int layerIdx, InputPreProcessor inputPreProcessor2, int layerIdx2) {
         INDArray params = orig.params();
         ComputationGraphConfiguration configClone = orig.getConfiguration().clone();
         NeuralNetConfiguration.Builder netConfigClone = netApplier.apply(new NeuralNetConfiguration.Builder(configClone.getDefaultConfiguration().clone()));
@@ -69,7 +83,16 @@ public class CGRefactorer {
             NeuralNetConfiguration layerConf = orig.getLayer(i).conf().clone();
             Layer layer = layerConf.getLayer();
             layerApplier.apply(layer);
-            conf = conf.addLayer(layer.getLayerName(), layer, configClone.getVertexInputs().get(layer.getLayerName()).toArray(new String[]{}));
+            if(inputPreProcessor!=null&&layerIdx==i) {
+                conf = conf.addLayer(layer.getLayerName(), layer, inputPreProcessor, configClone.getVertexInputs().get(layer.getLayerName()).toArray(new String[]{}));
+            } else {
+                conf = conf.addLayer(layer.getLayerName(), layer, configClone.getVertexInputs().get(layer.getLayerName()).toArray(new String[]{}));
+            }
+            if(inputPreProcessor2!=null&&layerIdx2==i) {
+                conf = conf.addLayer(layer.getLayerName(), layer, inputPreProcessor2, configClone.getVertexInputs().get(layer.getLayerName()).toArray(new String[]{}));
+            } else {
+                conf = conf.addLayer(layer.getLayerName(), layer, configClone.getVertexInputs().get(layer.getLayerName()).toArray(new String[]{}));
+            }
         }
 
         ComputationGraph net = new ComputationGraph(
