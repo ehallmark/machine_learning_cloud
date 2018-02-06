@@ -420,7 +420,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
         net.setLayerMaskArrays(finalDataSet.getFeaturesMaskArrays(),finalDataSet.getLabelsMaskArrays());
-        return 1d+net.score(finalDataSet)/finalDataSet.getLabels().length;
+        double score = net.score(finalDataSet);
+        net.clearLayerMaskArrays();
+        return 1d+score;
     }
 
 
