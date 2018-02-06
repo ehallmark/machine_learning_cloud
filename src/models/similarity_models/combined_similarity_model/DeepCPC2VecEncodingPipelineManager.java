@@ -42,7 +42,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 64;
-    protected static final Distribution unifRand = new UniformDistribution(0,1);
+    protected static final Random rand = new Random(235);
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
     protected String modelName;
     protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
@@ -89,8 +89,14 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                     //dataSet.getFeatures()[1]=dataSet.getFeatures(1).reshape(dataSet.getFeatures(1).length(),1);
                     //dataSet.setFeatures(new INDArray[]{dataSet.getFeatures(0)});
                     dataSet.setLabels(dataSet.getFeatures());
-                    dataSet.setLabelsMaskArray(dataSet.getFeaturesMaskArrays());
-                    dataSet.setLabelsMaskArray(0,dataSet.getLabelsMaskArray(0).mul(Nd4j.rand(dataSet.getLabelsMaskArray(0).shape(), unifRand).gti(0.5)));
+                    INDArray featureMask = dataSet.getFeaturesMaskArray(0);
+                    int[] lastIdx = featureMask.sum(1).data().asInt();
+                    float[][] labelMaskArr = new float[featureMask.rows()][];
+                    for(int i = 0; i < lastIdx.length; i++) {
+                        float[] zeros = new float[featureMask.columns()];
+                        zeros[rand.nextInt(lastIdx[i])] = 1f;
+                    }
+                    dataSet.setLabelsMaskArray(new INDArray[]{Nd4j.create(labelMaskArr)});
                 }
             });
             datasetManager = manager;
