@@ -51,7 +51,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Getter
     private ComputationGraph vaeNetwork;
 
-    int numHiddenLayers = 2;
+    int numHiddenLayers = 3;
     int encodingIdx = numHiddenLayers*2+5;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
@@ -280,7 +280,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     public int printIterations() {
-        return 100;
+        return 1000;
     }
 
 
@@ -327,7 +327,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         i += useBatchNorm ? 3 : 1;
 
         int t = i;
-        //  recurrent encoding
+       /* //  recurrent encoding
         for (; i < t + numHiddenLayers * increment; i += increment) {
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
             layer = NNOptimizer.newGravesBidirectionalLSTMLayer(hiddenLayerSize, hiddenLayerSize);
@@ -336,8 +336,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
             if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), norm.build(), String.valueOf(i));
         }
+        */
 
-        t = i;
+       t = i;
 
         // dense hidden encoding
         for (; i < t + numHiddenLayers * increment; i += increment) {
@@ -383,7 +384,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         t = i;
 
         //  recurrent hidden layers
-        for (; i < t + numHiddenLayers * increment; i += increment) {
+        //for (; i < t + numHiddenLayers * increment; i += increment) {
+        for (; i < t + 1 * increment; i += increment) {
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
             layer = NNOptimizer.newGravesBidirectionalLSTMLayer(hiddenLayerSize, hiddenLayerSize);
 
