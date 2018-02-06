@@ -115,28 +115,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         int trainLimit = 5000000;
         int testLimit = 30000;
         int devLimit = 30000;
-        final double testRatio = 0.1;
         Random rand = new Random(235);
-
-        List<String> trainLabels = Collections.synchronizedList(new ArrayList<>(trainLimit));
-        List<String> testLabels = Collections.synchronizedList(new ArrayList<>(testLimit));
-        List<String> devLabels = Collections.synchronizedList(new ArrayList<>(devLimit));
-
-        int maxWordCount = Math.round(0.05f*word2Vec.getVocab().totalNumberOfDocs());
-        System.out.println("Max word frequency for inclusion: "+maxWordCount);
-        word2Vec.getVocab().words().stream().filter(v->v.equals(v.toUpperCase())||word2Vec.getVocab().docAppearedIn(v)<1000).sorted().forEach(word->{
-            if(rand.nextDouble()<testRatio) {
-                if(rand.nextBoolean()) {
-                    devLabels.add(word);
-                } else {
-                    testLabels.add(word);
-                }
-            } else {
-                trainLabels.add(word);
-            }
-          //  System.out.println(word+": "+word2Vec.getVocab().docAppearedIn(word));
-        });
-        System.out.println("Filtered vocab from "+(trainLabels.size()+testLabels.size()+devLabels.size())+" out of "+word2Vec.getVocab().words().size());
 
         Map<String,Collection<CPC>> cpcMap = wordCPC2VecPipelineManager.getCPCMap();
 
