@@ -39,7 +39,7 @@ public class VocabSamplingIterator implements MultiDataSetIterator {
         for(int i = 0; i < num; i++) {
             int idx = rand == null ? cnt.get() : indices[rand.nextInt(indices.length)];
             maskIndices[i]=idx;
-            features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()).assign(allVectors[idx].dup());
+            features.get(NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.all()).assign(allVectors[idx].dup());
             cnt.getAndIncrement();
         }
         INDArray featureMask = Nd4j.pullRows(allMasks,1,maskIndices);
