@@ -17,17 +17,15 @@ public class VocabSamplingIterator implements MultiDataSetIterator {
     private final Random rand;
     private AtomicInteger cnt = new AtomicInteger(0);
     private int batchSize;
-    private int[] indices;
     private INDArray[] allVectors;
     private INDArray allMasks;
     private int limit;
-    public VocabSamplingIterator(int[] indices, INDArray[] allVectors, INDArray allMasks, int limit, int batchSize, boolean randomize) {
+    public VocabSamplingIterator(INDArray[] allVectors, INDArray allMasks, int limit, int batchSize, boolean randomize) {
         if(limit <= 0) limit = allVectors.length;
         this.allVectors=allVectors;
         this.limit=limit;
         this.allMasks=allMasks;
         this.batchSize=batchSize;
-        this.indices=indices;
         this.rand = !randomize ? null : new Random(System.currentTimeMillis());
     }
 
@@ -37,12 +35,12 @@ public class VocabSamplingIterator implements MultiDataSetIterator {
         INDArray features = Nd4j.create(num,allVectors[0].rows(),allVectors[0].columns());
         int[] maskIndices = new int[num];
         for(int i = 0; i < num; i++) {
-            int idx = rand == null ? cnt.get() : indices[rand.nextInt(indices.length)];
+            int idx = rand == null ? cnt.get() : rand.nextInt(allVectors.length);
             maskIndices[i]=idx;
             features.get(NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.all()).assign(allVectors[idx].dup());
             cnt.getAndIncrement();
         }
-        INDArray featureMask = Nd4j.pullRows(allMasks,1,maskIndices);
+        INDArray featureMask = allMasks.getRows(maskIndices);
         INDArray[] fArray = new INDArray[]{features};
         INDArray[] mArray = new INDArray[]{featureMask};
         return new org.nd4j.linalg.dataset.MultiDataSet(fArray,fArray,mArray,mArray);

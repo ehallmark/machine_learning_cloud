@@ -131,7 +131,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                     .collect(Collectors.toCollection(ArrayList::new));
 
             if(cpcLabels.isEmpty()) return Stream.empty();
-            return IntStream.range(0,Math.max(1,Math.round((float)(1f+Math.log(cpcLabels.size())))))//cpcLabels.size())
+            return IntStream.range(0,Math.min(3,Math.max(1,Math.round((float)Math.log(cpcLabels.size())))))//cpcLabels.size())
                     .mapToObj(i->{
                 List<String> cpcLabelsClone = new ArrayList<>(cpcLabels);
                 Collections.shuffle(cpcLabelsClone);
@@ -140,37 +140,21 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             });
         }).filter(e->e!=null).map(e->e.getSecond()).collect(Collectors.toList());
 
-        final long numAssets = entries.size();
+        final int numAssets = entries.size();
         AtomicInteger cnt = new AtomicInteger(0);
 
         INDArray masks = Nd4j.ones((int)numAssets,getMaxSamples());
 
         Collections.shuffle(entries,rand);
 
-        System.out.println("Starting to build vectors...");
-        INDArray[] vectors = entries.stream().map(cpcLabels->{
-            INDArray vec = Nd4j.create(VECTOR_SIZE,getMaxSamples());
-            int numCPCLabels = cpcLabels.size();
-            vec.get(NDArrayIndex.all(),NDArrayIndex.interval(0,numCPCLabels)).assign(word2Vec.getWordVectors(cpcLabels));
-            int idx = cnt.getAndIncrement();
-            if(getMaxSamples()>numCPCLabels) {
-                vec.get(NDArrayIndex.all(),NDArrayIndex.interval(numCPCLabels,getMaxSamples())).assign(0);
-                masks.get(NDArrayIndex.point(idx),NDArrayIndex.interval(numCPCLabels,getMaxSamples())).assign(0);
-            }
-            return vec;
-        }).toArray(size->new INDArray[size]);
 
-        System.out.println("Finished. Now creating indices...");
-
-        final int NUM_VECTORS = vectors.length;
-
-        final int[] trainIndices = new int[Math.min(NUM_VECTORS-testLimit-devLimit,trainLimit)];
+        final int[] trainIndices = new int[Math.min(numAssets-testLimit-devLimit,trainLimit)];
         final int[] testIndices = new int[testLimit];
         final int[] devIndices = new int[devLimit];
 
         Set<Integer> seenIndex = new HashSet<>();
         for(int i = 0; i < testLimit; i++) {
-            int next = rand.nextInt(vectors.length);
+            int next = rand.nextInt(numAssets);
             if(seenIndex.contains(next)) {
                 i--; continue;
             } else {
@@ -179,7 +163,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             }
         }
         for(int i = 0; i < devLimit; i++) {
-            int next = rand.nextInt(vectors.length);
+            int next = rand.nextInt(numAssets);
             if(seenIndex.contains(next)) {
                 i--; continue;
             } else {
@@ -198,12 +182,16 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             i++;
         }
 
+        INDArray[] trainVectors = buildVectors(trainIndices,entries);
+        INDArray[] testVectors = buildVectors(testIndices,entries);
+        INDArray[] devVectors = buildVectors(devIndices,entries);
+
         System.out.println("Finished finding test/train/dev indices...");
         PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
                 dataFolder,
-                new VocabSamplingIterator(trainIndices,vectors,masks,Math.round(1.5f*trainLimit),getBatchSize(),true),
-                new VocabSamplingIterator(testIndices,vectors,masks,-1,1024,false),
-                new VocabSamplingIterator(devIndices,vectors,masks,-1,1024,false),
+                new VocabSamplingIterator(trainVectors,masks,Math.round(1.5f*trainLimit),getBatchSize(),true),
+                new VocabSamplingIterator(testVectors,masks,-1,1024,false),
+                new VocabSamplingIterator(devVectors,masks,-1,1024,false),
                 true
         );
         manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
@@ -214,6 +202,30 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             }
         });
         datasetManager = manager;
+    }
+
+    private INDArray[] buildVectors(int[] indices, List<List<String>> _entries) {
+        List<List<String>> entries = IntStream.of(indices).mapToObj(i->_entries.get(i)).collect(Collectors.toList());
+
+        INDArray masks = Nd4j.ones(entries.size(),getMaxSamples());
+        AtomicInteger cnt = new AtomicInteger(0);
+
+        System.out.println("Starting to build vectors... Num entries: "+entries.size());
+        INDArray[] vectors = entries.stream().map(cpcLabels->{
+            INDArray vec = Nd4j.create(VECTOR_SIZE,getMaxSamples());
+            int numCPCLabels = cpcLabels.size();
+            vec.get(NDArrayIndex.all(),NDArrayIndex.interval(0,numCPCLabels)).assign(word2Vec.getWordVectors(cpcLabels));
+            int idx = cnt.getAndIncrement();
+            if(getMaxSamples()>numCPCLabels) {
+                vec.get(NDArrayIndex.all(),NDArrayIndex.interval(numCPCLabels,getMaxSamples())).assign(0);
+                masks.get(NDArrayIndex.point(idx),NDArrayIndex.interval(numCPCLabels,getMaxSamples())).assign(0);
+            }
+            return vec;
+        }).toArray(size->new INDArray[size]);
+
+        System.out.println("Finished. Now creating indices...");
+
+        return vectors;
     }
 
 
