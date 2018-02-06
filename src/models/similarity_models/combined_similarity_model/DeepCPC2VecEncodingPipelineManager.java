@@ -5,6 +5,7 @@ import cpc_normalization.CPC;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
+import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.text_streaming.FileTextDataSetIterator;
@@ -13,6 +14,8 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.MultiDataSet;
+import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
@@ -76,18 +79,18 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     @Override
     public synchronized DataSetManager<MultiDataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
-            /*PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,MINI_BATCH_SIZE,true);
+            PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,MINI_BATCH_SIZE,true);
             manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
                 @Override
-                public void preProcess(MultiDataSet dataSet) {
+                public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
                     //dataSet.getFeatures()[1]=dataSet.getFeatures(1).reshape(dataSet.getFeatures(1).length(),1);
                     //dataSet.setFeatures(new INDArray[]{dataSet.getFeatures(0)});
                     dataSet.setLabels(dataSet.getFeatures());
-                    dataSet.setLabelsArrayMask(dataSet.getFeaturesArrayMask());
+                    dataSet.setLabelsMaskArray(dataSet.getFeaturesMaskArrays());
                 }
             });
-            datasetManager = manager; */
-            setDatasetManager();
+            datasetManager = manager;
+            //setDatasetManager();
         }
         return datasetManager;
     }
@@ -107,12 +110,12 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     }
 
     protected int getMaxSamples() {
-        return 16;
+        return 8;
     }
 
     @Override
     protected void setDatasetManager() {
-        int trainLimit = 5000000;
+        int trainLimit = 10000000;
         int testLimit = 30000;
         int devLimit = 30000;
         Random rand = new Random(235);
@@ -128,7 +131,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                     .collect(Collectors.toCollection(ArrayList::new));
 
             if(cpcLabels.isEmpty()) return Stream.empty();
-            return IntStream.range(0,1)//cpcLabels.size())
+            return IntStream.range(0,Math.max(1,Math.round((float)(1f+Math.log(cpcLabels.size())))))//cpcLabels.size())
                     .mapToObj(i->{
                 List<String> cpcLabelsClone = new ArrayList<>(cpcLabels);
                 Collections.shuffle(cpcLabelsClone);
@@ -196,20 +199,20 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         }
 
         System.out.println("Finished finding test/train/dev indices...");
-        NoSaveDataSetManager<MultiDataSetIterator> manager = new NoSaveDataSetManager<>(
-                //dataFolder,
+        PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
+                dataFolder,
                 new VocabSamplingIterator(trainIndices,vectors,masks,Math.round(1.5f*trainLimit),getBatchSize(),true),
                 new VocabSamplingIterator(testIndices,vectors,masks,-1,1024,false),
-                new VocabSamplingIterator(devIndices,vectors,masks,-1,1024,false)//,
-                //true
+                new VocabSamplingIterator(devIndices,vectors,masks,-1,1024,false),
+                true
         );
-        /*manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
+        manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
             @Override
-            public void preProcess(MultiDataSet dataSet) {
+            public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
                 dataSet.setLabels(null);
-                dataSet.setLabelsArrayMask(null);
+                dataSet.setLabelsMaskArray(null);
             }
-        });*/
+        });
         datasetManager = manager;
     }
 
