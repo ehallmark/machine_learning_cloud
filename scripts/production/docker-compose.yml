@@ -8,12 +8,12 @@ services:
       - xpack.security.enabled=false
       - node.name=elasticsearch1
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms32000m -Xmx32000m"
+      - "ES_JAVA_OPTS=-Xms45000m -Xmx45000m"
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 75g
+    mem_limit: 100g
     volumes:
       - esdata1:/usr/share/elasticsearch/data
     ports:
