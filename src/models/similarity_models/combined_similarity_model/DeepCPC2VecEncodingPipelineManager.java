@@ -41,7 +41,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_single_2_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
-    protected static final int MINI_BATCH_SIZE = -1;
+    protected static final int MINI_BATCH_SIZE = 128;
     protected static final Random rand = new Random(235);
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
     protected String modelName;
