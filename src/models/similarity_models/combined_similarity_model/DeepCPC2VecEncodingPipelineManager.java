@@ -89,7 +89,8 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                     //dataSet.getFeatures()[1]=dataSet.getFeatures(1).reshape(dataSet.getFeatures(1).length(),1);
                     //dataSet.setFeatures(new INDArray[]{dataSet.getFeatures(0)});
                     dataSet.setLabels(dataSet.getFeatures());
-                    INDArray featureMask = dataSet.getFeaturesMaskArray(0);
+                    dataSet.setLabelsMaskArray(dataSet.getFeaturesMaskArrays());
+                    /*INDArray featureMask = dataSet.getFeaturesMaskArray(0);
                     int[] lastIdx = featureMask.sum(1).data().asInt();
                     float[][] labelMaskArr = new float[featureMask.rows()][];
                     for(int i = 0; i < lastIdx.length; i++) {
@@ -97,7 +98,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                         zeros[rand.nextInt(lastIdx[i])] = 1f;
                         labelMaskArr[i]=zeros;
                     }
-                    dataSet.setLabelsMaskArray(new INDArray[]{Nd4j.create(labelMaskArr)});
+                    dataSet.setLabelsMaskArray(new INDArray[]{Nd4j.create(labelMaskArr)});*/
                 }
             });
             datasetManager = manager;
