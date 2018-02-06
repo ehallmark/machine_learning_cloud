@@ -14,6 +14,8 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.rng.distribution.Distribution;
+import org.nd4j.linalg.api.rng.distribution.impl.UniformDistribution;
 import org.nd4j.linalg.dataset.MultiDataSet;
 import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
@@ -40,6 +42,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 64;
+    protected static final Distribution unifRand = new UniformDistribution(0,1);
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
     protected String modelName;
     protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
@@ -87,6 +90,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                     //dataSet.setFeatures(new INDArray[]{dataSet.getFeatures(0)});
                     dataSet.setLabels(dataSet.getFeatures());
                     dataSet.setLabelsMaskArray(dataSet.getFeaturesMaskArrays());
+                    dataSet.setLabelsMaskArray(0,dataSet.getLabelsMaskArray(0).mul(Nd4j.rand(dataSet.getLabelsMaskArray(0).shape(), unifRand).gti(0.5)));
                 }
             });
             datasetManager = manager;

@@ -51,7 +51,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Getter
     private ComputationGraph vaeNetwork;
 
-    int numHiddenLayers = 3;
+    int numHiddenLayers = 2;
     int encodingIdx = numHiddenLayers*2+5;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
@@ -444,7 +444,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             int valCount = 0;
             double score = 0d;
             int count = 0;
-            while(validationIterator.hasNext()&&valCount<30000) {
+            while(validationIterator.hasNext()&&valCount<20000) {
                 MultiDataSet dataSet = validationIterator.next();
                 validationDataSets.add(dataSet);
                 valCount+=dataSet.getFeatures()[0].shape()[0];
