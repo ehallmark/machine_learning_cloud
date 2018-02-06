@@ -311,9 +311,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .activation(activation)
                 .graphBuilder()
-                .backpropType(BackpropType.TruncatedBPTT)
-                .tBPTTBackwardLength(1)
-                .tBPTTForwardLength(1)
+              //  .backpropType(BackpropType.TruncatedBPTT)
+              //  .tBPTTBackwardLength(1)
+              //  .tBPTTForwardLength(1)
                 .addInputs("x1")
                 .setOutputs("y1");
 
