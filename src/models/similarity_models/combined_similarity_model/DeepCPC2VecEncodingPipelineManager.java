@@ -93,7 +93,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                     float[][] labelMaskArr = new float[featureMask.rows()][];
                     for(int i = 0; i < lastIdx.length; i++) {
                         float[] zeros = new float[featureMask.columns()];
-                        zeros[lastIdx[i]] = 1f;
+                        zeros[lastIdx[i]-1] = 1f;
                         labelMaskArr[i]=zeros;
                     }
                     dataSet.setLabelsMaskArray(new INDArray[]{Nd4j.create(labelMaskArr)});
