@@ -12,6 +12,7 @@ import lombok.NonNull;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
@@ -40,6 +41,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
 
     @Override
     public Map<String, Boolean> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
+        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         // only predicts with assignees
         int batchSize = 1000;
         String[] assigneeArray = assignees.toArray(new String[assignees.size()]);
