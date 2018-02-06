@@ -432,23 +432,25 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     protected Function<Object, Double> getTestFunction() {
-        MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
-        List<MultiDataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
-
-        int valCount = 0;
-        while(validationIterator.hasNext()&&valCount<30000) {
-            MultiDataSet dataSet = validationIterator.next();
-            validationDataSets.add(dataSet);
-            valCount+=dataSet.getFeatures()[0].shape()[0];
-            System.out.println("Validation seen: "+valCount);
-            //System.gc();
-        }
-
-        System.out.println("Num validation datasets: "+validationDataSets.size());
-
         return (v) -> {
             System.gc();
-            return validationDataSets.stream().mapToDouble(ds->test((ComputationGraph)v,ds)).average().orElse(Double.NaN);
+            MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
+            List<MultiDataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
+
+            int valCount = 0;
+            double score = 0d;
+            int count = 0;
+            while(validationIterator.hasNext()&&valCount<30000) {
+                MultiDataSet dataSet = validationIterator.next();
+                validationDataSets.add(dataSet);
+                valCount+=dataSet.getFeatures()[0].shape()[0];
+                score+=test(vaeNetwork,dataSet);
+                count++;
+                //System.gc();
+            }
+            validationIterator.reset();
+
+            return score/count;
         };
     }
 
