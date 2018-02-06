@@ -166,7 +166,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         INDArray[] vectors = entries.stream().map(cpcLabels->{
             INDArray vec = Nd4j.create(VECTOR_SIZE,getMaxSamples());
             int numCPCLabels = cpcLabels.size();
-            vec.get(NDArrayIndex.all(),NDArrayIndex.interval(0,numCPCLabels)).assign(vec);
+            vec.get(NDArrayIndex.all(),NDArrayIndex.interval(0,numCPCLabels)).assign(word2Vec.getWordVectors(cpcLabels));
             int idx = cnt.getAndIncrement();
             if(getMaxSamples()>numCPCLabels) {
                 vec.get(NDArrayIndex.all(),NDArrayIndex.interval(numCPCLabels,getMaxSamples())).assign(0);
