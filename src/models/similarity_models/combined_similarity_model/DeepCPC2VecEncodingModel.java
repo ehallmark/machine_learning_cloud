@@ -341,13 +341,13 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         }
 
 
-        org.deeplearning4j.nn.conf.layers.Layer.Builder encoding = NNOptimizer.newDenseLayer(hiddenLayerSize*pipelineManager.getMaxSamples(), vectorSize);
+        org.deeplearning4j.nn.conf.layers.Layer.Builder encoding = NNOptimizer.newDenseLayer(hiddenLayerSize, vectorSize);
 
         org.deeplearning4j.nn.conf.layers.Layer.Builder eNorm = NNOptimizer.newBatchNormLayer(vectorSize, vectorSize);
         conf = conf.addLayer(String.valueOf(i), encoding.build(), new RnnToFeedForwardPreProcessor(), String.valueOf(i - 1));
         if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), eNorm.build(), String.valueOf(i));
         i += increment;
-        org.deeplearning4j.nn.conf.layers.Layer.Builder decoding = NNOptimizer.newDenseLayer(vectorSize, hiddenLayerSize*pipelineManager.getMaxSamples());
+        org.deeplearning4j.nn.conf.layers.Layer.Builder decoding = NNOptimizer.newDenseLayer(vectorSize, hiddenLayerSize);
         org.deeplearning4j.nn.conf.layers.Layer.Builder dNorm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
         conf = conf.addLayer(String.valueOf(i), decoding.build(), String.valueOf(i - 1));
         if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), dNorm.build(), String.valueOf(i));
