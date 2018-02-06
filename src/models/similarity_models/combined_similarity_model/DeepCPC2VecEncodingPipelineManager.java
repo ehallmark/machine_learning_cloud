@@ -163,6 +163,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         INDArray masks = Nd4j.ones((int)numAssets,getMaxSamples());
 
         Collections.shuffle(entries,rand);
+
         INDArray[] vectors = entries.stream().map(cpcLabels->{
             INDArray vec = Nd4j.create(VECTOR_SIZE,getMaxSamples());
             int numCPCLabels = cpcLabels.size();
@@ -203,6 +204,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         }
         int i = 0;
         int idx = 0;
+        System.out.println("Starting to find train indices...");
         while(idx < trainIndices.length) {
             if(!seenIndex.contains(i)) {
                 trainIndices[idx]=i;
@@ -211,6 +213,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             i++;
         }
 
+        System.out.println("Finished finding test/train/dev indices...");
         NoSaveDataSetManager<MultiDataSetIterator> manager = new NoSaveDataSetManager<>(
                 //dataFolder,
                 new VocabSamplingIterator(trainIndices,vectors,masks,Math.round(1.5f*trainLimit),getBatchSize(),true),
