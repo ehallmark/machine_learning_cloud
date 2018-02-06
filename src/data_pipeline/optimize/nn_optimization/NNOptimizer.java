@@ -130,6 +130,10 @@ public class NNOptimizer {
         return new GravesLSTM.Builder().nIn(nIn).nOut(nOut);
     }
 
+    public static GravesBidirectionalLSTM.Builder newGravesBidirectionalLSTMLayer(int nIn, int nOut) {
+        return new GravesBidirectionalLSTM.Builder().nIn(nIn).nOut(nOut);
+    }
+
     public static NeuralNetConfiguration defaultNetworkConfig() {
         return new NeuralNetConfiguration.Builder()
                 .miniBatch(true)
