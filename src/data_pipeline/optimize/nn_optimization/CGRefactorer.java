@@ -85,14 +85,12 @@ public class CGRefactorer {
             layerApplier.apply(layer);
             if(inputPreProcessor!=null&&layerIdx==i) {
                 conf = conf.addLayer(layer.getLayerName(), layer, inputPreProcessor, configClone.getVertexInputs().get(layer.getLayerName()).toArray(new String[]{}));
-            } else {
-                conf = conf.addLayer(layer.getLayerName(), layer, configClone.getVertexInputs().get(layer.getLayerName()).toArray(new String[]{}));
-            }
-            if(inputPreProcessor2!=null&&layerIdx2==i) {
+            } else if(inputPreProcessor2!=null&&layerIdx2==i) {
                 conf = conf.addLayer(layer.getLayerName(), layer, inputPreProcessor2, configClone.getVertexInputs().get(layer.getLayerName()).toArray(new String[]{}));
             } else {
                 conf = conf.addLayer(layer.getLayerName(), layer, configClone.getVertexInputs().get(layer.getLayerName()).toArray(new String[]{}));
             }
+
         }
 
         ComputationGraph net = new ComputationGraph(
