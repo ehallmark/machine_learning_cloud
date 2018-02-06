@@ -280,7 +280,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     public int printIterations() {
-        return 1000;
+        return 100;
     }
 
 
