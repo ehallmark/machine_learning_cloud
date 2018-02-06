@@ -112,7 +112,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
     @Override
     protected void setDatasetManager() {
-        int trainLimit = 10000000;
+        int trainLimit = 5000000;
         int testLimit = 30000;
         int devLimit = 30000;
         final double testRatio = 0.1;
@@ -149,7 +149,8 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                     .collect(Collectors.toCollection(ArrayList::new));
 
             if(cpcLabels.isEmpty()) return Stream.empty();
-            return IntStream.range(0,cpcLabels.size()).mapToObj(i->{
+            return IntStream.range(0,1)//cpcLabels.size())
+                    .mapToObj(i->{
                 List<String> cpcLabelsClone = new ArrayList<>(cpcLabels);
                 Collections.shuffle(cpcLabelsClone);
                 if(cpcLabelsClone.size()>getMaxSamples()) cpcLabelsClone = cpcLabelsClone.subList(0,getMaxSamples());
