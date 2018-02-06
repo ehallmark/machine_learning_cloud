@@ -41,7 +41,6 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
 
     @Override
     public Map<String, Boolean> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         // only predicts with assignees
         int batchSize = 1000;
         String[] assigneeArray = assignees.toArray(new String[assignees.size()]);
@@ -79,6 +78,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
         INDArray labelMask = Nd4j.zeros(features.shape()[0],features.shape()[2]);
         labelMask.putColumn(labelMask.columns()-1,Nd4j.ones(labelMask.rows()));
         net.setLayerMaskArrays(new INDArray[]{mask}, new INDArray[]{labelMask});
+
         INDArray output = net.output(false,features)[0];
         net.clearLayerMaskArrays();
         INDArray predictions = output.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(output.shape()[2]-1));

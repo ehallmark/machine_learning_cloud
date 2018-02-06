@@ -1,8 +1,9 @@
 package seeding.ai_db_updater;
 
-import models.assignee.normalization.human_name_prediction.HumanNamePredictionPipelineManager;
-import models.assignee.normalization.name_correction.NormalizeAssignees;
 import elasticsearch.DataIngester;
+import models.assignee.normalization.human_name_prediction.HumanNamePredictionPipelineManager;
+import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.CleanseAttributesAndMongoBeforeReseed;
 import seeding.Database;
 import seeding.compdb.CreateCompDBAssigneeTransactionData;
@@ -17,6 +18,8 @@ import java.util.Map;
  */
 public class UpdateAll {
     public static void main(String[] args) throws Exception {
+        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
+
         try {
             for (String arg : args) {
                 if(arg.equals("-2")) {
