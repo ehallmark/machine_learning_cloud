@@ -140,7 +140,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
         Map<String,Collection<CPC>> cpcMap = wordCPC2VecPipelineManager.getCPCMap();
 
-        Map<String,List<String>> assetToDataSetMap = cpcMap.keySet().stream().flatMap(asset->{
+        List<List<String>> entries = cpcMap.keySet().stream().flatMap(asset->{
             Collection<CPC> cpcs = cpcMap.get(asset);
             if(cpcs==null) return Stream.empty();
             List<String> cpcLabels = cpcs.stream()
@@ -155,17 +155,15 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                 if(cpcLabelsClone.size()>getMaxSamples()) cpcLabelsClone = cpcLabelsClone.subList(0,getMaxSamples());
                 return new Pair<>(asset,cpcLabelsClone);
             });
-        }).filter(e->e!=null).collect(Collectors.toConcurrentMap(p->p.getFirst(),p->p.getSecond()));
+        }).filter(e->e!=null).map(e->e.getSecond()).collect(Collectors.toList());
 
-        final long numAssets = assetToDataSetMap.size();
+        final long numAssets = entries.size();
         AtomicInteger cnt = new AtomicInteger(0);
 
         INDArray masks = Nd4j.ones((int)numAssets,getMaxSamples());
 
-        List<Map.Entry<String,List<String>>> entries = new ArrayList<>(assetToDataSetMap.entrySet());
         Collections.shuffle(entries,rand);
-        INDArray[] vectors = entries.stream().map(e->{
-            List<String> cpcLabels = e.getValue();
+        INDArray[] vectors = entries.stream().map(cpcLabels->{
             INDArray vec = Nd4j.create(VECTOR_SIZE,getMaxSamples());
             int numCPCLabels = cpcLabels.size();
             vec.get(NDArrayIndex.all(),NDArrayIndex.interval(0,numCPCLabels)).assign(vec);
