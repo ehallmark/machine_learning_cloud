@@ -38,7 +38,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_single_2_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
-    protected static final int BATCH_SIZE = 64;
+    protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 64;
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
     protected String modelName;
@@ -115,7 +115,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
     @Override
     protected void setDatasetManager() {
-        int trainLimit = 10000000;
+        int trainLimit = 5000000;
         int testLimit = 30000;
         int devLimit = 30000;
         Random rand = new Random(235);
@@ -189,7 +189,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         System.out.println("Finished finding test/train/dev indices...");
         PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
                 dataFolder,
-                new VocabSamplingIterator(trainVectors,masks,Math.round(1.5f*trainLimit),getBatchSize(),true),
+                new VocabSamplingIterator(trainVectors,masks,2*trainLimit,getBatchSize(),true),
                 new VocabSamplingIterator(testVectors,masks,-1,1024,false),
                 new VocabSamplingIterator(devVectors,masks,-1,1024,false),
                 true
