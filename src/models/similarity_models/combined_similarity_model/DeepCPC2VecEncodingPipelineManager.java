@@ -165,6 +165,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
         Collections.shuffle(entries,rand);
 
+        System.out.println("Starting to build vectors...");
         INDArray[] vectors = entries.stream().map(cpcLabels->{
             INDArray vec = Nd4j.create(VECTOR_SIZE,getMaxSamples());
             int numCPCLabels = cpcLabels.size();
@@ -177,6 +178,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             return vec;
         }).toArray(size->new INDArray[size]);
 
+        System.out.println("Finished. Now creating indices...");
 
         final int NUM_VECTORS = vectors.length;
 
