@@ -95,6 +95,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                     for(int i = 0; i < lastIdx.length; i++) {
                         float[] zeros = new float[featureMask.columns()];
                         zeros[rand.nextInt(lastIdx[i])] = 1f;
+                        labelMaskArr[i]=zeros;
                     }
                     dataSet.setLabelsMaskArray(new INDArray[]{Nd4j.create(labelMaskArr)});
                 }
