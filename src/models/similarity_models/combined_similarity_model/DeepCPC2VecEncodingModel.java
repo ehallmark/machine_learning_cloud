@@ -311,19 +311,19 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .activation(activation)
                 .graphBuilder()
-                .backpropType(BackpropType.TruncatedBPTT)
-                .tBPTTBackwardLength(1)
-                .tBPTTForwardLength(1)
+              //  .backpropType(BackpropType.TruncatedBPTT)
+              //  .tBPTTBackwardLength(1)
+              //  .tBPTTForwardLength(1)
                 .addInputs("x1")
                 .setOutputs("y1");
 
         if (useBatchNorm) {
             conf = conf.addLayer(String.valueOf(i), NNOptimizer.newBatchNormLayer(input1, input1).build(), "x1")
-                    .addLayer(String.valueOf(i + 1), NNOptimizer.newGravesLSTMLayer(input1, hiddenLayerSize).build(), String.valueOf(i))
+                    .addLayer(String.valueOf(i + 1), NNOptimizer.newGravesBidirectionalLSTMLayer(input1, hiddenLayerSize).build(), String.valueOf(i))
                     .addLayer(String.valueOf(i + 2), NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize).build(), String.valueOf(i + 1));
         } else {
             conf = conf
-                    .addLayer(String.valueOf(i), NNOptimizer.newGravesLSTMLayer(input1 , hiddenLayerSize).build(), "x1");
+                    .addLayer(String.valueOf(i), NNOptimizer.newGravesBidirectionalLSTMLayer(input1 , hiddenLayerSize).build(), "x1");
                    // .addLayer(String.valueOf(i + 1), NNOptimizer.newGravesLSTMLayer(input1 + hiddenLayerSize, hiddenLayerSize).build(), String.valueOf(i), "x1");
         }
 
@@ -335,7 +335,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         //  recurrent encoding
         for (; i < t + numHiddenLayers * increment; i += increment) {
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
-            layer = NNOptimizer.newGravesLSTMLayer(hiddenLayerSize, hiddenLayerSize);
+            layer = NNOptimizer.newGravesBidirectionalLSTMLayer(hiddenLayerSize, hiddenLayerSize);
 
             org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
             conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
@@ -392,7 +392,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         for (; i < t + numHiddenLayers * increment; i += increment) {
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
             //int nIn = i == t ? (hiddenLayerSize + vectorSize) : (hiddenLayerSize + hiddenLayerSize);
-            layer = NNOptimizer.newGravesLSTMLayer(hiddenLayerSize, hiddenLayerSize);
+            layer = NNOptimizer.newGravesBidirectionalLSTMLayer(hiddenLayerSize, hiddenLayerSize);
 
             org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
             if(i==t) {
