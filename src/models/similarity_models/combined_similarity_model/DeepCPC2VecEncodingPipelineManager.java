@@ -87,8 +87,8 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                 @Override
                 public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
                     dataSet.setLabels(dataSet.getFeatures());
-                   // dataSet.setLabelsMaskArray(dataSet.getFeaturesMaskArrays());
-                    INDArray featureMask = dataSet.getFeaturesMaskArray(0);
+                    dataSet.setLabelsMaskArray(dataSet.getFeaturesMaskArrays());
+                    /*INDArray featureMask = dataSet.getFeaturesMaskArray(0);
                     int[] lastIdx = featureMask.sum(1).data().asInt();
                     float[][] labelMaskArr = new float[featureMask.rows()][];
                     for(int i = 0; i < lastIdx.length; i++) {
@@ -96,7 +96,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                         zeros[lastIdx[i]-1] = 1f;
                         labelMaskArr[i]=zeros;
                     }
-                    dataSet.setLabelsMaskArray(new INDArray[]{Nd4j.create(labelMaskArr)});
+                    dataSet.setLabelsMaskArray(new INDArray[]{Nd4j.create(labelMaskArr)});*/
                 }
             });
             datasetManager = manager;
