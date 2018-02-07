@@ -52,7 +52,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     private ComputationGraph vaeNetwork;
 
     int numHiddenLayers = 3;
-    int encodingIdx = numHiddenLayers*2+5;
+    int encodingIdx = numHiddenLayers+2;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
         super(pipelineManager,ComputationGraph.class,modelName);
@@ -110,7 +110,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                     if (cpcNames.isEmpty()) {
                         incomplete.getAndIncrement();
                     } else {
-                        final INDArray featuresVec = Nd4j.create(numSamples, 64);
+                        final INDArray featuresVec = Nd4j.create(numSamples, 32);
                         for (int j = 0; j < numSamples; j++) {
                             IntStream.range(0, sampleLength).forEach(h -> sampleVec.putRow(h,cpc2VecMap.get(cpcNames.get(rand.nextInt(cpcNames.size())))));
                             INDArray cpc2Vec = sampleVec.mean(0);
@@ -126,12 +126,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                     for(int j = 0; j < allFeatures.size(); j++) {
                         features.get(NDArrayIndex.interval(j*numSamples,j*numSamples+numSamples),NDArrayIndex.all()).assign(allFeatures.get(j));
                     }
-                    INDArray featuresView = features.get(NDArrayIndex.interval(0,allFeatures.size()*numSamples),NDArrayIndex.all());
-                    INDArray f1 = featuresView.get(NDArrayIndex.all(),NDArrayIndex.interval(0,32));
-                    f1.diviColumnVector(f1.norm2(1));
-                    INDArray f2 = featuresView.get(NDArrayIndex.all(),NDArrayIndex.interval(32,64));
-                    f2.diviColumnVector(f2.norm2(1));
 
+                    INDArray featuresView = features.get(NDArrayIndex.interval(0,allFeatures.size()*numSamples),NDArrayIndex.all());
                     INDArray encoding = null;// = encode(featuresView);
 
                     for (int j = 0; j < allFeatures.size(); j++) {
@@ -159,13 +155,15 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
 
         // add cpc vectors
+        INDArray fullMask = Nd4j.zeros(numSamples,sampleLength);
         cnt.set(0);
         incomplete.set(0);
         classCodes.forEach(cpc->{
             INDArray cpc2Vec = cpc2VecMap.get(cpc);
             if(cpc2Vec!=null) {
                 INDArray feature = Transforms.unitVec(cpc2Vec);
-                INDArray encoding = null;//encode(feature);
+                feature = feature.broadcast(numSamples,cpc2Vec.length());
+                INDArray encoding = encode(feature,fullMask);
                 finalPredictionsMap.put(cpc, Transforms.unitVec(encoding));
             }
 
@@ -280,7 +278,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     public int printIterations() {
-        return 1000;
+        return 5000;
     }
 
 
@@ -418,7 +416,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
-        double newLearningRate = 0.00001;
+        double newLearningRate = 0.000005;
         vaeNetwork = CGRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(VAE_NETWORK),newLearningRate,false);
         vaeNetwork = CGRefactorer.setInputPreprocessor(vaeNetwork,new RnnToFeedForwardPreProcessor(),1,new FeedForwardToRnnPreProcessor(),vaeNetwork.getNumLayers()-2,false);
         Map<String,ComputationGraph> updates = Collections.synchronizedMap(new HashMap<>());
