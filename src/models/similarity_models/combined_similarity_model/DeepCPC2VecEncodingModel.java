@@ -7,11 +7,9 @@ import lombok.Getter;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.api.layers.IOutputLayer;
-import org.deeplearning4j.nn.conf.BackpropType;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
-import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.conf.preprocessor.FeedForwardToRnnPreProcessor;
 import org.deeplearning4j.nn.conf.preprocessor.RnnToFeedForwardPreProcessor;
@@ -27,8 +25,6 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
-import seeding.Database;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
@@ -38,7 +34,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Created by Evan on 12/24/2017.
@@ -63,11 +58,57 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         return vectorSize;
     }
 
+    public static INDArray unitVecNormMax(INDArray in, boolean dup) {
+        if(dup) {
+            in = in.dup();
+        }
+        if(in.shape().length==1) {
+            in.divi(in.normmaxNumber());
+        } else if(in.shape().length==2) {
+            in.diviColumnVector(in.normmax(1));
+        } else throw new IllegalStateException("Matrix must have dimensions < 3");
+        return in;
+    }
+
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         final int numSamples = 8;
         final int sampleLength = 8;
         final int assigneeSamples = 128;
+
+        Map<String,INDArray> cpc2VecMap = pipelineManager.wordCPC2VecPipelineManager.getOrLoadCPCVectors();
+        Map<String,List<String>> cpcMap = pipelineManager.wordCPC2VecPipelineManager.getCPCMap().entrySet().parallelStream().map(e ->new Pair<>(e.getKey(),e.getValue().stream().filter(cpc->cpc.getNumParts() > 3 && cpc2VecMap.containsKey(cpc.getName())).limit(100).map(cpc -> cpc.getName()).collect(Collectors.toList())))
+                .collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
+
+        final Random rand = new Random(32);
+        final AtomicInteger incomplete = new AtomicInteger(0);
+        final AtomicInteger cnt = new AtomicInteger(0);
+        final AtomicInteger nullVae = new AtomicInteger(0);
+
+        Map<String,INDArray> finalPredictionsMap = Collections.synchronizedMap(new HashMap<>(assets.size()+assignees.size()+classCodes.size()));
+
+        // add cpc vectors
+        cnt.set(0);
+        incomplete.set(0);
+        classCodes.forEach(cpc->{
+            INDArray cpc2Vec = cpc2VecMap.get(cpc);
+            if(cpc2Vec!=null) {
+                INDArray feature = unitVecNormMax(cpc2Vec,true);
+                feature = feature.broadcast(numSamples,cpc2Vec.length());
+                INDArray encoding = encode(feature,null);
+                finalPredictionsMap.put(cpc, Transforms.unitVec(encoding));
+            }
+
+            if(cnt.get()%50000==49999) {
+                System.gc();
+            }
+            if(cnt.getAndIncrement()%10000==9999) {
+                System.out.println("Finished "+cnt.get()+" out of "+classCodes.size()+" cpcs. Incomplete: "+incomplete.get()+" / "+cnt.get());
+            }
+        });
+
+
+
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         Collection<String> filings = Collections.synchronizedSet(new HashSet<>());
         for(String asset : assets) {
@@ -76,22 +117,13 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             if(filing!=null) {
                 filings.add(filing);
             }
+
         };
 
 
-        Map<String,INDArray> cpc2VecMap = pipelineManager.wordCPC2VecPipelineManager.getOrLoadCPCVectors();
-        Map<String,List<String>> cpcMap = pipelineManager.wordCPC2VecPipelineManager.getCPCMap().entrySet().parallelStream().map(e ->new Pair<>(e.getKey(),e.getValue().stream().filter(cpc->cpc.getNumParts() > 3 && cpc2VecMap.containsKey(cpc.getName())).limit(100).map(cpc -> cpc.getName()).collect(Collectors.toList())))
-                .collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
-
-        final Random rand = new Random(32);
-
-        Map<String,INDArray> finalPredictionsMap = Collections.synchronizedMap(new HashMap<>(filings.size()));
-
         List<String> filingsList = new ArrayList<>(filings);
 
-        AtomicInteger incomplete = new AtomicInteger(0);
-        AtomicInteger cnt = new AtomicInteger(0);
-        AtomicInteger nullVae = new AtomicInteger(0);
+
         int batchSize = 1000;
         final INDArray sampleVec = Nd4j.create(sampleLength,32);
         INDArray features = Nd4j.create(sampleLength*batchSize,64);
@@ -124,7 +156,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
                 if(allFeatures.size()>0) {
                     for(int j = 0; j < allFeatures.size(); j++) {
-                        features.get(NDArrayIndex.interval(j*numSamples,j*numSamples+numSamples),NDArrayIndex.all()).assign(allFeatures.get(j));
+                        features.get(NDArrayIndex.interval(j*numSamples,j*numSamples+numSamples),NDArrayIndex.all(),NDArrayIndex.all()).assign(allFeatures.get(j));
                     }
 
                     INDArray featuresView = features.get(NDArrayIndex.interval(0,allFeatures.size()*numSamples),NDArrayIndex.all());
@@ -154,63 +186,6 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         System.out.println("FINAL:: Finished "+cnt.get()+" filings out of "+filings.size()+". Incomplete: "+incomplete.get()+ " / "+cnt.get()+", Null Vae: "+nullVae.get()+" / "+incomplete.get());
 
 
-        // add cpc vectors
-        INDArray fullMask = Nd4j.zeros(numSamples,sampleLength);
-        cnt.set(0);
-        incomplete.set(0);
-        classCodes.forEach(cpc->{
-            INDArray cpc2Vec = cpc2VecMap.get(cpc);
-            if(cpc2Vec!=null) {
-                INDArray feature = Transforms.unitVec(cpc2Vec);
-                feature = feature.broadcast(numSamples,cpc2Vec.length());
-                INDArray encoding = encode(feature,fullMask);
-                finalPredictionsMap.put(cpc, Transforms.unitVec(encoding));
-            }
-
-            if(cnt.get()%50000==49999) {
-                System.gc();
-            }
-            if(cnt.getAndIncrement()%10000==9999) {
-                System.out.println("Finished "+cnt.get()+" out of "+classCodes.size()+" cpcs. Incomplete: "+incomplete.get()+" / "+cnt.get());
-            }
-        });
-
-
-        // add assignee vectors
-        Map<String,List<String>> assigneeToCpcMap = assignees.parallelStream().collect(Collectors.toConcurrentMap(assignee->assignee,assignee->{
-            return Stream.of(
-                    Database.selectApplicationNumbersFromExactAssignee(assignee).stream().flatMap(asset->new AssetToCPCMap().getApplicationDataMap().getOrDefault(asset,Collections.emptySet()).stream()),
-                    Database.selectPatentNumbersFromExactAssignee(assignee).stream().flatMap(asset->new AssetToCPCMap().getPatentDataMap().getOrDefault(asset,Collections.emptySet()).stream())
-            ).flatMap(stream->stream).collect(Collectors.toList());
-        }));
-        cnt.set(0);
-        incomplete.set(0);
-        INDArray assigneeFeatures = Nd4j.create(assigneeSamples,32);
-        INDArray assigneeVae = Nd4j.create(assigneeSamples,32);
-        assignees.forEach(assignee->{
-            List<String> cpcs = assigneeToCpcMap.getOrDefault(assignee, Collections.emptyList()).stream().filter(cpc->cpc2VecMap.containsKey(cpc)).collect(Collectors.toList());
-            if(cpcs.size()>0) {
-                for(int i = 0; i < assigneeSamples; i++) {
-                    INDArray cpcVector = cpc2VecMap.get(cpcs.get(rand.nextInt(cpcs.size())));
-                    assigneeFeatures.putRow(i,Transforms.unitVec(cpcVector));
-                }
-                INDArray encoding = null;//encode(Nd4j.hstack(Transforms.unitVec(assigneeFeatures.mean(0)),Transforms.unitVec(assigneeVae.mean(0))));
-                finalPredictionsMap.put(assignee, Transforms.unitVec(encoding.mean(0)));
-
-            } else {
-                incomplete.getAndIncrement();
-            }
-
-            if(cnt.get()%50000==49999) {
-                System.gc();
-            }
-            if(cnt.getAndIncrement()%10000==9999) {
-                System.out.println("Finished "+cnt.get()+" out of "+assignees.size()+" assignees. Incomplete: "+incomplete.get()+" / "+cnt.get());
-            }
-        });
-
-        System.out.println("Final prediction map size: "+finalPredictionsMap.size());
-
         return finalPredictionsMap;
     }
 
@@ -218,9 +193,15 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         if(vaeNetwork==null) {
             vaeNetwork = getNetworks().get(VAE_NETWORK);
         }
-        // Map<String,INDArray> activations = vaeNetwork.feedForward(input,false);
-        vaeNetwork.setLayerMaskArrays(new INDArray[]{mask},new INDArray[]{mask});
+        if(mask==null) {
+            vaeNetwork.clearLayerMaskArrays();
+        } else {
+            vaeNetwork.setLayerMaskArrays(new INDArray[]{mask}, new INDArray[]{mask});
+        }
         INDArray res = feedForwardToVertex(vaeNetwork,String.valueOf(encodingIdx),input); // activations.get(String.valueOf(encodingIdx));
+        if(res.columns()!=getVectorSize()) {
+            throw new RuntimeException("Wrong vector size: "+res.columns()+" != "+getVectorSize());
+        }
         vaeNetwork.clearLayerMaskArrays();
         return res;
     }
@@ -278,7 +259,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     public int printIterations() {
-        return 5000;
+        return 1000;
     }
 
 

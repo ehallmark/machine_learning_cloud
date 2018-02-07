@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Level;
 import cpc_normalization.CPC;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
-import data_pipeline.vectorize.NoSaveDataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
@@ -14,9 +13,6 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.api.rng.distribution.Distribution;
-import org.nd4j.linalg.api.rng.distribution.impl.UniformDistribution;
-import org.nd4j.linalg.dataset.MultiDataSet;
 import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
@@ -263,9 +259,9 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
         boolean rebuildDatasets = false;
-        boolean runModels = true;
-        boolean forceRecreateModels = false;
-        boolean runPredictions = false;
+        boolean runModels = false;
+        boolean forceRecreateModels = true;
+        boolean runPredictions = true;
         boolean rebuildPrerequisites = false;
         int nEpochs = 5;
 
