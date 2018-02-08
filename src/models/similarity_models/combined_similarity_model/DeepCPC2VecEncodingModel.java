@@ -60,18 +60,6 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         return vectorSize;
     }
 
-    public static INDArray unitVecNormMax(INDArray in, boolean dup) {
-        if(dup) {
-            in = in.dup();
-        }
-        if(in.shape().length==1) {
-            in.divi(in.normmaxNumber());
-        } else if(in.shape().length==2) {
-            in.diviColumnVector(in.normmax(1));
-        } else throw new IllegalStateException("Matrix must have dimensions < 3");
-        return in;
-    }
-
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         final int numSamples = 8;
@@ -97,7 +85,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         classCodes.forEach(cpc->{
             INDArray cpc2Vec = cpc2VecMap.get(cpc);
             if(cpc2Vec!=null) {
-                INDArray feature = unitVecNormMax(cpc2Vec,true);
+                INDArray feature = cpc2Vec;
 
                 // add parent cpc info
                 CPC cpcObj = cpcHierarchy.getLabelToCPCMap().get(cpc);
@@ -105,12 +93,10 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 if(parent!=null) {
                     INDArray parentFeature = cpc2VecMap.get(parent.getName());
                     if(parentFeature!=null) {
-                        parentFeature = unitVecNormMax(parentFeature, true);
                         CPC grandParent = parent.getParent();
                         if(grandParent!=null) {
                             INDArray grandParentFeature = cpc2VecMap.get(grandParent.getName());
                             if(grandParentFeature!=null) {
-                                grandParentFeature = unitVecNormMax(grandParentFeature,true);
                                 feature = Nd4j.vstack(feature, parentFeature, feature, grandParentFeature, feature, parentFeature, feature).reshape(1, cpc2Vec.length(), 7);
                             } else {
                                 feature = Nd4j.vstack(feature, parentFeature, feature).reshape(1, cpc2Vec.length(), 3);
@@ -302,7 +288,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     public int printIterations() {
-        return 1000;
+        return 5000;
     }
 
 
