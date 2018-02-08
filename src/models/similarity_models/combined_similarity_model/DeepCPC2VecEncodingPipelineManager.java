@@ -293,7 +293,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
-        setCudaEnvironment();
+        //setCudaEnvironment();
 
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
