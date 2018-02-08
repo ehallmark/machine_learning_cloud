@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<MultiDataSetIterator,INDArray>  {
 
     public static final String MODEL_NAME = "deep_cpc_single_2_vec_encoding_model";
-    public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
+    public static final File PREDICTION_FILE = new File("deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_single_2_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
