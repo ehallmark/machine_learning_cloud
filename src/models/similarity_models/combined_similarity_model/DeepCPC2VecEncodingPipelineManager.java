@@ -59,7 +59,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
-                model.loadBestModel();
+                model.loadMostRecentModel();
             } catch(Exception e) {
                 System.out.println("Error loading previous model: "+e.getMessage());
             }
