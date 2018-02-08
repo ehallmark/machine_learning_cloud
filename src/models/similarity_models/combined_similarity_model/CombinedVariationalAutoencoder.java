@@ -182,7 +182,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
             return Stream.of(
                     Database.selectApplicationNumbersFromExactAssignee(assignee).stream().flatMap(asset->new AssetToCPCMap().getApplicationDataMap().getOrDefault(asset,Collections.emptySet()).stream()),
                     Database.selectPatentNumbersFromExactAssignee(assignee).stream().flatMap(asset->new AssetToCPCMap().getPatentDataMap().getOrDefault(asset,Collections.emptySet()).stream())
-            ).flatMap(stream->stream).collect(Collectors.toList());
+            ).flatMap(stream->stream).collect(Collectors.toCollection(ArrayList::new));
         }));
         cnt.set(0);
         incomplete.set(0);
