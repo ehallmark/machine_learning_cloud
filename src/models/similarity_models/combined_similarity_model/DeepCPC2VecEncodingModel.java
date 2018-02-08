@@ -200,6 +200,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         }
         INDArray res = feedForwardToVertex(vaeNetwork,String.valueOf(encodingIdx),input); // activations.get(String.valueOf(encodingIdx));
         if(res.columns()!=getVectorSize()) {
+            vaeNetwork.getConfiguration().getVertices().forEach((k,v)->{
+                System.out.println(k+": "+v.toString());
+            });
             throw new RuntimeException("Wrong vector size: "+res.columns()+" != "+getVectorSize());
         }
         vaeNetwork.clearLayerMaskArrays();
