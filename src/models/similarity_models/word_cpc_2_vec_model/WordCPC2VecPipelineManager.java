@@ -38,7 +38,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         modelNameToVectorSizeMap.put(SMALL_MODEL_NAME,SMALL_VECTOR_SIZE);
         modelNameToVectorSizeMap.put(DEEP_MODEL_NAME,LARGE_VECTOR_SIZE);
         modelNameToPredictionFileMap.put(SMALL_MODEL_NAME,new File(Constants.DATA_FOLDER+"wordcpc2vec_predictions/predictions_map.jobj"));
-        modelNameToPredictionFileMap.put(DEEP_MODEL_NAME,new File(Constants.DATA_FOLDER+"wordcpc2vec_deep_predictions/predictions_map.jobj"));
+        modelNameToPredictionFileMap.put(DEEP_MODEL_NAME,new File("wordcpc2vec_deep_predictions/predictions_map.jobj"));
 
     }
     private static final File INPUT_DATA_FOLDER = new File("wordcpc2vec_input_data");
