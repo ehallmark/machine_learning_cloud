@@ -47,7 +47,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     private ComputationGraph vaeNetwork;
 
     int numHiddenLayers = 3;
-    int encodingIdx = numHiddenLayers+2;
+    int encodingIdx = numHiddenLayers+1;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
         super(pipelineManager,ComputationGraph.class,modelName);
