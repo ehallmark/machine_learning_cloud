@@ -127,7 +127,7 @@ public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultP
 
 
     protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {
-        return new Word2VecToCPCIterator(iterator,word2Vec,batch,1);
+        return new Word2VecToCPCIterator(iterator,word2Vec,batch,getMaxSamples());
     }
 
 }

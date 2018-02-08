@@ -146,10 +146,12 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             testIter.setRunVocab(false);
             devIter.setRunVocab(false);
 
-            datasetManager = new NoSaveDataSetManager<>(
+            datasetManager = new PreSaveDataSetManager<>(
+                    dataFolder,
                     getRawIterator(trainIter,getBatchSize()),
                     getRawIterator(testIter, 1024),
-                    getRawIterator(devIter, 1024)
+                    getRawIterator(devIter, 1024),
+                    true
             );
 
         } else {
