@@ -4,9 +4,11 @@ import ch.qos.logback.classic.Level;
 import cpc_normalization.CPC;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
+import data_pipeline.vectorize.NoSaveDataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
+import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
 import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.word2vec.VocabWord;
@@ -34,7 +36,8 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
     public static final String MODEL_NAME = "deep_cpc_single_2_vec_encoding_model";
     public static final File PREDICTION_FILE = new File("deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
-    private static final File INPUT_DATA_FOLDER = new File("deep_cpc_single_2_vec_encoding_input_data");
+    private static final File INPUT_DATA_FOLDER_CPC = new File("deep_cpc_single_2_vec_encoding_input_data");
+    private static final File INPUT_DATA_FOLDER_WORD = new File("deep_cpc_word_2_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 64;
@@ -44,13 +47,18 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     @Getter
     protected Word2Vec word2Vec;
-    public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
-        super(INPUT_DATA_FOLDER,PREDICTION_FILE);
+    private boolean trainOnWords;
+    public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, boolean trainOnWords) {
+        super(trainOnWords?INPUT_DATA_FOLDER_WORD:INPUT_DATA_FOLDER_CPC,PREDICTION_FILE);
         this.word2Vec=word2Vec;
+        this.trainOnWords=trainOnWords;
         this.modelName=modelName;
         this.wordCPC2VecPipelineManager=wordCPC2VecPipelineManager;
     }
 
+    public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
+        this(modelName,word2Vec,wordCPC2VecPipelineManager,false);
+    }
 
     public void initModel(boolean forceRecreateModels) {
         if(model==null) {
@@ -64,10 +72,6 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                 System.out.println("Error loading previous model: "+e.getMessage());
             }
         }
-    }
-
-    protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, long numDocs, int batch) {
-        return new Word2VecToCPCIterator(iterator,numDocs,null,word2Vec,batch,false,VECTOR_SIZE);
     }
 
     @Override
@@ -119,122 +123,156 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         return 8;
     }
 
-    @Override
-    protected void setDatasetManager() {
-        int trainLimit = 5000000;
-        int testLimit = 30000;
-        int devLimit = 30000;
-        Random rand = new Random(235);
-
-        Map<String,Collection<CPC>> cpcMap = wordCPC2VecPipelineManager.getCPCMap();
-
-        List<List<String>> entries = cpcMap.keySet().stream().flatMap(asset->{
-            Collection<CPC> cpcs = cpcMap.get(asset);
-            if(cpcs==null) return Stream.empty();
-            List<String> cpcLabels = cpcs.stream()
-                    .filter(cpc->word2Vec.getVocab().indexOf(cpc.getName())>=0)
-                    .map(cpc->cpc.getName())
-                    .collect(Collectors.toCollection(ArrayList::new));
-
-            if(cpcLabels.isEmpty()) return Stream.empty();
-            return IntStream.range(0,Math.min(3,Math.max(1,Math.round((float)Math.log(cpcLabels.size())))))//cpcLabels.size())
-                    .mapToObj(i->{
-                List<String> cpcLabelsClone = new ArrayList<>(cpcLabels);
-                Collections.shuffle(cpcLabelsClone);
-                if(cpcLabelsClone.size()>getMaxSamples()) cpcLabelsClone = cpcLabelsClone.subList(0,getMaxSamples());
-                return new Pair<>(asset,cpcLabelsClone);
-            });
-        }).filter(e->e!=null).map(e->e.getSecond()).collect(Collectors.toList());
-
-        final int numAssets = entries.size();
-
-        INDArray masks = Nd4j.ones((int)numAssets,getMaxSamples());
-
-        Collections.shuffle(entries,rand);
-
-
-        final int[] trainIndices = new int[Math.min(numAssets-testLimit-devLimit,trainLimit)];
-        final int[] testIndices = new int[testLimit];
-        final int[] devIndices = new int[devLimit];
-
-        Set<Integer> seenIndex = new HashSet<>();
-        for(int i = 0; i < testLimit; i++) {
-            int next = rand.nextInt(numAssets);
-            if(seenIndex.contains(next)) {
-                i--; continue;
-            } else {
-                testIndices[i]=next;
-                seenIndex.add(i);
-            }
-        }
-        for(int i = 0; i < devLimit; i++) {
-            int next = rand.nextInt(numAssets);
-            if(seenIndex.contains(next)) {
-                i--; continue;
-            } else {
-                devIndices[i]=next;
-                seenIndex.add(i);
-            }
-        }
-        int i = 0;
-        int idx = 0;
-        System.out.println("Starting to find train indices...");
-        while(idx < trainIndices.length) {
-            if(!seenIndex.contains(i)) {
-                trainIndices[idx]=i;
-                idx++;
-            }
-            i++;
-        }
-
-        INDArray[] trainVectors = buildVectors(trainIndices,entries);
-        INDArray[] testVectors = buildVectors(testIndices,entries);
-        INDArray[] devVectors = buildVectors(devIndices,entries);
-
-        System.out.println("Finished finding test/train/dev indices...");
-        PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
-                dataFolder,
-                new VocabSamplingIterator(trainVectors,masks,2*trainLimit,getBatchSize(),true),
-                new VocabSamplingIterator(testVectors,masks,-1,1024,false),
-                new VocabSamplingIterator(devVectors,masks,-1,1024,false),
-                true
-        );
-        manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
-            @Override
-            public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
-                dataSet.setLabels(null);
-                dataSet.setLabelsMaskArray(null);
-            }
-        });
-        datasetManager = manager;
+    protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {
+        return new Word2VecToCPCIterator(iterator,word2Vec,batch,1);
     }
 
-    private INDArray[] buildVectors(int[] indices, List<List<String>> _entries) {
-        List<List<String>> entries = IntStream.of(indices).mapToObj(i->_entries.get(i)).collect(Collectors.toList());
+    @Override
+    protected void setDatasetManager() {
+        if(trainOnWords) {
+            File baseDir = FileTextDataSetIterator.BASE_DIR;
+            File trainFile = new File(baseDir, FileTextDataSetIterator.trainFile.getName());
+            File testFile = new File(baseDir, FileTextDataSetIterator.testFile.getName());
+            File devFile = new File(baseDir, getDevFile().getName());
 
-        INDArray masks = Nd4j.ones(entries.size(),getMaxSamples());
+            boolean fullText = baseDir.getName().equals(FileTextDataSetIterator.BASE_DIR.getName());
+            System.out.println("Using full text: "+fullText);
+
+            WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,getMaxSamples(), fullText);
+            WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,getMaxSamples(), fullText);
+            WordCPCIterator devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,getMaxSamples(), fullText);
+
+            trainIter.setRunVocab(false);
+            testIter.setRunVocab(false);
+            devIter.setRunVocab(false);
+
+            datasetManager = new NoSaveDataSetManager<>(
+                    getRawIterator(trainIter,getBatchSize()),
+                    getRawIterator(testIter, 1024),
+                    getRawIterator(devIter, 1024)
+            );
+
+        } else {
+            int trainLimit = 5000000;
+            int testLimit = 30000;
+            int devLimit = 30000;
+            Random rand = new Random(235);
+
+            Map<String, Collection<CPC>> cpcMap = wordCPC2VecPipelineManager.getCPCMap();
+
+            List<List<String>> entries = cpcMap.keySet().stream().flatMap(asset -> {
+                Collection<CPC> cpcs = cpcMap.get(asset);
+                if (cpcs == null) return Stream.empty();
+                List<String> cpcLabels = cpcs.stream()
+                        .filter(cpc -> word2Vec.getVocab().indexOf(cpc.getName()) >= 0)
+                        .map(cpc -> cpc.getName())
+                        .collect(Collectors.toCollection(ArrayList::new));
+
+                if (cpcLabels.isEmpty()) return Stream.empty();
+                return IntStream.range(0, Math.min(3, Math.max(1, Math.round((float) Math.log(cpcLabels.size())))))//cpcLabels.size())
+                        .mapToObj(i -> {
+                            List<String> cpcLabelsClone = new ArrayList<>(cpcLabels);
+                            Collections.shuffle(cpcLabelsClone);
+                            if (cpcLabelsClone.size() > getMaxSamples())
+                                cpcLabelsClone = cpcLabelsClone.subList(0, getMaxSamples());
+                            return new Pair<>(asset, cpcLabelsClone);
+                        });
+            }).filter(e -> e != null).map(e -> e.getSecond()).collect(Collectors.toList());
+
+            final int numAssets = entries.size();
+            Collections.shuffle(entries, rand);
+
+            final int[] trainIndices = new int[Math.min(numAssets - testLimit - devLimit, trainLimit)];
+            final int[] testIndices = new int[testLimit];
+            final int[] devIndices = new int[devLimit];
+
+            Set<Integer> seenIndex = new HashSet<>();
+            for (int i = 0; i < testLimit; i++) {
+                int next = rand.nextInt(numAssets);
+                if (seenIndex.contains(next)) {
+                    i--;
+                    continue;
+                } else {
+                    testIndices[i] = next;
+                    seenIndex.add(i);
+                }
+            }
+            for (int i = 0; i < devLimit; i++) {
+                int next = rand.nextInt(numAssets);
+                if (seenIndex.contains(next)) {
+                    i--;
+                    continue;
+                } else {
+                    devIndices[i] = next;
+                    seenIndex.add(i);
+                }
+            }
+            int i = 0;
+            int idx = 0;
+            System.out.println("Starting to find train indices...");
+            while (idx < trainIndices.length) {
+                if (!seenIndex.contains(i)) {
+                    trainIndices[idx] = i;
+                    idx++;
+                }
+                i++;
+            }
+
+
+            Pair<INDArray[], INDArray[]> trainVectors = buildVectors(trainIndices, entries);
+            Pair<INDArray[], INDArray[]> testVectors = buildVectors(testIndices, entries);
+            Pair<INDArray[], INDArray[]> devVectors = buildVectors(devIndices, entries);
+
+            System.out.println("Finished finding test/train/dev indices...");
+            PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
+                    dataFolder,
+                    new VocabSamplingIterator(trainVectors.getFirst(), trainVectors.getSecond(), 2 * trainLimit, getBatchSize(), true),
+                    new VocabSamplingIterator(testVectors.getFirst(), testVectors.getSecond(), -1, 1024, false),
+                    new VocabSamplingIterator(devVectors.getFirst(), testVectors.getSecond(), -1, 1024, false),
+                    true
+            );
+            manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
+                @Override
+                public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
+                    dataSet.setLabels(null);
+                    dataSet.setLabelsMaskArray(null);
+                }
+            });
+            datasetManager = manager;
+        }
+    }
+
+    private Pair<INDArray[],INDArray[]> buildVectors(int[] indices, List<List<String>> _entries) {
+        List<List<String>> entries = IntStream.of(indices).mapToObj(i->_entries.get(i)).collect(Collectors.toList());
+        return buildVectors(entries,word2Vec,getMaxSamples());
+    }
+
+    public static Pair<INDArray[],INDArray[]> buildVectors(List<List<String>> entries, Word2Vec word2Vec, int maxSamples) {
         AtomicInteger cnt = new AtomicInteger(0);
 
         System.out.println("Starting to build vectors... Num entries: "+entries.size());
+        INDArray[] masks = new INDArray[entries.size()];
         INDArray[] vectors = entries.stream().map(cpcLabels->{
-            INDArray vec = Nd4j.create(VECTOR_SIZE,getMaxSamples());
+            INDArray vec = Nd4j.create(VECTOR_SIZE,maxSamples);
+            INDArray mask = Nd4j.ones(maxSamples);
             int numCPCLabels = cpcLabels.size();
             vec.get(NDArrayIndex.all(),NDArrayIndex.interval(0,numCPCLabels)).assign(word2Vec.getWordVectors(cpcLabels));
             int idx = cnt.getAndIncrement();
-            if(getMaxSamples()>numCPCLabels) {
-                vec.get(NDArrayIndex.all(),NDArrayIndex.interval(numCPCLabels,getMaxSamples())).assign(0);
-                masks.get(NDArrayIndex.point(idx),NDArrayIndex.interval(numCPCLabels,getMaxSamples())).assign(0);
+            if(maxSamples>numCPCLabels) {
+                vec.get(NDArrayIndex.all(),NDArrayIndex.interval(numCPCLabels,maxSamples)).assign(0);
+                mask.get(NDArrayIndex.interval(numCPCLabels,maxSamples)).assign(0);
             }
+            masks[idx]=mask;
             return vec;
         }).toArray(size->new INDArray[size]);
 
         System.out.println("Finished. Now creating indices...");
 
-        return vectors;
+        return new Pair<>(vectors,masks);
     }
 
 
-    public static synchronized DeepCPC2VecEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec) {
+    public static synchronized DeepCPC2VecEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec, boolean trainOnWords) {
         if(MANAGER==null) {
             Nd4j.setDataType(DataBuffer.Type.DOUBLE);
 
@@ -246,7 +284,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             if(loadWord2Vec) wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
 
             setLoggingLevel(Level.INFO);
-            MANAGER = new DeepCPC2VecEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, wordCPC2VecPipelineManager);
+            MANAGER = new DeepCPC2VecEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, wordCPC2VecPipelineManager,trainOnWords);
         }
         return MANAGER;
     }
@@ -259,13 +297,20 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
         boolean rebuildDatasets = false;
-        boolean runModels = false;
+        boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
         boolean rebuildPrerequisites = false;
+        boolean trainOnWords = true;
         int nEpochs = 5;
 
-        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets||!INPUT_DATA_FOLDER.exists());
+        if(trainOnWords && !INPUT_DATA_FOLDER_WORD.exists()) {
+            rebuildDatasets=true;
+        } else if (!trainOnWords && !INPUT_DATA_FOLDER_CPC.exists()) {
+            rebuildDatasets=true;
+        }
+
+        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets,trainOnWords);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 

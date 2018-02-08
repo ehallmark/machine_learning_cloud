@@ -35,21 +35,15 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
 
 
     private SequenceIterator<VocabWord> documentIterator;
-    private Vectorizer vectorizer;
     private Word2Vec word2Vec;
     private int batch;
     private MultiDataSet currentDataSet;
-    private int numDimensions;
-    private double numDocs;
-    private boolean requireLabel;
-    public Word2VecToCPCIterator(SequenceIterator<VocabWord> documentIterator, long numDocs, Map<String, INDArray> cpcEncodings, Word2Vec word2Vec, int batchSize, boolean requireLabel, int numOutcomes) {
+    private int maxSamples;
+    public Word2VecToCPCIterator(SequenceIterator<VocabWord> documentIterator, Word2Vec word2Vec, int batchSize, int maxSamples) {
         this.documentIterator=documentIterator;
-        this.requireLabel=requireLabel;
-        this.vectorizer = cpcEncodings==null?null: new CPCSimilarityVectorizer(cpcEncodings,false,false,false);
         this.word2Vec=word2Vec;
+        this.maxSamples=maxSamples;
         this.batch=batchSize;
-        this.numDocs = numDocs;
-        this.numDimensions=numOutcomes;
         reset();
     }
 
@@ -68,7 +62,7 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
     }
 
     public int totalOutcomes() {
-        return numDimensions;
+        return word2Vec.getLayerSize();
     }
 
     @Override
@@ -94,25 +88,22 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
     public boolean hasNext() {
         currentDataSet=null;
         int idx = 0;
-        INDArray features = Nd4j.create(batch,inputColumns());
-        AtomicInteger totalWordsPerBatch = new AtomicInteger(0);
+        INDArray features = Nd4j.create(batch,inputColumns(),maxSamples);
+        INDArray masks = Nd4j.ones(batch,maxSamples);
         while(documentIterator.hasMoreSequences()&&idx<batch) {
             Sequence<VocabWord> document = documentIterator.nextSequence();
-
-            Map<String, Integer> wordCounts = groupingBOWFunction.apply(document.getElements());
-            totalWordsPerBatch.getAndAdd(wordCounts.size());
-
-            List<String> sequence = wordCounts.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(1).map(e->e.getKey()).collect(Collectors.toList());
+            List<String> sequence = document.getElements().stream().map(e->e.getLabel()).collect(Collectors.toList());
             if(sequence.size()==0) continue;
             INDArray featureVec;
             {
                 List<Integer> indexes = new ArrayList<>();
-                List<Double> tfidfs = new ArrayList<>();
                 for (int i = 0; i < sequence.size(); i++) {
                     String l = sequence.get(i);
                     if (word2Vec.getVocab().containsWord(l)) {
                         indexes.add(word2Vec.getVocab().indexOf(l));
-                        tfidfs.add(Math.max(1d, wordCounts.get(l).doubleValue()) * Math.log(Math.E + (numDocs / Math.max(word2Vec.getVocab().docAppearedIn(l), 30))));
+                        if(indexes.size()==maxSamples) {
+                            break;
+                        }
                     }
                 }
 
@@ -122,21 +113,26 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
                     continue;
                 }
 
-                featureVec = word2Vec.getLookupTable().getWeights().getRow(indexes.get(0));
+                featureVec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(),1,indexes.stream().mapToInt(i->i).toArray());
+
 
             }
-            features.putRow(idx,featureVec);
+            features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.interval(0,featureVec.rows())).assign(featureVec);
+            if(featureVec.rows()<maxSamples) {
+                features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.interval(featureVec.rows(),maxSamples)).assign(0);
+                masks.get(NDArrayIndex.point(idx),NDArrayIndex.interval(featureVec.rows(),maxSamples)).assign(0);
+            }
             idx++;
         }
 
         if(idx>0) {
             if(idx < batch) {
-                features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
+                features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all(),NDArrayIndex.all());
+                masks = masks.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
             }
-            //features.diviColumnVector(features.norm2(1));
-            features.diviColumnVector(features.normmax(1));
             INDArray[] allFeatures = new INDArray[]{features};
-            currentDataSet = new MultiDataSet(allFeatures,allFeatures);
+            INDArray[] allMasks = new INDArray[]{masks};
+            currentDataSet = new MultiDataSet(allFeatures,allFeatures,allMasks,allMasks);
         }
         return currentDataSet!=null;
     }

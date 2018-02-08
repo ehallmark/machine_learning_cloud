@@ -95,12 +95,10 @@ public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultP
         testIter.setRunVocab(false);
         devIter.setRunVocab(false);
 
-        long numDocs = Database.getAllPatentsAndApplications().size()*3;
-
         datasetManager = new NoSaveDataSetManager<>(
-                getRawIterator(trainIter,numDocs,getBatchSize()),
-                getRawIterator(testIter,numDocs, 128),
-                getRawIterator(devIter,numDocs, 128)
+                getRawIterator(trainIter,getBatchSize()),
+                getRawIterator(testIter, 1024),
+                getRawIterator(devIter, 1024)
         );
     }
 
@@ -128,9 +126,8 @@ public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultP
     }
 
 
-    protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, long numDocs, int batch) {
-        int dimensions = getAssetToEncodingMap().values().stream().findAny().get().length();;
-        return new Word2VecToCPCIterator(iterator,numDocs,getAssetToEncodingMap(),word2Vec,batch,true,dimensions);
+    protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {
+        return new Word2VecToCPCIterator(iterator,word2Vec,batch,1);
     }
 
 }
