@@ -94,9 +94,10 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             INDArray cpc2Vec = cpc2VecMap.get(cpc);
             if(cpc2Vec!=null) {
                 INDArray feature = unitVecNormMax(cpc2Vec,true);
-                feature = feature.broadcast(numSamples,cpc2Vec.length());
-                INDArray encoding = encode(feature,null);
+                feature = Nd4j.vstack(feature,feature,feature).reshape(1,cpc2Vec.length(),3);
+                INDArray encoding = encode(feature,null).mean(0);
                 finalPredictionsMap.put(cpc, Transforms.unitVec(encoding));
+                System.out.println("Encoding length: "+encoding.length());
             }
 
             if(cnt.get()%50000==49999) {
@@ -199,10 +200,13 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             vaeNetwork.setLayerMaskArrays(new INDArray[]{mask}, new INDArray[]{mask});
         }
         INDArray res = feedForwardToVertex(vaeNetwork,String.valueOf(encodingIdx),input); // activations.get(String.valueOf(encodingIdx));
-        if(res.columns()!=getVectorSize()) {
+        if(res.shape().length!=2||res.columns()!=getVectorSize()) {
             vaeNetwork.getConfiguration().getVertices().forEach((k,v)->{
                 System.out.println(k+": "+v.toString());
             });
+            if(res.shape().length!=2) {
+                throw new RuntimeException("Encoding is not a matrix. Num dims: "+res.shape().length+ " != "+2);
+            }
             throw new RuntimeException("Wrong vector size: "+res.columns()+" != "+getVectorSize());
         }
         vaeNetwork.clearLayerMaskArrays();
