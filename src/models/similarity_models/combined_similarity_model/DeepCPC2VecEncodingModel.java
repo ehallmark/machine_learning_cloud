@@ -1,5 +1,7 @@
 package models.similarity_models.combined_similarity_model;
 
+import cpc_normalization.CPC;
+import cpc_normalization.CPCHierarchy;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.optimize.nn_optimization.CGRefactorer;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
@@ -77,8 +79,10 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         final int assigneeSamples = 128;
 
         Map<String,INDArray> cpc2VecMap = pipelineManager.wordCPC2VecPipelineManager.getOrLoadCPCVectors();
-        Map<String,List<String>> cpcMap = pipelineManager.wordCPC2VecPipelineManager.getCPCMap().entrySet().parallelStream().map(e ->new Pair<>(e.getKey(),e.getValue().stream().filter(cpc->cpc.getNumParts() > 3 && cpc2VecMap.containsKey(cpc.getName())).limit(100).map(cpc -> cpc.getName()).collect(Collectors.toList())))
+        Map<String,List<String>> cpcMap = pipelineManager.wordCPC2VecPipelineManager.getCPCMap().entrySet().parallelStream().map(e ->new Pair<>(e.getKey(),e.getValue().stream().filter(cpc->cpc2VecMap.containsKey(cpc.getName())).limit(100).map(cpc -> cpc.getName()).collect(Collectors.toList())))
                 .collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
+        CPCHierarchy cpcHierarchy = new CPCHierarchy();
+        cpcHierarchy.loadGraph();
 
         final Random rand = new Random(32);
         final AtomicInteger incomplete = new AtomicInteger(0);
@@ -94,10 +98,39 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             INDArray cpc2Vec = cpc2VecMap.get(cpc);
             if(cpc2Vec!=null) {
                 INDArray feature = unitVecNormMax(cpc2Vec,true);
-                feature = Nd4j.vstack(feature,feature,feature).reshape(1,cpc2Vec.length(),3);
+
+                // add parent cpc info
+                CPC cpcObj = cpcHierarchy.getLabelToCPCMap().get(cpc);
+                CPC parent = cpcObj.getParent();
+                if(parent!=null) {
+                    INDArray parentFeature = cpc2VecMap.get(parent.getName());
+                    if(parentFeature!=null) {
+                        parentFeature = unitVecNormMax(parentFeature, true);
+                        CPC grandParent = parent.getParent();
+                        if(grandParent!=null) {
+                            INDArray grandParentFeature = cpc2VecMap.get(grandParent.getName());
+                            if(grandParentFeature!=null) {
+                                grandParentFeature = unitVecNormMax(grandParentFeature,true);
+                                feature = Nd4j.vstack(feature, parentFeature, feature, grandParentFeature, feature, parentFeature, feature).reshape(1, cpc2Vec.length(), 7);
+                            } else {
+                                feature = Nd4j.vstack(feature, parentFeature, feature).reshape(1, cpc2Vec.length(), 3);
+                            }
+                        } else {
+                            feature = Nd4j.vstack(feature, parentFeature, feature).reshape(1, cpc2Vec.length(), 3);
+                        }
+                    } else {
+                        feature = Nd4j.vstack(feature,feature).reshape(1,cpc2Vec.length(),2);
+                    }
+                } else {
+                    feature = Nd4j.vstack(feature,feature).reshape(1,cpc2Vec.length(),2);
+                }
+
+
                 INDArray encoding = encode(feature,null).mean(0);
+
+
+
                 finalPredictionsMap.put(cpc, Transforms.unitVec(encoding));
-                System.out.println("Encoding length: "+encoding.length());
             }
 
             if(cnt.get()%50000==49999) {
@@ -109,7 +142,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         });
 
 
+        System.out.println("Finished class codes...");
 
+        /*
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         Collection<String> filings = Collections.synchronizedSet(new HashSet<>());
         for(String asset : assets) {
@@ -186,6 +221,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
         System.out.println("FINAL:: Finished "+cnt.get()+" filings out of "+filings.size()+". Incomplete: "+incomplete.get()+ " / "+cnt.get()+", Null Vae: "+nullVae.get()+" / "+incomplete.get());
 
+        */
 
         return finalPredictionsMap;
     }
