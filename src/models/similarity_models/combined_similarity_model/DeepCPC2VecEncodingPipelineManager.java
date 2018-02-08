@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Level;
 import cpc_normalization.CPC;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
-import data_pipeline.vectorize.NoSaveDataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
@@ -20,7 +19,6 @@ import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.primitives.Pair;
-import seeding.Constants;
 
 import java.io.File;
 import java.util.*;
@@ -120,7 +118,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     }
 
     protected int getMaxSamples() {
-        return 8;
+        return 32;
     }
 
     protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {
@@ -255,14 +253,15 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         System.out.println("Starting to build vectors... Num entries: "+entries.size());
         INDArray[] masks = new INDArray[entries.size()];
         INDArray[] vectors = entries.stream().map(cpcLabels->{
-            INDArray vec = Nd4j.create(VECTOR_SIZE,maxSamples);
-            INDArray mask = Nd4j.ones(maxSamples);
+            int sample = rand.nextInt(maxSamples)+1;
+            INDArray vec = Nd4j.create(VECTOR_SIZE,sample);
+            INDArray mask = Nd4j.ones(sample);
             int numCPCLabels = cpcLabels.size();
             vec.get(NDArrayIndex.all(),NDArrayIndex.interval(0,numCPCLabels)).assign(word2Vec.getWordVectors(cpcLabels));
             int idx = cnt.getAndIncrement();
-            if(maxSamples>numCPCLabels) {
-                vec.get(NDArrayIndex.all(),NDArrayIndex.interval(numCPCLabels,maxSamples)).assign(0);
-                mask.get(NDArrayIndex.interval(numCPCLabels,maxSamples)).assign(0);
+            if(sample>numCPCLabels) {
+                vec.get(NDArrayIndex.all(),NDArrayIndex.interval(numCPCLabels,sample)).assign(0);
+                mask.get(NDArrayIndex.interval(numCPCLabels,sample)).assign(0);
             }
             masks[idx]=mask;
             return vec;
@@ -299,16 +298,16 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
         boolean rebuildDatasets = false;
-        boolean runModels = true;
+        boolean runModels = false;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
         boolean rebuildPrerequisites = false;
         boolean trainOnWords = true;
         int nEpochs = 2;
 
-        if(trainOnWords && !INPUT_DATA_FOLDER_WORD.exists()) {
+        if(trainOnWords && !INPUT_DATA_FOLDER_WORD.exists()&&runModels) {
             rebuildDatasets=true;
-        } else if (!trainOnWords && !INPUT_DATA_FOLDER_CPC.exists()) {
+        } else if (!trainOnWords && !INPUT_DATA_FOLDER_CPC.exists()&&runModels) {
             rebuildDatasets=true;
         }
 

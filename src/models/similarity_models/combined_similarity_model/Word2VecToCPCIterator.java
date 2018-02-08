@@ -1,8 +1,5 @@
 package models.similarity_models.combined_similarity_model;
 
-import models.similarity_models.Vectorizer;
-import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
-import org.apache.commons.lang.ArrayUtils;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.VocabWord;
@@ -14,10 +11,10 @@ import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -88,8 +85,9 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
     public boolean hasNext() {
         currentDataSet=null;
         int idx = 0;
-        INDArray features = Nd4j.create(batch,inputColumns(),maxSamples);
-        INDArray masks = Nd4j.ones(batch,maxSamples);
+        int sample = rand.nextInt(maxSamples)+1;
+        INDArray features = Nd4j.create(batch,inputColumns(),sample);
+        INDArray masks = Nd4j.ones(batch,sample);
         while(documentIterator.hasMoreSequences()&&idx<batch) {
             Sequence<VocabWord> document = documentIterator.nextSequence();
             List<String> sequence = document.getElements().stream().map(e->e.getLabel()).collect(Collectors.toList());
@@ -101,7 +99,7 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
                     String l = sequence.get(i);
                     if (word2Vec.getVocab().containsWord(l)) {
                         indexes.add(word2Vec.getVocab().indexOf(l));
-                        if(indexes.size()==maxSamples) {
+                        if(indexes.size()==sample) {
                             break;
                         }
                     }
@@ -118,9 +116,9 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
 
             }
             features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.interval(0,featureVec.rows())).assign(featureVec);
-            if(featureVec.rows()<maxSamples) {
-                features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.interval(featureVec.rows(),maxSamples)).assign(0);
-                masks.get(NDArrayIndex.point(idx),NDArrayIndex.interval(featureVec.rows(),maxSamples)).assign(0);
+            if(featureVec.rows()<sample) {
+                features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.interval(featureVec.rows(),sample)).assign(0);
+                masks.get(NDArrayIndex.point(idx),NDArrayIndex.interval(featureVec.rows(),sample)).assign(0);
             }
             idx++;
         }

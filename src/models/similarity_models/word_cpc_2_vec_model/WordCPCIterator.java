@@ -113,7 +113,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
             String[] text = defaultWordListFunction.apply(document.getContent());
             int wordLimit = maxSamples > 0 ? Math.min(text.length,maxSamples) : text.length;
             int start = text.length>wordLimit&&maxSamples>0 ? random.nextInt(text.length-wordLimit) : 0;
-            final double cpcProb = random.nextDouble();
+            final double cpcProb = random.nextDouble()/2;
             words = Stream.of(text).filter(word-> !Constants.STOP_WORD_SET.contains(word)).skip(start).limit(wordLimit).flatMap(word->{
                 VocabWord vocabWord = new VocabWord(1, word);
                 vocabWord.setSequencesCount(1);
