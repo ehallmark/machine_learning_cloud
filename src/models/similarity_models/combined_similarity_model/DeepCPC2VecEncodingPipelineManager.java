@@ -114,7 +114,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     }
 
     public File getDevFile() {
-        return FileTextDataSetIterator.devFile2;
+        return FileTextDataSetIterator.devFile3;
     }
 
     protected int getMaxSamples() {
