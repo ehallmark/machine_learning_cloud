@@ -405,11 +405,10 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             layer = NNOptimizer.newDenseLayer(hiddenLayerSize, hiddenLayerSize);
 
             org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
-            conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
             if(i==t) {
                 conf = conf.addVertex("p1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), String.valueOf(i-1))
                         .addVertex("r1", new ReshapeVertex(-1,pipelineManager.getMaxSamples()*hiddenLayerSize), "p1");
-                conf = conf.addLayer(String.valueOf(i), layer.build(),"r1");
+                conf = conf.addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(pipelineManager.getMaxSamples()*hiddenLayerSize,hiddenLayerSize).build(),"r1");
             } else {
                 conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
             }
@@ -437,7 +436,10 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
             layer = NNOptimizer.newDenseLayer(hiddenLayerSize, hiddenLayerSize);
             org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
-
+            if(i+increment>t+numHiddenLayers*increment) {
+                // flat last layer for input to reshape vertex
+                layer = NNOptimizer.newDenseLayer(hiddenLayerSize, pipelineManager.getMaxSamples()*hiddenLayerSize)
+            }
             conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
             if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), norm.build(), String.valueOf(i));
         }
