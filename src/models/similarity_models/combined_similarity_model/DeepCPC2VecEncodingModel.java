@@ -167,10 +167,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
         cnt.set(0);
         incomplete.set(0);
-        // assignees
-        assignees.forEach(assignee->{
 
-        });
         // add assignee vectors
         Map<String,List<String>> assigneeToCpcMap = assignees.parallelStream().collect(Collectors.toConcurrentMap(assignee->assignee,assignee->{
             return Stream.of(
