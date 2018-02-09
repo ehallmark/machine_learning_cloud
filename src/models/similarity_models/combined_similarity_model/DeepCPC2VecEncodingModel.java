@@ -55,7 +55,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Getter
     private ComputationGraph vaeNetwork;
 
-    int encodingIdx = 5;
+    int encodingIdx = 6;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
         super(pipelineManager,ComputationGraph.class,modelName);
@@ -340,7 +340,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     public int printIterations() {
-        return 2500;
+        return 5000;
     }
 
 
@@ -376,19 +376,21 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .addInputs("x1")
                 .addLayer("1", new GravesBidirectionalLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRNN).build(), "x1")
                 .addLayer("2", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "1")
-                .addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "2")
+                .addLayer("3", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "2")
+                .addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "3")
                 .addVertex("v2", new ReshapeVertex(-1,linearTotal), "v1")
-                .addLayer("3", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeFF).build(), "v2")
-                .addLayer("4", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "3")
-                .addLayer("5", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "4")
-                .addLayer("6", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "5")
-                .addLayer("7", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "6")
-                .addLayer("8", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "7")
-                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN), "8")
+                .addLayer("4", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeFF).build(), "v2")
+                .addLayer("5", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "4")
+                .addLayer("6", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "5")
+                .addLayer("7", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "6")
+                .addLayer("8", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "7")
+                .addLayer("9", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "8")
+                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN), "9")
                 .addVertex("v4", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "v3")
-                .addLayer("9", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v4")
-                .addLayer("10", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "9")
-                .addLayer("y1", new RnnOutputLayer.Builder().nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "10")
+                .addLayer("10", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v4")
+                .addLayer("11", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "10")
+                .addLayer("12", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "11")
+                .addLayer("y1", new RnnOutputLayer.Builder().nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "12")
                 .setOutputs("y1")
                 .backprop(true)
                 .pretrain(false);
@@ -405,7 +407,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         networks.add(vaeNetwork);
 
 
-        boolean testNet = true;
+        boolean testNet = false;
         if(testNet) {
             ComputationGraph graph = new ComputationGraph(conf.build());
             graph.init();
