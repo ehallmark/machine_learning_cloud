@@ -377,7 +377,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .graphBuilder()
                 .addInputs("x1")
                 .setOutputs("y1")
-                .addLayer("1", new GravesBidirectionalLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRNN).build(), "x")
+                .addLayer("1", new GravesBidirectionalLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRNN).build(), "x1")
                 .addLayer("2", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "1")
                 .addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "2")
                 .addVertex("v2", new ReshapeVertex(-1,linearTotal), "v1")
@@ -389,8 +389,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .addVertex("v4", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "v3")
                 .addLayer("7", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v4")
                 .addLayer("8", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "7")
-                .addLayer("y", new RnnOutputLayer.Builder().nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "8")
-                .setOutputs("y");
+                .addLayer("y1", new RnnOutputLayer.Builder().nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "8")
+                .setOutputs("y1");
 
         vaeNetwork = new ComputationGraph(conf.build());
         vaeNetwork.init();
