@@ -4,10 +4,7 @@ import com.google.gson.Gson;
 import seeding.Database;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
@@ -18,12 +15,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 11/16/2017.
  */
 public class ScrapeEPO {
-
+    public static final File mapDir = new File("epo_asset_family_maps/");
+    static {
+        if(!mapDir.exists()) mapDir.mkdirs();
+    }
+    public static final File mapFile = new File(mapDir,"epo_asset_to_family_data_map.jobj");
     private static String generateNewAuthToken() throws IOException{
         String key = "AZ42DGb0AeTZ4wwSUWnRoGdGjnP8Gfjc";
         String secret = "O7PG38t4P2uJK2IQ";
@@ -94,17 +96,17 @@ public class ScrapeEPO {
 
     public static Map<String,List<Map<String,Object>>> getFamilyMembersForAssets(List<String> assets, int maxRetries) throws Exception {
         Lock refreshLock = new ReentrantLock();
-        int batch = 100;
+        int batch = Runtime.getRuntime().availableProcessors()*2;
 
         AtomicReference<String> authToken = new AtomicReference<>(generateNewAuthToken());
         Map<String,List<Map<String,Object>>> dataMap = Collections.synchronizedMap(new ConcurrentHashMap<>(assets.size()));
         for(int i = 0; i < 1+assets.size()/batch; i++) {
             if(i*batch>=assets.size()) continue;
-            AtomicBoolean retry = new AtomicBoolean(true);
-            AtomicInteger tries = new AtomicInteger(0);
-            while (retry.get() && tries.getAndIncrement() < maxRetries) {
-                retry.set(false);
-                assets.subList(i*batch,Math.min(assets.size(),i*batch+batch)).parallelStream().forEach(asset-> {
+            assets.subList(i*batch,Math.min(assets.size(),i*batch+batch)).parallelStream().forEach(asset-> {
+                AtomicBoolean retry = new AtomicBoolean(true);
+                AtomicInteger tries = new AtomicInteger(0);
+                while (retry.get() && tries.getAndIncrement() < maxRetries) {
+                    retry.set(false);
                     try {
                         List<Map<String,Object>> familyData = getFamilyMembersForAssetHelper(asset, authToken.get());
                         if(familyData!=null) {
@@ -133,16 +135,31 @@ public class ScrapeEPO {
                             refreshLock.unlock();
                         }
                     }
-                });
-            }
+                }
+                if(tries.get()>=maxRetries) {
+                    System.out.println("Max retries reached...");
+                }
+            });
         }
-
+        saveCurrentResults(dataMap);
         return dataMap;
     }
 
+    private static void saveCurrentResults(Map<String,List<Map<String,Object>>> currentMap) {
+        File toSave = new File(mapFile.getAbsolutePath()+mapDir.listFiles().length);
+        Database.trySaveObject(currentMap,toSave);
+    }
+
     public static void main(String[] args) throws Exception {
+        int limitPerComputer = 100000;
+        Map<String,List<Map<String,Object>>> previousMap = MergeEPOMaps.loadMergedMap();
+
+        List<String> assets = Database.getCopyOfAllPatents()
+                .parallelStream().filter(p->previousMap==null||!previousMap.containsKey(p))
+                .limit(limitPerComputer)
+                .collect(Collectors.toList());
 
         //test
-        getFamilyMembersForAssets(new ArrayList<>(Database.getCopyOfAllPatents()), 4);
+        getFamilyMembersForAssets(assets, 4);
     }
 }
