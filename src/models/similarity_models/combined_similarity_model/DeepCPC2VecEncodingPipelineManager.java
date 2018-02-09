@@ -38,7 +38,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     private static final File INPUT_DATA_FOLDER_WORD = new File("deep_cpc_word_2_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
-    protected static final int MINI_BATCH_SIZE = 64;
+    protected static final int MINI_BATCH_SIZE = 32;
     protected static final Random rand = new Random(235);
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
     protected String modelName;
@@ -85,7 +85,11 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
                 @Override
                 public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
                     dataSet.setLabels(dataSet.getFeatures());
-                    dataSet.setLabelsMaskArray(dataSet.getFeaturesMaskArrays());
+                    dataSet.setLabelsMaskArray(null);
+                    dataSet.setFeaturesMaskArrays(null);
+                    //dataSet.setLabelsMaskArray(dataSet.getFeaturesMaskArrays());
+
+
                     /*INDArray featureMask = dataSet.getFeaturesMaskArray(0);
                     int[] lastIdx = featureMask.sum(1).data().asInt();
                     float[][] labelMaskArr = new float[featureMask.rows()][];
@@ -118,7 +122,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     }
 
     protected int getMaxSamples() {
-        return 32;
+        return 8;
     }
 
     protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {
@@ -247,13 +251,12 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         return buildVectors(entries,word2Vec,getMaxSamples());
     }
 
-    public static Pair<INDArray[],INDArray[]> buildVectors(List<List<String>> entries, Word2Vec word2Vec, int maxSamples) {
+    public static Pair<INDArray[],INDArray[]> buildVectors(List<List<String>> entries, Word2Vec word2Vec, int sample) {
         AtomicInteger cnt = new AtomicInteger(0);
 
         System.out.println("Starting to build vectors... Num entries: "+entries.size());
         INDArray[] masks = new INDArray[entries.size()];
         INDArray[] vectors = entries.stream().map(cpcLabels->{
-            int sample = rand.nextInt(maxSamples)+1;
             INDArray vec = Nd4j.create(VECTOR_SIZE,sample);
             INDArray mask = Nd4j.ones(sample);
             int numCPCLabels = cpcLabels.size();
@@ -300,10 +303,10 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         boolean rebuildDatasets = false;
         boolean runModels = true;
         boolean forceRecreateModels = false;
-        boolean runPredictions = true;
+        boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
-        boolean trainOnWords = true;
-        int nEpochs = 2;
+        boolean trainOnWords = false;
+        int nEpochs = 5;
 
         if(trainOnWords && !INPUT_DATA_FOLDER_WORD.exists()&&runModels) {
             rebuildDatasets=true;
