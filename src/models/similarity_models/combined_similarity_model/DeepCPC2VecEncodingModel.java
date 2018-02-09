@@ -55,8 +55,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Getter
     private ComputationGraph vaeNetwork;
 
-    int numHiddenLayers = 3;
-    int encodingIdx = numHiddenLayers+1;
+    int encodingIdx = 5;
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
         super(pipelineManager,ComputationGraph.class,modelName);
@@ -380,14 +379,16 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "2")
                 .addVertex("v2", new ReshapeVertex(-1,linearTotal), "v1")
                 .addLayer("3", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeFF).build(), "v2")
-                .addLayer("4", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "3")
-                .addLayer("5", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "4")
-                .addLayer("6", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "5")
-                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN), "6")
+                .addLayer("4", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "3")
+                .addLayer("5", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "4")
+                .addLayer("6", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "5")
+                .addLayer("7", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "6")
+                .addLayer("8", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "7")
+                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN), "8")
                 .addVertex("v4", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "v3")
-                .addLayer("7", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v4")
-                .addLayer("8", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "7")
-                .addLayer("y1", new RnnOutputLayer.Builder().nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "8")
+                .addLayer("9", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v4")
+                .addLayer("10", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "9")
+                .addLayer("y1", new RnnOutputLayer.Builder().nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "10")
                 .setOutputs("y1")
                 .backprop(true)
                 .pretrain(false);
@@ -404,27 +405,29 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         networks.add(vaeNetwork);
 
 
-        ComputationGraph graph = new ComputationGraph(conf.build());
-        graph.init();
+        boolean testNet = false;
+        if(testNet) {
+            ComputationGraph graph = new ComputationGraph(conf.build());
+            graph.init();
 
-        INDArray data3 = Nd4j.randn(new int[]{3,input1,pipelineManager.getMaxSamples()});
-        INDArray data5 = Nd4j.randn(new int[]{5,input1,pipelineManager.getMaxSamples()});
+            INDArray data3 = Nd4j.randn(new int[]{3, input1, pipelineManager.getMaxSamples()});
+            INDArray data5 = Nd4j.randn(new int[]{5, input1, pipelineManager.getMaxSamples()});
 
-       // for(int j = 0; j < 1000; j++) {
-       //     graph.fit(new INDArray[]{data3}, new INDArray[]{data3});
-       //     graph.fit(new INDArray[]{data5}, new INDArray[]{data5});
-       //     System.out.println("Score "+j+": "+graph.score());
-       // }
+            for (int j = 0; j < 1000; j++) {
+                graph.fit(new INDArray[]{data3}, new INDArray[]{data3});
+                graph.fit(new INDArray[]{data5}, new INDArray[]{data5});
+                System.out.println("Score " + j + ": " + graph.score());
+            }
 
-        for(int j = 1; j < 9; j++) {
-            try {
-                System.out.println("Shape of " + j + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(j),data3).shape()));
-                System.out.println("Shape of " + j + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(j),data5).shape()));
-            } catch(Exception e) {
-                e.printStackTrace();
+            for (int j = 1; j < 9; j++) {
+                try {
+                    System.out.println("Shape of " + j + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(j), data3).shape()));
+                    System.out.println("Shape of " + j + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(j), data5).shape()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
-
 
 
         return nameToNetworkMap;
