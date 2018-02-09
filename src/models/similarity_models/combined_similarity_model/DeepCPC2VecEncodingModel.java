@@ -409,7 +409,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             if(i==t) {
                 conf = conf.addVertex("p1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), String.valueOf(i-1))
                         .addVertex("r1", new ReshapeVertex(-1,pipelineManager.getMaxSamples()*hiddenLayerSize), "p1");
-                conf = conf.addLayer(String.valueOf(i), layer.build(), new RnnToFeedForwardPreProcessor(),"r1");
+                conf = conf.addLayer(String.valueOf(i), layer.build(),"r1");
             } else {
                 conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
             }
