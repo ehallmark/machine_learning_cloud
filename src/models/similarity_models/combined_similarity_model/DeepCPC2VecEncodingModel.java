@@ -349,7 +349,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         Map<String, ComputationGraph> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
 
         System.out.println("Build model....");
-        int hiddenLayerSizeRNN = 64;
+        int hiddenLayerSizeRNN = 96;
         int hiddenLayerSizeFF = 96;
         int maxSamples = pipelineManager.getMaxSamples();
 
