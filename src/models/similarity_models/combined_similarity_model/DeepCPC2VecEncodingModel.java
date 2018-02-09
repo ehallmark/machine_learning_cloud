@@ -12,6 +12,7 @@ import org.deeplearning4j.nn.api.layers.IOutputLayer;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.graph.PreprocessorVertex;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.conf.preprocessor.FeedForwardToRnnPreProcessor;
 import org.deeplearning4j.nn.conf.preprocessor.RnnToFeedForwardPreProcessor;
@@ -28,6 +29,7 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Database;
+import test.ReshapeVertex;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
@@ -405,7 +407,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
             conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
             if(i==t) {
-                conf = conf.addLayer(String.valueOf(i), layer.build(), new RnnToFeedForwardPreProcessor(), String.valueOf(i-1));
+                conf = conf.addVertex("p1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), String.valueOf(i-1))
+                        .addVertex("r1", new ReshapeVertex(-1,pipelineManager.getMaxSamples()*hiddenLayerSize), "p1");
+                conf = conf.addLayer(String.valueOf(i), layer.build(), new RnnToFeedForwardPreProcessor(),"r1");
             } else {
                 conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
             }
@@ -448,7 +452,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
             org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
             if(i==t) {
-                conf = conf.addLayer(String.valueOf(i), layer.build(), new FeedForwardToRnnPreProcessor(), String.valueOf(i-1));
+                conf = conf.addVertex("r2", new ReshapeVertex(-1,hiddenLayerSize), String.valueOf(i-1));
+                conf = conf.addLayer(String.valueOf(i), layer.build(), new FeedForwardToRnnPreProcessor(), "r2");
             } else {
                 conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
             }
