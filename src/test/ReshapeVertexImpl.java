@@ -105,7 +105,10 @@ public class ReshapeVertexImpl extends BaseGraphVertex {
             return new Pair<>(null, currentMaskState);
         }
 
-        if(maskShape != null){
+        throw new UnsupportedOperationException("Currently cannot use feedforward masks with this custom implementation of ReshapeVertex.");
+
+        /*
+        if (maskShape != null) {
             return new Pair<>(maskArrays[0].reshape(order, maskShape), currentMaskState);
         }
 
@@ -118,26 +121,26 @@ public class ReshapeVertexImpl extends BaseGraphVertex {
         // ii. output is rank 3 (RNN) -> no change
 
 
-        if(maskArrays[0].isColumnVector()){
-            if(newShape.length == 2 || newShape.length == 4){
+        if (maskArrays[0].isColumnVector()) {
+            if (newShape.length == 2 || newShape.length == 4) {
                 return new Pair<>(maskArrays[0], currentMaskState);
-            } else if(newShape.length == 3) {
+            } else if (newShape.length == 3) {
                 //Column vector -> 2d (FF -> RNN etc)
                 int[] newMaskShape = new int[]{newShape[0], newShape[2]};
                 return new Pair<>(maskArrays[0].reshape(order, newMaskShape), currentMaskState);
             }
         } else {
-            if(newShape.length == 3){
+            if (newShape.length == 3) {
                 return new Pair<>(maskArrays[0], currentMaskState);
             } else {
                 //RNN -> FF/CNN
-                int[] newMaskShape = new int[]{newShape[0]*newShape[2], 1};
+                int[] newMaskShape = new int[]{newShape[0] * newShape[2], 1};
                 return new Pair<>(maskArrays[0].reshape(order, newMaskShape), currentMaskState);
             }
         }
 
         //Other unknown case - shouldn't happen...
-        return new Pair<>(maskArrays[0], currentMaskState);
+        return new Pair<>(maskArrays[0], currentMaskState); */
     }
 
     @Override

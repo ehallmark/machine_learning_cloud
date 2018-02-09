@@ -3,7 +3,6 @@ package models.similarity_models.combined_similarity_model;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
-import data_pipeline.optimize.nn_optimization.CGRefactorer;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import lombok.Getter;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
@@ -350,52 +349,13 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         Map<String, ComputationGraph> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
 
         System.out.println("Build model....");
-        int hiddenLayerSizeRNN = 48;
-        int hiddenLayerSizeFF = 96;
-        int maxSamples = pipelineManager.getMaxSamples();
 
-        int linearTotal = hiddenLayerSizeRNN * maxSamples;
-
-        int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
-
-
-        Updater updater = Updater.RMSPROP;
-
-        LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
-
-        Activation activation = Activation.TANH;
 
         networks = new ArrayList<>();
 
         // build networks
-        ComputationGraphConfiguration.GraphBuilder conf = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
-                .updater(updater)
-                .learningRate(0.005)
-                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .activation(activation)
-                .graphBuilder()
-                .addInputs("x1")
-                .addVertex("0", new L2NormalizeVertex(), "x1")
-                .addLayer("1", new GravesBidirectionalLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRNN).build(), "0")
-                .addLayer("2", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "1")
-                .addLayer("3", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "2")
-                .addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "3")
-                .addVertex("v2", new ReshapeVertex(-1,linearTotal), "v1")
-                .addLayer("4", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeFF).build(), "v2")
-                .addLayer("5", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "4")
-                .addLayer("6", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "5")
-                .addLayer("7", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "6")
-                .addLayer("8", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "7")
-                .addLayer("9", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "8")
-                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN), "9")
-                .addVertex("v4", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "v3")
-                .addLayer("10", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v4")
-                .addLayer("11", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "10")
-                .addLayer("12", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "11")
-                .addLayer("y1", new RnnOutputLayer.Builder().nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "12")
-                .setOutputs("y1")
-                .backprop(true)
-                .pretrain(false);
+        double learningRate = 0.005;
+        ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate);
 
         vaeNetwork = new ComputationGraph(conf.build());
         vaeNetwork.init();
@@ -411,6 +371,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
         boolean testNet = false;
         if(testNet) {
+            int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
             ComputationGraph graph = new ComputationGraph(conf.build());
             graph.init();
 
@@ -441,9 +402,15 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
-        double newLearningRate = 0.000005;
-        vaeNetwork = CGRefactorer.updateNetworkLearningRate(net.getNameToNetworkMap().get(VAE_NETWORK),newLearningRate,false);
-        vaeNetwork = CGRefactorer.setInputPreprocessor(vaeNetwork,new RnnToFeedForwardPreProcessor(),1,new FeedForwardToRnnPreProcessor(),vaeNetwork.getNumLayers()-2,false);
+        // recreate net
+        double newLearningRate = 0.0005;
+        vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
+        INDArray params = vaeNetwork.params();
+        vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
+        vaeNetwork.init(params,false);
+
+        // add to maps
+        net.getNameToNetworkMap().put(VAE_NETWORK,vaeNetwork);
         Map<String,ComputationGraph> updates = Collections.synchronizedMap(new HashMap<>());
         updates.put(VAE_NETWORK,vaeNetwork);
         networks = new ArrayList<>();
@@ -473,6 +440,51 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
             return score/count;
         };
+    }
+
+    private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
+        int hiddenLayerSizeRNN = 48;
+        int hiddenLayerSizeFF = 96;
+        int maxSamples = pipelineManager.getMaxSamples();
+
+        int linearTotal = hiddenLayerSizeRNN * maxSamples;
+
+        int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
+
+
+        Updater updater = Updater.RMSPROP;
+
+        LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
+
+        Activation activation = Activation.TANH;
+        return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
+                .updater(updater)
+                .learningRate(learningRate)
+                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                .activation(activation)
+                .graphBuilder()
+                .addInputs("x1")
+                .addVertex("0", new L2NormalizeVertex(), "x1")
+                .addLayer("1", new GravesBidirectionalLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRNN).build(), "0")
+                .addLayer("2", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "1")
+                .addLayer("3", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "2")
+                .addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "3")
+                .addVertex("v2", new ReshapeVertex(-1,linearTotal), "v1")
+                .addLayer("4", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeFF).build(), "v2")
+                .addLayer("5", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "4")
+                .addLayer("6", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "5")
+                .addLayer("7", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "6")
+                .addLayer("8", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "7")
+                .addLayer("9", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "8")
+                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN), "9")
+                .addVertex("v4", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "v3")
+                .addLayer("10", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v4")
+                .addLayer("11", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "10")
+                .addLayer("12", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "11")
+                .addLayer("y1", new RnnOutputLayer.Builder().nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "12")
+                .setOutputs("y1")
+                .backprop(true)
+                .pretrain(false);
     }
 
     public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
