@@ -493,8 +493,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
         for(int j = 1; j <= graph.getNumLayers(); j++) {
             try {
-                System.out.println("Shape of " + j + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(i),data3).shape()));
-                System.out.println("Shape of " + j + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(i),data5).shape()));
+                System.out.println("Shape of " + j + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(j),data3).shape()));
+                System.out.println("Shape of " + j + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(j),data5).shape()));
             } catch(Exception e) {
                 e.printStackTrace();
             }
