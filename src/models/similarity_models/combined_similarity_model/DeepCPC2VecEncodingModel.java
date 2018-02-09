@@ -379,7 +379,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "2")
                 .addVertex("v2", new ReshapeVertex(-1,linearTotal), "v1")
                 .addLayer("3", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeFF).build(), "v2")
-                .addLayer("4", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "3")
+                .addLayer("4", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "3")
                 .addLayer("5", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "4")
                 .addLayer("6", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "5")
                 .addLayer("7", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "6")
@@ -405,7 +405,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         networks.add(vaeNetwork);
 
 
-        boolean testNet = false;
+        boolean testNet = true;
         if(testNet) {
             ComputationGraph graph = new ComputationGraph(conf.build());
             graph.init();
@@ -413,11 +413,6 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             INDArray data3 = Nd4j.randn(new int[]{3, input1, pipelineManager.getMaxSamples()});
             INDArray data5 = Nd4j.randn(new int[]{5, input1, pipelineManager.getMaxSamples()});
 
-            for (int j = 0; j < 1000; j++) {
-                graph.fit(new INDArray[]{data3}, new INDArray[]{data3});
-                graph.fit(new INDArray[]{data5}, new INDArray[]{data5});
-                System.out.println("Score " + j + ": " + graph.score());
-            }
 
             for (int j = 1; j < 9; j++) {
                 try {
@@ -427,6 +422,13 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                     e.printStackTrace();
                 }
             }
+
+            for (int j = 0; j < 10; j++) {
+                graph.fit(new INDArray[]{data3}, new INDArray[]{data3});
+                graph.fit(new INDArray[]{data5}, new INDArray[]{data5});
+                System.out.println("Score " + j + ": " + graph.score());
+            }
+
         }
 
 
