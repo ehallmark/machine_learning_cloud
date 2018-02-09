@@ -12,6 +12,7 @@ import lombok.NonNull;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
@@ -77,6 +78,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
         INDArray labelMask = Nd4j.zeros(features.shape()[0],features.shape()[2]);
         labelMask.putColumn(labelMask.columns()-1,Nd4j.ones(labelMask.rows()));
         net.setLayerMaskArrays(new INDArray[]{mask}, new INDArray[]{labelMask});
+
         INDArray output = net.output(false,features)[0];
         net.clearLayerMaskArrays();
         INDArray predictions = output.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(output.shape()[2]-1));

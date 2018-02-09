@@ -14,6 +14,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
@@ -473,6 +474,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
     }
 
     public static void main(String[] args) throws Exception {
+        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildDatasets = false;
         boolean runModels = false;
         boolean forceRecreateModels = false;
