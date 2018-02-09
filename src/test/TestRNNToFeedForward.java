@@ -51,11 +51,11 @@ public class TestRNNToFeedForward {
         INDArray data3 = Nd4j.randn(new int[]{3,numFeatures,maxSample});
         INDArray data5 = Nd4j.randn(new int[]{5,numFeatures,maxSample});
 
-        for(int i = 0; i < 1000; i++) {
-            graph.fit(new INDArray[]{data3}, new INDArray[]{data3});
-            graph.fit(new INDArray[]{data5}, new INDArray[]{data5});
-            System.out.println("Score "+i+": "+graph.score());
-        }
+       // for(int i = 0; i < 1000; i++) {
+       //     graph.fit(new INDArray[]{data3}, new INDArray[]{data3});
+       //     graph.fit(new INDArray[]{data5}, new INDArray[]{data5});
+       //     System.out.println("Score "+i+": "+graph.score());
+       // }
 
         for(int i = 1; i <= 8; i++) {
             try {

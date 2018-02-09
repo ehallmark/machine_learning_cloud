@@ -13,6 +13,8 @@ import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.graph.PreprocessorVertex;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
+import org.deeplearning4j.nn.conf.layers.GravesBidirectionalLSTM;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.conf.preprocessor.FeedForwardToRnnPreProcessor;
 import org.deeplearning4j.nn.conf.preprocessor.RnnToFeedForwardPreProcessor;
@@ -348,10 +350,14 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         Map<String, ComputationGraph> nameToNetworkMap = Collections.synchronizedMap(new HashMap<>());
 
         System.out.println("Build model....");
-        int hiddenLayerSize = 96;
+        int hiddenLayerSizeRNN = 64;
+        int hiddenLayerSizeFF = 96;
+        int maxSamples = pipelineManager.getMaxSamples();
+
+        int linearTotal = hiddenLayerSizeRNN * maxSamples;
+
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
 
-        boolean useBatchNorm = false;
 
         Updater updater = Updater.RMSPROP;
 
@@ -370,103 +376,21 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .activation(activation)
                 .graphBuilder()
                 .addInputs("x1")
-                .setOutputs("y1");
-
-        if (useBatchNorm) {
-            conf = conf.addLayer(String.valueOf(i), NNOptimizer.newBatchNormLayer(input1, input1).build(), "x1")
-                    .addLayer(String.valueOf(i + 1), NNOptimizer.newGravesBidirectionalLSTMLayer(input1, hiddenLayerSize).build(), String.valueOf(i))
-                    .addLayer(String.valueOf(i + 2), NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize).build(), String.valueOf(i + 1));
-        } else {
-            conf = conf
-                    .addLayer(String.valueOf(i), NNOptimizer.newGravesBidirectionalLSTMLayer(input1 , hiddenLayerSize).build(), "x1");
-        }
-
-        int increment = useBatchNorm ? 2 : 1;
-
-        i += useBatchNorm ? 3 : 1;
-
-        int t = i;
-       /* //  recurrent encoding
-        for (; i < t + numHiddenLayers * increment; i += increment) {
-            org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
-            layer = NNOptimizer.newGravesBidirectionalLSTMLayer(hiddenLayerSize, hiddenLayerSize);
-
-            org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
-            conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
-            if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), norm.build(), String.valueOf(i));
-        }
-        */
-
-       t = i;
-
-        // dense hidden encoding
-        for (; i < t + numHiddenLayers * increment; i += increment) {
-            org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
-            layer = NNOptimizer.newDenseLayer(hiddenLayerSize, hiddenLayerSize);
-
-            org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
-            if(i==t) {
-                conf = conf.addVertex("p1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), String.valueOf(i-1))
-                        .addVertex("r1", new ReshapeVertex(-1,pipelineManager.getMaxSamples()*hiddenLayerSize), "p1");
-                conf = conf.addLayer(String.valueOf(i), NNOptimizer.newDenseLayer(pipelineManager.getMaxSamples()*hiddenLayerSize,hiddenLayerSize).build(),"r1");
-            } else {
-                conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
-            }
-            if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), norm.build(), String.valueOf(i));
-        }
-
-        org.deeplearning4j.nn.conf.layers.Layer.Builder encoding = NNOptimizer.newDenseLayer(hiddenLayerSize, vectorSize);
-
-        org.deeplearning4j.nn.conf.layers.Layer.Builder eNorm = NNOptimizer.newBatchNormLayer(vectorSize, vectorSize);
-        conf = conf.addLayer(String.valueOf(i), encoding.build(), String.valueOf(i - 1));
-        if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), eNorm.build(), String.valueOf(i));
-        i += increment;
-
-
-        org.deeplearning4j.nn.conf.layers.Layer.Builder decoding = NNOptimizer.newDenseLayer(vectorSize, hiddenLayerSize);
-        org.deeplearning4j.nn.conf.layers.Layer.Builder dNorm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
-        conf = conf.addLayer(String.valueOf(i), decoding.build(), String.valueOf(i - 1));
-        if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), dNorm.build(), String.valueOf(i));
-        i += increment;
-
-        t = i;
-
-        //  dense hidden layers
-        for (; i < t + numHiddenLayers * increment; i += increment) {
-            org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
-            layer = NNOptimizer.newDenseLayer(hiddenLayerSize, hiddenLayerSize);
-            org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
-            if(i+increment>t+numHiddenLayers*increment) {
-                // flat last layer for input to reshape vertex
-                layer = NNOptimizer.newDenseLayer(hiddenLayerSize, pipelineManager.getMaxSamples()*hiddenLayerSize);
-            }
-            conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
-            if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), norm.build(), String.valueOf(i));
-        }
-
-        t = i;
-
-        //  recurrent hidden layers
-        //for (; i < t + numHiddenLayers * increment; i += increment) {
-        for (; i < t + 1 * increment; i += increment) {
-            org.deeplearning4j.nn.conf.layers.Layer.Builder layer;
-            layer = NNOptimizer.newGravesBidirectionalLSTMLayer(hiddenLayerSize, hiddenLayerSize);
-
-            org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
-            if(i==t) {
-                conf = conf.addVertex("r2", new ReshapeVertex(-1,hiddenLayerSize), String.valueOf(i-1))
-                        .addVertex("p2", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "r2");
-                conf = conf.addLayer(String.valueOf(i), layer.build(), "p2");
-            } else {
-                conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
-            }
-            if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), norm.build(), String.valueOf(i));
-        }
-
-        // output layers
-        RnnOutputLayer.Builder outputLayer = NNOptimizer.newRNNOutputLayer(hiddenLayerSize, input1).lossFunction(lossFunction).activation(Activation.TANH);
-
-        conf = conf.addLayer("y1", outputLayer.build(), String.valueOf(i - 1));
+                .setOutputs("y1")
+                .addLayer("1", new GravesBidirectionalLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRNN).build(), "x")
+                .addLayer("2", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "1")
+                .addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "2")
+                .addVertex("v2", new ReshapeVertex(-1,linearTotal), "v1")
+                .addLayer("3", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeFF).build(), "v2")
+                .addLayer("4", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "3")
+                .addLayer("5", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "4")
+                .addLayer("6", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "5")
+                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN), "6")
+                .addVertex("v4", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "v3")
+                .addLayer("7", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v4")
+                .addLayer("8", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "7")
+                .addLayer("y", new RnnOutputLayer.Builder().nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "8")
+                .setOutputs("y");
 
         vaeNetwork = new ComputationGraph(conf.build());
         vaeNetwork.init();
