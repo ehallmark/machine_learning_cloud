@@ -470,11 +470,36 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         vaeNetwork = new ComputationGraph(conf.build());
         vaeNetwork.init();
 
+
+
         System.out.println("Conf: " + conf.toString());
 
         nameToNetworkMap.put(VAE_NETWORK, vaeNetwork);
 
         networks.add(vaeNetwork);
+
+
+        ComputationGraph graph = new ComputationGraph(conf.build());
+        graph.init();
+
+        INDArray data3 = Nd4j.randn(new int[]{3,input1,pipelineManager.getMaxSamples()});
+        INDArray data5 = Nd4j.randn(new int[]{5,input1,pipelineManager.getMaxSamples()});
+
+        for(int j = 0; j < 1000; j++) {
+            graph.fit(new INDArray[]{data3}, new INDArray[]{data3});
+            graph.fit(new INDArray[]{data5}, new INDArray[]{data5});
+            System.out.println("Score "+j+": "+graph.score());
+        }
+
+        for(int j = 1; j <= graph.getNumLayers(); j++) {
+            try {
+                System.out.println("Shape of " + j + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(i),data3).shape()));
+                System.out.println("Shape of " + j + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(i),data5).shape()));
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+
 
 
         return nameToNetworkMap;
