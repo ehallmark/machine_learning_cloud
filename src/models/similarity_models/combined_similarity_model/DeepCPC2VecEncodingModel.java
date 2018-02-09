@@ -438,7 +438,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             org.deeplearning4j.nn.conf.layers.Layer.Builder norm = NNOptimizer.newBatchNormLayer(hiddenLayerSize, hiddenLayerSize);
             if(i+increment>t+numHiddenLayers*increment) {
                 // flat last layer for input to reshape vertex
-                layer = NNOptimizer.newDenseLayer(hiddenLayerSize, pipelineManager.getMaxSamples()*hiddenLayerSize)
+                layer = NNOptimizer.newDenseLayer(hiddenLayerSize, pipelineManager.getMaxSamples()*hiddenLayerSize);
             }
             conf = conf.addLayer(String.valueOf(i), layer.build(), String.valueOf(i - 1));
             if (useBatchNorm) conf = conf.addLayer(String.valueOf(i + 1), norm.build(), String.valueOf(i));
