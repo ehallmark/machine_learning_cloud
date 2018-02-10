@@ -124,10 +124,12 @@ public class ScrapeEPO {
                 try {
                     String familyData = getFamilyMembersForAssetHelper(asset, authToken.get());
                     assetsSeenSoFar.add(asset);
-                    if(familyData!=null) {
+                    if (familyData != null) {
                         writer.write(familyData);
                         writer.flush();
                     }
+                } catch(FileNotFoundException fne) {
+                    System.out.println("Unable to find: "+asset);
                 } catch (Exception e) {
                     e.printStackTrace();
                     retry.set(true);
