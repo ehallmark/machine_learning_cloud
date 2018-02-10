@@ -9,6 +9,7 @@ import org.deeplearning4j.nn.conf.layers.Layer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 import java.util.function.Function;
@@ -17,6 +18,38 @@ import java.util.function.Function;
  * Created by ehallmark on 11/16/17.
  */
 public class CGRefactorer {
+    public static ComputationGraph mergeParamsInBetween(ComputationGraph orig, ComputationGraphConfiguration newConf) {
+        INDArray origParams = orig.params();
+        INDArray newParams;
+        org.deeplearning4j.nn.api.Layer[] oldLayers = orig.getLayers();
+        org.deeplearning4j.nn.api.Layer[] newLayers;
+        {
+            ComputationGraph tmp = new ComputationGraph(newConf);
+            tmp.init();
+            newParams = tmp.params();
+            newLayers = tmp.getLayers();
+        }
+
+
+        for(int i = 0; i < oldLayers.length; i++) {
+            org.deeplearning4j.nn.api.Layer layer = oldLayers[i];
+            int n = layer.numParams();
+        }
+
+        int l1 = origParams.length();
+        int l2 = newParams.length();
+
+        int remainder = (l2-l1)/2;
+
+        newParams.get(NDArrayIndex.interval(remainder,l2-remainder)).assign(origParams);
+
+        ComputationGraph newGraph = new ComputationGraph(newConf);
+        newGraph.init(newParams,false);
+
+        return newGraph;
+    }
+
+
     public static ComputationGraph updateNetworkLearningRate(ComputationGraph orig, double learningRate, boolean dup) {
         Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier = builder -> builder.learningRate(learningRate).biasLearningRate(learningRate);
         Function<ComputationGraphConfiguration.GraphBuilder,ComputationGraphConfiguration.GraphBuilder> cgApplier = builder -> builder;
