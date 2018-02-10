@@ -148,13 +148,21 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             testIter.setRunVocab(false);
             devIter.setRunVocab(false);
 
-            datasetManager = new PreSaveDataSetManager<>(
+            PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
                     dataFolder,
                     getRawIterator(trainIter,getBatchSize()),
                     getRawIterator(testIter, 1024),
                     getRawIterator(devIter, 1024),
                     true
             );
+            manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
+                @Override
+                public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
+                    dataSet.setLabels(null);
+                    dataSet.setLabelsMaskArray(null);
+                }
+            });
+            datasetManager = manager;
 
         } else {
             int trainLimit = 5000000;
