@@ -9,6 +9,7 @@ import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.api.layers.IOutputLayer;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
+import org.deeplearning4j.nn.conf.LearningRatePolicy;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.graph.L2NormalizeVertex;
@@ -460,6 +461,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)
+                .lrPolicyDecayRate(0.0001)
+                .lrPolicyPower(0.7)
+                .learningRateDecayPolicy(LearningRatePolicy.Inverse)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .activation(activation)
                 .graphBuilder()
