@@ -32,15 +32,15 @@ public class TestRNNToFeedForward {
                 .addInputs("x")
                 .addLayer("1", new GravesBidirectionalLSTM.Builder().nIn(numFeatures).nOut(hiddenLayerSize).build(), "x")
                 .addLayer("2", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(), "1")
-                .addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "2")
-                .addVertex("v2", new ReshapeVertex(-1,linearTotal), "v1")
+                //.addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "2")
+                .addVertex("v2", new ReshapeVertex(-1,linearTotal), "2")
                 .addLayer("3", new DenseLayer.Builder().nIn(linearTotal).nOut(8).build(), "v2")
                 .addLayer("4", new DenseLayer.Builder().nIn(8).nOut(4).build(), "3")
                 .addLayer("5", new DenseLayer.Builder().nIn(4).nOut(8).build(), "4")
                 .addLayer("6", new DenseLayer.Builder().nIn(8).nOut(linearTotal).build(), "5")
-                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSize), "6")
-                .addVertex("v4", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "v3")
-                .addLayer("7", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(), "v4")
+                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSize,maxSample), "6")
+                //.addVertex("v4", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "v3")
+                .addLayer("7", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(), "v3")
                 .addLayer("8", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(), "7")
                 .addLayer("y", new RnnOutputLayer.Builder().nIn(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.MSE).nOut(numFeatures).build(), "8")
                 .setOutputs("y")
@@ -63,12 +63,12 @@ public class TestRNNToFeedForward {
                 INDArray[] data5 = new INDArray[]{Nd4j.randn(new int[]{5,numFeatures,maxSample})};
                 INDArray[] mask5 = new INDArray[]{Nd4j.randn(new int[]{5,maxSample})};
 
-                graph.setLayerMaskArrays(mask3,mask3);
+               // graph.setLayerMaskArrays(mask3,mask3);
                 System.out.println("Shape of " + i + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(i),data3).shape()));
-                graph.clearLayerMaskArrays();
-                graph.setLayerMaskArrays(mask5,mask5);
+               // graph.clearLayerMaskArrays();
+               // graph.setLayerMaskArrays(mask5,mask5);
                 System.out.println("Shape of " + i + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(i),data5).shape()));
-                graph.clearLayerMaskArrays();
+               // graph.clearLayerMaskArrays();
             } catch(Exception e) {
                 e.printStackTrace();
             }

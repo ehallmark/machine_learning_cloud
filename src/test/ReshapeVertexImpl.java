@@ -88,8 +88,12 @@ public class ReshapeVertexImpl extends BaseGraphVertex {
 
         if(DEBUG) {
             // TODO debug whether this is right
+
         }
+        //INDArray inputsCopy = inputs[0].dup();
+        //int[] preShape = inputsCopy.shape();
         return inputs[0].reshape(order, newShapeCopy);
+
         //return inputs[0].reshape(order, newShape);
     }
 
