@@ -443,7 +443,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSize1 = 64;
+        int hiddenLayerSize1 = 96;
         int maxSample = pipelineManager.getMaxSamples();
         int hiddenLayerSize2 = 126;
         Nd4j.getMemoryManager().setAutoGcWindow(5000);
