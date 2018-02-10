@@ -1,70 +1,110 @@
 package test;
 
 import models.similarity_models.combined_similarity_model.DeepCPC2VecEncodingModel;
+import org.deeplearning4j.iterator.CnnSentenceDataSetIterator;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
+import org.deeplearning4j.nn.conf.ConvolutionMode;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.graph.MergeVertex;
 import org.deeplearning4j.nn.conf.graph.PreprocessorVertex;
-import org.deeplearning4j.nn.conf.layers.Convolution1DLayer;
-import org.deeplearning4j.nn.conf.layers.DenseLayer;
-import org.deeplearning4j.nn.conf.layers.GravesBidirectionalLSTM;
-import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
+import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.conf.preprocessor.FeedForwardToRnnPreProcessor;
 import org.deeplearning4j.nn.conf.preprocessor.RnnToFeedForwardPreProcessor;
 import org.deeplearning4j.nn.graph.ComputationGraph;
+import org.deeplearning4j.nn.weights.WeightInit;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class TestRNNToFeedForward {
     public static void main(String[] args) {
-        int maxSample = 16;
-        int hiddenLayerSize = 10;
-        int hiddenLayerSize2 = 9;
-        int numFeatures = 3;
-        int linearTotal = maxSample * hiddenLayerSize;
+        int maxSample = 7;
+        int vectorSize = 4;
+        int hiddenLayerSize1 = 17;
+        int hiddenLayerSize2 = 13;
 
 
-        ComputationGraphConfiguration conf = new NeuralNetConfiguration.Builder()
-                .activation(Activation.TANH)
-                .learningRate(0.0001)
+        //Basic configuration
+
+        PoolingType globalPoolingType = PoolingType.MAX;
+
+        //Set up the network configuration. Note that we have multiple convolution layers, each wih filter
+        //widths of 3, 4 and 5 as per Kim (2014) paper.
+
+        Nd4j.getMemoryManager().setAutoGcWindow(5000);
+
+        ComputationGraphConfiguration config = new NeuralNetConfiguration.Builder()
+                .weightInit(WeightInit.RELU)
+                .activation(Activation.LEAKYRELU)
+                .updater(Updater.ADAM)
+                .convolutionMode(ConvolutionMode.Same)      //This is important so we can 'stack' the results later
+                .regularization(true).l2(0.0001)
+                .learningRate(0.01)
                 .graphBuilder()
-                .addInputs("x")
-                .addLayer("1", new GravesBidirectionalLSTM.Builder().nIn(numFeatures).nOut(hiddenLayerSize).build(), "x")
-                .addLayer("2", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(), "1")
-                //.addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "2")
-                .addVertex("v2", new ReshapeVertex(-1,linearTotal), "2")
-                .addLayer("3", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSize2).build(), "v2")
-                .addVertex("c1", new ReshapeVertex(-1,1,hiddenLayerSize2,4), "3")
-                .addLayer("4", new Convolution1DLayer.Builder().nIn(hiddenLayerSize2).nOut(4).build(), "c1")
-                .addLayer("5", new DenseLayer.Builder().nIn(4).nOut(hiddenLayerSize2).build(), "4")
-                .addLayer("6", new DenseLayer.Builder().nIn(hiddenLayerSize2).nOut(linearTotal).build(), "5")
-                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSize,maxSample), "6")
-                //.addVertex("v4", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "v3")
-                .addLayer("7", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(), "v3")
-                .addLayer("8", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(), "7")
-                .addLayer("y", new RnnOutputLayer.Builder().nIn(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.MSE).nOut(numFeatures).build(), "8")
-                .setOutputs("y")
+                .addInputs("input")
+                .addLayer("l1", new DenseLayer.Builder().nIn(vectorSize*maxSample).nOut(vectorSize*maxSample).build(),"input")
+                .addVertex("rl1", new ReshapeVertex(-1,1,vectorSize,maxSample),"l1")
+                .addLayer("c1", new ConvolutionLayer.Builder()
+                        .kernelSize(3,vectorSize)
+                        .stride(1,vectorSize)
+                        .nIn(1)
+                        .nOut(hiddenLayerSize1)
+                        .build(), "rl1")
+                .addLayer("c2", new ConvolutionLayer.Builder()
+                        .kernelSize(4,vectorSize)
+                        .stride(1,vectorSize)
+                        .nIn(1)
+                        .nOut(hiddenLayerSize1)
+                        .build(), "rl1")
+                .addLayer("c3", new ConvolutionLayer.Builder()
+                        .kernelSize(5,vectorSize)
+                        .stride(1,vectorSize)
+                        .nIn(1)
+                        .nOut(hiddenLayerSize1)
+                        .build(), "rl1")
+                .addVertex("m1", new MergeVertex(), "c1", "c2", "c3")      //Perform depth concatenation
+                .addLayer("p1", new GlobalPoolingLayer.Builder()
+                        .poolingType(globalPoolingType)
+                        .dropOut(0.5)
+                        .build(), "m1")
+                .addLayer("o1", new DenseLayer.Builder()
+                        .nIn(hiddenLayerSize1*3)
+                        .nOut(hiddenLayerSize2)
+                        .build(), "p1")
+                .addLayer("output", new OutputLayer.Builder()
+                        .lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY)
+                        .activation(Activation.IDENTITY)
+                        .nIn(hiddenLayerSize2)
+                        .nOut(vectorSize*maxSample)
+                        .build(), "o1")
+                .setOutputs("output")
                 .build();
 
-        ComputationGraph graph = new ComputationGraph(conf);
+        ComputationGraph graph = new ComputationGraph(config);
         graph.init();
 
-       // for(int i = 0; i < 1000; i++) {
-       //     graph.fit(new INDArray[]{data3}, new INDArray[]{data3});
-       //     graph.fit(new INDArray[]{data5}, new INDArray[]{data5});
-       //     System.out.println("Score "+i+": "+graph.score());
-       // }
+        for(int i = 0; i < graph.getLayers().length; i++) {
+            System.out.println("Layer "+i+": "+String.join("\n\t",graph.getLayer(i).paramTable().entrySet().stream().map(e->e.getKey()+": "+Arrays.toString(e.getValue().shape())).collect(Collectors.toList())));
+        }
+
+
+        INDArray[] data3 = new INDArray[]{Nd4j.randn(new int[]{3,vectorSize*maxSample})};
+        INDArray[] data5 = new INDArray[]{Nd4j.randn(new int[]{5,vectorSize*maxSample})};
+
+
+        for(int i = 0; i < 1000; i++) {
+            graph.fit(data3,data3);
+            graph.fit(data5,data5);
+            System.out.println("Score "+i+": "+graph.score());
+        }
 
         for(int i = 1; i <= graph.getNumLayers(); i++) {
             try {
-
-                INDArray[] data3 = new INDArray[]{Nd4j.randn(new int[]{3,numFeatures,maxSample})};
-                INDArray[] mask3 = new INDArray[]{Nd4j.randn(new int[]{3,maxSample})};
-                INDArray[] data5 = new INDArray[]{Nd4j.randn(new int[]{5,numFeatures,maxSample})};
-                INDArray[] mask5 = new INDArray[]{Nd4j.randn(new int[]{5,maxSample})};
 
                // graph.setLayerMaskArrays(mask3,mask3);
                 System.out.println("Shape of " + i + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(i),data3).shape()));

@@ -458,6 +458,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
         Activation activation = Activation.TANH;
+        Activation outputActivation = Activation.IDENTITY;
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)
@@ -485,7 +486,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .addLayer("10", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v3")
                 .addLayer("11", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "10")
                 .addLayer("12", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "11")
-                .addLayer("y1", new RnnOutputLayer.Builder().nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "12")
+                .addLayer("y1", new RnnOutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "12")
                 .setOutputs("y1")
                 .backprop(true)
                 .pretrain(false);
