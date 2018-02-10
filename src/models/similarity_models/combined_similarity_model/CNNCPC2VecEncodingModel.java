@@ -443,9 +443,9 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSize1 = 96;
+        int hiddenLayerSize1 = 64;
         int maxSample = pipelineManager.getMaxSamples();
-        int hiddenLayerSize2 = 128;
+        int hiddenLayerSize2 = 64;
 
         Updater updater = Updater.RMSPROP;
 
