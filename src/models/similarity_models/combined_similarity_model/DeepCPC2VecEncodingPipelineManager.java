@@ -266,7 +266,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             if(sample>numCPCLabels) {
                 return null;
             } else {
-                return word2Vec.getWordVectors(cpcLabels);
+                return word2Vec.getWordVectors(cpcLabels).transpose();
             }
         }).filter(vec->vec!=null).toArray(size->new INDArray[size]);
 
@@ -300,7 +300,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
-        boolean rebuildDatasets = false;
+        boolean rebuildDatasets = true;
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
