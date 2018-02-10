@@ -477,7 +477,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .addLayer("7", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "6")
                 .addLayer("8", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "7")
                 .addLayer("9", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "8")
-                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeFF), "9")
+                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN), "9")
                 .addVertex("v4", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "v3")
                 .addLayer("10", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v4")
                 .addLayer("11", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "10")
@@ -489,6 +489,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     }
 
     public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
+        System.out.println("ds shape: "+Arrays.toString(finalDataSet.getLabels()[0].shape()));
         double score = net.score(finalDataSet,false);
         return 1d+score/finalDataSet.getFeatures(0).shape()[2];
     }
