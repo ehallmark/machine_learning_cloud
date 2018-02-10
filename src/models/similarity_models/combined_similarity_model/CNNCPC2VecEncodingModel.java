@@ -352,7 +352,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
         networks = new ArrayList<>();
 
         // build networks
-        double learningRate = 0.05;
+        double learningRate = 0.01;
         ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate);
 
         vaeNetwork = new ComputationGraph(conf.build());
@@ -451,12 +451,12 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
-        Activation activation = Activation.TANH;
+        Activation activation = Activation.LEAKYRELU;
         //Activation outputActivation = Activation.IDENTITY;
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)
-                .weightInit(WeightInit.XAVIER)
+                .weightInit(WeightInit.RELU)
                 .activation(activation)
                 .updater(Updater.RMSPROP)
                 .convolutionMode(ConvolutionMode.Same)      //This is important so we can 'stack' the results later
@@ -490,20 +490,34 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .nIn(1)
                         .nOut(hiddenLayerSize1)
                         .build(), "rl1")
-                .addLayer("c5", new ConvolutionLayer.Builder()
-                        .kernelSize(vectorSize,5)
-                        .stride(vectorSize,1)
-                        .nIn(1)
-                        .nOut(hiddenLayerSize1)
-                        .build(), "rl1")
-                .addVertex("m1", new MergeVertex(), "c1", "c2", "c3", "c4", "c5")      //Perform depth concatenation
+                .addVertex("m1", new MergeVertex(), "c1", "c2", "c3", "c4")      //Perform depth concatenation
                 .addLayer("p1", new SubsamplingLayer.Builder()
-                        .poolingType(SubsamplingLayer.PoolingType.MAX)
-                        .kernelSize(1,1)
+                        .poolingType(SubsamplingLayer.PoolingType.AVG)
+                        .kernelSize(2,2)
                         .stride(1,1)
                        // .dropOut(0.5)
                         .build(), "m1")
-                .addVertex("p2", new ReshapeVertex(-1,hiddenLayerSize1*5),"p1")
+                .addLayer("c5", new ConvolutionLayer.Builder()
+                        .kernelSize(2,2)
+                        .stride(1,1)
+                        .nIn(1)
+                        .nOut(hiddenLayerSize1)
+                        .build(), "p1")
+                .addLayer("c6", new ConvolutionLayer.Builder()
+                        .kernelSize(3,3)
+                        .stride(1,1)
+                        .nIn(1)
+                        .nOut(hiddenLayerSize1)
+                        .build(), "p1")
+                .addLayer("c7", new ConvolutionLayer.Builder()
+                        .kernelSize(5,5)
+                        .stride(1,1)
+                        .nIn(1)
+                        .nOut(hiddenLayerSize1)
+                        .build(), "p1")
+                .addLayer("p2", new GlobalPoolingLayer.Builder()
+                        .poolingType(PoolingType.AVG)
+                )
                 .addLayer("o1", new DenseLayer.Builder()
                         .nIn(hiddenLayerSize1*5)
                         .nOut(hiddenLayerSize2)
