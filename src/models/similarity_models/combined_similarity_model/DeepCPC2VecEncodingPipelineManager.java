@@ -300,8 +300,8 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
-        boolean rebuildDatasets = true;
-        boolean runModels = false;
+        boolean rebuildDatasets = false;
+        boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
