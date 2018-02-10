@@ -503,7 +503,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .dropOut(0.5)
                         .build(), "m1")
                 .addLayer("o1", new DenseLayer.Builder()
-                        .nIn(hiddenLayerSize1*4)
+                        .nIn(hiddenLayerSize1*5)
                         .nOut(hiddenLayerSize2)
                         .build(), "p1")
                 .addLayer("v1", new DenseLayer.Builder()
