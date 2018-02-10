@@ -446,7 +446,6 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
         int hiddenLayerSize1 = 96;
         int maxSample = pipelineManager.getMaxSamples();
         int hiddenLayerSize2 = 126;
-        Nd4j.getMemoryManager().setAutoGcWindow(5000);
 
         Updater updater = Updater.RMSPROP;
 
