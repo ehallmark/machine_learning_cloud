@@ -445,7 +445,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSizeRNN = 48;
+        int hiddenLayerSizeRNN = 64;
         int maxSamples = pipelineManager.getMaxSamples();
         int linearTotal = hiddenLayerSizeRNN * maxSamples;
         int hiddenLayerSizeFF = (linearTotal+vectorSize)/2;
