@@ -526,7 +526,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
     public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
         //System.out.println("ds shape: "+Arrays.toString(finalDataSet.getLabels()[0].shape()));
         double score = net.score(finalDataSet,false);
-        return 1d + score/finalDataSet.getFeatures(0).shape()[2];
+        return 1d + score;
     }
 
 
