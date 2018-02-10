@@ -447,11 +447,11 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
         int maxSample = pipelineManager.getMaxSamples();
         int hiddenLayerSize2 = 96;
 
-        Updater updater = Updater.RMSPROP;
+        Updater updater = Updater.ADAM;
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
-        Activation activation = Activation.LEAKYRELU;
+        Activation activation = Activation.TANH;
         //Activation outputActivation = Activation.IDENTITY;
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
