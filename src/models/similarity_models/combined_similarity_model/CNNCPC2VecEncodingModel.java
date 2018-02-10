@@ -338,7 +338,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
 
     @Override
     public int printIterations() {
-        return 5000;
+        return 1000;
     }
 
 
@@ -352,7 +352,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
         networks = new ArrayList<>();
 
         // build networks
-        double learningRate = 0.01;
+        double learningRate = 0.05;
         ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate);
 
         vaeNetwork = new ComputationGraph(conf.build());
@@ -447,16 +447,12 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
         int maxSample = pipelineManager.getMaxSamples();
         int hiddenLayerSize2 = 96;
 
-        Updater updater = Updater.ADAM;
-
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
-
         Activation activation = Activation.TANH;
         //Activation outputActivation = Activation.IDENTITY;
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
-                .updater(updater)
                 .learningRate(learningRate)
-                .weightInit(WeightInit.RELU)
+                .weightInit(WeightInit.XAVIER)
                 .activation(activation)
                 .updater(Updater.RMSPROP)
                 .convolutionMode(ConvolutionMode.Same)      //This is important so we can 'stack' the results later
