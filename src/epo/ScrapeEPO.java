@@ -126,6 +126,7 @@ public class ScrapeEPO {
                     assetsSeenSoFar.add(asset);
                     if (familyData != null) {
                         writer.write(familyData);
+                        writer.write("\n");
                         writer.flush();
                     }
                 } catch(FileNotFoundException fne) {
