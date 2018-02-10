@@ -415,6 +415,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         updates.put(VAE_NETWORK,vaeNetwork);
         networks = new ArrayList<>();
         networks.add(vaeNetwork);
+        getTestFunction().apply(vaeNetwork);
         return updates;
     }
 
@@ -488,9 +489,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     }
 
     public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
-        net.setLayerMaskArrays(finalDataSet.getFeaturesMaskArrays(),finalDataSet.getLabelsMaskArrays());
         double score = net.score(finalDataSet,false);
-        net.clearLayerMaskArrays();
         return 1d+score/finalDataSet.getFeatures(0).shape()[2];
     }
 
