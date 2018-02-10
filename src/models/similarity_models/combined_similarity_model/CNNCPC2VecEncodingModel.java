@@ -338,7 +338,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
 
     @Override
     public int printIterations() {
-        return 500;
+        return 5000;
     }
 
 
@@ -352,7 +352,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
         networks = new ArrayList<>();
 
         // build networks
-        double learningRate = 0.01;
+        double learningRate = 0.001;
         ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate);
 
         vaeNetwork = new ComputationGraph(conf.build());
@@ -402,7 +402,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.001;
+        double newLearningRate = 0.0001;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
