@@ -87,7 +87,6 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
         int idx = 0;
         int sample = rand.nextInt(maxSamples)+1;
         INDArray features = Nd4j.create(batch,inputColumns(),sample);
-        INDArray masks = Nd4j.ones(batch,sample);
         while(documentIterator.hasMoreSequences()&&idx<batch) {
             Sequence<VocabWord> document = documentIterator.nextSequence();
             List<String> sequence = document.getElements().stream().map(e->e.getLabel()).collect(Collectors.toList());
@@ -111,26 +110,22 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
                     continue;
                 }
 
-                featureVec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(),1,indexes.stream().mapToInt(i->i).toArray());
+                featureVec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(),1,indexes.stream().limit(sample).mapToInt(i->i).toArray());
 
 
             }
+            if(featureVec.rows()<sample) continue;
+
             features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.interval(0,featureVec.rows())).assign(featureVec);
-            if(featureVec.rows()<sample) {
-                features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.interval(featureVec.rows(),sample)).assign(0);
-                masks.get(NDArrayIndex.point(idx),NDArrayIndex.interval(featureVec.rows(),sample)).assign(0);
-            }
             idx++;
         }
 
         if(idx>0) {
             if(idx < batch) {
                 features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all(),NDArrayIndex.all());
-                masks = masks.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all());
             }
             INDArray[] allFeatures = new INDArray[]{features};
-            INDArray[] allMasks = new INDArray[]{masks};
-            currentDataSet = new MultiDataSet(allFeatures,allFeatures,allMasks,allMasks);
+            currentDataSet = new MultiDataSet(allFeatures,allFeatures);
         }
         return currentDataSet!=null;
     }

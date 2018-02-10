@@ -45,12 +45,12 @@ public class ReshapeVertex extends GraphVertex {
     protected int[] maskShape;
 
     public ReshapeVertex(int... newShape){
-        this(DEFAULT_RESHAPE_ORDER, newShape, null);
+        this(newShape, null);
     }
 
-    public ReshapeVertex(@JsonProperty("reshapeOrder") char reshapeOrder, @JsonProperty("newShape") int[] newShape,
+    public ReshapeVertex(@JsonProperty("newShape") int[] newShape,
                          @JsonProperty("maskShape") int[] maskShape) {
-        this.reshapeOrder = reshapeOrder;
+        this.reshapeOrder = DEFAULT_RESHAPE_ORDER;
         this.newShape = newShape;
         this.maskShape = maskShape;
     }

@@ -24,6 +24,7 @@ public class TestRNNToFeedForward {
         int numFeatures = 3;
         int linearTotal = maxSample * hiddenLayerSize;
 
+
         ComputationGraphConfiguration conf = new NeuralNetConfiguration.Builder()
                 .activation(Activation.TANH)
                 .learningRate(0.0001)
@@ -48,19 +49,26 @@ public class TestRNNToFeedForward {
         ComputationGraph graph = new ComputationGraph(conf);
         graph.init();
 
-        INDArray data3 = Nd4j.randn(new int[]{3,numFeatures,maxSample});
-        INDArray data5 = Nd4j.randn(new int[]{5,numFeatures,maxSample});
-
        // for(int i = 0; i < 1000; i++) {
        //     graph.fit(new INDArray[]{data3}, new INDArray[]{data3});
        //     graph.fit(new INDArray[]{data5}, new INDArray[]{data5});
        //     System.out.println("Score "+i+": "+graph.score());
        // }
 
-        for(int i = 1; i <= 8; i++) {
+        for(int i = 1; i <= graph.getNumLayers(); i++) {
             try {
+
+                INDArray[] data3 = new INDArray[]{Nd4j.randn(new int[]{3,numFeatures,maxSample})};
+                INDArray[] mask3 = new INDArray[]{Nd4j.randn(new int[]{3,maxSample})};
+                INDArray[] data5 = new INDArray[]{Nd4j.randn(new int[]{5,numFeatures,maxSample})};
+                INDArray[] mask5 = new INDArray[]{Nd4j.randn(new int[]{5,maxSample})};
+
+                graph.setLayerMaskArrays(mask3,mask3);
                 System.out.println("Shape of " + i + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(i),data3).shape()));
+                graph.clearLayerMaskArrays();
+                graph.setLayerMaskArrays(mask5,mask5);
                 System.out.println("Shape of " + i + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(i),data5).shape()));
+                graph.clearLayerMaskArrays();
             } catch(Exception e) {
                 e.printStackTrace();
             }

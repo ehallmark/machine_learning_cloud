@@ -107,9 +107,16 @@ public class ReshapeVertexImpl extends BaseGraphVertex {
 
         throw new UnsupportedOperationException("Currently cannot use feedforward masks with this custom implementation of ReshapeVertex.");
 
-        /*
-        if (maskShape != null) {
-            return new Pair<>(maskArrays[0].reshape(order, maskShape), currentMaskState);
+        /*if (maskShape != null) {
+            int[] newShapeCopy = maskShape;
+            // auto determine number of rows (Evan Hallmark ADDED THIS)
+            if(maskShape.length==1) {
+                newShapeCopy = new int[]{1,newShapeCopy[0]*minibatchSize};
+                return new Pair<>(maskArrays[0].reshape(order, newShapeCopy), currentMaskState);
+            } else {
+                newShapeCopy[0] = minibatchSize;
+                return new Pair<>(maskArrays[0].reshape(order, newShapeCopy), currentMaskState);
+            }
         }
 
         //Mask array is an input mask. Therefore: 2 possible cases
