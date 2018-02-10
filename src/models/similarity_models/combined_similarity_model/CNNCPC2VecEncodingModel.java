@@ -443,9 +443,9 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSize1 = 48;
+        int hiddenLayerSize1 = 128;
         int maxSample = pipelineManager.getMaxSamples();
-        int hiddenLayerSize2 = 48;
+        int hiddenLayerSize2 = 96;
 
         Updater updater = Updater.RMSPROP;
 
@@ -510,7 +510,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .build(), "o3")
                 .addLayer("output", new OutputLayer.Builder()
                         .lossFunction(lossFunction)
-                        .activation(Activation.IDENTITY)
+                        .activation(Activation.TANH)
                         .nIn(hiddenLayerSize1)
                         .nOut(vectorSize*maxSample)
                         .build(), "o4")
