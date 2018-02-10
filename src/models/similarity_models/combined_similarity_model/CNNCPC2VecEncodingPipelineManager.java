@@ -83,7 +83,7 @@ public class CNNCPC2VecEncodingPipelineManager extends DefaultPipelineManager<Mu
                 @Override
                 public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
                     int[] prevShape = dataSet.getFeatures(0).shape();
-                    int[] shape = new int[]{prevShape[0],1,prevShape[1],prevShape[2]};
+                    int[] shape = new int[]{prevShape[0],prevShape[1]*prevShape[2]};
                     // set indices 2 and 3
                     dataSet.setFeatures(0, dataSet.getFeatures(0).reshape(shape));
                     dataSet.setLabels(dataSet.getFeatures());
