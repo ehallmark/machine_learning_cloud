@@ -4,6 +4,7 @@ import models.similarity_models.combined_similarity_model.DeepCPC2VecEncodingMod
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.graph.PreprocessorVertex;
+import org.deeplearning4j.nn.conf.layers.Convolution1DLayer;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.GravesBidirectionalLSTM;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
@@ -21,6 +22,7 @@ public class TestRNNToFeedForward {
     public static void main(String[] args) {
         int maxSample = 16;
         int hiddenLayerSize = 10;
+        int hiddenLayerSize2 = 9;
         int numFeatures = 3;
         int linearTotal = maxSample * hiddenLayerSize;
 
@@ -34,10 +36,11 @@ public class TestRNNToFeedForward {
                 .addLayer("2", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(), "1")
                 //.addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "2")
                 .addVertex("v2", new ReshapeVertex(-1,linearTotal), "2")
-                .addLayer("3", new DenseLayer.Builder().nIn(linearTotal).nOut(8).build(), "v2")
-                .addLayer("4", new DenseLayer.Builder().nIn(8).nOut(4).build(), "3")
-                .addLayer("5", new DenseLayer.Builder().nIn(4).nOut(8).build(), "4")
-                .addLayer("6", new DenseLayer.Builder().nIn(8).nOut(linearTotal).build(), "5")
+                .addLayer("3", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSize2).build(), "v2")
+                .addVertex("c1", new ReshapeVertex(-1,1,hiddenLayerSize2,4), "3")
+                .addLayer("4", new Convolution1DLayer.Builder().nIn(hiddenLayerSize2).nOut(4).build(), "c1")
+                .addLayer("5", new DenseLayer.Builder().nIn(4).nOut(hiddenLayerSize2).build(), "4")
+                .addLayer("6", new DenseLayer.Builder().nIn(hiddenLayerSize2).nOut(linearTotal).build(), "5")
                 .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSize,maxSample), "6")
                 //.addVertex("v4", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "v3")
                 .addLayer("7", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(), "v3")

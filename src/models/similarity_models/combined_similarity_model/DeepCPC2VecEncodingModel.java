@@ -405,7 +405,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.01;
+        double newLearningRate = 0.001;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
@@ -461,9 +461,9 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)
-                .lrPolicyDecayRate(0.0001)
-                .lrPolicyPower(0.7)
-                .learningRateDecayPolicy(LearningRatePolicy.Inverse)
+               // .lrPolicyDecayRate(0.0001)
+               // .lrPolicyPower(0.7)
+               // .learningRateDecayPolicy(LearningRatePolicy.Inverse)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .activation(activation)
                 .graphBuilder()
