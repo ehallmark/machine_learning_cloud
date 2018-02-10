@@ -9,7 +9,6 @@ import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.api.layers.IOutputLayer;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
-import org.deeplearning4j.nn.conf.LearningRatePolicy;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.graph.L2NormalizeVertex;
@@ -405,7 +404,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.001;
+        double newLearningRate = 0.01;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
@@ -446,25 +445,23 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSizeRNN = 64;
+        int hiddenLayerSizeRNN = 48;
+        int hiddenLayerSizeFF = 96;
         int maxSamples = pipelineManager.getMaxSamples();
+
         int linearTotal = hiddenLayerSizeRNN * maxSamples;
-        int hiddenLayerSizeFF = (linearTotal+vectorSize)/2;
+
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
 
 
         Updater updater = Updater.RMSPROP;
 
-        LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
+        LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.MSE;
 
         Activation activation = Activation.TANH;
-        Activation outputActivation = Activation.IDENTITY;
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)
-               // .lrPolicyDecayRate(0.0001)
-               // .lrPolicyPower(0.7)
-               // .learningRateDecayPolicy(LearningRatePolicy.Inverse)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .activation(activation)
                 .graphBuilder()
@@ -473,20 +470,20 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .addLayer("1", new GravesBidirectionalLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRNN).build(), "0")
                 .addLayer("2", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "1")
                 .addLayer("3", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "2")
-                //.addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "3")
-                .addVertex("v2", new ReshapeVertex(-1,linearTotal), "3")
+                .addVertex("v1", new PreprocessorVertex(new RnnToFeedForwardPreProcessor()), "3")
+                .addVertex("v2", new ReshapeVertex(-1,linearTotal), "v1")
                 .addLayer("4", new DenseLayer.Builder().nIn(linearTotal).nOut(linearTotal).build(), "v2")
                 .addLayer("5", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeFF).build(), "4")
                 .addLayer("6", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "5")
                 .addLayer("7", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "6")
                 .addLayer("8", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "7")
                 .addLayer("9", new DenseLayer.Builder().nIn(linearTotal).nOut(linearTotal).build(), "8")
-                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN,maxSamples), "9")
-                //.addVertex("v4", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "v3")
-                .addLayer("10", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v3")
+                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN), "9")
+                .addVertex("v4", new PreprocessorVertex(new FeedForwardToRnnPreProcessor()), "v3")
+                .addLayer("10", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v4")
                 .addLayer("11", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "10")
                 .addLayer("12", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "11")
-                .addLayer("y1", new RnnOutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "12")
+                .addLayer("y1", new RnnOutputLayer.Builder().nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "12")
                 .setOutputs("y1")
                 .backprop(true)
                 .pretrain(false);
@@ -495,7 +492,8 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
         //System.out.println("ds shape: "+Arrays.toString(finalDataSet.getLabels()[0].shape()));
         double score = net.score(finalDataSet,false);
-        return 1d + score/finalDataSet.getFeatures(0).shape()[2];
+        return //1d+
+            score/finalDataSet.getFeatures(0).shape()[2];
     }
 
 
