@@ -445,7 +445,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
         int hiddenLayerSize1 = 128;
         int maxSample = pipelineManager.getMaxSamples();
-        int hiddenLayerSize2 = 64;
+        int hiddenLayerSize2 = 256;
         Nd4j.getMemoryManager().setAutoGcWindow(5000);
 
         Updater updater = Updater.RMSPROP;
@@ -491,7 +491,13 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .nIn(1)
                         .nOut(hiddenLayerSize1)
                         .build(), "rl1")
-                .addVertex("m1", new MergeVertex(), "c1", "c2", "c3", "c4")      //Perform depth concatenation
+                .addLayer("c5", new ConvolutionLayer.Builder()
+                        .kernelSize(vectorSize,5)
+                        .stride(vectorSize,1)
+                        .nIn(1)
+                        .nOut(hiddenLayerSize1)
+                        .build(), "rl1")
+                .addVertex("m1", new MergeVertex(), "c1", "c2", "c3", "c5")      //Perform depth concatenation
                 .addLayer("p1", new GlobalPoolingLayer.Builder()
                         .poolingType(PoolingType.MAX)
                         .dropOut(0.5)
@@ -513,7 +519,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .nOut(hiddenLayerSize1)
                         .build(), "o2")
                 .addLayer("output", new OutputLayer.Builder()
-                        .lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY)
+                        .lossFunction(lossFunction)
                         .activation(Activation.TANH)
                         .nIn(hiddenLayerSize1)
                         .nOut(vectorSize*maxSample)
