@@ -36,6 +36,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
  */
 public class ReshapeVertexImpl extends BaseGraphVertex {
 
+    public static boolean DEBUG = false;
     private char order;
     private int[] newShape;
     private int[] maskShape;
@@ -85,6 +86,9 @@ public class ReshapeVertexImpl extends BaseGraphVertex {
         }
         newShapeCopy[0]=inputs[0].length()/n;
 
+        if(DEBUG) {
+            // TODO debug whether this is right
+        }
         return inputs[0].reshape(order, newShapeCopy);
         //return inputs[0].reshape(order, newShape);
     }

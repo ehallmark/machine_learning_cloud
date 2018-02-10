@@ -340,7 +340,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
     @Override
     public int printIterations() {
-        return 2000;
+        return 500;
     }
 
 
@@ -403,7 +403,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.0005;
+        double newLearningRate = 0.05;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
@@ -489,7 +489,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     }
 
     public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
-        System.out.println("ds shape: "+Arrays.toString(finalDataSet.getLabels()[0].shape()));
+        //System.out.println("ds shape: "+Arrays.toString(finalDataSet.getLabels()[0].shape()));
         double score = net.score(finalDataSet,false);
         return 1d+score/finalDataSet.getFeatures(0).shape()[2];
     }
