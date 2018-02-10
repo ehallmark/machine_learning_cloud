@@ -480,10 +480,10 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .nIn(1)
                         .nOut(hiddenLayerSize1)
                         .build(), "rl1")
-                .addVertex("m1", new MergeVertex(), "c1","c2","c3")      //Perform depth concatenation
+               // .addVertex("m1", new MergeVertex())      //Perform depth concatenation
                 .addLayer("p2", new GlobalPoolingLayer.Builder()
                         .poolingType(PoolingType.MAX)
-                        .build(), "m1")
+                        .build() , "c1","c2","c3")
                 .addLayer("o1", new DenseLayer.Builder()
                         .nIn(hiddenLayerSize1*3)
                         .nOut(hiddenLayerSize2)
