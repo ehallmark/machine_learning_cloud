@@ -7,10 +7,8 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,11 +22,12 @@ import java.util.stream.Collectors;
  * Created by Evan on 11/16/2017.
  */
 public class ScrapeEPO {
-    public static final File mapDir = new File("epo_asset_family_maps/");
+    public static final File dataDir = new File("epo_asset_family_maps/");
     static {
-        if(!mapDir.exists()) mapDir.mkdirs();
+        if(!dataDir.exists()) dataDir.mkdirs();
     }
-    public static final File mapFile = new File(mapDir,"epo_asset_to_family_data_map.jobj");
+    public static final File assetsSeenFile = new File("epo_asset_to_family_assets_seen_so_far.jobj");
+
     private static String generateNewAuthToken() throws IOException{
         String key = "AZ42DGb0AeTZ4wwSUWnRoGdGjnP8Gfjc";
         String secret = "O7PG38t4P2uJK2IQ";
@@ -65,11 +64,15 @@ public class ScrapeEPO {
             }
         }
 
+        if(auth_token==null) {
+            throw new NullPointerException("Auth_token is null.");
+        }
         System.out.println("Auth token: "+auth_token);
         return (String)auth_token;
     }
 
-    private static List<Map<String,Object>> getFamilyMembersForAssetHelper(String asset, String auth_token) throws Exception {
+    private AtomicInteger cnt = new AtomicInteger(0);
+    private String getFamilyMembersForAssetHelper(String asset, String auth_token) throws Exception {
         asset="US"+asset;
 
         if(auth_token!=null) {
@@ -91,90 +94,88 @@ public class ScrapeEPO {
         return null;
     }
 
-    // TODO
-    private static List<Map<String,Object>> parseJsonDoc(String json) {
-        System.out.println("json: "+json);
-        return null;
+    protected String parseJsonDoc(String json) {
+        if(cnt.getAndIncrement()%100==99) {
+            System.out.print("-");
+        }
+        if(cnt.get()%1000==0) {
+            System.out.println(" Completed: "+cnt.get());
+        }
+        return json;
     }
 
-    public static Map<String,List<Map<String,Object>>> getFamilyMembersForAssets(List<String> assets, int maxRetries, int computerNum) throws Exception {
-        Lock refreshLock = new ReentrantLock();
-        int batch = Runtime.getRuntime().availableProcessors()*2;
+    public void scrapeFamilyMembersForAssets(List<String> assets, int maxRetries, BufferedWriter writer, int computerNum) {
+        Set<String> assetsSeenSoFar = Collections.synchronizedSet(new HashSet<>());
 
-        AtomicReference<String> authToken = new AtomicReference<>(generateNewAuthToken());
-        Map<String,List<Map<String,Object>>> dataMap = Collections.synchronizedMap(new ConcurrentHashMap<>(assets.size()));
-        for(int i = 0; i < 1+assets.size()/batch; i++) {
-            if(i*batch>=assets.size()) continue;
-            System.out.println("Starting batch from "+(i*batch)+" to "+Math.min(assets.size(),i*batch+batch));
-            AtomicBoolean kill =  new AtomicBoolean(false);
-            assets.subList(i*batch,Math.min(assets.size(),i*batch+batch)).parallelStream().forEach(asset-> {
-                if(kill.get()) return;
-
-                AtomicBoolean retry = new AtomicBoolean(true);
-                AtomicInteger tries = new AtomicInteger(0);
-                while (!kill.get() && retry.get() && tries.getAndIncrement() < maxRetries) {
-                    retry.set(false);
+        AtomicReference<String> authToken;
+        try {
+            authToken = new AtomicReference<>(generateNewAuthToken());
+        }catch(Exception e) {
+            System.out.println("Error getting authtoken...");
+            e.printStackTrace();
+            return;
+        }
+        for(int i = 0; i < assets.size(); i++) {
+            AtomicBoolean retry = new AtomicBoolean(true);
+            AtomicInteger tries = new AtomicInteger(0);
+            String asset = assets.get(i);
+            while (retry.get() && tries.getAndIncrement() < maxRetries) {
+                retry.set(false);
+                try {
+                    String familyData = getFamilyMembersForAssetHelper(asset, authToken.get());
+                    assetsSeenSoFar.add(asset);
+                    if(familyData!=null) {
+                        writer.write(familyData);
+                        writer.flush();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    retry.set(true);
                     try {
-                        List<Map<String,Object>> familyData = getFamilyMembersForAssetHelper(asset, authToken.get());
-                        if(familyData!=null) {
-                            dataMap.put(asset,familyData);
+                        System.out.println("Trying to reacquire access token...");
+                        String auth = generateNewAuthToken();
+                        if(auth!=null) {
+                            authToken.set(auth);
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        retry.set(true);
-                        if (refreshLock.tryLock()) {
-                            try {
-                                System.out.println("Trying to reacquire access token...");
-                                authToken.set(generateNewAuthToken());
-                            } catch (Exception e2) {
-                                e2.printStackTrace();
-                            } finally {
-                                refreshLock.unlock();
-                            }
-                        } else {
-                            while(!refreshLock.tryLock()) {
-                                try {
-                                    TimeUnit.MILLISECONDS.sleep(10);
-                                } catch (Exception e2) {
-                                    e2.printStackTrace();
-                                }
-                            }
-                            refreshLock.unlock();
-                        }
+                    } catch (Exception e2) {
+                        e2.printStackTrace();
+                        System.out.println("Unable to reacquire access token.");
                     }
                 }
-                if(tries.get()>=maxRetries) {
-                    System.out.println("Max retries reached...");
-                    kill.set(true);
-                }
-            });
+            }
+            if(tries.get()>=maxRetries) {
+                System.out.println("Max retries reached...");
+                break;
+            }
         }
-        saveCurrentResults(dataMap,computerNum);
-        return dataMap;
+        saveCurrentResults(assetsSeenSoFar,computerNum);
     }
 
-    private static void saveCurrentResults(Map<String,List<Map<String,Object>>> currentMap, int computerNum) {
-        File toSave = new File(mapFile.getAbsolutePath()+computerNum+"_"+mapDir.listFiles().length);
-        Database.trySaveObject(currentMap,toSave);
+    private void saveCurrentResults(Set<String> seenSoFar, int computerNum) {
+        Database.trySaveObject(seenSoFar, new File(assetsSeenFile.getAbsolutePath()+computerNum));
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws IOException{
         if(args.length==0) throw new RuntimeException("Please enter the computer number as argument 1.");
         // The computer number determines which assets the computer will look at
         //  to allow for easier concurrency among computers
 
         int computerNumber = Integer.valueOf(args[0]);
-        int limitPerComputer = 10000;
+        int limitPerComputer = 100000;
 
-        Map<String,List<Map<String,Object>>> previousMap = MergeEPOMaps.loadMergedMap(true,false);
+        Set<String> seenSoFar = (Set<String>) Database.tryLoadObject(assetsSeenFile);
 
         List<String> assets = Database.getCopyOfAllPatents()
-                .parallelStream().filter(p->previousMap==null||!previousMap.containsKey(p))
+                .parallelStream().filter(p->seenSoFar==null||!seenSoFar.contains(p))
                 .filter(p->p.endsWith(String.valueOf(computerNumber)))
                 .limit(limitPerComputer)
                 .collect(Collectors.toList());
 
         //test
-        getFamilyMembersForAssets(assets, 10, computerNumber);
+        ScrapeEPO fullDocumentScraper = new ScrapeEPO();
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dataDir, "epo"+computerNumber+"_"+ LocalDate.now().toString())));
+        fullDocumentScraper.scrapeFamilyMembersForAssets(assets, 10, writer, computerNumber);
+        writer.close();
     }
 }
