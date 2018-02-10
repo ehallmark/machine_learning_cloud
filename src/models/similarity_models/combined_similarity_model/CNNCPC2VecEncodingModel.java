@@ -352,7 +352,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
         networks = new ArrayList<>();
 
         // build networks
-        double learningRate = 0.05;
+        double learningRate = 0.01;
         ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate);
 
         vaeNetwork = new ComputationGraph(conf.build());
@@ -443,9 +443,9 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSize1 = 128;
+        int hiddenLayerSize1 = 64;
         int maxSample = pipelineManager.getMaxSamples();
-        int hiddenLayerSize2 = 256;
+        int hiddenLayerSize2 = 126;
         Nd4j.getMemoryManager().setAutoGcWindow(5000);
 
         Updater updater = Updater.RMSPROP;
@@ -518,12 +518,16 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .nIn(hiddenLayerSize2)
                         .nOut(hiddenLayerSize1)
                         .build(), "o2")
+                .addLayer("o4", new DenseLayer.Builder()
+                        .nIn(hiddenLayerSize1)
+                        .nOut(hiddenLayerSize1)
+                        .build(), "o3")
                 .addLayer("output", new OutputLayer.Builder()
                         .lossFunction(lossFunction)
-                        .activation(Activation.TANH)
+                        .activation(Activation.IDENTITY)
                         .nIn(hiddenLayerSize1)
                         .nOut(vectorSize*maxSample)
-                        .build(), "o3")
+                        .build(), "o4")
                 .setOutputs("output")
                 .backprop(true)
                 .pretrain(false);
