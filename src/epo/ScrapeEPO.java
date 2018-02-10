@@ -1,6 +1,7 @@
 package epo;
 
 import com.google.gson.Gson;
+import seeding.Constants;
 import seeding.Database;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 11/16/2017.
  */
 public class ScrapeEPO {
-    public static final File mapDir = new File("epo_asset_family_maps/");
+    public static final File mapDir = new File(Constants.DATA_FOLDER+"epo_asset_family_maps/");
     static {
         if(!mapDir.exists()) mapDir.mkdirs();
     }
@@ -102,10 +103,14 @@ public class ScrapeEPO {
         Map<String,List<Map<String,Object>>> dataMap = Collections.synchronizedMap(new ConcurrentHashMap<>(assets.size()));
         for(int i = 0; i < 1+assets.size()/batch; i++) {
             if(i*batch>=assets.size()) continue;
+            System.out.println("Starting batch from "+(i*batch)+" to "+Math.min(assets.size(),i*batch+batch));
+            AtomicBoolean kill =  new AtomicBoolean(false);
             assets.subList(i*batch,Math.min(assets.size(),i*batch+batch)).parallelStream().forEach(asset-> {
+                if(kill.get()) return;
+
                 AtomicBoolean retry = new AtomicBoolean(true);
                 AtomicInteger tries = new AtomicInteger(0);
-                while (retry.get() && tries.getAndIncrement() < maxRetries) {
+                while (!kill.get() && retry.get() && tries.getAndIncrement() < maxRetries) {
                     retry.set(false);
                     try {
                         List<Map<String,Object>> familyData = getFamilyMembersForAssetHelper(asset, authToken.get());
@@ -138,6 +143,7 @@ public class ScrapeEPO {
                 }
                 if(tries.get()>=maxRetries) {
                     System.out.println("Max retries reached...");
+                    kill.set(true);
                 }
             });
         }
@@ -151,15 +157,22 @@ public class ScrapeEPO {
     }
 
     public static void main(String[] args) throws Exception {
+        if(args.length==0) throw new RuntimeException("Please enter the computer number as argument 1.");
+        // The computer number determines which assets the computer will look at
+        //  to allow for easier concurrency among computers
+
+        int computerNumber = Integer.valueOf(args[0]);
         int limitPerComputer = 100000;
-        Map<String,List<Map<String,Object>>> previousMap = MergeEPOMaps.loadMergedMap();
+
+        Map<String,List<Map<String,Object>>> previousMap = MergeEPOMaps.loadMergedMap(true);
 
         List<String> assets = Database.getCopyOfAllPatents()
                 .parallelStream().filter(p->previousMap==null||!previousMap.containsKey(p))
+                .filter(p->p.endsWith(String.valueOf(computerNumber)))
                 .limit(limitPerComputer)
                 .collect(Collectors.toList());
 
         //test
-        getFamilyMembersForAssets(assets, 4);
+        getFamilyMembersForAssets(assets, 10);
     }
 }

@@ -1,5 +1,6 @@
 package epo;
 
+import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
@@ -9,22 +10,29 @@ import java.util.List;
 import java.util.Map;
 
 public class MergeEPOMaps {
-    public static final File mainFile = new File("all_merged_epo_asset_to_family_data_maps.jobj");
+    public static final File mainFile = new File(Constants.DATA_FOLDER+"all_merged_epo_asset_to_family_data_maps.jobj");
     public static void main(String[] args) {
         File dir = ScrapeEPO.mapDir;
+
         File[] files = dir.listFiles();
-        Map<String,List<Map<String,Object>>> finalMap = Collections.synchronizedMap(new HashMap<>());
 
-        for(File mapFile : files) {
-            Map<String,List<Map<String,Object>>> currMap = (Map<String,List<Map<String,Object>>>) Database.tryLoadObject(mapFile);
-            if(currMap!=null) {
-                finalMap.putAll(currMap);
+        if(files.length>0) {
+            Map<String, List<Map<String, Object>>> finalMap = Collections.synchronizedMap(new HashMap<>());
+            for (File mapFile : files) {
+                Map<String, List<Map<String, Object>>> currMap = (Map<String, List<Map<String, Object>>>) Database.tryLoadObject(mapFile);
+                if (currMap != null) {
+                    finalMap.putAll(currMap);
+                }
             }
+            Database.trySaveObject(finalMap, mainFile);
         }
-
-        Database.trySaveObject(finalMap,mainFile);
     }
-    public static Map<String,List<Map<String,Object>>> loadMergedMap() {
+    static Map<String,List<Map<String,Object>>> loadMergedMap(boolean remerge) {
+        if(remerge) main(null);
         return (Map<String,List<Map<String,Object>>>) Database.tryLoadObject(mainFile);
+    }
+
+    public static Map<String,List<Map<String,Object>>> loadMergedMap() {
+        return loadMergedMap(false);
     }
 }
