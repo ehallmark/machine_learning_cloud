@@ -85,8 +85,7 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
     public boolean hasNext() {
         currentDataSet=null;
         int idx = 0;
-        int sample = rand.nextInt(maxSamples)+1;
-        INDArray features = Nd4j.create(batch,inputColumns(),sample);
+        INDArray features = Nd4j.create(batch,inputColumns(),maxSamples);
         while(documentIterator.hasMoreSequences()&&idx<batch) {
             Sequence<VocabWord> document = documentIterator.nextSequence();
             List<String> sequence = document.getElements().stream().map(e->e.getLabel()).collect(Collectors.toList());
@@ -98,7 +97,7 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
                     String l = sequence.get(i);
                     if (word2Vec.getVocab().containsWord(l)) {
                         indexes.add(word2Vec.getVocab().indexOf(l));
-                        if(indexes.size()==sample) {
+                        if(indexes.size()==maxSamples) {
                             break;
                         }
                     }
@@ -110,22 +109,21 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
                     continue;
                 }
 
-                featureVec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(),1,indexes.stream().limit(sample).mapToInt(i->i).toArray());
+                featureVec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(),1,indexes.stream().limit(maxSamples).mapToInt(i->i).toArray());
 
 
             }
-            if(featureVec.rows()<sample) continue;
+            if(featureVec.rows()<maxSamples) continue;
 
             features.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.interval(0,featureVec.rows())).assign(featureVec);
             idx++;
         }
 
         if(idx>0) {
-            if(idx < batch) {
-                features = features.get(NDArrayIndex.interval(0,idx),NDArrayIndex.all(),NDArrayIndex.all());
+            if(idx >= batch) {
+                INDArray[] allFeatures = new INDArray[]{features};
+                currentDataSet = new MultiDataSet(allFeatures, allFeatures);
             }
-            INDArray[] allFeatures = new INDArray[]{features};
-            currentDataSet = new MultiDataSet(allFeatures,allFeatures);
         }
         return currentDataSet!=null;
     }
