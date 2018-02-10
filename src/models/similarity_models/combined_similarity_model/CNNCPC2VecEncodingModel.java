@@ -352,7 +352,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
         networks = new ArrayList<>();
 
         // build networks
-        double learningRate = 0.001;
+        double learningRate = 0.05;
         ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate);
 
         vaeNetwork = new ComputationGraph(conf.build());
@@ -460,7 +460,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                 .activation(activation)
                 .updater(Updater.RMSPROP)
                 .convolutionMode(ConvolutionMode.Same)      //This is important so we can 'stack' the results later
-                .regularization(true).l2(0.0001)
+               // .regularization(true).l2(0.0001)
                 .graphBuilder()
                 .addInputs("input")
                 .addVertex("n1", new L2NormalizeVertex(), "input")
@@ -499,7 +499,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                 .addVertex("m1", new MergeVertex(), "c1", "c2", "c3", "c4", "c5")      //Perform depth concatenation
                 .addLayer("p1", new GlobalPoolingLayer.Builder()
                         .poolingType(PoolingType.MAX)
-                        .dropOut(0.5)
+                       // .dropOut(0.5)
                         .build(), "m1")
                 .addLayer("o1", new DenseLayer.Builder()
                         .nIn(hiddenLayerSize1*5)
