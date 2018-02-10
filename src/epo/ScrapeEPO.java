@@ -1,14 +1,16 @@
 package epo;
 
 import com.google.gson.Gson;
-import seeding.Constants;
 import seeding.Database;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.*;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,7 +24,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 11/16/2017.
  */
 public class ScrapeEPO {
-    public static final File mapDir = new File(Constants.DATA_FOLDER+"epo_asset_family_maps/");
+    public static final File mapDir = new File("epo_asset_family_maps/");
     static {
         if(!mapDir.exists()) mapDir.mkdirs();
     }
@@ -95,7 +97,7 @@ public class ScrapeEPO {
         return null;
     }
 
-    public static Map<String,List<Map<String,Object>>> getFamilyMembersForAssets(List<String> assets, int maxRetries) throws Exception {
+    public static Map<String,List<Map<String,Object>>> getFamilyMembersForAssets(List<String> assets, int maxRetries, int computerNum) throws Exception {
         Lock refreshLock = new ReentrantLock();
         int batch = Runtime.getRuntime().availableProcessors()*2;
 
@@ -147,12 +149,12 @@ public class ScrapeEPO {
                 }
             });
         }
-        saveCurrentResults(dataMap);
+        saveCurrentResults(dataMap,computerNum);
         return dataMap;
     }
 
-    private static void saveCurrentResults(Map<String,List<Map<String,Object>>> currentMap) {
-        File toSave = new File(mapFile.getAbsolutePath()+mapDir.listFiles().length);
+    private static void saveCurrentResults(Map<String,List<Map<String,Object>>> currentMap, int computerNum) {
+        File toSave = new File(mapFile.getAbsolutePath()+computerNum+"_"+mapDir.listFiles().length);
         Database.trySaveObject(currentMap,toSave);
     }
 
@@ -173,6 +175,6 @@ public class ScrapeEPO {
                 .collect(Collectors.toList());
 
         //test
-        getFamilyMembersForAssets(assets, 10);
+        getFamilyMembersForAssets(assets, 10, computerNumber);
     }
 }
