@@ -443,9 +443,9 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSize1 = 64;
+        int hiddenLayerSize1 = 48;
         int maxSample = pipelineManager.getMaxSamples();
-        int hiddenLayerSize2 = 64;
+        int hiddenLayerSize2 = 48;
 
         Updater updater = Updater.RMSPROP;
 
@@ -484,43 +484,31 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .nIn(1)
                         .nOut(hiddenLayerSize1)
                         .build(), "rl1")
-                .addLayer("c4", new ConvolutionLayer.Builder()
-                        .kernelSize(vectorSize,4)
-                        .stride(vectorSize,1)
-                        .nIn(1)
-                        .nOut(hiddenLayerSize1)
-                        .build(), "rl1")
-                .addVertex("m1", new MergeVertex(), "c1", "c2", "c3", "c4")      //Perform depth concatenation
+                .addVertex("m1", new MergeVertex(), "c1", "c2", "c3")      //Perform depth concatenation
                 .addLayer("c5", new ConvolutionLayer.Builder()
                         .kernelSize(1,1)
                         .stride(1,1)
-                        .nIn(4*hiddenLayerSize1)
+                        .nIn(3*hiddenLayerSize1)
                         .nOut(hiddenLayerSize1)
                         .build(), "m1")
                 .addLayer("c6", new ConvolutionLayer.Builder()
                         .kernelSize(1,2)
                         .stride(1,1)
-                        .nIn(4*hiddenLayerSize1)
+                        .nIn(3*hiddenLayerSize1)
                         .nOut(hiddenLayerSize1)
                         .build(), "m1")
                 .addLayer("c7", new ConvolutionLayer.Builder()
                         .kernelSize(1,3)
                         .stride(1,1)
-                        .nIn(4*hiddenLayerSize1)
+                        .nIn(3*hiddenLayerSize1)
                         .nOut(hiddenLayerSize1)
                         .build(), "m1")
-                .addLayer("c8", new ConvolutionLayer.Builder()
-                        .kernelSize(1,5)
-                        .stride(1,1)
-                        .nIn(4*hiddenLayerSize1)
-                        .nOut(hiddenLayerSize1)
-                        .build(), "m1")
-                .addVertex("m2", new MergeVertex(), "c5", "c6", "c7", "c8")      //Perform depth concatenation
+                .addVertex("m2", new MergeVertex(), "c5", "c6", "c7")      //Perform depth concatenation
                 .addLayer("p2", new GlobalPoolingLayer.Builder()
-                        .poolingType(PoolingType.AVG)
+                        .poolingType(PoolingType.MAX)
                         .build(), "m2")
                 .addLayer("o1", new DenseLayer.Builder()
-                        .nIn(hiddenLayerSize1*4)
+                        .nIn(hiddenLayerSize1*3)
                         .nOut(hiddenLayerSize2)
                         .build(),"p2")
                 .addLayer("v1", new DenseLayer.Builder()
