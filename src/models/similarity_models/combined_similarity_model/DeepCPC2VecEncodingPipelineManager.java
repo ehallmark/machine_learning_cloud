@@ -32,7 +32,7 @@ import java.util.stream.Stream;
  */
 public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<MultiDataSetIterator,INDArray>  {
 
-    public static final String MODEL_NAME = "deep_cpc_single_2_vec_encoding_model";
+    public static final String MODEL_NAME = "deep_cpc_32_2_vec_encoding_model";
     public static final File PREDICTION_FILE = new File("deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER_CPC = new File("deep_cpc_single_2_vec_encoding_input_data");
     private static final File INPUT_DATA_FOLDER_WORD = new File("deep_cpc_word_2_vec_encoding_input_data");
