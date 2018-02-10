@@ -166,7 +166,7 @@ public class ScrapeEPO {
         int computerNumber = Integer.valueOf(args[0]);
         int limitPerComputer = 10000;
 
-        Map<String,List<Map<String,Object>>> previousMap = MergeEPOMaps.loadMergedMap(true);
+        Map<String,List<Map<String,Object>>> previousMap = MergeEPOMaps.loadMergedMap(true,false);
 
         List<String> assets = Database.getCopyOfAllPatents()
                 .parallelStream().filter(p->previousMap==null||!previousMap.containsKey(p))
