@@ -311,12 +311,6 @@ public class CNNCPC2VecEncodingPipelineManager extends DefaultPipelineManager<Mu
         boolean trainOnWords = true;
         int nEpochs = 3;
 
-        if(trainOnWords && !INPUT_DATA_FOLDER_WORD.exists()&&runModels) {
-            rebuildDatasets=true;
-        } else if (!trainOnWords && !INPUT_DATA_FOLDER_CPC.exists()&&runModels) {
-            rebuildDatasets=true;
-        }
-
         CNNCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets,trainOnWords);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }

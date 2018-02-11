@@ -309,12 +309,6 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         boolean trainOnWords = false;
         int nEpochs = 3;
 
-        if(trainOnWords && !INPUT_DATA_FOLDER_WORD.exists()&&runModels) {
-            rebuildDatasets=true;
-        } else if (!trainOnWords && !INPUT_DATA_FOLDER_CPC.exists()&&runModels) {
-            rebuildDatasets=true;
-        }
-
         DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets,trainOnWords);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
