@@ -16,6 +16,7 @@ import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.graph.L2NormalizeVertex;
 import org.deeplearning4j.nn.conf.graph.MergeVertex;
 import org.deeplearning4j.nn.conf.layers.*;
+import org.deeplearning4j.nn.conf.layers.variational.GaussianReconstructionDistribution;
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.graph.vertex.VertexIndices;
@@ -470,7 +471,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .nIn(maxSample*vectorSize)
                         .nOut(vectorSize)
                         .pzxActivationFunction(Activation.IDENTITY)
-                        .lossFunction(activation,lossFunction)
+                        .reconstructionDistribution(new GaussianReconstructionDistribution(Activation.SIGMOID))
                         //.preTrainIterations(1)
                         .encoderLayerSizes(hiddenLayerSize1,hiddenLayerSize1,hiddenLayerSize1)
                         .decoderLayerSizes(hiddenLayerSize1,hiddenLayerSize1,hiddenLayerSize1)
