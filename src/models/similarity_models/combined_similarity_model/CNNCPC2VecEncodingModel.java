@@ -467,7 +467,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                 .addInputs("input")
                 .addVertex("n1", new L2NormalizeVertex(), "input")
                 .addLayer("l1", new DenseLayer.Builder().nIn(vectorSize*maxSample).nOut(vectorSize*maxSample).build(),"n1")
-              /*  .addVertex("rl1", new ReshapeVertex(-1,1,vectorSize,maxSample),"l1")
+                .addVertex("rl1", new ReshapeVertex(-1,1,vectorSize,maxSample),"l1")
                 .addLayer("c1", new ConvolutionLayer.Builder()
                         .kernelSize(vectorSize,2)
                         .stride(vectorSize,1)
@@ -486,14 +486,15 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .nIn(1)
                         .nOut(hiddenLayerSize1)
                         .build(), "rl1")
-               // .addVertex("m1", new MergeVertex())      //Perform depth concatenation
+                .addVertex("m1", new MergeVertex())      //Perform depth concatenation
                 .addLayer("p2", new GlobalPoolingLayer.Builder()
+                        .dropOut(0.5)
                         .poolingType(PoolingType.MAX)
-                        .build() , "c1","c2","c3")*/
+                        .build() , "c1","c2","c3")
                 .addLayer("i1", new DenseLayer.Builder()
-                        .nIn(vectorSize*maxSample)
+                        .nIn(3*hiddenLayerSize1)
                         .nOut(hiddenLayerSize1)
-                        .build(),"l1")
+                        .build(),"p2")
                 .addLayer("i2", new DenseLayer.Builder()
                         .nIn(hiddenLayerSize1)
                         .nOut(hiddenLayerSize1)
