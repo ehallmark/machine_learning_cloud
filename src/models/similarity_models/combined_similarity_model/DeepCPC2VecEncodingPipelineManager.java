@@ -47,11 +47,11 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     @Getter
     protected Word2Vec word2Vec;
-    private static int maxSample = 2;
+    private static int maxSample = 3;
     public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, boolean trainOnWords) {
         super(new File((INPUT_DATA_FOLDER_ALL).getAbsolutePath()+maxSample),PREDICTION_FILE);
         this.word2Vec=word2Vec;
-        this.modelName=modelName;
+        this.modelName=modelName+maxSample;
         this.wordCPC2VecPipelineManager=wordCPC2VecPipelineManager;
     }
 

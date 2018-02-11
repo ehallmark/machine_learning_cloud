@@ -405,7 +405,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.00001;
+        double newLearningRate = 0.01;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
@@ -431,7 +431,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
             int valCount = 0;
             double score = 0d;
             int count = 0;
-            while(validationIterator.hasNext()&&valCount<30000) {
+            while(validationIterator.hasNext()&&valCount<50000) {
                 MultiDataSet dataSet = validationIterator.next();
                 validationDataSets.add(dataSet);
                 valCount+=dataSet.getFeatures()[0].shape()[0];
