@@ -36,7 +36,7 @@ public class CNNCPC2VecEncodingPipelineManager extends DefaultPipelineManager<Mu
     private static final File INPUT_DATA_FOLDER_WORD = new File("deep_cpc_word_2_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
-    protected static final int MINI_BATCH_SIZE = 128;
+    protected static final int MINI_BATCH_SIZE = 32;
     protected static final Random rand = new Random(235);
     private static CNNCPC2VecEncodingPipelineManager MANAGER;
     protected String modelName;
@@ -317,7 +317,7 @@ public class CNNCPC2VecEncodingPipelineManager extends DefaultPipelineManager<Mu
         } else if (!trainOnWords && !new File(INPUT_DATA_FOLDER_CPC.getAbsolutePath()+maxSample).exists()&&runModels) {
             rebuildDatasets=true;
         }
-        
+
         CNNCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets,trainOnWords);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
