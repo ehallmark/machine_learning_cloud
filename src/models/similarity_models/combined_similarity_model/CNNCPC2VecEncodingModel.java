@@ -459,6 +459,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                 .learningRate(learningRate)
                 .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                .convolutionMode(ConvolutionMode.Same)
                 .activation(activation)
                 .updater(Updater.RMSPROP)
                // .convolutionMode(ConvolutionMode.Same)      //This is important so we can 'stack' the results later
