@@ -558,12 +558,9 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
     protected void train(MultiDataSetIterator dataSetIterator, int nEpochs, AtomicBoolean stoppingCondition) {
         try {
             for (int i = 0; i < nEpochs; i++) {
-                while(dataSetIterator.hasNext()) {
-                    MultiDataSet ds = dataSetIterator.next();
-                    networks.forEach(vaeNetwork->{
-                        vaeNetwork.fit(ds);
-                    });
-                }
+                networks.forEach(vaeNetwork->{
+                    vaeNetwork.fit(dataSetIterator);
+                });
 
                 if (stoppingCondition.get()) break;
                 dataSetIterator.reset();
