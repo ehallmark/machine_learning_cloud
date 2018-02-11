@@ -306,7 +306,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
-        boolean trainOnWords = false;
+        boolean trainOnWords = true;
         int nEpochs = 3;
 
         if(trainOnWords && !new File(INPUT_DATA_FOLDER_WORD.getAbsolutePath()+maxSample).exists()&&runModels) {
