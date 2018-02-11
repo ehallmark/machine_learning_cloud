@@ -471,6 +471,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .nOut(vectorSize)
                         .pzxActivationFunction(Activation.IDENTITY)
                         .lossFunction(activation,lossFunction)
+                        .preTrainIterations(1)
                         .encoderLayerSizes(hiddenLayerSize1,hiddenLayerSize1,hiddenLayerSize1)
                         .decoderLayerSizes(hiddenLayerSize1,hiddenLayerSize1,hiddenLayerSize1)
                         .build(),
