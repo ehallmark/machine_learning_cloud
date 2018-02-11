@@ -307,7 +307,7 @@ public class CNNCPC2VecEncodingPipelineManager extends DefaultPipelineManager<Mu
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
-        boolean trainOnWords = false;
+        boolean trainOnWords = true;
         int nEpochs = 3;
 
         if(trainOnWords && !INPUT_DATA_FOLDER_WORD.exists()&&runModels) {
