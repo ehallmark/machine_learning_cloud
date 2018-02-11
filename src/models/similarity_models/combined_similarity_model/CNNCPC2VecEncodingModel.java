@@ -437,7 +437,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                 MultiDataSet dataSet = validationIterator.next();
                 validationDataSets.add(dataSet);
                 valCount+=dataSet.getFeatures()[0].shape()[0];
-                score+=test(dataSet.getFeatures(0),vae);
+                score+=test(vaeNetwork,dataSet);//dataSet.getFeatures(0),vae);
                 count++;
                 //System.gc();
             }
@@ -516,7 +516,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .build(), "o2")
                 .addLayer("output", new OutputLayer.Builder()
                         .lossFunction(lossFunction)
-                        .activation(Activation.IDENTITY)
+                        .activation(Activation.TANH)
                         .nIn(vectorSize*maxSample)
                         .nOut(vectorSize*maxSample)
                         .build(), "o3")
