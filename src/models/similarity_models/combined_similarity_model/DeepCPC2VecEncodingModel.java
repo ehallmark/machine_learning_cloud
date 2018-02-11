@@ -446,10 +446,10 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSizeRNN = 64;
+        int hiddenLayerSizeRNN = 96;
         int maxSamples = pipelineManager.getMaxSamples();
         int linearTotal = hiddenLayerSizeRNN * maxSamples;
-        int hiddenLayerSizeFF = (linearTotal+vectorSize)/2;
+        int hiddenLayerSizeFF = 128;
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
 
 
