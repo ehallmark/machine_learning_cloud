@@ -35,9 +35,9 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
     public static final String MODEL_NAME = "deep_cpc_rnn3_2_vec_encoding_model";
     public static final File PREDICTION_FILE = new File("deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
-    private static final File INPUT_DATA_FOLDER_CPC = new File("deep_cpc_single_2_vec_encoding_input_data");
+    //private static final File INPUT_DATA_FOLDER_CPC = new File("deep_cpc_single_2_vec_encoding_input_data");
     private static final File INPUT_DATA_FOLDER_ALL = new File("deep_cpc_all3_vec_encoding_input_data");
-    private static final File INPUT_DATA_FOLDER_WORD = new File("deep_cpc_word_2_vec_encoding_input_data");
+    //private static final File INPUT_DATA_FOLDER_WORD = new File("deep_cpc_word_2_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 32;
@@ -48,15 +48,11 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     @Getter
     protected Word2Vec word2Vec;
     private static int maxSample = 3;
-    public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, boolean trainOnWords) {
+    public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
         super(new File((INPUT_DATA_FOLDER_ALL).getAbsolutePath()+maxSample),PREDICTION_FILE);
         this.word2Vec=word2Vec;
         this.modelName=modelName+maxSample;
         this.wordCPC2VecPipelineManager=wordCPC2VecPipelineManager;
-    }
-
-    public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
-        this(modelName,word2Vec,wordCPC2VecPipelineManager,false);
     }
 
     public void initModel(boolean forceRecreateModels) {
@@ -279,7 +275,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     }
 
 
-    public static synchronized DeepCPC2VecEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec, boolean trainOnWords) {
+    public static synchronized DeepCPC2VecEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec) {
         if(MANAGER==null) {
             Nd4j.setDataType(DataBuffer.Type.DOUBLE);
 
@@ -291,7 +287,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             if(loadWord2Vec) wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
 
             setLoggingLevel(Level.INFO);
-            MANAGER = new DeepCPC2VecEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, wordCPC2VecPipelineManager,trainOnWords);
+            MANAGER = new DeepCPC2VecEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, wordCPC2VecPipelineManager);
         }
         return MANAGER;
     }
@@ -308,12 +304,11 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
-        boolean trainOnWords = false;
         int nEpochs = 3;
 
         rebuildDatasets = runModels && !new File(INPUT_DATA_FOLDER_ALL.getAbsolutePath()+maxSample).exists();
 
-        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets,trainOnWords);
+        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
