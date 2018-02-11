@@ -475,7 +475,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .encoderLayerSizes(hiddenLayerSize1,hiddenLayerSize1,hiddenLayerSize1)
                         .decoderLayerSizes(hiddenLayerSize1,hiddenLayerSize1,hiddenLayerSize1)
                         .build(),
-                        "input"
+                        "n1"
                 ).setOutputs("vae").pretrain(true).backprop(false);
               //  .addLayer("l1", new AutoEncoder.Builder().nIn(vectorSize*maxSample).nOut(vectorSize*maxSample).build(),"n1")
               /*  .addVertex("rl1", new ReshapeVertex(-1,1,vectorSize,maxSample),"l1")
