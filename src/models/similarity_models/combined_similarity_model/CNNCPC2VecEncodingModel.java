@@ -16,7 +16,6 @@ import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.graph.L2NormalizeVertex;
 import org.deeplearning4j.nn.conf.graph.MergeVertex;
 import org.deeplearning4j.nn.conf.layers.*;
-import org.deeplearning4j.nn.conf.layers.variational.GaussianReconstructionDistribution;
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.graph.vertex.VertexIndices;
@@ -449,9 +448,9 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSize1 = 1000;
+        int hiddenLayerSize1 = 512;
         int maxSample = pipelineManager.getMaxSamples();
-        int hiddenLayerSize2 = 96;
+        int hiddenLayerSize2 = 128;
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
         Activation activation = Activation.TANH;
@@ -459,6 +458,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .learningRate(learningRate)
                 .weightInit(WeightInit.XAVIER)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .activation(activation)
                 .updater(Updater.RMSPROP)
                 .convolutionMode(ConvolutionMode.Same)      //This is important so we can 'stack' the results later
@@ -466,19 +466,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                 .graphBuilder()
                 .addInputs("input")
                 .addVertex("n1", new L2NormalizeVertex(), "input")
-                .addLayer("vae", new VariationalAutoencoder.Builder()
-                        .activation(activation)
-                        .nIn(maxSample*vectorSize)
-                        .nOut(vectorSize)
-                        .pzxActivationFunction(Activation.IDENTITY)
-                        .reconstructionDistribution(new GaussianReconstructionDistribution(Activation.SIGMOID))
-                        //.preTrainIterations(1)
-                        .encoderLayerSizes(hiddenLayerSize1,hiddenLayerSize1,hiddenLayerSize1)
-                        .decoderLayerSizes(hiddenLayerSize1,hiddenLayerSize1,hiddenLayerSize1)
-                        .build(),
-                        "n1"
-                ).setOutputs("vae").pretrain(true).backprop(false);
-              //  .addLayer("l1", new AutoEncoder.Builder().nIn(vectorSize*maxSample).nOut(vectorSize*maxSample).build(),"n1")
+                .addLayer("l1", new DenseLayer.Builder().nIn(vectorSize*maxSample).nOut(vectorSize*maxSample).build(),"n1")
               /*  .addVertex("rl1", new ReshapeVertex(-1,1,vectorSize,maxSample),"l1")
                 .addLayer("c1", new ConvolutionLayer.Builder()
                         .kernelSize(vectorSize,2)
@@ -502,7 +490,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                 .addLayer("p2", new GlobalPoolingLayer.Builder()
                         .poolingType(PoolingType.MAX)
                         .build() , "c1","c2","c3")*/
-               /* .addLayer("i1", new DenseLayer.Builder()
+                .addLayer("i1", new DenseLayer.Builder()
                         .nIn(vectorSize*maxSample)
                         .nOut(hiddenLayerSize1)
                         .build(),"l1")
@@ -534,7 +522,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .build(), "o3")
                 .setOutputs("output")
                 .backprop(true)
-                .pretrain(false);*/
+                .pretrain(false);
     }
 
     public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
