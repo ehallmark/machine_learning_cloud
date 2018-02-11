@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class TestCPCEncoding {
     public static void main(String[] args) {
-        Map<String,INDArray> map = DeepCPC2VecEncodingPipelineManager.getOrLoadManager(false,false).loadPredictions();
+        Map<String,INDArray> map = DeepCPC2VecEncodingPipelineManager.getOrLoadManager(false).loadPredictions();
 
         Set<String> cpcs = new HashSet<>(map.keySet());
 
