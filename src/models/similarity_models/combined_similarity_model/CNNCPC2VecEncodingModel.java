@@ -448,9 +448,9 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSize1 = 512;
+        int hiddenLayerSize1 = 256;
         int maxSample = pipelineManager.getMaxSamples();
-        int hiddenLayerSize2 = 256;
+        int hiddenLayerSize2 = 128;
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
         Activation activation = Activation.TANH;
@@ -459,10 +459,9 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                 .learningRate(learningRate)
                 .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .convolutionMode(ConvolutionMode.Same)
                 .activation(activation)
                 .updater(Updater.RMSPROP)
-               // .convolutionMode(ConvolutionMode.Same)      //This is important so we can 'stack' the results later
+                .convolutionMode(ConvolutionMode.Same)      //This is important so we can 'stack' the results later
                // .regularization(true).l2(0.0001)
                 .graphBuilder()
                 .addInputs("input")
