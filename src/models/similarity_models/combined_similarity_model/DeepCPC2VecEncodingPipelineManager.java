@@ -46,8 +46,9 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     @Getter
     protected Word2Vec word2Vec;
     private boolean trainOnWords;
+    private static int maxSample = 2;
     public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, boolean trainOnWords) {
-        super(trainOnWords?INPUT_DATA_FOLDER_WORD:INPUT_DATA_FOLDER_CPC,PREDICTION_FILE);
+        super(new File((trainOnWords?INPUT_DATA_FOLDER_WORD:INPUT_DATA_FOLDER_CPC).getAbsolutePath()+maxSample),PREDICTION_FILE);
         this.word2Vec=word2Vec;
         this.trainOnWords=trainOnWords;
         this.modelName=modelName;
@@ -122,7 +123,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     }
 
     protected int getMaxSamples() {
-        return 8;
+        return 2;
     }
 
     protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {
