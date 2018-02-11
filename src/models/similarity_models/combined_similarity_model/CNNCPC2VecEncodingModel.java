@@ -340,7 +340,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
 
     @Override
     public int printIterations() {
-        return 10000;
+        return 5000;
     }
 
 
