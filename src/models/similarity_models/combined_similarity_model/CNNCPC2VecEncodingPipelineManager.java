@@ -44,8 +44,9 @@ public class CNNCPC2VecEncodingPipelineManager extends DefaultPipelineManager<Mu
     @Getter
     protected Word2Vec word2Vec;
     private boolean trainOnWords;
+    private static final int maxSample = 2;
     public CNNCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, boolean trainOnWords) {
-        super(trainOnWords?INPUT_DATA_FOLDER_WORD:INPUT_DATA_FOLDER_CPC,PREDICTION_FILE);
+        super(new File((trainOnWords?INPUT_DATA_FOLDER_WORD:INPUT_DATA_FOLDER_CPC).getAbsolutePath()+maxSample),PREDICTION_FILE);
         this.word2Vec=word2Vec;
         this.trainOnWords=trainOnWords;
         this.modelName=modelName;
@@ -124,7 +125,7 @@ public class CNNCPC2VecEncodingPipelineManager extends DefaultPipelineManager<Mu
     }
 
     protected int getMaxSamples() {
-        return 8;
+        return maxSample;
     }
 
     protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {

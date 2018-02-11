@@ -123,7 +123,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     }
 
     protected int getMaxSamples() {
-        return 2;
+        return maxSample;
     }
 
     protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {
