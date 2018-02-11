@@ -450,7 +450,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
         int hiddenLayerSize1 = 512;
         int maxSample = pipelineManager.getMaxSamples();
-        int hiddenLayerSize2 = 128;
+        int hiddenLayerSize2 = 256;
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
         Activation activation = Activation.TANH;
@@ -461,7 +461,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                 .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .activation(activation)
                 .updater(Updater.RMSPROP)
-                .convolutionMode(ConvolutionMode.Same)      //This is important so we can 'stack' the results later
+               // .convolutionMode(ConvolutionMode.Same)      //This is important so we can 'stack' the results later
                // .regularization(true).l2(0.0001)
                 .graphBuilder()
                 .addInputs("input")
@@ -496,30 +496,46 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                         .build(),"l1")
                 .addLayer("i2", new DenseLayer.Builder()
                         .nIn(hiddenLayerSize1)
-                        .nOut(hiddenLayerSize2)
+                        .nOut(hiddenLayerSize1)
                         .build(),"i1")
+                .addLayer("i3", new DenseLayer.Builder()
+                        .nIn(hiddenLayerSize1)
+                        .nOut(hiddenLayerSize2)
+                        .build(),"i2")
+                .addLayer("i4", new DenseLayer.Builder()
+                        .nIn(hiddenLayerSize2)
+                        .nOut(hiddenLayerSize2)
+                        .build(),"i3")
                 .addLayer("v1", new DenseLayer.Builder()
                         .nIn(hiddenLayerSize2)
                         .nOut(vectorSize)
-                        .build(), "i2")
+                        .build(), "i4")
                 .addLayer("o1", new DenseLayer.Builder()
                         .nIn(vectorSize)
                         .nOut(hiddenLayerSize2)
                         .build(), "v1")
                 .addLayer("o2", new DenseLayer.Builder()
                         .nIn(hiddenLayerSize2)
-                        .nOut(hiddenLayerSize1)
+                        .nOut(hiddenLayerSize2)
                         .build(), "o1")
                 .addLayer("o3", new DenseLayer.Builder()
+                        .nIn(hiddenLayerSize2)
+                        .nOut(hiddenLayerSize1)
+                        .build(), "o2")
+                .addLayer("o4", new DenseLayer.Builder()
+                        .nIn(hiddenLayerSize1)
+                        .nOut(hiddenLayerSize1)
+                        .build(), "o3")
+                .addLayer("o5", new DenseLayer.Builder()
                         .nIn(hiddenLayerSize1)
                         .nOut(vectorSize*maxSample)
-                        .build(), "o2")
+                        .build(), "o4")
                 .addLayer("output", new OutputLayer.Builder()
                         .lossFunction(lossFunction)
                         .activation(Activation.TANH)
                         .nIn(vectorSize*maxSample)
                         .nOut(vectorSize*maxSample)
-                        .build(), "o3")
+                        .build(), "o5")
                 .setOutputs("output")
                 .backprop(true)
                 .pretrain(false);
