@@ -466,7 +466,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                 .graphBuilder()
                 .addInputs("input")
                 .addVertex("n1", new L2NormalizeVertex(), "input")
-                .addLayer("l1", new DenseLayer.Builder().nIn(vectorSize*maxSample).nOut(vectorSize*maxSample).build(),"n1")
+                .addLayer("l1", new DenseLayer.Builder().nIn(vectorSize*maxSample).nOut(hiddenLayerSize1).build(),"n1")
                 /*.addVertex("rl1", new ReshapeVertex(-1,1,vectorSize,maxSample),"l1")
                 .addLayer("c1", new ConvolutionLayer.Builder()
                         .kernelSize(vectorSize,2)
