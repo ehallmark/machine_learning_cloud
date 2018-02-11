@@ -5,6 +5,7 @@ import cpc_normalization.CPCHierarchy;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import lombok.Getter;
+import models.NDArrayHelper;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.api.layers.IOutputLayer;
@@ -426,6 +427,9 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
             MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
             List<MultiDataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
 
+            org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
+                    = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) vaeNetwork.getLayer(0);
+
             int valCount = 0;
             double score = 0d;
             int count = 0;
@@ -433,7 +437,7 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
                 MultiDataSet dataSet = validationIterator.next();
                 validationDataSets.add(dataSet);
                 valCount+=dataSet.getFeatures()[0].shape()[0];
-                score+=test(vaeNetwork,dataSet);
+                score+=test(dataSet.getFeatures(0),vae);
                 count++;
                 //System.gc();
             }
@@ -535,6 +539,13 @@ public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Com
         //System.out.println("ds shape: "+Arrays.toString(finalDataSet.getLabels()[0].shape()));
         double score = net.score(finalDataSet,false);
         return 1d + score;
+    }
+
+    public static double test(INDArray inputs, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
+        INDArray latentValues = model.activate(inputs,false);
+        INDArray outputs = model.generateAtMeanGivenZ(latentValues);
+        double similarity = NDArrayHelper.sumOfCosineSimByRow(inputs,outputs);
+        return 1d - (similarity/inputs.rows());
     }
 
 
