@@ -3,6 +3,7 @@ package models.similarity_models.combined_similarity_model;
 import ch.qos.logback.classic.Level;
 import cpc_normalization.CPC;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
+import data_pipeline.vectorize.CombinedFileMultiMinibatchIterator;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
@@ -35,6 +36,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     public static final String MODEL_NAME = "deep_cpc_rnn3_2_vec_encoding_model";
     public static final File PREDICTION_FILE = new File("deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER_CPC = new File("deep_cpc_single_2_vec_encoding_input_data");
+    private static final File INPUT_DATA_FOLDER_ALL = new File("deep_cpc_all3_vec_encoding_input_data");
     private static final File INPUT_DATA_FOLDER_WORD = new File("deep_cpc_word_2_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
@@ -45,12 +47,10 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     @Getter
     protected Word2Vec word2Vec;
-    private boolean trainOnWords;
     private static int maxSample = 2;
     public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, boolean trainOnWords) {
-        super(new File((trainOnWords?INPUT_DATA_FOLDER_WORD:INPUT_DATA_FOLDER_CPC).getAbsolutePath()+maxSample),PREDICTION_FILE);
+        super(new File((INPUT_DATA_FOLDER_ALL).getAbsolutePath()+maxSample),PREDICTION_FILE);
         this.word2Vec=word2Vec;
-        this.trainOnWords=trainOnWords;
         this.modelName=modelName;
         this.wordCPC2VecPipelineManager=wordCPC2VecPipelineManager;
     }
@@ -132,7 +132,14 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
     @Override
     protected void setDatasetManager() {
-        if(trainOnWords) {
+        MultiDataSetIterator train1;
+        MultiDataSetIterator train2;
+        MultiDataSetIterator test1;
+        MultiDataSetIterator test2;
+        MultiDataSetIterator val1;
+        MultiDataSetIterator val2;
+
+        {
             File baseDir = FileTextDataSetIterator.BASE_DIR;
             File trainFile = new File(baseDir, FileTextDataSetIterator.trainFile.getName());
             File testFile = new File(baseDir, FileTextDataSetIterator.testFile.getName());
@@ -149,23 +156,14 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             testIter.setRunVocab(false);
             devIter.setRunVocab(false);
 
-            PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
-                    dataFolder,
-                    getRawIterator(trainIter,getBatchSize()),
-                    getRawIterator(testIter, 1024),
-                    getRawIterator(devIter, 1024),
-                    true
-            );
-            manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
-                @Override
-                public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
-                    dataSet.setLabels(null);
-                    dataSet.setLabelsMaskArray(null);
-                }
-            });
-            datasetManager = manager;
+            train1 =  getRawIterator(trainIter,getBatchSize());
+            test1 =  getRawIterator(testIter,1024);
+            val1 =  getRawIterator(devIter,1024);
 
-        } else {
+
+
+        }
+        {
             int trainLimit = 5000000;
             int testLimit = 30000;
             int devLimit = 30000;
@@ -236,23 +234,27 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
             INDArray[] testVectors = buildVectors(testIndices, entries);
             INDArray[] devVectors = buildVectors(devIndices, entries);
 
-            System.out.println("Finished finding test/train/dev indices...");
-            PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
-                    dataFolder,
-                    new VocabSamplingIterator(trainVectors, 2 * trainLimit, getBatchSize(), true),
-                    new VocabSamplingIterator(testVectors, -1, 1024, false),
-                    new VocabSamplingIterator(devVectors, -1, 1024, false),
-                    true
-            );
-            manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
-                @Override
-                public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
-                    dataSet.setLabels(null);
-                    dataSet.setLabelsMaskArray(null);
-                }
-            });
-            datasetManager = manager;
+            train2 = new VocabSamplingIterator(trainVectors,2*trainLimit,getBatchSize(), true);
+            test2 = new VocabSamplingIterator(testVectors, -1, 1024, false);
+            val2 = new VocabSamplingIterator(devVectors, -1, 1024, false);
         }
+
+
+        PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
+                dataFolder,
+                new CombinedFileMultiMinibatchIterator(train1,train2),
+                new CombinedFileMultiMinibatchIterator(test1,test2),
+                new CombinedFileMultiMinibatchIterator(val1,val2),
+                true
+        );
+        manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
+            @Override
+            public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
+                dataSet.setLabels(null);
+                dataSet.setLabelsMaskArray(null);
+            }
+        });
+        datasetManager = manager;
     }
 
     private INDArray[] buildVectors(int[] indices, List<List<String>> _entries) {
@@ -301,7 +303,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
 
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
-        boolean rebuildDatasets = false;
+        boolean rebuildDatasets;
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
@@ -309,11 +311,7 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
         boolean trainOnWords = false;
         int nEpochs = 3;
 
-        if(trainOnWords && !new File(INPUT_DATA_FOLDER_WORD.getAbsolutePath()+maxSample).exists()&&runModels) {
-            rebuildDatasets=true;
-        } else if (!trainOnWords && !new File(INPUT_DATA_FOLDER_CPC.getAbsolutePath()+maxSample).exists()&&runModels) {
-            rebuildDatasets=true;
-        }
+        rebuildDatasets = runModels && !new File(INPUT_DATA_FOLDER_ALL.getAbsolutePath()+maxSample).exists();
 
         DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets,trainOnWords);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
