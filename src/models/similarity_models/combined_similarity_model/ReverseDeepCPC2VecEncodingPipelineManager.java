@@ -76,7 +76,7 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
         return new MultiDataSetPreProcessor() {
             @Override
             public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
-                dataSet.setLabels(dataSet.getFeatures());
+                dataSet.setLabels(dataSet.getFeatures().clone());
                 dataSet.setLabelsMaskArray(null);
                 dataSet.setFeaturesMaskArrays(null);
                 // added
