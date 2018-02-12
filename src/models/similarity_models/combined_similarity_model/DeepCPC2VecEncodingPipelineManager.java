@@ -13,6 +13,7 @@ import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
+import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
@@ -39,6 +40,7 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 32;
+    private static final int MAX_NETWORK_RECURSION = 2;
     private static int MAX_SAMPLE = 2;
     protected static final Random rand = new Random(235);
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
@@ -59,6 +61,27 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
                 System.out.println("Error loading previous model: "+e.getMessage());
             }
         }
+    }
+
+    @Override
+    protected MultiDataSetPreProcessor getMultiDataSetPreProcessor() {
+        Random rand = new Random(59);
+        return new MultiDataSetPreProcessor() {
+            @Override
+            public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
+                ComputationGraph encoder = ((DeepCPC2VecEncodingModel) model).getVaeNetwork();
+                INDArray newFeatures = dataSet.getFeatures(0);
+                int r = MAX_NETWORK_RECURSION >= 0 ? rand.nextInt(MAX_NETWORK_RECURSION) : 0;
+                r++;
+                for (int i = 0; i < r; i++) {
+                    newFeatures = encoder.output(false, dataSet.getFeatures(0))[0];
+                }
+                dataSet.setFeatures(0, newFeatures);
+                dataSet.setLabels(dataSet.getFeatures());
+                dataSet.setLabelsMaskArray(null);
+                dataSet.setFeaturesMaskArrays(null);
+            }
+        };
     }
 
     public static synchronized DeepCPC2VecEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec) {
