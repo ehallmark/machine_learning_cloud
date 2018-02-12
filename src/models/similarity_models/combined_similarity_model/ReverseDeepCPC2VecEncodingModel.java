@@ -94,7 +94,7 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
 
         networks.add(vaeNetwork);
 
-        boolean testNet = true;
+        boolean testNet = false;
         if(testNet) {
             int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
             ComputationGraph graph = new ComputationGraph(conf.build());
