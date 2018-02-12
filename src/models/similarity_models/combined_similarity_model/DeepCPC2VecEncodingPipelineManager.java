@@ -72,9 +72,15 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
                 ComputationGraph encoder = ((DeepCPC2VecEncodingModel) model).getVaeNetwork();
                 INDArray newFeatures = dataSet.getFeatures(0);
                 int r = MAX_NETWORK_RECURSION >= 0 ? rand.nextInt(MAX_NETWORK_RECURSION) : 0;
-                System.out.println("Shape start: "+Arrays.toString(newFeatures.shape()));
                 for (int i = 0; i < r; i++) {
-                    newFeatures = encoder.output(false, newFeatures)[0];
+                    System.out.println("Shape before: "+Arrays.toString(newFeatures.shape()));
+                    try {
+                        newFeatures = encoder.output(false, newFeatures)[0];
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                        System.out.println("EXCEPTION DURING PRE CODE");
+                        System.exit(1);
+                    }
                     System.out.println("Shape time "+i+": "+Arrays.toString(newFeatures.shape()));
                 }
                 dataSet.setFeatures(0, newFeatures);
