@@ -1,58 +1,45 @@
 package models.similarity_models.combined_similarity_model;
 
 import ch.qos.logback.classic.Level;
-import cpc_normalization.CPC;
-import data_pipeline.pipeline_manager.DefaultPipelineManager;
-import data_pipeline.vectorize.CombinedFileMultiMinibatchIterator;
-import data_pipeline.vectorize.DataSetManager;
-import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
-import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
-import models.text_streaming.FileTextDataSetIterator;
-import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
-import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
+import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
-import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.NDArrayIndex;
-import org.nd4j.linalg.primitives.Pair;
 
 import java.io.File;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import java.util.Random;
 
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipelineManager  {
+public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipelineManager  {
 
-    public static final String MODEL_NAME = "deep_cpc_rnn3_2_vec_encoding_model";
-    public static final File PREDICTION_FILE = new File("deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
+    public static final String MODEL_NAME = "reverse_deep_cpc_rnn3_2_vec_encoding_model";
+    public static final File PREDICTION_FILE = new File("reverse_deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER_ALL = new File("deep_cpc_all3_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 32;
     private static int MAX_SAMPLE = 2;
     protected static final Random rand = new Random(235);
-    private static DeepCPC2VecEncodingPipelineManager MANAGER;
+    private static ReverseDeepCPC2VecEncodingPipelineManager MANAGER;
     protected String modelName;
     protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     @Getter
     protected Word2Vec word2Vec;
-    public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
+    protected DeepCPC2VecEncodingModel encodingModel;
+    public ReverseDeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, DeepCPC2VecEncodingModel encodingModel) {
         super(new File((INPUT_DATA_FOLDER_ALL).getAbsolutePath()+MAX_SAMPLE),PREDICTION_FILE,modelName,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,MAX_SAMPLE,wordCPC2VecPipelineManager);
+        this.encodingModel=encodingModel;
     }
 
     public void initModel(boolean forceRecreateModels) {
         if(model==null) {
-            model = new DeepCPC2VecEncodingModel(this,modelName,VECTOR_SIZE);
+            model = new ReverseDeepCPC2VecEncodingModel(this,modelName,VECTOR_SIZE);
         }
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
@@ -64,7 +51,7 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
         }
     }
 
-    public static synchronized DeepCPC2VecEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec) {
+    public static synchronized ReverseDeepCPC2VecEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec) {
         if(MANAGER==null) {
             Nd4j.setDataType(DataBuffer.Type.DOUBLE);
 
@@ -72,13 +59,33 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
             String wordCpc2VecModel = WordCPC2VecPipelineManager.DEEP_MODEL_NAME;
 
 
+            DeepCPC2VecEncodingPipelineManager encodingPipelineManager = DeepCPC2VecEncodingPipelineManager.getOrLoadManager(false);
+            encodingPipelineManager.runPipeline(false,false,false,false,-1,false);
+
             WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(wordCpc2VecModel, -1, -1, -1);
             if(loadWord2Vec) wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
 
             setLoggingLevel(Level.INFO);
-            MANAGER = new DeepCPC2VecEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, wordCPC2VecPipelineManager);
+            MANAGER = new ReverseDeepCPC2VecEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, wordCPC2VecPipelineManager, (DeepCPC2VecEncodingModel)encodingPipelineManager.getModel());
         }
         return MANAGER;
+    }
+
+    @Override
+    protected MultiDataSetPreProcessor getMultiDataSetPreProcessor() {
+        return new MultiDataSetPreProcessor() {
+            @Override
+            public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
+                dataSet.setLabels(dataSet.getFeatures());
+                dataSet.setLabelsMaskArray(null);
+                dataSet.setFeaturesMaskArrays(null);
+                // added
+                int[] shape = dataSet.getFeatures(0).shape();
+                int[] newShape = new int[]{shape[0],shape[1]*shape[2]};
+                INDArray result = encodingModel.encode(dataSet.getFeatures(0),null).reshape(newShape);
+                dataSet.setFeatures(0, result);
+            }
+        };
     }
 
 
@@ -97,7 +104,7 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
 
         rebuildDatasets = runModels && !new File(INPUT_DATA_FOLDER_ALL.getAbsolutePath()+MAX_SAMPLE).exists();
 
-        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets);
+        ReverseDeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 

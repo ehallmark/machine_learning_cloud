@@ -47,9 +47,9 @@ import java.util.stream.Stream;
 /**
  * Created by Evan on 12/24/2017.
  */
-public class CNNCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<ComputationGraph,CNNCPC2VecEncodingPipelineManager> {
+public class CNNCPC2VecEncodingModel extends AbstractEncodingModel<ComputationGraph,CNNCPC2VecEncodingPipelineManager> {
     public static final String VAE_NETWORK = "vaeNet";
-    public static final File BASE_DIR = new File("cnc_cpc2vec_encoding_data"); //new File("deep_cpc_2_vec_encoding_data");
+    public static final File BASE_DIR = new File("cnn_cpc2vec_encoding_data"); //new File("deep_cpc_2_vec_encoding_data");
 
     private List<ComputationGraph> networks;
     @Getter

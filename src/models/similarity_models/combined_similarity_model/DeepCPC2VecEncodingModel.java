@@ -48,7 +48,7 @@ import java.util.stream.Stream;
 /**
  * Created by Evan on 12/24/2017.
  */
-public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<ComputationGraph,DeepCPC2VecEncodingPipelineManager> {
+public class DeepCPC2VecEncodingModel extends AbstractEncodingModel<ComputationGraph,DeepCPC2VecEncodingPipelineManager> {
     public static final String VAE_NETWORK = "vaeNet";
     public static final File BASE_DIR = new File("deep_cpc_2_vec2_encoding_data"); //new File("deep_cpc_2_vec_encoding_data");
 
@@ -288,56 +288,6 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
         return res;
     }
 
-    public static INDArray feedForwardToVertex(ComputationGraph encoder, String vertexName, INDArray... inputs) {
-        for(int i = 0; i < inputs.length; i++) {
-            encoder.setInput(i, inputs[i]);
-        }
-
-        boolean excludeOutputLayers = false;
-        boolean train = false;
-        for(int i = 0; i < encoder.topologicalSortOrder().length; ++i) {
-            org.deeplearning4j.nn.graph.vertex.GraphVertex current = encoder.getVertices()[encoder.topologicalSortOrder()[i]];
-            VertexIndices[] var8;
-            int var9;
-            int var10;
-            VertexIndices v;
-            int vIdx;
-            int inputNum;
-            if(current.isInputVertex()) {
-                VertexIndices[] var14 = current.getOutputVertices();
-                INDArray var15 = encoder.getInputs()[current.getVertexIndex()];
-                if(current.getVertexName().equals(vertexName)) return var15;
-                var8 = var14;
-                var9 = var14.length;
-
-                for(var10 = 0; var10 < var9; ++var10) {
-                    v = var8[var10];
-                    vIdx = v.getVertexIndex();
-                    inputNum = v.getVertexEdgeNumber();
-                    encoder.getVertices()[vIdx].setInput(inputNum, var15.dup());
-                }
-            } else if(!excludeOutputLayers || !current.isOutputVertex() || !current.hasLayer() || !(current.getLayer() instanceof IOutputLayer)) {
-                INDArray out = current.doForward(train);
-                if(current.hasLayer()) {
-                    if(current.getVertexName().equals(vertexName)) return out;
-                }
-
-                VertexIndices[] outputsTo = current.getOutputVertices();
-                if(outputsTo != null) {
-                    var8 = outputsTo;
-                    var9 = outputsTo.length;
-
-                    for(var10 = 0; var10 < var9; ++var10) {
-                        v = var8[var10];
-                        vIdx = v.getVertexIndex();
-                        inputNum = v.getVertexEdgeNumber();
-                        encoder.getVertices()[vIdx].setInput(inputNum, out);
-                    }
-                }
-            }
-        }
-        return null;
-    }
 
     @Override
     public int printIterations() {
@@ -401,6 +351,7 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
 
         return nameToNetworkMap;
     }
+
 
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
@@ -490,12 +441,6 @@ public class DeepCPC2VecEncodingModel extends AbstractCombinedSimilarityModel<Co
                 .setOutputs("y1")
                 .backprop(true)
                 .pretrain(false);
-    }
-
-    public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
-        //System.out.println("ds shape: "+Arrays.toString(finalDataSet.getLabels()[0].shape()));
-        double score = net.score(finalDataSet,false);
-        return 1d + score/finalDataSet.getFeatures(0).shape()[2];
     }
 
 
