@@ -1,29 +1,15 @@
 package models.similarity_models.combined_similarity_model;
 
 import ch.qos.logback.classic.Level;
-import cpc_normalization.CPC;
-import data_pipeline.pipeline_manager.DefaultPipelineManager;
-import data_pipeline.vectorize.DataSetManager;
-import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
-import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
 import models.text_streaming.FileTextDataSetIterator;
-import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
-import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
-import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.primitives.Pair;
 
 import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import java.util.Random;
 
 /**
  * Created by ehallmark on 11/7/17.
@@ -79,7 +65,7 @@ public class CNNCPC2VecEncodingPipelineManager extends AbstractEncodingPipelineM
     }
 
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         setCudaEnvironment();
 
@@ -98,4 +84,8 @@ public class CNNCPC2VecEncodingPipelineManager extends AbstractEncodingPipelineM
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
+    @Override
+    public File getDevFile() {
+        return FileTextDataSetIterator.devFile3;
+    }
 }

@@ -1,7 +1,5 @@
 package models.similarity_models.combined_similarity_model;
 
-import cpc_normalization.CPC;
-import cpc_normalization.CPCHierarchy;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import lombok.Getter;
@@ -13,7 +11,7 @@ import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.graph.L2NormalizeVertex;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.GravesBidirectionalLSTM;
-import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
@@ -21,23 +19,14 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
-import org.nd4j.linalg.ops.transforms.Transforms;
-import org.nd4j.linalg.primitives.Pair;
-import seeding.Database;
 import test.ReshapeVertex;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Created by Evan on 12/24/2017.
@@ -172,16 +161,18 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
         int hiddenLayerSizeRNN = 64;
+        int hiddenLayerSizeFF = 64;
         int maxSample = pipelineManager.getMaxSamples();
-        int nLSTMLayers = 4;
-        int layerOffset = 4;
-        int outputIdx = layerOffset+nLSTMLayers;
-        Updater updater = Updater.ADAM;
+        int nLSTMLayers = 3;
+        int nFFLayers = 3;
+
+        Updater updater = Updater.RMSPROP;
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
         Activation activation = Activation.TANH;
         Activation outputActivation = Activation.TANH;
+        AtomicInteger layerIdx = new AtomicInteger(0);
         ComputationGraphConfiguration.GraphBuilder builder = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)
@@ -192,16 +183,60 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
                 .activation(activation)
                 .graphBuilder()
                 .addInputs("x1")
-                .addVertex("0", new L2NormalizeVertex(), "x1")
-                .addLayer("1", new DenseLayer.Builder().nIn(vectorSize).nOut(vectorSize*maxSample).build(), "0")
-                .addVertex("2", new ReshapeVertex(-1,vectorSize,maxSample), "1")
-                .addLayer("3", new GravesBidirectionalLSTM.Builder().nIn(vectorSize).nOut(hiddenLayerSizeRNN).build(), "2");
+                .addVertex(
+                        String.valueOf(layerIdx.getAndIncrement()),
+                        new L2NormalizeVertex(),
+                        "x1"
+                )
+                .addLayer(
+                        String.valueOf(layerIdx.getAndIncrement()),
+                        new GravesBidirectionalLSTM.Builder().nIn(vectorSize).nOut(hiddenLayerSizeRNN).build(),
+                        String.valueOf(layerIdx.get()-2)
+                );
 
+        // start with RNN
         for(int i = 0; i < nLSTMLayers; i++) {
-            builder = builder.addLayer(String.valueOf(i+layerOffset), new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), String.valueOf(i+layerOffset-1));
+            builder = builder
+                    .addLayer(
+                            String.valueOf(layerIdx.getAndIncrement()),
+                            new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build()
+                            , String.valueOf(layerIdx.get()-2)
+                    );
         }
 
-        return builder.addLayer("y1", new RnnOutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(vectorSize).build(), String.valueOf(outputIdx-1))
+        // transfer to FF
+        builder = builder
+                .addLayer(
+                        String.valueOf(layerIdx.getAndIncrement()),
+                        new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeFF).build(),
+                        String.valueOf(layerIdx.get()-2)
+                )
+                .addVertex(
+                        String.valueOf(layerIdx.getAndIncrement()),
+                        new ReshapeVertex(-1,hiddenLayerSizeFF*maxSample),
+                        String.valueOf(layerIdx.get()-2)
+                ).addLayer(
+                        String.valueOf(layerIdx.getAndIncrement()),
+                        new DenseLayer.Builder().nIn(hiddenLayerSizeFF*maxSample).nOut(hiddenLayerSizeFF).build(),
+                        String.valueOf(layerIdx.get()-2)
+                );
+
+        // finish with FF
+        for(int i = 0; i < nFFLayers; i++) {
+            builder = builder
+                    .addLayer(
+                            String.valueOf(layerIdx.getAndIncrement()),
+                            new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(),
+                            String.valueOf(layerIdx.get()-2)
+                    );
+        }
+
+        // add output layer
+        return builder
+                .addLayer("y1",
+                        new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeFF).lossFunction(lossFunction).nOut(vectorSize).build(),
+                        String.valueOf(layerIdx.get()-1)
+                )
                 .setOutputs("y1")
                 .backprop(true)
                 .pretrain(false);

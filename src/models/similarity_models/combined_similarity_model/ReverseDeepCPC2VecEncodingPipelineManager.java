@@ -1,17 +1,13 @@
 package models.similarity_models.combined_similarity_model;
 
 import ch.qos.logback.classic.Level;
-import lombok.Getter;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
+import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.buffer.DataBuffer;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -72,23 +68,12 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
     }
 
     @Override
-    protected MultiDataSetPreProcessor getMultiDataSetPreProcessor() {
-        return new MultiDataSetPreProcessor() {
-            @Override
-            public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
-                dataSet.setLabels(dataSet.getFeatures().clone());
-                dataSet.setLabelsMaskArray(null);
-                dataSet.setFeaturesMaskArrays(null);
-                // added
-                INDArray result = encodingModel.encode(dataSet.getFeatures(0),null);
-                dataSet.setFeatures(0, result);
-
-            }
-        };
+    public File getDevFile() {
+        return FileTextDataSetIterator.devFile4;
     }
 
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         setCudaEnvironment();
 

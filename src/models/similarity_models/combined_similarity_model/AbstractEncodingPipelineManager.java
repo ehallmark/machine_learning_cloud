@@ -56,22 +56,19 @@ public abstract class AbstractEncodingPipelineManager extends DefaultPipelineMan
     public synchronized DataSetManager<MultiDataSetIterator> getDatasetManager() {
         if(datasetManager==null) {
             PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(dataFolder,miniBatchSize,true);
-            manager.setMultiDataSetPreProcessor(getMultiDataSetPreProcessor());
+            manager.setMultiDataSetPreProcessor(getTrainTimeMultiDataSetPreProcessor());
             datasetManager = manager;
             //setDatasetManager();
         }
         return datasetManager;
     }
 
-    protected MultiDataSetPreProcessor getMultiDataSetPreProcessor() {
-        return new MultiDataSetPreProcessor() {
-            @Override
-            public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
-                dataSet.setLabels(dataSet.getFeatures());
-                dataSet.setLabelsMaskArray(null);
-                dataSet.setFeaturesMaskArrays(null);
-            }
-        };
+    protected MultiDataSetPreProcessor getTrainTimeMultiDataSetPreProcessor() {
+        return null;
+    }
+
+    protected MultiDataSetPreProcessor getSeedTimeMultiDataSetPreProcessor() {
+        return null;
     }
 
     public int getBatchSize() {
@@ -84,9 +81,7 @@ public abstract class AbstractEncodingPipelineManager extends DefaultPipelineMan
         // handled by Elasticsearch
     }
 
-    public File getDevFile() {
-        return FileTextDataSetIterator.devFile3;
-    }
+    public abstract File getDevFile();
 
     protected int getMaxSamples() {
         return maxSample;
@@ -213,13 +208,7 @@ public abstract class AbstractEncodingPipelineManager extends DefaultPipelineMan
                 new CombinedFileMultiMinibatchIterator(val1,val2),
                 true
         );
-        manager.setMultiDataSetPreProcessor(new MultiDataSetPreProcessor() {
-            @Override
-            public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
-                dataSet.setLabels(null);
-                dataSet.setLabelsMaskArray(null);
-            }
-        });
+        manager.setMultiDataSetPreProcessor(getSeedTimeMultiDataSetPreProcessor());
         datasetManager = manager;
     }
 

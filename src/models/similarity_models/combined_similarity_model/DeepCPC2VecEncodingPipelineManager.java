@@ -3,6 +3,7 @@ package models.similarity_models.combined_similarity_model;
 import ch.qos.logback.classic.Level;
 import lombok.Getter;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
+import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.buffer.DataBuffer;
@@ -32,7 +33,11 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
     @Getter
     private static final ReentrantLock lock = new ReentrantLock();
     public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
-        super(new File((INPUT_DATA_FOLDER_ALL).getAbsolutePath()+MAX_SAMPLE),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,MAX_SAMPLE,wordCPC2VecPipelineManager);
+        super(new File(currentDataFolderName()),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,MAX_SAMPLE,wordCPC2VecPipelineManager);
+    }
+
+    public static String currentDataFolderName() {
+        return (INPUT_DATA_FOLDER_ALL).getAbsolutePath()+MAX_SAMPLE+(MAX_NETWORK_RECURSION>0?("_r"+MAX_NETWORK_RECURSION):"");
     }
 
     public void initModel(boolean forceRecreateModels) {
@@ -50,7 +55,18 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
     }
 
     @Override
-    protected MultiDataSetPreProcessor getMultiDataSetPreProcessor() {
+    protected MultiDataSetPreProcessor getSeedTimeMultiDataSetPreProcessor() {
+        return new MultiDataSetPreProcessor() {
+            @Override
+            public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
+                dataSet.setLabels(null);
+                dataSet.setLabelsMaskArray(null);
+            }
+        };
+    }
+
+    @Override
+    protected MultiDataSetPreProcessor getTrainTimeMultiDataSetPreProcessor() {
         Random rand = new Random(59);
         return new MultiDataSetPreProcessor() {
             @Override
@@ -81,6 +97,11 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
         };
     }
 
+    @Override
+    public File getDevFile() {
+        return FileTextDataSetIterator.devFile3;
+    }
+
     public static synchronized DeepCPC2VecEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec) {
         if(MANAGER==null) {
             Nd4j.setDataType(DataBuffer.Type.DOUBLE);
@@ -99,7 +120,7 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
     }
 
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         setCudaEnvironment();
 
@@ -112,7 +133,7 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
         boolean rebuildPrerequisites = false;
         int nEpochs = 3;
 
-        rebuildDatasets = runModels && !new File(INPUT_DATA_FOLDER_ALL.getAbsolutePath()+MAX_SAMPLE).exists();
+        rebuildDatasets = runModels && !new File(currentDataFolderName()).exists();
 
         DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
