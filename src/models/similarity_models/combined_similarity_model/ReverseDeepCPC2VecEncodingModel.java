@@ -44,7 +44,7 @@ import java.util.stream.Stream;
  */
 public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<ComputationGraph,ReverseDeepCPC2VecEncodingPipelineManager> {
     public static final String VAE_NETWORK = "vaeNet";
-    public static final File BASE_DIR = new File("reverse_deep_cpc_2_vec2_encoding_data");
+    public static final File BASE_DIR = new File("reverse_deep_cpc_2_vec_encoding_data");
     private List<ComputationGraph> networks;
     @Getter
     private ComputationGraph vaeNetwork;
