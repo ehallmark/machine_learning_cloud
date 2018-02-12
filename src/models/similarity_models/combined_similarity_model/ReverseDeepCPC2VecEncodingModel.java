@@ -201,7 +201,7 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
             builder = builder.addLayer(String.valueOf(i+layerOffset), new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), String.valueOf(i+layerOffset-1));
         }
 
-        return builder.addLayer("y1", new RnnOutputLayer.Builder().activation(outputActivation).nIn(vectorSize).lossFunction(lossFunction).nOut(vectorSize).build(), String.valueOf(outputIdx-1))
+        return builder.addLayer("y1", new RnnOutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(vectorSize).build(), String.valueOf(outputIdx-1))
                 .setOutputs("y1")
                 .backprop(true)
                 .pretrain(false);
