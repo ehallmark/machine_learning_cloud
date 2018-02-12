@@ -7,20 +7,14 @@ import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import lombok.Getter;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.api.layers.IOutputLayer;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
-import org.deeplearning4j.nn.conf.LearningRatePolicy;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.graph.L2NormalizeVertex;
-import org.deeplearning4j.nn.conf.graph.PreprocessorVertex;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.GravesBidirectionalLSTM;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
-import org.deeplearning4j.nn.conf.preprocessor.FeedForwardToRnnPreProcessor;
-import org.deeplearning4j.nn.conf.preprocessor.RnnToFeedForwardPreProcessor;
 import org.deeplearning4j.nn.graph.ComputationGraph;
-import org.deeplearning4j.nn.graph.vertex.VertexIndices;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -386,14 +380,14 @@ public class DeepCPC2VecEncodingModel extends AbstractEncodingModel<ComputationG
                 MultiDataSet dataSet = validationIterator.next();
                 validationDataSets.add(dataSet);
                 valCount+=dataSet.getFeatures()[0].shape()[0];
-                pipelineManager.getLock().lock();
+                DeepCPC2VecEncodingPipelineManager.getLock().lock();
                 try {
                     score += test(vaeNetwork, dataSet);
                 } catch(Exception e) {
                     e.printStackTrace();
                     System.out.println("During testing...");
                 } finally {
-                    pipelineManager.getLock().unlock();
+                    DeepCPC2VecEncodingPipelineManager.getLock().unlock();
                 }
                 count++;
                 //System.gc();
@@ -464,14 +458,14 @@ public class DeepCPC2VecEncodingModel extends AbstractEncodingModel<ComputationG
                 while(dataSetIterator.hasNext()) {
                     MultiDataSet ds = dataSetIterator.next();
                     networks.forEach(vaeNetwork->{
-                        pipelineManager.getLock().lock();
+                        DeepCPC2VecEncodingPipelineManager.getLock().lock();
                         try {
                             vaeNetwork.fit(ds);
                         } catch(Exception e) {
                             e.printStackTrace();
                             System.out.println("Error occurred during network.fit();");
                         } finally {
-                            pipelineManager.getLock().unlock();
+                            DeepCPC2VecEncodingPipelineManager.getLock().unlock();
                         }
                     });
                 }
