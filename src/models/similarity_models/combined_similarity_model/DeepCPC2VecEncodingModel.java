@@ -456,7 +456,9 @@ public class DeepCPC2VecEncodingModel extends AbstractEncodingModel<ComputationG
                 while(dataSetIterator.hasNext()) {
                     MultiDataSet ds = dataSetIterator.next();
                     networks.forEach(vaeNetwork->{
-                        vaeNetwork.fit(ds);
+                        synchronized (pipelineManager) {
+                            vaeNetwork.fit(ds);
+                        }
                     });
                 }
 

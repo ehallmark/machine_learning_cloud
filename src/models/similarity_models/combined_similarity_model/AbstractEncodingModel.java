@@ -35,7 +35,7 @@ import java.util.stream.IntStream;
  */
 public abstract class AbstractEncodingModel<T extends Model,V extends DefaultPipelineManager<MultiDataSetIterator,INDArray>> extends CombinedNeuralNetworkPredictionModel<INDArray,T> {
 
-    protected V pipelineManager;
+    protected final V pipelineManager;
     private Class<T> clazz;
     public AbstractEncodingModel(V pipelineManager, Class<T> clazz, String modelName) {
         super(modelName);
