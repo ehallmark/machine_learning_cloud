@@ -75,7 +75,7 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
                 for (int i = 0; i < r; i++) {
                     System.out.println("Shape before: "+Arrays.toString(newFeatures.shape()));
                     try {
-                        synchronized (this) {
+                        synchronized (DeepCPC2VecEncodingPipelineManager.class) {
                             newFeatures = encoder.output(false, newFeatures)[0];
                         }
                     } catch(Exception e) {
