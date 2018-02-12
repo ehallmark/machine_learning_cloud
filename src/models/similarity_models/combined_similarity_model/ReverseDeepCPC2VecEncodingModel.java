@@ -171,7 +171,7 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSizeRNN = 48;
+        int hiddenLayerSizeRNN = 64;
         int maxSample = pipelineManager.getMaxSamples();
         int nLSTMLayers = 4;
         int layerOffset = 4;
