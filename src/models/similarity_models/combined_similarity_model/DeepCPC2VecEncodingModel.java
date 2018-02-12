@@ -386,8 +386,14 @@ public class DeepCPC2VecEncodingModel extends AbstractEncodingModel<ComputationG
                 MultiDataSet dataSet = validationIterator.next();
                 validationDataSets.add(dataSet);
                 valCount+=dataSet.getFeatures()[0].shape()[0];
-                synchronized (DeepCPC2VecEncodingPipelineManager.class) {
+                pipelineManager.getLock().lock();
+                try {
                     score += test(vaeNetwork, dataSet);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    System.out.println("During testing...");
+                } finally {
+                    pipelineManager.getLock().unlock();
                 }
                 count++;
                 //System.gc();
@@ -458,13 +464,14 @@ public class DeepCPC2VecEncodingModel extends AbstractEncodingModel<ComputationG
                 while(dataSetIterator.hasNext()) {
                     MultiDataSet ds = dataSetIterator.next();
                     networks.forEach(vaeNetwork->{
+                        pipelineManager.getLock().lock();
                         try {
-                            synchronized (DeepCPC2VecEncodingPipelineManager.class) {
-                                vaeNetwork.fit(ds);
-                            }
+                            vaeNetwork.fit(ds);
                         } catch(Exception e) {
                             e.printStackTrace();
                             System.out.println("Error occurred during network.fit();");
+                        } finally {
+                            pipelineManager.getLock().unlock();
                         }
                     });
                 }

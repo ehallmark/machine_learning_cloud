@@ -25,6 +25,7 @@ import org.nd4j.linalg.primitives.Pair;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -44,7 +45,8 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
     private static int MAX_SAMPLE = 3;
     protected static final Random rand = new Random(235);
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
-
+    @Getter
+    private ReentrantLock lock = new ReentrantLock();
     public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
         super(new File((INPUT_DATA_FOLDER_ALL).getAbsolutePath()+MAX_SAMPLE),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,MAX_SAMPLE,wordCPC2VecPipelineManager);
     }
@@ -75,14 +77,16 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
                 int r = MAX_NETWORK_RECURSION >= 0 ? rand.nextInt(MAX_NETWORK_RECURSION) : 0;
                 for (int i = 0; i < r; i++) {
                     //System.out.println("Shape before: "+Arrays.toString(newFeatures.shape()));
+                    lock.lock();
                     try {
-                        synchronized (DeepCPC2VecEncodingPipelineManager.class) {
-                            newFeatures = encoder.output(false, newFeatures)[0];
-                        }
+                        newFeatures = encoder.output(false, newFeatures)[0];
+
                     } catch(Exception e) {
                         e.printStackTrace();
                         throw new RuntimeException("EXCEPTION DURING PRE CODE");
                         //System.exit(1);
+                    } finally {
+                        lock.unlock();
                     }
                    // System.out.println("Shape time "+i+": "+Arrays.toString(newFeatures.shape()));
                 }
