@@ -93,10 +93,8 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
         nameToNetworkMap.put(VAE_NETWORK, vaeNetwork);
 
         networks.add(vaeNetwork);
-        System.out.println("Initial test: " +getTestFunction().apply(vaeNetwork));
 
-
-        boolean testNet = false;
+        boolean testNet = true;
         if(testNet) {
             int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
             ComputationGraph graph = new ComputationGraph(conf.build());
@@ -123,6 +121,7 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
 
         }
 
+        System.out.println("Initial test: " +getTestFunction().apply(vaeNetwork));
 
         return nameToNetworkMap;
     }
@@ -173,7 +172,6 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
         int hiddenLayerSizeRNN = 64;
-        int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
         int maxSample = pipelineManager.getMaxSamples();
         int nLSTMLayers = 4;
         int layerOffset = 4;
@@ -203,7 +201,7 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
             builder = builder.addLayer(String.valueOf(i+layerOffset), new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), String.valueOf(i+layerOffset-1));
         }
 
-        return builder.addLayer("y1", new RnnOutputLayer.Builder().activation(outputActivation).nIn(vectorSize).lossFunction(lossFunction).nOut(input1).build(), String.valueOf(outputIdx-1))
+        return builder.addLayer("y1", new RnnOutputLayer.Builder().activation(outputActivation).nIn(vectorSize).lossFunction(lossFunction).nOut(vectorSize).build(), String.valueOf(outputIdx-1))
                 .setOutputs("y1")
                 .backprop(true)
                 .pretrain(false);

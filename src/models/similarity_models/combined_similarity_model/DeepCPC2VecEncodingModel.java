@@ -56,7 +56,7 @@ public class DeepCPC2VecEncodingModel extends AbstractEncodingModel<ComputationG
     @Getter
     private ComputationGraph vaeNetwork;
 
-    int encodingIdx = 6;
+    String encodingLabel = "v";
     private int vectorSize;
     public DeepCPC2VecEncodingModel(DeepCPC2VecEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
         super(pipelineManager,ComputationGraph.class,modelName);
@@ -274,7 +274,7 @@ public class DeepCPC2VecEncodingModel extends AbstractEncodingModel<ComputationG
         } else {
             vaeNetwork.setLayerMaskArrays(new INDArray[]{mask}, new INDArray[]{mask});
         }
-        INDArray res = feedForwardToVertex(vaeNetwork,String.valueOf(encodingIdx),input); // activations.get(String.valueOf(encodingIdx));
+        INDArray res = feedForwardToVertex(vaeNetwork,encodingLabel,input); // activations.get(String.valueOf(encodingIdx));
         if(res.shape().length!=2||res.columns()!=getVectorSize()) {
             vaeNetwork.getConfiguration().getVertices().forEach((k,v)->{
                 System.out.println(k+": "+v.toString());
@@ -428,8 +428,8 @@ public class DeepCPC2VecEncodingModel extends AbstractEncodingModel<ComputationG
                 .addVertex("v2", new ReshapeVertex(-1,linearTotal), "3")
                 .addLayer("4", new DenseLayer.Builder().nIn(linearTotal).nOut(linearTotal).build(), "v2")
                 .addLayer("5", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeFF).build(), "4")
-                .addLayer("6", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "5")
-                .addLayer("7", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "6")
+                .addLayer("v", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "5")
+                .addLayer("7", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "v")
                 .addLayer("8", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "7")
                 .addLayer("9", new DenseLayer.Builder().nIn(linearTotal).nOut(linearTotal).build(), "8")
                 .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN,maxSamples), "9")

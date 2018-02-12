@@ -11,6 +11,7 @@ import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -81,9 +82,10 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
                 // added
 
                 INDArray result = encodingModel.encode(dataSet.getFeatures(0),null);
-                int[] shape = result.shape();
-                int[] newShape = new int[]{shape[0],shape[1]};
-                dataSet.setFeatures(0, result.reshape(newShape));
+                System.out.println(" Input shape: "+ Arrays.toString(result.shape()));
+                //int[] shape = result.shape();
+                //int[] newShape = new int[]{shape[0],shape[1]};
+                dataSet.setFeatures(0, result);
             }
         };
     }
