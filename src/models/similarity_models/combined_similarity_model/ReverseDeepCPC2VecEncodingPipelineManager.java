@@ -82,7 +82,7 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
 
                 INDArray result = encodingModel.encode(dataSet.getFeatures(0),null);
                 int[] shape = result.shape();
-                int[] newShape = new int[]{shape[0],shape[1]*shape[2]};
+                int[] newShape = new int[]{shape[0],shape[1]};
                 dataSet.setFeatures(0, result.reshape(newShape));
             }
         };
