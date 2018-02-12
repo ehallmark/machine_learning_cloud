@@ -386,7 +386,9 @@ public class DeepCPC2VecEncodingModel extends AbstractEncodingModel<ComputationG
                 MultiDataSet dataSet = validationIterator.next();
                 validationDataSets.add(dataSet);
                 valCount+=dataSet.getFeatures()[0].shape()[0];
-                score+=test(vaeNetwork,dataSet);
+                synchronized (DeepCPC2VecEncodingPipelineManager.class) {
+                    score += test(vaeNetwork, dataSet);
+                }
                 count++;
                 //System.gc();
             }
