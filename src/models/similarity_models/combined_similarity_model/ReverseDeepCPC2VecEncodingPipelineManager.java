@@ -27,11 +27,8 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
     private static int MAX_SAMPLE = 2;
     protected static final Random rand = new Random(235);
     private static ReverseDeepCPC2VecEncodingPipelineManager MANAGER;
-    protected String modelName;
-    protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
-    @Getter
-    protected Word2Vec word2Vec;
     protected DeepCPC2VecEncodingModel encodingModel;
+
     public ReverseDeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, DeepCPC2VecEncodingModel encodingModel) {
         super(new File((INPUT_DATA_FOLDER_ALL).getAbsolutePath()+MAX_SAMPLE),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,MAX_SAMPLE,wordCPC2VecPipelineManager);
         this.encodingModel=encodingModel;
@@ -62,8 +59,7 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
             DeepCPC2VecEncodingPipelineManager encodingPipelineManager = DeepCPC2VecEncodingPipelineManager.getOrLoadManager(false);
             encodingPipelineManager.runPipeline(false,false,false,false,-1,false);
             encodingPipelineManager.initModel(false);
-
-            //((DeepCPC2VecEncodingModel)encodingPipelineManager.getModel()).updateNetworksBeforeTraining(null);
+            ((DeepCPC2VecEncodingModel)encodingPipelineManager.getModel()).updateNetworksBeforeTraining(null);
 
             WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(wordCpc2VecModel, -1, -1, -1);
             if(loadWord2Vec) wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
