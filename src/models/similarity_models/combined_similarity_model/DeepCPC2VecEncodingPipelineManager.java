@@ -41,13 +41,13 @@ public class DeepCPC2VecEncodingPipelineManager extends DefaultPipelineManager<M
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 32;
+    private static int maxSample = 2;
     protected static final Random rand = new Random(235);
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
     protected String modelName;
     protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     @Getter
     protected Word2Vec word2Vec;
-    private static int maxSample = 3;
     public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
         super(new File((INPUT_DATA_FOLDER_ALL).getAbsolutePath()+maxSample),PREDICTION_FILE);
         this.word2Vec=word2Vec;
