@@ -201,6 +201,7 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
         int maxSample = pipelineManager.getMaxSamples();
         int nLSTMLayers = 4;
         int layerOffset = 4;
+        int outputIdx = layerOffset+nLSTMLayers;
         Updater updater = Updater.RMSPROP;
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
@@ -226,7 +227,7 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
             builder = builder.addLayer(String.valueOf(i+layerOffset), new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), String.valueOf(i+layerOffset-1));
         }
 
-        return builder.addLayer("y1", new RnnOutputLayer.Builder().activation(outputActivation).nIn(vectorSize).lossFunction(lossFunction).nOut(input1).build(), "8")
+        return builder.addLayer("y1", new RnnOutputLayer.Builder().activation(outputActivation).nIn(vectorSize).lossFunction(lossFunction).nOut(input1).build(), String.valueOf(outputIdx-1))
                 .setOutputs("y1")
                 .backprop(true)
                 .pretrain(false);
