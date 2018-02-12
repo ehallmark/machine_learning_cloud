@@ -68,6 +68,11 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
     }
 
     @Override
+    protected void setDatasetManager() {
+        // TODO
+    }
+
+    @Override
     public File getDevFile() {
         return FileTextDataSetIterator.devFile4;
     }
