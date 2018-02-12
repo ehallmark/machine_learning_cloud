@@ -62,8 +62,10 @@ public abstract class BaseTrainablePredictionModel<T,N> implements TrainablePred
 
     public File getMostRecentModelFile() {
         File baseDir = getModelBaseDirectory();
+        System.out.println("Looking in folder: "+baseDir.getAbsolutePath());
         if(baseDir==null||!baseDir.exists()||!baseDir.isDirectory()) return null;
         File[] matchingFiles = baseDir.listFiles(defaultFileFilter);
+        System.out.println("Looking for file: "+modelName);
         if(matchingFiles==null||matchingFiles.length==0) return null;
         return Stream.of(matchingFiles).sorted((f1,f2)->{
             String s1 = f1.getName().substring(modelName.length()+1);
