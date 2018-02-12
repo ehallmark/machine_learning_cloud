@@ -38,6 +38,7 @@ public abstract class AbstractEncodingPipelineManager extends DefaultPipelineMan
     public AbstractEncodingPipelineManager(File dataFolder, File predictionFile, String modelName, Word2Vec word2Vec, int vectorSize, int batchSize, int miniBatchSize, int maxSample, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
         super(dataFolder, predictionFile);
         this.word2Vec=word2Vec;
+        System.out.println("Initializing "+modelName);
         this.miniBatchSize=miniBatchSize;
         this.modelName=modelName;
         this.maxSample=maxSample;
