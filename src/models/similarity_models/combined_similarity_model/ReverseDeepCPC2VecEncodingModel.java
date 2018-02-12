@@ -100,8 +100,8 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
             ComputationGraph graph = new ComputationGraph(conf.build());
             graph.init();
 
-            INDArray data3 = Nd4j.randn(new int[]{3, input1, pipelineManager.getMaxSamples()});
-            INDArray data5 = Nd4j.randn(new int[]{5, input1, pipelineManager.getMaxSamples()});
+            INDArray data3 = Nd4j.randn(new int[]{3, input1});
+            INDArray data5 = Nd4j.randn(new int[]{5, input1});
 
 
             for (int j = 1; j < 9; j++) {
