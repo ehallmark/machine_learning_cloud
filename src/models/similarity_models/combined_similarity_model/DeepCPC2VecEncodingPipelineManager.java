@@ -41,7 +41,7 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 32;
     private static final int MAX_NETWORK_RECURSION = 2;
-    private static int MAX_SAMPLE = 2;
+    private static int MAX_SAMPLE = 3;
     protected static final Random rand = new Random(235);
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
 
@@ -72,7 +72,6 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
                 ComputationGraph encoder = ((DeepCPC2VecEncodingModel) model).getVaeNetwork();
                 INDArray newFeatures = dataSet.getFeatures(0);
                 int r = MAX_NETWORK_RECURSION >= 0 ? rand.nextInt(MAX_NETWORK_RECURSION) : 0;
-                r++;
                 for (int i = 0; i < r; i++) {
                     newFeatures = encoder.output(false, dataSet.getFeatures(0))[0];
                 }
