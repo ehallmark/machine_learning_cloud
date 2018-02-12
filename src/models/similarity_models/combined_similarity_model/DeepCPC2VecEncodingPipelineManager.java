@@ -71,10 +71,10 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
             public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
                 ComputationGraph encoder = ((DeepCPC2VecEncodingModel) model).getVaeNetwork();
                 INDArray newFeatures = dataSet.getFeatures(0);
-                int r = MAX_NETWORK_RECURSION >= 0 ? rand.nextInt(MAX_NETWORK_RECURSION) : 0;
-                for (int i = 0; i < r; i++) {
-                    newFeatures = encoder.output(false, dataSet.getFeatures(0))[0];
-                }
+            //    int r = MAX_NETWORK_RECURSION >= 0 ? rand.nextInt(MAX_NETWORK_RECURSION) : 0;
+            //    for (int i = 0; i < r; i++) {
+            //        newFeatures = encoder.output(false, dataSet.getFeatures(0))[0];
+            //    }
                 dataSet.setFeatures(0, newFeatures);
                 dataSet.setLabels(dataSet.getFeatures());
                 dataSet.setLabelsMaskArray(null);
