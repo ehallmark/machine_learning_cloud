@@ -80,7 +80,7 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
         networks = new ArrayList<>();
 
         // build networks
-        double learningRate = 0.05;
+        double learningRate = 0.005;
         ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate);
 
         vaeNetwork = new ComputationGraph(conf.build());
@@ -171,12 +171,12 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSizeRNN = 64;
+        int hiddenLayerSizeRNN = 48;
         int maxSample = pipelineManager.getMaxSamples();
         int nLSTMLayers = 4;
         int layerOffset = 4;
         int outputIdx = layerOffset+nLSTMLayers;
-        Updater updater = Updater.RMSPROP;
+        Updater updater = Updater.ADAM;
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
