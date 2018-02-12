@@ -1,10 +1,12 @@
 package models.similarity_models.combined_similarity_model;
 
 import ch.qos.logback.classic.Level;
+import data_pipeline.vectorize.PreSaveDataSetManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
@@ -24,11 +26,11 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
     private static int MAX_SAMPLE = 2;
     protected static final Random rand = new Random(235);
     private static ReverseDeepCPC2VecEncodingPipelineManager MANAGER;
-    protected final DeepCPC2VecEncodingModel encodingModel;
+    protected final DeepCPC2VecEncodingPipelineManager encodingPipelineManager;
 
-    public ReverseDeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, DeepCPC2VecEncodingModel encodingModel) {
+    public ReverseDeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, DeepCPC2VecEncodingPipelineManager encodingPipelineManager) {
         super(new File((INPUT_DATA_FOLDER_ALL).getAbsolutePath()+MAX_SAMPLE),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,MAX_SAMPLE,wordCPC2VecPipelineManager);
-        this.encodingModel=encodingModel;
+        this.encodingPipelineManager=encodingPipelineManager;
     }
 
     public void initModel(boolean forceRecreateModels) {
@@ -62,15 +64,40 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
             if(loadWord2Vec) wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
 
             setLoggingLevel(Level.INFO);
-            MANAGER = new ReverseDeepCPC2VecEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, wordCPC2VecPipelineManager, (DeepCPC2VecEncodingModel)encodingPipelineManager.getModel());
+            MANAGER = new ReverseDeepCPC2VecEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, wordCPC2VecPipelineManager, encodingPipelineManager);
         }
         return MANAGER;
     }
 
+    private MultiDataSetIterator transformEncodingIterator(MultiDataSetIterator preIter) {
+        // TODO
+
+        return null;
+    }
+
     @Override
     protected void setDatasetManager() {
-        // TODO
+        //encodingPipelineManager.setDatasetManager();
+
+        MultiDataSetIterator preTrainIter = encodingPipelineManager.getDatasetManager().getTrainingIterator();
+        MultiDataSetIterator preTestIter = encodingPipelineManager.getDatasetManager().getTestIterator();
+        MultiDataSetIterator preDevIter = encodingPipelineManager.getDatasetManager().getValidationIterator();
+
+        MultiDataSetIterator trainIter = transformEncodingIterator(preTrainIter);
+        MultiDataSetIterator testIter = transformEncodingIterator(preTestIter);
+        MultiDataSetIterator valIter = transformEncodingIterator(preDevIter);
+
+        PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
+                dataFolder,
+                trainIter,
+                testIter,
+                valIter,
+                true
+        );
+        manager.setMultiDataSetPreProcessor(getSeedTimeMultiDataSetPreProcessor());
+        datasetManager = manager;
     }
+
 
     @Override
     public File getDevFile() {

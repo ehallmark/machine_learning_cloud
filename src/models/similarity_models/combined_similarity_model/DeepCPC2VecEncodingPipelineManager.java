@@ -22,6 +22,7 @@ import org.nd4j.linalg.primitives.Pair;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -234,14 +235,11 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
                 i++;
             }
 
+            Function<Integer,INDArray> buildVectorFunction = index -> buildVectors(new int[]{index},entries)[0];
 
-            INDArray[] trainVectors = buildVectors(trainIndices, entries);
-            INDArray[] testVectors = buildVectors(testIndices, entries);
-            INDArray[] devVectors = buildVectors(devIndices, entries);
-
-            train2 = new VocabSamplingIterator(trainVectors,2*trainLimit,getBatchSize(), true);
-            test2 = new VocabSamplingIterator(testVectors, -1, 1024, false);
-            val2 = new VocabSamplingIterator(devVectors, -1, 1024, false);
+            train2 = new VocabSamplingIterator(trainIndices,buildVectorFunction,vectorSize,maxSample,2*trainLimit,getBatchSize(), true);
+            test2 = new VocabSamplingIterator(testIndices, buildVectorFunction,vectorSize,maxSample,-1, 1024, false);
+            val2 = new VocabSamplingIterator(devIndices, buildVectorFunction,vectorSize,maxSample,-1, 1024, false);
         }
 
 

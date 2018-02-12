@@ -9,6 +9,7 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 /**
  * Created by Evan on 2/4/2018.
@@ -17,12 +18,18 @@ public class VocabSamplingIterator implements MultiDataSetIterator {
     private final Random rand;
     private AtomicInteger cnt = new AtomicInteger(0);
     private int batchSize;
-    private INDArray[] allVectors;
     private int limit;
-    public VocabSamplingIterator(INDArray[] allVectors, int limit, int batchSize, boolean randomize) {
-        if(limit <= 0) limit = allVectors.length;
-        this.allVectors=allVectors;
+    private int[] indices;
+    private Function<Integer,INDArray> vectorFunction;
+    private int vectorSize;
+    private int maxSamples;
+    public VocabSamplingIterator(int[] indices, Function<Integer,INDArray> vectorFunction, int vectorSize, int maxSamples, int limit, int batchSize, boolean randomize) {
+        if(limit <= 0) limit = indices.length;
+        this.vectorFunction=vectorFunction;
         this.limit=limit;
+        this.vectorSize=vectorSize;
+        this.maxSamples=maxSamples;
+        this.indices=indices;
         this.batchSize=batchSize;
         this.rand = !randomize ? null : new Random(System.currentTimeMillis());
     }
@@ -30,10 +37,10 @@ public class VocabSamplingIterator implements MultiDataSetIterator {
     @Override
     public MultiDataSet next(int n) {
         int num = Math.min(n,limit-cnt.get());
-        INDArray features = Nd4j.create(num,allVectors[0].rows(),allVectors[0].columns());
+        INDArray features = Nd4j.create(num,vectorSize,maxSamples);
         for(int i = 0; i < num; i++) {
-            int idx = rand == null ? cnt.get() : rand.nextInt(allVectors.length);
-            features.get(NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.all()).assign(allVectors[idx].dup());
+            int idx = rand == null ? cnt.get() : rand.nextInt(indices.length);
+            features.get(NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.all()).assign(vectorFunction.apply(idx));
             cnt.getAndIncrement();
         }
         INDArray[] fArray = new INDArray[]{features};
