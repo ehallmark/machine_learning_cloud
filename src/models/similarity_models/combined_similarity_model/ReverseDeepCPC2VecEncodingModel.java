@@ -64,30 +64,6 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
         throw new UnsupportedOperationException("predict()");
     }
 
-    public synchronized INDArray encode(INDArray input, INDArray mask) {
-        if(vaeNetwork==null) {
-            vaeNetwork = getNetworks().get(VAE_NETWORK);
-        }
-        if(mask==null) {
-            vaeNetwork.clearLayerMaskArrays();
-        } else {
-            vaeNetwork.setLayerMaskArrays(new INDArray[]{mask}, new INDArray[]{mask});
-        }
-        INDArray res = vaeNetwork.output(false, input)[0];
-        if(res.shape().length!=2||res.columns()!=getVectorSize()) {
-            vaeNetwork.getConfiguration().getVertices().forEach((k,v)->{
-                System.out.println(k+": "+v.toString());
-            });
-            if(res.shape().length!=2) {
-                throw new RuntimeException("Encoding is not a matrix. Num dims: "+res.shape().length+ " != "+2);
-            }
-            throw new RuntimeException("Wrong vector size: "+res.columns()+" != "+getVectorSize());
-        }
-        vaeNetwork.clearLayerMaskArrays();
-        return res;
-    }
-
-
     @Override
     public int printIterations() {
         return 2000;
