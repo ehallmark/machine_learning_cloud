@@ -61,6 +61,7 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
 
             DeepCPC2VecEncodingPipelineManager encodingPipelineManager = DeepCPC2VecEncodingPipelineManager.getOrLoadManager(false);
             encodingPipelineManager.runPipeline(false,false,false,false,-1,false);
+            encodingPipelineManager.initModel(false);
             ((DeepCPC2VecEncodingModel)encodingPipelineManager.getModel()).updateNetworksBeforeTraining(null);
 
             WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(wordCpc2VecModel, -1, -1, -1);
