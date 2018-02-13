@@ -6,6 +6,7 @@ import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -71,7 +72,7 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
 
     private MultiDataSetIterator transformEncodingIterator(MultiDataSetIterator preIter) {
         // TODO
-
+        INDArray preFeatures = preIter.
         return null;
     }
 
