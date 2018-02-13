@@ -7,21 +7,15 @@ package seeding.ai_db_updater.iterators;
 import com.google.gson.Gson;
 import elasticsearch.DataIngester;
 import lombok.Setter;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Constants;
 import seeding.Database;
-import seeding.ai_db_updater.handlers.CustomHandler;
-import seeding.ai_db_updater.handlers.NestedHandler;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
-import user_interface.ui_models.attributes.script_attributes.PriorityDateAttribute;
 import user_interface.ui_models.portfolios.PortfolioList;
 
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,7 +30,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
 
@@ -87,6 +80,10 @@ public class DatabaseIterator {
         transformationFunctionMap.put(Constants.ASSIGNEE,Flag.assigneeTransformationFunction);
         transformationFunctionMap.put(Constants.CITED_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.CITATIONS+"."+Constants.NAME,Flag.unknownDocumentHandler);
+        transformationFunctionMap.put(Constants.CITATION_CATEGORY, f->text->{
+            if(text==null || text.trim().length() == 0) return null;
+            return text.trim().toLowerCase();
+        });
         transformationFunctionMap.put(Constants.PRIORITY_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.PARENT_CLAIM_NUM,f->text->{
             if(text == null || text.trim().length() < 5 ) return null;
@@ -401,7 +398,6 @@ public class DatabaseIterator {
         patentDBStatement.setFetchSize(10);
 
         System.out.println("Executing query: "+patentDBStatement.toString());
-        Map<String,String> assetToFilingMap = new AssetToFilingMap().getPatentDataMap();
 
         Map<String,AtomicLong> validCountMap = new HashMap<>();
 

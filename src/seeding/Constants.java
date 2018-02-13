@@ -326,6 +326,7 @@ public class Constants {
 		PG_NAME_MAP.put(CITATIONS+"."+COUNTRY,"patent_cited_country");
 		PG_NAME_MAP.put(ASSIGNEE,"orgname");
 		PG_NAME_MAP.put(FIRST_NAME,"first_name");
+		PG_NAME_MAP.put(CITATION_CATEGORY, "category");
 		PG_NAME_MAP.put(LAST_NAME,"last_name");
 		PG_NAME_MAP.put(RELATION_TYPE, "relation");
 		PG_NAME_MAP.put(PATENT_FAMILY+"."+NAME,"doc_number");

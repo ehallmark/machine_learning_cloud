@@ -4,6 +4,7 @@ import seeding.Constants;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +26,12 @@ public class CitationCategoryAttribute extends AbstractAttribute {
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Text;
+        return AbstractFilter.FieldType.Multiselect;
+    }
+
+    @Override
+    public Collection<String> getAllValues() {
+        return Arrays.asList("cited by examiner", "cited by other");
     }
 
     @Override
