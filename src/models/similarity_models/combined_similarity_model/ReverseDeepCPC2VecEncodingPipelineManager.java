@@ -93,8 +93,15 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
                 newShape[2]--;
                 INDArray newFeatures = Nd4j.create(newShape);
                 for(int i = 0; i < maxSample; i++) {
-                    INDArray encoding = encoder.output(false, features.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(i)))[0];
-                    newFeatures.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(i)).assign(encoding);
+                    DeepCPC2VecEncodingPipelineManager.getLock().lock();
+                    try {
+                        INDArray encoding = encoder.output(false, features.get(NDArrayIndex.all(), NDArrayIndex.all(), NDArrayIndex.point(i)))[0];
+                        newFeatures.get(NDArrayIndex.all(), NDArrayIndex.all(), NDArrayIndex.point(i)).assign(encoding);
+                    } catch(Exception e) {
+                        throw new RuntimeException(e);
+                    } finally {
+                        DeepCPC2VecEncodingPipelineManager.getLock().unlock();
+                    }
                 }
 
                 INDArray labels = features.sum(2);//features.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(maxSample));
