@@ -1,6 +1,7 @@
 package models.similarity_models.combined_similarity_model;
 
 import ch.qos.logback.classic.Level;
+import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.text_streaming.FileTextDataSetIterator;
@@ -76,7 +77,7 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
     }
 
     @Override
-    protected MultiDataSetPreProcessor getSeedTimeMultiDataSetPreProcessor() {
+    protected MultiDataSetPreProcessor getTrainTimeMultiDataSetPreProcessor() {
         return new MultiDataSetPreProcessor() {
             @Override
             public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
@@ -105,12 +106,19 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
     }
 
     @Override
-    protected void setDatasetManager() {
+    public synchronized DataSetManager<MultiDataSetIterator> getDatasetManager() {
+        if(datasetManager==null) {
+            handleDataSetManager(miniBatchSize);
+        }
+        return datasetManager;
+    }
+
+    private void handleDataSetManager(int examplesPerBatch) {
         //encodingPipelineManager.setDatasetManager();
         PreSaveDataSetManager<MultiDataSetIterator> preManager = new PreSaveDataSetManager<>(
                 // need the dataset file with 1 extra sample
                 new File(DeepCPC2VecEncodingPipelineManager.currentDataFolderName(-1,maxSample+1)),
-                batchSize,
+                examplesPerBatch,
                 true
         );
         preManager.setMultiDataSetPreProcessor(getSeedTimeMultiDataSetPreProcessor());
@@ -123,9 +131,15 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
                 preManager.getValidationIterator(),
                 true
         );
-
         datasetManager = manager;
     }
+
+    @Override
+    protected void setDatasetManager() {
+        handleDataSetManager(batchSize);
+    }
+
+
 
 
     @Override
@@ -147,7 +161,7 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
         boolean rebuildPrerequisites = false;
         int nEpochs = 3;
 
-        rebuildDatasets = runModels && !new File(INPUT_DATA_FOLDER_ALL.getAbsolutePath()+MAX_SAMPLE).exists();
+        rebuildDatasets = false; //rebuildDatasets || (runModels && !new File(INPUT_DATA_FOLDER_ALL.getAbsolutePath()+MAX_SAMPLE).exists());
 
         ReverseDeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
