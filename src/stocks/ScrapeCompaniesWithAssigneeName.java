@@ -44,12 +44,11 @@ public class ScrapeCompaniesWithAssigneeName {
             String symbol = cells[0];
             String company = cells[1];
             if(symbol!=null) symbol = symbol.trim();
-            if(company!=null) company = AssigneeTrimmer.standardizedAssignee(company);
-            if(symbol.isEmpty()||company.isEmpty()||!trie.getValuesForClosestKeys(company).iterator().hasNext()) {
+            if(company!=null) company = normalizer.normalizedAssignee(AssigneeTrimmer.standardizedAssignee(company));
+            if(symbol.isEmpty()||company==null||company.isEmpty()||!trie.getValuesForClosestKeys(company).iterator().hasNext()) {
                 return null;
             }
-            final String normalizedCompany = normalizer.normalizedAssignee(company);
-            if(normalizedCompany == null || company.isEmpty()) return null;
+            final String normalizedCompany = company;
             List<String> possible = new ArrayList<>();
             trie.getValuesForClosestKeys(company).forEach(a->possible.add(a));
             Pair<String,Double> companyScorePair = possible.stream()
