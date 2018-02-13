@@ -104,9 +104,11 @@ public class ScrapeCompaniesWithAssigneeName {
     private static final String getExcelRow(String assignee, NormalizeAssignees normalizer, OverallEvaluator evaluator) {
         int portfolioSize = Math.max(Database.getNormalizedAssetCountFor(assignee),Database.getAssetCountFor(assignee));
         boolean isNormalized = !assignee.equals(normalizer.normalizedAssignee(assignee));
-        double[] aIValues = (isNormalized ?
-                (Stream.of(Database.selectApplicationNumbersFromExactNormalizedAssignee(assignee),Database.selectPatentNumbersFromExactNormalizedAssignee(assignee)))
-                : (Stream.of(Database.selectPatentNumbersFromExactAssignee(assignee),Database.selectApplicationNumbersFromExactAssignee(assignee))))
+        double[] aIValues = Stream.of(
+                Database.selectApplicationNumbersFromExactNormalizedAssignee(assignee),
+                Database.selectPatentNumbersFromExactNormalizedAssignee(assignee),
+                Database.selectPatentNumbersFromExactAssignee(assignee),
+                Database.selectApplicationNumbersFromExactAssignee(assignee))
                 .flatMap(list->list.stream()).map(asset->evaluator.getApplicationDataMap().getOrDefault(asset,evaluator.getPatentDataMap().get(asset)))
                 .filter(d->d!=null).mapToDouble(n->n.doubleValue()).toArray();
 
@@ -116,7 +118,7 @@ public class ScrapeCompaniesWithAssigneeName {
         } else {
             aiValue = "N/A";
         }
-        return assignee+","+portfolioSize+","+aiValue+","+isNormalized+"\n";
+        return "\""+assignee+"\","+portfolioSize+","+aiValue+","+isNormalized+"\n";
     }
 
     public static Map<String,List<Pair<LocalDate,Double>>> getAssigneeToStockPriceOverTimeMap() {
