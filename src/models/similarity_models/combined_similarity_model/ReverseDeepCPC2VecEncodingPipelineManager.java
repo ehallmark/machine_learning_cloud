@@ -114,7 +114,17 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
                 true
         );
         preManager.setMultiDataSetPreProcessor(getSeedTimeMultiDataSetPreProcessor());
-        datasetManager = preManager;
+
+        PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
+                // need the dataset file with 1 extra sample
+                dataFolder,
+                preManager.getTrainingIterator(),
+                preManager.getTestIterator(),
+                preManager.getValidationIterator(),
+                true
+        );
+
+        datasetManager = manager;
     }
 
 

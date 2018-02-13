@@ -39,7 +39,7 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 32;
     private static final int MAX_NETWORK_RECURSION = -1;
-    private static int MAX_SAMPLE = 2;
+    private static int MAX_SAMPLE = 3;
     protected static final Random rand = new Random(235);
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
     @Getter
