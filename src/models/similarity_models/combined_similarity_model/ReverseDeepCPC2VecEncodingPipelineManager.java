@@ -135,7 +135,7 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
 
     @Override
     protected void setDatasetManager() {
-        handleDataSetManager(batchSize);
+        handleDataSetManager(miniBatchSize);
     }
 
 
