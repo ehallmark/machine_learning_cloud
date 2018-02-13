@@ -1,5 +1,6 @@
 package user_interface.ui_models.attributes.computable_attributes;
 
+import lombok.Getter;
 import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -17,6 +18,7 @@ public abstract class ComputableFilingAttribute<T> extends ComputableAttribute<T
     protected static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
     protected static final Map<String,Map<String,?>> filingMapCache = Collections.synchronizedMap(new HashMap<>());
 
+    @Getter
     protected Map<String,T> map;
     protected final File file;
     public ComputableFilingAttribute(File file, Collection<AbstractFilter.FilterType> filterTypes) {
