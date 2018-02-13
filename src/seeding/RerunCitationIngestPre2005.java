@@ -13,7 +13,7 @@ public class RerunCitationIngestPre2005 {
     public static void ingestData() {
         SimilarPatentServer.loadAttributes(true);
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
-        //computableAttributes.forEach(attr->attr.getPatentDataMap());
+        computableAttributes.forEach(attr->attr.getPatentDataMap());
         DatabaseIterator.setComputableAttributes(computableAttributes);
 
         LocalDate startDate = LocalDate.of(LocalDate.now().getYear(),1,1).minusYears(25);
@@ -21,7 +21,7 @@ public class RerunCitationIngestPre2005 {
         DatabaseIterator iterator = new DatabaseIterator(startDate,endDate);
         try {
             iterator.run(false,false,true);
-            iterator.save();
+            //iterator.save();
         } catch(Exception e) {
             e.printStackTrace();
             System.exit(1);
