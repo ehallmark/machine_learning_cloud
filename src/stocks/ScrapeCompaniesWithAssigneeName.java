@@ -124,7 +124,7 @@ public class ScrapeCompaniesWithAssigneeName {
         // wipo
         String wipoTechnology1;
         String wipoTechnology2;
-        List<String> allWipos =  allAssets.stream().map(asset->new WIPOTechnologyAttribute().getPatentDataMap().getOrDefault(asset,new WIPOTechnologyAttribute().getApplicationDataMap().get(asset)))
+        List<String> allWipos =  allAssets.stream().map(asset->new WIPOTechnologyAttribute().getPatentDataMap().get(asset))
                 .filter(tech->tech!=null)
                 .collect(Collectors.groupingBy(t->t,Collectors.counting()))
                 .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
