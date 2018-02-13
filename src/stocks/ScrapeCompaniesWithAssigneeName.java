@@ -109,7 +109,7 @@ public class ScrapeCompaniesWithAssigneeName {
                 Database.selectPatentNumbersFromExactNormalizedAssignee(assignee),
                 Database.selectPatentNumbersFromExactAssignee(assignee),
                 Database.selectApplicationNumbersFromExactAssignee(assignee))
-                .flatMap(list->list.stream()).map(asset->evaluator.getApplicationDataMap().getOrDefault(asset,evaluator.getPatentDataMap().get(asset)))
+                .flatMap(list->list.stream()).distinct().map(asset->evaluator.getApplicationDataMap().getOrDefault(asset,evaluator.getPatentDataMap().get(asset)))
                 .filter(d->d!=null).mapToDouble(n->n.doubleValue()).toArray();
 
         String aiValue;
