@@ -35,7 +35,7 @@ import java.util.stream.IntStream;
 
  */
 public class DatabaseIterator {
-    private static boolean debug = false;
+    private static boolean debug = true;
     @Setter
     protected static Collection<ComputableAttribute> computableAttributes;
     private LocalDate startDate;
@@ -391,7 +391,7 @@ public class DatabaseIterator {
         Map<String,String> pgNamesToAttrNames = nestedAttribute.getAttributes().stream().filter(attr->Constants.PG_NAME_MAP.containsKey(attr.getFullName())||Constants.PG_NAME_MAP.containsKey(attr.getName())).collect(Collectors.toMap(attr->Constants.PG_NAME_MAP.getOrDefault(attr.getFullName(),Constants.PG_NAME_MAP.get(attr.getName())),attr->attr.getName()));
         List<String> pgNames = new ArrayList<>(pgNamesToAttrNames.keySet());
         List<String> javaNames = pgNames.stream().map(pg->pgNamesToAttrNames.get(pg)).collect(Collectors.toList());
-        nestedAttribute.getAttributes().stream().map(str->str).forEach(attr->endFlag.addChild(Flag.simpleFlag(attr.getName(),attr.getName(),endFlag).withTransformationFunction(transformationFunctionMap.getOrDefault(attr.getFullName(), transformationFunctionMap.getOrDefault(attr.getName(), Flag.defaultTransformationFunction)))));
+        nestedAttribute.getAttributes().forEach(attr->endFlag.addChild(Flag.simpleFlag(attr.getName(),attr.getName(),endFlag).withTransformationFunction(transformationFunctionMap.getOrDefault(attr.getFullName(), transformationFunctionMap.getOrDefault(attr.getName(), Flag.defaultTransformationFunction)))));
 
         StringJoiner selectJoin = new StringJoiner("), array_agg(n.","select array_agg(n.", ")");
         pgNames.forEach(name->selectJoin.add(name));
