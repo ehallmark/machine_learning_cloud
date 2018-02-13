@@ -612,6 +612,24 @@ public class Database {
 		return apps;
 	}
 
+	public synchronized static Collection<String> selectPatentNumbersFromExactNormalizedAssignee(String assignee){
+		Set<String> patents = new HashSet<>();
+		if(normalizedAssigneeToPatentsMap == null) getNormalizedAssigneeToPatentsMap();
+		if(normalizedAssigneeToPatentsMap.containsKey(assignee)) {
+			patents.addAll(normalizedAssigneeToPatentsMap.get(assignee));
+		}
+		return patents;
+	}
+
+	public synchronized static Collection<String> selectApplicationNumbersFromExactNormalizedAssignee(String assignee) {
+		Set<String> apps = new HashSet<>();
+		if(normalizedAssigneeToAppsMap == null) getNormalizedAssigneeToAppsMap();
+		if(normalizedAssigneeToAppsMap.containsKey(assignee)) {
+			apps.addAll(normalizedAssigneeToAppsMap.get(assignee));
+		}
+		return apps;
+	}
+
 
 	public synchronized static void close(){
 		try {

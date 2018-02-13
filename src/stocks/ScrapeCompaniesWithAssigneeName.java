@@ -7,17 +7,17 @@ import models.assignee.normalization.name_correction.NormalizeAssignees;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
+import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 11/16/17.
@@ -52,7 +52,7 @@ public class ScrapeCompaniesWithAssigneeName {
             List<String> possible = new ArrayList<>();
             trie.getValuesForClosestKeys(company).forEach(a->possible.add(a));
             Pair<String,Double> companyScorePair = possible.stream()
-                    .filter(p->Math.max(Database.getNormalizedAssetCountFor(p),Database.getAssetCountFor(p))>=300)
+                    .filter(p->Math.max(Database.getNormalizedAssetCountFor(p),Database.getAssetCountFor(p))>=100)
                     .map(p->new Pair<>(p,distance.similarity(p,normalizedCompany)))
                     .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).findFirst().orElse(null);
             if(companyScorePair==null) return null;
@@ -85,8 +85,37 @@ public class ScrapeCompaniesWithAssigneeName {
         });
 
         System.out.println("Num assignees with stock prices: "+assigneeToStockPriceOverTimeMap.size());
+
+        // find ai values
+        OverallEvaluator evaluator = new OverallEvaluator(false);
+
+        BufferedWriter bw = new BufferedWriter(new FileWriter(new File("data/yahoo_assignees.csv")));
+        for (String assignee : assigneeToStockPriceOverTimeMap.keySet()) {
+            bw.write(getExcelRow(assignee,normalizer,evaluator));
+        }
+        bw.flush();
+        bw.close();
+
         // Save
         Database.trySaveObject(assigneeToStockPriceOverTimeMap,assigneeToStockPriceOverTimeMapFile);
+    }
+
+    private static final String getExcelRow(String assignee, NormalizeAssignees normalizer, OverallEvaluator evaluator) {
+        int portfolioSize = Math.max(Database.getNormalizedAssetCountFor(assignee),Database.getAssetCountFor(assignee));
+        boolean isNormalized = !assignee.equals(normalizer.normalizedAssignee(assignee));
+        double[] aIValues = (isNormalized ?
+                (Stream.of(Database.selectApplicationNumbersFromExactNormalizedAssignee(assignee),Database.selectPatentNumbersFromExactNormalizedAssignee(assignee)))
+                : (Stream.of(Database.selectPatentNumbersFromExactAssignee(assignee),Database.selectApplicationNumbersFromExactAssignee(assignee))))
+                .flatMap(list->list.stream()).map(asset->evaluator.getApplicationDataMap().getOrDefault(asset,evaluator.getPatentDataMap().get(asset)))
+                .filter(d->d!=null).mapToDouble(n->n.doubleValue()).toArray();
+
+        String aiValue;
+        if(aIValues.length>30) {
+            aiValue = String.valueOf(DoubleStream.of(aIValues).average().getAsDouble());
+        } else {
+            aiValue = "N/A";
+        }
+        return assignee+","+portfolioSize+","+aiValue+","+isNormalized+"\n";
     }
 
     public static Map<String,List<Pair<LocalDate,Double>>> getAssigneeToStockPriceOverTimeMap() {
