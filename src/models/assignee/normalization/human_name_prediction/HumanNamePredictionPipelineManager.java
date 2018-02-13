@@ -473,7 +473,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         return PIPELINE;
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildDatasets = false;
         boolean runModels = false;

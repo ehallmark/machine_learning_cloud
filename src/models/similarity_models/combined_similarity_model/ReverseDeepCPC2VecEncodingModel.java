@@ -20,7 +20,7 @@ import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
-import test.ReshapeVertex;
+import tools.ReshapeVertex;
 
 import java.io.File;
 import java.util.*;

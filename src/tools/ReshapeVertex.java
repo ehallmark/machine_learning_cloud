@@ -16,7 +16,7 @@
  *
  */
 
-package test;
+package tools;
 
 import lombok.Data;
 import org.deeplearning4j.nn.conf.graph.GraphVertex;

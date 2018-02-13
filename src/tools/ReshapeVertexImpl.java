@@ -16,7 +16,7 @@
  *
  */
 
-package test;
+package tools;
 
 import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.nn.api.Layer;
