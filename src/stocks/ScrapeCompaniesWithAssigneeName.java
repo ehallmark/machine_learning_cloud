@@ -8,6 +8,7 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
+import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -90,7 +91,7 @@ public class ScrapeCompaniesWithAssigneeName {
         OverallEvaluator evaluator = new OverallEvaluator(false);
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File("data/yahoo_assignees.csv")));
-        bw.write("Assignee,Portfolio Size,Average AI Value,Is Normalized\n");
+        bw.write("Assignee,Symbol,Exchange,Country,Portfolio Size,Primary WIPO,Secondary WIPO,Average AI Value,Is Normalized\n");
         for (String assignee : assigneeToStockPriceOverTimeMap.keySet()) {
             bw.write(getExcelRow(assignee,normalizer,evaluator));
         }
@@ -104,12 +105,14 @@ public class ScrapeCompaniesWithAssigneeName {
     private static final String getExcelRow(String assignee, NormalizeAssignees normalizer, OverallEvaluator evaluator) {
         int portfolioSize = Math.max(Database.getNormalizedAssetCountFor(assignee),Database.getAssetCountFor(assignee));
         boolean isNormalized = !assignee.equals(normalizer.normalizedAssignee(assignee));
-        double[] aIValues = Stream.of(
+        List<String> allAssets = Stream.of(
                 Database.selectApplicationNumbersFromExactNormalizedAssignee(assignee),
                 Database.selectPatentNumbersFromExactNormalizedAssignee(assignee),
                 Database.selectPatentNumbersFromExactAssignee(assignee),
                 Database.selectApplicationNumbersFromExactAssignee(assignee))
-                .flatMap(list->list.stream()).distinct().map(asset->evaluator.getApplicationDataMap().getOrDefault(asset,evaluator.getPatentDataMap().get(asset)))
+                .flatMap(list->list.stream()).distinct().collect(Collectors.toList());
+
+        double[] aIValues = allAssets.stream().map(asset->evaluator.getApplicationDataMap().getOrDefault(asset,evaluator.getPatentDataMap().get(asset)))
                 .filter(d->d!=null).mapToDouble(n->n.doubleValue()).toArray();
 
         String aiValue;
@@ -118,7 +121,25 @@ public class ScrapeCompaniesWithAssigneeName {
         } else {
             aiValue = "N/A";
         }
-        return "\""+assignee+"\","+portfolioSize+","+aiValue+","+isNormalized+"\n";
+        // wipo
+        String wipoTechnology1;
+        String wipoTechnology2;
+        List<String> allWipos =  allAssets.stream().map(asset->new WIPOTechnologyAttribute().getPatentDataMap().getOrDefault(asset,new WIPOTechnologyAttribute().getApplicationDataMap().get(asset)))
+                .filter(tech->tech!=null)
+                .collect(Collectors.groupingBy(t->t,Collectors.counting()))
+                .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
+                .limit(2).map(e->e.getKey()).collect(Collectors.toList());
+        if(allWipos.size()==2) {
+            wipoTechnology1 = allWipos.get(0);
+            wipoTechnology2 = allWipos.get(1);
+        } else if(allWipos.size()==1) {
+            wipoTechnology1 = allWipos.get(0);
+            wipoTechnology2 = "";
+        } else {
+            wipoTechnology1 = "";
+            wipoTechnology2 = "";
+        }
+        return "\""+assignee+"\",\""+wipoTechnology1+"\",\""+wipoTechnology2+"\","+portfolioSize+","+aiValue+","+isNormalized+"\n";
     }
 
     public static Map<String,List<Pair<LocalDate,Double>>> getAssigneeToStockPriceOverTimeMap() {
