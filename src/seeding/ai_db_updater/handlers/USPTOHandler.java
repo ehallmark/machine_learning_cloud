@@ -43,7 +43,6 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     protected void initAndAddFlagsAndEndFlags() {
-        boolean debug = false;
         int batchSize = 5000;
         List<EndFlag> nestedEndFlags = new ArrayList<>();
         Collection<String> attrsToIngest = Stream.of(
