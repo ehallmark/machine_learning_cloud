@@ -35,7 +35,7 @@ import java.util.stream.IntStream;
 
  */
 public class DatabaseIterator {
-    private static boolean debug = true;
+    private static boolean debug = false;
     @Setter
     protected static Collection<ComputableAttribute> computableAttributes;
     private LocalDate startDate;
@@ -99,7 +99,7 @@ public class DatabaseIterator {
             runAggregateClaimData();
         } else if(runCitationsOnly) {
             try {
-                runNestedTable("patent_grant_citation", Constants.DOC_KIND, new CitationsNestedAttribute(), transformationFunctionMap);
+                runNestedTable("patent_grant_citation", null, new CitationsNestedAttribute(), transformationFunctionMap);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -192,7 +192,7 @@ public class DatabaseIterator {
                     @Override
                     protected void compute() {
                         try {
-                            runNestedTable("patent_grant_citation", Constants.DOC_KIND, new CitationsNestedAttribute(), transformationFunctionMap);
+                            runNestedTable("patent_grant_citation", null, new CitationsNestedAttribute(), transformationFunctionMap);
                         } catch (Exception e) {
                             errors.set(true);
                             e.printStackTrace();
@@ -485,12 +485,14 @@ public class DatabaseIterator {
                 }
 
                 if (debug) System.out.println("Pre Data: " + new Gson().toJson(fullMap));
-                computableAttributes.forEach(computableAttribute -> {
-                    computableAttribute.handlePatentData(patent, fullMap);
-                });
-                if (debug) System.out.println("Post Data: " + new Gson().toJson(fullMap));
                 if(!fullMap.isEmpty()) {
-                    DataIngester.ingestBulk(patent, fullMap, false);
+                    computableAttributes.forEach(computableAttribute -> {
+                        computableAttribute.handlePatentData(patent, fullMap);
+                    });
+                    if (debug) System.out.println("Post Data: " + new Gson().toJson(fullMap));
+                    if (!fullMap.isEmpty()) {
+                        DataIngester.ingestBulk(patent, fullMap, false);
+                    }
                 }
             }
             endFlag.save();
