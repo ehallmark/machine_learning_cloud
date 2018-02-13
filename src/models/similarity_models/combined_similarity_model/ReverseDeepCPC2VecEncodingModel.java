@@ -166,12 +166,12 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
         int nLSTMLayers = 3;
         int nFFLayers = 3;
 
-        Updater updater = Updater.RMSPROP;
+        Updater updater = Updater.ADAM;
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
         Activation activation = Activation.TANH;
-        Activation outputActivation = Activation.TANH;
+        Activation outputActivation = Activation.IDENTITY;
         AtomicInteger layerIdx = new AtomicInteger(0);
         ComputationGraphConfiguration.GraphBuilder builder = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)

@@ -30,7 +30,7 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
     private static final File INPUT_DATA_FOLDER_ALL = new File("reverse_deep_cpc_all_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
-    protected static final int MINI_BATCH_SIZE = 32;
+    protected static final int MINI_BATCH_SIZE = 64;
     private static int MAX_SAMPLE = 2;
     protected static final Random rand = new Random(235);
     private static ReverseDeepCPC2VecEncodingPipelineManager MANAGER;
