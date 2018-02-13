@@ -97,7 +97,7 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
                 dataSet.setFeatures(0, newFeatures);
                 dataSet.setLabels(0,labels);
 
-                System.out.println("Label Shape: "+ Arrays.toString(labels.shape())+", Feature Shape: "+Arrays.toString(newFeatures.shape()));
+               // System.out.println("Label Shape: "+ Arrays.toString(labels.shape())+", Feature Shape: "+Arrays.toString(newFeatures.shape()));
             }
         };
     }
