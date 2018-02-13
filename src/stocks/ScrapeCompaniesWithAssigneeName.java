@@ -29,10 +29,11 @@ public class ScrapeCompaniesWithAssigneeName {
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(csvFile));
 
-        RadixTree<String> trie = Database.getNormalizedAssigneePrefixTrie();
-        JaroWinkler distance = new JaroWinkler();
+        RadixTree<String> trie = Database.getAssigneePrefixTrie();
 
+        JaroWinkler distance = new JaroWinkler();
         NormalizeAssignees normalizer = new NormalizeAssignees();
+
         AtomicInteger idx = new AtomicInteger(0);
         Map<String,Set<String>> companyToTickersMap = reader.lines().parallel().map(line->{
             if(idx.getAndIncrement()%10000==9999) {
@@ -43,15 +44,15 @@ public class ScrapeCompaniesWithAssigneeName {
             String symbol = cells[0];
             String company = cells[1];
             if(symbol!=null) symbol = symbol.trim();
-            if(company!=null) company = normalizer.normalizedAssignee(AssigneeTrimmer.standardizedAssignee(company));
+            if(company!=null) company = AssigneeTrimmer.standardizedAssignee(company);
             if(symbol.isEmpty()||company==null||company.isEmpty()||!trie.getValuesForClosestKeys(company).iterator().hasNext()) {
                 return null;
             }
-            final String normalizedCompany = company;
+            final String normalizedCompany = normalizer.normalizedAssignee(company);
             List<String> possible = new ArrayList<>();
             trie.getValuesForClosestKeys(company).forEach(a->possible.add(a));
             Pair<String,Double> companyScorePair = possible.stream()
-                    .filter(p->Database.getAssetCountFor(p)>=1000)
+                    .filter(p->Database.getAssetCountFor(p)>=200)
                     .map(p->new Pair<>(p,distance.similarity(p,normalizedCompany)))
                     .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).findFirst().orElse(null);
             if(companyScorePair==null) return null;
