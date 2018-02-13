@@ -55,7 +55,7 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
 
     @Override
     public int printIterations() {
-        return 200;
+        return 2000;
     }
 
 
