@@ -52,7 +52,7 @@ public class ScrapeCompaniesWithAssigneeName {
             List<String> possible = new ArrayList<>();
             trie.getValuesForClosestKeys(company).forEach(a->possible.add(a));
             Pair<String,Double> companyScorePair = possible.stream()
-                    .filter(p->Database.getAssetCountFor(p)>=200)
+                    .filter(p->Math.max(Database.getNormalizedAssetCountFor(p),Database.getAssetCountFor(p))>=300)
                     .map(p->new Pair<>(p,distance.similarity(p,normalizedCompany)))
                     .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).findFirst().orElse(null);
             if(companyScorePair==null) return null;
@@ -61,7 +61,7 @@ public class ScrapeCompaniesWithAssigneeName {
             if(score>=0.9 && Math.min(normalizedCompany.length(),assignee.length()) > 3) {
                 return new Pair<>(assignee, symbol);
             } else return null;
-        }).filter(p->p!=null).filter(p->Database.getNormalizedAssetCountFor(p.getFirst())>=1000).collect(Collectors.groupingBy(p->p.getFirst(),Collectors.mapping(p->p.getSecond(),Collectors.toSet())));
+        }).filter(p->p!=null).collect(Collectors.groupingBy(p->p.getFirst(),Collectors.mapping(p->p.getSecond(),Collectors.toSet())));
 
         System.out.println("Companies found: "+companyToTickersMap.size());
 
