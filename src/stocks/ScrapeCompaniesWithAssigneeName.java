@@ -91,7 +91,7 @@ public class ScrapeCompaniesWithAssigneeName {
         OverallEvaluator evaluator = new OverallEvaluator(false);
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File("data/yahoo_assignees.csv")));
-        bw.write("Assignee,Portfolio Size,Primary WIPO,Secondary WIPO,Average AI Value,Is Normalized\n");
+        bw.write("Assignee,Primary WIPO,Secondary WIPO,Portfolio Size,Average AI Value,Is Normalized\n");
         for (String assignee : assigneeToStockPriceOverTimeMap.keySet()) {
             bw.write(getExcelRow(assignee,normalizer,evaluator));
         }
@@ -104,7 +104,7 @@ public class ScrapeCompaniesWithAssigneeName {
 
     private static final String getExcelRow(String assignee, NormalizeAssignees normalizer, OverallEvaluator evaluator) {
         int portfolioSize = Math.max(Database.getNormalizedAssetCountFor(assignee),Database.getAssetCountFor(assignee));
-        boolean isNormalized = !assignee.equals(normalizer.normalizedAssignee(assignee));
+        boolean isNormalized = assignee.equals(normalizer.normalizedAssignee(assignee));
         List<String> allAssets = Stream.of(
                 Database.selectApplicationNumbersFromExactNormalizedAssignee(assignee),
                 Database.selectPatentNumbersFromExactNormalizedAssignee(assignee),
