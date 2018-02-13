@@ -48,13 +48,7 @@ public class ReverseWord2VecToCPCIterator implements MultiDataSetIterator {
 
     }
 
-    public int inputColumns() {
-        return word2Vec.getLayerSize();
-    }
 
-    public int totalOutcomes() {
-        return word2Vec.getLayerSize();
-    }
 
     @Override
     public boolean resetSupported() {
