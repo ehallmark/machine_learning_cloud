@@ -59,7 +59,7 @@ public class DatabaseIterator {
         }
     }
 
-    public void run(boolean patentGrantOnly, boolean runAggOnly) throws SQLException {
+    public void run(boolean patentGrantOnly, boolean runAggOnly, boolean runCitationsOnly) throws SQLException {
         Database.setupSeedConn();
         this.init();
 
@@ -97,8 +97,13 @@ public class DatabaseIterator {
 
         if(runAggOnly) {
             runAggregateClaimData();
+        } else if(runCitationsOnly) {
+            try {
+                runNestedTable("patent_grant_citation", Constants.DOC_KIND, new CitationsNestedAttribute(), transformationFunctionMap);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
-
             runPatentGrant(transformationFunctionMap);
 
             if (!patentGrantOnly) {

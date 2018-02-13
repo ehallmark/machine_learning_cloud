@@ -1,4 +1,4 @@
-package seeding.ai_db_updater;
+package test;
 
 import elasticsearch.DataIngester;
 import seeding.ai_db_updater.iterators.DatabaseIterator;
@@ -9,10 +9,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
 
-/**
- * Created by Evan on 1/22/2017.
- */
-public class UpdatePre2005DataFromPatentDB {
+public class RerunCitationIngestPre2005 {
     public static void ingestData() {
         SimilarPatentServer.loadAttributes(true);
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
@@ -23,7 +20,7 @@ public class UpdatePre2005DataFromPatentDB {
         LocalDate endDate = LocalDate.of(2005,1,1);
         DatabaseIterator iterator = new DatabaseIterator(startDate,endDate);
         try {
-            iterator.run(false,false,false);
+            iterator.run(false,false,true);
             iterator.save();
         } catch(Exception e) {
             e.printStackTrace();
