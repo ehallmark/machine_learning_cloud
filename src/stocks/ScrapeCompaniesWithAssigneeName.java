@@ -53,8 +53,8 @@ public class ScrapeCompaniesWithAssigneeName {
             Pair<String,Double> companyScorePair = possible.stream()
                     .filter(p->Database.getAssetCountFor(p)>=1000)
                     .map(p->new Pair<>(p,distance.similarity(p,normalizedCompany)))
-                    .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).findFirst().get();
-
+                    .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).findFirst().orElse(null);
+            if(companyScorePair==null) return null;
             double score = companyScorePair.getSecond();
             String assignee = companyScorePair.getFirst();
             if(score>=0.9 && Math.min(normalizedCompany.length(),assignee.length()) > 3) {
