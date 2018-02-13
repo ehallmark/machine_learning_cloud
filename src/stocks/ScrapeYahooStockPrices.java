@@ -63,7 +63,7 @@ public class ScrapeYahooStockPrices {
        // return "https://query1.finance.yahoo.com/v7/finance/download/"+symbol+"?period1=1092898800&period2=1510819200&interval=1mo&events=history";
        // return "https://finance.yahoo.com/quote/"+symbol+"/history?period1=1092898800&period2=1510819200&interval=1mo&filter=history&frequency=1mo";
         String url = "https://query2.finance.yahoo.com/v8/finance/chart/"+symbol+"?formatted=true&crumb=6iPfwrHM.4i&lang=en-IN&region=IN&period1="+from+"&period2="+to+"&interval=1mo&events=div|split&corsDomain=in.finance.yahoo.com";
-        System.out.println("Searching for url: "+url);
+        //System.out.println("Searching for url: "+url);
         return url;
     }
 
