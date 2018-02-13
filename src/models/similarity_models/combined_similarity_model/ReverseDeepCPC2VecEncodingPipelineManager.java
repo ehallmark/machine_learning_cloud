@@ -14,6 +14,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -94,6 +95,8 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
 
                 dataSet.setFeatures(0, newFeatures);
                 dataSet.setLabels(0,labels);
+
+                System.out.println("Label Shape: "+ Arrays.toString(labels.shape())+", Feature Shape: "+Arrays.toString(newFeatures.shape()));
             }
         };
     }
@@ -104,7 +107,7 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
         PreSaveDataSetManager<MultiDataSetIterator> preManager = new PreSaveDataSetManager<>(
                 // need the dataset file with 1 extra sample
                 new File(DeepCPC2VecEncodingPipelineManager.currentDataFolderName(-1,maxSample+1)),
-                miniBatchSize,
+                batchSize,
                 true
         );
         preManager.setMultiDataSetPreProcessor(encodingPipelineManager.getTrainTimeMultiDataSetPreProcessor());
