@@ -412,7 +412,7 @@ public class DatabaseIterator {
             for(int i = 0; i < pgNames.size(); i++) {
                 Object[] value = (Object[])rs.getArray(i + 1).getArray();
                 if(debug) {
-                    System.out.println(pgNames.get(i)+" -> "+javaNames.get(i)+": "+value==null?null:Arrays.toString(value));
+                    System.out.println(pgNames.get(i)+" -> "+javaNames.get(i)+": "+(value==null?null:Arrays.toString(value)));
                 }
                 if(value!=null&&value.length>0) {
                     values.add(value);
