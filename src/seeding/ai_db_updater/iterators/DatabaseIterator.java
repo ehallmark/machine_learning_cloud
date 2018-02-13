@@ -260,9 +260,6 @@ public class DatabaseIterator {
                         String name = javaNames.get(i);
                         Flag flag = Flag.simpleFlag(name,name,null).withTransformationFunction(transformationFunctions.get(i));
                         Object cleanValue = flag.apply(value.toString());
-                        //if (debug) {
-                        //    System.out.println("Value type of " + pgNames.get(i) + ": " + (value.getClass().getName()));
-                        //}
                         data.put(javaNames.get(i), cleanValue);
                     }
                 } catch(Exception e) {
@@ -411,22 +408,27 @@ public class DatabaseIterator {
         System.out.println("starting");
         while(rs.next()) {
             List<Object[]> values = new ArrayList<>();
-            int numValues = 0;
+            int maxNumValues = 0;
             for(int i = 0; i < pgNames.size(); i++) {
                 Object[] value = (Object[])rs.getArray(i + 1).getArray();
-
+                if(debug) {
+                    System.out.println(pgNames.get(i)+" -> "+javaNames.get(i)+": "+value==null?null:Arrays.toString(value));
+                }
                 if(value!=null&&value.length>0) {
                     values.add(value);
-                    numValues = value.length;
+                    maxNumValues = Math.max(maxNumValues,value.length);
+                } else {
+                    values.add(new Object[]{});
                 }
             }
 
             List<Map<String,Object>> dataList = new ArrayList<>();
-            for(int v = 0; v < numValues; v++) {
+            for(int v = 0; v < maxNumValues; v++) {
                 Map<String,Object> data = new HashMap<>();
                 for (int i = 0; i < javaNames.size(); i++) {
                     String name = javaNames.get(i);
-                    Object value = i >= values.size() ? "" : values.get(i)[v];
+                    Object[] valuesForAttr = values.get(i);
+                    Object value = v >= valuesForAttr.length ? "" : valuesForAttr[v];
                     Object cleanValue = null;
                     if(value!=null) {
                         Flag flag = endFlag.flagMap.get(name);

@@ -2,7 +2,6 @@ package seeding;
 
 import elasticsearch.DataIngester;
 import seeding.ai_db_updater.iterators.DatabaseIterator;
-import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 
 import java.time.LocalDate;
@@ -11,9 +10,9 @@ import java.util.HashSet;
 
 public class RerunCitationIngestPre2005 {
     public static void ingestData() {
-        SimilarPatentServer.loadAttributes(true);
-        Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
-        computableAttributes.forEach(attr->attr.getPatentDataMap());
+       // SimilarPatentServer.loadAttributes(true);
+        Collection<ComputableAttribute> computableAttributes = new HashSet<>(); //new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
+        //computableAttributes.forEach(attr->attr.getPatentDataMap());
         DatabaseIterator.setComputableAttributes(computableAttributes);
 
         LocalDate startDate = LocalDate.of(LocalDate.now().getYear(),1,1).minusYears(25);
