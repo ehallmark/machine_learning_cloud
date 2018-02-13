@@ -55,7 +55,7 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
 
     @Override
     public int printIterations() {
-        return 2000;
+        return 200;
     }
 
 
@@ -252,6 +252,7 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
     protected void train(MultiDataSetIterator dataSetIterator, int nEpochs, AtomicBoolean stoppingCondition) {
         try {
             for (int i = 0; i < nEpochs; i++) {
+                System.out.println("Starting to epoch: "+i);
                 while(dataSetIterator.hasNext()) {
                     MultiDataSet ds = dataSetIterator.next();
                     networks.forEach(vaeNetwork->{
