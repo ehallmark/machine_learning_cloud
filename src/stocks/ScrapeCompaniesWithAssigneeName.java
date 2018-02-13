@@ -91,7 +91,7 @@ public class ScrapeCompaniesWithAssigneeName {
         OverallEvaluator evaluator = new OverallEvaluator(false);
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File("data/yahoo_assignees.csv")));
-        bw.write("Assignee,Symbol,Exchange,Country,Portfolio Size,Primary WIPO,Secondary WIPO,Average AI Value,Is Normalized\n");
+        bw.write("Assignee,Portfolio Size,Primary WIPO,Secondary WIPO,Average AI Value,Is Normalized\n");
         for (String assignee : assigneeToStockPriceOverTimeMap.keySet()) {
             bw.write(getExcelRow(assignee,normalizer,evaluator));
         }
