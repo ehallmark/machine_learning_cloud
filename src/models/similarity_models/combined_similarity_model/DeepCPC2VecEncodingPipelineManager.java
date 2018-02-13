@@ -264,7 +264,6 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
     }
 
     public static INDArray[] buildVectors(List<List<String>> entries, Word2Vec word2Vec, int sample) {
-        System.out.println("Starting to build vectors... Num entries: "+entries.size());
         INDArray[] vectors = entries.stream().map(cpcLabels->{
             int numCPCLabels = cpcLabels.size();
             if(sample>numCPCLabels) {
@@ -273,9 +272,6 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
                 return word2Vec.getWordVectors(cpcLabels).transpose();
             }
         }).filter(vec->vec!=null).toArray(size->new INDArray[size]);
-
-        System.out.println("Finished. Now creating indices...");
-
         return vectors;
     }
 
