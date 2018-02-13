@@ -5,12 +5,16 @@ import data_pipeline.vectorize.PreSaveDataSetManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.word2vec.Word2Vec;
+import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import java.io.File;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -70,23 +74,44 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
         return MANAGER;
     }
 
-    private MultiDataSetIterator transformEncodingIterator(MultiDataSetIterator preIter) {
-        // TODO
-        INDArray preFeatures = preIter.
-        return null;
+    @Override
+    protected MultiDataSetPreProcessor getSeedTimeMultiDataSetPreProcessor() {
+        return new MultiDataSetPreProcessor() {
+            @Override
+            public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
+                INDArray features = dataSet.getFeatures(0);
+
+                ComputationGraph encoder = ((DeepCPC2VecEncodingModel) model).getVaeNetwork();
+                int[] newShape = features.shape().clone();
+                newShape[2]--;
+                INDArray newFeatures = Nd4j.create(newShape);
+                for(int i = 0; i < maxSample; i++) {
+                    INDArray encoding = encoder.output(false, features.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(i)))[0];
+                    newFeatures.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(i)).assign(encoding);
+                }
+
+                INDArray labels = features.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(maxSample));
+
+                dataSet.setFeatures(0, newFeatures);
+                dataSet.setLabels(0,labels);
+            }
+        };
     }
 
     @Override
     protected void setDatasetManager() {
         //encodingPipelineManager.setDatasetManager();
+        PreSaveDataSetManager<MultiDataSetIterator> preManager = new PreSaveDataSetManager<>(
+                // need the dataset file with 1 extra sample
+                new File(DeepCPC2VecEncodingPipelineManager.currentDataFolderName(-1,maxSample+1)),
+                miniBatchSize,
+                true
+        );
+        preManager.setMultiDataSetPreProcessor(encodingPipelineManager.getTrainTimeMultiDataSetPreProcessor());
 
-        MultiDataSetIterator preTrainIter = encodingPipelineManager.getDatasetManager().getTrainingIterator();
-        MultiDataSetIterator preTestIter = encodingPipelineManager.getDatasetManager().getTestIterator();
-        MultiDataSetIterator preDevIter = encodingPipelineManager.getDatasetManager().getValidationIterator();
-
-        MultiDataSetIterator trainIter = transformEncodingIterator(preTrainIter);
-        MultiDataSetIterator testIter = transformEncodingIterator(preTestIter);
-        MultiDataSetIterator valIter = transformEncodingIterator(preDevIter);
+        MultiDataSetIterator trainIter = encodingPipelineManager.getDatasetManager().getTrainingIterator();
+        MultiDataSetIterator testIter = encodingPipelineManager.getDatasetManager().getTestIterator();
+        MultiDataSetIterator valIter = encodingPipelineManager.getDatasetManager().getValidationIterator();
 
         PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
                 dataFolder,

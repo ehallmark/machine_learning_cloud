@@ -38,18 +38,22 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 32;
-    private static final int MAX_NETWORK_RECURSION = 2;
-    private static int MAX_SAMPLE = 3;
+    private static final int MAX_NETWORK_RECURSION = -1;
+    private static int MAX_SAMPLE = 2;
     protected static final Random rand = new Random(235);
     private static DeepCPC2VecEncodingPipelineManager MANAGER;
     @Getter
     private static final ReentrantLock lock = new ReentrantLock();
     public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
-        super(new File(currentDataFolderName()),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,MAX_SAMPLE,wordCPC2VecPipelineManager);
+        super(new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,MAX_SAMPLE,wordCPC2VecPipelineManager);
     }
 
-    public static String currentDataFolderName() {
-        return (INPUT_DATA_FOLDER_ALL).getAbsolutePath()+MAX_SAMPLE+(MAX_NETWORK_RECURSION>0?("_r"+MAX_NETWORK_RECURSION):"");
+    public static String currentDataFolderName(int recursion,int sample) {
+        return (INPUT_DATA_FOLDER_ALL).getAbsolutePath()+sample+(recursion>0?("_r"+recursion):"");
+    }
+
+    public static String currentDataFolderName(int sample) {
+        return currentDataFolderName(-1,sample);
     }
 
     public void initModel(boolean forceRecreateModels) {
@@ -288,7 +292,7 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
         boolean rebuildPrerequisites = false;
         int nEpochs = 3;
 
-        rebuildDatasets = runModels && !new File(currentDataFolderName()).exists();
+        rebuildDatasets = runModels && !new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)).exists();
 
         DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
