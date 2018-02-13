@@ -80,6 +80,9 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
         return new MultiDataSetPreProcessor() {
             @Override
             public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
+                if(encodingPipelineManager.getSeedTimeMultiDataSetPreProcessor()!=null) {
+                    encodingPipelineManager.getSeedTimeMultiDataSetPreProcessor().preProcess(dataSet);
+                }
                 INDArray features = dataSet.getFeatures(0);
 
                 ComputationGraph encoder = ((DeepCPC2VecEncodingModel) model).getVaeNetwork();
@@ -111,20 +114,8 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
                 true
         );
         preManager.setMultiDataSetPreProcessor(encodingPipelineManager.getTrainTimeMultiDataSetPreProcessor());
-
-        MultiDataSetIterator trainIter = encodingPipelineManager.getDatasetManager().getTrainingIterator();
-        MultiDataSetIterator testIter = encodingPipelineManager.getDatasetManager().getTestIterator();
-        MultiDataSetIterator valIter = encodingPipelineManager.getDatasetManager().getValidationIterator();
-
-        PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
-                dataFolder,
-                trainIter,
-                testIter,
-                valIter,
-                true
-        );
-        manager.setMultiDataSetPreProcessor(getSeedTimeMultiDataSetPreProcessor());
-        datasetManager = manager;
+        preManager.setMultiDataSetPreProcessor(getSeedTimeMultiDataSetPreProcessor());
+        datasetManager = preManager;
     }
 
 
