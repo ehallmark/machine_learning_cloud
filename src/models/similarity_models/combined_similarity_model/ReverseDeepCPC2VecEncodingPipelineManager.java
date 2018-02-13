@@ -2,6 +2,7 @@ package models.similarity_models.combined_similarity_model;
 
 import ch.qos.logback.classic.Level;
 import data_pipeline.vectorize.DataSetManager;
+import data_pipeline.vectorize.NoSaveDataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.text_streaming.FileTextDataSetIterator;
@@ -81,6 +82,10 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
         return new MultiDataSetPreProcessor() {
             @Override
             public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
+                if(encodingPipelineManager.getTrainTimeMultiDataSetPreProcessor()!=null) {
+                    encodingPipelineManager.getTrainTimeMultiDataSetPreProcessor().preProcess(dataSet);
+                }
+
                 INDArray features = dataSet.getFeatures(0);
 
                 ComputationGraph encoder = ((DeepCPC2VecEncodingModel) encodingPipelineManager.getModel()).getVaeNetwork();
@@ -118,18 +123,17 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
                 examplesPerBatch,
                 true
         );
-        preManager.setMultiDataSetPreProcessor(encodingPipelineManager.getTrainTimeMultiDataSetPreProcessor());
+        preManager.setMultiDataSetPreProcessor(getTrainTimeMultiDataSetPreProcessor());
 
-        PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
+        NoSaveDataSetManager<MultiDataSetIterator> manager = new NoSaveDataSetManager<>(
                 // need the dataset file with 1 extra sample
-                dataFolder,
+              //  dataFolder,
                 preManager.getTrainingIterator(),
                 preManager.getTestIterator(),
-                preManager.getValidationIterator(),
-                true
+                preManager.getValidationIterator()
+               // true
         );
 
-        manager.setMultiDataSetPreProcessor(getTrainTimeMultiDataSetPreProcessor());
         datasetManager = manager;
     }
 
