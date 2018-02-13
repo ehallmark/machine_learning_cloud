@@ -1,4 +1,4 @@
-package test;
+package seeding;
 
 import elasticsearch.DataIngester;
 import seeding.ai_db_updater.iterators.DatabaseIterator;
