@@ -85,7 +85,7 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
                 }
                 INDArray features = dataSet.getFeatures(0);
 
-                ComputationGraph encoder = ((DeepCPC2VecEncodingModel) model).getVaeNetwork();
+                ComputationGraph encoder = ((DeepCPC2VecEncodingModel) encodingPipelineManager.getModel()).getVaeNetwork();
                 int[] newShape = features.shape().clone();
                 newShape[2]--;
                 INDArray newFeatures = Nd4j.create(newShape);
@@ -94,7 +94,7 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
                     newFeatures.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(i)).assign(encoding);
                 }
 
-                INDArray labels = features.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(maxSample));
+                INDArray labels = features.sum(2);//features.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(maxSample));
 
                 dataSet.setFeatures(0, newFeatures);
                 dataSet.setLabels(0,labels);
