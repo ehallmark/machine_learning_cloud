@@ -113,7 +113,6 @@ public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingP
                 batchSize,
                 true
         );
-        preManager.setMultiDataSetPreProcessor(encodingPipelineManager.getTrainTimeMultiDataSetPreProcessor());
         preManager.setMultiDataSetPreProcessor(getSeedTimeMultiDataSetPreProcessor());
         datasetManager = preManager;
     }
