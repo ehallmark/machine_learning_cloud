@@ -24,7 +24,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 11/16/17.
  */
 public class ScrapeCompaniesWithAssigneeName {
-    private static final File csvFile = new File(Constants.DATA_FOLDER+"yahoo_companies_and_symbols.csv");
+    private static final File csvFile = new File(Constants.DATA_FOLDER+"yahoocompanylist.csv");
     private static final File assigneeToStockPriceOverTimeMapFile = new File(Constants.DATA_FOLDER+"assignee_to_stock_prices_over_time_map.jobj");
 
     public static void main(String[] args) throws IOException {
