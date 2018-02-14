@@ -25,7 +25,7 @@ import java.util.Random;
  */
 public class ReverseDeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipelineManager  {
 
-    public static final String MODEL_NAME = "reverse_deep_cpc_rnn3_2_vec_encoding_model";
+    public static final String MODEL_NAME = "reverse_deep_cpc_rnn4_2_vec_encoding_model";
     public static final File PREDICTION_FILE = new File("reverse_deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER_ALL = new File("reverse_deep_cpc_all_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
