@@ -29,10 +29,11 @@ public class ScrapeCompaniesWithAssigneeName {
     //private static final File assigneeToStockPriceOverTimeMapFile = new File(Constants.DATA_FOLDER+"assignee_to_stock_prices_over_time_map.jobj");
 
     public static void main(String[] args) throws IOException {
-
+        run(csvFile1, new File("data/yahoo_assignees_local.csv"));
+        run(csvFile2, new File("data/yahoo_assignees_intl.csv"));
     }
 
-    public static void run(File csvFile) throws IOException {
+    public static void run(File csvFile, File outputFile) throws IOException {
         final int startYear = 2005;
         final int endYear = LocalDate.now().getYear();
         BufferedReader reader = new BufferedReader(new FileReader(csvFile));
@@ -117,7 +118,7 @@ public class ScrapeCompaniesWithAssigneeName {
         // find ai values
         OverallEvaluator evaluator = new OverallEvaluator(false);
 
-        BufferedWriter bw = new BufferedWriter(new FileWriter(new File("data/yahoo_assignees.csv")));
+        BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile));
         StringJoiner csvJoiner = new StringJoiner("\",\"","\"","\"\n");
         csvJoiner.add("Assignee").add("Ticker(s)").add("Stock Exchange(s)").add("Primary WIPO").add("Secondary WIPO").add("Portfolio Size").add("Average AI Value").add("Is Normalized");
         for(int i = startYear; i <= endYear; i++) {
