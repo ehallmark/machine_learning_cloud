@@ -42,7 +42,7 @@ public class ScrapeCompaniesWithAssigneeName {
                 System.out.println("Read: "+idx.get());
             }
             String[] cells = line.split(",");
-            if(cells.length<2) return null;
+            if(cells.length<3) return null;
             String symbol = cells[0];
             String company = cells[1];
             if(symbol!=null) symbol = symbol.trim();
