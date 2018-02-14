@@ -64,6 +64,16 @@ public class ScrapeCompaniesWithAssigneeName {
             } else return null;
         }).filter(p->p!=null).collect(Collectors.groupingBy(p->p.getFirst(),Collectors.mapping(p->p.getSecond(),Collectors.toSet())));
 
+        List<String> companies = new ArrayList<>(companyToTickersMap.keySet());
+        companies.forEach(c->{
+            String n = normalizer.normalizedAssignee(c);
+            if(!c.equals(n)) {
+                if(companyToTickersMap.containsKey(n)) {
+                    companyToTickersMap.remove(c);
+                }
+            }
+        });
+
         System.out.println("Companies found: "+companyToTickersMap.size());
 
         // no pull stock info
@@ -91,9 +101,11 @@ public class ScrapeCompaniesWithAssigneeName {
         OverallEvaluator evaluator = new OverallEvaluator(false);
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File("data/yahoo_assignees.csv")));
-        bw.write("Assignee,Primary WIPO,Secondary WIPO,Portfolio Size,Average AI Value,Is Normalized\n");
-        for (String assignee : assigneeToStockPriceOverTimeMap.keySet()) {
-            bw.write(getExcelRow(assignee,normalizer,evaluator));
+        bw.write("Assignee,\"Stock Exchange(s)\",Primary WIPO,Secondary WIPO,Portfolio Size,Average AI Value,Is Normalized\n");
+        for (Map.Entry<String,Set<String>> e : companyToTickersMap.entrySet()) {
+            String assignee = e.getKey();
+            Set<String> tickers = e.getValue();
+            bw.write(getExcelRow(assignee,tickers,normalizer,evaluator));
         }
         bw.flush();
         bw.close();
@@ -102,7 +114,7 @@ public class ScrapeCompaniesWithAssigneeName {
         Database.trySaveObject(assigneeToStockPriceOverTimeMap,assigneeToStockPriceOverTimeMapFile);
     }
 
-    private static final String getExcelRow(String assignee, NormalizeAssignees normalizer, OverallEvaluator evaluator) {
+    private static final String getExcelRow(String assignee, Set<String> exchanges, NormalizeAssignees normalizer, OverallEvaluator evaluator) {
         int portfolioSize = Math.max(Database.getNormalizedAssetCountFor(assignee),Database.getAssetCountFor(assignee));
         boolean isNormalized = assignee.equals(normalizer.normalizedAssignee(assignee));
         List<String> allAssets = Stream.of(
@@ -140,7 +152,7 @@ public class ScrapeCompaniesWithAssigneeName {
             wipoTechnology1 = "";
             wipoTechnology2 = "";
         }
-        return "\""+assignee+"\",\""+wipoTechnology1+"\",\""+wipoTechnology2+"\","+portfolioSize+","+aiValue+","+isNormalized+"\n";
+        return "\""+assignee+"\",\""+String.join("; ",exchanges)+"\",\""+wipoTechnology1+"\",\""+wipoTechnology2+"\","+portfolioSize+","+aiValue+","+isNormalized+"\n";
     }
 
     public static Map<String,List<Pair<LocalDate,Double>>> getAssigneeToStockPriceOverTimeMap() {
