@@ -299,7 +299,7 @@ public class DeepCPC2VecEncodingModel extends AbstractEncodingModel<ComputationG
         networks = new ArrayList<>();
 
         // build networks
-        double learningRate = 0.05;
+        double learningRate = 0.025;
         ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate);
 
         vaeNetwork = new ComputationGraph(conf.build());
