@@ -119,7 +119,7 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.0001;
+        double newLearningRate = 0.005;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
@@ -160,18 +160,18 @@ public class ReverseDeepCPC2VecEncodingModel extends AbstractEncodingModel<Compu
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSizeRNN = 64;
-        int hiddenLayerSizeFF = 64;
+        int hiddenLayerSizeRNN = 96;
+        int hiddenLayerSizeFF = 96;
         int maxSample = pipelineManager.getMaxSamples();
-        int nLSTMLayers = 3;
-        int nFFLayers = 3;
+        int nLSTMLayers = 2;
+        int nFFLayers = 2;
 
-        Updater updater = Updater.ADAM;
+        Updater updater = Updater.RMSPROP;
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
         Activation activation = Activation.TANH;
-        Activation outputActivation = Activation.IDENTITY;
+        Activation outputActivation = Activation.TANH;
         AtomicInteger layerIdx = new AtomicInteger(0);
         ComputationGraphConfiguration.GraphBuilder builder = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
