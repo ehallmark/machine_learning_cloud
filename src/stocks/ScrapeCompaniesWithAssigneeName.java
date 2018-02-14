@@ -13,6 +13,7 @@ import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyA
 import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,7 +36,7 @@ public class ScrapeCompaniesWithAssigneeName {
 
     public static void run(File csvFile, File outputFile) throws IOException {
         final int startYear = 2005;
-        final int endYear = LocalDate.now().getYear();
+        final int endYear = LocalDate.now().getYear()-1;
         BufferedReader reader = new BufferedReader(new FileReader(csvFile));
 
         RadixTree<String> trie = Database.getAssigneePrefixTrie();
@@ -124,7 +125,7 @@ public class ScrapeCompaniesWithAssigneeName {
         StringJoiner csvJoiner = new StringJoiner("\",\"","\"","\"\n");
         csvJoiner.add("Assignee").add("Ticker(s)").add("Stock Exchange(s)").add("Primary WIPO").add("Secondary WIPO").add("Portfolio Size").add("Average AI Value").add("Is Normalized");
         for(int i = startYear; i <= endYear; i++) {
-            csvJoiner.add("Avg. Stock Price ("+i+")");
+            csvJoiner.add("Percent Gain ("+i+")");
         }
         bw.write(csvJoiner.toString());
         for (String assignee : assigneeToStockPriceOverTimeMap.keySet()) {
@@ -134,8 +135,17 @@ public class ScrapeCompaniesWithAssigneeName {
             for(int i = startYear; i <= endYear; i++) {
                 // prices
                 final int year = i;
-                double avgPrice = stocks.stream().filter(p->p.getFirst().getYear()==year).mapToDouble(d->d.getSecond()).average().orElse(Double.NaN);
-                priceJoiner.add(String.valueOf(avgPrice));
+                double startingPrice = stocks.stream().filter(p->p.getFirst().getYear()==year&&p.getFirst().getMonth().equals(Month.JANUARY)).mapToDouble(p->p.getSecond()).findFirst().orElse(Double.NaN);
+                double endPrice = stocks.stream().filter(p->p.getFirst().getYear()==year+1&&p.getFirst().getMonth().equals(Month.JANUARY)).mapToDouble(p->p.getSecond()).findFirst().orElse(Double.NaN);
+                if(Double.isNaN(startingPrice)||Double.isNaN(endPrice)) {
+                    priceJoiner.add("NaN");
+                } else {
+                    if (startingPrice > 0 && endPrice > 0) {
+                        priceJoiner.add(String.valueOf((endPrice-startingPrice)/startingPrice));
+                    } else {
+                        break; // SOMETHING IS FUNKY
+                    }
+                }
             }
             bw.write(getExcelRow(assignee,tickers,companyToExchangeMap.getOrDefault(assignee,new HashSet<>()),normalizer,evaluator)+","+priceJoiner.toString());
         }
