@@ -112,9 +112,8 @@ public class ScrapeCompaniesWithAssigneeName {
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File("data/yahoo_assignees.csv")));
         bw.write("Assignee,\"Ticker(s)\",\"Stock Exchange(s)\",Primary WIPO,Secondary WIPO,Portfolio Size,Average AI Value,Is Normalized\n");
-        for (Map.Entry<String,Set<String>> e : companyToTickersMap.entrySet()) {
-            String assignee = e.getKey();
-            Set<String> tickers = e.getValue();
+        for (String assignee : assigneeToStockPriceOverTimeMap.keySet()) {
+            Set<String> tickers = companyToTickersMap.get(assignee);
             bw.write(getExcelRow(assignee,tickers,companyToExchangeMap.getOrDefault(assignee,new HashSet<>()),normalizer,evaluator));
         }
         bw.flush();
