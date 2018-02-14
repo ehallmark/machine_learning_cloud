@@ -189,8 +189,8 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
                         .map(cpc -> cpc.getName())
                         .collect(Collectors.toCollection(ArrayList::new));
 
-                if (cpcLabels.isEmpty()) return Stream.empty();
-                return IntStream.range(0, Math.min(3, Math.max(1, Math.round((float) Math.log(cpcLabels.size())))))//cpcLabels.size())
+                if (cpcLabels.size()<getMaxSamples()) return Stream.empty();
+                return IntStream.range(0, Math.min(5, Math.max(1, Math.round((float) Math.log(cpcLabels.size())))))//cpcLabels.size())
                         .mapToObj(i -> {
                             List<String> cpcLabelsClone = new ArrayList<>(cpcLabels);
                             Collections.shuffle(cpcLabelsClone);
