@@ -63,13 +63,15 @@ public class ScrapeCompaniesWithAssigneeName {
             List<String> possible = new ArrayList<>();
             trie.getValuesForClosestKeys(company).forEach(a->possible.add(a));
             Pair<String,Double> companyScorePair = possible.stream()
+                    .map(p->normalizer.normalizedAssignee(p))
+                    .distinct()
                     .filter(p->Math.max(Database.getNormalizedAssetCountFor(p),Database.getAssetCountFor(p))>=100)
                     .map(p->new Pair<>(p,distance.similarity(p,normalizedCompany)))
                     .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).findFirst().orElse(null);
             if(companyScorePair==null) return null;
             double score = companyScorePair.getSecond();
             String assignee = companyScorePair.getFirst();
-            if(score>=0.97 && Math.min(normalizedCompany.length(),assignee.length()) > 3) {
+            if(score>=0.93 && Math.min(normalizedCompany.length(),assignee.length()) > 3) {
                 if(exchange!=null) {
                     synchronized (companyToExchangeMap) {
                         companyToExchangeMap.putIfAbsent(assignee, Collections.synchronizedSet(new HashSet<>()));
