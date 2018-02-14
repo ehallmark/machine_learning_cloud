@@ -24,10 +24,17 @@ import java.util.stream.Stream;
  * Created by ehallmark on 11/16/17.
  */
 public class ScrapeCompaniesWithAssigneeName {
-    private static final File csvFile = new File(Constants.DATA_FOLDER+"yahoocompanylist.csv");
-    private static final File assigneeToStockPriceOverTimeMapFile = new File(Constants.DATA_FOLDER+"assignee_to_stock_prices_over_time_map.jobj");
+    private static final File csvFile1 = new File(Constants.DATA_FOLDER+"yahoocompanylist.csv");
+    private static final File csvFile2 = new File(Constants.DATA_FOLDER+"yahoo_companies_and_symbols.csv");
+    //private static final File assigneeToStockPriceOverTimeMapFile = new File(Constants.DATA_FOLDER+"assignee_to_stock_prices_over_time_map.jobj");
 
     public static void main(String[] args) throws IOException {
+
+    }
+
+    public static void run(File csvFile) throws IOException {
+        final int startYear = 2005;
+        final int endYear = LocalDate.now().getYear();
         BufferedReader reader = new BufferedReader(new FileReader(csvFile));
 
         RadixTree<String> trie = Database.getAssigneePrefixTrie();
@@ -61,7 +68,7 @@ public class ScrapeCompaniesWithAssigneeName {
             if(companyScorePair==null) return null;
             double score = companyScorePair.getSecond();
             String assignee = companyScorePair.getFirst();
-            if(score>=0.9 && Math.min(normalizedCompany.length(),assignee.length()) > 3) {
+            if(score>=0.97 && Math.min(normalizedCompany.length(),assignee.length()) > 3) {
                 if(exchange!=null) {
                     synchronized (companyToExchangeMap) {
                         companyToExchangeMap.putIfAbsent(assignee, Collections.synchronizedSet(new HashSet<>()));
@@ -88,7 +95,7 @@ public class ScrapeCompaniesWithAssigneeName {
 
         // no pull stock info
         final long to = System.currentTimeMillis()/1000;
-        final long from = LocalDateTime.of(2005,1,1,0,0).atZone(ZoneId.of("America/Los_Angeles")).toInstant().toEpochMilli()/1000;
+        final long from = LocalDateTime.of(startYear,1,1,0,0).atZone(ZoneId.of("America/Los_Angeles")).toInstant().toEpochMilli()/1000;
 
         Map<String,List<Pair<LocalDate,Double>>> assigneeToStockPriceOverTimeMap = Collections.synchronizedMap(new HashMap<>());
 
@@ -111,16 +118,29 @@ public class ScrapeCompaniesWithAssigneeName {
         OverallEvaluator evaluator = new OverallEvaluator(false);
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File("data/yahoo_assignees.csv")));
-        bw.write("Assignee,\"Ticker(s)\",\"Stock Exchange(s)\",Primary WIPO,Secondary WIPO,Portfolio Size,Average AI Value,Is Normalized\n");
+        StringJoiner csvJoiner = new StringJoiner("\",\"","\"","\"\n");
+        csvJoiner.add("Assignee").add("Ticker(s)").add("Stock Exchange(s)").add("Primary WIPO").add("Secondary WIPO").add("Portfolio Size").add("Average AI Value").add("Is Normalized");
+        for(int i = startYear; i <= endYear; i++) {
+            csvJoiner.add("Avg. Stock Price ("+i+")");
+        }
+        bw.write(csvJoiner.toString());
         for (String assignee : assigneeToStockPriceOverTimeMap.keySet()) {
             Set<String> tickers = companyToTickersMap.get(assignee);
-            bw.write(getExcelRow(assignee,tickers,companyToExchangeMap.getOrDefault(assignee,new HashSet<>()),normalizer,evaluator));
+            StringJoiner priceJoiner = new StringJoiner(",","","\n");
+            List<Pair<LocalDate,Double>> stocks = assigneeToStockPriceOverTimeMap.get(assignee);
+            for(int i = startYear; i <= endYear; i++) {
+                // prices
+                final int year = i;
+                double avgPrice = stocks.stream().filter(p->p.getFirst().getYear()==year).mapToDouble(d->d.getSecond()).average().orElse(Double.NaN);
+                priceJoiner.add(String.valueOf(avgPrice));
+            }
+            bw.write(getExcelRow(assignee,tickers,companyToExchangeMap.getOrDefault(assignee,new HashSet<>()),normalizer,evaluator)+","+priceJoiner.toString());
         }
         bw.flush();
         bw.close();
 
         // Save
-        Database.trySaveObject(assigneeToStockPriceOverTimeMap,assigneeToStockPriceOverTimeMapFile);
+        //Database.trySaveObject(assigneeToStockPriceOverTimeMap,assigneeToStockPriceOverTimeMapFile);
     }
 
     private static final String getExcelRow(String assignee, Set<String> tickers, Set<String> exchanges, NormalizeAssignees normalizer, OverallEvaluator evaluator) {
@@ -161,11 +181,12 @@ public class ScrapeCompaniesWithAssigneeName {
             wipoTechnology1 = "";
             wipoTechnology2 = "";
         }
-        return "\""+assignee+"\",\""+String.join("; ",tickers)+"\",\""+String.join("; ",exchanges)+"\",\""+wipoTechnology1+"\",\""+wipoTechnology2+"\","+portfolioSize+","+aiValue+","+isNormalized+"\n";
+        return "\""+assignee+"\",\""+String.join("; ",tickers)+"\",\""+String.join("; ",exchanges)+"\",\""+wipoTechnology1+"\",\""+wipoTechnology2+"\","+portfolioSize+","+aiValue+","+isNormalized;
     }
 
     public static Map<String,List<Pair<LocalDate,Double>>> getAssigneeToStockPriceOverTimeMap() {
-        return (Map<String,List<Pair<LocalDate,Double>>>)Database.tryLoadObject(assigneeToStockPriceOverTimeMapFile);
+        //return (Map<String,List<Pair<LocalDate,Double>>>)Database.tryLoadObject(assigneeToStockPriceOverTimeMapFile);
+        return null;
     }
 
     private static List<Pair<LocalDate,Double>> stockDataFor(Set<String> symbols, long from, long to) throws Exception {
