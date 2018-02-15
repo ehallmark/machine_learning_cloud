@@ -62,6 +62,7 @@ public abstract class AbstractEncodingModel<T extends Model,V extends DefaultPip
 
     public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
         double score = net.score(finalDataSet,false);
+        //System.out.println("Raw score: "+score);
         int divisor;
         if(finalDataSet.getLabels(0).shape().length<=2) {
             divisor = 1;

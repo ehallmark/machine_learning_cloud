@@ -21,10 +21,10 @@ import java.util.stream.Collectors;
 
 public class TestRNNToFeedForward {
     public static void main(String[] args) {
-        int maxSample = 7;
-        int vectorSize = 4;
-        int hiddenLayerSize1 = 17;
-        int hiddenLayerSize2 = 13;
+        int maxSample = 6;
+        int vectorSize = 32;
+        int hiddenLayerSize1 = vectorSize * 6;
+        int hiddenLayerSize2 = vectorSize * 3;
 
 
         //Basic configuration
@@ -41,54 +41,59 @@ public class TestRNNToFeedForward {
                 .activation(Activation.TANH)
                 .updater(Updater.RMSPROP)
                 .convolutionMode(ConvolutionMode.Same)      //This is important so we can 'stack' the results later
-                .regularization(true).l2(0.0001)
+                //.regularization(true).l2(0.0001)
                 .learningRate(0.01)
                 .graphBuilder()
                 .addInputs("input")
-                .addVertex("n1", new L2NormalizeVertex(), "input")
-                .addLayer("l1", new DenseLayer.Builder().nIn(vectorSize*maxSample).nOut(vectorSize*maxSample).build(),"n1")
-                .addVertex("rl1", new ReshapeVertex(-1,1,vectorSize,maxSample),"l1")
+                .addVertex("rl1", new ReshapeVertex(-1,1,maxSample,vectorSize),"input")
+                //.addVertex("rl1", new L2NormalizeVertex(), "n1")
                 .addLayer("c1", new ConvolutionLayer.Builder()
-                        .kernelSize(vectorSize,1)
-                        .stride(vectorSize,1)
+                        .kernelSize(1,vectorSize)
+                        .stride(1,vectorSize)
                         .nIn(1)
                         .nOut(hiddenLayerSize1)
                         .build(), "rl1")
                 .addLayer("c2", new ConvolutionLayer.Builder()
-                        .kernelSize(vectorSize,2)
-                        .stride(vectorSize,1)
+                        .kernelSize(2,vectorSize)
+                        .stride(1,vectorSize)
                         .nIn(1)
                         .nOut(hiddenLayerSize1)
                         .build(), "rl1")
                 .addLayer("c3", new ConvolutionLayer.Builder()
-                        .kernelSize(vectorSize,3)
-                        .stride(vectorSize,1)
+                        .kernelSize(3,vectorSize)
+                        .stride(1,vectorSize)
                         .nIn(1)
                         .nOut(hiddenLayerSize1)
                         .build(), "rl1")
-                .addLayer("c4", new ConvolutionLayer.Builder()
-                        .kernelSize(vectorSize,4)
-                        .stride(vectorSize,1)
-                        .nIn(1)
-                        .nOut(hiddenLayerSize1)
-                        .build(), "rl1")
-                .addVertex("m1", new MergeVertex(), "c1", "c2", "c3", "c4")      //Perform depth concatenation
+                .addVertex("m1", new MergeVertex(), "c1", "c2", "c3")      //Perform depth concatenation
                 .addLayer("p1", new GlobalPoolingLayer.Builder()
                         .poolingType(globalPoolingType)
                         .dropOut(0.5)
                         .build(), "m1")
-                .addLayer("o1", new DenseLayer.Builder()
-                        .nIn(hiddenLayerSize1*4)
-                        .nOut(hiddenLayerSize2)
+                .addLayer("i1", new DenseLayer.Builder()
+                        .nIn(hiddenLayerSize1*3)
+                        .nOut(hiddenLayerSize1)
                         .build(), "p1")
-                .addLayer("v1", new DenseLayer.Builder()
+                .addLayer("i2", new DenseLayer.Builder()
+                        .nIn(hiddenLayerSize1)
+                        .nOut(hiddenLayerSize2)
+                        .build(), "i1")
+                .addLayer("i3", new DenseLayer.Builder()
+                        .nIn(hiddenLayerSize2)
+                        .nOut(hiddenLayerSize2)
+                        .build(), "i2")
+                .addLayer("v", new DenseLayer.Builder()
                         .nIn(hiddenLayerSize2)
                         .nOut(vectorSize)
-                        .build(), "o1")
-                .addLayer("o2", new DenseLayer.Builder()
+                        .build(), "i3")
+                .addLayer("o1", new DenseLayer.Builder()
                         .nIn(vectorSize)
                         .nOut(hiddenLayerSize2)
-                        .build(), "v1")
+                        .build(), "v")
+                .addLayer("o2", new DenseLayer.Builder()
+                        .nIn(hiddenLayerSize2)
+                        .nOut(hiddenLayerSize2)
+                        .build(), "o1")
                 .addLayer("o3", new DenseLayer.Builder()
                         .nIn(hiddenLayerSize2)
                         .nOut(hiddenLayerSize1)

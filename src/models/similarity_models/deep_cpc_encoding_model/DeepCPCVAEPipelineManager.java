@@ -28,11 +28,11 @@ import java.util.stream.Stream;
  * Created by ehallmark on 11/7/17.
  */
 public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
-    public static final String MODEL_NAME = "deep64_cpc_autoencoder";
+    public static final String MODEL_NAME = "deep16_cpc_autoencoder";
     public static final int MAX_CPC_DEPTH = 5;
-    private static final int BATCH_SIZE = 256;
-    private static final int MINI_BATCH_SIZE = 64;
-    private static final int MIN_CPC_APPEARANCES = 510;
+    private static final int BATCH_SIZE = 1024;
+    private static final int MINI_BATCH_SIZE = 32;
+    private static final int MAX_NUM_CPCS = 3000;
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File("deep_cpc_vae_predictions/predictions_map.jobj");
 
@@ -71,8 +71,8 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
         });
         datasetManager=manager;
     }
-    public int getMinCPCOccurrences() {
-        return MIN_CPC_APPEARANCES;
+    public int getMaxNumCpcs() {
+        return MAX_NUM_CPCS;
     }
 
     @Override
@@ -138,8 +138,8 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     protected void splitData() {
         System.out.println("Starting to recreate datasets...");
-        int limit = 2500000;
-        int numTest = 25000;
+        int limit = 4000000;
+        int numTest = 40000;
         getCPCMap();
         System.out.println("Loaded cpcMap");
         List<String> allAssets = new ArrayList<>(cpcMap.keySet().parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
@@ -175,7 +175,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
                     return getHierarchy();
                 }
             };
-            cpcToIdxMap = DeepCPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,MAX_CPC_DEPTH,getMinCPCOccurrences());
+            cpcToIdxMap = DeepCPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,MAX_CPC_DEPTH,getMaxNumCpcs());
         }
         return cpcToIdxMap;
     }
@@ -187,7 +187,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
-        int nEpochs = 10;
+        int nEpochs = 5;
         String modelName = MODEL_NAME;
 
         setCudaEnvironment();

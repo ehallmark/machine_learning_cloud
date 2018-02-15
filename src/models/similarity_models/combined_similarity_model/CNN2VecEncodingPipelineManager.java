@@ -30,10 +30,10 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipelineManager  {
+public class CNN2VecEncodingPipelineManager extends AbstractEncodingPipelineManager  {
 
-    public static final String MODEL_NAME = "deep_cpc_rnn6_2_vec_encoding_model";
-    public static final File PREDICTION_FILE = new File("deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
+    public static final String MODEL_NAME = "cnn_cpc_2_vec_encoding_model";
+    public static final File PREDICTION_FILE = new File("cnn_cpc_2_vec_encoding_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER_ALL = new File("deep_cpc_all3_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
@@ -41,10 +41,10 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
     private static final int MAX_NETWORK_RECURSION = -1;
     private static int MAX_SAMPLE = 6;
     protected static final Random rand = new Random(235);
-    private static DeepCPC2VecEncodingPipelineManager MANAGER;
+    private static CNN2VecEncodingPipelineManager MANAGER;
     @Getter
     private static final ReentrantLock lock = new ReentrantLock();
-    public DeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
+    public CNN2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
         super(new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,MAX_SAMPLE,wordCPC2VecPipelineManager);
     }
 
@@ -58,7 +58,7 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
 
     public void initModel(boolean forceRecreateModels) {
         if(model==null) {
-            model = new DeepCPC2VecEncodingModel(this,modelName,VECTOR_SIZE);
+            model = new CNN2VecEncodingModel(this,modelName,VECTOR_SIZE);
         }
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
@@ -87,28 +87,10 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
         return new MultiDataSetPreProcessor() {
             @Override
             public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
-                ComputationGraph encoder = ((DeepCPC2VecEncodingModel) model).getVaeNetwork();
-                dataSet.setLabels(dataSet.getFeatures().clone());
-                INDArray newFeatures = dataSet.getFeatures(0);
-                int r = MAX_NETWORK_RECURSION >= 0 ? rand.nextInt(MAX_NETWORK_RECURSION) : 0;
-                for (int i = 0; i < r; i++) {
-                    //System.out.println("Shape before: "+Arrays.toString(newFeatures.shape()));
-                    lock.lock();
-                    try {
-                        newFeatures = encoder.output(false, newFeatures)[0];
-
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                        throw new RuntimeException("EXCEPTION DURING PRE CODE");
-                        //System.exit(1);
-                    } finally {
-                        lock.unlock();
-                    }
-                   // System.out.println("Shape time "+i+": "+Arrays.toString(newFeatures.shape()));
-                }
-                dataSet.setFeatures(0, newFeatures);
-                dataSet.setLabelsMaskArray(null);
-                dataSet.setFeaturesMaskArrays(null);
+                INDArray features = dataSet.getFeatures(0);
+                int[] shape = features.shape();
+                dataSet.setFeatures(0, features.reshape(shape[0],shape[1]*shape[2]));
+                dataSet.setLabels(0,dataSet.getFeatures(0));
             }
         };
     }
@@ -118,7 +100,7 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
         return FileTextDataSetIterator.devFile3;
     }
 
-    public static synchronized DeepCPC2VecEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec) {
+    public static synchronized CNN2VecEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec) {
         if(MANAGER==null) {
             Nd4j.setDataType(DataBuffer.Type.DOUBLE);
 
@@ -130,7 +112,7 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
             if(loadWord2Vec) wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
 
             setLoggingLevel(Level.INFO);
-            MANAGER = new DeepCPC2VecEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, wordCPC2VecPipelineManager);
+            MANAGER = new CNN2VecEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, wordCPC2VecPipelineManager);
         }
         return MANAGER;
     }
@@ -286,11 +268,11 @@ public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipeline
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
-        int nEpochs = 1;
+        int nEpochs = 3;
 
         rebuildDatasets = runModels && !new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)).exists();
 
-        DeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets);
+        CNN2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 

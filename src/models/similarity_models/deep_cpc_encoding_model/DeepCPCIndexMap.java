@@ -20,12 +20,12 @@ import java.util.stream.Collectors;
 public class DeepCPCIndexMap {
     private static final String CPC_TO_INDEX_FILENAME = Constants.DATA_FOLDER+"deep_cpc_vae_cpc_to_idx_map.jobj";
     private static Map<String,Map<String,Integer>> depthCPCIndexCache = Collections.synchronizedMap(new HashMap<>());
-    public static Map<String,Integer> loadOrCreateMapForDepth(RecursiveTask<CPCHierarchy> hierarchyTask, int depth, int minOccurrences) {
-        if(!depthCPCIndexCache.containsKey(String.valueOf(depth)+"_"+minOccurrences)) {
+    public static Map<String,Integer> loadOrCreateMapForDepth(RecursiveTask<CPCHierarchy> hierarchyTask, int depth, int maxNumCPCs) {
+        if(!depthCPCIndexCache.containsKey(String.valueOf(depth)+"_"+maxNumCPCs)) {
             // try loading from file
             Map<String,Integer> cpcIdxMap;
             try {
-                cpcIdxMap = (Map<String,Integer>)Database.tryLoadObject(new File(CPC_TO_INDEX_FILENAME+depth+"_"+minOccurrences));
+                cpcIdxMap = (Map<String,Integer>)Database.tryLoadObject(new File(CPC_TO_INDEX_FILENAME+depth+"_n"+maxNumCPCs));
             } catch(Exception e) {
                 cpcIdxMap = null;
             }
@@ -36,7 +36,8 @@ public class DeepCPCIndexMap {
                         .flatMap(e->e.getValue().stream().map(cpc-> ClassCodeHandler.convertToLabelFormat(cpc)))
                         .collect(Collectors.groupingBy(cpc->cpc,Collectors.counting()))
                         .entrySet().parallelStream()
-                        .filter(e->e.getValue()>=minOccurrences)
+                        .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
+                        .limit(maxNumCPCs)
                         .map(e->e.getKey()).collect(Collectors.toSet());
                 System.out.println("Num prevalent cpcs: "+prevalentCPCs.size());
 
@@ -59,10 +60,10 @@ public class DeepCPCIndexMap {
                         .sorted(Comparator.comparing(e->e.getKey())).sequential().collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
                 System.out.println("Input size: " + cpcIdxMap.size());
                 System.out.println("Saving cpc idx map...");
-                Database.trySaveObject(cpcIdxMap,new File(CPC_TO_INDEX_FILENAME+depth+"_"+minOccurrences));
+                Database.trySaveObject(cpcIdxMap,new File(CPC_TO_INDEX_FILENAME+depth+"_n"+maxNumCPCs));
             }
-            depthCPCIndexCache.put(String.valueOf(depth)+"_"+minOccurrences,cpcIdxMap);
+            depthCPCIndexCache.put(String.valueOf(depth)+"_"+maxNumCPCs,cpcIdxMap);
         }
-        return depthCPCIndexCache.get(String.valueOf(depth)+"_"+minOccurrences);
+        return depthCPCIndexCache.get(String.valueOf(depth)+"_"+maxNumCPCs);
     }
 }

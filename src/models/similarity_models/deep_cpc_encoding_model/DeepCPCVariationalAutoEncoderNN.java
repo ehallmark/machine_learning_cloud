@@ -33,7 +33,7 @@ import java.util.function.Function;
  * Created by ehallmark on 10/26/17.
  */
 public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN {
-    public static final int VECTOR_SIZE = 128;
+    public static final int VECTOR_SIZE = 32;
     public static final File BASE_DIR = new File("deep_cpc_deep_vae_nn_model_data");
 
     public DeepCPCVariationalAutoEncoderNN(DeepCPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {
@@ -49,7 +49,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
                     return pipelineManager.getHierarchy();
                 }
             };
-            cpcToIdxMap = DeepCPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,maxCPCDepth,((DeepCPCVAEPipelineManager)pipelineManager).getMinCPCOccurrences());
+            cpcToIdxMap = DeepCPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,maxCPCDepth,((DeepCPCVAEPipelineManager)pipelineManager).getMaxNumCpcs());
         }
         return cpcToIdxMap;
     }
@@ -65,14 +65,14 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
         final int numInputs = getCpcToIdxMap().size();
-        final int printIterations = 100;
+        final int printIterations = 2000;
 
         if(net==null) {
             //Neural net configuration
             int[] hiddenLayerEncoder = new int[]{
                     1024,
-                    1024//,
-                    //1024
+                    1024,
+                    1024
             };
             int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
             for(int i = 0; i < hiddenLayerEncoder.length; i++) {
@@ -83,7 +83,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             Nd4j.getRandom().setSeed(rngSeed);
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(rngSeed)
-                    .learningRate(0.001)
+                    .learningRate(0.025)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                     .updater(Updater.RMSPROP)
                     //.updater(Updater.ADAM)
@@ -109,8 +109,8 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             net = new MultiLayerNetwork(conf);
             net.init();
         } else {
-            double learningRate = 0.001;
-            //double learningRate = 0.0001;
+            //double learningRate = 0.005;
+            double learningRate = 0.001; //0.0001;
             net = NNRefactorer.updateNetworkLearningRate(net,learningRate,false);
             net = NNRefactorer.updatePretrainAndBackprop(net,true,false,false);
             System.out.println("new learning rates: ");
@@ -155,7 +155,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
         net.setListeners(listener);
 
-        trainIter = new AsyncDataSetIterator(trainIter,10);
+        trainIter = new AsyncDataSetIterator(trainIter,4);
         AtomicInteger gcIter = new AtomicInteger(0);
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
