@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 11/21/2017.
  */
 public class ValidWordStage extends Stage<Set<MultiStem>>  {
-    private static final File dictionaryFile = new File(Constants.DATA_FOLDER+"word_list.txt");
+    private static final File dictionaryFile = new File(Constants.DATA_FOLDER+"word_list2.txt");
     public ValidWordStage(Collection<MultiStem> multiStems, Model model) {
         super(model);
         this.data = multiStems==null? Collections.emptySet() : new HashSet<>(multiStems);
