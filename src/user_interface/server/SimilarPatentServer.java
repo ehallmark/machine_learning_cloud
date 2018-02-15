@@ -89,7 +89,7 @@ public class SimilarPatentServer {
     private static final String PROTECTED_URL_PREFIX = "/secure";
     public static final String EXCEL_SESSION = "excel_data";
     public static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
-    public static final String DATASETS_TO_SEARCH_IN_FIELD = "datasetsToSearchFor[]";
+    public static final String DATASETS_TO_SEARCH_IN_FIELD = "datasetsToSearchFor";
     public static final String CPCS_TO_SEARCH_FOR_FIELD = "cpcsToSearchFor";
     public static final String LINE_CHART_MAX = "lineChartMax";
     public static final String TEXT_TO_SEARCH_FOR = "textToSearchFor";

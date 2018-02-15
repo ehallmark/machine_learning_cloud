@@ -52,7 +52,7 @@ public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
-               datasetAttribute.getFilterTag(getId(),getId())
+               datasetAttribute.getFilterTag(getName(),getId())
         );
     }
 
