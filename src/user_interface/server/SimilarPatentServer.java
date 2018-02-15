@@ -89,6 +89,7 @@ public class SimilarPatentServer {
     private static final String PROTECTED_URL_PREFIX = "/secure";
     public static final String EXCEL_SESSION = "excel_data";
     public static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
+    public static final String DATASETS_TO_SEARCH_IN_FIELD = "datasetsToSearchFor[]";
     public static final String CPCS_TO_SEARCH_FOR_FIELD = "cpcsToSearchFor";
     public static final String LINE_CHART_MAX = "lineChartMax";
     public static final String TEXT_TO_SEARCH_FOR = "textToSearchFor";
@@ -217,6 +218,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("CPC Subgroup", Constants.CPC_SUBGROUP);
             humanAttrToJavaAttrMap.put("CPC Title", Constants.CPC_TITLE);
             humanAttrToJavaAttrMap.put("Granted", Constants.GRANTED);
+            humanAttrToJavaAttrMap.put("Dataset Similarity", DATASETS_TO_SEARCH_IN_FIELD);
             humanAttrToJavaAttrMap.put("Filing Date", Constants.FILING_DATE);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
             humanAttrToJavaAttrMap.put("Assignee Role", Constants.ASSIGNEE_ROLE);
@@ -612,7 +614,7 @@ public class SimilarPatentServer {
             // nested attribute names
             buildJavaToHumanAttrMap();
 
-            SimilarityEngineController.setAllEngines(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(), new CPCSimilarityEngine()));
+            SimilarityEngineController.setAllEngines(Arrays.asList(new DataSetSimilarityEngine(), new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(), new CPCSimilarityEngine()));
 
             // similarity engine
             similarityEngine = new RecursiveTask<SimilarityEngineController>() {

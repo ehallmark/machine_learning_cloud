@@ -63,7 +63,7 @@ public class DatasetAttribute extends TermsLookupAttribute {
         return SimilarPatentServer.technologySelectWithCustomClass(name, id, "dataset-multiselect", Collections.emptyList());
     }
 
-    private static Pair<String,Set<String>> createDatasetFor(String label) {
+    public static Pair<String,Set<String>> createDatasetFor(String label) {
         // need to get latest folder name for this dataset and assets
         String[] tmp = label.split("_",2);
         if(tmp.length==2) {
