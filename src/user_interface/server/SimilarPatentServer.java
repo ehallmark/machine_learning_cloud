@@ -33,7 +33,6 @@ import spark.Request;
 import spark.Response;
 import spark.Session;
 import user_interface.server.tools.AjaxChartMessage;
-import user_interface.server.tools.FileCacheMap;
 import user_interface.server.tools.PasswordHandler;
 import user_interface.server.tools.SimpleAjaxMessage;
 import user_interface.ui_models.attributes.*;
@@ -84,7 +83,6 @@ import static spark.Spark.*;
 public class SimilarPatentServer {
     private static final boolean debug = false;
     private static final Map<String,Lock> fileSynchronizationMap = Collections.synchronizedMap(new HashMap<>());
-    private static final FileCacheMap fileCache = new FileCacheMap();
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static final String PROTECTED_URL_PREFIX = "/secure";
     public static final String EXCEL_SESSION = "excel_data";
@@ -1066,7 +1064,6 @@ public class SimilarPatentServer {
     private static Function3<Map<String,Object>,File,Boolean,Void> saveTemplatesFunction() {
         return (formMap,file,shared) -> {
             Database.trySaveObject(formMap, file);
-            fileCache.putWithLimit(file.getAbsolutePath(),formMap);
             return null;
         };
     }
@@ -1075,10 +1072,7 @@ public class SimilarPatentServer {
         return (updateMap,updatesFile)->{
             if (updatesFile.exists()) updatesFile.delete();
             if (updateMap.size() > 0) {
-                fileCache.put(updatesFile.getAbsolutePath(),updateMap);
                 Database.trySaveObject(updateMap, updatesFile);
-            } else {
-                fileCache.remove(updatesFile.getAbsolutePath());
             }
             return null;
         };
@@ -1364,7 +1358,6 @@ public class SimilarPatentServer {
                             DatasetIndex.rename(username,filename);
                         }
                         if(useUpdatesFile) {
-                            fileCache.put(updatesFile.getAbsolutePath(), updates);
                             Database.trySaveObject(updates, updatesFile);
                         } else {
                             Database.trySaveObject(updates,formFile);
@@ -1739,8 +1732,6 @@ public class SimilarPatentServer {
                         if(deleteFromES) {
                             DatasetIndex.delete(username,toDelete.getName());
                         }
-                        fileCache.remove(updatesFile.getAbsolutePath());
-                        fileCache.remove(toDelete.getAbsolutePath());
 
                         if (toDelete.exists() && toDelete.isFile()) {
                             boolean success = toDelete.delete();
@@ -2095,22 +2086,13 @@ public class SimilarPatentServer {
 
         sync.lock();
         try {
-            if(fileCache.containsKey(updatesFile.getAbsolutePath())) {
-                updates = (Map<String,Object>) fileCache.get(updatesFile.getAbsolutePath());
-            }
-            if(fileCache.containsKey(file.getAbsolutePath())) {
-                templateMap = (Map<String,Object>) fileCache.get(file.getAbsolutePath());
-            }
-
-            if (loadData && templateMap == null) {
+            if (loadData) {
                 templateMap = (Map<String, Object>) Database.tryLoadObject(file,false);
-                if(templateMap!=null) fileCache.putWithLimit(file.getAbsolutePath(),templateMap);
-            } else if(!loadData) {
+            } else {
                 if(updates!=null) {
                     templateMap = updates;
                 } else {
                     templateMap = (Map<String, Object>) Database.tryLoadObject(updatesFile,false);
-                    if(templateMap!=null) fileCache.put(updatesFile.getAbsolutePath(),templateMap);
                 }
             }
 
@@ -2119,7 +2101,6 @@ public class SimilarPatentServer {
                 if (updatesFile.exists() || updates!=null) {
                     if(updates==null) {
                         updates = (Map<String, Object>) Database.tryLoadObject(updatesFile,false);
-                        if(updates!=null) fileCache.put(updatesFile.getAbsolutePath(), updates);
                     }
                     if (updates != null) {
                         templateMap.put("name", updates.get("name"));
