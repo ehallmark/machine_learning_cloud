@@ -11,6 +11,7 @@ import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEn
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
+import org.deeplearning4j.nn.conf.LearningRatePolicy;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.graph.L2NormalizeVertex;
@@ -45,7 +46,7 @@ import java.util.stream.Stream;
  */
 public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<ComputationGraph,CombinedDeepCPC2VecEncodingPipelineManager> {
     public static final String VAE_NETWORK = "vaeNet";
-    public static final File BASE_DIR = new File("deep_cpc_2_vec2_encoding_data"); //new File("deep_cpc_2_vec_encoding_data");
+    public static final File BASE_DIR = new File("combined_deep_cpc_2_vec_encoding_data"); //new File("deep_cpc_2_vec_encoding_data");
 
     private List<ComputationGraph> networks;
     @Getter
@@ -286,7 +287,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
 
     @Override
     public int printIterations() {
-        return 500;
+        return 2000;
     }
 
 
@@ -405,7 +406,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
             shape[1] = (inputs[i].shape().length==2 ? inputs[i].shape()[1] : (inputs[i].shape()[1]*inputs[i].shape()[2]));
             cosineSim += NDArrayHelper.sumOfCosineSimByRow(inputs[i].reshape(shape),predictions[i].reshape(shape))/shape[0];
         }
-        return 1 + (cosineSim/inputs.length);
+        return 1 - (cosineSim/inputs.length);
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
@@ -422,12 +423,15 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
 
         Activation activation = Activation.TANH;
         Activation outputActivation = Activation.TANH;
+        Map<Integer,Double> learningRateSchedule = new HashMap<>();
+        learningRateSchedule.put(0,learningRate);
+        learningRateSchedule.put(100000,learningRate/5);
+        learningRateSchedule.put(1000000,learningRate/25);
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)
-                // .lrPolicyDecayRate(0.0001)
-                // .lrPolicyPower(0.7)
-                // .learningRateDecayPolicy(LearningRatePolicy.Inverse)
+                .learningRateDecayPolicy(LearningRatePolicy.Schedule)
+                .learningRateSchedule(learningRateSchedule)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .activation(activation)
                 .graphBuilder()
