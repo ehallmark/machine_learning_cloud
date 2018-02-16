@@ -425,8 +425,8 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
         Activation outputActivation = Activation.TANH;
         Map<Integer,Double> learningRateSchedule = new HashMap<>();
         learningRateSchedule.put(0,learningRate);
-        learningRateSchedule.put(100000,learningRate/5);
-        learningRateSchedule.put(1000000,learningRate/25);
+        learningRateSchedule.put(20000,learningRate/5);
+        learningRateSchedule.put(100000,learningRate/25);
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)
