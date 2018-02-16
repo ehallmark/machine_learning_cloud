@@ -58,7 +58,7 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
         }
     }
 
-    protected static void setCudaEnvironment() {
+    public static void setCudaEnvironment() {
         // setup cuda env
         try {
             Nd4j.getMemoryManager().setAutoGcWindow(500);
