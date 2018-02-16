@@ -65,7 +65,7 @@ public abstract class AbstractEncodingModel<T extends Model,V extends DefaultPip
         //System.out.println("Raw score: "+score);
         int divisor;
         if(finalDataSet.getLabels(0).shape().length<=2) {
-            divisor = 1;
+            divisor = finalDataSet.getLabels().length;
         } else {
             divisor = finalDataSet.getLabels(0).shape()[finalDataSet.getLabels(0).shape().length-1];
         }

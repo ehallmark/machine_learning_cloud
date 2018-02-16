@@ -400,7 +400,7 @@ public class CombinedVariationalAutoencoder extends AbstractCombinedSimilarityMo
     protected void train(MultiDataSet dataSet) {
         INDArray vec = DEFAULT_LABEL_FUNCTION.apply(dataSet.getFeatures(0),dataSet.getFeatures(1));
         INDArray dates = dataSet.getFeatures(2);
-        MultiDataSet finalDataSet = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{vec}, new INDArray[]{vec,dates});
+        MultiDataSet finalDataSet = new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{vec}, new INDArray[]{vec});
         vaeNetwork.fit(finalDataSet);
     }
 

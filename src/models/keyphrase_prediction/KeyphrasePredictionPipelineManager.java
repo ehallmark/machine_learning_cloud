@@ -96,8 +96,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         // stage 3
         System.out.println("Pre-grouping data for stage 3...");
         Stage3 stage3 = new Stage3(cpcDensityStage.get(), modelParams);
-        //if(filters)
-            stage3.run(rerunFilters);
+        if(filters) stage3.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
         // stage 3
@@ -280,14 +279,13 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
         int nEpochs = 10;
-        String modelName = modelParams.getModelName();
 
         String CPC2VecModelName = WordCPC2VecPipelineManager.SMALL_MODEL_NAME;
 
         WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(CPC2VecModelName,-1,-1,-1);
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(wordCPC2VecPipelineManager);
 
-        pipelineManager.initStages(true,false,false,false);
+        //pipelineManager.initStages(true,false,false,false);
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }
 }

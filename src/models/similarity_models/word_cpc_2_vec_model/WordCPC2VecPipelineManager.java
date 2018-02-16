@@ -112,7 +112,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     public synchronized Map<String,Collection<CPC>> getCPCMap() {
         if(cpcMap==null) {
 
-            cpcMap = (Map<String,Collection<CPC>>) Database.tryLoadObject(cpcMapFile);
+            //cpcMap = (Map<String,Collection<CPC>>) Database.tryLoadObject(cpcMapFile);
 
             if(cpcMap == null) {
                 Map<String, String> patentToFiling = new AssetToFilingMap().getPatentDataMap();
@@ -136,7 +136,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
                         .filter(e -> e.getValue().size() > 0)
                         .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
 
-                Database.trySaveObject(cpcMap,cpcMapFile);
+                //Database.trySaveObject(cpcMap,cpcMapFile);
             }
 
         }

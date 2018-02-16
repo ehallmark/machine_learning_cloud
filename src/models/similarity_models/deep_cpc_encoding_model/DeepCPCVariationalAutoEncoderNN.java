@@ -1,10 +1,12 @@
 package models.similarity_models.deep_cpc_encoding_model;
 
+import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.helpers.Function2;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
+import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -23,6 +25,8 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -59,6 +63,10 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         return BASE_DIR;
     }
 
+    public synchronized INDArray encode(List<String> assets) {
+        CPCDataSetIterator iterator = new CPCDataSetIterator(assets,false,assets.size(),pipelineManager.getCPCMap(),getCpcToIdxMap());
+        return iterator.next().getFeatureMatrix();
+    }
 
     @Override
     public void train(int nEpochs) {
@@ -108,7 +116,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             net = new MultiLayerNetwork(conf);
             net.init();
         } else {
-            double learningRate = 0.00001;
+            double learningRate = 0.000005;
             //double learningRate = 0.000001;
             //double learningRate = 0.0001;
             net = NNRefactorer.updateNetworkLearningRate(net,learningRate,false);

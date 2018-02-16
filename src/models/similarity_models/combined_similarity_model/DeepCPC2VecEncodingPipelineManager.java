@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipelineManager  {
+public class  DeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipelineManager  {
 
     public static final String MODEL_NAME = "deep_cpc_rnn6_2_vec_encoding_model";
     public static final File PREDICTION_FILE = new File("deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
