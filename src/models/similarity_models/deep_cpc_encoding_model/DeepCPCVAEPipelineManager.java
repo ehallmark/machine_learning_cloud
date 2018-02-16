@@ -130,8 +130,8 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
                     .entrySet().parallelStream()
                     .filter(e->e.getValue().size()>0)
                     .collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+            System.out.println("CPC Map size: "+cpcMap.size());
         }
-        System.out.println("CPC Map size: "+cpcMap.size());
         return cpcMap;
     }
 

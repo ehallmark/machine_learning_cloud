@@ -1,6 +1,8 @@
 package test;
 
+import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import models.similarity_models.combined_similarity_model.DeepCPC2VecEncodingModel;
+import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.ConvolutionMode;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -23,9 +25,12 @@ public class TestRNNToFeedForward {
     public static void main(String[] args) {
         int maxSample = 6;
         int vectorSize = 32;
-        int hiddenLayerSize1 = vectorSize * 6;
-        int hiddenLayerSize2 = vectorSize * 3;
-
+        int hiddenLayerSizeRNN = vectorSize * 6;
+        int hiddenLayerSizeFF = vectorSize * 3;
+        int input1 = 7;
+        int input2 = 13;
+        double learningRate = 0.001;
+        int linearTotal = maxSample * hiddenLayerSizeRNN;
 
         //Basic configuration
 
@@ -36,75 +41,50 @@ public class TestRNNToFeedForward {
 
         Nd4j.getMemoryManager().setAutoGcWindow(5000);
 
-        ComputationGraphConfiguration config = new NeuralNetConfiguration.Builder()
-                .weightInit(WeightInit.XAVIER)
-                .activation(Activation.TANH)
-                .updater(Updater.RMSPROP)
-                .convolutionMode(ConvolutionMode.Same)      //This is important so we can 'stack' the results later
-                //.regularization(true).l2(0.0001)
-                .learningRate(0.01)
+
+        Updater updater = Updater.RMSPROP;
+
+        LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
+
+        Activation activation = Activation.TANH;
+        Activation outputActivation = Activation.TANH;
+        ComputationGraphConfiguration config = new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
+                .updater(updater)
+                .learningRate(learningRate)
+                // .lrPolicyDecayRate(0.0001)
+                // .lrPolicyPower(0.7)
+                // .learningRateDecayPolicy(LearningRatePolicy.Inverse)
+                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                .activation(activation)
                 .graphBuilder()
-                .addInputs("input")
-                .addVertex("rl1", new ReshapeVertex(-1,1,maxSample,vectorSize),"input")
-                //.addVertex("rl1", new L2NormalizeVertex(), "n1")
-                .addLayer("c1", new ConvolutionLayer.Builder()
-                        .kernelSize(1,vectorSize)
-                        .stride(1,vectorSize)
-                        .nIn(1)
-                        .nOut(hiddenLayerSize1)
-                        .build(), "rl1")
-                .addLayer("c2", new ConvolutionLayer.Builder()
-                        .kernelSize(2,vectorSize)
-                        .stride(1,vectorSize)
-                        .nIn(1)
-                        .nOut(hiddenLayerSize1)
-                        .build(), "rl1")
-                .addLayer("c3", new ConvolutionLayer.Builder()
-                        .kernelSize(3,vectorSize)
-                        .stride(1,vectorSize)
-                        .nIn(1)
-                        .nOut(hiddenLayerSize1)
-                        .build(), "rl1")
-                .addVertex("m1", new MergeVertex(), "c1", "c2", "c3")      //Perform depth concatenation
-                .addLayer("p1", new GlobalPoolingLayer.Builder()
-                        .poolingType(globalPoolingType)
-                        .dropOut(0.5)
-                        .build(), "m1")
-                .addLayer("i1", new DenseLayer.Builder()
-                        .nIn(hiddenLayerSize1*3)
-                        .nOut(hiddenLayerSize1)
-                        .build(), "p1")
-                .addLayer("i2", new DenseLayer.Builder()
-                        .nIn(hiddenLayerSize1)
-                        .nOut(hiddenLayerSize2)
-                        .build(), "i1")
-                .addLayer("i3", new DenseLayer.Builder()
-                        .nIn(hiddenLayerSize2)
-                        .nOut(hiddenLayerSize2)
-                        .build(), "i2")
-                .addLayer("v", new DenseLayer.Builder()
-                        .nIn(hiddenLayerSize2)
-                        .nOut(vectorSize)
-                        .build(), "i3")
-                .addLayer("o1", new DenseLayer.Builder()
-                        .nIn(vectorSize)
-                        .nOut(hiddenLayerSize2)
-                        .build(), "v")
-                .addLayer("o2", new DenseLayer.Builder()
-                        .nIn(hiddenLayerSize2)
-                        .nOut(hiddenLayerSize2)
-                        .build(), "o1")
-                .addLayer("o3", new DenseLayer.Builder()
-                        .nIn(hiddenLayerSize2)
-                        .nOut(hiddenLayerSize1)
-                        .build(), "o2")
-                .addLayer("output", new OutputLayer.Builder()
-                        .lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY)
-                        .activation(Activation.TANH)
-                        .nIn(hiddenLayerSize1)
-                        .nOut(vectorSize*maxSample)
-                        .build(), "o3")
-                .setOutputs("output")
+                .addInputs("x1","x2")
+                .addVertex("1-0", new L2NormalizeVertex(), "x1")
+                .addVertex("1-1", new L2NormalizeVertex(), "x2")
+                .addLayer("2-0", new GravesBidirectionalLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRNN).build(), "1-0")
+                .addLayer("2-1", new DenseLayer.Builder().nIn(input2).nOut(hiddenLayerSizeRNN).build(), "1-1")
+                .addLayer("3-0", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "2-0")
+                .addLayer("3-1", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "2-1")
+                .addVertex("v2", new ReshapeVertex(-1,linearTotal), "3-0")
+                .addLayer("4", new DenseLayer.Builder().nIn(linearTotal+hiddenLayerSizeRNN).nOut(linearTotal).build(), "v2","3-1")
+                .addLayer("5", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeFF).build(), "4")
+                .addLayer("6", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "5")
+                .addLayer("7", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "6")
+                .addLayer("v", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "7")
+                .addLayer("8", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "v")
+                .addLayer("9", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "8")
+                .addLayer("10", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "9")
+                .addLayer("11", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "10")
+                .addLayer("12", new DenseLayer.Builder().nIn(linearTotal).nOut(linearTotal).build(), "11")
+                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN,maxSample), "12")
+                .addLayer("13-0", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v3")
+                .addLayer("13-1", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeRNN).build(), "12")
+                .addLayer("14-0", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "13-0")
+                .addLayer("14-1", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "13-1")
+                .addLayer("y1", new RnnOutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "14-0")
+                .addLayer("y2", new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input2).build(), "14-1")
+                .setOutputs("y1","y2")
+                .backprop(true)
+                .pretrain(false)
                 .build();
 
         ComputationGraph graph = new ComputationGraph(config);
@@ -115,8 +95,8 @@ public class TestRNNToFeedForward {
         }
 
 
-        INDArray[] data3 = new INDArray[]{Nd4j.randn(new int[]{3,vectorSize*maxSample})};
-        INDArray[] data5 = new INDArray[]{Nd4j.randn(new int[]{5,vectorSize*maxSample})};
+        INDArray[] data3 = new INDArray[]{Nd4j.randn(new int[]{3,input1,maxSample}), Nd4j.rand(3,input2)};
+        INDArray[] data5 = new INDArray[]{Nd4j.randn(new int[]{5,input1,maxSample}), Nd4j.rand(5,input2)};
 
 
         for(int i = 0; i < 1000; i++) {

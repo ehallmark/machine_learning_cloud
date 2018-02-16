@@ -47,11 +47,9 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
     protected static final Random rand = new Random(235);
     private static CombinedDeepCPC2VecEncodingPipelineManager MANAGER;
     DeepCPCVAEPipelineManager deepCPCVAEPipelineManager;
-    DeepCPC2VecEncodingPipelineManager deepCPC2VecEncodingPipelineManager;
-    public CombinedDeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager, DeepCPC2VecEncodingPipelineManager deepCPC2VecEncodingPipelineManager) {
+    public CombinedDeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager) {
         super(new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,MAX_SAMPLE,wordCPC2VecPipelineManager);
         this.deepCPCVAEPipelineManager=deepCPCVAEPipelineManager;
-        this.deepCPC2VecEncodingPipelineManager=deepCPC2VecEncodingPipelineManager;
     }
 
     public static String currentDataFolderName(int recursion,int sample) {
@@ -116,19 +114,17 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
             if(loadWord2Vec) wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
 
             DeepCPCVAEPipelineManager deepCPCVAEPipelineManager = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME);
-            deepCPCVAEPipelineManager.runPipeline(false,false,false,false,-1,false);
+            if(loadWord2Vec) deepCPCVAEPipelineManager.runPipeline(false,false,false,false,-1,false);
 
-            DeepCPC2VecEncodingPipelineManager deepCPC2VecEncodingPipelineManager = DeepCPC2VecEncodingPipelineManager.getOrLoadManager(loadWord2Vec);
-            if(loadWord2Vec) deepCPC2VecEncodingPipelineManager.runPipeline(false,false,false,false,-1,false);
             setLoggingLevel(Level.INFO);
-            MANAGER = new CombinedDeepCPC2VecEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, wordCPC2VecPipelineManager, deepCPCVAEPipelineManager, deepCPC2VecEncodingPipelineManager);
+            MANAGER = new CombinedDeepCPC2VecEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, wordCPC2VecPipelineManager, deepCPCVAEPipelineManager);
         }
         return MANAGER;
     }
 
 
     protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {
-        return new CombinedWord2VecToCPCIterator(iterator,wordCPC2VecPipelineManager.getCPCMap(),word2Vec,(DeepCPC2VecEncodingModel)deepCPC2VecEncodingPipelineManager.getModel(),(DeepCPCVariationalAutoEncoderNN)deepCPCVAEPipelineManager.getModel(),batch,getMaxSamples());
+        return new CombinedWord2VecToCPCIterator(iterator,word2Vec,(DeepCPCVariationalAutoEncoderNN)deepCPCVAEPipelineManager.getModel(),batch,getMaxSamples());
     }
 
     @Override

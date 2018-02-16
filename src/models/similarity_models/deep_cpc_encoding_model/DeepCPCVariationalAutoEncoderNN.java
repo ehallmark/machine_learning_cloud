@@ -37,7 +37,7 @@ import java.util.function.Function;
  * Created by ehallmark on 10/26/17.
  */
 public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN {
-    public static final int VECTOR_SIZE = 64;
+    public static final int VECTOR_SIZE = 32;
     public static final File BASE_DIR = new File("deep_cpc_deep_vae_nn_model_data");
 
     public DeepCPCVariationalAutoEncoderNN(DeepCPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {
@@ -65,7 +65,13 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
 
     public synchronized INDArray encode(List<String> assets) {
         CPCDataSetIterator iterator = new CPCDataSetIterator(assets,false,assets.size(),pipelineManager.getCPCMap(),getCpcToIdxMap());
-        return iterator.next().getFeatureMatrix();
+        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
+                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
+        return vae.activate(iterator.next().getFeatureMatrix(),false);
+    }
+
+    public synchronized Map<String,Collection<CPC>> getCPCMap() {
+        return pipelineManager.getCPCMap();
     }
 
     @Override

@@ -5,6 +5,7 @@ import cpc_normalization.CPCHierarchy;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import lombok.Getter;
+import models.NDArrayHelper;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
@@ -285,7 +286,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
 
     @Override
     public int printIterations() {
-        return 2000;
+        return 500;
     }
 
 
@@ -350,7 +351,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.000001;
+        double newLearningRate = 0.005;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
@@ -395,12 +396,25 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
         };
     }
 
+    public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
+        INDArray[] inputs = finalDataSet.getFeatures();
+        INDArray[] predictions = net.output(false,finalDataSet.getFeatures());
+        double cosineSim = 0d;
+        for(int i = 0; i < inputs.length; i++) {
+            int[] shape = new int[]{inputs[i].shape()[0],0};
+            shape[1] = (inputs[i].shape().length==2 ? inputs[i].shape()[1] : (inputs[i].shape()[1]*inputs[i].shape()[2]));
+            cosineSim += NDArrayHelper.sumOfCosineSimByRow(inputs[i].reshape(shape),predictions[i].reshape(shape))/shape[0];
+        }
+        return 1 + (cosineSim/inputs.length);
+    }
+
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSizeRNN = 96;
-        int hiddenLayerSizeFF = 64;
+        int hiddenLayerSizeRNN = 64;
+        int maxSamples = pipelineManager.getMaxSamples();
+        int linearTotal = hiddenLayerSizeRNN * maxSamples;
+        int hiddenLayerSizeFF = 128;
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
         int input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
-
 
         Updater updater = Updater.RMSPROP;
 
@@ -411,41 +425,37 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)
-               // .lrPolicyDecayRate(0.0001)
-               // .lrPolicyPower(0.7)
-               // .learningRateDecayPolicy(LearningRatePolicy.Inverse)
+                // .lrPolicyDecayRate(0.0001)
+                // .lrPolicyPower(0.7)
+                // .learningRateDecayPolicy(LearningRatePolicy.Inverse)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .activation(activation)
                 .graphBuilder()
                 .addInputs("x1","x2")
-                .addVertex("n1", new L2NormalizeVertex(), "x1")
-                .addVertex("n2",new L2NormalizeVertex(), "x2")
-                .addLayer("a1", new DenseLayer.Builder().nIn(input1).nOut(hiddenLayerSizeRNN).build(), "n1")
-                .addLayer("a2", new DenseLayer.Builder().nIn(input2).nOut(hiddenLayerSizeRNN).build(), "n2")
-                .addLayer("a3", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "a1")
-                .addLayer("a4", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "a2")
-                .addLayer("norm1", new BatchNormalization.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "a3")
-                .addLayer("norm2", new BatchNormalization.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "a4")
-                .addLayer("1", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN+hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN+hiddenLayerSizeRNN).build(), "norm1","norm2")
-                .addLayer("2", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN+hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "3")
-                .addLayer("3", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeFF).build(), "4")
-                .addLayer("4", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "5")
-                .addLayer("5", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "6", "5")
-                .addLayer("v", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "7")
-                .addLayer("6", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "v")
+                .addVertex("1-0", new L2NormalizeVertex(), "x1")
+                .addVertex("1-1", new L2NormalizeVertex(), "x2")
+                .addLayer("2-0", new GravesBidirectionalLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRNN).build(), "1-0")
+                .addLayer("2-1", new DenseLayer.Builder().nIn(input2).nOut(hiddenLayerSizeRNN).build(), "1-1")
+                .addLayer("3-0", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "2-0")
+                .addLayer("3-1", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "2-1")
+                .addVertex("v2", new ReshapeVertex(-1,linearTotal), "3-0")
+                .addLayer("4", new DenseLayer.Builder().nIn(linearTotal+hiddenLayerSizeRNN).nOut(linearTotal).build(), "v2","3-1")
+                .addLayer("5", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeFF).build(), "4")
+                .addLayer("6", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "5")
                 .addLayer("7", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "6")
-                .addLayer("8", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "7")
-                .addLayer("9", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeRNN).build(), "8")
-                .addLayer("10", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "9")
-                .addLayer("11", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN+hiddenLayerSizeRNN).build(), "10")
-                .addLayer("b1", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN+hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "11")
-                .addLayer("b2", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN+hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "11")
-                .addLayer("norm3", new BatchNormalization.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "b1")
-                .addLayer("norm4", new BatchNormalization.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "b2")
-                .addLayer("b3", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "norm3")
-                .addLayer("b4", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "norm4")
-                .addLayer("y1", new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "b3")
-                .addLayer("y2", new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input2).build(), "b4")
+                .addLayer("v", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(vectorSize).build(), "7")
+                .addLayer("8", new DenseLayer.Builder().nIn(vectorSize).nOut(hiddenLayerSizeFF).build(), "v")
+                .addLayer("9", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "8")
+                .addLayer("10", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "9")
+                .addLayer("11", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "10")
+                .addLayer("12", new DenseLayer.Builder().nIn(linearTotal).nOut(linearTotal).build(), "11")
+                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN,maxSamples), "12")
+                .addLayer("13-0", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v3")
+                .addLayer("13-1", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeRNN).build(), "12")
+                .addLayer("14-0", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "13-0")
+                .addLayer("14-1", new DenseLayer.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "13-1")
+                .addLayer("y1", new RnnOutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input1).build(), "14-0")
+                .addLayer("y2", new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeRNN).lossFunction(lossFunction).nOut(input2).build(), "14-1")
                 .setOutputs("y1","y2")
                 .backprop(true)
                 .pretrain(false);

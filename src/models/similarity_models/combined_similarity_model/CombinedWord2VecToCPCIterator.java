@@ -35,17 +35,13 @@ public class CombinedWord2VecToCPCIterator implements MultiDataSetIterator {
     private int batch;
     private MultiDataSet currentDataSet;
     private int maxSamples;
-    private DeepCPC2VecEncodingModel net1;
     private DeepCPCVariationalAutoEncoderNN net2;
-    private Map<String,Collection<CPC>> cpcMap;
-    public CombinedWord2VecToCPCIterator(SequenceIterator<VocabWord> documentIterator, Map<String,Collection<CPC>> cpcMap, Word2Vec word2Vec, DeepCPC2VecEncodingModel net1, DeepCPCVariationalAutoEncoderNN net2, int batchSize, int maxSamples) {
+    public CombinedWord2VecToCPCIterator(SequenceIterator<VocabWord> documentIterator, Word2Vec word2Vec, DeepCPCVariationalAutoEncoderNN net2, int batchSize, int maxSamples) {
         this.documentIterator=documentIterator;
         this.word2Vec=word2Vec;
-        this.net1=net1;
         this.net2=net2;
         this.maxSamples=maxSamples;
         this.batch=batchSize;
-        this.cpcMap = cpcMap;
         reset();
     }
 
@@ -60,9 +56,6 @@ public class CombinedWord2VecToCPCIterator implements MultiDataSetIterator {
     }
 
     public int inputColumns1() {
-        return word2Vec.getLayerSize();
-    }
-    public int inputColumns2() {
         return word2Vec.getLayerSize();
     }
 
@@ -97,8 +90,7 @@ public class CombinedWord2VecToCPCIterator implements MultiDataSetIterator {
             List<String> sequence = document.getElements().stream().map(e->e.getLabel()).collect(Collectors.toList());
             if(sequence.size()==0||document.getSequenceLabels().isEmpty()) continue;
             String label = document.getSequenceLabels().get(0).getLabel();
-            if(!cpcMap.containsKey(label)) continue;
-            assets.add(label);
+            if(!net2.getCPCMap().containsKey(label)) continue;
 
             INDArray featureVec;
             {
@@ -121,20 +113,22 @@ public class CombinedWord2VecToCPCIterator implements MultiDataSetIterator {
 
                 featureVec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(),1,indexes.stream().limit(maxSamples).mapToInt(i->i).toArray());
 
-
             }
             if(featureVec.rows()<maxSamples) continue;
-
+            assets.add(label);
             features1.get(NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.interval(0,featureVec.rows())).assign(featureVec);
             idx++;
         }
 
         if(idx>0) {
-            if(idx >= batch) {
-                INDArray vae1 = net1.encode(features1,null);
+            if(idx == batch) {
                 INDArray vae2 = net2.encode(assets);
-
-                INDArray[] allFeatures = new INDArray[]{vae1,vae2};
+                System.out.println("Shape1: "+Arrays.toString(features1.shape()));
+                System.out.println("Shape2: "+Arrays.toString(vae2.shape()));
+                if(vae2.shape()[0]!=features1.shape()[0]) {
+                    throw new RuntimeException("Features must have the same number of examples...");
+                }
+                INDArray[] allFeatures = new INDArray[]{features1,vae2};
                 currentDataSet = new MultiDataSet(allFeatures, allFeatures);
             }
         }
