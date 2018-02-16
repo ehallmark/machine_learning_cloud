@@ -146,7 +146,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             return null;
         };
 
-        runSamplingIteratorWithLabels(attributesFunction);
+        runSamplingIteratorWithLabels(attributesFunction,100000);
         System.out.println("Found "+cpcCount.get()+" / "+total.get()+" CPCS.");
 
         return new Pair<>(cpcCodeIndexMap,matrix);

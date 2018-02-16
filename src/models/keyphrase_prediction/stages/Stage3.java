@@ -54,7 +54,7 @@ public class Stage3 extends Stage<Set<MultiStem>> {
 
     public RealMatrix buildMMatrix(Collection<MultiStem> data, Map<MultiStem,MultiStem> multiStemToSelfMap) {
         return this.buildMMatrix(data,multiStemToSelfMap,attrFunc->{
-            runSamplingIterator(attrFunc);
+            runSamplingIterator(attrFunc, 100000);
             return null;
         });
     }

@@ -55,7 +55,7 @@ public abstract class Stage<V> {
 
     private static final boolean debug = false;
     @Getter
-    private static final File baseDir = new File(Constants.DATA_FOLDER + "technologyPredictionStages/");
+    private static final File baseDir = new File("technologyPredictionStages/");
     protected File mainDir;
     protected V data;
     protected Model model;
@@ -305,7 +305,7 @@ public abstract class Stage<V> {
 
     }
 
-    public static void runSamplingIterator(Function<Map<MultiStem, Integer>, Void> attributesFunction) {
+    public static void runSamplingIterator(Function<Map<MultiStem, Integer>, Void> attributesFunction, int sampling) {
         Function<String, Void> lineTransformer = line -> {
             String[] cells = line.split(",", 2);
             if (cells.length == 1) return null;
@@ -318,10 +318,10 @@ public abstract class Stage<V> {
             attributesFunction.apply(data);
             return null;
         };
-        samplingIteratorHelper(lineTransformer);
+        samplingIteratorHelper(lineTransformer,sampling);
     }
 
-    public static void runSamplingIteratorWithLabels(Function<Pair<String, Map<MultiStem, Integer>>, Void> attributesFunction) {
+    public static void runSamplingIteratorWithLabels(Function<Pair<String, Map<MultiStem, Integer>>, Void> attributesFunction, int sampling) {
         Function<String, Void> lineTransformer = line -> {
             String[] cells = line.split(",", 3);
             String asset = cells[0];
@@ -336,10 +336,10 @@ public abstract class Stage<V> {
             attributesFunction.apply(new Pair<>(asset, data));
             return null;
         };
-        samplingIteratorHelper(lineTransformer);
+        samplingIteratorHelper(lineTransformer,sampling);
     }
 
-    private static void samplingIteratorHelper(Function<String, Void> lineTransformer) {
+    private static void samplingIteratorHelper(Function<String, Void> lineTransformer, int sampling) {
         int taskLimit = Math.max(Runtime.getRuntime().availableProcessors(), 1);
         File file = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.trainFile.getName());
         LineIterator iterator;
@@ -350,7 +350,7 @@ public abstract class Stage<V> {
         }
         AtomicInteger cnt = new AtomicInteger(0);
         List<RecursiveAction> tasks = new ArrayList<>();
-        while (iterator.hasNext()) {
+        while (iterator.hasNext()&&(cnt.get()<sampling||sampling<=0)) {
             if (cnt.getAndIncrement() % 100000 == 99999) {
                 taskLimit = Math.max(Runtime.getRuntime().availableProcessors(), 1);
                 System.out.println("Iterated through: " + cnt.get());

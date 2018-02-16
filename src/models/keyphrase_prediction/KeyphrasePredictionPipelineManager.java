@@ -6,6 +6,7 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import lombok.Getter;
 import models.keyphrase_prediction.models.DefaultModel;
+import models.keyphrase_prediction.models.DefaultModel2;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
@@ -31,7 +32,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 12/21/17.
  */
 public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<WordCPCIterator,Set<String>> {
-    public static final Model modelParams = new DefaultModel();
+    public static final Model modelParams = new DefaultModel2();
     @Getter
     private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
@@ -95,10 +96,20 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         // stage 3
         System.out.println("Pre-grouping data for stage 3...");
         Stage3 stage3 = new Stage3(cpcDensityStage.get(), modelParams);
-        stage3.run(rerunFilters);
+        //if(filters)
+            stage3.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
-        multiStemSet = stage3.get();
+        // stage 3
+        System.out.println("Pre-grouping data for word order...");
+        WordOrderStage wordOrder = new WordOrderStage(stage3.get(), stage1.get(), modelParams);
+        wordOrder.run(rerunFilters);
+        //if(alwaysRerun) stage3.createVisualization();
+
+
+
+
+        multiStemSet = wordOrder.get();
 
         labelToKeywordMap = Collections.synchronizedMap(new HashMap<>());
         multiStemSet.parallelStream().forEach(stem->labelToKeywordMap.put(stem.getBestPhrase(),stem));
@@ -150,8 +161,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             buildKeywordToLookupTableMap();
         }
 
-        final double keyphraseTrimAlpha = 0.9;
-
         System.out.println("Building keyword vector pairs...");
         INDArray keywordMatrix = Nd4j.create(keywords.size(),keywordToVectorLookupTable.values().stream().findAny().get().length());
         for(int i = 0; i < keywords.size(); i++) {
@@ -161,7 +170,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
 
         Map<String,INDArray> cpcVectors = toPredictMap;
-        Map<String,INDArray> wordVectors = wordCPC2VecPipelineManager.getOrLoadWordVectors();
 
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
@@ -187,31 +195,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
             while(!heap.isEmpty()) {
                 MultiStem keyword = heap.remove().getFirst();
-                INDArray multiStemVec = keywordToVectorLookupTable.get(keyword);
-
-                // potentially remove words from keyphrase
-                List<Pair<String,INDArray>> wordVectorsPairs = Stream.of(keyword.getBestPhrase().split(" "))
-                        .map(word->{
-                            if(wordVectors.containsKey(word)) return new Pair<>(word,wordVectors.get(word));
-                            else return null;
-                        }).filter(pair->pair!=null).collect(Collectors.toList());
-
-                List<Pair<String,Double>> wordSimilarityPairs = wordVectorsPairs.stream()
-                        .map(pair->new Pair<>(pair.getFirst(),Transforms.cosineSim(Transforms.unitVec(pair.getSecond()),Transforms.unitVec(cpcVec))))
-                        .collect(Collectors.toList());
-
-                double similarityFullPhrase = Transforms.cosineSim(multiStemVec,cpcVec);
-                List<String> wordList = wordSimilarityPairs.stream()
-                        .filter(pair->pair.getSecond()>=similarityFullPhrase*keyphraseTrimAlpha)
-                        .map(pair->pair.getFirst())
-                        .collect(Collectors.toList());
-
-
-
-                if(!wordList.isEmpty()) {
-                    String prediction = String.join(" ",wordList);
-                    tags.add(prediction);
-                }
+                tags.add(keyword.getBestPhrase());
             }
 
             if(!tags.isEmpty()) {
@@ -221,7 +205,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             }
 
 
-            if(cnt.getAndIncrement()%1000==999) {
+            if(cnt.getAndIncrement()%100==99) {
                 System.gc();
                 System.out.println("Best keywords for "+cpc+": "+String.join("; ",tags));
                 System.out.println("Finished "+cnt.get()+" out of "+cpcVectors.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
@@ -294,7 +278,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         boolean rebuildDatasets = false;
         boolean runModels = false;
         boolean forceRecreateModels = false;
-        boolean runPredictions = false;
+        boolean runPredictions = true;
         int nEpochs = 10;
         String modelName = modelParams.getModelName();
 
@@ -303,6 +287,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(CPC2VecModelName,-1,-1,-1);
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(wordCPC2VecPipelineManager);
 
+        pipelineManager.initStages(true,false,false,false);
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }
 }

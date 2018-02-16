@@ -46,6 +46,7 @@ public class TermhoodScorer implements KeywordScorer {
                 double sumProduct = wordCountSums[j] * wordCountSumI;
                 score += sumProduct == 0 ? 0 : (Math.pow(Mi.getEntry(j) - sumProduct, 2) / sumProduct);
             }
+           // System.out.println("Score: "+score);
             return score;
         }));
     }
