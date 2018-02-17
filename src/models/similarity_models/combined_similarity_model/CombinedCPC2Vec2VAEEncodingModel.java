@@ -85,7 +85,7 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
 
     @Override
     public int printIterations() {
-        return 500;
+        return 400;
     }
 
 
@@ -150,7 +150,7 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.001;
+        double newLearningRate = 0.0001;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());

@@ -12,7 +12,7 @@ import java.io.File;
 public class TestDeepEncodingModel {
     public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
-        DeepCPC2VecEncodingPipelineManager.setCudaEnvironment();
+        AbstractEncodingPipelineManager.setCudaEnvironment();
 
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
@@ -24,7 +24,7 @@ public class TestDeepEncodingModel {
         int nEpochs = 3;
 
 
-        DeepCPC2VecEncodingPipelineManager pipelineManager = DeepCPC2VecEncodingPipelineManager.getOrLoadManager(rebuildDatasets);
+        CombinedDeepCPC2VecEncodingPipelineManager pipelineManager = CombinedDeepCPC2VecEncodingPipelineManager.getOrLoadManager(rebuildDatasets);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
 
         MultiDataSetIterator iterator = pipelineManager.getDatasetManager().getValidationIterator();

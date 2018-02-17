@@ -1,7 +1,7 @@
 package test;
 
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
-import models.similarity_models.combined_similarity_model.DeepCPC2VecEncodingModel;
+import models.similarity_models.combined_similarity_model.AbstractEncodingModel;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.ConvolutionMode;
@@ -109,10 +109,10 @@ public class TestRNNToFeedForward {
             try {
 
                // graph.setLayerMaskArrays(mask3,mask3);
-                System.out.println("Shape of " + i + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(i),data3).shape()));
+                System.out.println("Shape of " + i + ": " + Arrays.toString(AbstractEncodingModel.feedForwardToVertex(graph, String.valueOf(i),data3).shape()));
                // graph.clearLayerMaskArrays();
                // graph.setLayerMaskArrays(mask5,mask5);
-                System.out.println("Shape of " + i + ": " + Arrays.toString(DeepCPC2VecEncodingModel.feedForwardToVertex(graph, String.valueOf(i),data5).shape()));
+                System.out.println("Shape of " + i + ": " + Arrays.toString(AbstractEncodingModel.feedForwardToVertex(graph, String.valueOf(i),data5).shape()));
                // graph.clearLayerMaskArrays();
             } catch(Exception e) {
                 e.printStackTrace();
