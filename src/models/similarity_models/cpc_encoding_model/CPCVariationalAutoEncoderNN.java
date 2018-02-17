@@ -45,7 +45,7 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
     protected Map<String,Integer> cpcToIdxMap;
     protected CPCVAEPipelineManager pipelineManager;
     protected int maxCPCDepth;
-    private Map<String,INDArray> predictions;
+    protected Map<String,INDArray> predictions;
     public CPCVariationalAutoEncoderNN(CPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {
         super(modelName);
         this.pipelineManager= pipelineManager;

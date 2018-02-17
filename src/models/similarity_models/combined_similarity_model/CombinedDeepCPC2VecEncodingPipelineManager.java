@@ -36,12 +36,12 @@ import java.util.stream.Stream;
  */
 public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipelineManager  {
 
-    public static final String MODEL_NAME = "combined_deep_cpc_rnn_2_vec_encoding_model";
+    public static final String MODEL_NAME = "combined2_deep_cpc_rnn_2_vec_encoding_model";
     public static final File PREDICTION_FILE = new File("combined_deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER_ALL = new File("combined_deep_cpc_all3_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
-    protected static final int MINI_BATCH_SIZE = 32;
+    protected static final int MINI_BATCH_SIZE = 1024;
     private static final int MAX_NETWORK_RECURSION = -1;
     private static int MAX_SAMPLE = 6;
     protected static final Random rand = new Random(235);

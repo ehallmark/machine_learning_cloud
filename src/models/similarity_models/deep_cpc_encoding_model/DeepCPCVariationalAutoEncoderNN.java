@@ -25,13 +25,13 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 10/26/17.
@@ -70,6 +70,66 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         return vae.activate(iterator.next().getFeatureMatrix(),false);
     }
 
+
+    public synchronized INDArray encodeCPCs(List<String> cpcs) {
+        if(predictions==null) predictions = pipelineManager.loadPredictions();
+        return Nd4j.vstack(cpcs.stream().map(cpc->{
+            CPC c = pipelineManager.getHierarchy().getLabelToCPCMap().get(cpc);
+            while(c!=null&&!predictions.containsKey(c.getName())) {
+                c = c.getParent();
+            }
+            if(c==null)return null;
+            return predictions.get(c.getName());
+        }).collect(Collectors.toList()));
+    }
+
+    public synchronized INDArray encodeCPCsSingle(List<String> cpcs) {
+        if(predictions==null) predictions = pipelineManager.loadPredictions();
+        Collection<CPC> valid = cpcs.stream().map(cpc->pipelineManager.getHierarchy().getLabelToCPCMap().get(cpc)).filter(cpc->cpc!=null).collect(Collectors.toList());
+        INDArray inputs = CPCDataSetIterator.createVector(Stream.of(valid),cpcToIdxMap,1,cpcToIdxMap.size());
+        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
+                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
+        return vae.activate(inputs,false);
+    }
+
+    @Override
+    public Map<String,INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
+        if(cpcToIdxMap==null) cpcToIdxMap = getCpcToIdxMap();
+
+        List<String> cpcs = new ArrayList<>(cpcToIdxMap.keySet());
+        CPCHierarchy hierarchy = pipelineManager.getHierarchy();
+
+        INDArray inputs = Nd4j.create(cpcs.size(),cpcToIdxMap.size());
+        for(int i = 0; i < cpcs.size(); i++) {
+            String cpc = cpcs.get(i);
+            Collection<CPC> family = hierarchy.cpcWithAncestors(cpc);
+            double[] vec = new double[cpcToIdxMap.size()];
+            family.forEach(member->{
+                if(cpcToIdxMap.containsKey(member.getName())) {
+                    vec[cpcToIdxMap.get(member.getName())]=1d;
+                }
+            });
+            inputs.putRow(i,Nd4j.create(vec));
+        }
+
+        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
+                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
+        INDArray outputs = vae.activate(inputs,false);
+        // normalize
+        outputs.diviColumnVector(outputs.norm2(1));
+
+        if(predictions == null) {
+            predictions = Collections.synchronizedMap(new HashMap<>(cpcToIdxMap.size()));
+        }
+
+        for(int i = 0; i < cpcs.size(); i++) {
+            predictions.put(cpcs.get(i),outputs.getRow(i));
+        }
+
+        return predictions;
+    }
+
+
     public synchronized Map<String,Collection<CPC>> getCPCMap() {
         return pipelineManager.getCPCMap();
     }
@@ -79,7 +139,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
         final int numInputs = getCpcToIdxMap().size();
-        final int printIterations = 2000;
+        final int printIterations = 200;
 
         if(net==null) {
             //Neural net configuration
@@ -98,7 +158,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
                     .seed(rngSeed)
                     .learningRate(0.05)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                    .updater(Updater.RMSPROP)
+                    .updater(Updater.ADAM)
                     //.updater(Updater.ADAM)
                     .miniBatch(true)
                     .weightInit(WeightInit.XAVIER)
@@ -122,7 +182,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             net = new MultiLayerNetwork(conf);
             net.init();
         } else {
-            double learningRate = 0.000005;
+            double learningRate = 0.0001;
             //double learningRate = 0.000001;
             //double learningRate = 0.0001;
             net = NNRefactorer.updateNetworkLearningRate(net,learningRate,false);
@@ -169,7 +229,6 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
         net.setListeners(listener);
 
-        trainIter = new AsyncDataSetIterator(trainIter,4);
         AtomicInteger gcIter = new AtomicInteger(0);
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");

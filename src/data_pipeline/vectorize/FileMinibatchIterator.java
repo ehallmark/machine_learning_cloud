@@ -143,7 +143,11 @@ public class FileMinibatchIterator implements DataSetIterator {
 
             dataSetQueue.add(task);
         }
-        return (currentIterator!=null&&currentIterator.hasNext())||dataSetQueue.size()>0;
+        if(currentIterator!=null&&currentIterator.hasNext()) return true;
+        if(dataSetQueue.isEmpty()) return false;
+        currentIterator = dataSetQueue.remove(0).join().iterator();
+
+        return hasNext();
     }
 
     public DataSet next() {
@@ -151,9 +155,6 @@ public class FileMinibatchIterator implements DataSetIterator {
     }
 
     private DataSet nextDataSet() {
-        if(currentIterator==null||!currentIterator.hasNext()) {
-            currentIterator = dataSetQueue.remove(0).join().iterator();
-        }
         return currentIterator.next();
     }
 

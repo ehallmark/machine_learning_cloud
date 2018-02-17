@@ -6,6 +6,7 @@ import data_pipeline.models.CombinedNeuralNetworkPredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
+import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.api.layers.IOutputLayer;
@@ -23,7 +24,9 @@ import org.nd4j.linalg.primitives.Pair;
 
 import java.time.LocalDateTime;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -34,6 +37,7 @@ import java.util.stream.IntStream;
  * Created by Evan on 12/24/2017.
  */
 public abstract class AbstractEncodingModel<T extends Model,V extends DefaultPipelineManager<MultiDataSetIterator,INDArray>> extends CombinedNeuralNetworkPredictionModel<INDArray,T> {
+    private static final Random rand = new Random(2352);
 
     protected final V pipelineManager;
     private Class<T> clazz;
@@ -49,6 +53,25 @@ public abstract class AbstractEncodingModel<T extends Model,V extends DefaultPip
 
     protected abstract Function<Object,Double> getTestFunction();
 
+    protected INDArray sampleWordVectors(List<String> words, int samples, int minLength, Word2Vec wordVectors) {
+        if(wordVectors==null) throw new NullPointerException("Word vectors must be preloaded...");
+        if(words==null||words.isEmpty()) return null;
+        words = words.stream().filter(word->wordVectors.hasWord(word)).collect(Collectors.toList());
+        if(words.isEmpty()) return null;
+        final List<String> finalWords = words;
+        INDArray inputs = Nd4j.create(samples,wordVectors.getLayerSize(),minLength);
+        for (int i = 0; i < samples; i++) {
+            List<String> sub;
+            if(words.size()<=minLength*2) {
+                sub = IntStream.range(0,minLength).mapToObj(n->finalWords.get(rand.nextInt(finalWords.size()))).collect(Collectors.toList());
+            } else {
+                int start = rand.nextInt(words.size()-minLength);
+                sub = words.subList(start,start+minLength);
+            }
+            inputs.get(NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.all()).assign(wordVectors.getWordVectors(sub).transpose());
+        }
+        return inputs;
+    }
 
     protected abstract Function<IterationListener,Void> setListenerFunction();
 
