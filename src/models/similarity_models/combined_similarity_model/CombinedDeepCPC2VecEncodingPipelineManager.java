@@ -41,7 +41,7 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
     private static final File INPUT_DATA_FOLDER_ALL = new File("combined_deep_cpc_all3_vec_encoding_input_data");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
-    protected static final int MINI_BATCH_SIZE = 1024;
+    protected static final int MINI_BATCH_SIZE = 256;
     private static final int MAX_NETWORK_RECURSION = -1;
     private static int MAX_SAMPLE = 6;
     protected static final Random rand = new Random(235);
@@ -81,6 +81,7 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
             public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
                 dataSet.setLabels(null);
                 dataSet.setLabelsMaskArray(null);
+                System.gc();
             }
         };
     }
