@@ -180,6 +180,11 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
         return vectors;
     }
 
+    public Map<String,INDArray> getOrLoadCPCVectors() {
+        // TODO need to implement
+        return null;
+    }
+
     public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         setCudaEnvironment();

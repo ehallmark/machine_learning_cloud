@@ -4,6 +4,8 @@ import ch.qos.logback.classic.Level;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
+import models.similarity_models.combined_similarity_model.CombinedDeepCPC2VecEncodingModel;
+import models.similarity_models.combined_similarity_model.CombinedDeepCPC2VecEncodingPipelineManager;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEPipelineManager;
 import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
@@ -47,11 +49,13 @@ public class PredictKeyphraseForFilings {
         Map<String,Set<String>> cpcToKeyphraseMap = pipelineManager.loadPredictions();
         Map<String,Collection<CPC>> filingToCPCMap = pipelineManager.getCPCMap();
 
-        Map<String,INDArray> cpcVectors = wordCPC2VecPipelineManager.getOrLoadCPCVectors();
-        Map<String,INDArray> wordVectors = wordCPC2VecPipelineManager.getOrLoadWordVectors();
-
+        CombinedDeepCPC2VecEncodingPipelineManager combinedDeepCPC2VecEncodingPipelineManager = CombinedDeepCPC2VecEncodingPipelineManager.getOrLoadManager(true);
+        CombinedDeepCPC2VecEncodingModel simModel = (CombinedDeepCPC2VecEncodingModel)combinedDeepCPC2VecEncodingPipelineManager.getModel();
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
+        Map<String,INDArray> cpcVectors = combinedDeepCPC2VecEncodingPipelineManager.getOrLoadCPCVectors();
+        Map<String,INDArray> keyphraseVectors = KeyphrasePredictionPipelineManager.getKeywordToVectorLookupTable()
+                .entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey().getBestPhrase(),e->e.getValue()));
 
 
         technologyMap = Collections.synchronizedMap(filingToCPCMap.entrySet().parallelStream()
@@ -66,10 +70,9 @@ public class PredictKeyphraseForFilings {
                         Map<String, Long> keyphraseCounts = cpcs.stream().flatMap(cpc -> cpcToKeyphraseMap.getOrDefault(cpc.getName(), Collections.emptySet()).stream()).collect(Collectors.groupingBy(i -> i, Collectors.counting()));
 
                         List<Pair<String, INDArray>> phrasesWithVectors = keyphraseCounts.keySet().stream().map(phrase -> {
-                            String[] words = phrase.split(" ");
-                            List<INDArray> vectors = Stream.of(words).map(word -> wordVectors.get(word)).filter(vec -> vec != null).collect(Collectors.toList());
-                            if (vectors.isEmpty()) return null;
-                            return new Pair<>(phrase, Transforms.unitVec(Nd4j.vstack(vectors).mean(0)));
+                            INDArray vec = keyphraseVectors.get(phrase);
+                            if (vec==null) return null;
+                            return new Pair<>(phrase, vec);
                         }).filter(p -> p != null).collect(Collectors.toList());
 
                         if (phrasesWithVectors.size() > 0) {

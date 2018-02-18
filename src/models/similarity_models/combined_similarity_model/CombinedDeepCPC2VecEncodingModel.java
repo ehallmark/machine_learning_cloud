@@ -252,6 +252,8 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
 
             List<List<String>> assigneeBatches = createBatches(assignees, batchSize);
             assigneeBatches.forEach(assigneeBatch -> {
+                if(assigneeBatch.isEmpty()) return;
+
                 INDArray allFeatures1 = Nd4j.create(assigneeSamples*assigneeBatch.size(),getVectorSize(),sampleLength);
                 INDArray allFeatures2 = Nd4j.create(assigneeSamples*assigneeBatch.size(),getVectorSize());
                 List<List<String>> itemsGrouped = new ArrayList<>(assigneeSamples);
@@ -313,6 +315,8 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
 
             List<List<String>> filingBatches = createBatches(filingsList, batchSize);
             filingBatches.forEach(filingBatch -> {
+                if(filingBatch.isEmpty()) return;
+
                 INDArray allFeatures1 = Nd4j.create(patentSamples * filingBatch.size(), getVectorSize(), sampleLength);
                 INDArray allFeatures2 = Nd4j.create(patentSamples * filingBatch.size(), getVectorSize());
                 List<List<String>> itemsGrouped = new ArrayList<>(patentSamples);

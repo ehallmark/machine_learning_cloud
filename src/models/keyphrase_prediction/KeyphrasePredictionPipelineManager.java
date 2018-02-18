@@ -9,9 +9,12 @@ import models.keyphrase_prediction.models.DefaultModel;
 import models.keyphrase_prediction.models.DefaultModel2;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
+import models.similarity_models.combined_similarity_model.CombinedDeepCPC2VecEncodingModel;
+import models.similarity_models.combined_similarity_model.CombinedDeepCPC2VecEncodingPipelineManager;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
+import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -35,6 +38,8 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     public static final Model modelParams = new DefaultModel2();
     @Getter
     private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
+    @Getter
+    private CombinedDeepCPC2VecEncodingPipelineManager combinedDeepCPC2VecEncodingPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyphrase_prediction_model_predictions/predictions_map.jobj");
     @Getter
@@ -46,6 +51,11 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     public KeyphrasePredictionPipelineManager(WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
         super(INPUT_DATA_FOLDER, PREDICTION_DATA_FILE);
         this.wordCPC2VecPipelineManager=wordCPC2VecPipelineManager;
+    }
+
+    public KeyphrasePredictionPipelineManager(CombinedDeepCPC2VecEncodingPipelineManager combinedDeepCPC2VecEncodingPipelineManager) {
+        super(INPUT_DATA_FOLDER, PREDICTION_DATA_FILE);
+        this.combinedDeepCPC2VecEncodingPipelineManager=combinedDeepCPC2VecEncodingPipelineManager;
     }
 
     @Override
@@ -104,9 +114,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         WordOrderStage wordOrder = new WordOrderStage(stage3.get(), stage1.get(), modelParams);
         wordOrder.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
-
-
-
 
         multiStemSet = wordOrder.get();
 
@@ -226,7 +233,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         }
 
         List<MultiStem> keywords = Collections.synchronizedList(new ArrayList<>(keywordToVectorLookupTable.keySet()));
-        return predict(keywords,wordCPC2VecPipelineManager.getOrLoadCPCVectors(),maxTags,minScore);
+        return predict(keywords,combinedDeepCPC2VecEncodingPipelineManager.getOrLoadCPCVectors(),maxTags,minScore);
     }
 
 
@@ -237,16 +244,17 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             if(keywordToVectorLookupTable==null) {
 
                 // get vectors
-                wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
-                Map<String, INDArray> wordVectorMap = wordCPC2VecPipelineManager.getOrLoadWordVectors();
                 keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
-
+                CombinedDeepCPC2VecEncodingModel simModel = (CombinedDeepCPC2VecEncodingModel)combinedDeepCPC2VecEncodingPipelineManager.getModel();
+                Word2Vec word2Vec = combinedDeepCPC2VecEncodingPipelineManager.getWord2Vec();
                 multiStemSet.stream().forEach(stem -> {
                     String[] words = stem.getBestPhrase().toLowerCase().split(" ");
-                    List<INDArray> wordVectors = Stream.of(words).map(word -> wordVectorMap.get(word)).filter(vec -> vec != null).collect(Collectors.toList());
-                    if (wordVectors.size() >= Math.max(1, words.length - 1)) {
-                        INDArray vec = Transforms.unitVec(Nd4j.vstack(wordVectors).mean(0));
-                        keywordToVectorLookupTable.put(stem, vec);
+                    List<String> valid = Stream.of(words).filter(word2Vec::hasWord).collect(Collectors.toList());
+                    if(valid.size()==words.length) {
+                        INDArray encoding = simModel.encodeText(valid,6);
+                        if (encoding!=null) {
+                            keywordToVectorLookupTable.put(stem, encoding);
+                        }
                     }
                 });
 
@@ -266,8 +274,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     @Override
     protected void setDatasetManager() {
-        if(datasetManager==null) {
-        }
+
     }
 
     public static void main(String[] args) {
@@ -280,10 +287,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         boolean runPredictions = true;
         int nEpochs = 10;
 
-        String CPC2VecModelName = WordCPC2VecPipelineManager.SMALL_MODEL_NAME;
-
-        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(CPC2VecModelName,-1,-1,-1);
-        KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(wordCPC2VecPipelineManager);
+        KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(CombinedDeepCPC2VecEncodingPipelineManager.getOrLoadManager(true));
 
         //pipelineManager.initStages(true,false,false,false);
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
