@@ -136,6 +136,36 @@ public class Database {
 		return collection;
 	}
 
+	public static List<String> loadAllFilingsWithVectors() throws SQLException {
+
+		PreparedStatement ps = conn.prepareStatement("select filing from sim_vectors");
+		List<String> list = new LinkedList<>();
+		ps.setFetchSize(100);
+		ResultSet rs = ps.executeQuery();
+		while(rs.next()) {
+			list.add(rs.getString(1));
+		}
+		rs.close();
+		ps.close();
+		return list;
+	}
+
+	public static void upsertVectors(Map<String,Double[]> map) throws SQLException {
+		List<Map.Entry<String,Double[]>> entries = new ArrayList<>(map.entrySet());
+		PreparedStatement ps = conn.prepareStatement("insert into sim_vectors (filing,vector) values (?,?) on conflict (filing) do update set vector=?");
+		for(int i = 0; i < entries.size(); i++) {
+			Map.Entry<String,Double[]> entry = entries.get(i);
+			ps.setString(1,entry.getKey());
+			Array array =  conn.createArrayOf("float8",entry.getValue());
+			ps.setArray(2,array);
+            ps.setArray(3,array);
+            ps.executeUpdate();
+            array.free();
+        }
+		ps.close();
+		commit();
+	}
+
 	public static void ingestPairRecords(Map<Flag,String> data, String tableName) throws SQLException {
 		List<Map.Entry<Flag,String>> entries = data.entrySet().stream().collect(Collectors.toList());
 		String queryPrefix = "INSERT INTO "+tableName+" ("+String.join(",",entries.stream().map(e->e.getKey().dbName).collect(Collectors.toList()))+") VALUES ";

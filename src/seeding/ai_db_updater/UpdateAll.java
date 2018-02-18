@@ -79,7 +79,7 @@ public class UpdateAll {
                     List<String> allAssignees = new ArrayList<>(Database.getAssignees());
                     List<String> allClassCodes = new ArrayList<>(Database.getClassCodes());
                     Map<String,Boolean> predictions = pipelineManager.updatePredictions(allAssets,allAssignees,allClassCodes);
-                    pipelineManager.savePredictions(predictions);
+                    if(predictions!=null) pipelineManager.savePredictions(predictions);
 
                 } else if (arg.equals("10")) {
                     UpdateAssetGraphs.update(false);

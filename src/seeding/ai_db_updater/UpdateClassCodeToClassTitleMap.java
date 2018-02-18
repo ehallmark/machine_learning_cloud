@@ -17,7 +17,7 @@ import java.util.*;
  * Created by ehallmark on 1/25/17.
  */
 public class UpdateClassCodeToClassTitleMap {
-    private static final File cpcInputDataFile = new File(Constants.DATA_FOLDER+"CPCSchemeXML201708/");
+    private static final File cpcInputDataFile = new File("CPCSchemeXML201802/");
     // the file is located here: http://www.cooperativepatentclassification.org/Archive.html
 
     public static void main(String[] args) {

@@ -146,7 +146,9 @@ public class CPCHierarchy {
 
     public static CPCHierarchy updateAndGetLatest() {
         CPCHierarchy hierarchy = new CPCHierarchy();
-        hierarchy.run(new ArrayList<>(Database.getClassCodeToClassTitleMap().keySet()));
+        Set<String> cpcs = new HashSet<>(Database.getClassCodes());
+        cpcs.addAll(Database.getClassCodeToClassTitleMap().keySet());
+        hierarchy.run(new ArrayList<>(cpcs));
         hierarchy.save();
         return hierarchy;
     }

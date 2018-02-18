@@ -73,23 +73,44 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
 
     public synchronized INDArray encodeCPCs(List<String> cpcs) {
         if(predictions==null) predictions = pipelineManager.loadPredictions();
-        return Nd4j.vstack(cpcs.stream().map(cpc->{
+        List<INDArray> vectors = cpcs.stream().map(cpc->{
             CPC c = pipelineManager.getHierarchy().getLabelToCPCMap().get(cpc);
             while(c!=null&&!predictions.containsKey(c.getName())) {
                 c = c.getParent();
             }
             if(c==null)return null;
             return predictions.get(c.getName());
-        }).collect(Collectors.toList()));
+        }).collect(Collectors.toList());
+        if(vectors.isEmpty()) return null;
+        return Nd4j.vstack(vectors);
     }
 
-    public synchronized INDArray encodeCPCsSingle(List<String> cpcs) {
-        if(predictions==null) predictions = pipelineManager.loadPredictions();
-        Collection<CPC> valid = cpcs.stream().map(cpc->pipelineManager.getHierarchy().getLabelToCPCMap().get(cpc)).filter(cpc->cpc!=null).collect(Collectors.toList());
-        INDArray inputs = CPCDataSetIterator.createVector(Stream.of(valid),cpcToIdxMap,1,cpcToIdxMap.size());
+    private static final Map<String,Collection<CPC>> ancestorsCache = Collections.synchronizedMap(new HashMap<>());
+    public synchronized INDArray encodeCPCsMultiple(List<List<String>> cpcsList) {
+        if(cpcToIdxMap==null) cpcToIdxMap = getCpcToIdxMap();
+        CPCHierarchy hierarchy = pipelineManager.getHierarchy();
+
+        double[][] vec = new double[cpcsList.size()][];
+        for(int i = 0; i < cpcsList.size(); i++) {
+            List<String> cpcs = cpcsList.get(i);
+            double[] v = new double[cpcToIdxMap.size()];
+            vec[i] = v;
+            for(int j = 0; j < cpcs.size(); j++) {
+                String cpc = cpcs.get(j);
+                Collection<CPC> family = ancestorsCache.getOrDefault(cpc,hierarchy.cpcWithAncestors(cpc));
+                ancestorsCache.putIfAbsent(cpc,family);
+
+                family.forEach(member -> {
+                    if (cpcToIdxMap.containsKey(member.getName())) {
+                        v[cpcToIdxMap.get(member.getName())] = 1d;
+                    }
+                });
+            }
+        }
+
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
-        return vae.activate(inputs,false);
+        return vae.activate(Nd4j.create(vec),false);
     }
 
     @Override

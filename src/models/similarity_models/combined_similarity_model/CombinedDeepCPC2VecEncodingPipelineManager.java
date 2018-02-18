@@ -187,15 +187,15 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
         boolean rebuildDatasets;
-        boolean runModels = true;
+        boolean runModels = false;
         boolean forceRecreateModels = false;
-        boolean runPredictions = false;
+        boolean runPredictions = true;
         boolean rebuildPrerequisites = false;
         int nEpochs = 1;
 
         rebuildDatasets = runModels && !new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)).exists();
 
-        CombinedDeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets);
+        CombinedDeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets||runPredictions);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
