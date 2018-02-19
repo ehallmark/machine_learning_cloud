@@ -13,6 +13,7 @@ import models.similarity_models.combined_similarity_model.CombinedCPC2Vec2VAEEnc
 import models.similarity_models.combined_similarity_model.CombinedCPC2Vec2VAEEncodingPipelineManager;
 import models.similarity_models.combined_similarity_model.CombinedDeepCPC2VecEncodingModel;
 import models.similarity_models.combined_similarity_model.CombinedDeepCPC2VecEncodingPipelineManager;
+import models.similarity_models.paragraph_vectors.FloatFrequencyPair;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
@@ -21,6 +22,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
@@ -170,6 +172,12 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             INDArray vec = keywordToVectorLookupTable.get(keywords.get(i));
             keywordMatrix.putRow(i,Transforms.unitVec(vec));
         }
+        INDArray cpcMatrix = Nd4j.create(toPredictMap.size(),toPredictMap.values().stream().findAny().get().length());
+        List<String> allEntries = new ArrayList<>(toPredictMap.keySet());
+        for(int i = 0; i < keywords.size(); i++) {
+            INDArray vec = toPredictMap.get(allEntries.get(i));
+            cpcMatrix.putRow(i,Transforms.unitVec(vec));
+        }
 
         final int batchSize = 10000;
 
@@ -181,37 +189,35 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         System.out.println("Starting predictions...");
 
         Map<String,Set<String>> predictions = Collections.synchronizedMap(new HashMap<>());
-        List<List<Map.Entry<String,INDArray>>> entries = batchBy(new ArrayList<>(cpcVectors.entrySet()),batchSize);
+        List<List<String>> entries = batchBy(allEntries,batchSize);
+        AtomicInteger idx = new AtomicInteger(0);
+        double maxIncrease = (1d - minScore)/2;
         entries.forEach(batch->{
-            INDArray cpcMat = Nd4j.create(batch.size(),keywordMatrix.columns());
-            AtomicInteger c = new AtomicInteger(0);
-            batch.forEach(entry->{
-                INDArray cpcVec = Nd4j.toFlattened('c',entry.getValue().broadcast(3,entry.getValue().length()).reshape(1,3* entry.getValue().length()));
-                cpcMat.putRow(c.getAndIncrement(),cpcVec);
-            });
-            cpcMat.diviColumnVector(cpcMat.norm2(1));
+            int i = idx.getAndIncrement();
+            INDArray cpcMat = cpcMatrix.get(NDArrayIndex.interval(i*batchSize,i*batchSize+batch.size()));
             INDArray simResults = keywordMatrix.mmul(cpcMat.transpose());
             System.out.println("Matrix results shape: "+Arrays.toString(simResults.shape()));
-            float[] allScores = Nd4j.toFlattened('f',simResults).data().asFloat();
-            int numKeywords = keywords.size();
-            IntStream.range(0,batch.size()).parallel().forEach(b->{
-                MinHeap<WordFrequencyPair<MultiStem,Double>> heap = new MinHeap<>(maxTags);
-                for (int i = 0; i < numKeywords; i++) {
-                    double score = allScores[i+b*numKeywords];
-                    if (score >= minScore) {
-                        heap.add(new WordFrequencyPair<>(keywords.get(i), score));
+            float[] data = Nd4j.toFlattened('f',simResults).data().asFloat();
+            for(int r = 0; r < batch.size(); r++) {
+                MinHeap<FloatFrequencyPair<String>> heap = new MinHeap<>(maxTags);
+                int found = 0;
+                for(int j = r*keywords.size(); j < r*keywords.size()+keywords.size(); j++) {
+                    int kIdx = j%keywords.size();
+                    float s = data[j];
+                    if(s>=minScore) {
+                        found++;
+                        heap.add(new FloatFrequencyPair<>(keywords.get(kIdx).getBestPhrase(), s));
                     }
                 }
 
-                Set<String> tags = Collections.synchronizedSet(new HashSet<>(maxTags));
-
-                while (!heap.isEmpty()) {
-                    MultiStem keyword = heap.remove().getFirst();
-                    tags.add(keyword.getBestPhrase());
+                Set<String> tags = Collections.synchronizedSet(new HashSet<>());
+                while(!heap.isEmpty()) {
+                    FloatFrequencyPair<String> p = heap.remove();
+                    if(p.getSecond()>=minScore+((maxIncrease*(1d-(double)found)/maxTags))) {
+                        tags.add(p.getFirst());
+                    }
                 }
-
-                String cpc = batch.get(b).getKey();
-
+                String cpc = batch.get(r);
                 if(!tags.isEmpty()) {
                     predictions.put(cpc, tags);
                 } else {
@@ -224,14 +230,14 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
                     System.out.println("Best keywords for "+cpc+": "+String.join("; ",tags));
                     System.out.println("Finished "+cnt.get()+" out of "+cpcVectors.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
                 }
-            });
+            }
         });
 
         System.out.println("size="+predictions.size());
         return predictions;
     }
 
-    private static List<List<Map.Entry<String,INDArray>>> batchBy(List<Map.Entry<String,INDArray>> entries, int batch) {
+    private static List<List<String>> batchBy(List<String> entries, int batch) {
         return IntStream.range(0,1+(entries.size()/batch)).mapToObj(i->{
             if(i*batch>=entries.size())return null;
             return entries.subList(i*batch,Math.min(i*batch+batch,entries.size()));
@@ -241,7 +247,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     @Override
     public Map<String,Set<String>> predict(List<String> assets, List<String> assignees, List<String> cpcs) {
         final double minScore = 0.55d;
-        final int maxTags = 15;
+        final int maxTags = 10;
 
         if(keywordToVectorLookupTable==null) {
             System.out.println("Loading keyword to vector table...");
@@ -267,15 +273,8 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
                     String[] words = stem.getBestPhrase().toLowerCase().split(" ");
                     List<String> valid = Stream.of(words).filter(word2Vec::hasWord).collect(Collectors.toList());
                     if(valid.size()==words.length) {
-                        INDArray encoding = word2Vec.getWordVectors(valid);
-                        encoding.diviColumnVector(encoding.norm2(1));
-                        if(valid.size()==1) {
-                            encoding = Nd4j.toFlattened('c',encoding.broadcast(3,encoding.length()));
-                        } else if(valid.size()==2) {
-                            encoding = Nd4j.hstack(encoding.getRow(0),encoding.mean(0),encoding.getRow(1));
-                        }
+                        INDArray encoding = Transforms.unitVec(word2Vec.getWordVectors(valid).mean(0));
                         if (encoding!=null) {
-                            encoding =  encoding.reshape(1,word2Vec.getLayerSize()*3);
                             //System.out.println("Shape: "+Arrays.toString(encoding.shape()));
                             keywordToVectorLookupTable.put(stem,encoding);
                         }

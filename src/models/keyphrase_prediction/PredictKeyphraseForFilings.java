@@ -42,7 +42,7 @@ public class PredictKeyphraseForFilings {
         final double minScore = 0.75;
 
         String CPC2VecModelName = WordCPC2VecPipelineManager.DEEP_MODEL_NAME;
-        final int vectorSize = 3*WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(CPC2VecModelName);
+        final int vectorSize = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(CPC2VecModelName);
         WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(CPC2VecModelName,-1,-1,-1);
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(wordCPC2VecPipelineManager);
         pipelineManager.runPipeline(false,false,false,false,-1,false);
@@ -63,8 +63,7 @@ public class PredictKeyphraseForFilings {
         cpcVectors.entrySet().forEach(e->{
             int i = idx.getAndIncrement();
             cpcToIdx.put(e.getKey(),i);
-            INDArray cpcVec = Nd4j.toFlattened('c',e.getValue().broadcast(3,e.getValue().length()).reshape(1,3* e.getValue().length()));
-            cpcMatrix.putRow(i,Transforms.unitVec(cpcVec));
+            cpcMatrix.putRow(i,Transforms.unitVec(e.getValue()));
         });
         idx.set(0);
         System.out.println("Building keyphrase matrix...");
