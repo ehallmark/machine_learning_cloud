@@ -97,13 +97,15 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
         // stage 3
         System.out.println("Pre-grouping data for wikipedia stage...");
-        WikipediaStage wikipediaStage = new WikipediaStage(cpcDensityStage.get(), modelParams);
-        if(filters) wikipediaStage.run(rerunFilters);
+        wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
+        Word2Vec word2Vec = (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet();
+        KMeansStage kMeansStage = new KMeansStage(cpcDensityStage.get(),  word2Vec, modelParams);
+        if(filters) kMeansStage.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
         // stage 3
         System.out.println("Pre-grouping data for word order...");
-        WordOrderStage wordOrder = new WordOrderStage(wikipediaStage.get(), stage1.get(), modelParams);
+        WordOrderStage wordOrder = new WordOrderStage(kMeansStage.get(), stage1.get(), modelParams);
         wordOrder.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
