@@ -174,7 +174,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         }
         INDArray cpcMatrix = Nd4j.create(toPredictMap.size(),toPredictMap.values().stream().findAny().get().length());
         List<String> allEntries = new ArrayList<>(toPredictMap.keySet());
-        for(int i = 0; i < keywords.size(); i++) {
+        for(int i = 0; i < allEntries.size(); i++) {
             INDArray vec = toPredictMap.get(allEntries.get(i));
             cpcMatrix.putRow(i,Transforms.unitVec(vec));
         }
@@ -194,7 +194,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         double maxIncrease = (1d - minScore)/2;
         entries.forEach(batch->{
             int i = idx.getAndIncrement();
-            INDArray cpcMat = cpcMatrix.get(NDArrayIndex.interval(i*batchSize,i*batchSize+batch.size()));
+            INDArray cpcMat = cpcMatrix.get(NDArrayIndex.interval(i*batchSize,i*batchSize+batch.size()),NDArrayIndex.all());
             INDArray simResults = keywordMatrix.mmul(cpcMat.transpose());
             System.out.println("Matrix results shape: "+Arrays.toString(simResults.shape()));
             float[] data = Nd4j.toFlattened('f',simResults).data().asFloat();
@@ -246,7 +246,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     @Override
     public Map<String,Set<String>> predict(List<String> assets, List<String> assignees, List<String> cpcs) {
-        final double minScore = 0.55d;
+        final double minScore = 0.60d;
         final int maxTags = 10;
 
         if(keywordToVectorLookupTable==null) {
