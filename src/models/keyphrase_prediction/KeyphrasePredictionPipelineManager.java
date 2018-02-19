@@ -5,27 +5,18 @@ import cpc_normalization.CPCHierarchy;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import lombok.Getter;
-import models.keyphrase_prediction.models.DefaultModel;
 import models.keyphrase_prediction.models.DefaultModel2;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
-import models.similarity_models.combined_similarity_model.CombinedCPC2Vec2VAEEncodingModel;
-import models.similarity_models.combined_similarity_model.CombinedCPC2Vec2VAEEncodingPipelineManager;
-import models.similarity_models.combined_similarity_model.CombinedDeepCPC2VecEncodingModel;
-import models.similarity_models.combined_similarity_model.CombinedDeepCPC2VecEncodingPipelineManager;
 import models.similarity_models.paragraph_vectors.FloatFrequencyPair;
-import models.similarity_models.paragraph_vectors.WordFrequencyPair;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
 import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import org.nd4j.linalg.primitives.Pair;
-import seeding.Constants;
 import seeding.Database;
 import tools.MinHeap;
 
@@ -48,6 +39,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     @Getter
     private static Map<MultiStem,INDArray> keywordToVectorLookupTable;
     private static final File keywordToVectorLookupTableFile = new File("keyword_to_vector_predictions_lookup_table.jobj");
+    @Getter
     private Set<MultiStem> multiStemSet;
     private static Map<String,Collection<CPC>> cpcMap;
     private static Map<String,MultiStem> labelToKeywordMap;
@@ -102,15 +94,16 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         if(filters)cpcDensityStage.run(rerunFilters);
         //if(alwaysRerun) stage4.createVisualization();
 
+
         // stage 3
-        System.out.println("Pre-grouping data for stage 3...");
-        Stage3 stage3 = new Stage3(cpcDensityStage.get(), modelParams);
-        if(filters) stage3.run(rerunFilters);
+        System.out.println("Pre-grouping data for wikipedia stage...");
+        WikipediaStage wikipediaStage = new WikipediaStage(cpcDensityStage.get(), modelParams);
+        if(filters) wikipediaStage.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
         // stage 3
         System.out.println("Pre-grouping data for word order...");
-        WordOrderStage wordOrder = new WordOrderStage(stage3.get(), stage1.get(), modelParams);
+        WordOrderStage wordOrder = new WordOrderStage(wikipediaStage.get(), stage1.get(), modelParams);
         wordOrder.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
@@ -317,7 +310,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         encodingPipelineManager.runPipeline(false,false,false,false,-1,false);
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(encodingPipelineManager);
 
-        //pipelineManager.initStages(true,false,false,false);
-        pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
+        pipelineManager.initStages(true,true,false,false);
+        //pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }
 }
