@@ -3,8 +3,7 @@ package models.keyphrase_prediction.stages;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
-import models.kmeans.DistanceFunctions;
-import models.kmeans.KMeans;
+import models.kmeans.AssetKMeans;
 import models.similarity_models.combined_similarity_model.Word2VecToCPCIterator;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -35,7 +34,7 @@ public class KMeansStage extends Stage<Set<MultiStem>>  {
         this.word2Vec=word2Vec;
         this.net=net;
         this.data = multiStems==null? Collections.emptySet() : new HashSet<>(multiStems);
-        this.stemToMultiStemMap = this.data.stream().collect(Collectors.toMap(s->s.toString(),s->s));
+        this.stemToMultiStemMap = this.data.stream().collect(Collectors.toMap(s->s.getBestPhrase(),s->s));
         this.docCounts=docCounts;
     }
 
@@ -45,25 +44,15 @@ public class KMeansStage extends Stage<Set<MultiStem>>  {
             // apply filter 2
             System.out.println("Num keywords before kmeans stage: " + data.size());
 
-            KMeans kMeansModel = new KMeans(5000, 1000, DistanceFunctions.COSINE_DISTANCE_FUNCTION);
-            int numKMeansEpochs = 20;
             System.out.println("Computing multi stem encoding map...");
             Map<String,INDArray> multiStemToEncodingsMap = computeMultiStemToEncodingMap(stemToBestPhraseMap,word2Vec,net);
+            AssetKMeans kMeansModel = new AssetKMeans(multiStemToEncodingsMap, data.size()/10);
 
             System.out.println("Starting to fit k means...");
-            kMeansModel.fit(multiStemToEncodingsMap,numKMeansEpochs,false);
-
-            List<Set<String>> clusters = kMeansModel.getClusters();
-            data = clusters.stream().map(cluster->{
-                return cluster.stream()
+            Map<String,List<String>> clusters = kMeansModel.clusterAssets();
+            data = clusters.keySet().stream()
                         .map(name->stemToMultiStemMap.get(name))
-                        .filter(m->m!=null)
-                        .map(m->new Pair<>(m,docCounts.getOrDefault(m,new AtomicLong(0)).get()))
-                        .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond()))
-                        .map(p->p.getFirst())
-                        .findFirst().orElse(null);
-
-            }).filter(stem->stem!=null).collect(Collectors.toSet());
+                        .filter(stem->stem!=null).collect(Collectors.toSet());
 
             System.out.println("Num keywords after kmeans stage: " + data.size());
 
