@@ -9,7 +9,7 @@ public class DefaultModel2 extends Model {
         return "vae_model";
     }
 
-    public double getDefaultUpperBound() { return 0.95d; }
+    public double getDefaultUpperBound() { return 1d; }
     public double getDefaultLowerBound() { return 0.6d; }
     public double getDefaultMinValue() { return Double.MIN_VALUE; }
     public int getMinDocFrequency() { return 5; };
