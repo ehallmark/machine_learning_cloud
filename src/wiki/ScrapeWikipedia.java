@@ -59,9 +59,9 @@ public class ScrapeWikipedia {
             boolean isTechnology = isTechnology(stem.getBestPhrase().split(" "));
             if (cnt.getAndIncrement() % 1000 == 999) {
                 System.out.println("Seen "+cnt.get()+" out of "+multiStems.size()+" Num Valid: "+technologies.size());
-                System.out.println(stem.getBestPhrase() + ": " + isTechnology);
             }
             if(isTechnology) {
+                System.out.println(stem.getBestPhrase() + ": " + isTechnology);
                 technologies.add(stem);
             }
         });
