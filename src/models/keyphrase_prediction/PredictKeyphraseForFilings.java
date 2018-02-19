@@ -41,7 +41,8 @@ public class PredictKeyphraseForFilings {
         final int maxTags = 5;
         final double minScore = 0.75;
 
-        String CPC2VecModelName = WordCPC2VecPipelineManager.SMALL_MODEL_NAME;
+        String CPC2VecModelName = WordCPC2VecPipelineManager.DEEP_MODEL_NAME;
+        final int vectorSize = 3*WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(CPC2VecModelName);
         WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(CPC2VecModelName,-1,-1,-1);
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(wordCPC2VecPipelineManager);
         pipelineManager.runPipeline(false,false,false,false,-1,false);
@@ -49,14 +50,32 @@ public class PredictKeyphraseForFilings {
         Map<String,Set<String>> cpcToKeyphraseMap = pipelineManager.loadPredictions();
         Map<String,Collection<CPC>> filingToCPCMap = pipelineManager.getCPCMap();
 
-        CombinedDeepCPC2VecEncodingPipelineManager combinedDeepCPC2VecEncodingPipelineManager = CombinedDeepCPC2VecEncodingPipelineManager.getOrLoadManager(true);
-        CombinedDeepCPC2VecEncodingModel simModel = (CombinedDeepCPC2VecEncodingModel)combinedDeepCPC2VecEncodingPipelineManager.getModel();
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
-        Map<String,INDArray> cpcVectors = combinedDeepCPC2VecEncodingPipelineManager.getOrLoadCPCVectors();
+        Map<String,INDArray> cpcVectors = wordCPC2VecPipelineManager.getOrLoadCPCVectors();
         Map<String,INDArray> keyphraseVectors = KeyphrasePredictionPipelineManager.getKeywordToVectorLookupTable()
                 .entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey().getBestPhrase(),e->e.getValue()));
 
+        System.out.println("Building cpc matrix...");
+        Map<String,Integer> cpcToIdx = new HashMap<>();
+        AtomicInteger idx = new AtomicInteger(0);
+        INDArray cpcMatrix = Nd4j.create(cpcVectors.size(),vectorSize);
+        cpcVectors.entrySet().forEach(e->{
+            int i = idx.getAndIncrement();
+            cpcToIdx.put(e.getKey(),i);
+            INDArray cpcVec = Nd4j.toFlattened('c',e.getValue().broadcast(3,e.getValue().length()).reshape(1,3* e.getValue().length()));
+            cpcMatrix.putRow(i,Transforms.unitVec(cpcVec));
+        });
+        idx.set(0);
+        System.out.println("Building keyphrase matrix...");
+        Map<String,Integer> keyphraseToIdx = new HashMap<>();
+        INDArray keyphraseMatrix = Nd4j.create(keyphraseVectors.size(),vectorSize);
+        keyphraseVectors.entrySet().forEach(e->{
+            int i = idx.getAndIncrement();
+            keyphraseToIdx.put(e.getKey(),i);
+            keyphraseMatrix.putRow(i,Transforms.unitVec(e.getValue()));
+        });
+        System.out.println("Finished");
 
         technologyMap = Collections.synchronizedMap(filingToCPCMap.entrySet().parallelStream()
                 .map(e->{
@@ -64,26 +83,24 @@ public class PredictKeyphraseForFilings {
                     String filing = e.getKey();
 
                     Collection<CPC> cpcs = e.getValue();
-                    List<INDArray> cpcVecs = cpcs.stream().filter(cpc->cpc.getNumParts()>=4).map(cpc->cpcVectors.get(cpc.getName())).filter(vec->vec!=null).collect(Collectors.toList());
-                    if(cpcVecs.size()>0) {
-                        INDArray cpcVec = Transforms.unitVec(Nd4j.vstack(cpcVecs).mean(0));
+                    List<String> validCPCs = cpcs.stream().filter(cpc->cpc.getNumParts()>=3).filter(cpc->cpcToIdx.containsKey(cpc.getName())).map(cpc->cpc.getName()).collect(Collectors.toList());
+                    if(validCPCs.size()>0) {
+                        int[] cpcIndices = validCPCs.stream().mapToInt(cpc->cpcToIdx.get(cpc)).toArray();
+                        INDArray cpcVec = Nd4j.pullRows(cpcMatrix,1,cpcIndices);
                         Map<String, Long> keyphraseCounts = cpcs.stream().flatMap(cpc -> cpcToKeyphraseMap.getOrDefault(cpc.getName(), Collections.emptySet()).stream()).collect(Collectors.groupingBy(i -> i, Collectors.counting()));
 
-                        List<Pair<String, INDArray>> phrasesWithVectors = keyphraseCounts.keySet().stream().map(phrase -> {
-                            INDArray vec = keyphraseVectors.get(phrase);
-                            if (vec==null) return null;
-                            return new Pair<>(phrase, vec);
-                        }).filter(p -> p != null).collect(Collectors.toList());
+                        List<String> phrases = keyphraseCounts.keySet().stream().filter(p->keyphraseToIdx.containsKey(p)).collect(Collectors.toList());
 
-                        if (phrasesWithVectors.size() > 0) {
-                            INDArray phraseMatrix = Nd4j.vstack(phrasesWithVectors.stream().map(p -> p.getSecond()).collect(Collectors.toList()));
+                        if (phrases.size() > 0) {
+                            int[] keyphraseIndices = phrases.stream().mapToInt(p->keyphraseToIdx.get(p)).toArray();
+                            INDArray phraseMatrix = Nd4j.pullRows(keyphraseMatrix,1, keyphraseIndices);
                             MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(maxTags);
 
-                            float[] scores = phraseMatrix.mulRowVector(cpcVec).sum(1).data().asFloat();
+                            float[] scores = phraseMatrix.mmul(cpcVec.transpose()).mean(0).data().asFloat();
                             for(int i = 0; i < scores.length; i++) {
                                 double score = scores[i];
                                 if(score>=minScore) {
-                                    String phrase = phrasesWithVectors.get(i).getFirst();
+                                    String phrase = phrases.get(i);
                                     heap.add(new WordFrequencyPair<>(phrase, score*Math.sqrt(keyphraseCounts.get(phrase))));
                                 }
                             }

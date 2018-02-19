@@ -31,6 +31,7 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -40,8 +41,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     public static final Model modelParams = new DefaultModel2();
     @Getter
     private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
-    @Getter
-    private CombinedDeepCPC2VecEncodingPipelineManager combinedDeepCPC2VecEncodingPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
     private static final File PREDICTION_DATA_FILE = new File("keyphrase_prediction_model_predictions/predictions_map.jobj");
     @Getter
@@ -55,10 +54,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         this.wordCPC2VecPipelineManager=wordCPC2VecPipelineManager;
     }
 
-    public KeyphrasePredictionPipelineManager(CombinedDeepCPC2VecEncodingPipelineManager combinedDeepCPC2VecEncodingPipelineManager) {
-        super(INPUT_DATA_FOLDER, PREDICTION_DATA_FILE);
-        this.combinedDeepCPC2VecEncodingPipelineManager=combinedDeepCPC2VecEncodingPipelineManager;
-    }
 
     @Override
     public DataSetManager<WordCPCIterator> getDatasetManager() {
@@ -176,6 +171,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             keywordMatrix.putRow(i,Transforms.unitVec(vec));
         }
 
+        final int batchSize = 10000;
 
         Map<String,INDArray> cpcVectors = toPredictMap;
 
@@ -185,49 +181,67 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         System.out.println("Starting predictions...");
 
         Map<String,Set<String>> predictions = Collections.synchronizedMap(new HashMap<>());
-        cpcVectors.entrySet().parallelStream().forEach(e->{
-            MinHeap<WordFrequencyPair<MultiStem,Double>> heap = new MinHeap<>(maxTags);
-
-            String cpc = e.getKey();
-            INDArray cpcVec = Transforms.unitVec(e.getValue());
-
-            float[] scores = keywordMatrix.mulRowVector(cpcVec).sum(1).data().asFloat();
-            for(int i = 0; i < scores.length; i++) {
-                double score = scores[i];
-                if(score>=minScore) {
-                    heap.add(new WordFrequencyPair<>(keywords.get(i), score));
+        List<List<Map.Entry<String,INDArray>>> entries = batchBy(new ArrayList<>(cpcVectors.entrySet()),batchSize);
+        entries.forEach(batch->{
+            INDArray cpcMat = Nd4j.create(batch.size(),keywordMatrix.columns());
+            AtomicInteger c = new AtomicInteger(0);
+            batch.forEach(entry->{
+                INDArray cpcVec = Nd4j.toFlattened('c',entry.getValue().broadcast(3,entry.getValue().length()).reshape(1,3* entry.getValue().length()));
+                cpcMat.putRow(c.getAndIncrement(),cpcVec);
+            });
+            cpcMat.diviColumnVector(cpcMat.norm2(1));
+            INDArray simResults = keywordMatrix.mmul(cpcMat.transpose());
+            System.out.println("Matrix results shape: "+Arrays.toString(simResults.shape()));
+            float[] allScores = Nd4j.toFlattened('f',simResults).data().asFloat();
+            int numKeywords = keywords.size();
+            IntStream.range(0,batch.size()).parallel().forEach(b->{
+                MinHeap<WordFrequencyPair<MultiStem,Double>> heap = new MinHeap<>(maxTags);
+                for (int i = 0; i < numKeywords; i++) {
+                    double score = allScores[i+b*numKeywords];
+                    if (score >= minScore) {
+                        heap.add(new WordFrequencyPair<>(keywords.get(i), score));
+                    }
                 }
-            }
 
-            Set<String> tags = Collections.synchronizedSet(new HashSet<>(maxTags));
+                Set<String> tags = Collections.synchronizedSet(new HashSet<>(maxTags));
 
-            while(!heap.isEmpty()) {
-                MultiStem keyword = heap.remove().getFirst();
-                tags.add(keyword.getBestPhrase());
-            }
+                while (!heap.isEmpty()) {
+                    MultiStem keyword = heap.remove().getFirst();
+                    tags.add(keyword.getBestPhrase());
+                }
 
-            if(!tags.isEmpty()) {
-                predictions.put(cpc, tags);
-            } else {
-                incomplete.getAndIncrement();
-            }
+                String cpc = batch.get(b).getKey();
+
+                if(!tags.isEmpty()) {
+                    predictions.put(cpc, tags);
+                } else {
+                    incomplete.getAndIncrement();
+                }
 
 
-            if(cnt.getAndIncrement()%100==99) {
-                System.gc();
-                System.out.println("Best keywords for "+cpc+": "+String.join("; ",tags));
-                System.out.println("Finished "+cnt.get()+" out of "+cpcVectors.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
-            }
+                if(cnt.getAndIncrement()%100==99) {
+                    System.gc();
+                    System.out.println("Best keywords for "+cpc+": "+String.join("; ",tags));
+                    System.out.println("Finished "+cnt.get()+" out of "+cpcVectors.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
+                }
+            });
         });
 
         System.out.println("size="+predictions.size());
         return predictions;
     }
 
+    private static List<List<Map.Entry<String,INDArray>>> batchBy(List<Map.Entry<String,INDArray>> entries, int batch) {
+        return IntStream.range(0,1+(entries.size()/batch)).mapToObj(i->{
+            if(i*batch>=entries.size())return null;
+            return entries.subList(i*batch,Math.min(i*batch+batch,entries.size()));
+        }).filter(l->l!=null&&l.size()>0).collect(Collectors.toList());
+    }
+
     @Override
     public Map<String,Set<String>> predict(List<String> assets, List<String> assignees, List<String> cpcs) {
-        final double minScore = 0.70d;
-        final int maxTags = 30;
+        final double minScore = 0.55d;
+        final int maxTags = 15;
 
         if(keywordToVectorLookupTable==null) {
             System.out.println("Loading keyword to vector table...");
@@ -235,7 +249,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         }
 
         List<MultiStem> keywords = Collections.synchronizedList(new ArrayList<>(keywordToVectorLookupTable.keySet()));
-        return predict(keywords,combinedDeepCPC2VecEncodingPipelineManager.getOrLoadCPCVectors(),maxTags,minScore);
+        return predict(keywords,wordCPC2VecPipelineManager.getOrLoadCPCVectors(),maxTags,minScore);
     }
 
 
@@ -244,23 +258,26 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             keywordToVectorLookupTable = (Map<MultiStem, INDArray>) Database.tryLoadObject(keywordToVectorLookupTableFile);
 
             if(keywordToVectorLookupTable==null) {
-
                 // get vectors
                 keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
-                CombinedDeepCPC2VecEncodingModel simModel = (CombinedDeepCPC2VecEncodingModel)combinedDeepCPC2VecEncodingPipelineManager.getModel();
-                Word2Vec word2Vec = combinedDeepCPC2VecEncodingPipelineManager.getWord2Vec();
-                CombinedCPC2Vec2VAEEncodingPipelineManager vaeEncodingPipelineManager = CombinedCPC2Vec2VAEEncodingPipelineManager.getOrLoadManager(true);
-                vaeEncodingPipelineManager.runPipeline(false,false,false,false,-1,false);
-                CombinedCPC2Vec2VAEEncodingModel cpc2VaeModel = (CombinedCPC2Vec2VAEEncodingModel)vaeEncodingPipelineManager.getModel();
+                Word2Vec word2Vec = (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet();
                 System.out.println("Num vectors to create: "+multiStemSet.size());
                 AtomicInteger cnt = new AtomicInteger(0);
                 multiStemSet.stream().forEach(stem -> {
                     String[] words = stem.getBestPhrase().toLowerCase().split(" ");
                     List<String> valid = Stream.of(words).filter(word2Vec::hasWord).collect(Collectors.toList());
                     if(valid.size()==words.length) {
-                        INDArray encoding = simModel.encodeText(valid,8, cpc2VaeModel);
+                        INDArray encoding = word2Vec.getWordVectors(valid);
+                        encoding.diviColumnVector(encoding.norm2(1));
+                        if(valid.size()==1) {
+                            encoding = Nd4j.toFlattened('c',encoding.broadcast(3,encoding.length()));
+                        } else if(valid.size()==2) {
+                            encoding = Nd4j.hstack(encoding.getRow(0),encoding.mean(0),encoding.getRow(1));
+                        }
                         if (encoding!=null) {
-                            keywordToVectorLookupTable.put(stem, encoding);
+                            encoding =  encoding.reshape(1,word2Vec.getLayerSize()*3);
+                            //System.out.println("Shape: "+Arrays.toString(encoding.shape()));
+                            keywordToVectorLookupTable.put(stem,encoding);
                         }
                     }
                     if(cnt.getAndIncrement()%100==99) {
@@ -297,7 +314,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         boolean runPredictions = true;
         int nEpochs = 10;
 
-        CombinedDeepCPC2VecEncodingPipelineManager encodingPipelineManager = CombinedDeepCPC2VecEncodingPipelineManager.getOrLoadManager(true);
+        WordCPC2VecPipelineManager encodingPipelineManager = new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.DEEP_MODEL_NAME,-1,-1,-1);
         encodingPipelineManager.runPipeline(false,false,false,false,-1,false);
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(encodingPipelineManager);
 

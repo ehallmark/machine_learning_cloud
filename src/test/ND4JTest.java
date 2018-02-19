@@ -10,11 +10,10 @@ import org.nd4j.linalg.factory.Nd4j;
 public class ND4JTest {
     public static void main(String[] args) throws Exception {
         INDArray v1 = Nd4j.create(new double[][]{
-                new double[]{
-                        1,2,3,4,5
-                }
+                new double[]{1,2,3,4,5},
+                new double[]{6,7,8,9,10}
         });
-        INDArray v3 = v1.broadcast(8,5);
+        INDArray v3 = Nd4j.toFlattened('f',v1);
         System.out.println(v3.toString());
     }
 }
