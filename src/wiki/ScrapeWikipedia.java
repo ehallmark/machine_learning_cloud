@@ -35,6 +35,7 @@ public class ScrapeWikipedia {
               //  System.out.println("Is disambiguation: "+String.join("_",phrase));
                 return false;
             }
+            return true;/*
             Elements elements = document.select("#bodyContent div.mw-parser-output").select("p,h1,h2,h3,h4,h5");
             for (Element element : elements) {
                 if (element.hasText()) {
@@ -44,7 +45,7 @@ public class ScrapeWikipedia {
                     }
                 }
             }
-            return false;
+            return false;*/
         } catch(Exception e) {
             return false;
         }
