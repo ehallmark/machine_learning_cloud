@@ -32,7 +32,7 @@ public class ScrapeWikipedia {
             Document document = Jsoup.connect("http://en.wikipedia.org/wiki/" + String.join("_", phrase).toLowerCase()).get();
             // not disambiguated
             if(!document.select("#disambigbox").isEmpty()) {
-                System.out.println("Is disambiguation: "+String.join("_",phrase));
+              //  System.out.println("Is disambiguation: "+String.join("_",phrase));
                 return false;
             }
             Elements elements = document.select("#bodyContent div.mw-parser-output").select("p,h1,h2,h3,h4,h5");
@@ -57,7 +57,7 @@ public class ScrapeWikipedia {
         multiStems.parallelStream().forEach(stem-> {
             boolean isTechnology = isTechnology(stem.getBestPhrase().split(" "));
             if (cnt.getAndIncrement() % 1000 == 999) {
-                System.out.println("Seen "+cnt.get()+" out of "+multiStems.size());
+                System.out.println("Seen "+cnt.get()+" out of "+multiStems.size()+" Num Valid: "+technologies.size());
                 System.out.println(stem.getBestPhrase() + ": " + isTechnology);
             }
             if(isTechnology) {
