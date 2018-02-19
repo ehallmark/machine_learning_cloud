@@ -39,7 +39,7 @@ public class PredictKeyphraseForFilings {
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
         final int maxTags = 5;
-        final double minScore = 0.6;
+        final double minScore = 0.75;
 
         String CPC2VecModelName = WordCPC2VecPipelineManager.SMALL_MODEL_NAME;
         WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(CPC2VecModelName,-1,-1,-1);

@@ -79,6 +79,9 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
     }
 
     public synchronized INDArray encodeText(INDArray inputs) {
+        if(vaeNetwork==null) {
+            updateNetworksBeforeTraining(getNet().getNameToNetworkMap());
+        }
         return Transforms.unitVec(vaeNetwork.output(false,inputs)[0].mean(0));
     }
 

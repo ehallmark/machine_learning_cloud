@@ -443,9 +443,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
     }
 
     // do not use for encoding patents
-    public synchronized INDArray encodeText(List<String> text, int samples) {
-        CombinedCPC2Vec2VAEEncodingPipelineManager manager = CombinedCPC2Vec2VAEEncodingPipelineManager.getOrLoadManager(true);
-        CombinedCPC2Vec2VAEEncodingModel model = (CombinedCPC2Vec2VAEEncodingModel)manager.getModel();
+    public synchronized INDArray encodeText(List<String> text, int samples, CombinedCPC2Vec2VAEEncodingModel model) {
         Word2Vec word2Vec = pipelineManager.getWord2Vec();
         if(word2Vec==null) throw new RuntimeException("Word2Vec cannot be null during encoding");
         text = text.stream().filter(word->word2Vec.hasWord(word)).collect(Collectors.toList());
@@ -454,6 +452,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
         if(inputs==null) return null;
         INDArray vaeVec = model.encodeText(inputs);
         if(vaeVec==null) return null;
+        vaeVec = vaeVec.broadcast(inputs.shape()[0],vaeVec.length());
         INDArray encoding = encode(inputs,vaeVec);
         if(encoding==null) return null;
         return Transforms.unitVec(encoding.mean(0));
