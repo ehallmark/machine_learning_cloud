@@ -258,24 +258,8 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
             if(keywordToVectorLookupTable==null) {
                 // get vectors
-                keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
                 Word2Vec word2Vec = (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet();
-                System.out.println("Num vectors to create: "+multiStemSet.size());
-                AtomicInteger cnt = new AtomicInteger(0);
-                multiStemSet.stream().forEach(stem -> {
-                    String[] words = stem.getBestPhrase().toLowerCase().split(" ");
-                    List<String> valid = Stream.of(words).filter(word2Vec::hasWord).collect(Collectors.toList());
-                    if(valid.size()==words.length) {
-                        INDArray encoding = Transforms.unitVec(word2Vec.getWordVectors(valid).mean(0));
-                        if (encoding!=null) {
-                            //System.out.println("Shape: "+Arrays.toString(encoding.shape()));
-                            keywordToVectorLookupTable.put(stem,encoding);
-                        }
-                    }
-                    if(cnt.getAndIncrement()%100==99) {
-                        System.out.println(cnt.get());
-                    }
-                });
+               keywordToVectorLookupTable = buildNewKeywordToLookupTableMapHelper(word2Vec,multiStemSet);
 
                 Database.trySaveObject(keywordToVectorLookupTable,keywordToVectorLookupTableFile);
 
@@ -285,6 +269,27 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
         }
         System.out.println("Stem lookup table size: "+keywordToVectorLookupTable.size());
+    }
+
+    public static Map<MultiStem,INDArray> buildNewKeywordToLookupTableMapHelper(Word2Vec word2Vec, Set<MultiStem> multiStemSet) {
+        Map<MultiStem,INDArray> keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
+        System.out.println("Num vectors to create: "+multiStemSet.size());
+        AtomicInteger cnt = new AtomicInteger(0);
+        multiStemSet.stream().forEach(stem -> {
+            String[] words = stem.getBestPhrase().toLowerCase().split(" ");
+            List<String> valid = Stream.of(words).filter(word2Vec::hasWord).collect(Collectors.toList());
+            if(valid.size()==words.length) {
+                INDArray encoding = Transforms.unitVec(word2Vec.getWordVectors(valid).mean(0));
+                if (encoding!=null) {
+                    //System.out.println("Shape: "+Arrays.toString(encoding.shape()));
+                    keywordToVectorLookupTable.put(stem,encoding);
+                }
+            }
+            if(cnt.getAndIncrement()%100==99) {
+                System.out.println(cnt.get());
+            }
+        });
+        return keywordToVectorLookupTable;
     }
 
     @Override

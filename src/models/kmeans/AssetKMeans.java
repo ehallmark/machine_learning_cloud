@@ -61,7 +61,7 @@ public class AssetKMeans {
 
     public Map<String,List<String>> clusterAssets() {
         int minK = k==null?MIN_K:k;
-        int maxK = k==null?MAX_K:(k+1);
+        int maxK = k==null?MAX_K:k;
         int startingK = Math.min(assetEncodingMap.size(),minK);
         int endingK = Math.min(assetEncodingMap.size(),maxK);
 
