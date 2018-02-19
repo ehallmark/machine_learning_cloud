@@ -8,6 +8,8 @@ import elasticsearch.DataSearcher;
 import models.assignee.normalization.name_correction.AssigneeTrimmer;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.search.sort.SortOrder;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.compdb.CreateCompDBAssigneeTransactionData;
 import tools.ClassCodeHandler;
@@ -22,6 +24,8 @@ import java.io.*;
 import java.sql.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.RecursiveTask;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -150,20 +154,56 @@ public class Database {
 		return list;
 	}
 
-	public static void upsertVectors(Map<String,Double[]> map) throws SQLException {
-		List<Map.Entry<String,Double[]>> entries = new ArrayList<>(map.entrySet());
-		PreparedStatement ps = conn.prepareStatement("insert into sim_vectors (filing,vector) values (?,?) on conflict (filing) do update set vector=?");
-		for(int i = 0; i < entries.size(); i++) {
-			Map.Entry<String,Double[]> entry = entries.get(i);
-			ps.setString(1,entry.getKey());
-			Array array =  conn.createArrayOf("float8",entry.getValue());
-			ps.setArray(2,array);
-            ps.setArray(3,array);
-            ps.executeUpdate();
-            array.free();
+	private static INDArray toINDArray(Double[] vec) {
+	    double[] d = new double[vec.length];
+	    for(int i = 0; i < d.length; i++) {
+	        d[i]=vec[i];
         }
-		ps.close();
-		commit();
+        return Nd4j.create(d);
+    }
+
+	public static Map<String,INDArray> loadVectorPredictions() throws SQLException {
+	    PreparedStatement ps = conn.prepareStatement("select filing,vector from sim_vectors");
+	    ps.setFetchSize(1000);
+	    Map<String,INDArray> map = Collections.synchronizedMap(new HashMap<>());
+	    ResultSet rs = ps.executeQuery();
+	    int cnt = 0;
+	    while(rs.next()) {
+	        INDArray vec = toINDArray((Double[])rs.getArray(2).getArray());
+	        map.put(rs.getString(1),vec);
+	        cnt++;
+	        if(cnt%10000==9999) {
+	        	System.out.println("Loaded "+cnt+" vectors...");
+			}
+        }
+	    return map;
+    }
+
+	public static RecursiveAction upsertVectors(Map<String,Double[]> map) {
+		RecursiveAction action = new RecursiveAction() {
+			@Override
+			protected void compute() {
+				try {
+					List<Map.Entry<String, Double[]>> entries = new ArrayList<>(map.entrySet());
+					PreparedStatement ps = conn.prepareStatement("insert into sim_vectors (filing,vector) values (?,?) on conflict (filing) do update set vector=?");
+					for (int i = 0; i < entries.size(); i++) {
+						Map.Entry<String, Double[]> entry = entries.get(i);
+						ps.setString(1, entry.getKey());
+						Array array = conn.createArrayOf("float8", entry.getValue());
+						ps.setArray(2, array);
+						ps.setArray(3, array);
+						ps.executeUpdate();
+						array.free();
+					}
+					ps.close();
+					commit();
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		return action;
+
 	}
 
 	public static void ingestPairRecords(Map<Flag,String> data, String tableName) throws SQLException {

@@ -35,9 +35,7 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.Future;
-import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -91,7 +89,8 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         final int sampleLength = pipelineManager.getMaxSamples();
         final int assigneeSamples = 32;
-        final int patentSamples = 8;
+        final int patentSamples = 6;
+        ForkJoinPool pool = new ForkJoinPool(2);
 
         Set<String> alreadyPredicted;
         try {
@@ -100,7 +99,6 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
             e.printStackTrace();
             throw new RuntimeException("Unable to read filings...");
         }
-        assets = assets.parallelStream().filter(a->!alreadyPredicted.contains(a)).collect(Collectors.toList());
         assignees = assignees.parallelStream().filter(a->!alreadyPredicted.contains(a)).collect(Collectors.toList());
         classCodes = classCodes.parallelStream().filter(a->!alreadyPredicted.contains(a)).collect(Collectors.toList());
 
@@ -119,7 +117,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
 
         //Map<String, INDArray> finalPredictionsMap = Collections.synchronizedMap(new HashMap<>(assets.size() + assignees.size() + classCodes.size()));
 
-        if(encodeClassCodes) {
+        if(classCodes.size()>0&&encodeClassCodes) {
             // add cpc vectors
             cnt.set(0);
             incomplete.set(0);
@@ -199,7 +197,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
 
                 idx.set(0);
                 try {
-                    Database.upsertVectors(createVectorMap(codes, encoding));
+                    pool.execute(Database.upsertVectors(createVectorMap(codes, encoding)));
                 } catch(Exception e) {
                     e.printStackTrace();
                     System.out.println("Error upserting to postgres...");
@@ -225,7 +223,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
         }
 
 
-        if(encodeAssignees) {
+        if(assignees.size()>0&&encodeAssignees) {
             cnt.set(0);
             incomplete.set(0);
 
@@ -291,7 +289,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
                 }
                 encoding.diviColumnVector(encoding.norm2(1));
                 try {
-                    Database.upsertVectors(createVectorMap(assigneeBatch, encoding));
+                    pool.execute(Database.upsertVectors(createVectorMap(assigneeBatch, encoding)));
                 } catch(Exception e) {
                     e.printStackTrace();
                     System.out.println("Error upserting to postgres...");
@@ -300,22 +298,25 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
             });
         }
 
-        if(encodeAssets) {
+        if(filings.size()>0&&encodeAssets) {
             Map<String, List<String>> filingToCPCMap = pipelineManager.wordCPC2VecPipelineManager.getCPCMap()
                     .entrySet().parallelStream().map(e->new Pair<>(e.getKey(),e.getValue().stream().filter(cpc->word2Vec.hasWord(cpc.getName())).flatMap(w->IntStream.range(0,w.getNumParts()).mapToObj(i->w.getName())).collect(Collectors.toList())))
                     .filter(p->p.getSecond().size()>0)
                     .collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
+            filings = filings.parallelStream().filter(a->!alreadyPredicted.contains(a)).collect(Collectors.toList());
             int preSize = filings.size();
             filings = filings.stream().filter(filing->filingToCPCMap.containsKey(filing)&&filingToCPCMap.get(filing).size()>0).collect(Collectors.toList());
             List<String> filingsList = new ArrayList<>(filings);
             cnt.set(0);
             incomplete.set(preSize-filings.size());
 
-            int batchSize = 1000;
+            int batchSize = 40000;
+            int gc = 20000;
 
             List<List<String>> filingBatches = createBatches(filingsList, batchSize);
             filingBatches.forEach(filingBatch -> {
                 if(filingBatch.isEmpty()) return;
+                long t0 = System.currentTimeMillis();
 
                 INDArray allFeatures1 = Nd4j.create(patentSamples * filingBatch.size(), getVectorSize(), sampleLength);
                 INDArray allFeatures2 = Nd4j.create(patentSamples * filingBatch.size(), getVectorSize());
@@ -347,28 +348,49 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
                     if(cnt.get() % 1000==999) {
                         System.out.print("-");
                     }
-                    if (cnt.get() % 50000 == 49999) {
+                    if (cnt.get() % gc == gc-1) {
+                        //System.out.println("Garbage collecting...");
                         System.gc();
                     }
                     if (cnt.getAndIncrement() % 10000 == 9999) {
-                        System.out.println("Finished " + cnt.get() + " out of " + filingsList.size() + " filings. Incomplete: " + incomplete.get() + " / " + cnt.get());
+                        System.out.println("Finished " + cnt.get() + " out of " + filingsList.size() + " filings. "+ " Incomplete: " + incomplete.get() + " / " + cnt.get());
                     }
                 }
 
                 encoding.diviColumnVector(encoding.norm2(1));
                 try {
-                    Database.upsertVectors(createVectorMap(filingBatch, encoding));
+                    pool.execute(Database.upsertVectors(createVectorMap(filingBatch, encoding)));
                 } catch(Exception e) {
                     e.printStackTrace();
                     System.out.println("Error upserting to postgres...");
                     System.exit(1);
                 }
+                long t1 = System.currentTimeMillis();
+                double t = t1-t0;
+                t /= (60*1000);
+                System.out.println("Time to complete batch: "+t+" minutes.");
             });
 
         }
+
+        pool.shutdown();
+        try {
+            pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("While shutting down pool...");
+        }
         System.out.println("FINAL:: Finished "+cnt.get()+" filings out of "+filings.size()+". Incomplete: "+incomplete.get()+ " / "+cnt.get());
 
-        return null;
+        Map<String,INDArray> predictions;
+        try {
+            predictions = Database.loadVectorPredictions();
+        } catch(Exception e) {
+            predictions = null;
+            e.printStackTrace();
+            System.out.println("While loading vectors from postgres...");
+        }
+        return predictions;
     }
 
     public static List<List<String>> createBatches(List<String> in, int batchSize) {
