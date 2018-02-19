@@ -41,10 +41,10 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     @Getter
     private CombinedDeepCPC2VecEncodingPipelineManager combinedDeepCPC2VecEncodingPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
-    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyphrase_prediction_model_predictions/predictions_map.jobj");
+    private static final File PREDICTION_DATA_FILE = new File("keyphrase_prediction_model_predictions/predictions_map.jobj");
     @Getter
     private static Map<MultiStem,INDArray> keywordToVectorLookupTable;
-    private static final File keywordToVectorLookupTableFile = new File(Constants.DATA_FOLDER+"keyword_to_vector_predictions_lookup_table.jobj");
+    private static final File keywordToVectorLookupTableFile = new File("keyword_to_vector_predictions_lookup_table.jobj");
     private Set<MultiStem> multiStemSet;
     private static Map<String,Collection<CPC>> cpcMap;
     private static Map<String,MultiStem> labelToKeywordMap;

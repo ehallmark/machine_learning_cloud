@@ -22,6 +22,7 @@ import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.primitives.Pair;
+import seeding.Database;
 
 import java.io.File;
 import java.util.*;
@@ -39,6 +40,7 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
     public static final String MODEL_NAME = "combined2_deep_cpc_rnn_2_vec_encoding_model";
     public static final File PREDICTION_FILE = new File("combined_deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER_ALL = new File("combined_deep_cpc_all3_vec_encoding_input_data");
+    static final File cpcVectorsFile = new File("combined_deep_cpc_cpcVectors.jobj");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 1024;
@@ -47,6 +49,7 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
     protected static final Random rand = new Random(235);
     private static CombinedDeepCPC2VecEncodingPipelineManager MANAGER;
     DeepCPCVAEPipelineManager deepCPCVAEPipelineManager;
+    private Map<String,INDArray> cpcVectors;
     public CombinedDeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager) {
         super(new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,MAX_SAMPLE,wordCPC2VecPipelineManager);
         this.deepCPCVAEPipelineManager=deepCPCVAEPipelineManager;
@@ -182,7 +185,10 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
 
     public Map<String,INDArray> getOrLoadCPCVectors() {
         // TODO need to implement
-        return null;
+        if(cpcVectors==null) {
+            cpcVectors = (Map<String,INDArray>) Database.tryLoadObject(cpcVectorsFile);
+        }
+        return cpcVectors;
     }
 
     public static void main(String[] args) {

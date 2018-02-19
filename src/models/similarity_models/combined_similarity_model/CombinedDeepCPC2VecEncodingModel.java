@@ -384,7 +384,18 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
 
         Map<String,INDArray> predictions;
         try {
+            System.out.println("Garbage collecting...");
+            System.gc(); System.gc(); System.gc();
+            System.out.println("Finished GC.");
             predictions = Database.loadVectorPredictions();
+            Map<String,INDArray> cpcVectors = Collections.synchronizedMap(new HashMap<>(classCodes.size()));
+            predictions.entrySet().parallelStream().forEach(e->{
+                if(cpcHierarchy.getLabelToCPCMap().containsKey(e.getKey())) {
+                    cpcVectors.put(e.getKey(),e.getValue());
+                }
+            });
+            System.out.println("Num cpc vectors: "+cpcVectors.size());
+            Database.trySaveObject(cpcVectors,CombinedDeepCPC2VecEncodingPipelineManager.cpcVectorsFile);
         } catch(Exception e) {
             predictions = null;
             e.printStackTrace();
