@@ -39,7 +39,7 @@ public class PredictKeyphraseForFilings {
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
         final int maxTags = 5;
-        final double minScore = 0.75;
+        final double minScore = 0.65;
 
         String CPC2VecModelName = WordCPC2VecPipelineManager.DEEP_MODEL_NAME;
         final int vectorSize = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(CPC2VecModelName);
@@ -104,8 +104,8 @@ public class PredictKeyphraseForFilings {
                             for(int i = 0; i < scores.length; i++) {
                                 double score = scores[i];
                                 String phrase = phrases.get(i);
+                                score = score+0.1*keyphraseCounts.get(phrase);
                                 if(score>=minScore) {
-                                    score = score*Math.sqrt(keyphraseCounts.get(phrase));
                                     heap.add(new WordFrequencyPair<>(phrase, score));
                                 }
                             }
