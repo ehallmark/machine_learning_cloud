@@ -31,14 +31,16 @@ public class ScrapeWikipedia {
         try {
             Document document = Jsoup.connect("http://en.wikipedia.org/wiki/" + String.join("_", phrase).toLowerCase()).get();
             // not disambiguated
+            return true;/*
             if(!document.select("#disambigbox").isEmpty()) {
               //  System.out.println("Is disambiguation: "+String.join("_",phrase));
                 return false;
-            } else if(!document.select("#contentSub .mw-redirectedfrom").isEmpty()) {
-                return false;
-            }
-            return true;
-            /*Elements elements = document.select("#bodyContent div.mw-parser-output").select("p,h1,h2,h3,h4,h5");
+            }// else if(!document.select("#contentSub .mw-redirectedfrom").isEmpty()) {
+             //   return false;
+            //}
+            //System.out.println("Size: "+ document.select("#bodyContent div.mw-parser-output").select("p").size());
+            return document.select("#bodyContent div.mw-parser-output").select("p").size()>10;
+            Elements elements = document.select("#bodyContent div.mw-parser-output").select("p,h1,h2,h3,h4,h5");
             for (Element element : elements) {
                 if (element.hasText()) {
                     String text = element.text().toLowerCase();
@@ -61,9 +63,9 @@ public class ScrapeWikipedia {
             boolean isTechnology = isTechnology(stem.getBestPhrase().split(" "));
             if (cnt.getAndIncrement() % 1000 == 999) {
                 System.out.println("Seen "+cnt.get()+" out of "+multiStems.size()+" Num Valid: "+technologies.size());
+                System.out.println(stem.getBestPhrase() + ": " + isTechnology);
             }
             if(isTechnology) {
-                System.out.println(stem.getBestPhrase() + ": " + isTechnology);
                 technologies.add(stem);
             }
         });

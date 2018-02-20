@@ -32,12 +32,19 @@ public class WordOrderStage extends Stage<Set<MultiStem>>  {
             Map<MultiStem,Long> dataCountMap = Collections.synchronizedMap(
                     data.parallelStream().collect(Collectors.toMap(d->d,d->docMap.get(d).get()))
             );
+            Map<String,Long> dataCountMapFromPhrase = Collections.synchronizedMap(new HashMap<>());
+            dataCountMap.forEach((k,v)->{
+                dataCountMapFromPhrase.merge(k.getBestPhrase(),v,(v1,v2)->v1>v2?v1:v2);
+            });
             data.parallelStream().forEach(d->{
+                String[] phrase = d.getBestPhrase().split(" ");
                 String[] stems = d.getStems();
                 if(stems.length==1) return;
                 MultiStem[] stemsToCheck;
+                String[] phrasesToCheck;
                 if(stems.length==2) {
                     stemsToCheck = new MultiStem[]{new MultiStem(new String[]{stems[1],stems[0]},-1)};
+                    phrasesToCheck = new String[]{String.join(" ",phrase[1],phrase[0])};
                 } else if(stems.length==3) {
                     stemsToCheck = new MultiStem[]{
                             new MultiStem(new String[]{stems[0],stems[2],stems[1]},-1),
@@ -46,6 +53,14 @@ public class WordOrderStage extends Stage<Set<MultiStem>>  {
                             new MultiStem(new String[]{stems[2],stems[0],stems[1]},-1),
                             new MultiStem(new String[]{stems[2],stems[1],stems[0]},-1),
                     };
+                    phrasesToCheck = new String[]{
+                            String.join(" ",phrase[0],phrase[2],phrase[1]),
+                            String.join(" ",phrase[1],phrase[0],phrase[2]),
+                            String.join(" ",phrase[1],phrase[2],phrase[0]),
+                            String.join(" ",phrase[2],phrase[0],phrase[1]),
+                            String.join(" ",phrase[2],phrase[1],phrase[0])
+                    };
+
                 } else {
                     return;
                 }
@@ -62,7 +77,20 @@ public class WordOrderStage extends Stage<Set<MultiStem>>  {
                         }
                     }
                 }
+                for(String toCheck : phrasesToCheck) {
+                    if(toCheck!=null) {
+                        synchronized (dataCountMapFromPhrase) {
+                            Long num = dataCountMapFromPhrase.get(toCheck);
+                            if(num!=null&&num>numToBeat) {
+                                System.out.println("Removing "+d.getBestPhrase()+" for "+toCheck);
+                                dataCountMapFromPhrase.remove(d);
+                                return;
+                            }
+                        }
+                    }
+                }
             });
+            data = Collections.synchronizedSet(new HashSet<>(dataCountMap.keySet()));
             System.out.println("Num keywords after word order stage: " + data.size());
 
             Database.saveObject(data, getFile());

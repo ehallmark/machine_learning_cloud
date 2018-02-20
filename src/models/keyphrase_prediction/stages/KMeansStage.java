@@ -35,8 +35,8 @@ public class KMeansStage extends Stage<Set<MultiStem>>  {
             System.out.println("Computing multi stem encoding map...");
             Map<MultiStem,INDArray> multiStemToEncodingsMap = KeyphrasePredictionPipelineManager.buildNewKeywordToLookupTableMapHelper(word2Vec,data);
             Map<String,INDArray> labelToEncodingMap = multiStemToEncodingsMap.entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey().toString(),e->e.getValue()));
-            AssetKMeans kMeansModel = new AssetKMeans(labelToEncodingMap, data.size()/10);
-
+            AssetKMeans kMeansModel = new AssetKMeans(labelToEncodingMap, 500);
+            kMeansModel.setTechPredictions(Collections.emptyMap());
             System.out.println("Starting to fit k means...");
             Map<String,List<String>> clusters = kMeansModel.clusterAssets();
             data = clusters.keySet().stream()

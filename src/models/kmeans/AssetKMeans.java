@@ -1,5 +1,6 @@
 package models.kmeans;
 
+import lombok.Setter;
 import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
 import models.keyphrase_prediction.PredictKeyphraseForFilings;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
@@ -21,7 +22,7 @@ import java.util.stream.Stream;
  * Created by Evan on 1/2/2018.
  */
 public class AssetKMeans {
-    private static final int maxEpochs = 200;
+    private static final int maxEpochs = 50;
     private static final double minScore = 0.3;
     private static final int MIN_K = 2;
     private static final int MAX_K = 50;
@@ -32,6 +33,7 @@ public class AssetKMeans {
 
     private UnitCosineKMeans kMeans;
     private Map<String,INDArray> assetEncodingMap;
+    @Setter
     private Map<String,List<String>> techPredictions;
     private Integer k;
     public AssetKMeans(Map<String,INDArray> assetToEncodingMap, Integer k) {
@@ -39,7 +41,7 @@ public class AssetKMeans {
         this.k=k;
         this.techPredictions = PredictKeyphraseForFilings.loadOrGetTechnologyMap();
         this.assetEncodingMap = assetToEncodingMap;
-        System.out.println("Num tech predictions: "+techPredictions.size());
+        //System.out.println("Num tech predictions: "+techPredictions.size());
     }
 
     public AssetKMeans(List<String> assets, Map<String,INDArray> cpcVectors, Integer k) {

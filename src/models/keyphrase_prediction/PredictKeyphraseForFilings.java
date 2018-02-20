@@ -32,7 +32,7 @@ import java.util.stream.Stream;
  * Created by Evan on 11/2/2017.
  */
 public class PredictKeyphraseForFilings {
-    private static final File technologyMapFile = new File(Constants.DATA_FOLDER+"filing_to_keyphrase_map.jobj");
+    private static final File technologyMapFile = new File("filing_to_keyphrase_map.jobj");
     private static Map<String,List<String>> technologyMap;
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
@@ -53,8 +53,13 @@ public class PredictKeyphraseForFilings {
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
         Map<String,INDArray> cpcVectors = wordCPC2VecPipelineManager.getOrLoadCPCVectors();
-        Map<String,INDArray> keyphraseVectors = KeyphrasePredictionPipelineManager.getKeywordToVectorLookupTable()
-                .entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey().getBestPhrase(),e->e.getValue()));
+        pipelineManager.buildKeywordToLookupTableMap();
+        Map<MultiStem,INDArray> _keyphraseVectors = KeyphrasePredictionPipelineManager.getKeywordToVectorLookupTable()
+                .entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+        Map<String,INDArray> keyphraseVectors = Collections.synchronizedMap(new HashMap<>());
+        _keyphraseVectors.entrySet().parallelStream().forEach(e->{
+            keyphraseVectors.put(e.getKey().getBestPhrase(),e.getValue());
+        });
 
         System.out.println("Building cpc matrix...");
         Map<String,Integer> cpcToIdx = new HashMap<>();
@@ -95,12 +100,13 @@ public class PredictKeyphraseForFilings {
                             INDArray phraseMatrix = Nd4j.pullRows(keyphraseMatrix,1, keyphraseIndices);
                             MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(maxTags);
 
-                            float[] scores = phraseMatrix.mmul(cpcVec.transpose()).mean(0).data().asFloat();
+                            float[] scores = phraseMatrix.mmul(cpcVec.transpose()).max(1).data().asFloat();
                             for(int i = 0; i < scores.length; i++) {
                                 double score = scores[i];
+                                String phrase = phrases.get(i);
                                 if(score>=minScore) {
-                                    String phrase = phrases.get(i);
-                                    heap.add(new WordFrequencyPair<>(phrase, score*Math.sqrt(keyphraseCounts.get(phrase))));
+                                    score = score*Math.sqrt(keyphraseCounts.get(phrase));
+                                    heap.add(new WordFrequencyPair<>(phrase, score));
                                 }
                             }
 

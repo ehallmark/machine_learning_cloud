@@ -8,6 +8,7 @@ import lombok.Getter;
 import models.keyphrase_prediction.models.DefaultModel2;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
+import models.kmeans.KMeans;
 import models.similarity_models.paragraph_vectors.FloatFrequencyPair;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
@@ -94,20 +95,28 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         if(filters)cpcDensityStage.run(rerunFilters);
         //if(alwaysRerun) stage4.createVisualization();
 
-
         // stage 3
-        System.out.println("Pre-grouping data for wikipedia stage...");
-        wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
-        Word2Vec word2Vec = (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet();
-        KMeansStage kMeansStage = new KMeansStage(cpcDensityStage.get(),  word2Vec, modelParams);
-        if(filters) kMeansStage.run(rerunFilters);
+        System.out.println("Pre-grouping data for stage 3...");
+        Stage3 stage3 = new Stage3(cpcDensityStage.get(), modelParams);
+        if(filters) stage3.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
-        // stage 3
+        // word order stage
         System.out.println("Pre-grouping data for word order...");
-        WordOrderStage wordOrder = new WordOrderStage(kMeansStage.get(), stage1.get(), modelParams);
+        WordOrderStage wordOrder = new WordOrderStage(stage3.get(), stage1.get(), modelParams);
         wordOrder.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
+
+
+        /*// wiki stage
+        System.out.println("Pre-grouping data for kMeansStage stage...");
+        wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
+        Word2Vec word2Vec = (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet();
+        KMeansStage kMeansStage = new KMeansStage(wordOrder.get(), word2Vec, modelParams);
+        if(filters) kMeansStage.run(rerunFilters);
+        //if(alwaysRerun) stage3.createVisualization();
+        multiStemSet = kMeansStage.get();
+        */
 
         multiStemSet = wordOrder.get();
 
@@ -186,7 +195,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         Map<String,Set<String>> predictions = Collections.synchronizedMap(new HashMap<>());
         List<List<String>> entries = batchBy(allEntries,batchSize);
         AtomicInteger idx = new AtomicInteger(0);
-        double maxIncrease = (1d - minScore)/2;
         entries.forEach(batch->{
             int i = idx.getAndIncrement();
             INDArray cpcMat = cpcMatrix.get(NDArrayIndex.interval(i*batchSize,i*batchSize+batch.size()),NDArrayIndex.all());
@@ -195,12 +203,10 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
             float[] data = Nd4j.toFlattened('f',simResults).data().asFloat();
             for(int r = 0; r < batch.size(); r++) {
                 MinHeap<FloatFrequencyPair<String>> heap = new MinHeap<>(maxTags);
-                int found = 0;
                 for(int j = r*keywords.size(); j < r*keywords.size()+keywords.size(); j++) {
                     int kIdx = j%keywords.size();
                     float s = data[j];
                     if(s>=minScore) {
-                        found++;
                         heap.add(new FloatFrequencyPair<>(keywords.get(kIdx).getBestPhrase(), s));
                     }
                 }
@@ -208,9 +214,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
                 Set<String> tags = Collections.synchronizedSet(new HashSet<>());
                 while(!heap.isEmpty()) {
                     FloatFrequencyPair<String> p = heap.remove();
-                    if(p.getSecond()>=minScore+((maxIncrease*(1d-(double)found)/maxTags))) {
-                        tags.add(p.getFirst());
-                    }
+                    tags.add(p.getFirst());
                 }
                 String cpc = batch.get(r);
                 if(!tags.isEmpty()) {
@@ -241,8 +245,8 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     @Override
     public Map<String,Set<String>> predict(List<String> assets, List<String> assignees, List<String> cpcs) {
-        final double minScore = 0.60d;
-        final int maxTags = 10;
+        final double minScore = 0.5;
+        final int maxTags = 15;
 
         if(keywordToVectorLookupTable==null) {
             System.out.println("Loading keyword to vector table...");
@@ -318,6 +322,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(encodingPipelineManager);
 
         pipelineManager.initStages(true,true,false,false);
-        //pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
+        pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }
 }

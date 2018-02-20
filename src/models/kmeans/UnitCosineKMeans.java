@@ -98,6 +98,11 @@ public class UnitCosineKMeans {
     protected int optimize(int minK, int maxK, int B, int nEpochs) {
         if(this.V==null||this.dataPoints==null) throw new NullPointerException("Please initialize V and data points list.");
 
+        if(minK==maxK) {
+            fit(minK,nEpochs);
+            return minK;
+        }
+
         UnitCosineKMeans nullDistribution = new UnitCosineKMeans();
         nullDistribution.dataPoints = IntStream.range(0,this.dataPoints.size()).mapToObj(i->new DataPoint(String.valueOf(i),i)).collect(Collectors.toList());
         INDArray nullDatasets = sampleFromNullDistribution(this.dataPoints.size(),B);
@@ -329,6 +334,7 @@ public class UnitCosineKMeans {
     }
 
     // TODO Most Computationally intensive part (speed this up!)
+    private AtomicInteger cnter = new AtomicInteger(0);
     private double reassignDataToClusters() {
         this.Ctranspose = centroidMatrix.transpose();
 
@@ -355,16 +361,24 @@ public class UnitCosineKMeans {
                 System.out.print("-");
             }
         });
+        System.out.println(cnter.getAndIncrement());
         return pair.getFirst();
     }
 
     private static INDArray multiplyInBatches(INDArray x, INDArray y, int batchSize) {
+        INDArray res = Nd4j.create(x.rows(),y.columns());
+        multiplyInBatchesHelper(x,y,batchSize,0,res);
+        return res;
+    }
+
+    private static void multiplyInBatchesHelper(INDArray x, INDArray y, int batchSize, int startIdx, INDArray res) {
         if(x.rows()<=batchSize) {
-            return x.mmul(y);
+            res.get(NDArrayIndex.interval(startIdx,startIdx+x.rows()),NDArrayIndex.all()).assign(x.mmul(y));
         } else {
             INDArray xPart = x.get(NDArrayIndex.interval(0,batchSize),NDArrayIndex.all());
             INDArray xEnd = x.get(NDArrayIndex.interval(batchSize,x.rows()),NDArrayIndex.all());
-            return Nd4j.vstack(multiplyInBatches(xPart,y,batchSize),multiplyInBatches(xEnd,y,batchSize));
+            multiplyInBatchesHelper(xPart,y,batchSize,startIdx,res);
+            multiplyInBatchesHelper(xEnd,y,batchSize,startIdx+batchSize,res);
         }
     }
 
