@@ -1,5 +1,8 @@
 version: '2'
 services:
+  path:
+    repo:
+      - /home/ehallmark1122/elasticsearch_backup
   elasticsearch1:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch1
@@ -74,7 +77,3 @@ volumes:
 
 networks:
   esnet:
-
-path:
-  repo:
-    - /home/ehallmark1122/elasticsearch_backup
