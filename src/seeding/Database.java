@@ -53,7 +53,7 @@ public class Database {
 	public static Set<String> gatherAssets;
 	public static final File gatherAssetsFile = new File(Constants.DATA_FOLDER+"gather_assets_set.jobj");
 	public static Set<String> compdbReelFrames;
-	public static final File compdbReelFramesFile = new File(Constants.DATA_FOLDER+"compdb_assets_set.jobj");
+	public static final File compdbReelFramesFile = new File(Constants.DATA_FOLDER+"compdb_reel_frames_set.jobj");
 	public static Set<String> allClassCodes;
 	private static Map<String,Integer> assigneeToAssetsSoldCountMap;
 	private static Map<String,Integer> assigneeToAssetsPurchasedCountMap;
