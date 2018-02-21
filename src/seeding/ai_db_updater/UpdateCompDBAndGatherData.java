@@ -25,10 +25,7 @@ public class UpdateCompDBAndGatherData {
         } catch(Exception e) {
             e.printStackTrace();
         }
-
-        System.out.println("MAKE SURE TO REMOVE THIS LINE AFTER!!!!!!!!!!!!!!!!!");
-        System.exit(0); // TODO REMOVE THIS
-
+        
         Collection<AbstractAttribute> gatherAttributes = Arrays.asList(new GatherNestedAttribute());
         Collection<String> gatherAssets = Database.getGatherAssets();
 
