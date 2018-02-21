@@ -25,7 +25,7 @@ public class UpdateCompDBAndGatherData {
         } catch(Exception e) {
             e.printStackTrace();
         }
-        
+
         Collection<AbstractAttribute> gatherAttributes = Arrays.asList(new GatherNestedAttribute());
         Collection<String> gatherAssets = Database.getGatherAssets();
 
