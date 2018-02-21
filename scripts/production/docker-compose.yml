@@ -2,9 +2,6 @@ version: '2'
 services:
   elasticsearch1:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
-    path:
-      repo:
-        - /home/ehallmark1122/elasticsearch_backup
     container_name: elasticsearch1
     environment:
       - cluster.name=elasticsearch
@@ -27,9 +24,6 @@ services:
       - esnet
   elasticsearch2:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
-    path:
-      repo:
-        - /home/ehallmark1122/elasticsearch_backup
     container_name: elasticsearch2
     environment:
       - cluster.name=elasticsearch
@@ -51,9 +45,6 @@ services:
       - esnet
   elasticsearch3:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
-    path:
-      repo:
-        - /home/ehallmark1122/elasticsearch_backup
     container_name: elasticsearch3
     environment:
       - cluster.name=elasticsearch
@@ -83,3 +74,7 @@ volumes:
 
 networks:
   esnet:
+
+path:
+  repo:
+    - /home/ehallmark1122/elasticsearch_backup
