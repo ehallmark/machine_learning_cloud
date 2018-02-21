@@ -23,8 +23,12 @@ public class DatasetIndex {
     public static void index(String user, String id, List<String> data) {
         Map<String,Object> dataMap = new HashMap<>(2);
         dataMap.put(DATA_FIELD,data);
-        client.prepareIndex(INDEX,TYPE,id+"_"+user).setSource(dataMap).get();
+        index(id+"_"+user,dataMap);
     }
+
+    public static void index(String fullId, Map<String,Object> doc) {
+        client.prepareIndex(INDEX,TYPE,fullId).setSource(doc).get();
+    };
 
     public static void delete(String user, String id) {
         client.prepareDelete(INDEX,TYPE,id+"_"+user).get();
@@ -45,12 +49,6 @@ public class DatasetIndex {
     }
     public static List<String> get(String user, String id) {
         return get(id+"_"+user);
-    }
-
-    public static void rename(String user, String id) {
-        Map<String,Object> data = new HashMap<>();
-        client.prepareUpdate(INDEX,TYPE,id+"_"+user)
-                .setDoc(data).get();
     }
 
 

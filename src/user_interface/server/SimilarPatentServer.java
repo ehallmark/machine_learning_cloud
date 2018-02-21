@@ -1354,9 +1354,6 @@ public class SimilarPatentServer {
 
                     sync.lock();
                     try {
-                        if(isDataset) {
-                            DatasetIndex.rename(username,filename);
-                        }
                         if(useUpdatesFile) {
                             Database.trySaveObject(updates, updatesFile);
                         } else {

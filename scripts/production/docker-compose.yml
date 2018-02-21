@@ -4,7 +4,6 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch1
     environment:
-      - path.repo=["/home/ehallmark1122/elasticsearch_backup"]
       - cluster.name=elasticsearch
       - xpack.security.enabled=false
       - node.name=elasticsearch1
@@ -27,7 +26,6 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch2
     environment:
-      - path.repo=["/home/ehallmark1122/elasticsearch_backup"]
       - cluster.name=elasticsearch
       - xpack.security.enabled=false
       - node.name=elasticsearch2
@@ -49,7 +47,6 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch3
     environment:
-      - path.repo=["/home/ehallmark1122/elasticsearch_backup"]
       - cluster.name=elasticsearch
       - xpack.security.enabled=false
       - node.name=elasticsearch3
