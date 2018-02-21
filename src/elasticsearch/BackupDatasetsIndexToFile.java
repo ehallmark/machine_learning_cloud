@@ -20,7 +20,13 @@ public class BackupDatasetsIndexToFile {
         // this program will backup the dataset index to a file
         TransportClient client = MyClient.get();
         Map<String,Map<String,Object>> data = Collections.synchronizedMap(new HashMap<>());
-        SearchResponse response = client.prepareSearch(DatasetIndex.INDEX).setTypes(DatasetIndex.TYPE).setFetchSource(true).setSize(10000).setFrom(0).get();
+        SearchResponse response = client.prepareSearch(DatasetIndex.INDEX)
+                .setTypes(DatasetIndex.TYPE)
+                .setFetchSource(true)
+                .setSize(10000)
+                .setFrom(0)
+                .setScroll(new TimeValue(120000))
+                .get();
         do {
             SearchHits searchHits = response.getHits();
             SearchHit[] hits = searchHits.getHits();
