@@ -8,12 +8,14 @@ import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import tools.MinHeap;
 import user_interface.ui_models.engines.TextSimilarityEngine;
+import wiki.ScrapeWikipedia;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class TestTextModels {
 
@@ -69,13 +71,32 @@ public class TestTextModels {
 
     public static void main(String[] args) {
         // load input data
-        final Map<String,Pair<String[],Set<String>>> keywordToWikiAndAssetsMap = null; // TODO
+        Map<String,List<String>> wikipediaData = ScrapeWikipedia.loadWikipediaMap();
+        final int maxSentences = 20;
+        // need to run searches on the keys
+
+        Set<String> allFilings = Collections.synchronizedSet(new HashSet<>());
+
+        final Map<String,Pair<String[],Set<String>>> keywordToWikiAndAssetsMap = wikipediaData.entrySet().stream()
+                .map(e->{
+                    String[] text = e.getValue().stream().limit(maxSentences)
+                            .flatMap(sentence-> Stream.of(sentence.split("\\s+")))
+                            .toArray(size->new String[size]);
+                    if(text.length==0) return null;
+                    Set<String> relevantFilings = null; // TODO elasticsearch Search
+                    if(relevantFilings!=null&&relevantFilings.size()>0) {
+                        allFilings.addAll(relevantFilings);
+                        return new Pair<>(e.getKey(), new Pair<>(text, relevantFilings));
+                    } else return null;
+                }).filter(p->p!=null)
+                .collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
 
         // new model
         CombinedCPC2Vec2VAEEncodingPipelineManager encodingPipelineManager1 = CombinedCPC2Vec2VAEEncodingPipelineManager.getOrLoadManager(true);
         encodingPipelineManager1.runPipeline(false,false,false,false,-1,false);
         CombinedCPC2Vec2VAEEncodingModel encodingModel1 = (CombinedCPC2Vec2VAEEncodingModel)encodingPipelineManager1.getModel();
-        Map<String,INDArray> predictions1 = null; // TODO
+        Map<String,INDArray> allPredictions1 = CombinedDeepCPC2VecEncodingPipelineManager.getOrLoadManager(false).loadPredictions();
+        Map<String,INDArray> predictions1 = allFilings.stream().filter(allPredictions1::containsKey).collect(Collectors.toMap(e->e,e->allPredictions1.get(e)));
 
         final Pair<List<String>,INDArray> filingsWithMatrix1 = createFilingMatrix(predictions1);
         final List<String> filings1 = filingsWithMatrix1.getFirst();
@@ -89,7 +110,8 @@ public class TestTextModels {
 
         // older model
         TextSimilarityEngine encodingModel2 = new TextSimilarityEngine();
-        Map<String,INDArray> predictions2 = null; // TODO
+        Map<String,INDArray> allPredictions2 = CombinedSimilarityVAEPipelineManager.getOrLoadManager().loadPredictions();
+        Map<String,INDArray> predictions2 = allFilings.stream().filter(allPredictions2::containsKey).collect(Collectors.toMap(e->e,e->allPredictions2.get(e)));
 
         final Pair<List<String>,INDArray> filingsWithMatrix2 = createFilingMatrix(predictions2);
         final List<String> filings2 = filingsWithMatrix2.getFirst();
@@ -101,11 +123,16 @@ public class TestTextModels {
         };
 
 
-        final int n = 500;
-        double score1 = testModel(keywordToWikiAndAssetsMap, model1, n);
-        double score2 = testModel(keywordToWikiAndAssetsMap, model2, n);
+        System.out.println("All relevant filings size: "+allFilings.size());
+        System.out.println("Size of filings (Model 1): "+filings1.size());
+        System.out.println("Size of filings (Model 2): "+filings2.size());
 
-        System.out.println("Score for model [n="+n+"] 1: "+score1);
-        System.out.println("Score for model [n="+n+"] 2: "+score2);
+        for(int n = 10; n <= 1000; n*=10) {
+            double score1 = testModel(keywordToWikiAndAssetsMap, model1, n);
+            double score2 = testModel(keywordToWikiAndAssetsMap, model2, n);
+
+            System.out.println("Score for model [n=" + n + "] 1: " + score1);
+            System.out.println("Score for model [n=" + n + "] 2: " + score2);
+        }
     }
 }

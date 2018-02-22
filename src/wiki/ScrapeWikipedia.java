@@ -1,29 +1,41 @@
 package wiki;
 
+import cpc_normalization.CPCHierarchy;
 import models.keyphrase_prediction.MultiStem;
+import models.keyphrase_prediction.models.DefaultModel2;
+import models.keyphrase_prediction.models.Model;
+import models.keyphrase_prediction.stages.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.nd4j.linalg.primitives.Pair;
+import seeding.Database;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class ScrapeWikipedia {
-
+    public static final File wikipediaMapFile = new File("wikipedia_text_from_keywords_map.jobj");
     public static List<String> pullWikipediaPageByPhrase(String[] phrase) {
         try {
             Document document = Jsoup.connect("http://en.wikipedia.org/wiki/" + String.join("_", phrase).toLowerCase()).get();
-            Elements elements = document.select("#bodyContent div.mw-parser-output").select("p,h1,h2,h3,h4,h5");
+            if(!document.select("#disambigbox").isEmpty()) {
+                //  System.out.println("Is disambiguation: "+String.join("_",phrase));
+                return null;
+            }
+            Elements elements = document.select("#bodyContent div.mw-parser-output").select("p");
             List<String> sentences = new ArrayList<>();
             for (Element element : elements) {
                 if (element.hasText()) {
-                    sentences.add(element.text());
+                    sentences.add(element.text().toLowerCase());
                 }
             }
             return sentences;
         } catch(Exception e) {
-            return Collections.emptyList();
+            return null;
         }
     }
 
@@ -73,28 +85,67 @@ public class ScrapeWikipedia {
         return technologies;
     }
 
+    public static Set<MultiStem> loadAllMultistems() {
+        // stage 1;
+        boolean rerunVocab = false;
+        boolean rerunFilters = false;
+        boolean filters = true;
+        boolean vocab = true;
+
+        Model modelParams = new DefaultModel2();
+
+        Stage1 stage1 = new Stage1(modelParams);
+        if(vocab)stage1.run(rerunVocab);
+        //if(alwaysRerun)stage1.createVisualization();
+
+        // stage 2
+        System.out.println("Pre-grouping data for stage 2...");
+        Stage2 stage2 = new Stage2(stage1.get(), modelParams);
+        if(filters)stage2.run(rerunFilters);
+        //if(alwaysRerun)stage2.createVisualization();
+
+        // valid word
+        System.out.println("Pre-grouping data for valid word stage...");
+        ValidWordStage validWordStage = new ValidWordStage(stage2.get(), modelParams);
+        if(filters)validWordStage.run(rerunFilters);
+
+        return validWordStage.get();
+    }
+
+    public static Map<String,List<String>> loadWikipediaMap() {
+        return (Map<String,List<String>>) Database.tryLoadObject(wikipediaMapFile);
+    }
+
     public static void main(String[] args) {
-        //KeyphrasePredictionPipelineManager predictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.DEEP_MODEL_NAME,-1,-1,-1));
-        //predictionPipelineManager.runPipeline(false,false,false,false,-1,false);
-        //Set<MultiStem> multiStems = new HashSet<>(predictionPipelineManager.getMultiStemSet());
+        Set<String> phrases = loadAllMultistems().stream().map(s->s.getBestPhrase()).collect(Collectors.toSet());
+        System.out.println("Num phrases: "+phrases.size());
 
-        Set<MultiStem> test = new HashSet<>();
-        MultiStem s1 = new MultiStem(new String[]{"virtual","reality"},-1);
-        MultiStem s2 = new MultiStem(new String[]{"papaya"},-1);
-        MultiStem s3 = new MultiStem(new String[]{"notreallyathing"},-1);
-        MultiStem s4 = new MultiStem(new String[]{"mercury"},-1);
-        s1.setBestPhrase("virtual reality");
-        s2.setBestPhrase("papaya");
-        s3.setBestPhrase("notreallyathing");
-        s4.setBestPhrase("mercury");
-        test.addAll(Arrays.asList(s1,s2,s3,s4));
+        AtomicInteger cnt = new AtomicInteger(0);
+        AtomicInteger missing = new AtomicInteger(0);
+        AtomicInteger remaining = new AtomicInteger(phrases.size());
+        Map<String,List<String>> wikipediaMap = phrases.parallelStream()
+                .map(stem->{
+                    List<String> sentences = pullWikipediaPageByPhrase(stem.split(" "));
+                    Pair<String,List<String>> pair;
+                    if(sentences==null) {
+                        missing.getAndIncrement();
+                        pair = null;
+                    } else {
+                        pair = new Pair<>(stem,sentences);
+                    }
+                    cnt.getAndIncrement();
+                    remaining.getAndDecrement();
+                    if(cnt.get()%1000==999) {
+                        System.out.println("Finished "+cnt.get()+" out of "+phrases.size()+". Missing: "+missing.get()+" out of "+cnt.get()+". Remaining: "+remaining.get());
+                        System.out.println("Num found: "+(cnt.get()-missing.get()));
+                    }
+                    return pair;
+                }).filter(p->p!=null)
+                .collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
 
-
-        System.out.println("Starting to filter multistems... Size: "+test.size());
-
-        Set<MultiStem> technologies = filterMultistems(test);
-
-        System.out.println("Technologies size: "+technologies.size());
+        System.out.println("Saving...");
+        Database.trySaveObject(wikipediaMap,wikipediaMapFile);
+        System.out.println("Done.");
     }
 
 }
