@@ -17,7 +17,7 @@ services:
         hard: -1
     mem_limit: 60g
     volumes:
-      - esdata1:/tank/elasticsearch/data
+      - esdata2:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
       - 9300:9300
@@ -40,7 +40,7 @@ services:
         hard: -1
     mem_limit: 60g
     volumes:
-      - esdata2:/tank/elasticsearch/data
+      - esdata2:/usr/share/elasticsearch/data
     ports:
       - 9301:9300
     networks:
