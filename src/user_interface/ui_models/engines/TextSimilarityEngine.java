@@ -60,17 +60,22 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        final Random random = new Random(359);
         String text = extractString(req, TEXT_TO_SEARCH_FOR, "").toLowerCase().trim();
 
+        avg = encodeText(text.split("\\s+"));
         System.out.println("Running text similarity model...");
 
+    }
+
+    public INDArray encodeText(String[] text) {
+        final Random random = new Random(359);
         List<INDArray> featureVecs = new ArrayList<>(maxNumSamples);
         Word2Vec word2Vec = CombinedSimilarityVAEPipelineManager.getOrLoadManager().getWord2Vec();
-        if(text.length()>0) {
+        INDArray avg = null;
+        if(text.length>0) {
             if(wordToEncodingNet==null) loadSimilarityNetworks();
             // get the input to the word to cpc network
-            List<String> validWords = Stream.of(text.split("\\s+")).filter(word->!Constants.STOP_WORD_SET.contains(word)&&word2Vec.vocab().containsWord(word)).collect(Collectors.toList());
+            List<String> validWords = Stream.of(text).filter(word->!Constants.STOP_WORD_SET.contains(word)&&word2Vec.vocab().containsWord(word)).collect(Collectors.toList());
             System.out.println(" Num valid words found: "+validWords.size());
             if(validWords.size()>0) {
                 for (int i = 0; i < Math.min(maxNumSamples,Math.max(1,validWords.size()-maxSampleLength)); i++) {
@@ -112,7 +117,9 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
             }
             System.out.println("Num features found: "+featureVecs.size());
         }
+        return avg;
     }
+
     @Override
     public String getId() {
         return TEXT_TO_SEARCH_FOR;
