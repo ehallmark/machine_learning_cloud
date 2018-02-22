@@ -34,16 +34,49 @@ public class TestSimModels extends TestModelHelper {
         return null;
     }
 
+    private static Map<String,Pair<Set<String>,Set<String>>> getPositiveAndNegativeFilingsMap(Map<String,Set<String>> filingToCPCMap, int samples) {
+        Map<String,Pair<Set<String>,Set<String>>> map = Collections.synchronizedMap(new HashMap<>());
+
+        List<String> allFilings = new ArrayList<>(filingToCPCMap.keySet());
+
+        System.out.println("All filings: "+allFilings.size());
+
+        Map<String,Set<String>> cpcToFilingMap = Collections.synchronizedMap(new HashMap<>());
+        filingToCPCMap.forEach((filing,cpcs)->{
+            cpcs.forEach(cpc->{
+                cpcToFilingMap.putIfAbsent(cpc,Collections.synchronizedSet(new HashSet<>()));
+                cpcToFilingMap.get(cpc).add(filing);
+
+            });
+        });
+
+        // sample
+        Collections.shuffle(allFilings);
+        allFilings = allFilings.subList(0,Math.min(allFilings.size(),samples));
+
+        allFilings.forEach(filing->{
+            Set<String> positives = Collections.synchronizedSet(new HashSet<>());
+            Set<String> negatives = Collections.synchronizedSet(new HashSet<>());
+            Set<String> cpcs = filingToCPCMap.get(filing);
+            cpcs.forEach(cpc->{
+                Set<String> others = cpcToFilingMap.get(cpc);
+
+            });
+            map.put(filing, new Pair<>(positives,negatives));
+        });
+
+
+        return map;
+    }
+
     public static void main(String[] args) {
         // load input data
         Map<String,Set<String>> filingData = loadFilingCPCData(new AssetToCPCMap().getPatentDataMap());
 
-        final int maxSentences = 20;
-        // need to run searches on the keys
 
         Set<String> allFilings = Collections.synchronizedSet(new HashSet<>());
 
-        final Map<String,Pair<String[],Set<String>>> keywordToWikiAndAssetsMap = null;
+        final Map<String,Pair<Set<String>,Set<String>>> filingsToPositiveAndNegativeFilings = null;
 
         // new model
         CombinedCPC2Vec2VAEEncodingPipelineManager encodingPipelineManager1 = CombinedCPC2Vec2VAEEncodingPipelineManager.getOrLoadManager(true);
