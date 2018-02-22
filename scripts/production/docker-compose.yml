@@ -8,7 +8,6 @@ services:
       - xpack.security.enabled=false
       - node.name=elasticsearch1
       - bootstrap.memory_lock=true
-      - path.data=/tank/elasticsearch/data
       - "ES_JAVA_OPTS=-Xms30000m -Xmx30000m"
       - "discovery.zen.ping.unicast.hosts=elasticsearch2"
     ulimits:
@@ -31,7 +30,6 @@ services:
       - xpack.security.enabled=false
       - node.name=elasticsearch2
       - bootstrap.memory_lock=true
-      - path.data=/tank/elasticsearch/data
       - "ES_JAVA_OPTS=-Xms30000m -Xmx30000m"
       - "discovery.zen.ping.unicast.hosts=elasticsearch1"
     ulimits:
