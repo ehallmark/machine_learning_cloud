@@ -6,12 +6,9 @@ import elasticsearch.DataSearcher;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
-import tools.MinHeap;
 import user_interface.acclaim_compatibility.Parser;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -19,7 +16,6 @@ import user_interface.ui_models.attributes.FilingNameAttribute;
 import user_interface.ui_models.attributes.computable_attributes.IsGrantedApplicationAttribute;
 import user_interface.ui_models.engines.TextSimilarityEngine;
 import user_interface.ui_models.filters.AbstractBooleanExcludeFilter;
-import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AcclaimExpertSearchFilter;
 import user_interface.ui_models.portfolios.items.Item;
@@ -28,12 +24,10 @@ import wiki.ScrapeWikipedia;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class TestTextModels {
+public class TestTextModels extends TestModelHelper {
 
 
 
@@ -52,37 +46,6 @@ public class TestTextModels {
             cnt.getAndIncrement();
         });
         return sum.get()/cnt.get();
-    }
-
-    private static int intersect(Collection<String> c1, Collection<String> c2) {
-        Set<String> s = new HashSet<>(c1);
-        s.removeAll(c2);
-        return s.size();
-    }
-
-    private static int union(Collection<String> c1, Collection<String> c2) {
-        Set<String> s = new HashSet<>(c1);
-        s.addAll(c2);
-        return s.size();
-    }
-
-    private static Set<String> topNByCosineSim(List<String> filings, INDArray filingMatrix, INDArray encodingVec, int n) {
-        float[] results = filingMatrix.mmul(Transforms.unitVec(encodingVec).reshape(1,encodingVec.length())).data().asFloat();
-        return IntStream.range(0,results.length).mapToObj(i->new Pair<>(filings.get(i),results[i]))
-                .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond()))
-                .limit(n)
-                .map(p->p.getFirst())
-                .collect(Collectors.toSet());
-    }
-
-    private static Pair<List<String>,INDArray> createFilingMatrix(Map<String,INDArray> filingToVectorMap) {
-        int columns = filingToVectorMap.values().stream().findAny().get().length();
-        INDArray mat = Nd4j.create(filingToVectorMap.size(),columns);
-        List<String> filings = Collections.synchronizedList(new ArrayList<>(filingToVectorMap.size()));
-        for(int i = 0; i < filings.size(); i++) {
-            mat.putRow(i, Transforms.unitVec(filingToVectorMap.get(filings.get(i))));
-        }
-        return new Pair<>(filings,mat);
     }
 
     private static Map<String,Set<String>> keywordToFilingMap;
