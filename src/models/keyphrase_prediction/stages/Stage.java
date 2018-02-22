@@ -55,7 +55,7 @@ public abstract class Stage<V> {
 
     private static final boolean debug = false;
     @Getter
-    private static final File baseDir = new File("technologyPredictionStages/");
+    private static final File baseDir = new File(Constants.DATA_FOLDER+"technologyPredictionStages/");
     protected File mainDir;
     protected V data;
     protected Model model;

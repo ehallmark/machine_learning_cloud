@@ -28,7 +28,7 @@ import java.util.function.Function;
 public class CombinedSimilarityComputationGraph extends AbstractCombinedSimilarityModel<ComputationGraph,CombinedSimilarityPipelineManager> {
     public static final String WORD_CPC_2_VEC = "wordCpc2Vec";
     public static final String CPC_VEC_NET = "cpcVecNet";
-    public static final File BASE_DIR = new File((CombinedSimilarityVAEPipelineManager.USE_DEEP_MODEL?"":Constants.DATA_FOLDER)+"combined_similarity_graph_data");
+    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"combined_similarity_graph_data");
 
     ComputationGraph wordCpc2Vec;
     ComputationGraph cpcVecNet;

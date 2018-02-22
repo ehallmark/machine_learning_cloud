@@ -1,16 +1,10 @@
 package models.similarity_models.combined_similarity_model;
 
-import cpc_normalization.CPC;
-import cpc_normalization.CPCHierarchy;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import lombok.Getter;
-import models.NDArrayHelper;
-import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
-import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecModel;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
-import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.LearningRatePolicy;
@@ -20,7 +14,6 @@ import org.deeplearning4j.nn.conf.graph.L2NormalizeVertex;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.GravesBidirectionalLSTM;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
-import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
@@ -28,30 +21,22 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import org.nd4j.linalg.primitives.Pair;
-import seeding.Database;
+import seeding.Constants;
 import tools.ReshapeVertex;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Created by Evan on 12/24/2017.
  */
 public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<ComputationGraph,CombinedCPC2Vec2VAEEncodingPipelineManager> {
     public static final String VAE_NETWORK = "vaeNet";
-    public static final File BASE_DIR = new File("combined_cpc2vec_2_vae_model_data"); //new File("deep_cpc_2_vec_encoding_data");
+    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"combined_cpc2vec_2_vae_model_data"); //new File("deep_cpc_2_vec_encoding_data");
 
     private List<ComputationGraph> networks;
     @Getter

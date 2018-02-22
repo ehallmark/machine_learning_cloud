@@ -3,19 +3,18 @@ package elasticsearch;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class BackupDatasetsIndexToFile {
-    public static final File backupFile = new File("elasticsearch_dataset_index.es");
+    public static final File backupFile = new File(Constants.DATA_FOLDER+"elasticsearch_dataset_index.es");
     public static void main(String[] args) {
         // this program will backup the dataset index to a file
         TransportClient client = MyClient.get();
