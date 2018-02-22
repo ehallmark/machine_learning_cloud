@@ -4,7 +4,6 @@ import data_pipeline.models.WordVectorPredictionModel;
 import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.CBOW;
-import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
@@ -26,7 +25,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
     public static final String CLASS_VECTORS = "cpcVectors";
     private static final int BATCH_SIZE = 512;
     private static Type MODEL_TYPE = Type.Word2Vec;
-    public static final File BASE_DIR = new File("wordcpc2vec_model_data");
+    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"wordcpc2vec_model_data");
 
     private WordCPC2VecPipelineManager pipelineManager;
     private final int vectorSize;

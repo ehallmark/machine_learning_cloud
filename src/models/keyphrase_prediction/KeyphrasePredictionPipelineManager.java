@@ -8,7 +8,6 @@ import lombok.Getter;
 import models.keyphrase_prediction.models.DefaultModel2;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
-import models.kmeans.KMeans;
 import models.similarity_models.paragraph_vectors.FloatFrequencyPair;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
@@ -18,6 +17,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.ops.transforms.Transforms;
+import seeding.Constants;
 import seeding.Database;
 import tools.MinHeap;
 
@@ -36,10 +36,10 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     @Getter
     private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
-    private static final File PREDICTION_DATA_FILE = new File("keyphrase_prediction_model_predictions/predictions_map.jobj");
+    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyphrase_prediction_model_predictions/predictions_map.jobj");
     @Getter
     private static Map<MultiStem,INDArray> keywordToVectorLookupTable;
-    private static final File keywordToVectorLookupTableFile = new File("keyword_to_vector_predictions_lookup_table.jobj");
+    private static final File keywordToVectorLookupTableFile = new File(Constants.DATA_FOLDER+"keyword_to_vector_predictions_lookup_table.jobj");
     @Getter
     private Set<MultiStem> multiStemSet;
     private static Map<String,Collection<CPC>> cpcMap;
