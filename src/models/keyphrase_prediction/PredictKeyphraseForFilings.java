@@ -1,16 +1,8 @@
 package models.keyphrase_prediction;
 
-import ch.qos.logback.classic.Level;
 import cpc_normalization.CPC;
-import cpc_normalization.CPCHierarchy;
-import data_pipeline.pipeline_manager.DefaultPipelineManager;
-import models.similarity_models.combined_similarity_model.CombinedDeepCPC2VecEncodingModel;
-import models.similarity_models.combined_similarity_model.CombinedDeepCPC2VecEncodingPipelineManager;
-import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEPipelineManager;
-import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
-import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -20,19 +12,16 @@ import seeding.Constants;
 import seeding.Database;
 import tools.MinHeap;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by Evan on 11/2/2017.
  */
 public class PredictKeyphraseForFilings {
-    private static final File technologyMapFile = new File("filing_to_keyphrase_map.jobj");
+    private static final File technologyMapFile = new File(Constants.DATA_FOLDER+"filing_to_keyphrase_map.jobj");
     private static Map<String,List<String>> technologyMap;
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
