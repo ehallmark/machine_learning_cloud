@@ -13,12 +13,11 @@ import java.util.stream.Collectors;
 
 public class TestSimModels extends TestModelHelper {
 
-    public static double testModel(Map<String,Pair<String[],Set<String>>> keywordToWikiAndAssetsMap, Function2<String[],Integer,Set<String>> model, int n) {
+    public static double testModel(Map<String,Pair<Set<String>,Set<String>>> filingsToPositiveAndNegativeFilings, Function2<String,Integer,Set<String>> model, int n) {
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicDouble sum = new AtomicDouble(0d);
-        keywordToWikiAndAssetsMap.forEach((keyword,pair)->{
-            String[] text = pair.getFirst();
-            Set<String> predictions = model.apply(text,n);
+        filingsToPositiveAndNegativeFilings.forEach((filing,pair)->{
+            Set<String> predictions = model.apply(filing,n);
             if(predictions!=null&&predictions.size()>0) {
                 Set<String> actual = pair.getSecond();
                 if(actual!=null&&actual.size()>0) {
@@ -88,7 +87,7 @@ public class TestSimModels extends TestModelHelper {
         final Pair<List<String>,INDArray> filingsWithMatrix1 = createFilingMatrix(predictions1);
         final List<String> filings1 = filingsWithMatrix1.getFirst();
         final INDArray filingsMatrix1 = filingsWithMatrix1.getSecond();
-        Function2<String[],Integer,Set<String>> model1 = (text,n) -> {
+        Function2<String,Integer,Set<String>> model1 = (text,n) -> {
             INDArray encodingVec = encodingModel1.encodeText(Arrays.asList(text),20);
             if(encodingVec==null)return null;
             return topNByCosineSim(filings1,filingsMatrix1,encodingVec,n);
@@ -103,8 +102,8 @@ public class TestSimModels extends TestModelHelper {
         final Pair<List<String>,INDArray> filingsWithMatrix2 = createFilingMatrix(predictions2);
         final List<String> filings2 = filingsWithMatrix2.getFirst();
         final INDArray filingsMatrix2 = filingsWithMatrix2.getSecond();
-        Function2<String[],Integer,Set<String>> model2 = (text,n) -> {
-            INDArray encodingVec = encodingModel2.encodeText(text);
+        Function2<String,Integer,Set<String>> model2 = (text,n) -> {
+            INDArray encodingVec = null;//encodingModel2.encodeText(text);
             if(encodingVec==null)return null;
             return topNByCosineSim(filings2,filingsMatrix2,encodingVec,n);
         };
@@ -115,8 +114,8 @@ public class TestSimModels extends TestModelHelper {
         System.out.println("Size of filings (Model 2): "+filings2.size());
 
         for(int n = 10; n <= 1000; n*=10) {
-            double score1 = testModel(keywordToWikiAndAssetsMap, model1, n);
-            double score2 = testModel(keywordToWikiAndAssetsMap, model2, n);
+            double score1 = testModel(filingsToPositiveAndNegativeFilings, model1, n);
+            double score2 = testModel(filingsToPositiveAndNegativeFilings, model2, n);
 
             System.out.println("Score for model [n=" + n + "] 1: " + score1);
             System.out.println("Score for model [n=" + n + "] 2: " + score2);
