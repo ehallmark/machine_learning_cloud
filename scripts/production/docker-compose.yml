@@ -4,8 +4,8 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch1
     environment:
-      ES_JAVA_OPTS: "-Xms32000m -Xmx32000m"
-      bootstrap.memory_lock: true
+      - ES_JAVA_OPTS="-Xms32000m -Xmx32000m"
+      - bootstrap.memory_lock=true
     ulimits:
       memlock:
         soft: -1
