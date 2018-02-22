@@ -1,6 +1,7 @@
 package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
+import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import spark.Request;
@@ -18,6 +19,7 @@ import static j2html.TagCreator.*;
  */
 public class AcclaimExpertSearchFilter extends AbstractFilter {
     public static final String NAME = "acclaim_expert_filter";
+    @Setter
     protected QueryBuilder query;
 
     public AcclaimExpertSearchFilter() {
