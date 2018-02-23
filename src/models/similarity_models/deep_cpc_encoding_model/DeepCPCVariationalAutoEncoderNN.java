@@ -8,7 +8,6 @@ import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
-import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -22,6 +21,7 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import seeding.Constants;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -31,14 +31,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 10/26/17.
  */
 public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN {
     public static final int VECTOR_SIZE = 32;
-    public static final File BASE_DIR = new File("deep_cpc_deep_vae_nn_model_data");
+    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"deep_cpc_deep_vae_nn_model_data");
 
     public DeepCPCVariationalAutoEncoderNN(DeepCPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {
         super(pipelineManager,modelName,maxCpcDepth);
