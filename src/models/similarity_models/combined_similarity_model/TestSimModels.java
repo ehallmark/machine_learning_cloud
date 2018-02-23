@@ -76,13 +76,18 @@ public class TestSimModels extends TestModelHelper {
         return data;
     }
 
-    private static void test(DefaultPipelineManager<?,INDArray> pipelineManager, String modelName, Map<String,Pair<String,String>> filingData) {
+    private static double test(DefaultPipelineManager<?,INDArray> pipelineManager, String modelName, Map<String,Pair<String,String>> filingData) {
         final Map<String,INDArray> allPredictions = pipelineManager.loadPredictions();
         AtomicInteger numMissing = new AtomicInteger(0);
         AtomicInteger totalSeen = new AtomicInteger(0);
         Function3<String,String,String,Boolean> model = (filing, posSample, negSample) -> {
             totalSeen.getAndIncrement();
-            System.out.println(totalSeen.get());
+            if(totalSeen.get()%100==99) {
+                System.out.print("-");
+            }
+            if(totalSeen.get()%1000==999) {
+                System.out.println();
+            }
             INDArray encodingVec = allPredictions.get(filing);
             INDArray posVec = allPredictions.get(posSample);
             INDArray negVec = allPredictions.get(negSample);
@@ -96,6 +101,7 @@ public class TestSimModels extends TestModelHelper {
         double score = testModel(filingData, model);
         System.out.println("Score for model "+modelName+": " + score);
         System.out.println("Missing vectors for "+numMissing.get()+" out of "+totalSeen.get());
+        return score;
     }
 
     public static void main(String[] args) {
@@ -112,7 +118,10 @@ public class TestSimModels extends TestModelHelper {
         System.out.println("Num filing samples used: "+filingData.size());
 
         // run tests
-        test(encodingPipelineManager1,"Model 1",filingData);
-        test(encodingPipelineManager2, "Model 2",filingData);
+        double score1 = test(encodingPipelineManager1,"Model 1",filingData);
+        double score2 = test(encodingPipelineManager2, "Model 2",filingData);
+
+        System.out.println("Score for Model 1: "+score1);
+        System.out.println("Score for Model 2: "+score2);
     }
 }
