@@ -55,13 +55,18 @@ public class TestTextModels extends TestModelHelper {
             keywordToFilingMap = (Map<String,Set<String>>) Database.tryLoadObject(keywordToFilingMapFile);
             if(keywordToFilingMap==null) {
                 System.out.println("Rebuilding keyword to filing map...");
+                AtomicInteger ttl = new AtomicInteger(0);
+                AtomicInteger missing = new AtomicInteger(0);
                 keywordToFilingMap = Collections.synchronizedMap(new HashMap<>(keywords.size()));
-                keywords.forEach(keyword->{
+                keywords.parallelStream().forEach(keyword->{
                     Set<String> results = searchForFilings(keyword);
                     if(results!=null&&results.size()>0) {
                         System.out.println("Num results for "+keyword+": "+results.size());
                         keywordToFilingMap.put(keyword,results);
+                    } else {
+                        missing.getAndIncrement();
                     }
+                    System.out.println("Missing: "+missing.get()+" out of "+ttl.getAndIncrement());
                 });
                 System.out.println("Saving...");
                 Database.trySaveObject(keywordToFilingMap,keywordToFilingMapFile);
@@ -77,7 +82,7 @@ public class TestTextModels extends TestModelHelper {
         QueryBuilder builder = new Parser(SimilarPatentServer.SUPER_USER).parseAcclaimQuery("TAC:("+keyword+")");
         filter.setQuery(builder);
         Collection<AbstractFilter> filters = Arrays.asList(filter, new AbstractBooleanExcludeFilter(new IsGrantedApplicationAttribute(), AbstractFilter.FilterType.BoolFalse));
-        List<Item> items = DataSearcher.searchForAssets(attributes,filters,comparator, SortOrder.DESC, 10000, new HashMap<>(),false,false);
+        List<Item> items = DataSearcher.searchForAssets(attributes,filters,comparator, SortOrder.DESC, 500, new HashMap<>(),false,false);
         if(items==null) return null;
         return items.stream().map(item->item.getData(Constants.FILING_NAME)).filter(obj->obj!=null).map(obj->obj.toString()).collect(Collectors.toSet());
     };

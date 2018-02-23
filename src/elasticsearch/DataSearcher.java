@@ -139,9 +139,9 @@ public class DataSearcher {
                 }
             }
 
-            System.out.println("Sorting: "+sortBuilder.toString());
+            //System.out.println("Sorting: "+sortBuilder.toString());
 
-            System.out.println("Filtering by score: "+isOverallScore);
+            //System.out.println("Filtering by score: "+isOverallScore);
 
             //String[] attrArray = attributes.stream().flatMap(attr->SimilarPatentServer.attributeNameHelper(attr,"").stream()).toArray(size -> new String[size]);
             AtomicReference<SearchRequestBuilder> request = new AtomicReference<>(client.prepareSearch(INDEX_NAME)
@@ -176,18 +176,18 @@ public class DataSearcher {
             AtomicReference<BoolQueryBuilder> filterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             AtomicReference<BoolQueryBuilder> queryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
 
-            System.out.println("Looking for similarity greater than...");
+            //System.out.println("Looking for similarity greater than...");
             filters.forEach(filter->{
                 if(filter instanceof AbstractGreaterThanFilter && filter.getAttribute().getFullName().equals(Constants.SIMILARITY)) {
                     AbstractGreaterThanFilter simFilter = (AbstractGreaterThanFilter)filter;
                     attributes.forEach(attr->{
                         if(attr.getFullName().equals(Constants.SIMILARITY)) {
-                            System.out.println("Found and setting similarity attribute for filter...");
+                            //System.out.println("Found and setting similarity attribute for filter...");
                             simFilter.setAttribute(attr);
                         }
                     });
                     if(simFilter.isActive()) {
-                        System.out.println("Sim greater than filter is active...");
+                        //System.out.println("Sim greater than filter is active...");
                         QueryBuilder scriptFilter = simFilter.getScriptFilter();
                         System.out.println(scriptFilter.toString());
                         filterBuilder.set(filterBuilder.get().must(scriptFilter));
@@ -224,7 +224,7 @@ public class DataSearcher {
                     }
                 }
             }
-            System.out.println("Starting ES attributes...");
+            //System.out.println("Starting ES attributes...");
             for(AbstractAttribute attribute : attributes) {
                 if(debug)System.out.println("  attribute: " + attribute.getName());
                 if(attribute instanceof NestedAttribute) {
@@ -237,7 +237,7 @@ public class DataSearcher {
 
             }
 
-            System.out.println("Combining Query...");
+           // System.out.println("Combining Query...");
             // Add filter to query
             queryBuilder.set(queryBuilder.get().filter(filterBuilder.get()));
 
