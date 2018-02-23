@@ -134,7 +134,7 @@ public class SimilarPatentServer {
     private static Map<String,AbstractChartAttribute> chartModelMap = new HashMap<>();
     private static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
     private static final Function<String,Boolean> DEFAULT_ROLE_TO_ATTR_FUNCTION = (str) -> false;
-    private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
+    //private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
     private static NestedAttribute allAttributes;
     private static AbstractNestedFilter allFilters;
     private static NestedAttribute allCharts;
@@ -1768,13 +1768,13 @@ public class SimilarPatentServer {
     };
 
     private static Object handleReport(Request req, Response res) {
-        try {
+        /*try {
             ProcessBuilder ps = new ProcessBuilder("/bin/bash", "-c", "curl http://"+PLATFORM_STARTER_IP_ADDRESS+":8080/ping");
             ps.start();
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("While pinging platform starter...");
-        }
+        }*/
 
         List<RecursiveTask> otherTasks = Collections.synchronizedList(new ArrayList<>());
         // start timer
