@@ -2751,7 +2751,6 @@ public class SimilarPatentServer {
     }
 
     public static void main(String[] args) throws Exception {
-        Database.setLoadLocalFlag(true); // loads stuff locally (use CopyFilesToLocalMachines program)
         loadStuff();
 
         // perform quick search

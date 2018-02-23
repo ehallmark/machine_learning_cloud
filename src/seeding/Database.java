@@ -6,7 +6,6 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFa
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
 import elasticsearch.DataSearcher;
 import models.assignee.normalization.name_correction.AssigneeTrimmer;
-import org.apache.commons.io.FileUtils;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -25,7 +24,6 @@ import java.sql.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.RecursiveTask;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -91,15 +89,6 @@ public class Database {
 	private static Map<String,Integer> gatherValueMap;
 	private static volatile boolean init=false;
 
-	public static final String DATA_COPY_FOLDER = "data_copy/";
-	private static volatile boolean COPY_DATA_FLAG = false;
-	private static volatile boolean LOAD_LOCAL_FLAG = false;
-	public static void setCopyDataFlag(boolean copy) {
-		COPY_DATA_FLAG = copy;
-	}
-	public static void setLoadLocalFlag(boolean loadLocal) {
-		LOAD_LOCAL_FLAG = loadLocal;
-	}
 
 	private static Connection conn;
 	static {
@@ -232,40 +221,13 @@ public class Database {
 		return tryLoadObject(file,true);
 	}
 
-	private static File fileCopyFor(File file) {
-		String absFile = file.getAbsolutePath();
-		if(absFile.contains("/"+Constants.DATA_FOLDER)) {
-			return new File(absFile.replace("/" + Constants.DATA_FOLDER, "/" + DATA_COPY_FOLDER));
-		}
-		return null;
-	}
-
 	public static Object tryLoadObject(File file, boolean print) {
-		File originalFile = file;
-		if(LOAD_LOCAL_FLAG) {
-			file = fileCopyFor(file);
-			if(file==null||!file.exists()) {
-				file = originalFile;
-			}
-		}
 		if(print)System.out.println("Starting to load file: "+file.getName()+"...");
 		try {
 			ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
 			Object toReturn = ois.readObject();
 			ois.close();
 			if(print)System.out.println("Successfully loaded "+file.getName()+".");
-			if(COPY_DATA_FLAG) {
-				// copy
-				File fileCopy = fileCopyFor(file);
-				if(fileCopy!=null) {
-					File parent = fileCopy.getParentFile();
-					if(!parent.exists()) {
-						parent.mkdirs();
-					}
-					FileUtils.copyFile(file,fileCopy);
-				}
-
-			}
 			return toReturn;
 		} catch(Exception e) {
 			e.printStackTrace();
