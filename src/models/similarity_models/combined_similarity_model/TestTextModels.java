@@ -44,6 +44,12 @@ public class TestTextModels extends TestModelHelper {
                 }
             }
             cnt.getAndIncrement();
+            if(cnt.get()%100==99) {
+                System.out.print("-");
+            }
+            if(cnt.get()%1000==999) {
+                System.out.println();
+            }
         });
         return sum.get()/cnt.get();
     }
@@ -151,9 +157,9 @@ public class TestTextModels extends TestModelHelper {
 
         for(int n = 10; n <= 1000; n*=10) {
             double score1 = testModel(keywordToWikiAndAssetsMap, model1, n);
-            double score2 = testModel(keywordToWikiAndAssetsMap, model2, n);
-
             System.out.println("Score for model [n=" + n + "] 1: " + score1);
+
+            double score2 = testModel(keywordToWikiAndAssetsMap, model2, n);
             System.out.println("Score for model [n=" + n + "] 2: " + score2);
         }
     }

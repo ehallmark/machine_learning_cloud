@@ -61,8 +61,10 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     @Override
     public void extractRelevantInformationFromParams(Request req) {
         String text = extractString(req, TEXT_TO_SEARCH_FOR, "").toLowerCase().trim();
-
-        avg = encodeText(text.split("\\s+"));
+        if(text.length()>0) {
+            avg = encodeText(text.split("\\s+"));
+            if(avg==null) throw new RuntimeException("Unable to find similarity from provided text.");
+        }
         System.out.println("Running text similarity model...");
 
     }
@@ -76,7 +78,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
             if(wordToEncodingNet==null) loadSimilarityNetworks();
             // get the input to the word to cpc network
             List<String> validWords = Stream.of(text).filter(word->!Constants.STOP_WORD_SET.contains(word)&&word2Vec.vocab().containsWord(word)).collect(Collectors.toList());
-            System.out.println(" Num valid words found: "+validWords.size());
+            //System.out.println(" Num valid words found: "+validWords.size());
             if(validWords.size()>0) {
                 for (int i = 0; i < Math.min(maxNumSamples,Math.max(1,validWords.size()-maxSampleLength)); i++) {
                     int wordLimit = Math.min(validWords.size(), maxSampleLength);
@@ -113,9 +115,9 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
                 avg = wordToEncodingNet.output(false, Transforms.unitVec(Nd4j.vstack(featureVecs).mean(0)))[0];
                 avg.divi(avg.norm2Number());
             } else {
-                throw new RuntimeException("Unable to find similarity from provided text.");
+                avg = null;
             }
-            System.out.println("Num features found: "+featureVecs.size());
+            //System.out.println("Num features found: "+featureVecs.size());
         }
         return avg;
     }
