@@ -93,12 +93,14 @@ public class TestTextModels extends TestModelHelper {
         Map<String,Set<String>> filingData = loadKeywordToFilingsMap(new ArrayList<>(wikipediaData.keySet()));
 
         final int maxSentences = 20;
+        final int maxSamples = 100000;
         // need to run searches on the keys
 
         Set<String> allFilings = Collections.synchronizedSet(new HashSet<>());
 
         final Map<String,Pair<String[],Set<String>>> keywordToWikiAndAssetsMap = wikipediaData.entrySet().stream()
                 .map(e->{
+                    if(allFilings.size()>maxSamples) return null;
                     String[] text = e.getValue().stream().limit(maxSentences)
                             .flatMap(sentence-> Stream.of(sentence.split("\\s+")))
                             .toArray(size->new String[size]);
