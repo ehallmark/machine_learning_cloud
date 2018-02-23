@@ -24,6 +24,9 @@ public class TestModelHelper {
 
     protected static Set<String> topNByCosineSim(List<String> filings, INDArray filingMatrix, INDArray encodingVec, int n) {
         float[] results = filingMatrix.mmul(Transforms.unitVec(encodingVec).reshape(encodingVec.length(),1)).data().asFloat();
+        if(filings.size()!=results.length) {
+            throw new IllegalStateException("Filings size ("+filings.size()+") is not equal to results length ("+results.length+")");
+        }
         return IntStream.range(0,results.length).mapToObj(i->new Pair<>(filings.get(i),results[i]))
                 .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond()))
                 .limit(n)
@@ -34,7 +37,7 @@ public class TestModelHelper {
     protected static Pair<List<String>,INDArray> createFilingMatrix(Map<String,INDArray> filingToVectorMap) {
         int columns = filingToVectorMap.values().stream().findAny().get().length();
         INDArray mat = Nd4j.create(filingToVectorMap.size(),columns);
-        List<String> filings = Collections.synchronizedList(new ArrayList<>(filingToVectorMap.size()));
+        List<String> filings = Collections.synchronizedList(new ArrayList<>(filingToVectorMap.keySet()));
         for(int i = 0; i < filings.size(); i++) {
             mat.putRow(i, Transforms.unitVec(filingToVectorMap.get(filings.get(i))));
         }
