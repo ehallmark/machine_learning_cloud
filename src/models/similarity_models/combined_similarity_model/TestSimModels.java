@@ -1,7 +1,6 @@
 package models.similarity_models.combined_similarity_model;
 
 import com.google.common.util.concurrent.AtomicDouble;
-import data_pipeline.helpers.Function2;
 import data_pipeline.helpers.Function3;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -9,12 +8,10 @@ import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
-import user_interface.ui_models.engines.TextSimilarityEngine;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class TestSimModels extends TestModelHelper {
 
@@ -85,6 +82,7 @@ public class TestSimModels extends TestModelHelper {
         AtomicInteger totalSeen = new AtomicInteger(0);
         Function3<String,String,String,Boolean> model = (filing, posSample, negSample) -> {
             totalSeen.getAndIncrement();
+            System.out.println(totalSeen.get());
             INDArray encodingVec = allPredictions.get(filing);
             INDArray posVec = allPredictions.get(posSample);
             INDArray negVec = allPredictions.get(negSample);
@@ -102,11 +100,11 @@ public class TestSimModels extends TestModelHelper {
 
     public static void main(String[] args) {
         // load input data
-        final int numFilingSamples = 50000;
+        final int numFilingSamples = 5000;
         Map<String,Pair<String,String>> filingData = loadFilingCPCData(new AssetToCPCMap().getPatentDataMap(), numFilingSamples);
 
         // new model
-        CombinedCPC2Vec2VAEEncodingPipelineManager encodingPipelineManager1 = CombinedCPC2Vec2VAEEncodingPipelineManager.getOrLoadManager(true);
+        CombinedDeepCPC2VecEncodingPipelineManager encodingPipelineManager1 = CombinedDeepCPC2VecEncodingPipelineManager.getOrLoadManager(false);
 
         // older model
         CombinedSimilarityVAEPipelineManager encodingPipelineManager2 = CombinedSimilarityVAEPipelineManager.getOrLoadManager();
