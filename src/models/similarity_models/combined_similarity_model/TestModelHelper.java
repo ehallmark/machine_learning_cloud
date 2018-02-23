@@ -23,7 +23,7 @@ public class TestModelHelper {
     }
 
     protected static Set<String> topNByCosineSim(List<String> filings, INDArray filingMatrix, INDArray encodingVec, int n) {
-        float[] results = filingMatrix.mmul(Transforms.unitVec(encodingVec).reshape(1,encodingVec.length())).data().asFloat();
+        float[] results = filingMatrix.mmul(Transforms.unitVec(encodingVec).reshape(encodingVec.length(),1)).data().asFloat();
         return IntStream.range(0,results.length).mapToObj(i->new Pair<>(filings.get(i),results[i]))
                 .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond()))
                 .limit(n)
