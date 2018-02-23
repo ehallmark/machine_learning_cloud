@@ -150,7 +150,7 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
         updates.put(VAE_NETWORK,vaeNetwork);
         networks = new ArrayList<>();
         networks.add(vaeNetwork);
-        System.out.println("Initial test: " +getTestFunction().apply(vaeNetwork));
+        //System.out.println("Initial test: " +getTestFunction().apply(vaeNetwork));
         return updates;
     }
 

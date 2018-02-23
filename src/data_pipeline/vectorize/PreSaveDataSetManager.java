@@ -55,7 +55,7 @@ public class PreSaveDataSetManager<T extends Iterator> implements DataSetManager
         this.baseDir=baseDir;
         this.multi=multi;
         this.miniBatch=miniBatch;
-        if(!this.baseDir.exists()) throw new RuntimeException("Please use other constructor and call saveDatasets()");
+        //if(!this.baseDir.exists()) throw new RuntimeException("Please use other constructor and call saveDatasets()");
     }
 
     public void removeDataFromDisk() {
