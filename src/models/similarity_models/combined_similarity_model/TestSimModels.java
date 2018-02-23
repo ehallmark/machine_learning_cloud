@@ -2,46 +2,49 @@ package models.similarity_models.combined_similarity_model;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import data_pipeline.helpers.Function2;
+import data_pipeline.helpers.Function3;
+import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.engines.TextSimilarityEngine;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TestSimModels extends TestModelHelper {
 
-    public static double testModel(Map<String,Pair<Set<String>,Set<String>>> filingsToPositiveAndNegativeFilings, Function2<String,Integer,Set<String>> model, int n) {
+    public static double testModel(Map<String,Pair<String,String>> filingData, Function3<String,String,String,Boolean> model) {
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicDouble sum = new AtomicDouble(0d);
-        filingsToPositiveAndNegativeFilings.forEach((filing,pair)->{
-            Set<String> predictions = model.apply(filing,n);
-            if(predictions!=null&&predictions.size()>0) {
-                Set<String> actual = pair.getSecond();
-                if(actual!=null&&actual.size()>0) {
-                    sum.getAndAdd(((double)intersect(predictions,actual))/((double)(union(predictions,actual))));
-                }
+        filingData.forEach((filing,pair)->{
+            Boolean result = model.apply(filing,pair.getFirst(),pair.getSecond());
+            if(result==null) return;
+            if(result) {
+                sum.addAndGet(1d);
             }
             cnt.getAndIncrement();
         });
         return sum.get()/cnt.get();
     }
 
-    private static Map<String,Set<String>> loadFilingCPCData(Map<String,Set<String>> cpcMap) {
-        return null;
-    }
-
-    private static Map<String,Pair<Set<String>,Set<String>>> getPositiveAndNegativeFilingsMap(Map<String,Set<String>> filingToCPCMap, int samples) {
-        Map<String,Pair<Set<String>,Set<String>>> map = Collections.synchronizedMap(new HashMap<>());
-
-        List<String> allFilings = new ArrayList<>(filingToCPCMap.keySet());
-
-        System.out.println("All filings: "+allFilings.size());
+    private static Map<String,Pair<String,String>> loadFilingCPCData(Map<String,Set<String>> patentCpcMap, int numFilings) {
+        Map<String,String> filingToAssetMap = Collections.synchronizedMap(new HashMap<>());
+        patentCpcMap.keySet().parallelStream().forEach(k->{
+            String filing = new AssetToFilingMap().getPatentDataMap().get(k);
+            if(filing!=null) {
+                filingToAssetMap.put(filing,k);
+            }
+        });
+        Map<String,Set<String>> filingCpcMap = filingToAssetMap.entrySet().parallelStream()
+                .collect(Collectors.toMap(e->e.getKey(),e->patentCpcMap.get(e.getValue())));
 
         Map<String,Set<String>> cpcToFilingMap = Collections.synchronizedMap(new HashMap<>());
-        filingToCPCMap.forEach((filing,cpcs)->{
+        filingCpcMap.forEach((filing,cpcs)->{
             cpcs.forEach(cpc->{
                 cpcToFilingMap.putIfAbsent(cpc,Collections.synchronizedSet(new HashSet<>()));
                 cpcToFilingMap.get(cpc).add(filing);
@@ -49,76 +52,69 @@ public class TestSimModels extends TestModelHelper {
             });
         });
 
-        // sample
-        Collections.shuffle(allFilings);
-        allFilings = allFilings.subList(0,Math.min(allFilings.size(),samples));
+        Random rand = new Random(23);
 
-        allFilings.forEach(filing->{
-            Set<String> positives = Collections.synchronizedSet(new HashSet<>());
-            Set<String> negatives = Collections.synchronizedSet(new HashSet<>());
-            Set<String> cpcs = filingToCPCMap.get(filing);
-            cpcs.forEach(cpc->{
-                Set<String> others = cpcToFilingMap.get(cpc);
+        List<String> filings = new ArrayList<>(filingCpcMap.keySet());
+        Collections.shuffle(filings, new Random(2352));
+        Map<String,Pair<String,String>> data = Collections.synchronizedMap(new HashMap<>(numFilings));
+        for(int i = 0; i < Math.min(filings.size(),numFilings); i++) {
+            String filing = filings.get(i);
+            Set<String> cpcs = filingCpcMap.get(filing);
+            List<String> cpcList = new ArrayList<>(cpcs);
+            String randomCpc = cpcList.get(rand.nextInt(cpcList.size()));
 
-            });
-            map.put(filing, new Pair<>(positives,negatives));
-        });
+            Set<String> otherFilings = cpcToFilingMap.get(randomCpc);
+            otherFilings.remove(filing);
 
+            if(otherFilings.isEmpty()) continue;
 
-        return map;
+            List<String> otherFilingsList = new ArrayList<>(otherFilings);
+
+            String positiveSample = otherFilingsList.get(rand.nextInt(otherFilingsList.size()));
+
+            String negativeSample = filings.get(rand.nextInt(filings.size()));
+
+            data.put(filing, new Pair<>(positiveSample,negativeSample));
+        }
+        return data;
+    }
+
+    private static void test(DefaultPipelineManager<?,INDArray> pipelineManager, String modelName, Map<String,Pair<String,String>> filingData) {
+        final Map<String,INDArray> allPredictions = pipelineManager.loadPredictions();
+        AtomicInteger numMissing = new AtomicInteger(0);
+        AtomicInteger totalSeen = new AtomicInteger(0);
+        Function3<String,String,String,Boolean> model = (filing, posSample, negSample) -> {
+            totalSeen.getAndIncrement();
+            INDArray encodingVec = allPredictions.get(filing);
+            INDArray posVec = allPredictions.get(posSample);
+            INDArray negVec = allPredictions.get(negSample);
+            if(encodingVec==null||posVec==null||negVec==null){
+                numMissing.getAndIncrement();
+                return null;
+            }
+            return Transforms.cosineSim(encodingVec,posVec) > Transforms.cosineSim(encodingVec,negVec);
+        };
+
+        double score = testModel(filingData, model);
+        System.out.println("Score for model "+modelName+": " + score);
+        System.out.println("Missing vectors for "+numMissing.get()+" out of "+totalSeen.get());
     }
 
     public static void main(String[] args) {
         // load input data
-        Map<String,Set<String>> filingData = loadFilingCPCData(new AssetToCPCMap().getPatentDataMap());
-
-
-        Set<String> allFilings = Collections.synchronizedSet(new HashSet<>());
-
-        final Map<String,Pair<Set<String>,Set<String>>> filingsToPositiveAndNegativeFilings = null;
+        final int numFilingSamples = 50000;
+        Map<String,Pair<String,String>> filingData = loadFilingCPCData(new AssetToCPCMap().getPatentDataMap(), numFilingSamples);
 
         // new model
         CombinedCPC2Vec2VAEEncodingPipelineManager encodingPipelineManager1 = CombinedCPC2Vec2VAEEncodingPipelineManager.getOrLoadManager(true);
-        encodingPipelineManager1.runPipeline(false,false,false,false,-1,false);
-        CombinedCPC2Vec2VAEEncodingModel encodingModel1 = (CombinedCPC2Vec2VAEEncodingModel)encodingPipelineManager1.getModel();
-        Map<String,INDArray> allPredictions1 = CombinedDeepCPC2VecEncodingPipelineManager.getOrLoadManager(false).loadPredictions();
-        Map<String,INDArray> predictions1 = allFilings.stream().filter(allPredictions1::containsKey).collect(Collectors.toMap(e->e,e->allPredictions1.get(e)));
-
-        final Pair<List<String>,INDArray> filingsWithMatrix1 = createFilingMatrix(predictions1);
-        final List<String> filings1 = filingsWithMatrix1.getFirst();
-        final INDArray filingsMatrix1 = filingsWithMatrix1.getSecond();
-        Function2<String,Integer,Set<String>> model1 = (text,n) -> {
-            INDArray encodingVec = encodingModel1.encodeText(Arrays.asList(text),20);
-            if(encodingVec==null)return null;
-            return topNByCosineSim(filings1,filingsMatrix1,encodingVec,n);
-        };
-
 
         // older model
-        TextSimilarityEngine encodingModel2 = new TextSimilarityEngine();
-        Map<String,INDArray> allPredictions2 = CombinedSimilarityVAEPipelineManager.getOrLoadManager().loadPredictions();
-        Map<String,INDArray> predictions2 = allFilings.stream().filter(allPredictions2::containsKey).collect(Collectors.toMap(e->e,e->allPredictions2.get(e)));
+        CombinedSimilarityVAEPipelineManager encodingPipelineManager2 = CombinedSimilarityVAEPipelineManager.getOrLoadManager();
 
-        final Pair<List<String>,INDArray> filingsWithMatrix2 = createFilingMatrix(predictions2);
-        final List<String> filings2 = filingsWithMatrix2.getFirst();
-        final INDArray filingsMatrix2 = filingsWithMatrix2.getSecond();
-        Function2<String,Integer,Set<String>> model2 = (text,n) -> {
-            INDArray encodingVec = null;//encodingModel2.encodeText(text);
-            if(encodingVec==null)return null;
-            return topNByCosineSim(filings2,filingsMatrix2,encodingVec,n);
-        };
+        System.out.println("Num filing samples used: "+filingData.size());
 
-
-        System.out.println("All relevant filings size: "+allFilings.size());
-        System.out.println("Size of filings (Model 1): "+filings1.size());
-        System.out.println("Size of filings (Model 2): "+filings2.size());
-
-        for(int n = 10; n <= 1000; n*=10) {
-            double score1 = testModel(filingsToPositiveAndNegativeFilings, model1, n);
-            double score2 = testModel(filingsToPositiveAndNegativeFilings, model2, n);
-
-            System.out.println("Score for model [n=" + n + "] 1: " + score1);
-            System.out.println("Score for model [n=" + n + "] 2: " + score2);
-        }
+        // run tests
+        test(encodingPipelineManager1,"Model 1",filingData);
+        test(encodingPipelineManager2, "Model 2",filingData);
     }
 }
