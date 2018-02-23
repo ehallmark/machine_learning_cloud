@@ -49,7 +49,7 @@ public class TestTextModels extends TestModelHelper {
     }
 
     private static Map<String,Set<String>> keywordToFilingMap;
-    private static final File keywordToFilingMapFile = new File("keyword_to_filing_map_for_test_text_models.jobj");
+    private static final File keywordToFilingMapFile = new File(Constants.DATA_FOLDER+"keyword_to_filing_map_for_test_text_models.jobj");
     private static Map<String,Set<String>> loadKeywordToFilingsMap(List<String> keywords) {
         if(keywordToFilingMap==null) {
             keywordToFilingMap = (Map<String,Set<String>>) Database.tryLoadObject(keywordToFilingMapFile);

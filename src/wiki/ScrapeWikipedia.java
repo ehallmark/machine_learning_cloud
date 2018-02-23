@@ -1,15 +1,17 @@
 package wiki;
 
-import cpc_normalization.CPCHierarchy;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.DefaultModel2;
 import models.keyphrase_prediction.models.Model;
-import models.keyphrase_prediction.stages.*;
+import models.keyphrase_prediction.stages.Stage1;
+import models.keyphrase_prediction.stages.Stage2;
+import models.keyphrase_prediction.stages.ValidWordStage;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.nd4j.linalg.primitives.Pair;
+import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
@@ -18,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class ScrapeWikipedia {
-    public static final File wikipediaMapFile = new File("wikipedia_text_from_keywords_map.jobj");
+    public static final File wikipediaMapFile = new File(Constants.DATA_FOLDER+"wikipedia_text_from_keywords_map.jobj");
     public static List<String> pullWikipediaPageByPhrase(String[] phrase) {
         try {
             Document document = Jsoup.connect("http://en.wikipedia.org/wiki/" + String.join("_", phrase).toLowerCase()).get();
