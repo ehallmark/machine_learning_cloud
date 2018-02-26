@@ -5,7 +5,6 @@ import cpc_normalization.CPCHierarchy;
 import data_pipeline.helpers.Function2;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
-import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -37,11 +36,11 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 10/26/17.
  */
-public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN {
+public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN {
     public static final int VECTOR_SIZE = 32;
-    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"deep_cpc_deep_vae_nn_model_data");
+    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"deeper_cpc_deep_vae_nn_model_data");
 
-    public DeepCPCVariationalAutoEncoderNN(DeepCPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {
+    public DeeperCPCVariationalAutoEncoderNN(DeeperCPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {
         super(pipelineManager,modelName,maxCpcDepth);
     }
 
@@ -54,7 +53,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
                     return pipelineManager.getHierarchy();
                 }
             };
-            cpcToIdxMap = DeepCPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,maxCPCDepth);
+            cpcToIdxMap = DeeperCPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,maxCPCDepth,((DeeperCPCVAEPipelineManager)pipelineManager).getMaxNumCpcs());
         }
         return cpcToIdxMap;
     }
@@ -137,22 +136,11 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         int numInputs = getCpcToIdxMap().size();
 
         //Neural net configuration
-        int[] hiddenLayerEncoder;
-        if(modelName.equals("deep32_cpc_autoencoder")) {
-            hiddenLayerEncoder = new int[]{
-                    2048,
-                    2048
-            };
-        } else {
-            hiddenLayerEncoder = new int[]{
-                    1024,
-                    512,
-                    512,
-                    256,
-                    256
+        int[] hiddenLayerEncoder = new int[]{
+                    2560,
+                    2560
             };
 
-        }
         int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
         for(int i = 0; i < hiddenLayerEncoder.length; i++) {
             hiddenLayerDecoder[i] = hiddenLayerEncoder[hiddenLayerEncoder.length-1-i];
@@ -163,7 +151,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
 
         int numExamples = 4000000;
         int stepsPerEpoch = 1;
-        int batchSize = ((DeepCPCVAEPipelineManager)pipelineManager).getMiniBatchSize();
+        int batchSize = ((DeeperCPCVAEPipelineManager)pipelineManager).getMiniBatchSize();
 
         return new NeuralNetConfiguration.Builder()
                 .seed(rngSeed)
@@ -204,7 +192,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             net = new MultiLayerNetwork(getConf(learningRate,nEpochs));
             net.init();
         } else {
-            final double learningRate =  0.002;
+            final double learningRate =  0.01;
             INDArray params = net.params();
             net = new MultiLayerNetwork(getConf(learningRate,nEpochs));
             net.init(params,false);

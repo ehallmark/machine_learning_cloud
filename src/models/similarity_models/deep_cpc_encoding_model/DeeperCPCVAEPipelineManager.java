@@ -28,23 +28,22 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
-   // public static final String MODEL_NAME = "deep32wide_cpc_autoencoder";
-    public static final String MODEL_NAME = "deep32_cpc_autoencoder";
-    public static final int MAX_CPC_DEPTH = 4;
+public class DeeperCPCVAEPipelineManager extends CPCVAEPipelineManager {
+    public static final String MODEL_NAME = "deeper32_cpc_autoencoder";
+    public static final int MAX_CPC_DEPTH = 5;
     private static final int BATCH_SIZE = 1024;
     private static final int MINI_BATCH_SIZE = 128;
-    public static final int MAX_NUM_CPCS = 10000;
-    private static final File INPUT_DATA_FOLDER = new File("deep_cpc_vae_data");
-    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_vae_predictions/predictions_map.jobj");
+    public static final int MAX_NUM_CPCS = 5000;
+    private static final File INPUT_DATA_FOLDER = new File("deeper_cpc_vae_data");
+    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deeper_cpc_vae_predictions/predictions_map.jobj");
 
-    public DeepCPCVAEPipelineManager(String modelName) {
+    public DeeperCPCVAEPipelineManager(String modelName) {
         super(modelName,INPUT_DATA_FOLDER,PREDICTION_DATA_FILE,MAX_CPC_DEPTH);
     }
 
     @Override
     protected void initModel(boolean forceRecreateModels) {
-        model = new DeepCPCVariationalAutoEncoderNN(this, modelName, maxCPCDepth);
+        model = new DeeperCPCVariationalAutoEncoderNN(this, modelName, maxCPCDepth);
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
@@ -181,7 +180,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
                     return getHierarchy();
                 }
             };
-            cpcToIdxMap = DeepCPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,MAX_CPC_DEPTH);
+            cpcToIdxMap = DeeperCPCIndexMap.loadOrCreateMapForDepth(hierarchyTask,MAX_CPC_DEPTH,MAX_NUM_CPCS);
         }
         return cpcToIdxMap;
     }
@@ -190,16 +189,16 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
-        boolean runModels = false;
+        boolean runModels = true;
         boolean forceRecreateModels = false;
-        boolean runPredictions = true;
+        boolean runPredictions = false;
         int nEpochs = 5;
         String modelName = MODEL_NAME;
 
         setCudaEnvironment();
 
         setLoggingLevel(Level.INFO);
-        DeepCPCVAEPipelineManager pipelineManager = new DeepCPCVAEPipelineManager(modelName);
+        DeeperCPCVAEPipelineManager pipelineManager = new DeeperCPCVAEPipelineManager(modelName);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 

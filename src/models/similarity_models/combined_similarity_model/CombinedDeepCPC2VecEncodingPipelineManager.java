@@ -30,13 +30,14 @@ import java.util.stream.IntStream;
  */
 public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipelineManager  {
 
-    public static final String MODEL_NAME = "combined2_deep_cpc_rnn_2_vec_encoding_model";
+    public static final String MODEL_NAME = "new_combined2_deep_cpc_rnn_2_vec_encoding_model";
+    //public static final String MODEL_NAME = "combined2_deep_cpc_rnn_2_vec_encoding_model";
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"combined_deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
-    private static final File INPUT_DATA_FOLDER_ALL = new File("combined_deep_cpc_all3_vec_encoding_input_data");
+    static final File INPUT_DATA_FOLDER_ALL = new File("combined_deep_cpc_all3_vec_encoding_input_data");
     static final File cpcVectorsFile = new File(Constants.DATA_FOLDER+"combined_deep_cpc_cpcVectors.jobj");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
-    protected static final int MINI_BATCH_SIZE = 1024;
+    protected static final int MINI_BATCH_SIZE = 512;
     private static final int MAX_NETWORK_RECURSION = -1;
     private static int MAX_SAMPLE = 6;
     protected static final Random rand = new Random(235);
@@ -191,11 +192,11 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
         boolean rebuildDatasets;
-        boolean runModels = false;
+        boolean runModels = true;
         boolean forceRecreateModels = false;
-        boolean runPredictions = true;
+        boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
-        int nEpochs = 1;
+        int nEpochs = 2;
 
         rebuildDatasets = runModels && !new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)).exists();
 

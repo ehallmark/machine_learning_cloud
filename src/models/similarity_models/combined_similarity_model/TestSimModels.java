@@ -3,6 +3,7 @@ package models.similarity_models.combined_similarity_model;
 import com.google.common.util.concurrent.AtomicDouble;
 import data_pipeline.helpers.Function3;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
+import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
@@ -14,20 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class TestSimModels extends TestModelHelper {
-
-    public static double testModel(Map<String,Pair<String,String>> filingData, Function3<String,String,String,Boolean> model) {
-        AtomicInteger cnt = new AtomicInteger(0);
-        AtomicDouble sum = new AtomicDouble(0d);
-        filingData.forEach((filing,pair)->{
-            Boolean result = model.apply(filing,pair.getFirst(),pair.getSecond());
-            if(result==null) return;
-            if(result) {
-                sum.addAndGet(1d);
-            }
-            cnt.getAndIncrement();
-        });
-        return sum.get()/cnt.get();
-    }
 
     private static Map<String,Pair<String,String>> loadFilingCPCData(Map<String,Set<String>> patentCpcMap, int numFilings) {
         Map<String,String> filingToAssetMap = Collections.synchronizedMap(new HashMap<>());
@@ -76,37 +63,10 @@ public class TestSimModels extends TestModelHelper {
         return data;
     }
 
-    private static double test(DefaultPipelineManager<?,INDArray> pipelineManager, String modelName, Map<String,Pair<String,String>> filingData) {
-        final Map<String,INDArray> allPredictions = pipelineManager.loadPredictions();
-        AtomicInteger numMissing = new AtomicInteger(0);
-        AtomicInteger totalSeen = new AtomicInteger(0);
-        Function3<String,String,String,Boolean> model = (filing, posSample, negSample) -> {
-            totalSeen.getAndIncrement();
-            if(totalSeen.get()%100==99) {
-                System.out.print("-");
-            }
-            if(totalSeen.get()%1000==999) {
-                System.out.println();
-            }
-            INDArray encodingVec = allPredictions.get(filing);
-            INDArray posVec = allPredictions.get(posSample);
-            INDArray negVec = allPredictions.get(negSample);
-            if(encodingVec==null||posVec==null||negVec==null){
-                numMissing.getAndIncrement();
-                return null;
-            }
-            return Transforms.cosineSim(encodingVec,posVec) > Transforms.cosineSim(encodingVec,negVec);
-        };
-
-        double score = testModel(filingData, model);
-        System.out.println("Score for model "+modelName+": " + score);
-        System.out.println("Missing vectors for "+numMissing.get()+" out of "+totalSeen.get());
-        return score;
-    }
 
     public static void main(String[] args) {
         // load input data
-        final int numFilingSamples = 5000;
+        final int numFilingSamples = 100000;
         Map<String,Pair<String,String>> filingData = loadFilingCPCData(new AssetToCPCMap().getPatentDataMap(), numFilingSamples);
 
         // new model
@@ -115,13 +75,18 @@ public class TestSimModels extends TestModelHelper {
         // older model
         CombinedSimilarityVAEPipelineManager encodingPipelineManager2 = CombinedSimilarityVAEPipelineManager.getOrLoadManager();
 
+        // vae model
+        DeepCPCVAEPipelineManager encodingPipelineManager3 = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME);
+
         System.out.println("Num filing samples used: "+filingData.size());
 
         // run tests
         double score1 = test(encodingPipelineManager1,"Model 1",filingData);
         double score2 = test(encodingPipelineManager2, "Model 2",filingData);
+        double score3 = test(encodingPipelineManager3, "Model 3",filingData);
 
         System.out.println("Score for Model 1: "+score1);
         System.out.println("Score for Model 2: "+score2);
+        System.out.println("Score for Model 3: "+score3);
     }
 }

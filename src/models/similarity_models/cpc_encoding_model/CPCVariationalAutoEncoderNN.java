@@ -21,9 +21,11 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import data_pipeline.helpers.Function2;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
 import tools.ClassCodeHandler;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -79,7 +81,9 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         this.predictions=predictions;
     }
 
-    public static Map<String,INDArray> encodeVAE(List<String> assets, List<String> assignees, List<String> classCodes, Map<String,INDArray> previous, Map<String, ? extends Collection<CPC>> cpcMap, Map<String,Integer> cpcToIdxMap, CPCHierarchy hierarchy, MultiLayerNetwork net, int batchSize) {
+    public static Map<String,INDArray> encodeVAE(List<String> assets, List<String> assignees, List<String> classCodes, Map<String,INDArray> previous, Map<String,Collection<CPC>> cpcMap, Map<String,Integer> cpcToIdxMap, CPCHierarchy hierarchy, MultiLayerNetwork net, int batchSize) {
+        System.out.println("Starting to encode vae...");
+
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder vae
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) net.getLayer(0);
         Map<String,INDArray> assetToEncodingMap = previous==null?Collections.synchronizedMap(new HashMap<>()) : previous;
@@ -89,21 +93,83 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         // cpcs
         idx.set(0);
         AtomicInteger noData = new AtomicInteger(0);
-        classCodes.forEach(cpc->{
-            Collection<CPC> cpcFamily = hierarchy.cpcWithAncestors(ClassCodeHandler.convertToLabelFormat(cpc)).stream().filter(c->cpcToIdxMap.containsKey(c.getName())).collect(Collectors.toList());
-            if(cpcFamily.size()>0) {
-                INDArray cpcVec = CPCDataSetIterator.createVector(Stream.of(cpcFamily), cpcToIdxMap, 1, cpcToIdxMap.size());
-                INDArray encoding = vae.activate(cpcVec, false);
-                assetToEncodingMap.put(cpc, encoding);
-                if (idx.getAndIncrement() % 10000 == 9999) {
-                    System.out.println("Vectorized " + idx.get() + " / " + classCodes.size() + " cpcs.");
-                    System.out.println("Num not found: " + noData.get());
-                }
+        Map<String,Collection<CPC>> classCodeCpcMap = Collections.synchronizedMap(new HashMap<>(classCodes.size()));
+        classCodes = classCodes.stream().filter(cpc-> {
+            Collection<CPC> cpcFamily = hierarchy.cpcWithAncestors(ClassCodeHandler.convertToLabelFormat(cpc)).stream().filter(c -> cpcToIdxMap.containsKey(c.getName())).collect(Collectors.toList());
+            if (cpcFamily.size() > 0) {
+                classCodeCpcMap.put(cpc, cpcFamily);
+                return true;
             } else {
                 noData.getAndIncrement();
+                return false;
             }
-        });
+        }).collect(Collectors.toList());
+        CPCDataSetIterator classCodeIterator = new CPCDataSetIterator(classCodes,false,batchSize,classCodeCpcMap,cpcToIdxMap);
+        while(classCodeIterator.hasNext()) {
+            DataSet ds = classCodeIterator.next();
+            INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
+            encoding.diviColumnVector(encoding.norm2(1));
+            for(int i = 0; i < encoding.rows() && idx.get()<classCodes.size(); i++) {
+                INDArray vector = encoding.getRow(i);
+                assetToEncodingMap.put(classCodes.get(idx.getAndIncrement()), vector);
+                if(idx.get()%50000==49999) {
+                    System.gc();
+                    System.out.println(idx.get());
+                }
+            }
+        }
         System.out.println("Total num cpc errors: "+noData.get());
+
+
+        // assignees
+        idx.set(0);
+        final int assetLimit = 500;
+        final int cpcSample = 30;
+        noData.set(0);
+        Random rand = new Random();
+        System.out.println("Predicting assignees...");
+        Map<String,Collection<CPC>> assigneeCpcMap = Collections.synchronizedMap(new HashMap<>(classCodes.size()));
+        assignees = assignees.stream().filter(assignee-> {
+            List<String> assigneeAssets = Stream.of(
+                    Database.selectPatentNumbersFromExactAssignee(assignee),
+                    Database.selectApplicationNumbersFromExactAssignee(assignee)
+            ).flatMap(portfolio -> portfolio.stream()).distinct()
+                    .flatMap(asset->Stream.of(
+                            asset,new AssetToFilingMap().getPatentDataMap().getOrDefault(asset,new AssetToFilingMap().getApplicationDataMap().get(asset)))
+                    ).filter(f->f!=null).distinct().filter(f->cpcMap.containsKey(f)).collect(Collectors.toCollection(ArrayList::new));
+            List<String> assetSample = IntStream.range(0, Math.min(assigneeAssets.size(), assetLimit)).mapToObj(a -> assigneeAssets.remove(rand.nextInt(assigneeAssets.size()))).collect(Collectors.toList());
+            Collection<CPC> cpcFamily = assetSample.stream().flatMap(asset->cpcMap.getOrDefault(asset,Collections.emptyList()).stream())
+                    .collect(Collectors.groupingBy(asset->asset,Collectors.counting()))
+                    .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
+                    .limit(cpcSample)
+                    .map(cpc->cpc.getKey().getName())
+                    .flatMap(cpc->{
+                        return hierarchy.cpcWithAncestors(ClassCodeHandler.convertToLabelFormat(cpc)).stream().filter(c -> cpcToIdxMap.containsKey(c.getName()));
+                    }).collect(Collectors.toList());
+
+            if (cpcFamily.size() > 0) {
+                assigneeCpcMap.put(assignee, cpcFamily);
+                return true;
+            } else {
+                noData.getAndIncrement();
+                return false;
+            }
+        }).collect(Collectors.toList());
+        CPCDataSetIterator assigneeIterator = new CPCDataSetIterator(assignees,false,batchSize,assigneeCpcMap,cpcToIdxMap);
+        while(assigneeIterator.hasNext()) {
+            DataSet ds = assigneeIterator.next();
+            INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
+            encoding.diviColumnVector(encoding.norm2(1));
+            for(int i = 0; i < encoding.rows() && idx.get()<assignees.size(); i++) {
+                INDArray vector = encoding.getRow(i);
+                assetToEncodingMap.put(assignees.get(idx.getAndIncrement()), vector);
+                if(idx.get()%50000==49999) {
+                    System.gc();
+                    System.out.println(idx.get());
+                }
+            }
+        }
+        System.out.println("Total num assignee errors: "+noData.get());
 
         assets = assets.stream().filter(asset->cpcMap.containsKey(asset)).collect(Collectors.toList());
         CPCDataSetIterator iterator = new CPCDataSetIterator(assets,false,batchSize,cpcMap,cpcToIdxMap);
@@ -111,6 +177,7 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         while(iterator.hasNext()) {
             DataSet ds = iterator.next();
             INDArray encoding = vae.activate(ds.getFeatureMatrix(),false);
+            encoding.diviColumnVector(encoding.norm2(1));
             for(int i = 0; i < encoding.rows() && idx.get()<assets.size(); i++) {
                 INDArray vector = encoding.getRow(i);
                 assetToEncodingMap.put(assets.get(idx.getAndIncrement()), vector);
@@ -120,31 +187,6 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
                 }
             }
         }
-        // assignees
-        idx.set(0);
-        final int assetLimit = 500;
-        noData.set(0);
-        Random rand = new Random();
-        System.out.println("Predicting assignees...");
-        assignees.parallelStream().forEach(assignee-> {
-            List<String> assigneeAssets = Stream.of(
-                    Database.selectPatentNumbersFromExactAssignee(assignee),
-                    Database.selectApplicationNumbersFromExactAssignee(assignee)
-            ).flatMap(portfolio -> portfolio.stream()).collect(Collectors.toCollection(ArrayList::new));
-            List<String> assetSample = IntStream.range(0, Math.min(assigneeAssets.size(), assetLimit)).mapToObj(a -> assigneeAssets.remove(rand.nextInt(assigneeAssets.size()))).collect(Collectors.toList());
-            List<INDArray> vectors = assetSample.stream().map(asset->assetToEncodingMap.get(asset)).filter(vec->vec!=null).collect(Collectors.toList());
-            if(vectors.isEmpty()) {
-                noData.getAndIncrement();
-            } else {
-                assetToEncodingMap.put(assignee,Nd4j.vstack(vectors).mean(0));
-            }
-            if (idx.getAndIncrement() % 10000 == 9999) {
-                System.out.println("Vectorized " + idx.get() + " / "+assignees.size()+" assignees.");
-                System.out.println("Num Errors: "+noData.get());
-            }
-        });
-
-        System.out.println("Total num assignee errors: "+noData.get());
         return assetToEncodingMap;
     };
 

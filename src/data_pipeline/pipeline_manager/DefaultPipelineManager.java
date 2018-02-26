@@ -5,7 +5,7 @@ import data_pipeline.models.TrainablePredictionModel;
 import data_pipeline.vectorize.DataSetManager;
 import lombok.Getter;
 import lombok.Setter;
-//import org.nd4j.jita.conf.CudaEnvironment;
+import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
 
@@ -61,12 +61,12 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
     public static void setCudaEnvironment() {
         // setup cuda env
         try {
-            /*Nd4j.getMemoryManager().setAutoGcWindow(500);
+            Nd4j.getMemoryManager().setAutoGcWindow(300);
             CudaEnvironment.getInstance().getConfiguration().setMaximumGridSize(512).setMaximumBlockSize(512)
                     .setMaximumDeviceCacheableLength(2L * 1024 * 1024 * 1024L)
                     .setMaximumDeviceCache(10L * 1024 * 1024 * 1024L)
                     .setMaximumHostCacheableLength(2L * 1024 * 1024 * 1024L)
-                    .setMaximumHostCache(10L * 1024 * 1024 * 1024L);*/
+                    .setMaximumHostCache(10L * 1024 * 1024 * 1024L);
         } catch(Exception e) {
             e.printStackTrace();
         }

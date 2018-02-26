@@ -16,6 +16,7 @@ import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import seeding.Constants;
 
 import java.io.File;
 import java.util.List;
@@ -28,12 +29,13 @@ import java.util.stream.IntStream;
  */
 public class CombinedCPC2Vec2VAEEncodingPipelineManager extends AbstractEncodingPipelineManager  {
 
-    public static final String MODEL_NAME = "cpc2vec_2_vae_vec_encoding_model";
-    public static final File PREDICTION_FILE = new File("cpc2vec_2_vae_vec_encoding_predictions/predictions_map.jobj");
-    private static final File INPUT_DATA_FOLDER_ALL = new File("combined_deep_cpc_all3_vec_encoding_input_data");
-    private static final int VECTOR_SIZE = 32;
+    public static final String MODEL_NAME = "cpc2vec_new_2_vae_vec_encoding_model";
+    //public static final String MODEL_NAME = "cpc2vec_2_vae_vec_encoding_model";
+    public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"cpc2vec_2_vae_vec_encoding_predictions/predictions_map.jobj");
+    private static final File INPUT_DATA_FOLDER_ALL = CombinedDeepCPC2VecEncodingPipelineManager.INPUT_DATA_FOLDER_ALL;
+    private static final int VECTOR_SIZE = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
     protected static final int BATCH_SIZE = 1024;
-    protected static final int MINI_BATCH_SIZE = 1024;
+    protected static final int MINI_BATCH_SIZE = 512;
     private static final int MAX_NETWORK_RECURSION = -1;
     private static int MAX_SAMPLE = 6;
     protected static final Random rand = new Random(235);
@@ -101,7 +103,7 @@ public class CombinedCPC2Vec2VAEEncodingPipelineManager extends AbstractEncoding
 
     @Override
     protected void setDatasetManager() {
-       throw new RuntimeException("Use combineddeepcpc2vecencodingmanager to setDatasetManager...");
+       throw new RuntimeException("Use combineddeepcpc2vecencodingmanager to setDatasetManager...\nThis class uses the same dataset as CombinedDeepCPC2VecEncodingManager, so use that class to build this dataset.");
     }
 
     public static void main(String[] args) {
@@ -115,7 +117,7 @@ public class CombinedCPC2Vec2VAEEncodingPipelineManager extends AbstractEncoding
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
         boolean rebuildPrerequisites = false;
-        int nEpochs = 1;
+        int nEpochs = 5;
 
         CombinedCPC2Vec2VAEEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);

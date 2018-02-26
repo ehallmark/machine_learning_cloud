@@ -1,6 +1,7 @@
 package data_pipeline.models;
 
 import lombok.Getter;
+import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
 import seeding.Constants;
 import seeding.Database;
 
@@ -40,6 +41,15 @@ public abstract class BaseTrainablePredictionModel<T,N> implements TrainablePred
         this.isSaved = new AtomicBoolean(false);
     }
 
+    protected Map<Integer,Double> createSchedule(double learningRate, int nEpochs, int batchSize, int numExamples, int stepsPerEpoch) {
+        // half learning rate each epoch policy
+        Map<Integer,Double> schedule = new HashMap<>();
+        int iterationsPerEpoch = numExamples/(stepsPerEpoch*batchSize);
+        for(int i = 0; i < nEpochs*stepsPerEpoch; i++) {
+            schedule.put(i*iterationsPerEpoch,learningRate/Math.pow(2,i));
+        }
+        return schedule;
+    }
 
     public abstract File getModelBaseDirectory();
 

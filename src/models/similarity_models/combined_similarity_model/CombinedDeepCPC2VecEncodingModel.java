@@ -465,7 +465,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
 
     @Override
     public int printIterations() {
-        return 200;
+        return 500;
     }
 
 
@@ -479,7 +479,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
         networks = new ArrayList<>();
 
         // build networks
-        double learningRate = 0.01;
+        double learningRate = 0.05;
         ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate);
 
         vaeNetwork = new ComputationGraph(conf.build());
@@ -530,7 +530,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.000002;
+        double newLearningRate = 0.001;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
@@ -556,12 +556,17 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
             int valCount = 0;
             double score = 0d;
             int count = 0;
+            double score1 = 0d;
+            double score2 = 0d;
             while(validationIterator.hasNext()&&valCount<50000) {
                 MultiDataSet dataSet = validationIterator.next();
                 validationDataSets.add(dataSet);
                 valCount+=dataSet.getFeatures()[0].shape()[0];
                 try {
-                    score += test(vaeNetwork, dataSet);
+                    double[] scores = test2(vaeNetwork, dataSet);
+                    score+=scores[0];
+                    score1+=scores[1];
+                    score2+=scores[2];
                 } catch(Exception e) {
                     e.printStackTrace();
                     System.out.println("During testing...");
@@ -570,43 +575,44 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
                 //System.gc();
             }
             validationIterator.reset();
-
+            System.out.println("Score 1: "+score1/count+", Score 2: "+score2/count);
             return score/count;
         };
     }
 
-    public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
+    public static double[] test2(ComputationGraph net, MultiDataSet finalDataSet) {
         INDArray[] inputs = finalDataSet.getFeatures();
         INDArray[] predictions = net.output(false,finalDataSet.getFeatures());
+        double[] scores = new double[1+inputs.length];
         double cosineSim = 0d;
         for(int i = 0; i < inputs.length; i++) {
             int[] shape = new int[]{inputs[i].shape()[0],0};
             shape[1] = (inputs[i].shape().length==2 ? inputs[i].shape()[1] : (inputs[i].shape()[1]*inputs[i].shape()[2]));
-            cosineSim += NDArrayHelper.sumOfCosineSimByRow(inputs[i].reshape(shape),predictions[i].reshape(shape))/shape[0];
+            scores[1+i] = NDArrayHelper.sumOfCosineSimByRow(inputs[i].reshape(shape),predictions[i].reshape(shape))/shape[0];
+            cosineSim+= scores[1+i];
         }
-        return 1 - (cosineSim/inputs.length);
+        scores[0] = (cosineSim/inputs.length);
+        for(int i = 0; i < scores.length; i++) {
+            scores[i]=1d-scores[i];
+        }
+        return scores;
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSizeRNN = 64;
+        int hiddenLayerSizeRNN = 96;
         int maxSamples = pipelineManager.getMaxSamples();
         int linearTotal = hiddenLayerSizeRNN * maxSamples;
-        int hiddenLayerSizeFF = 128;
+        int hiddenLayerSizeFF = 256;
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
         int input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
 
-        Updater updater = Updater.ADAM;
+        Updater updater = Updater.RMSPROP;
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
         Activation activation = Activation.TANH;
         Activation outputActivation = Activation.TANH;
-        Map<Integer,Double> learningRateSchedule = new HashMap<>();
-        learningRateSchedule.put(0,learningRate);
-        //learningRateSchedule.put(20000,learningRate/5);
-        //learningRateSchedule.put(50000,learningRate/5);
-        //learningRateSchedule.put(200000,learningRate/25);
-        //learningRateSchedule.put(300000,learningRate/55);
+        Map<Integer,Double> learningRateSchedule = createSchedule(learningRate,10,pipelineManager.miniBatchSize,1000000,1);
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)

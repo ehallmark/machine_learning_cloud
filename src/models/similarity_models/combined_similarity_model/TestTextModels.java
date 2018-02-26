@@ -154,6 +154,7 @@ public class TestTextModels extends TestModelHelper {
         System.out.println("All relevant filings size: "+allFilings.size());
         System.out.println("Size of filings (Model 1): "+filings1.size());
         System.out.println("Size of filings (Model 2): "+filings2.size());
+        System.out.println("Max Sentences: "+maxSentences);
 
         for(int n = 10; n <= 1000; n*=10) {
             double score1 = testModel(keywordToWikiAndAssetsMap, model1, n);

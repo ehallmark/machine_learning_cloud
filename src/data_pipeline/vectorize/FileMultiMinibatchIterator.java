@@ -123,7 +123,7 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
                         //System.out.println("Shape: "+ Arrays.toString(e.getFeatures(0).shape()));
 
                         // split
-                        if(miniBatch>0) {
+                        if(miniBatch<e.getFeatures(0).shape()[0]&&miniBatch>0) {
                             return IntStream.range(0, e.getFeatures(0).shape()[0]/miniBatch).mapToObj(i->{
                                 int start = i*miniBatch;
                                 int end = Math.min(e.getFeatures(0).shape()[0],start+miniBatch);

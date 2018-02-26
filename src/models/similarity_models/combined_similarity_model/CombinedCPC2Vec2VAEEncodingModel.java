@@ -6,14 +6,12 @@ import lombok.Getter;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
-import org.deeplearning4j.nn.conf.LearningRatePolicy;
-import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.*;
 import org.deeplearning4j.nn.conf.graph.L2NormalizeVertex;
-import org.deeplearning4j.nn.conf.layers.DenseLayer;
-import org.deeplearning4j.nn.conf.layers.GravesBidirectionalLSTM;
-import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.graph.MergeVertex;
+import org.deeplearning4j.nn.conf.layers.*;
+import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
+import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
@@ -73,7 +71,7 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
 
     @Override
     public int printIterations() {
-        return 400;
+        return 2000;
     }
 
 
@@ -87,7 +85,7 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
         networks = new ArrayList<>();
 
         // build networks
-        double learningRate = 0.025;
+        double learningRate = 0.05;
         ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate);
 
         vaeNetwork = new ComputationGraph(conf.build());
@@ -138,7 +136,7 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.00002;
+        double newLearningRate = 0.001;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
@@ -184,15 +182,14 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSizeRNN = 48;
         int maxSamples = pipelineManager.getMaxSamples();
-        int linearTotal = hiddenLayerSizeRNN * maxSamples;
-        int hiddenLayerSizeFF2 = 64;
-        int hiddenLayerSizeFF1 = 64*maxSamples/2;
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
+        int hiddenLayerSizeFF2 = 512;
+        int hiddenLayerSizeFF1 = 256;
+        int linearTotal = input1 * maxSamples;
         int input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
 
-        Updater updater = Updater.ADAM;
+        Updater updater = Updater.RMSPROP;
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
@@ -200,34 +197,33 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
         Activation outputActivation = Activation.TANH;
         Map<Integer,Double> learningRateSchedule = new HashMap<>();
         learningRateSchedule.put(0,learningRate);
-        //learningRateSchedule.put(20000,learningRate/5);
-        //learningRateSchedule.put(50000,learningRate/5);
-        //learningRateSchedule.put(200000,learningRate/25);
-        //learningRateSchedule.put(300000,learningRate/55);
+        learningRateSchedule.put(50000,learningRate/2);
+        learningRateSchedule.put(100000,learningRate/5);
+        learningRateSchedule.put(200000,learningRate/10);
+        learningRateSchedule.put(300000,learningRate/25);
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)
                 .learningRateDecayPolicy(LearningRatePolicy.Schedule)
                 .learningRateSchedule(learningRateSchedule)
                 //.regularization(true).l2(0.0001)
+                //.convolutionMode(ConvolutionMode.Same) //This is important so we can 'stack' the results later
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .activation(activation)
                 .graphBuilder()
                 .addInputs("x1")
-                .addVertex("0", new L2NormalizeVertex(), "x1")
-                .addLayer("1", new GravesBidirectionalLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRNN).build(), "0")
-                .addLayer("2", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "1")
-                .addLayer("3", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "2")
-                .addVertex("v2", new ReshapeVertex(-1,linearTotal), "3")
-                .addLayer("4", new DenseLayer.Builder().nIn(linearTotal).nOut(linearTotal).build(), "v2")
-                .addLayer("5", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeFF1).build(), "4")
-                .addLayer("6", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1+linearTotal).nOut(hiddenLayerSizeFF1).build(), "5", "4")
-                .addLayer("7", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "6", "5")
-                .addLayer("8", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "7", "6")
-                .addLayer("9", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF2).build(), "8","7")
-                .addLayer("10", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1+hiddenLayerSizeFF2).nOut(hiddenLayerSizeFF2).build(), "9","8")
+                .addVertex("reshape", new ReshapeVertex(-1,linearTotal), "x1")
+                .addLayer("6", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeFF2).build(), "reshape")
+                .addLayer("7", new DenseLayer.Builder().nIn(hiddenLayerSizeFF2+linearTotal).nOut(hiddenLayerSizeFF2).build(), "6","reshape")
+                .addLayer("8", new DenseLayer.Builder().nIn(hiddenLayerSizeFF2*2).nOut(hiddenLayerSizeFF2).build(), "7","6")
+                .addLayer("9", new DenseLayer.Builder().nIn(hiddenLayerSizeFF2*2).nOut(hiddenLayerSizeFF2).build(), "8","7")
+                .addLayer("10", new DenseLayer.Builder().nIn(hiddenLayerSizeFF2*2).nOut(hiddenLayerSizeFF2).build(), "9","8")
                 .addLayer("11", new DenseLayer.Builder().nIn(hiddenLayerSizeFF2*2).nOut(hiddenLayerSizeFF2).build(), "10","9")
-                .addLayer("y1", new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeFF2).lossFunction(lossFunction).nOut(input2).build(), "11")
+                .addLayer("12", new DenseLayer.Builder().nIn(hiddenLayerSizeFF2*2).nOut(hiddenLayerSizeFF1).build(), "11","10")
+                .addLayer("13", new DenseLayer.Builder().nIn(hiddenLayerSizeFF2+hiddenLayerSizeFF1).nOut(hiddenLayerSizeFF1).build(), "12","11")
+                .addLayer("14", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "13","12")
+                .addLayer("15", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "14","13")
+                .addLayer("y1", new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeFF1).lossFunction(lossFunction).nOut(input2).build(), "15")
                 .setOutputs("y1")
                 .backprop(true)
                 .pretrain(false);
