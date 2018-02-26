@@ -23,14 +23,12 @@ public abstract class AbstractEncodingPipelineManager extends DefaultPipelineMan
     protected int vectorSize;
     protected int batchSize;
     protected int miniBatchSize;
-    protected int maxSample;
-    public AbstractEncodingPipelineManager(File dataFolder, File predictionFile, String modelName, Word2Vec word2Vec, int vectorSize, int batchSize, int miniBatchSize, int maxSample, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
+    public AbstractEncodingPipelineManager(File dataFolder, File predictionFile, String modelName, Word2Vec word2Vec, int vectorSize, int batchSize, int miniBatchSize, WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
         super(dataFolder, predictionFile);
         this.word2Vec=word2Vec;
         System.out.println("Initializing "+modelName);
         this.miniBatchSize=miniBatchSize;
         this.modelName=modelName;
-        this.maxSample=maxSample;
         this.batchSize=batchSize;
         this.vectorSize=vectorSize;
         this.wordCPC2VecPipelineManager=wordCPC2VecPipelineManager;
@@ -71,10 +69,6 @@ public abstract class AbstractEncodingPipelineManager extends DefaultPipelineMan
     }
 
     public abstract File getDevFile();
-
-    protected int getMaxSamples() {
-        return maxSample;
-    }
 
 
 }

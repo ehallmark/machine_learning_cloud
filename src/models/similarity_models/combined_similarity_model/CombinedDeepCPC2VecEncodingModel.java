@@ -91,7 +91,6 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
 
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        final int sampleLength = pipelineManager.getMaxSamples();
         final int assigneeSamples = 32;
         final int patentSamples = 6;
         ForkJoinPool pool = new ForkJoinPool(2);
@@ -150,7 +149,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
 
                 int after = codes.size();
                 incomplete.getAndAdd(before - after);
-                INDArray allFeatures = Nd4j.zeros(codes.size(), getVectorSize(), pipelineManager.getMaxSamples());
+                INDArray allFeatures = Nd4j.zeros(codes.size(), getVectorSize());
                 AtomicInteger idx = new AtomicInteger(0);
                 INDArray codeVecs = word2Vec.getWordVectors(wordVectorCodes);
                 for (int cpcIdx = 0; cpcIdx < codes.size(); cpcIdx++) {
@@ -256,17 +255,15 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
             assigneeBatches.forEach(assigneeBatch -> {
                 if(assigneeBatch.isEmpty()) return;
 
-                INDArray allFeatures1 = Nd4j.create(assigneeSamples*assigneeBatch.size(),getVectorSize(),sampleLength);
+                INDArray allFeatures1 = Nd4j.create(assigneeSamples*assigneeBatch.size(),getVectorSize());
                 INDArray allFeatures2 = Nd4j.create(assigneeSamples*assigneeBatch.size(),getVectorSize());
                 List<List<String>> itemsGrouped = new ArrayList<>(assigneeSamples);
                 for(int b = 0; b < assigneeBatch.size(); b++) {
                     String assignee = assigneeBatch.get(b);
                     List<String> cpcs = assigneeToCpcMap.getOrDefault(assignee, Collections.emptyList());
-                    List<String> items = IntStream.range(0, sampleLength * assigneeSamples).mapToObj(k -> cpcs.get(rand.nextInt(cpcs.size()))).collect(Collectors.toList());
+                    List<String> items = IntStream.range(0, assigneeSamples).mapToObj(k -> cpcs.get(rand.nextInt(cpcs.size()))).collect(Collectors.toList());
                     INDArray cpcVector = word2Vec.getWordVectors(items);
-                    for (int i = 0; i < assigneeSamples; i++) {
-                        allFeatures1.get(NDArrayIndex.point(b*assigneeSamples+i), NDArrayIndex.all(), NDArrayIndex.all()).assign(cpcVector.get(NDArrayIndex.interval(i * sampleLength, i * sampleLength + sampleLength), NDArrayIndex.all()).transpose());
-                    }
+                    allFeatures1.get(NDArrayIndex.interval(b*assigneeSamples,b*assigneeSamples+assigneeSamples), NDArrayIndex.all()).assign(cpcVector);
                     itemsGrouped.add(items);
                 }
                 INDArray vaeVec = ((DeepCPCVariationalAutoEncoderNN) pipelineManager.deepCPCVAEPipelineManager.getModel()).encodeCPCsMultiple(itemsGrouped);
@@ -322,7 +319,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
                 if(filingBatch.isEmpty()) return;
                 long t0 = System.currentTimeMillis();
 
-                INDArray allFeatures1 = Nd4j.create(patentSamples * filingBatch.size(), getVectorSize(), sampleLength);
+                INDArray allFeatures1 = Nd4j.create(patentSamples * filingBatch.size(), getVectorSize());
                 INDArray allFeatures2 = Nd4j.create(patentSamples * filingBatch.size(), getVectorSize());
                 List<List<String>> itemsGrouped = new ArrayList<>(patentSamples);
 
@@ -330,11 +327,9 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
                     String filing = filingBatch.get(b);
                     List<String> cpcs = filingToCPCMap.getOrDefault(filing, Collections.emptyList());
                     List<String> distinctCpcs = new ArrayList<>(new HashSet<>(cpcs));
-                    List<String> items = IntStream.range(0, sampleLength * patentSamples).mapToObj(k -> cpcs.get(rand.nextInt(cpcs.size()))).collect(Collectors.toList());
+                    List<String> items = IntStream.range(0,  patentSamples).mapToObj(k -> cpcs.get(rand.nextInt(cpcs.size()))).collect(Collectors.toList());
                     INDArray cpcVector = word2Vec.getWordVectors(items);
-                    for (int i = 0; i < patentSamples; i++) {
-                        allFeatures1.get(NDArrayIndex.point(b*patentSamples+i), NDArrayIndex.all(), NDArrayIndex.all()).assign(cpcVector.get(NDArrayIndex.interval(i * sampleLength, i * sampleLength + sampleLength), NDArrayIndex.all()).transpose());
-                    }
+                    allFeatures1.get(NDArrayIndex.interval(b*patentSamples,b*patentSamples+patentSamples)).assign(cpcVector);
                     itemsGrouped.add(distinctCpcs);
                 }
                 INDArray vaeVec = ((DeepCPCVariationalAutoEncoderNN) pipelineManager.deepCPCVAEPipelineManager.getModel()).encodeCPCsMultiple(itemsGrouped);
@@ -422,7 +417,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
         if(vaeVec==null) return null;
         vaeVec = vaeVec.broadcast(samples,vaeVec.length());
         if(pipelineManager.getWord2Vec()==null) throw new NullPointerException("Must set word2vec before encoding.");
-        INDArray wordVec = sampleWordVectors(words,samples,pipelineManager.getMaxSamples(),pipelineManager.getWord2Vec());
+        INDArray wordVec = sampleWordVectors(words,samples,pipelineManager.getWord2Vec());
         if(wordVec==null) return null;
         INDArray encoding = encode(wordVec,vaeVec);
         if(encoding==null) return null;
@@ -452,7 +447,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
         if(word2Vec==null) throw new RuntimeException("Word2Vec cannot be null during encoding");
         text = text.stream().filter(word->word2Vec.hasWord(word)).collect(Collectors.toList());
         if(text.isEmpty()) return null;
-        INDArray inputs = sampleWordVectors(text,samples,pipelineManager.getMaxSamples(),pipelineManager.getWord2Vec());
+        INDArray inputs = sampleWordVectors(text,samples,pipelineManager.getWord2Vec());
         if(inputs==null) return null;
         INDArray vaeVec = model.encodeText(inputs);
         if(vaeVec==null) return null;
@@ -501,8 +496,8 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
             ComputationGraph graph = new ComputationGraph(conf.build());
             graph.init();
 
-            INDArray data3 = Nd4j.randn(new int[]{3, input1, pipelineManager.getMaxSamples()});
-            INDArray data5 = Nd4j.randn(new int[]{5, input1, pipelineManager.getMaxSamples()});
+            INDArray data3 = Nd4j.randn(new int[]{3, input1});
+            INDArray data5 = Nd4j.randn(new int[]{5, input1});
 
 
             for (int j = 1; j < 9; j++) {
@@ -600,8 +595,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
         int hiddenLayerSizeRNN = 96;
-        int maxSamples = pipelineManager.getMaxSamples();
-        int linearTotal = hiddenLayerSizeRNN * maxSamples;
+        int linearTotal = hiddenLayerSizeRNN;
         int hiddenLayerSizeFF = 256;
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
         int input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
@@ -642,7 +636,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
                 .addLayer("11", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(linearTotal).build(), "10")
                 .addLayer("12", new DenseLayer.Builder().nIn(linearTotal).nOut(linearTotal).build(), "11")
               //  .addLayer("bn2", new BatchNormalization.Builder().nIn(linearTotal).nOut(linearTotal).build(), "12")
-                .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN,maxSamples), "12")
+              //  .addVertex("v3", new ReshapeVertex(-1,hiddenLayerSizeRNN,maxSamples), "12")
                 .addLayer("13-0", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "v3")
                 .addLayer("13-1", new DenseLayer.Builder().nIn(linearTotal).nOut(hiddenLayerSizeRNN).build(), "12")
                 .addLayer("14-0", new GravesBidirectionalLSTM.Builder().nIn(hiddenLayerSizeRNN).nOut(hiddenLayerSizeRNN).build(), "13-0")

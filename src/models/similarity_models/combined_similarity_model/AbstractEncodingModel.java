@@ -7,23 +7,16 @@ import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.api.layers.IOutputLayer;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.graph.vertex.VertexIndices;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
-import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.NDArrayIndex;
-import org.nd4j.linalg.primitives.Pair;
 
 import java.time.LocalDateTime;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -53,24 +46,15 @@ public abstract class AbstractEncodingModel<T extends Model,V extends DefaultPip
 
     protected abstract Function<Object,Double> getTestFunction();
 
-    protected INDArray sampleWordVectors(List<String> words, int samples, int minLength, Word2Vec wordVectors) {
+    protected INDArray sampleWordVectors(List<String> words, int samples, Word2Vec wordVectors) {
         if(wordVectors==null) throw new NullPointerException("Word vectors must be preloaded...");
         if(words==null||words.isEmpty()) return null;
         words = words.stream().filter(word->wordVectors.hasWord(word)).collect(Collectors.toList());
         if(words.isEmpty()) return null;
         final List<String> finalWords = words;
-        INDArray inputs = Nd4j.create(samples,wordVectors.getLayerSize(),minLength);
-        for (int i = 0; i < samples; i++) {
-            List<String> sub;
-            if(words.size()<=minLength*2) {
-                sub = IntStream.range(0,minLength).mapToObj(n->finalWords.get(rand.nextInt(finalWords.size()))).collect(Collectors.toList());
-            } else {
-                int start = rand.nextInt(words.size()-minLength);
-                sub = words.subList(start,start+minLength);
-            }
-            inputs.get(NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.all()).assign(wordVectors.getWordVectors(sub).transpose());
-        }
-        return inputs;
+        List<String> randSamples = IntStream.range(0,samples).mapToObj(i->finalWords.get(rand.nextInt(finalWords.size())))
+                .collect(Collectors.toList());
+        return wordVectors.getWordVectors(randSamples);
     }
 
     protected abstract Function<IterationListener,Void> setListenerFunction();

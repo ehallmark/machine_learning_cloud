@@ -6,12 +6,12 @@ import lombok.Getter;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.conf.*;
-import org.deeplearning4j.nn.conf.graph.L2NormalizeVertex;
-import org.deeplearning4j.nn.conf.graph.MergeVertex;
-import org.deeplearning4j.nn.conf.layers.*;
-import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
-import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
+import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
+import org.deeplearning4j.nn.conf.LearningRatePolicy;
+import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
@@ -57,7 +57,7 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
 
 
     public synchronized INDArray encodeText(List<String> words, int samples) {
-        INDArray inputs = sampleWordVectors(words,samples,pipelineManager.getMaxSamples(),pipelineManager.getWord2Vec());
+        INDArray inputs = sampleWordVectors(words,samples,pipelineManager.getWord2Vec());
         return encodeText(inputs);
     }
 
@@ -107,8 +107,8 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
             ComputationGraph graph = new ComputationGraph(conf.build());
             graph.init();
 
-            INDArray data3 = Nd4j.randn(new int[]{3, input1, pipelineManager.getMaxSamples()});
-            INDArray data5 = Nd4j.randn(new int[]{5, input1, pipelineManager.getMaxSamples()});
+            INDArray data3 = Nd4j.randn(new int[]{3, input1});
+            INDArray data5 = Nd4j.randn(new int[]{5, input1});
 
 
             for (int j = 1; j < 9; j++) {
@@ -182,11 +182,10 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int maxSamples = pipelineManager.getMaxSamples();
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
         int hiddenLayerSizeFF2 = 512;
         int hiddenLayerSizeFF1 = 256;
-        int linearTotal = input1 * maxSamples;
+        int linearTotal = input1;
         int input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
 
         Updater updater = Updater.RMSPROP;

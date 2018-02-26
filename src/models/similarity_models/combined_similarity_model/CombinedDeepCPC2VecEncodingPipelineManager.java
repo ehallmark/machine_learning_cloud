@@ -29,34 +29,27 @@ import java.util.stream.IntStream;
  * Created by ehallmark on 11/7/17.
  */
 public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipelineManager  {
-    public static final String MODEL_NAME = "keyphrase_cpc_2_vae_vec_encoding_model";
+    public static final String MODEL_NAME = "deep_keyphrase_cpc_2_vae_vec_encoding_model";
     //public static final String MODEL_NAME = "new_combined2_deep_cpc_rnn_2_vec_encoding_model";
     //public static final String MODEL_NAME = "combined2_deep_cpc_rnn_2_vec_encoding_model";
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"combined_deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
-    static final File INPUT_DATA_FOLDER_ALL = new File("combined_deep_cpc_all3_vec_encoding_input_data");
+    static final File INPUT_DATA_FOLDER_ALL = new File("combined_deep_keyphrase_cpc_2_vae_vec_encoding_input_data");
     static final File cpcVectorsFile = new File(Constants.DATA_FOLDER+"combined_deep_cpc_cpcVectors.jobj");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 512;
     private static final int MAX_NETWORK_RECURSION = -1;
-    private static int MAX_SAMPLE = 3;
     protected static final Random rand = new Random(235);
     private static CombinedDeepCPC2VecEncodingPipelineManager MANAGER;
     DeepCPCVAEPipelineManager deepCPCVAEPipelineManager;
     private Map<String,INDArray> cpcVectors;
 
     public CombinedDeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager) {
-        super(new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,MAX_SAMPLE,wordCPC2VecPipelineManager);
+        super(INPUT_DATA_FOLDER_ALL,PREDICTION_FILE,modelName,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,wordCPC2VecPipelineManager);
         this.deepCPCVAEPipelineManager=deepCPCVAEPipelineManager;
     }
 
-    public static String currentDataFolderName(int recursion,int sample) {
-        return (INPUT_DATA_FOLDER_ALL).getAbsolutePath()+sample+(recursion>0?("_r"+recursion):"");
-    }
 
-    public static String currentDataFolderName(int sample) {
-        return currentDataFolderName(-1,sample);
-    }
 
     public void initModel(boolean forceRecreateModels) {
         if(model==null) {
@@ -176,18 +169,15 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
 
     private INDArray[] buildVectors(int[] indices, List<List<String>> _entries) {
         List<List<String>> entries = IntStream.of(indices).mapToObj(i->_entries.get(i)).collect(Collectors.toList());
-        return buildVectors(entries,word2Vec,getMaxSamples());
+        return buildVectors(entries,word2Vec);
     }
 
-    public static INDArray[] buildVectors(List<List<String>> entries, Word2Vec word2Vec, int sample) {
+    public static INDArray[] buildVectors(List<List<String>> entries, Word2Vec word2Vec) {
         INDArray[] vectors = entries.stream().map(cpcLabels->{
-            int numCPCLabels = cpcLabels.size();
-            if(sample>numCPCLabels) {
-                return null;
-            } else {
-                return word2Vec.getWordVectors(cpcLabels).transpose();
-            }
-        }).filter(vec->vec!=null).toArray(size->new INDArray[size]);
+            cpcLabels = cpcLabels.stream().filter(word2Vec::hasWord).collect(Collectors.toList());
+            if(cpcLabels.isEmpty())return null;
+            return word2Vec.getWordVectors(cpcLabels).mean(0);
+        }).filter(v->v!=null).toArray(size->new INDArray[size]);
         return vectors;
     }
 
@@ -211,7 +201,7 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
         boolean rebuildPrerequisites = false;
         int nEpochs = 2;
 
-        rebuildDatasets = runModels && !new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)).exists();
+        rebuildDatasets = runModels && !INPUT_DATA_FOLDER_ALL.exists();
 
         CombinedDeepCPC2VecEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets||runPredictions);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
