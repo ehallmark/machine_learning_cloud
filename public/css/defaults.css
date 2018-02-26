@@ -47,7 +47,9 @@ label {
     border: 1px rgba(0,0,0,.1) solid;
     border-radius: 4px;
     border-collapse: collapse;
-    background-color: #e6e6e6;
+    background-color: lightgray;
+    font-size: 15 !important;
+    padding: 3;
 }
 
 .start .draggable .collapse {
@@ -95,11 +97,6 @@ h5 {
     cursor: pointer;
     font-size: 16;
     font-weight: 500;
-}
-
-.draggable {
-    font-size: 15 !important;
-    padding: 3;
 }
 
 .dynatable-processing {

@@ -2,6 +2,8 @@ package models.similarity_models.combined_similarity_model;
 
 import ch.qos.logback.classic.Level;
 import data_pipeline.vectorize.PreSaveDataSetManager;
+import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
+import models.keyphrase_prediction.stages.Stage;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
@@ -19,9 +21,7 @@ import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -29,8 +29,8 @@ import java.util.stream.IntStream;
  * Created by ehallmark on 11/7/17.
  */
 public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncodingPipelineManager  {
-
-    public static final String MODEL_NAME = "new_combined2_deep_cpc_rnn_2_vec_encoding_model";
+    public static final String MODEL_NAME = "keyphrase_cpc_2_vae_vec_encoding_model";
+    //public static final String MODEL_NAME = "new_combined2_deep_cpc_rnn_2_vec_encoding_model";
     //public static final String MODEL_NAME = "combined2_deep_cpc_rnn_2_vec_encoding_model";
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"combined_deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
     static final File INPUT_DATA_FOLDER_ALL = new File("combined_deep_cpc_all3_vec_encoding_input_data");
@@ -39,11 +39,12 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 512;
     private static final int MAX_NETWORK_RECURSION = -1;
-    private static int MAX_SAMPLE = 6;
+    private static int MAX_SAMPLE = 3;
     protected static final Random rand = new Random(235);
     private static CombinedDeepCPC2VecEncodingPipelineManager MANAGER;
     DeepCPCVAEPipelineManager deepCPCVAEPipelineManager;
     private Map<String,INDArray> cpcVectors;
+
     public CombinedDeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager) {
         super(new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,MAX_SAMPLE,wordCPC2VecPipelineManager);
         this.deepCPCVAEPipelineManager=deepCPCVAEPipelineManager;
@@ -122,12 +123,26 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
 
 
     protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {
-        return new CombinedWord2VecToCPCIterator(iterator,word2Vec,(DeepCPCVariationalAutoEncoderNN)deepCPCVAEPipelineManager.getModel(),batch,getMaxSamples());
+        return new CombinedWord2VecToCPCIterator(iterator,getAllWordCPC2VecPredictionsForIterator(),(DeepCPCVariationalAutoEncoderNN)deepCPCVAEPipelineManager.getModel(), batch);
+    }
+
+    protected Map<String,INDArray> getAllWordCPC2VecPredictionsForIterator() {
+        System.out.println("Starting to build getAllWordCPC2VecPredictionsForIterator...");
+        Map<String,INDArray> map = Collections.synchronizedMap(new HashMap<>());
+        KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(wordCPC2VecPipelineManager);
+        keyphrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
+        keyphrasePredictionPipelineManager.buildKeywordToLookupTableMap().entrySet().parallelStream().forEach(e->{
+            map.put(e.getKey().toString(),e.getValue());
+        });
+        System.out.println("Size of map before adding CPCs: "+map.size());
+        map.putAll(wordCPC2VecPipelineManager.getOrLoadCPCVectors());
+        System.out.println("Size of map after adding CPCs: "+map.size());
+        return map;
     }
 
     @Override
     protected void setDatasetManager() {
-        File baseDir = FileTextDataSetIterator.BASE_DIR;
+        File baseDir = Stage.getTransformedDataFolder();
         File trainFile = new File(baseDir, FileTextDataSetIterator.trainFile.getName());
         File testFile = new File(baseDir, FileTextDataSetIterator.testFile.getName());
         File devFile = new File(baseDir, getDevFile().getName());
@@ -135,9 +150,9 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
         boolean fullText = baseDir.getName().equals(FileTextDataSetIterator.BASE_DIR.getName());
         System.out.println("Using full text: "+fullText);
 
-        WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,getMaxSamples()*2, fullText);
-        WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,getMaxSamples()*2, fullText);
-        WordCPCIterator devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),1,wordCPC2VecPipelineManager.getCPCMap(),1,getMaxSamples()*2, fullText);
+        WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,wordCPC2VecPipelineManager.getCPCMap(),5, fullText);
+        WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,wordCPC2VecPipelineManager.getCPCMap(),5, fullText);
+        WordCPCIterator devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),1,wordCPC2VecPipelineManager.getCPCMap(),5, fullText);
 
         trainIter.setRunVocab(false);
         testIter.setRunVocab(false);
@@ -148,7 +163,6 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
         MultiDataSetIterator val =  getRawIterator(devIter,1024);
 
         PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
-                // need the dataset file with 1 extra sample
                 dataFolder,
                 train,
                 test,
@@ -178,7 +192,6 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
     }
 
     public Map<String,INDArray> getOrLoadCPCVectors() {
-        // TODO need to implement
         if(cpcVectors==null) {
             cpcVectors = (Map<String,INDArray>) Database.tryLoadObject(cpcVectorsFile);
         }

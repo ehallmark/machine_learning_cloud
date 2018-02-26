@@ -37,7 +37,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyphrase_prediction_model_predictions/predictions_map.jobj");
-    @Getter
     private static Map<MultiStem,INDArray> keywordToVectorLookupTable;
     private static final File keywordToVectorLookupTableFile = new File(Constants.DATA_FOLDER+"keyword_to_vector_predictions_lookup_table.jobj");
     @Getter
@@ -258,7 +257,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     }
 
 
-    public synchronized void buildKeywordToLookupTableMap() {
+    public synchronized Map<MultiStem,INDArray> buildKeywordToLookupTableMap() {
         if(keywordToVectorLookupTable==null) {
             keywordToVectorLookupTable = (Map<MultiStem, INDArray>) Database.tryLoadObject(keywordToVectorLookupTableFile);
 
@@ -275,6 +274,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
         }
         System.out.println("Stem lookup table size: "+keywordToVectorLookupTable.size());
+        return keywordToVectorLookupTable;
     }
 
     public static Map<MultiStem,INDArray> buildNewKeywordToLookupTableMapHelper(Word2Vec word2Vec, Set<MultiStem> multiStemSet) {

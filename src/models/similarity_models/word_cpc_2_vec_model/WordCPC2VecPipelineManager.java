@@ -170,9 +170,9 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
             boolean fullText = baseDir.getName().equals(FileTextDataSetIterator.BASE_DIR.getName());
             System.out.println("Using full text: "+fullText);
             datasetManager = new NoSaveDataSetManager<>(
-                    new WordCPCIterator(trainIter,numEpochs,getCPCMap(), windowSize, maxSamples,fullText),
-                    new WordCPCIterator(testIter,1,getCPCMap(), windowSize, maxSamples,fullText),
-                    new WordCPCIterator(devIter,1,getCPCMap(), windowSize, maxSamples,fullText)
+                    new WordCPCIterator(trainIter,numEpochs,getCPCMap(), maxSamples,fullText),
+                    new WordCPCIterator(testIter,1,getCPCMap(), maxSamples,fullText),
+                    new WordCPCIterator(devIter,1,getCPCMap(), maxSamples,fullText)
             );
         }
     }

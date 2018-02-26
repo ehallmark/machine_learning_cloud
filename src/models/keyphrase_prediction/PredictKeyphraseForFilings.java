@@ -43,7 +43,7 @@ public class PredictKeyphraseForFilings {
         AtomicInteger cnt = new AtomicInteger(0);
         Map<String,INDArray> cpcVectors = wordCPC2VecPipelineManager.getOrLoadCPCVectors();
         pipelineManager.buildKeywordToLookupTableMap();
-        Map<MultiStem,INDArray> _keyphraseVectors = KeyphrasePredictionPipelineManager.getKeywordToVectorLookupTable()
+        Map<MultiStem,INDArray> _keyphraseVectors = pipelineManager.buildKeywordToLookupTableMap()
                 .entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
         Map<String,INDArray> keyphraseVectors = Collections.synchronizedMap(new HashMap<>());
         _keyphraseVectors.entrySet().parallelStream().forEach(e->{

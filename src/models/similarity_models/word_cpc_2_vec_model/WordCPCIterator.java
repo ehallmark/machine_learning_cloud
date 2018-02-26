@@ -17,7 +17,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -44,7 +43,6 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     private RecursiveAction task;
     private boolean vocabPass;
     private int numEpochs;
-    private Function<Void,Void> afterEpochFunction;
     private FileTextDataSetIterator iterator;
     private Map<String,Collection<CPC>> cpcMap;
     private int maxSamples;
@@ -52,22 +50,15 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
     private int vocabSampling = 0;
     private int resetCounter = 0;
     private AtomicBoolean finished = new AtomicBoolean(true);
-    private int minSequenceLength;
     private boolean fullText;
-    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, int minSequenceLength, int maxSamples, boolean fullText) {
-        this(iterator,numEpochs,cpcMap,null,minSequenceLength,maxSamples,fullText);
-    }
-
-    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, Function<Void,Void> afterEpochFunction, int minSequenceLength, int maxSamples, boolean fullText) {
+    public WordCPCIterator(FileTextDataSetIterator iterator, int numEpochs, Map<String,Collection<CPC>> cpcMap, int maxSamples, boolean fullText) {
         this.numEpochs=numEpochs;
         this.iterator=iterator;
-        this.minSequenceLength=minSequenceLength;
         this.maxSamples=maxSamples;
         this.fullText=fullText;
         this.cpcMap=cpcMap;
         this.queue = new ArrayBlockingQueue<>(1000);
         this.vocabPass=true;
-        this.afterEpochFunction=afterEpochFunction;
     }
 
     public void setRunVocab(boolean vocab) {
@@ -102,7 +93,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         return sequence;
     }
 
-    private static Sequence<VocabWord> extractSequenceFromDocumentAndTokens(LabelledDocument document, List<String> tokens, Random random, int minSequenceLength, int maxSamples, boolean fullText) {
+    private static Sequence<VocabWord> extractSequenceFromDocumentAndTokens(LabelledDocument document, List<String> tokens, Random random, int maxSamples, boolean fullText) {
         if(document.getContent()==null||document.getLabels()==null||document.getContent().isEmpty() || document.getLabels().isEmpty()) {
             //System.out.println("Returning NULL because content or labels are null");
             return null;
@@ -133,69 +124,14 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
 
         } else {
             Map<String, Integer> wordCountMap = defaultBOWFunction.apply(document.getContent());
-            if (maxSamples <= 0) {
-                words = new ArrayList<>();
-                wordCountMap.forEach((word, cnt) -> {
-                    VocabWord vocabWord = new VocabWord(cnt, word);
-                    vocabWord.setSequencesCount(1);
-                    vocabWord.setElementFrequency(cnt);
-                    words.add(vocabWord);
-                });
-                int tokenCnt = wordCountMap.size() / tokens.size();
-                tokens.forEach(token -> {
-                    VocabWord vocabWord = new VocabWord(tokenCnt, token);
-                    vocabWord.setSequencesCount(1);
-                    vocabWord.setElementFrequency(tokenCnt);
-                    words.add(vocabWord);
-                });
-            } else {
-                String[] contentWords = new String[wordCountMap.size()];
-                int[] contentCounts = new int[wordCountMap.size()];
-                AtomicInteger total = new AtomicInteger(0);
-                AtomicInteger idx = new AtomicInteger(0);
-                wordCountMap.entrySet().forEach(e -> {
-                    int i = idx.getAndIncrement();
-                    int count = e.getValue();
-                    contentCounts[i] = count;
-                    contentWords[i] = e.getKey();
-                    total.getAndAdd(count);
-                });
-
-                final int N = Math.min((total.get() + tokens.size()), maxSamples);
-
-                if (N < minSequenceLength) {
-                    //System.out.println("Returning NULL because N <= 0");
-                    return null;
-                }
-
-                words = new ArrayList<>(N);
-
-                for (int i = 0; i < N; i++) {
-                    VocabWord word = null;
-                    boolean randBool = rand.nextBoolean();
-                    if (randBool || tokens.size() == 0) {
-                        int r = rand.nextInt(total.get());
-                        int s = 0;
-                        for (int j = 0; j < contentCounts.length; j++) {
-                            s += contentCounts[j];
-                            if (s >= r) {
-                                word = new VocabWord(1, contentWords[j]);
-                                break;
-                            }
-                        }
-                    }
-                    if (!randBool || total.get() == 0) {
-                        if (tokens.size() > 0) {
-                            word = new VocabWord(1, tokens.get(random.nextInt(tokens.size())));
-                        }
-                    }
-                    if (word != null) {
-                        word.setSequencesCount(1);
-                        word.setElementFrequency(1);
-                        words.add(word);
-                    }
-                }
-            }
+            if(wordCountMap.size()==0) return null;
+            words = new ArrayList<>();
+            wordCountMap.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(maxSamples).forEach(e -> {
+                VocabWord vocabWord = new VocabWord(e.getValue(), e.getKey());
+                vocabWord.setSequencesCount(1);
+                vocabWord.setElementFrequency(e.getValue());
+                words.add(vocabWord);
+            });
         }
 
         if(words.isEmpty()) return null;
@@ -237,7 +173,8 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                             LocalDate date = iterator.getCurrentDate();
                             if (document.getLabels() == null || document.getContent() == null) continue;
 
-                            List<String> cpcs = document.getLabels().stream().flatMap(asset -> cpcMap.getOrDefault(asset, Collections.emptyList()).stream()).flatMap(cpc -> IntStream.range(0,cpc.getNumParts()).mapToObj(c->cpc.getName())).collect(Collectors.toCollection(ArrayList::new));
+                            List<String> cpcs = document.getLabels().stream().flatMap(asset -> cpcMap.getOrDefault(asset, Collections.emptyList()).stream())
+                                    .filter(cpc->fullText || cpc.getNumParts()>=3).flatMap(cpc -> fullText ? IntStream.range(0,cpc.getNumParts()).mapToObj(c->cpc.getName()) : Stream.of(cpc.getName())).collect(Collectors.toCollection(ArrayList::new));
                             if(!finalVocabPass && cpcs.size()>0) {
                                 Collections.shuffle(cpcs);
                                 try {
@@ -253,7 +190,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                             }
 
                             // extract sequence
-                            Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document, cpcs, rand, minSequenceLength, finalNumSamples, fullText);
+                            Sequence<VocabWord> sequence = extractSequenceFromDocumentAndTokens(document, cpcs, rand, finalNumSamples, fullText);
                             if (date!=null&&sequence != null) {
                                 sequence.addSequenceLabel(new VocabWord(1,date.toString()));
                                 //System.out.print("-");
@@ -266,7 +203,6 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
                         }
                         System.out.println("Finished epoch: " + (i + 1));
                         // Evaluate model
-                        if (afterEpochFunction != null) afterEpochFunction.apply(null);
                         iterator.reset();
 
                     }
