@@ -192,7 +192,7 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
             net = new MultiLayerNetwork(getConf(learningRate,nEpochs));
             net.init();
         } else {
-            final double learningRate =  0.01;
+            final double learningRate =  0.001;
             INDArray params = net.params();
             net = new MultiLayerNetwork(getConf(learningRate,nEpochs));
             net.init(params,false);
