@@ -90,7 +90,7 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
 
     @Override
     public File getDevFile() {
-        return FileTextDataSetIterator.devFile3;
+        return FileTextDataSetIterator.devFile2;
     }
 
     public static synchronized CombinedDeepCPC2VecEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec) {
