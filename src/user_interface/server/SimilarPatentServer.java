@@ -2267,6 +2267,18 @@ public class SimilarPatentServer {
                                             return li(e.getFirst()+" -> "+fullHumanAttributeFor(e.getSecond()));
                                         }).collect(Collectors.toList())
                                 )
+                        ),div().withId("new-dataset-from-asset-list-overlay").with(
+                                div().withId("new-dataset-from-asset-list-inside").attr("style","background-color: lightgray; padding: 5px;").with(
+                                        textarea().withPlaceholder("Enter asset list separated by spaces or newlines (eg. 8234523 8323233 2013335323 RE032353).").withId("new-dataset-from-asset-list"),br(),
+                                        button("Create").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-submit"),
+                                        button("Cancel").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-cancel")
+                                )
+                        ),div().withId("k-for-clustering-overlay").with(
+                                div().withId("k-for-clustering-inside").attr("style","background-color: lightgray; padding: 5px;").with(
+                                        label("Number of Clusters").with(div().withText("(or leave blank to automatically find optimal number)"),input().withType("number").attr("min","2").withId("k-for-clustering")),br(),
+                                        button("Cluster").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("k-for-clustering-submit"),
+                                        button("Cancel").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("k-for-clustering-cancel")
+                                )
                         ),
                         div().withClass("container-fluid text-center").attr("style","height: 100%; z-index: 1;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
@@ -2303,18 +2315,6 @@ public class SimilarPatentServer {
                                                                                 getDatasetsForUser(SUPER_USER,false,"Preset Datasets"),
                                                                                 getDatasetsForUser(req.session().attribute("username"),true,"My Datasets"),
                                                                                 getDatasetsForUser(SHARED_USER,true, "Shared Datasets")
-                                                                        )
-                                                                ),div().withId("new-dataset-from-asset-list-overlay").attr("style","z-index: 10000;").with(
-                                                                        div().withId("new-dataset-from-asset-list-inside").with(
-                                                                                textarea().withPlaceholder("Enter asset list separated by spaces or newlines (eg. 8234523 8323233 2013335323 RE032353).").withId("new-dataset-from-asset-list"),br(),
-                                                                                button("Create").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-submit"),
-                                                                                button("Cancel").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-cancel")
-                                                                        )
-                                                                ),div().withId("k-for-clustering-overlay").attr("style","z-index: 10000;").with(
-                                                                        div().withId("k-for-clustering-inside").attr("style","background-color: lightgray; padding: 5px;").with(
-                                                                                label("Number of Clusters").with(div().withText("(or leave blank to automatically find optimal number)"),input().withType("number").attr("min","2").withId("k-for-clustering")),br(),
-                                                                                button("Cluster").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("k-for-clustering-submit"),
-                                                                                button("Cancel").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("k-for-clustering-cancel")
                                                                         )
                                                                 )
                                                         )
