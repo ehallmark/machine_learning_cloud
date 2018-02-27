@@ -37,7 +37,7 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
     static final File cpcVectorsFile = new File(Constants.DATA_FOLDER+"combined_deep_cpc_cpcVectors.jobj");
     private static final int VECTOR_SIZE = 32;
     protected static final int BATCH_SIZE = 1024;
-    protected static final int MINI_BATCH_SIZE = 128;
+    protected static final int MINI_BATCH_SIZE = 256;
     protected static final Random rand = new Random(235);
     private static CombinedDeepCPC2VecEncodingPipelineManager MANAGER;
     DeepCPCVAEPipelineManager deepCPCVAEPipelineManager;
@@ -194,9 +194,9 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
         boolean rebuildDatasets;
-        boolean runModels = true;
+        boolean runModels = false;
         boolean forceRecreateModels = false;
-        boolean runPredictions = false;
+        boolean runPredictions = true;
         boolean rebuildPrerequisites = false;
         int nEpochs = 2;
 

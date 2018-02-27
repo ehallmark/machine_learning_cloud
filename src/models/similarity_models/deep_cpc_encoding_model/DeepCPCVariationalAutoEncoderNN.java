@@ -22,6 +22,7 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
@@ -72,18 +73,20 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
     }
 
 
-    public synchronized INDArray encodeCPCs(List<String> cpcs) {
+    public synchronized Pair<List<String>,INDArray> encodeCPCs(List<String> cpcs) {
         if(predictions==null) predictions = pipelineManager.loadPredictions();
+        List<String> valid = new ArrayList<>(cpcs.size());
         List<INDArray> vectors = cpcs.stream().map(cpc->{
             CPC c = pipelineManager.getHierarchy().getLabelToCPCMap().get(cpc);
             while(c!=null&&!predictions.containsKey(c.getName())) {
                 c = c.getParent();
             }
             if(c==null)return null;
+            valid.add(cpc);
             return predictions.get(c.getName());
         }).collect(Collectors.toList());
         if(vectors.isEmpty()) return null;
-        return Nd4j.vstack(vectors);
+        return new Pair<>(valid,Nd4j.vstack(vectors));
     }
 
     private static final Map<String,Collection<CPC>> ancestorsCache = Collections.synchronizedMap(new HashMap<>());

@@ -98,6 +98,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
         Set<String> alreadyPredicted;
         try {
             alreadyPredicted = Collections.synchronizedSet(new HashSet<>(Database.loadAllFilingsWithVectors()));
+            System.out.println("Num filings already predicted: "+alreadyPredicted.size());
         } catch(Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Unable to read filings...");
@@ -128,8 +129,12 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
             List<List<String>> cpcBatches = createBatches(classCodes,batchSize);
             for(List<String> codes : cpcBatches) {
                 int before = codes.size();
+                if (codes.isEmpty()) continue;
+                Pair<List<String>,INDArray> vaeVecPair = ((DeepCPCVariationalAutoEncoderNN) pipelineManager.deepCPCVAEPipelineManager.getModel()).encodeCPCs(codes);
+                if(vaeVecPair==null) continue;
+
                 List<String> wordVectorCodes = new ArrayList<>(codes.size());
-                codes = codes.stream().filter(cpc->{
+                codes = vaeVecPair.getFirst().stream().filter(cpc->{
                     // default to parent if neccessary
                     if(word2Vec.hasWord(cpc)) {
                         wordVectorCodes.add(cpc);
@@ -143,46 +148,12 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
                     }
                     return false;
                 }).collect(Collectors.toList());
-                if (codes.isEmpty()) continue;
-                INDArray vaeVec = ((DeepCPCVariationalAutoEncoderNN) pipelineManager.deepCPCVAEPipelineManager.getModel()).encodeCPCs(codes);
-                if(vaeVec==null) continue;
 
                 int after = codes.size();
                 incomplete.getAndAdd(before - after);
-                INDArray allFeatures = Nd4j.zeros(codes.size(), getVectorSize());
                 AtomicInteger idx = new AtomicInteger(0);
-                INDArray codeVecs = word2Vec.getWordVectors(wordVectorCodes);
+                INDArray allFeatures = word2Vec.getWordVectors(wordVectorCodes);
                 for (int cpcIdx = 0; cpcIdx < codes.size(); cpcIdx++) {
-                    INDArray feature = codeVecs.getRow(cpcIdx);
-                    String cpcCode = wordVectorCodes.get(cpcIdx);
-
-                    // add parent cpc info
-                    CPC cpcObj = cpcHierarchy.getLabelToCPCMap().get(cpcCode);
-                    CPC parent = cpcObj.getParent();
-                    if (parent != null) {
-                        INDArray parentFeature = word2Vec.getLookupTable().vector(parent.getName());
-                        if (parentFeature != null) {
-                            CPC grandParent = parent.getParent();
-                            if (grandParent != null) {
-                                INDArray grandParentFeature = word2Vec.getLookupTable().vector(grandParent.getName());
-                                if (grandParentFeature != null) {
-                                    feature = Nd4j.vstack(feature, parentFeature, feature, grandParentFeature, parentFeature, feature);
-                                } else {
-                                    feature = Nd4j.vstack(feature, parentFeature, feature, feature, parentFeature, feature);
-                                }
-                            } else {
-                                feature = Nd4j.vstack(feature, parentFeature, feature, feature, parentFeature, feature);
-                            }
-                        } else {
-                            feature = Nd4j.vstack(feature, feature, feature, feature, feature, feature);
-                        }
-                    } else {
-                        feature = Nd4j.vstack(feature, feature, feature, feature, feature, feature);
-                    }
-
-                    allFeatures.get(NDArrayIndex.point(idx.get()), NDArrayIndex.all(), NDArrayIndex.all()).assign(feature.transpose());
-
-
                     if (cnt.get() % 5000 == 4999) {
                         System.gc();
                     }
@@ -192,9 +163,8 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
                     idx.getAndIncrement();
                 }
 
-
                 System.out.println("All Features batch shape: " + allFeatures.shapeInfoToString());
-                INDArray encoding = encode(allFeatures, vaeVec);
+                INDArray encoding = encode(allFeatures, vaeVecPair.getSecond());
                 encoding.diviColumnVector(encoding.norm2(1));
                 System.out.println("Encoding batch shape: " + encoding.shapeInfoToString());
 
@@ -525,7 +495,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.01;
+        double newLearningRate = 0.001;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
@@ -595,7 +565,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int hiddenLayerSizeFF = 512;
+        int hiddenLayerSizeFF = 256;
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
         int input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
 
