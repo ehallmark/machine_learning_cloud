@@ -32,7 +32,7 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
     public static final String MODEL_NAME = "deep_keyphrase_cpc_2_vae_vec_encoding_model";
     //public static final String MODEL_NAME = "new_combined2_deep_cpc_rnn_2_vec_encoding_model";
     //public static final String MODEL_NAME = "combined2_deep_cpc_rnn_2_vec_encoding_model";
-    public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"combined_deep_cpc_2_vec_encoding_predictions/predictions_map.jobj");
+    public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"combined_deep_keyphrase_cpc_2_vae_vec_encoding_predictions/predictions_map.jobj");
     static final File INPUT_DATA_FOLDER_ALL = new File("combined_deep_keyphrase_cpc_2_vae_vec_encoding_input_data");
     static final File cpcVectorsFile = new File(Constants.DATA_FOLDER+"combined_deep_cpc_cpcVectors.jobj");
     private static final int VECTOR_SIZE = 32;

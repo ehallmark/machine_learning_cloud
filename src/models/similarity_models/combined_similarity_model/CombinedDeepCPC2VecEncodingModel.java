@@ -130,9 +130,26 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
             for(List<String> codes : cpcBatches) {
                 int before = codes.size();
                 if (codes.isEmpty()) continue;
+
+                // make sure has word vectors
+                codes = codes.stream().filter(cpc->{
+                    // default to parent if neccessary
+                    if(word2Vec.hasWord(cpc)) {
+                        return true;
+                    } else {
+                        CPC c = cpcHierarchy.getLabelToCPCMap().get(cpc);
+                        if(c!=null&&c.getParent()!=null&&word2Vec.hasWord(c.getParent().getName())) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }).collect(Collectors.toList());
+
+                // get vae output
                 Pair<List<String>,INDArray> vaeVecPair = ((DeepCPCVariationalAutoEncoderNN) pipelineManager.deepCPCVAEPipelineManager.getModel()).encodeCPCs(codes);
                 if(vaeVecPair==null) continue;
 
+                // get word vectors
                 List<String> wordVectorCodes = new ArrayList<>(codes.size());
                 codes = vaeVecPair.getFirst().stream().filter(cpc->{
                     // default to parent if neccessary
@@ -271,7 +288,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
 
         if(filings.size()>0&&encodeAssets) {
             Map<String, List<String>> filingToCPCMap = pipelineManager.wordCPC2VecPipelineManager.getCPCMap()
-                    .entrySet().parallelStream().map(e->new Pair<>(e.getKey(),e.getValue().stream().filter(cpc->word2Vec.hasWord(cpc.getName())).flatMap(w->IntStream.range(0,w.getNumParts()).mapToObj(i->w.getName())).collect(Collectors.toList())))
+                    .entrySet().parallelStream().map(e->new Pair<>(e.getKey(),e.getValue().stream().filter(cpc->cpc.getNumParts()>=3).filter(cpc->word2Vec.hasWord(cpc.getName())).flatMap(w->IntStream.range(0,w.getNumParts()).mapToObj(i->w.getName())).collect(Collectors.toList())))
                     .filter(p->p.getSecond().size()>0)
                     .collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
             filings = filings.parallelStream().filter(a->!alreadyPredicted.contains(a)).collect(Collectors.toList());
