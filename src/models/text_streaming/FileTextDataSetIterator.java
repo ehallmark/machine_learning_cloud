@@ -134,7 +134,7 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
         return currentDate;
     }
 
-    public static void transformData(File newBaseDir, Function<LabelledDocument,String> transformFunction) {
+    public static void transformData(File newBaseDir, Function<LabelledDocument,String> transformFunction, boolean write, int maxSamples) {
         if(!newBaseDir.exists()) newBaseDir.mkdirs();
         typeToFileMap.forEach((type,file)->{
             FileTextDataSetIterator iterator = new FileTextDataSetIterator(type);
@@ -143,15 +143,16 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
             int taskLimit = Math.max(Runtime.getRuntime().availableProcessors(),1);
             AtomicInteger cnt = new AtomicInteger(0);
             List<RecursiveTask<String>> tasks = new ArrayList<>();
-            try(BufferedWriter writer = new BufferedWriter(new FileWriter(newFile))) {
-                while (iterator.hasNext()) {
+            try {
+                BufferedWriter writer = write ? new BufferedWriter(new FileWriter(newFile)): null;
+                while (iterator.hasNext()&&cnt.get()<maxSamples) {
                     if (cnt.getAndIncrement() % 10000 == 9999) {
                         taskLimit = Math.max(Runtime.getRuntime().availableProcessors(),1);
                         System.out.println("Iterated through: " + cnt.get());
                     }
                     if (tasks.size() >= taskLimit) {
                         String result = tasks.remove(0).join();
-                        if(result!=null) {
+                        if(write&&result!=null) {
                             writer.write(result+"\n");
                         }
                     }
@@ -167,11 +168,14 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
                 }
                 for(RecursiveTask<String> task : tasks) {
                     String result = task.join();
-                    if(result!=null) {
+                    if(write && result!=null) {
                         writer.write(result+"\n");
                     }
                 }
-                writer.flush();
+                if(write) {
+                    writer.flush();
+                    writer.close();
+                }
             } catch(Exception e) {
                 e.printStackTrace();
             }

@@ -301,7 +301,7 @@ public abstract class Stage<V> {
             return ret;
         };
 
-        FileTextDataSetIterator.transformData(transformedDataFolder, documentTransformer);
+        FileTextDataSetIterator.transformData(transformedDataFolder, documentTransformer, false,5000000);
 
     }
 
