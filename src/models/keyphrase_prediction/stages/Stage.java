@@ -296,7 +296,7 @@ public abstract class Stage<V> {
             data.put(DATE, date);
             pipeline.annotate(annotation, annotator.apply(data));
             attributesFunction.apply(data);
-            System.out.println("Date: "+date);
+            //System.out.println("Date: "+date);
             Map<MultiStem, AtomicInteger> docCounts = (Map<MultiStem, AtomicInteger>) data.get(APPEARED_WITH_COUNTS);
             if (docCounts == null) return null;
             String ret = asset + "," + date + "," + String.join(",", docCounts.entrySet().stream().map(e -> e.getKey().toString() + ":" + e.getValue().get()).collect(Collectors.toList()));
