@@ -365,25 +365,9 @@ public class UnitCosineKMeans {
         return pair.getFirst();
     }
 
-    private static INDArray multiplyInBatches(INDArray x, INDArray y, int batchSize) {
-        INDArray res = Nd4j.create(x.rows(),y.columns());
-        multiplyInBatchesHelper(x,y,batchSize,0,res);
-        return res;
-    }
-
-    private static void multiplyInBatchesHelper(INDArray x, INDArray y, int batchSize, int startIdx, INDArray res) {
-        if(x.rows()<=batchSize) {
-            res.get(NDArrayIndex.interval(startIdx,startIdx+x.rows()),NDArrayIndex.all()).assign(x.mmul(y));
-        } else {
-            INDArray xPart = x.get(NDArrayIndex.interval(0,batchSize),NDArrayIndex.all());
-            INDArray xEnd = x.get(NDArrayIndex.interval(batchSize,x.rows()),NDArrayIndex.all());
-            multiplyInBatchesHelper(xPart,y,batchSize,startIdx,res);
-            multiplyInBatchesHelper(xEnd,y,batchSize,startIdx+batchSize,res);
-        }
-    }
 
     private Triple<Double,double[],int[]> findClosestCentroids(INDArray V, INDArray Ctranspose) {
-        INDArray res = multiplyInBatches(V,Ctranspose,1024);
+        INDArray res = MatrixMultiplication.multiplyInBatches(V,Ctranspose,1024);
         INDArray max = res.max(1).rsubi(1d);
         double error = max.sumNumber().doubleValue();
         INDArray idxOfMaxInEachRow = Nd4j.getExecutioner().exec(new IMax(res),1);
