@@ -130,14 +130,14 @@ public class PasswordHandler {
         if(password.length() < 6) {
             throw new PasswordException("Password must be at least 6 characters.");
         }
-        if(password.replaceAll("[^a-zA-Z]","").isEmpty()) {
+        if(password.replaceAll("[^0-9]","").isEmpty()) {
             throw new PasswordException("Password must contain a number.");
         }
-        if(password.replaceAll("[^a-z0-9]","").isEmpty()) {
+        if(password.replaceAll("[^A-Z]","").isEmpty()) {
             throw new PasswordException("Password must contain an uppercase character.");
         }
         if(password.length() > MAX_PASSWORD_SIZE) {
-            throw new PasswordException("Password must contain an uppercase character.");
+            throw new PasswordException("Password is too large. Must be less than 500 characters.");
         }
     }
 

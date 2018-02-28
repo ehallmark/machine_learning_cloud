@@ -70,7 +70,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static j2html.TagCreator.*;
@@ -728,24 +727,18 @@ public class SimilarPatentServer {
 
     private static boolean canCreateUser(String creatorRole, String childRole) {
         if(creatorRole==null||childRole==null) return false;
-        if(creatorRole.equals(ANALYST_USER) && childRole.equals(ANALYST_USER)) return true;
+        if(creatorRole.equals(ANALYST_USER)) return false;
         if(creatorRole.equals(INTERNAL_USER) && (childRole.equals(ANALYST_USER) || childRole.equals(INTERNAL_USER))) return true;
         if(creatorRole.equals(SUPER_USER)) return true;
         return false;
     }
 
-    private static Stream<Collection<?>> chunked(List<?> items, int batchSize) {
-        int numItems = items.size();
-        int numBatches = numItems / batchSize;
-        if(numItems % numBatches > 0) {
-            // remaining
-            numBatches++;
-        }
-        return IntStream.range(0,numBatches).parallel().mapToObj(i->{
-            int startIdx = i * batchSize;
-            int endIdx = Math.min(numItems,startIdx + batchSize);
-            return items.subList(startIdx,endIdx);
-        });
+    private static boolean canPotentiallyCreateUser(String creatorRole) {
+        if(creatorRole==null) return false;
+        if(creatorRole.equals(ANALYST_USER)) return false;
+        if(creatorRole.equals(INTERNAL_USER)) return true;
+        if(creatorRole.equals(SUPER_USER)) return true;
+        return false;
     }
 
     private static void authorize(Request req, Response res) {
@@ -842,6 +835,53 @@ public class SimilarPatentServer {
             res.redirect(redirect);
             req.session().attribute("message", message);
             return null;
+        });
+
+        post("/update_user", (req,res)->{
+            authorize(req,res);
+            String username = req.session(false).attribute("username");
+            String oldPassword = extractString(req, "old_password", null);
+            String newPassword = extractString(req, "new_password", null);
+            String redirect;
+            String message = null;
+            if(newPassword == null || username == null || oldPassword == null) {
+                message = "Please enter current and new password.";
+            }
+            if(message == null) {
+                try {
+                    passwordHandler.changePassword(username, oldPassword, newPassword);
+                    redirect = HOME_URL;
+                    message = "Successfully updated user.";
+                } catch (Exception e) {
+                    System.out.println("Error while updating user...");
+                    e.printStackTrace();
+                    redirect = "/edit_user";
+                    message = e.getMessage();
+                }
+            } else {
+                redirect = "/edit_user";
+            }
+            res.redirect(redirect);
+            req.session().attribute("message", message);
+            return null;
+        });
+
+        get("/edit_user", (req, res)->{
+            authorize(req,res);
+            String ownerRole = req.session().attribute("role");
+            String message = req.session().attribute("message");
+            req.session().removeAttribute("message");
+            Tag form = form().withId("create-user-form").withAction("/update_user").withMethod("POST").attr("style","margin-top: 100px;").with(
+                    (message == null ? span() : div().withClass("not-implemented").withText(
+                            message
+                    )),br(),
+                    label("Current Password").with(
+                            input().withType("text").withClass("form-control").withName("old_password")
+                    ), br(), br(), label("New Password").with(
+                            input().withType("password").withClass("form-control").withName("new_password")
+                    ), br(), br(), button("Change Password").withClass("btn btn-secondary")
+            );
+            return templateWrapper(true, req, res, form);
         });
 
         get("/create_user", (req, res)->{
@@ -2286,7 +2326,8 @@ public class SimilarPatentServer {
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").with(authorized ? div().withText("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : div().withText("Not signed in.")),
                                                         div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
-                                                        div().withClass("col-12").with(authorized ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com")),
+                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(req.session().attribute("role")) ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com")),
+                                                        div().withClass("col-12").with(authorized ? a("Change Password").withHref("/edit_user") : span()),
                                                         div().withClass("col-12").with(authorized ? a("Update Defaults").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span())
                                                 ), hr(),
                                                 (!authorized) ? div() : div().with(
