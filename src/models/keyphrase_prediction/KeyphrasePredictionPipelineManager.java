@@ -5,6 +5,7 @@ import cpc_normalization.CPCHierarchy;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import lombok.Getter;
+import models.keyphrase_prediction.models.DefaultModel2;
 import models.keyphrase_prediction.models.DefaultModel3;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
@@ -72,7 +73,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     private void initStages(boolean vocab, boolean filters, boolean rerunVocab, boolean rerunFilters) {
         // stage 1;
-        Stage1 stage1 = new Stage1(modelParams);
+        Stage1 stage1 = new Stage1(new DefaultModel2());
         if(vocab)stage1.run(rerunVocab);
         //if(alwaysRerun)stage1.createVisualization();
 

@@ -284,9 +284,11 @@ public abstract class Stage<V> {
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
         Function<LabelledDocument, String> documentTransformer = doc -> {
+            if(doc.getLabels().size()<2) return null;
             String asset = doc.getLabels().get(0);
             String date = doc.getLabels().get(1);
             String text = doc.getContent();
+            if(date==null) return null;
             Annotation annotation = new Annotation(text);
             Map<String, Object> data = new HashMap<>();
             data.put(TEXT, text);
@@ -301,8 +303,7 @@ public abstract class Stage<V> {
             return ret;
         };
 
-        FileTextDataSetIterator.transformData(transformedDataFolder, documentTransformer, false,5000000);
-
+        FileTextDataSetIterator.transformData(transformedDataFolder, documentTransformer, true,10000000);
     }
 
     public static void runSamplingIterator(Function<Map<MultiStem, Integer>, Void> attributesFunction, int sampling) {

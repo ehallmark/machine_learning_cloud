@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Created by Evan on 11/19/2017.
@@ -136,7 +137,8 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
 
     public static void transformData(File newBaseDir, Function<LabelledDocument,String> transformFunction, boolean write, int maxSamples) {
         if(!newBaseDir.exists()) newBaseDir.mkdirs();
-        typeToFileMap.forEach((type,file)->{
+        Stream.of(Type.TEST,Type.DEV1,Type.DEV2,Type.DEV3,Type.DEV4,Type.TRAIN).forEach(type->{
+            File file = typeToFileMap.get(type);
             FileTextDataSetIterator iterator = new FileTextDataSetIterator(type);
             File newFile = new File(newBaseDir,file.getName());
 
