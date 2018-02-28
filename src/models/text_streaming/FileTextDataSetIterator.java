@@ -117,7 +117,7 @@ public class FileTextDataSetIterator implements LabelAwareIterator {
             String date = data[1];
             text = data[2];
             labels.add(label);
-            labels.add(text);
+            labels.add(date);
             currentDate = LocalDate.parse(date,DateTimeFormatter.ISO_DATE);
         } else {
             data = line.split(",", 2);
