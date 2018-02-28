@@ -3,7 +3,11 @@ package models.similarity_models.combined_similarity_model;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.NoSaveDataSetManager;
+import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
+import models.keyphrase_prediction.stages.Stage;
+import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
+import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
 import models.text_streaming.FileTextDataSetIterator;
@@ -126,7 +130,7 @@ public abstract class AbstractCombinedSimilarityPipelineManager extends DefaultP
 
 
     protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {
-        return new Word2VecToCPCIterator(iterator,word2Vec,batch,getMaxSamples());
+        return null;//return new Word2VecToCPCIterator(iterator,word2Vec,null,batch,getMaxSamples());
     }
 
 }

@@ -40,12 +40,10 @@ public class CombinedDeepCPC2VecEncodingPipelineManager extends AbstractEncoding
     protected static final int MINI_BATCH_SIZE = 256;
     protected static final Random rand = new Random(235);
     private static CombinedDeepCPC2VecEncodingPipelineManager MANAGER;
-    DeepCPCVAEPipelineManager deepCPCVAEPipelineManager;
     private Map<String,INDArray> cpcVectors;
 
     public CombinedDeepCPC2VecEncodingPipelineManager(String modelName, Word2Vec word2Vec, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager) {
-        super(INPUT_DATA_FOLDER_ALL,PREDICTION_FILE,modelName,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,wordCPC2VecPipelineManager);
-        this.deepCPCVAEPipelineManager=deepCPCVAEPipelineManager;
+        super(INPUT_DATA_FOLDER_ALL,PREDICTION_FILE,modelName,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,wordCPC2VecPipelineManager,deepCPCVAEPipelineManager);
     }
 
 

@@ -72,23 +72,6 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         return vae.activate(iterator.next().getFeatureMatrix(),false);
     }
 
-
-    public synchronized Pair<List<String>,INDArray> encodeCPCs(List<String> cpcs) {
-        if(predictions==null) predictions = pipelineManager.loadPredictions();
-        List<String> valid = new ArrayList<>(cpcs.size());
-        List<INDArray> vectors = cpcs.stream().map(cpc->{
-            CPC c = pipelineManager.getHierarchy().getLabelToCPCMap().get(cpc);
-            while(c!=null&&!predictions.containsKey(c.getName())) {
-                c = c.getParent();
-            }
-            if(c==null)return null;
-            valid.add(cpc);
-            return predictions.get(c.getName());
-        }).collect(Collectors.toList());
-        if(vectors.isEmpty()) return null;
-        return new Pair<>(valid,Nd4j.vstack(vectors));
-    }
-
     private static final Map<String,Collection<CPC>> ancestorsCache = Collections.synchronizedMap(new HashMap<>());
     public synchronized INDArray encodeCPCsMultiple(List<List<String>> cpcsList) {
         if(cpcToIdxMap==null) cpcToIdxMap = getCpcToIdxMap();
@@ -140,22 +123,11 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         int numInputs = getCpcToIdxMap().size();
 
         //Neural net configuration
-        int[] hiddenLayerEncoder;
-        if(modelName.equals("deep32_cpc_autoencoder")) {
-            hiddenLayerEncoder = new int[]{
-                    2048,
-                    2048
-            };
-        } else {
-            hiddenLayerEncoder = new int[]{
-                    1024,
-                    512,
-                    512,
-                    256,
-                    256
-            };
+        int[] hiddenLayerEncoder = new int[]{
+                2048,
+                2048
+        };
 
-        }
         int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
         for(int i = 0; i < hiddenLayerEncoder.length; i++) {
             hiddenLayerDecoder[i] = hiddenLayerEncoder[hiddenLayerEncoder.length-1-i];
@@ -175,17 +147,12 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
                 .learningRateSchedule(createSchedule(learningRate,nEpochs,batchSize,numExamples,stepsPerEpoch))
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .updater(Updater.RMSPROP)
-                //.updater(Updater.ADAM)
                 .miniBatch(true)
                 .weightInit(WeightInit.XAVIER)
-                //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
-                //.gradientNormalizationThreshold(1d)
-                //.regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .encoderLayerSizes(hiddenLayerEncoder)
                         .decoderLayerSizes(hiddenLayerDecoder)
-                        //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
                         .activation(activation)
                         .pzxActivationFunction(Activation.IDENTITY)
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
@@ -237,9 +204,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             return total/count;
         };
 
-        Function<Object,Double> trainErrorFunction = (v) -> {
-            return 0d;//test(pipelineManager.getDatasetManager().getTrainingIterator(10000/pipelineManager.getBatchSize()), vae);
-        };
+        Function<Object,Double> trainErrorFunction = (v) -> 0d;
 
         System.out.println("Initial test: "+testErrorFunction.apply(net));
 
@@ -255,17 +220,11 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
         IterationListener listener = new DefaultScoreListener(printIterations, testErrorFunction, trainErrorFunction, saveFunction, stoppingCondition);
         net.setListeners(listener);
 
-        AtomicInteger gcIter = new AtomicInteger(0);
         for (int i = 0; i < nEpochs; i++) {
             System.out.println("Starting epoch {"+(i+1)+"} of {"+nEpochs+"}");
             try {
                 net.fit(trainIter);
-                /*
-                while(trainIter.hasNext()) {
-                    DataSet ds = trainIter.next();
-                    net.fit(ds);
-                   // if(gcIter.getAndIncrement()%100==0)System.gc();
-                }*/
+
             } catch(StoppingConditionMetException s) {
                 System.out.println("Stopping condition met");
             }

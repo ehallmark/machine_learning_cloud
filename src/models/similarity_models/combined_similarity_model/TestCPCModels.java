@@ -48,7 +48,7 @@ public class TestCPCModels extends TestModelHelper {
         return data;
     }
 
-    public static void main(String[] args) {
+    public static void runTest(Tester tester) {
         // load input data
         final int numSamples = 100000;
         Map<String,Pair<String,String>> cpcData = loadData(numSamples);
@@ -68,6 +68,11 @@ public class TestCPCModels extends TestModelHelper {
         double score1 = test(encodingPipelineManager1,"Model 1",cpcData);
         double score2 = test(encodingPipelineManager2, "Model 2",cpcData);
         double score3 = test(encodingPipelineManager3, "Model 3",cpcData);
+
+        String testName = "CPC Test";
+        tester.scoreModel("Model 1",testName,score1);
+        tester.scoreModel("Model 2",testName,score2);
+        tester.scoreModel("Model 3",testName,score3);
 
         System.out.println("Score for Model 1: "+score1);
         System.out.println("Score for Model 2: "+score2);

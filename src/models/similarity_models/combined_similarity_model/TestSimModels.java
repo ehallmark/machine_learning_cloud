@@ -47,7 +47,7 @@ public class TestSimModels extends TestModelHelper {
             List<String> cpcList = new ArrayList<>(cpcs);
             String randomCpc = cpcList.get(rand.nextInt(cpcList.size()));
 
-            Set<String> otherFilings = cpcToFilingMap.get(randomCpc);
+            Set<String> otherFilings = new HashSet<>(cpcToFilingMap.get(randomCpc));
             otherFilings.remove(filing);
 
             if(otherFilings.isEmpty()) continue;
@@ -64,7 +64,7 @@ public class TestSimModels extends TestModelHelper {
     }
 
 
-    public static void main(String[] args) {
+    public static void runTest(Tester tester) {
         // load input data
         final int numFilingSamples = 100000;
         Map<String,Pair<String,String>> filingData = loadFilingCPCData(new AssetToCPCMap().getPatentDataMap(), numFilingSamples);
@@ -84,6 +84,11 @@ public class TestSimModels extends TestModelHelper {
         double score1 = test(encodingPipelineManager1,"Model 1",filingData);
         double score2 = test(encodingPipelineManager2, "Model 2",filingData);
         double score3 = test(encodingPipelineManager3, "Model 3",filingData);
+
+        String testName = "Similarity Test";
+        tester.scoreModel("Model 1",testName,score1);
+        tester.scoreModel("Model 2",testName,score2);
+        tester.scoreModel("Model 3",testName,score3);
 
         System.out.println("Score for Model 1: "+score1);
         System.out.println("Score for Model 2: "+score2);

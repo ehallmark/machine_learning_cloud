@@ -132,26 +132,9 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
                 if (codes.isEmpty()) continue;
 
                 // make sure has word vectors
-                codes = codes.stream().filter(cpc->{
-                    // default to parent if neccessary
-                    if(word2Vec.hasWord(cpc)) {
-                        return true;
-                    } else {
-                        CPC c = cpcHierarchy.getLabelToCPCMap().get(cpc);
-                        if(c!=null&&c.getParent()!=null&&word2Vec.hasWord(c.getParent().getName())) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }).collect(Collectors.toList());
-
-                // get vae output
-                Pair<List<String>,INDArray> vaeVecPair = ((DeepCPCVariationalAutoEncoderNN) pipelineManager.deepCPCVAEPipelineManager.getModel()).encodeCPCs(codes);
-                if(vaeVecPair==null) continue;
-
-                // get word vectors
                 List<String> wordVectorCodes = new ArrayList<>(codes.size());
-                codes = vaeVecPair.getFirst().stream().filter(cpc->{
+                codes = codes.stream().filter(cpc->cpcHierarchy.getLabelToCPCMap().containsKey(cpc)&&cpcHierarchy.cpcWithAncestors(cpc).stream().anyMatch(c->pipelineManager.deepCPCVAEPipelineManager.getCpcToIdxMap().containsKey(c.getName()))).collect(Collectors.toList());
+                codes = codes.stream().filter(cpc->{
                     // default to parent if neccessary
                     if(word2Vec.hasWord(cpc)) {
                         wordVectorCodes.add(cpc);
@@ -166,9 +149,16 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
                     return false;
                 }).collect(Collectors.toList());
 
+                if(codes.isEmpty()) continue;
+
+                List<List<String>> cpcList = codes.stream().map(cpc->Collections.singletonList(cpc)).collect(Collectors.toList());
+
+                // get vae output
+                INDArray vaeVec = ((DeepCPCVariationalAutoEncoderNN) pipelineManager.deepCPCVAEPipelineManager.getModel()).encodeCPCsMultiple(cpcList);
+                if(vaeVec==null) continue;
+
                 int after = codes.size();
                 incomplete.getAndAdd(before - after);
-                AtomicInteger idx = new AtomicInteger(0);
                 INDArray allFeatures = word2Vec.getWordVectors(wordVectorCodes);
                 for (int cpcIdx = 0; cpcIdx < codes.size(); cpcIdx++) {
                     if (cnt.get() % 5000 == 4999) {
@@ -177,15 +167,13 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
                     if (cnt.getAndIncrement() % 10000 == 9999) {
                         System.out.println("Finished " + cnt.get() + " out of " + classCodes.size() + " cpcs. Incomplete: " + incomplete.get() + " / " + cnt.get());
                     }
-                    idx.getAndIncrement();
                 }
 
                 System.out.println("All Features batch shape: " + allFeatures.shapeInfoToString());
-                INDArray encoding = encode(allFeatures, vaeVecPair.getSecond());
+                INDArray encoding = encode(allFeatures, vaeVec);
                 encoding.diviColumnVector(encoding.norm2(1));
                 System.out.println("Encoding batch shape: " + encoding.shapeInfoToString());
 
-                idx.set(0);
                 try {
                     pool.execute(Database.upsertVectors(createVectorMap(codes, encoding)));
                 } catch(Exception e) {
@@ -532,7 +520,7 @@ public class CombinedDeepCPC2VecEncodingModel extends AbstractEncodingModel<Comp
     protected Function<Object, Double> getTestFunction() {
         return (v) -> {
             System.gc();
-            MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getTestIterator(); // TODO Fix validation iterator bug (only dev3_data.csv file)
+            MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator(); // TODO Fix validation iterator bug (only dev3_data.csv file)
             List<MultiDataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
 
             int valCount = 0;

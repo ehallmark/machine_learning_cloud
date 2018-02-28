@@ -58,7 +58,7 @@ public class TestModelHelper {
                 numMissing.getAndIncrement();
                 return null;
             }
-            return Transforms.cosineSim(encodingVec,posVec) - Transforms.cosineSim(encodingVec,negVec);
+            return Transforms.cosineSim(encodingVec,posVec) > Transforms.cosineSim(encodingVec,negVec) ? 1d : 0d;
         };
 
         double score = testModel(filingData, model);
@@ -87,5 +87,41 @@ public class TestModelHelper {
             mat.putRow(i, Transforms.unitVec(filingToVectorMap.get(filings.get(i))));
         }
         return new Pair<>(filings,mat);
+    }
+
+
+    public static void main(String[] args) {
+        // test
+        Tester tester = new Tester();
+        tester.registerModel("Model 1");
+        tester.registerModel("Model 2");
+        tester.registerModel("Model 3");
+
+        TestSimModels.runTest(tester);
+        TestCPCModels.runTest(tester);
+        TestAssigneeModels.runTest(tester);
+
+        System.out.println(tester.resultsToString());
+    }
+
+
+}
+
+class Tester {
+    SortedMap<String,Map<String,Double>> scores = Collections.synchronizedSortedMap(new TreeMap<>());
+    void registerModel(String model) {
+        scores.put(model, Collections.synchronizedMap(new HashMap<>()));
+    }
+
+    void scoreModel(String model, String testName, double score) {
+        scores.get(model).put(testName,score);
+    }
+
+    String resultsToString() {
+        StringJoiner sj = new StringJoiner("\n","Tester results:\n","\n------------------");
+        scores.forEach((model,results)->{
+            sj.add("Results for Model "+model+": "+String.join(", ",results.entrySet().stream().map(e->e.getKey()+" -> "+e.getValue()).collect(Collectors.toList())));
+        });
+        return sj.toString();
     }
 }

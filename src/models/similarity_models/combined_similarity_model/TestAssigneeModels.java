@@ -54,7 +54,7 @@ public class TestAssigneeModels extends TestModelHelper {
         return data;
     }
 
-    public static void main(String[] args) {
+    public static void runTest(Tester tester) {
         // load input data
         final int numSamples = 100000;
         Map<String,Pair<String,String>> data = loadData(numSamples);
@@ -75,6 +75,11 @@ public class TestAssigneeModels extends TestModelHelper {
         double score1 = test(encodingPipelineManager1,"Model 1",data);
         double score2 = test(encodingPipelineManager2, "Model 2",data);
         double score3 = test(encodingPipelineManager3, "Model 3",data);
+
+        String testName = "Assignee Test";
+        tester.scoreModel("Model 1",testName,score1);
+        tester.scoreModel("Model 2",testName,score2);
+        tester.scoreModel("Model 3",testName,score3);
 
         System.out.println("Score for Model 1: "+score1);
         System.out.println("Score for Model 2: "+score2);
