@@ -139,7 +139,7 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.01;
+        double newLearningRate = 0.005;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
@@ -199,10 +199,10 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
         Activation outputActivation = Activation.IDENTITY;
         Map<Integer,Double> learningRateSchedule = new HashMap<>();
         learningRateSchedule.put(0,learningRate);
-        learningRateSchedule.put(100000,learningRate/2);
-        learningRateSchedule.put(300000,learningRate/5);
-        learningRateSchedule.put(600000,learningRate/10);
-        learningRateSchedule.put(1200000,learningRate/25);
+        learningRateSchedule.put(50000,learningRate/2);
+        learningRateSchedule.put(100000,learningRate/5);
+        learningRateSchedule.put(200000,learningRate/10);
+        learningRateSchedule.put(400000,learningRate/25);
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)
