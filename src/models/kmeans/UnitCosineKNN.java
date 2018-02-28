@@ -4,27 +4,24 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.primitives.Pair;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class UnitCosineKNN {
+public class UnitCosineKNN<T> {
 
-    private List<String> items;
-    private Map<String,Integer> itemToIdxMap;
+    private List<T> items;
+    private Map<T,Integer> itemToIdxMap;
     private INDArray matrix;
     private INDArray resultMatrix;
-    public UnitCosineKNN(List<String> items, INDArray matrix) {
+    public UnitCosineKNN(List<T> items, INDArray matrix) {
         this.matrix=matrix;
         this.items=items;
         this.itemToIdxMap = createIdxMap(items);
         this.matrix.diviColumnVector(this.matrix.norm2(1));
     }
 
-    public UnitCosineKNN(Map<String,INDArray> dataMap) {
+    public UnitCosineKNN(Map<T,INDArray> dataMap) {
         this.items = Collections.synchronizedList(new ArrayList<>(dataMap.keySet()));
         this.itemToIdxMap = createIdxMap(items);
         this.matrix = Nd4j.create(items.size(),dataMap.values().stream().findAny().get().length());
@@ -34,7 +31,7 @@ public class UnitCosineKNN {
         this.matrix.diviColumnVector(this.matrix.norm2(1));
     }
 
-    private static Map<String,Integer> createIdxMap(List<String> items) {
+    private Map<T,Integer> createIdxMap(List<T> items) {
         return IntStream.range(0,items.size()).mapToObj(i->new Pair<>(items.get(i),i))
                 .collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
     }
@@ -43,11 +40,22 @@ public class UnitCosineKNN {
         if(this.resultMatrix==null) {
             System.out.println("Computing result matrix...");
             this.resultMatrix = MatrixMultiplication.multiplyInBatches(matrix,matrix.transpose(),1024);
+            Nd4j.doAlongDiagonal(this.resultMatrix,n->-1d);
             System.out.println("Finished.");
         }
     }
 
-    public List<String> kNearestNeighborsOf(String item, int k) {
+    public Map<T,T> allItemsToNearestNeighbor() {
+        Map<T,T> data = Collections.synchronizedMap(new HashMap<>(items.size()));
+        INDArray indices = Nd4j.argMax(resultMatrix,0);
+        int[] indexArray = indices.data().asInt();
+        IntStream.range(0,indexArray.length).forEach(i->{
+            data.put(items.get(i),items.get(indexArray[i]));
+        });
+        return data;
+    }
+
+    public List<T> kNearestNeighborsOf(T item, int k) {
         if(resultMatrix==null) throw new RuntimeException("Must init kNN");
         int idx = itemToIdxMap.getOrDefault(item,-1);
         if(idx<0) return Collections.emptyList();
@@ -62,7 +70,7 @@ public class UnitCosineKNN {
                 .collect(Collectors.toList());
     }
 
-    public List<String> similarNeighborsOf(String item, double threshold) {
+    public List<T> similarNeighborsOf(T item, double threshold) {
         if(resultMatrix==null) throw new RuntimeException("Must init kNN");
         int idx = itemToIdxMap.getOrDefault(item,-1);
         if(idx<0) return Collections.emptyList();

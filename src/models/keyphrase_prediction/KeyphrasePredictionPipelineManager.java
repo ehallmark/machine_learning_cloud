@@ -5,7 +5,7 @@ import cpc_normalization.CPCHierarchy;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import lombok.Getter;
-import models.keyphrase_prediction.models.DefaultModel2;
+import models.keyphrase_prediction.models.DefaultModel3;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
 import models.similarity_models.paragraph_vectors.FloatFrequencyPair;
@@ -32,7 +32,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 12/21/17.
  */
 public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<WordCPCIterator,Set<String>> {
-    public static final Model modelParams = new DefaultModel2();
+    public static final Model modelParams = new DefaultModel3();
     @Getter
     private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
@@ -94,28 +94,28 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         if(filters)cpcDensityStage.run(rerunFilters);
         //if(alwaysRerun) stage4.createVisualization();
 
-        // stage 3
-        System.out.println("Pre-grouping data for stage 3...");
-        Stage3 stage3 = new Stage3(cpcDensityStage.get(), modelParams);
-        if(filters) stage3.run(rerunFilters);
+        //// stage 3
+        //System.out.println("Pre-grouping data for stage 3...");
+        //Stage3 stage3 = new Stage3(cpcDensityStage.get(), modelParams);
+        //if(filters) stage3.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
         // word order stage
         System.out.println("Pre-grouping data for word order...");
-        WordOrderStage wordOrder = new WordOrderStage(stage3.get(), stage1.get(), modelParams);
+        WordOrderStage wordOrder = new WordOrderStage(cpcDensityStage.get(), stage1.get(), modelParams);
         wordOrder.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
 
-        /*// wiki stage
+        // kmeans stage
         System.out.println("Pre-grouping data for kMeansStage stage...");
         wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
         Word2Vec word2Vec = (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet();
-        KMeansStage kMeansStage = new KMeansStage(wordOrder.get(), word2Vec, modelParams);
+        KNNStage kMeansStage = new KNNStage(wordOrder.get(), word2Vec, stage1.get(), modelParams);
         if(filters) kMeansStage.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
         multiStemSet = kMeansStage.get();
-        */
+
 
         multiStemSet = wordOrder.get();
 
