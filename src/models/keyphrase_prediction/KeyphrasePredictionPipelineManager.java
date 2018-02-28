@@ -108,16 +108,14 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
 
         // kmeans stage
-        System.out.println("Pre-grouping data for kMeansStage stage...");
+        System.out.println("Pre-grouping data for kNN stage...");
         wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
         Word2Vec word2Vec = (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet();
-        KNNStage kMeansStage = new KNNStage(wordOrder.get(), word2Vec, stage1.get(), modelParams);
-        if(filters) kMeansStage.run(rerunFilters);
+        KNNStage knnStage = new KNNStage(wordOrder.get(), word2Vec, stage1.get(), modelParams);
+        if(filters) knnStage.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
-        multiStemSet = kMeansStage.get();
-
-
-        multiStemSet = wordOrder.get();
+        multiStemSet = knnStage.get();
+       // multiStemSet = wordOrder.get();
 
         labelToKeywordMap = Collections.synchronizedMap(new HashMap<>());
         multiStemSet.parallelStream().forEach(stem->labelToKeywordMap.put(stem.getBestPhrase(),stem));
