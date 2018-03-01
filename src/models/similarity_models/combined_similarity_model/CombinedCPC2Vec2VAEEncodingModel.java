@@ -22,6 +22,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
@@ -60,7 +61,14 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
 
 
     public synchronized INDArray encodeText(List<String> words, int samples) {
-        INDArray inputs = sampleWordVectors(words,samples,pipelineManager.getWord2Vec());
+        int maxSample = pipelineManager.getMaxSample();
+        INDArray inputs = Nd4j.create(samples,vectorSize,maxSample);
+
+        for(int i = 0; i < samples; i ++) { // TODO speed this up (i.e remove loop)
+            inputs.get(NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.all()).assign(sampleWordVectors(words,maxSample,pipelineManager.getWord2Vec()).transpose());
+        }
+
+        //System.out.println("Sampled word vectors shape: "+Arrays.toString(inputs.shape()));
         return encodeText(inputs);
     }
 

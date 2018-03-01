@@ -3,6 +3,7 @@ package models.similarity_models.combined_similarity_model;
 import com.google.common.util.concurrent.AtomicDouble;
 import data_pipeline.helpers.Function2;
 import elasticsearch.DataSearcher;
+import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -98,12 +99,11 @@ public class TestTextModels extends TestModelHelper {
         Map<String,List<String>> wikipediaData = ScrapeWikipedia.loadWikipediaMap();
         Map<String,Set<String>> filingData = loadKeywordToFilingsMap(new ArrayList<>(wikipediaData.keySet()));
 
-        final int maxSentences = 20;
+        final int maxSentences = 30;
         final int maxSamples = 100000;
         // need to run searches on the keys
 
         Set<String> allFilings = Collections.synchronizedSet(new HashSet<>());
-
         final Map<String,Pair<String[],Set<String>>> keywordToWikiAndAssetsMap = wikipediaData.entrySet().stream()
                 .map(e->{
                     if(allFilings.size()>maxSamples) return null;
@@ -123,18 +123,29 @@ public class TestTextModels extends TestModelHelper {
         CombinedCPC2Vec2VAEEncodingPipelineManager encodingPipelineManager1 = CombinedCPC2Vec2VAEEncodingPipelineManager.getOrLoadManager(true);
         encodingPipelineManager1.runPipeline(false,false,false,false,-1,false);
         CombinedCPC2Vec2VAEEncodingModel encodingModel1 = (CombinedCPC2Vec2VAEEncodingModel)encodingPipelineManager1.getModel();
-        Map<String,INDArray> allPredictions1 = CombinedDeepCPC2VecEncodingPipelineManager.getOrLoadManager(false).loadPredictions();
+        Map<String,INDArray> allPredictions1 = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME).loadPredictions();
         Map<String,INDArray> predictions1 = allFilings.stream().filter(allPredictions1::containsKey).collect(Collectors.toMap(e->e,e->allPredictions1.get(e)));
 
         final Pair<List<String>,INDArray> filingsWithMatrix1 = createFilingMatrix(predictions1);
         final List<String> filings1 = filingsWithMatrix1.getFirst();
         final INDArray filingsMatrix1 = filingsWithMatrix1.getSecond();
-        Function2<String[],Integer,Set<String>> model1 = (text,n) -> {
-            INDArray encodingVec = encodingModel1.encodeText(Arrays.asList(text),20);
+        Function2<String[],Integer,Set<String>> model1_1 = (text,n) -> {
+            INDArray encodingVec = encodingModel1.encodeText(Arrays.asList(text),1);
             if(encodingVec==null)return null;
             return topNByCosineSim(filings1,filingsMatrix1,encodingVec,n);
         };
 
+        Function2<String[],Integer,Set<String>> model1_5 = (text,n) -> {
+            INDArray encodingVec = encodingModel1.encodeText(Arrays.asList(text),5);
+            if(encodingVec==null)return null;
+            return topNByCosineSim(filings1,filingsMatrix1,encodingVec,n);
+        };
+
+        Function2<String[],Integer,Set<String>> model1_10 = (text,n) -> {
+            INDArray encodingVec = encodingModel1.encodeText(Arrays.asList(text),10);
+            if(encodingVec==null)return null;
+            return topNByCosineSim(filings1,filingsMatrix1,encodingVec,n);
+        };
 
         // older model
         TextSimilarityEngine encodingModel2 = new TextSimilarityEngine();
@@ -156,9 +167,27 @@ public class TestTextModels extends TestModelHelper {
         System.out.println("Size of filings (Model 2): "+filings2.size());
         System.out.println("Max Sentences: "+maxSentences);
 
+        List<String> allFilingsList = new ArrayList<>(allFilings);
+
+        Random rand = new Random(23);
+        Function2<String[],Integer,Set<String>> randomModel = (text,n) ->{
+            Set<String> ret = new HashSet<>(n);
+            for(int i = 0; i < n; i++) {
+                ret.add(allFilingsList.get(rand.nextInt(allFilingsList.size())));
+            }
+            return ret;
+        };
+
         for(int n = 10; n <= 1000; n*=10) {
-            double score1 = testModel(keywordToWikiAndAssetsMap, model1, n);
-            System.out.println("Score for model [n=" + n + "] 1: " + score1);
+            double randomScore = testModel(keywordToWikiAndAssetsMap, randomModel, n);
+            System.out.println("Random score [n=" + n + "]: " + randomScore);
+
+            double score1_1 = testModel(keywordToWikiAndAssetsMap, model1_1, n);
+            System.out.println("Score for model [n=" + n + "] 1-1: " + score1_1);
+            double score1_5 = testModel(keywordToWikiAndAssetsMap, model1_5, n);
+            System.out.println("Score for model [n=" + n + "] 1-5: " + score1_5);
+            double score1_10 = testModel(keywordToWikiAndAssetsMap, model1_10, n);
+            System.out.println("Score for model [n=" + n + "] 1-10: " + score1_10);
 
             double score2 = testModel(keywordToWikiAndAssetsMap, model2, n);
             System.out.println("Score for model [n=" + n + "] 2: " + score2);
