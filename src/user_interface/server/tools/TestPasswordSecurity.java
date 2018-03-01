@@ -16,9 +16,8 @@ public class TestPasswordSecurity {
         };
         String password = "Evan12352!!";
 
-        PasswordHandler passwordHandler = new PasswordHandler();
 
-        String encrypted = passwordHandler.encrypt(password);
+        String encrypted = PasswordHandler.encrypt(password);
 
         Random rand = new Random(2352);
 
@@ -35,7 +34,7 @@ public class TestPasswordSecurity {
 
             //System.out.println("Attempt: "+attempt);
 
-            String encAttempt = passwordHandler.encrypt(attempt);
+            String encAttempt = PasswordHandler.encrypt(attempt);
             if(encAttempt.equals(encrypted)) {
                 System.out.println("FAILURE");
                 failures.getAndIncrement();
