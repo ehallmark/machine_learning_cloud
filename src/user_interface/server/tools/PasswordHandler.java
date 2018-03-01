@@ -22,8 +22,8 @@ public class PasswordHandler {
     // Returns the role of the user (or null if not authorized)
     public String authorizeUser(String username, String password) throws PasswordException {
         if(username == null || password == null) return null;
-        // HACK
-        if(username.equals("gtt") && password.equals("password")) return SimilarPatentServer.ANALYST_USER;
+        //// HACK
+        //if(username.equals("gtt") && password.equals("password")) return SimilarPatentServer.ANALYST_USER;
 
         File passwordFile = new File(passwordFolder+username);
         if(!passwordFile.exists()) return null;
