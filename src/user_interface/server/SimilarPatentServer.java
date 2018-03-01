@@ -891,6 +891,7 @@ public class SimilarPatentServer {
                         passwordHandler.changeUserGroup(usernameToChange, newUserGroup);
                         if(usernameToChange.equals(newUserGroup)) {
                             // update session
+                            req.session(false).removeAttribute("userGroup");
                             req.session(false).attribute("userGroup", newUserGroup);
                         }
                         redirect = "/edit_user_group";
@@ -922,11 +923,13 @@ public class SimilarPatentServer {
             if(role==null||username==null) {
                 form = div();
             } else {
+                final boolean isSuperUser = role != null && role.equals(SUPER_USER);
+                String selectedOption = isSuperUser ? null : passwordHandler.getUserGroup(username);
                 form = form().withId("create-user-form").withAction("/update_user_group").withMethod("POST").attr("style", "margin-top: 100px;").with(
                         (message == null ? span() : div().withClass("not-implemented").withText(
                                 message
                         )), br(),
-                        (role != null && role.equals(SUPER_USER)) ?
+                        (isSuperUser) ?
                                 label("User to Update").with(
                                         select().withClass("form-control single-select2").withName("username").with(
                                                 passwordHandler.getAllUsers().stream().sorted().map(user -> {
@@ -939,12 +942,18 @@ public class SimilarPatentServer {
                                                     }
                                                 }).collect(Collectors.toList())
                                         )
-                                ) : input().withType("hidden").withName("username").withValue(username)
+                                ) : div().with(
+                                        p("Please log off and log back in for these changes to take effect."),
+                                        input().withType("hidden").withName("username").withValue(username)
+                                )
                         , br(), br(), label("User Group").with(
                                 select().withClass("form-control single-select2").withName("user_group").with(
-                                        option("(No user group)").withValue("")
+                                        selectedOption==null ? option("(No user group)").withValue("").attr("selected","selected") : option("(No user group)").withValue("")
                                 ).with(
                                         passwordHandler.getUserGroups().stream().sorted().map(userGroup -> {
+                                            if(selectedOption!=null && selectedOption.equals(userGroup)) {
+                                                return option(userGroup).withValue(userGroup).attr("selected","selected");
+                                            }
                                             return option(userGroup).withValue(userGroup);
                                         }).collect(Collectors.toList())
                                 ),
