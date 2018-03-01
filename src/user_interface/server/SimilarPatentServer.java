@@ -876,7 +876,7 @@ public class SimilarPatentServer {
                             message
                     )),br(),
                     label("Current Password").with(
-                            input().withType("text").withClass("form-control").withName("old_password")
+                            input().withType("password").withClass("form-control").withName("old_password")
                     ), br(), br(), label("New Password").with(
                             input().withType("password").withClass("form-control").withName("new_password")
                     ), br(), br(), button("Change Password").withClass("btn btn-secondary")
