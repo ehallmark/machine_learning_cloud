@@ -90,7 +90,11 @@ public class PasswordHandler {
         }
     }
 
-    public synchronized void createUserGroup(String group) {
+    public synchronized void createUserGroup(String group) throws PasswordException {
+        List<String> allUsers = getAllUsers();
+        if(allUsers.contains(group)) {
+            throw new PasswordException("User group conflicts with an existing username.");
+        }
         Set<String> currentGroups = getUserGroups();
         currentGroups.add(group);
         Database.trySaveObject(currentGroups,new File(userGroupNamesFile));
@@ -165,7 +169,7 @@ public class PasswordHandler {
         }
     }
 
-    private static void validateUsername(String username) throws PasswordException {
+    private void validateUsername(String username) throws PasswordException {
         if(username == null) {
             throw new PasswordException("Please include username.");
         }
@@ -175,6 +179,10 @@ public class PasswordHandler {
         File passwordFile = new File(passwordFolder+username);
         if(passwordFile.exists()) {
             throw new PasswordException("User already exists.");
+        }
+        Set<String> userGroups = getUserGroups();
+        if(userGroups.contains(username)) {
+            throw new PasswordException("Username conflicts with an existing usergroup.");
         }
     }
 

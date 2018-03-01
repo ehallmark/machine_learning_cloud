@@ -791,6 +791,7 @@ public class SimilarPatentServer {
             }
             session.attribute("username",username);
             session.attribute("role", role);
+            session.attribute("userGroup", passwordHandler.getUserGroup(username));
             res.status(200);
             res.redirect(HOME_URL);
             return null;
@@ -800,6 +801,7 @@ public class SimilarPatentServer {
             req.session(true).attribute("authorized",false);
             req.session().removeAttribute("role");
             req.session().removeAttribute("username");
+            req.session().removeAttribute("userGroup");
             res.redirect("/");
             res.status(200);
             return null;
@@ -887,6 +889,10 @@ public class SimilarPatentServer {
                 if(message == null && (role.equals(INTERNAL_USER)||role.equals(SUPER_USER))) {
                     try {
                         passwordHandler.changeUserGroup(usernameToChange, newUserGroup);
+                        if(usernameToChange.equals(newUserGroup)) {
+                            // update session
+                            req.session(false).attribute("userGroup", newUserGroup);
+                        }
                         redirect = "/edit_user_group";
                         message = "Successfully updated user.";
                     } catch (Exception e) {
@@ -2471,6 +2477,10 @@ public class SimilarPatentServer {
             acclaimAttrs = Collections.emptyList();
         }
         String role = req.session().attribute("role");
+        String userGroup = req.session().attribute("userGroup");
+        if(userGroup == null) {
+            userGroup = SHARED_USER; // default to shared user
+        }
         return html().with(
                 head().with(
                         title("AI Search Platform"),
@@ -2523,6 +2533,7 @@ public class SimilarPatentServer {
                                                         div().withClass("col-12").with(authorized ? div().withText("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : div().withText("Not signed in.")),
                                                         div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
                                                         div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com")),
+                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Change User Group").withHref("/edit_user_group") : span()),
                                                         div().withClass("col-12").with(authorized ? a("Change Password").withHref("/edit_user") : span()),
                                                         div().withClass("col-12").with(authorized && (role!=null&&role.equals(SUPER_USER)) ? a("Remove Users").withHref("/delete_user") : span()),
                                                         div().withClass("col-12").with(authorized ? a("Update Defaults").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span())
@@ -2545,14 +2556,14 @@ public class SimilarPatentServer {
                                                                         ul().with(
                                                                                 getTemplatesForUser(SUPER_USER,false,"Preset Templates",true),
                                                                                 getTemplatesForUser(req.session().attribute("username"),true,"My Templates",false),
-                                                                                getTemplatesForUser(SHARED_USER,true, "Shared Templates",false)
+                                                                                getTemplatesForUser(userGroup,true, "Shared Templates",false)
                                                                         )
 
                                                                 ),div().withClass("tab-pane").attr("role","tabpanel").withId("datasets-tree").with(
                                                                         ul().with(
                                                                                 getDatasetsForUser(SUPER_USER,false,"Preset Datasets"),
                                                                                 getDatasetsForUser(req.session().attribute("username"),true,"My Datasets"),
-                                                                                getDatasetsForUser(SHARED_USER,true, "Shared Datasets")
+                                                                                getDatasetsForUser(userGroup,true, "Shared Datasets")
                                                                         )
                                                                 )
                                                         )
