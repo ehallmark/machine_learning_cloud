@@ -2,13 +2,11 @@ package user_interface.server.tools;
 
 import lombok.NonNull;
 import org.apache.commons.io.FileUtils;
-import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -18,9 +16,11 @@ public class PasswordHandler {
     private static final int MAX_PASSWORD_SIZE = 500;
     private static final String passwordFolder = Constants.DATA_FOLDER+"passwords/";
     private static final String roleFolder = Constants.DATA_FOLDER+"roles/";
+    private static final String userGroupFolder = Constants.DATA_FOLDER+"userGroups/";
+    private static final String userGroupNamesFile = Constants.DATA_FOLDER+"userGroupNames.jobj";
     public static final String USER_NAME_REGEX = "[^a-zA-Z0-9_\\-]";
     // Returns the role of the user (or null if not authorized)
-    public String authorizeUser(String username, String password) throws PasswordException {
+    public synchronized String authorizeUser(String username, String password) throws PasswordException {
         if(username == null || password == null) return null;
         //// HACK
         //if(username.equals("gtt") && password.equals("password")) return SimilarPatentServer.ANALYST_USER;
@@ -52,7 +52,51 @@ public class PasswordHandler {
         } else return null;
     }
 
-    public void changePassword(String username, String oldPassword, String newPassword) throws PasswordException {
+    public synchronized void changeUserGroup(String username, String newGroup) throws PasswordException {
+        File groupFile = new File(userGroupFolder+username);
+        if(newGroup==null) {
+            if(groupFile.exists()) {
+                groupFile.delete();
+            }
+        } else {
+            try(BufferedWriter bw = new BufferedWriter(new FileWriter(groupFile))) {
+                bw.write(newGroup);
+                bw.flush();
+            } catch(Exception e) {
+                throw new PasswordException("Error creating new usergroup file.");
+            }
+        }
+    }
+
+    public synchronized String getUserGroup(String username) throws PasswordException {
+        File groupFile = new File(userGroupFolder+username);
+        if(groupFile.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(groupFile))) {
+                return reader.readLine();
+            } catch(Exception e) {
+                throw new PasswordException("Error retrieving user group.");
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public synchronized Set<String> getUserGroups() {
+        File userGroupsFile = new File(userGroupNamesFile);
+        if(userGroupsFile.exists()) {
+            return (Set<String>) Database.tryLoadObject(userGroupsFile);
+        } else {
+            return Collections.synchronizedSet(new HashSet<>());
+        }
+    }
+
+    public synchronized void createUserGroup(String group) {
+        Set<String> currentGroups = getUserGroups();
+        currentGroups.add(group);
+        Database.trySaveObject(currentGroups,new File(userGroupNamesFile));
+    }
+
+    public synchronized void changePassword(String username, String oldPassword, String newPassword) throws PasswordException {
         // authorize
         String authorized = authorizeUser(username, oldPassword);
         if(authorized==null) {
@@ -63,7 +107,7 @@ public class PasswordHandler {
         saveUserToFile(username, newPassword,null);
     }
 
-    public void createUser(String username, String password, String role) throws PasswordException {
+    public synchronized void createUser(String username, String password, String role) throws PasswordException {
         // validate
         validateUsername(username);
         validatePassword(password);
@@ -71,7 +115,7 @@ public class PasswordHandler {
         saveUserToFile(username, password, role);
     }
 
-    public void deleteUser(String username) throws PasswordException {
+    public synchronized void deleteUser(String username) throws PasswordException {
         File fileToRemove = new File(passwordFolder+username);
         if(!fileToRemove.exists()) {
             throw new PasswordException("Unable to find user file.");

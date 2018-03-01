@@ -866,6 +866,144 @@ public class SimilarPatentServer {
             return null;
         });
 
+        post("/update_user_group", (req,res)->{
+            authorize(req,res);
+            String username = req.session(false).attribute("username");
+            String role = req.session(false).attribute("role");
+            String usernameToChange = extractString(req,"username",null);
+            String message = null;
+            if(role==null||role.equals(ANALYST_USER)) {
+                message = "Analysts are not allowed to change their own user groups. Please contact an administrator.";
+            }
+            String newUserGroup = extractString(req, "user_group", null);
+            String redirect;
+            if(username == null || usernameToChange == null) {
+                message = "Please enter a user.";
+            }
+            if(message == null) {
+                if(role.equals(INTERNAL_USER)&&!username.equals(usernameToChange)) {
+                    message = "Internal users can only change their own user groups.";
+                }
+                if(message == null && (role.equals(INTERNAL_USER)||role.equals(SUPER_USER))) {
+                    try {
+                        passwordHandler.changeUserGroup(usernameToChange, newUserGroup);
+                        redirect = "/edit_user_group";
+                        message = "Successfully updated user.";
+                    } catch (Exception e) {
+                        System.out.println("Error while updating user...");
+                        e.printStackTrace();
+                        redirect = "/edit_user_group";
+                        message = e.getMessage();
+                    }
+                } else {
+                    redirect = "/edit_user_group";
+                }
+            } else {
+                redirect = "/edit_user_group";
+            }
+            res.redirect(redirect);
+            req.session().attribute("message", message);
+            return null;
+        });
+
+        get("/edit_user_group", (req, res)->{
+            authorize(req,res);
+            String role = req.session().attribute("role");
+            String message = req.session().attribute("message");
+            req.session().removeAttribute("message");
+            String username = req.session().attribute("username");
+            Tag form;
+            if(role==null||username==null) {
+                form = div();
+            } else {
+                form = form().withId("create-user-form").withAction("/update_user_group").withMethod("POST").attr("style", "margin-top: 100px;").with(
+                        (message == null ? span() : div().withClass("not-implemented").withText(
+                                message
+                        )), br(),
+                        (role != null && role.equals(SUPER_USER)) ?
+                                label("User to Update").with(
+                                        select().withClass("form-control single-select2").withName("username").with(
+                                                passwordHandler.getAllUsers().stream().sorted().map(user -> {
+                                                    try {
+                                                        String group = passwordHandler.getUserGroup(user);
+                                                        if (group == null) group = "(No user group)";
+                                                        return option(user + " - " + group).withValue(user);
+                                                    } catch (Exception e) {
+                                                        return option(user).withValue(user);
+                                                    }
+                                                }).collect(Collectors.toList())
+                                        )
+                                ) : input().withType("hidden").withName("username").withValue(username)
+                        , br(), br(), label("User Group").with(
+                                select().withClass("form-control single-select2").withName("user_group").with(
+                                        option("(No user group)").withValue("")
+                                ).with(
+                                        passwordHandler.getUserGroups().stream().sorted().map(userGroup -> {
+                                            return option(userGroup).withValue(userGroup);
+                                        }).collect(Collectors.toList())
+                                ),
+                                a("Or create a new user group.").withHref("/user_groups")
+                        ), br(), br(), button("Update User Group").withClass("btn btn-secondary")
+                );
+            }
+            return templateWrapper(true, req, res, form);
+        });
+
+        post("/new_user_group", (req,res)->{
+            authorize(req,res);
+            String username = req.session(false).attribute("username");
+            String role = req.session(false).attribute("role");
+            String userGroup = extractString(req, "user_group", null);
+            String redirect;
+            String message = null;
+            if(role == null || username == null || userGroup == null || (!role.equals(SUPER_USER) && !role.equals(INTERNAL_USER))) {
+                message = "Not authorized.";
+            }
+            if(message == null) {
+                try {
+                    passwordHandler.createUserGroup(userGroup);
+                    redirect = "/user_groups";
+                    message = "Successfully created user group.";
+                } catch (Exception e) {
+                    System.out.println("Error while creating user group...");
+                    e.printStackTrace();
+                    redirect = "/user_groups";
+                    message = e.getMessage();
+                }
+            } else {
+                redirect = "/user_groups";
+            }
+            res.redirect(redirect);
+            req.session().attribute("message", message);
+            return null;
+        });
+
+        get("/user_groups", (req, res)->{
+            authorize(req,res);
+            String ownerRole = req.session().attribute("role");
+            if(ownerRole == null || ownerRole.equals(ANALYST_USER)) return div();
+            String message = req.session().attribute("message");
+            req.session().removeAttribute("message");
+            Tag form = div().with(
+                    form().withId("create-user-form").withAction("/new_user_group").withMethod("POST").attr("style","margin-top: 100px;").with(
+                            (message == null ? span() : div().withClass("not-implemented").withText(
+                                    message
+                            )),br(),
+                            label("New User Group").with(
+                                    input().withType("text").withClass("form-control").withName("user_group")
+                            ), br(), br(),  button("Create").withClass("btn btn-secondary")
+                    ), div().with(
+                            p("Current user groups: "),
+                            ul().with(
+                                    passwordHandler.getUserGroups().stream().sorted()
+                                    .map(userGroup->li(userGroup))
+                                    .collect(Collectors.toList())
+                            )
+                    )
+            );
+            return templateWrapper(true, req, res, form);
+        });
+
         get("/edit_user", (req, res)->{
             authorize(req,res);
             String ownerRole = req.session().attribute("role");
