@@ -119,6 +119,14 @@ public class TestTextModels extends TestModelHelper {
                 }).filter(p->p!=null)
                 .collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
 
+        {
+            Random rand = new Random(20);
+            List<String> randFilings = new ArrayList<>(Database.getAllFilings());
+            for(int i = 0; i < maxSamples; i++) {
+                allFilings.add(randFilings.remove(rand.nextInt(randFilings.size())));
+            }
+        }
+
         // new model
         CombinedCPC2Vec2VAEEncodingPipelineManager encodingPipelineManager1 = CombinedCPC2Vec2VAEEncodingPipelineManager.getOrLoadManager(true);
         encodingPipelineManager1.runPipeline(false,false,false,false,-1,false);
@@ -172,8 +180,9 @@ public class TestTextModels extends TestModelHelper {
         Random rand = new Random(23);
         Function2<String[],Integer,Set<String>> randomModel = (text,n) ->{
             Set<String> ret = new HashSet<>(n);
+            List<String> filingsCopy = new ArrayList<>(allFilingsList);
             for(int i = 0; i < n; i++) {
-                ret.add(allFilingsList.get(rand.nextInt(allFilingsList.size())));
+                ret.add(filingsCopy.remove(rand.nextInt(filingsCopy.size())));
             }
             return ret;
         };

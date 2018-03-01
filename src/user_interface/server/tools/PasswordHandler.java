@@ -2,13 +2,14 @@ package user_interface.server.tools;
 
 import lombok.NonNull;
 import org.apache.commons.io.FileUtils;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by ehallmark on 8/29/17.
@@ -70,11 +71,7 @@ public class PasswordHandler {
         saveUserToFile(username, password, role);
     }
 
-    public void deleteUser(String username, String password) throws PasswordException {
-        String authorized = authorizeUser(username, password);
-        if(authorized==null) {
-            throw new PasswordException("User is not authorized.");
-        }
+    public void deleteUser(String username) throws PasswordException {
         File fileToRemove = new File(passwordFolder+username);
         if(!fileToRemove.exists()) {
             throw new PasswordException("Unable to find user file.");
@@ -83,6 +80,20 @@ public class PasswordHandler {
         if(!deleted) {
             throw new PasswordException("Unable to delete user file.");
         }
+        File roleFileToRemove = new File(roleFolder+username);
+        if(roleFileToRemove.exists()) {
+            if(!roleFileToRemove.delete()) {
+                throw new PasswordException("Unable to delete user role file.");
+            }
+        }
+    }
+
+    public List<String> getAllUsers() {
+        String[] users = new File(passwordFolder).list();
+        if(users==null) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(users);
     }
 
 

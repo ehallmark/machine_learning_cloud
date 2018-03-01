@@ -33,19 +33,21 @@ public class KNNStage extends Stage<Set<MultiStem>>  {
             // apply filter 2
             System.out.println("Num keywords before knn stage: " + data.size());
 
-            System.out.println("Computing multi stem encoding map...");
-            Map<MultiStem,INDArray> multiStemToEncodingsMap = KeyphrasePredictionPipelineManager.buildNewKeywordToLookupTableMapHelper(word2Vec,data);
-            UnitCosineKNN<MultiStem> knnModel = new UnitCosineKNN<>(multiStemToEncodingsMap);
-            System.out.println("Starting to init knn...");
-            knnModel.init();
+            int numIterations = 3;
+            for(int i = 0; i < numIterations; i++) {
+                System.out.println("Computing multi stem encoding map...");
+                Map<MultiStem, INDArray> multiStemToEncodingsMap = KeyphrasePredictionPipelineManager.buildNewKeywordToLookupTableMapHelper(word2Vec, data);
+                UnitCosineKNN<MultiStem> knnModel = new UnitCosineKNN<>(multiStemToEncodingsMap);
+                System.out.println("Starting to init knn...");
+                knnModel.init();
 
-            Map<MultiStem,MultiStem> nearestNeighborMap = knnModel.allItemsToNearestNeighbor();
-            data = Collections.synchronizedSet(data.parallelStream().filter(d->{
-                long score = docCounter.get(d).get();
-                long otherScore = docCounter.get(nearestNeighborMap.get(d)).get();
-                return score >= otherScore;
-            }).collect(Collectors.toSet()));
-
+                Map<MultiStem, MultiStem> nearestNeighborMap = knnModel.allItemsToNearestNeighbor();
+                data = Collections.synchronizedSet(data.parallelStream().filter(d -> {
+                    long score = docCounter.get(d).get();
+                    long otherScore = docCounter.get(nearestNeighborMap.get(d)).get();
+                    return score >= otherScore;
+                }).collect(Collectors.toSet()));
+            }
 
             System.out.println("Num keywords after knn stage: " + data.size());
 

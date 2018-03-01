@@ -778,7 +778,7 @@ public class SimilarPatentServer {
             staticFiles.externalLocation("/home/ehallmark/repos/machine_learning_cloud/public");
         }
 
-        PasswordHandler passwordHandler = new PasswordHandler();
+        final PasswordHandler passwordHandler = new PasswordHandler();
 
         post("/login", (req,res)->{
             Session session = req.session(true);
@@ -905,6 +905,63 @@ public class SimilarPatentServer {
                             )
                     ), br(), br(), button("Create User").withClass("btn btn-secondary")
             );
+            return templateWrapper(true, req, res, form);
+        });
+
+        post("/remove_user", (req,res)->{
+            authorize(req,res);
+            String role = req.session(false).attribute("role");
+            String userToDelete = extractString(req, "user_to_delete", null);
+            String redirect;
+            String message = null;
+            if(role==null||!role.equals(SUPER_USER)) {
+                message = "Not properly authenticated.";
+            } else if(userToDelete == null) {
+                message = "Please enter a user to remove.";
+            }
+            if(message == null) {
+                try {
+                    passwordHandler.deleteUser(userToDelete);
+                    redirect = "/delete_user";
+                    message = "Successfully deleted user.";
+                } catch (Exception e) {
+                    System.out.println("Error while updating user...");
+                    e.printStackTrace();
+                    redirect = "/delete_user";
+                    message = e.getMessage();
+                }
+            } else {
+                redirect = "/delete_user";
+            }
+            res.redirect(redirect);
+            req.session().attribute("message", message);
+            return null;
+        });
+
+        get("/delete_user", (req, res)->{
+            authorize(req,res);
+            String ownerRole = req.session().attribute("role");
+            Tag form;
+            String message = req.session().attribute("message");
+            req.session().removeAttribute("message");
+            if(ownerRole!=null&&ownerRole.equals(SUPER_USER)) {
+                form = form().withId("create-user-form").withAction("/remove_user").withMethod("POST").attr("style", "margin-top: 100px;").with(
+                        (message == null ? span() : div().withClass("not-implemented").withText(
+                                message
+                        )), br(),
+                        label("User to Remove").with(
+                                select().withClass("form-control single-select2").withName("user_to_delete").with(
+                                        passwordHandler.getAllUsers().stream().sorted().map(user -> {
+                                            return option(user).withValue(user);
+                                        }).collect(Collectors.toList())
+                                )
+                        ), br(), br(), button("Remove User").withClass("btn btn-secondary")
+                );
+            } else {
+                form = div().with(
+                        p("Unable to access this page. Only administrators can delete user accounts.")
+                );
+            }
             return templateWrapper(true, req, res, form);
         });
 
@@ -2275,6 +2332,7 @@ public class SimilarPatentServer {
         } else {
             acclaimAttrs = Collections.emptyList();
         }
+        String role = req.session().attribute("role");
         return html().with(
                 head().with(
                         title("AI Search Platform"),
@@ -2326,8 +2384,9 @@ public class SimilarPatentServer {
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").with(authorized ? div().withText("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : div().withText("Not signed in.")),
                                                         div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
-                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(req.session().attribute("role")) ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com")),
+                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com")),
                                                         div().withClass("col-12").with(authorized ? a("Change Password").withHref("/edit_user") : span()),
+                                                        div().withClass("col-12").with(authorized && (role!=null&&role.equals(SUPER_USER)) ? a("Remove Users").withHref("/delete_user") : span()),
                                                         div().withClass("col-12").with(authorized ? a("Update Defaults").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span())
                                                 ), hr(),
                                                 (!authorized) ? div() : div().with(

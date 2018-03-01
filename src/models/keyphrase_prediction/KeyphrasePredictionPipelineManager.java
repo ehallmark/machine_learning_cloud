@@ -103,7 +103,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         // word order stage
         System.out.println("Pre-grouping data for word order...");
         WordOrderStage wordOrder = new WordOrderStage(cpcDensityStage.get(), stage1.get(), modelParams);
-        wordOrder.run(rerunFilters);
+        if(filters)wordOrder.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
 
@@ -112,7 +112,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
         Word2Vec word2Vec = (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet();
         KNNStage knnStage = new KNNStage(wordOrder.get(), word2Vec, stage1.get(), modelParams);
-        if(filters) knnStage.run(rerunFilters);
+        knnStage.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
         multiStemSet = knnStage.get();
        // multiStemSet = wordOrder.get();
@@ -319,7 +319,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         encodingPipelineManager.runPipeline(false,false,false,false,-1,false);
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(encodingPipelineManager);
 
-        pipelineManager.initStages(true,true,false,true);
+        pipelineManager.initStages(true,true,false,false);
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }
 }
