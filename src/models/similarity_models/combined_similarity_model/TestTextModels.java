@@ -42,9 +42,9 @@ public class TestTextModels extends TestModelHelper {
                 Set<String> actual = pair.getSecond();
                 if(actual!=null&&actual.size()>0) {
                     sum.getAndAdd(((double)intersect(predictions,actual))/((double)(union(predictions,actual))));
+                    cnt.getAndIncrement();
                 }
             }
-            cnt.getAndIncrement();
             if(cnt.get()%100==99) {
                 System.out.print("-");
             }

@@ -319,7 +319,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         encodingPipelineManager.runPipeline(false,false,false,false,-1,false);
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(encodingPipelineManager);
 
-        pipelineManager.initStages(true,true,false,false);
+        pipelineManager.initStages(true,true,false,true);
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }
 }
