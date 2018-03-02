@@ -257,13 +257,10 @@ public class PasswordHandler {
         boolean reGeneratePasswords = true;
         if(reGeneratePasswords) {
             String myPass = "Changeme123";
-            String encMyPass = encrypt(myPass);
             String myUsername = "ehallmark";
-            String encSuperPass = encrypt(superPass);
-            String encSharedPass = encrypt(sharedPass);
-            handler.forceChangePassword(SimilarPatentServer.SUPER_USER,encSuperPass);
-            handler.forceChangePassword(SimilarPatentServer.SHARED_USER,encSharedPass);
-            handler.forceChangePassword(myUsername,encMyPass);
+            handler.forceChangePassword(SimilarPatentServer.SUPER_USER,superPass);
+            handler.forceChangePassword(SimilarPatentServer.SHARED_USER,sharedPass);
+            handler.forceChangePassword(myUsername,myPass);
         } else {
             try {
                 handler.createUser(SimilarPatentServer.SUPER_USER, superPass, SimilarPatentServer.SUPER_USER);
