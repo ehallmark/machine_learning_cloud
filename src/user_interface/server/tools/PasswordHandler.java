@@ -1,12 +1,16 @@
 package user_interface.server.tools;
 
 import lombok.NonNull;
+import org.apache.commons.crypto.stream.CryptoOutputStream;
 import org.apache.commons.io.FileUtils;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -204,7 +208,27 @@ public class PasswordHandler {
         }
     }
 
+
+    private static final String keyString = "2108372937393963";
+    static final SecretKeySpec key = new SecretKeySpec(getUTF8Bytes(keyString),"AES");
+    static final IvParameterSpec iv = new IvParameterSpec(getUTF8Bytes(keyString));
+    static Properties properties = new Properties();
+    static final String transform = "AES/CBC/PKCS5Padding";
+
     public static String encrypt(@NonNull String password) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try(CryptoOutputStream cos = new CryptoOutputStream(transform,properties,outputStream,key,iv)) {
+            cos.write(getUTF8Bytes(password));
+            cos.flush();
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+
+        return Arrays.toString(outputStream.toByteArray());
+    }
+
+    /*public static String encrypt(@NonNull String password) {
         Random random = new Random(468394683L);
         while(password.length() < MAX_PASSWORD_SIZE) password+=" ";
         char[] chars = password.toCharArray();
@@ -213,6 +237,10 @@ public class PasswordHandler {
             encrypted += new Long(Character.hashCode(chars[i]))*random.nextInt(2000);
         }
         return encrypted;
+    }*/
+
+    private static byte[] getUTF8Bytes(String str) {
+        return str.getBytes(StandardCharsets.UTF_8);
     }
 
     public static void main(String[] args) throws Exception {
