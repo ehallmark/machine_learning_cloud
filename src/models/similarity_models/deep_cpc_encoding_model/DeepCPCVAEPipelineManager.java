@@ -34,7 +34,6 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
     public static final int MAX_CPC_DEPTH = 4;
     private static final int BATCH_SIZE = 1024;
     private static final int MINI_BATCH_SIZE = 128;
-    public static final int MAX_NUM_CPCS = 10000;
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_vae_predictions/predictions_map.jobj");
 
@@ -76,9 +75,6 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
             }
         });
         datasetManager=manager;
-    }
-    public int getMaxNumCpcs() {
-        return MAX_NUM_CPCS;
     }
 
     @Override
