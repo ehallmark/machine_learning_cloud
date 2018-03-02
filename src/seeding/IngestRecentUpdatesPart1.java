@@ -1,37 +1,17 @@
 package seeding;
 
-import elasticsearch.DataIngester;
-import elasticsearch.IngestMongoIntoElasticSearch;
-import models.similarity_models.UpdateSimilarityModels;
-import models.value_models.UpdateValueModels;
-import org.bson.Document;
 import seeding.ai_db_updater.UpdateAll;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
-
-import java.io.File;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 9/29/2017.
  */
 public class IngestRecentUpdatesPart1 {
     public static void main(String[] args) {
-        String[] updates = new String[]{"-1","1","2","3","4","5","6","7","8","9","10","11"};
+        String[] updates = new String[]{"-1","1","2","3","4","5","6","7","8","9","10","11","12"};
 
         try {
-
             UpdateAll.main(updates);
 
-            try {
-                // add encodings
-                UpdateSimilarityModels.main(null);
-            } catch(Exception e) {
-                System.out.println("Error updating encodings...");
-                e.printStackTrace();
-            }
         } catch(Exception e) {
             System.out.println("Error during seeding...");
             e.printStackTrace();

@@ -2,6 +2,7 @@ package seeding.ai_db_updater;
 
 import elasticsearch.DataIngester;
 import models.assignee.normalization.human_name_prediction.HumanNamePredictionPipelineManager;
+import models.similarity_models.UpdateSimilarityModels;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.CleanseAttributesAndMongoBeforeReseed;
@@ -17,41 +18,41 @@ import java.util.Map;
  * Created by Evan on 7/6/2017.
  */
 public class UpdateAll {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
 
         try {
             for (String arg : args) {
-                if(arg.equals("-2")) {
+                if (arg.equals("-2")) {
                     CleanseAttributesAndMongoBeforeReseed.main(args);
-                } else if(arg.equals("-1")) {
+                } else if (arg.equals("-1")) {
                     // pg_restore
                     RestoreGatherAndCompDB.main(args);
-                } else if(arg.equals("0")) {
-                    if(AssetToAssigneeMap.getAssigneeToHumanMap()==null) {
+                } else if (arg.equals("0")) {
+                    if (AssetToAssigneeMap.getAssigneeToHumanMap() == null) {
                         AssetToAssigneeMap.setAssigneeToHumanMap(HumanNamePredictionPipelineManager.loadPipelineManager().loadPredictions());
                     }
                     UpdatePre2005DataFromPatentDB.main(args);
                     DataIngester.finishCurrentMongoBatch();
-                    if(AssetToAssigneeMap.getAssigneeToHumanMap()!=null) {
+                    if (AssetToAssigneeMap.getAssigneeToHumanMap() != null) {
                         HumanNamePredictionPipelineManager.loadPipelineManager().savePredictions(AssetToAssigneeMap.getAssigneeToHumanMap());
                     }
                 } else if (arg.equals("1")) {
-                    if(AssetToAssigneeMap.getAssigneeToHumanMap()==null) {
+                    if (AssetToAssigneeMap.getAssigneeToHumanMap() == null) {
                         AssetToAssigneeMap.setAssigneeToHumanMap(HumanNamePredictionPipelineManager.loadPipelineManager().loadPredictions());
                     }
                     UpdateBaseApplicationData.main(args);
                     DataIngester.finishCurrentMongoBatch();
-                    if(AssetToAssigneeMap.getAssigneeToHumanMap()!=null) {
+                    if (AssetToAssigneeMap.getAssigneeToHumanMap() != null) {
                         HumanNamePredictionPipelineManager.loadPipelineManager().savePredictions(AssetToAssigneeMap.getAssigneeToHumanMap());
                     }
                 } else if (arg.equals("2")) {
-                    if(AssetToAssigneeMap.getAssigneeToHumanMap()==null) {
+                    if (AssetToAssigneeMap.getAssigneeToHumanMap() == null) {
                         AssetToAssigneeMap.setAssigneeToHumanMap(HumanNamePredictionPipelineManager.loadPipelineManager().loadPredictions());
                     }
                     UpdateBasePatentData.main(args);
                     DataIngester.finishCurrentMongoBatch();
-                    if(AssetToAssigneeMap.getAssigneeToHumanMap()!=null) {
+                    if (AssetToAssigneeMap.getAssigneeToHumanMap() != null) {
                         HumanNamePredictionPipelineManager.loadPipelineManager().savePredictions(AssetToAssigneeMap.getAssigneeToHumanMap());
                     }
                 } else if (arg.equals("3")) {
@@ -78,15 +79,25 @@ public class UpdateAll {
                     List<String> allAssets = new ArrayList<>(Database.getAllPatentsAndApplications());
                     List<String> allAssignees = new ArrayList<>(Database.getAssignees());
                     List<String> allClassCodes = new ArrayList<>(Database.getClassCodes());
-                    Map<String,Boolean> predictions = pipelineManager.updatePredictions(allAssets,allAssignees,allClassCodes);
-                    if(predictions!=null) pipelineManager.savePredictions(predictions);
+                    Map<String, Boolean> predictions = pipelineManager.updatePredictions(allAssets, allAssignees, allClassCodes);
+                    if (predictions != null) pipelineManager.savePredictions(predictions);
 
                 } else if (arg.equals("10")) {
                     UpdateAssetGraphs.update(false);
                 } else if (arg.equals("11")) {
+                    try {
+                        // add encodings
+                        UpdateSimilarityModels.main(null);
+                    } catch(Exception e) {
+                        System.out.println("Error updating encodings...");
+                        e.printStackTrace();
+                    }
+                } else if (arg.equals("12")) {
                     UpdateExtraneousComputableAttributeData.update(null);
                 }
             }
+        } catch(Exception e) {
+            throw new RuntimeException(e);
         } finally {
             DataIngester.close();
         }

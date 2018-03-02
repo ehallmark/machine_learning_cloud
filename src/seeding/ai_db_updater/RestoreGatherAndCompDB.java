@@ -9,6 +9,18 @@ import java.io.File;
  */
 public class RestoreGatherAndCompDB {
     public static void main(String[] args) {
+        System.out.println("Pulling latest dumps from gcloud...");
+        try {
+            String pullLatestCompdbFile = "gsutil cp gs://machine_learning_cloud_data/compdb_production.dump";
+            String pullLatestGatherFile = "gsutil cp gs://machine_learning_cloud_data/gather_production.dump";
+            PGDumpLatest.startProcess(pullLatestCompdbFile);
+            PGDumpLatest.startProcess(pullLatestGatherFile);
+            
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("While pulling latest dumps from gcloud.");
+            System.exit(1);
+        }
         try {
             File compdbFile = new File("data/compdb_production.dump");
             if(!compdbFile.exists()) throw new RuntimeException("compdb dump file does not exist...");
