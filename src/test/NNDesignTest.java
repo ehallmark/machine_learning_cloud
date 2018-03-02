@@ -1,7 +1,6 @@
 package test;
 
 import data_pipeline.helpers.Function2;
-import models.similarity_models.combined_similarity_model.CombinedSimilarityComputationGraph;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
@@ -65,7 +64,7 @@ public class NNDesignTest {
             System.out.println("Similarity of layer "+i+": "+ Transforms.cosineSim(net1.getLayer(i).params(),net2.getLayer(i).params()));
         }
 
-        CombinedSimilarityComputationGraph.syncParams(net1,net2, 1);
+        //CombinedSimilarityComputationGraph.syncParams(net1,net2, 1);
 
         System.out.println("Params for net 1 after: "+net1.params().toString());
         System.out.println("Params for net 2 after: "+net2.params().toString());
@@ -110,7 +109,7 @@ public class NNDesignTest {
         net2.fit(new DataSet(features2,labels));
 
         if(syncParams) {
-            CombinedSimilarityComputationGraph.syncParams(net1,net2, 1);
+         //   CombinedSimilarityComputationGraph.syncParams(net1,net2, 1);
         }
     }
 

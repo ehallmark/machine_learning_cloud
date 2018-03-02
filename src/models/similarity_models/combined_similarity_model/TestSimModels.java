@@ -70,10 +70,8 @@ public class TestSimModels extends TestModelHelper {
         Map<String,Pair<String,String>> filingData = loadFilingCPCData(new AssetToCPCMap().getPatentDataMap(), numFilingSamples);
 
         // new model
-        CombinedDeepCPC2VecEncodingPipelineManager encodingPipelineManager1 = CombinedDeepCPC2VecEncodingPipelineManager.getOrLoadManager(false);
 
         // older model
-        CombinedSimilarityVAEPipelineManager encodingPipelineManager2 = CombinedSimilarityVAEPipelineManager.getOrLoadManager();
 
         // vae model
         DeepCPCVAEPipelineManager encodingPipelineManager3 = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME);
@@ -81,17 +79,11 @@ public class TestSimModels extends TestModelHelper {
         System.out.println("Num filing samples used: "+filingData.size());
 
         // run tests
-        double score1 = test(encodingPipelineManager1,"Model 1",filingData);
-        double score2 = test(encodingPipelineManager2, "Model 2",filingData);
         double score3 = test(encodingPipelineManager3, "Model 3",filingData);
 
         String testName = "Similarity Test";
-        tester.scoreModel("Model 1",testName,score1);
-        tester.scoreModel("Model 2",testName,score2);
         tester.scoreModel("Model 3",testName,score3);
 
-        System.out.println("Score for Model 1: "+score1);
-        System.out.println("Score for Model 2: "+score2);
         System.out.println("Score for Model 3: "+score3);
     }
 }

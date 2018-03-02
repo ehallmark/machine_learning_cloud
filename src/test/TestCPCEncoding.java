@@ -1,7 +1,7 @@
 package test;
 
-import models.similarity_models.combined_similarity_model.CombinedDeepCPC2VecEncodingPipelineManager;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
+import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import tools.MinHeap;
@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class TestCPCEncoding {
     public static void main(String[] args) {
-        Map<String,INDArray> map = CombinedDeepCPC2VecEncodingPipelineManager.getOrLoadManager(false).loadPredictions();
+        Map<String,INDArray> map = WordCPC2VecPipelineManager.getOrLoadManager(false,-1).getOrLoadCPCVectors();
 
         Set<String> cpcs = new HashSet<>(map.keySet());
 

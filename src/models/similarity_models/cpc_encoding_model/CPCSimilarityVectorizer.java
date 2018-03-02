@@ -2,7 +2,6 @@ package models.similarity_models.cpc_encoding_model;
 
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import models.similarity_models.Vectorizer;
-import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEPipelineManager;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.nd4j.linalg.api.buffer.DataBuffer;

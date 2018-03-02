@@ -155,24 +155,9 @@ public class TestTextModels extends TestModelHelper {
             return topNByCosineSim(filings1,filingsMatrix1,encodingVec,n);
         };
 
-        // older model
-        TextSimilarityEngine encodingModel2 = new TextSimilarityEngine();
-        Map<String,INDArray> allPredictions2 = CombinedSimilarityVAEPipelineManager.getOrLoadManager().loadPredictions();
-        Map<String,INDArray> predictions2 = allFilings.stream().filter(allPredictions2::containsKey).collect(Collectors.toMap(e->e,e->allPredictions2.get(e)));
-
-        final Pair<List<String>,INDArray> filingsWithMatrix2 = createFilingMatrix(predictions2);
-        final List<String> filings2 = filingsWithMatrix2.getFirst();
-        final INDArray filingsMatrix2 = filingsWithMatrix2.getSecond();
-        Function2<String[],Integer,Set<String>> model2 = (text,n) -> {
-            INDArray encodingVec = encodingModel2.encodeText(text);
-            if(encodingVec==null)return null;
-            return topNByCosineSim(filings2,filingsMatrix2,encodingVec,n);
-        };
-
 
         System.out.println("All relevant filings size: "+allFilings.size());
         System.out.println("Size of filings (Model 1): "+filings1.size());
-        System.out.println("Size of filings (Model 2): "+filings2.size());
         System.out.println("Max Sentences: "+maxSentences);
 
         List<String> allFilingsList = new ArrayList<>(allFilings);
@@ -198,8 +183,6 @@ public class TestTextModels extends TestModelHelper {
             double score1_10 = testModel(keywordToWikiAndAssetsMap, model1_10, n);
             System.out.println("Score for model [n=" + n + "] 1-10: " + score1_10);
 
-            double score2 = testModel(keywordToWikiAndAssetsMap, model2, n);
-            System.out.println("Score for model [n=" + n + "] 2: " + score2);
         }
     }
 }

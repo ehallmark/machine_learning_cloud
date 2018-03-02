@@ -1,6 +1,5 @@
 package models.similarity_models;
 
-import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEPipelineManager;
 import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
 import user_interface.ui_models.portfolios.items.Item;
