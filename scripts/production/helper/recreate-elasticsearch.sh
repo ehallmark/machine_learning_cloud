@@ -13,7 +13,7 @@ sudo -u ehallmark bash -c '    java -cp target/classes:"target/dependency/*" -Xm
 curl -XPUT 'localhost:9200/ai_db/_settings?pretty' -H 'Content-Type: application/json' -d'
 {
     "index" : {
-        "refresh_interval" : "60s"
+        "refresh_interval" : "15s"
     }
 }
 '
