@@ -29,13 +29,21 @@ import java.util.stream.Stream;
  * Created by ehallmark on 11/7/17.
  */
 public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
-   // public static final String MODEL_NAME = "deep32wide_cpc_autoencoder";
     public static final String MODEL_NAME = "deep32_cpc_autoencoder";
     public static final int MAX_CPC_DEPTH = 4;
     private static final int BATCH_SIZE = 1024;
     private static final int MINI_BATCH_SIZE = 128;
     private static final File INPUT_DATA_FOLDER = new File("deep_cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deep_cpc_vae_predictions/predictions_map.jobj");
+
+    private static DeepCPCVAEPipelineManager MANAGER = null;
+    public synchronized static DeepCPCVAEPipelineManager getOrLoadManager() {
+        if(MANAGER==null) {
+            MANAGER = new DeepCPCVAEPipelineManager(MODEL_NAME);
+            MANAGER.runPipeline(false,false,false,false,-1,false);
+        }
+        return MANAGER;
+    }
 
     public DeepCPCVAEPipelineManager(String modelName) {
         super(modelName,INPUT_DATA_FOLDER,PREDICTION_DATA_FILE,MAX_CPC_DEPTH);

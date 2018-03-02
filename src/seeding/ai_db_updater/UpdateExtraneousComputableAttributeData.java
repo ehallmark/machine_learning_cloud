@@ -3,6 +3,7 @@ package seeding.ai_db_updater;
 import models.similarity_models.Vectorizer;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEPipelineManager;
 import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
+import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.attributes.computable_attributes.NestedComputedCPCAttribute;
@@ -21,8 +22,8 @@ public class UpdateExtraneousComputableAttributeData {
     public static void update(List<String> assets) {
         SimilarPatentServer.initialize(true,false);
 
-        CombinedSimilarityVAEPipelineManager combinedSimilarityVAEPipelineManager = CombinedSimilarityVAEPipelineManager.getOrLoadManager();
-        Vectorizer combinedVectorizer = new CPCSimilarityVectorizer(combinedSimilarityVAEPipelineManager,false, true, false,null);
+        DeepCPCVAEPipelineManager similarityVAEPipelineManager = DeepCPCVAEPipelineManager.getOrLoadManager();
+        Vectorizer combinedVectorizer = new CPCSimilarityVectorizer(similarityVAEPipelineManager,false, true, false,null);
 
         Map<String,Vectorizer> vectorizerMap = Collections.synchronizedMap(new HashMap<>());
         //vectorizerMap.put("vector_obj",cpcVaeVectorizer);

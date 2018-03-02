@@ -177,13 +177,32 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         }
     }
 
+    private static WordCPC2VecPipelineManager MANAGER = null;
+    public static WordCPC2VecPipelineManager getOrLoadManager(boolean loadWord2Vec, int nEpochs) {
+        if(MANAGER==null) {
+
+            final int maxSamples;
+            final int windowSize;
+            String modelName;
+
+            windowSize = 6;//4;
+            modelName = DEEP_MODEL_NAME;
+            maxSamples = 500;
+            MANAGER = new WordCPC2VecPipelineManager(modelName,nEpochs,windowSize,maxSamples);
+            if(loadWord2Vec) {
+                MANAGER.runPipeline(false,false,false,false,-1,false);
+            }
+
+        }
+        return MANAGER;
+    }
+
 
     public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         setCudaEnvironment();
 
-        final int maxSamples;
-        final int windowSize;
+
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
         boolean runModels = true;
@@ -191,21 +210,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         boolean runPredictions = true;
         int nEpochs = 2;//3;//5
 
-        boolean runDeepModel = true;// CombinedSimilarityVAEPipelineManager.USE_DEEP_MODEL;
-
-        String modelName;
-
-        if(runDeepModel) {
-            windowSize = 6;//4;
-            modelName = DEEP_MODEL_NAME;
-            maxSamples = 500;
-        } else {
-            windowSize = 6;
-            modelName = SMALL_MODEL_NAME;
-            maxSamples = 20;
-        }
-
-        WordCPC2VecPipelineManager pipelineManager = new WordCPC2VecPipelineManager(modelName,nEpochs,windowSize,maxSamples);
+        WordCPC2VecPipelineManager pipelineManager = getOrLoadManager(false, nEpochs);
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }
 

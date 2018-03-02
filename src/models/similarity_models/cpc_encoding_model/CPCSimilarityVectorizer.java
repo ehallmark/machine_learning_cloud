@@ -3,6 +3,7 @@ package models.similarity_models.cpc_encoding_model;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import models.similarity_models.Vectorizer;
 import models.similarity_models.combined_similarity_model.CombinedSimilarityVAEPipelineManager;
+import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -106,11 +107,9 @@ public class CPCSimilarityVectorizer implements Vectorizer {
 
     public static void updateLatest() {
         // update cpc
-        CPCVAEPipelineManager cpcvaePipelineManager = new CPCVAEPipelineManager(CPCVAEPipelineManager.MODEL_NAME);
-        CombinedSimilarityVAEPipelineManager combinedPipelineManager = CombinedSimilarityVAEPipelineManager.getOrLoadManager();
-        Collection<CPCSimilarityVectorizer> vectorizers = Arrays.asList(
-                new CPCSimilarityVectorizer(cpcvaePipelineManager,false,false,false,v->Database.getAllPatentsAndApplications()),
-                new CPCSimilarityVectorizer(combinedPipelineManager,false,false,false,v->Database.getAllFilings())
+        DeepCPCVAEPipelineManager cpcvaePipelineManager = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME);
+        Collection<CPCSimilarityVectorizer> vectorizers = Collections.singleton(
+                new CPCSimilarityVectorizer(cpcvaePipelineManager,false,false,false,v->Database.getAllFilings())
         );
         vectorizers.forEach(vectorizer->{
             try {
@@ -121,7 +120,7 @@ public class CPCSimilarityVectorizer implements Vectorizer {
         });
     }
 
-    public void update() throws Exception {
+    public void update()  {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
 
         // test restore model
