@@ -110,6 +110,10 @@ public class PasswordHandler {
         if(authorized==null) {
             throw new PasswordException("User is not authorized.");
         }
+        forceChangePassword(username,newPassword);
+    }
+
+    public synchronized void forceChangePassword(String username, String newPassword) throws PasswordException {
         // validate password
         validatePassword(newPassword);
         saveUserToFile(username, newPassword,null);
@@ -248,19 +252,33 @@ public class PasswordHandler {
         System.out.println("Encrypted \"string\": "+encrypt("string"));
 
         PasswordHandler handler = new PasswordHandler();
+        final String superPass = "Ekbj223KSjvj!~2kjJSk3e3";
+        final String sharedPass = "kdfjg@#kdjgkjS@#%(2322KDSJG";
+        boolean reGeneratePasswords = true;
+        if(reGeneratePasswords) {
+            String myPass = "Changeme123";
+            String encMyPass = encrypt(myPass);
+            String myUsername = "ehallmark";
+            String encSuperPass = encrypt(superPass);
+            String encSharedPass = encrypt(sharedPass);
+            handler.forceChangePassword(SimilarPatentServer.SUPER_USER,encSuperPass);
+            handler.forceChangePassword(SimilarPatentServer.SHARED_USER,encSharedPass);
+            handler.forceChangePassword(myUsername,encMyPass);
+        } else {
+            try {
+                handler.createUser(SimilarPatentServer.SUPER_USER, superPass, SimilarPatentServer.SUPER_USER);
+            } catch (PasswordException pe) {
+                System.out.println(pe.getMessage());
+            }
+            try {
+                handler.createUser(SimilarPatentServer.SHARED_USER, sharedPass, SimilarPatentServer.SUPER_USER);
+            } catch (PasswordException pe) {
+                System.out.println(pe.getMessage());
+            }
+        }
 
-        try {
-            handler.createUser(SimilarPatentServer.SUPER_USER, "klerjhdgtklh34h5jkhjkdsfhg39804758gjkhs834jhgs3y5456454bv4x5b5h55y45bfdcgjiytusvg", SimilarPatentServer.SUPER_USER);
-        } catch(PasswordException pe) {
-            System.out.println(pe.getMessage());
-        }
-        System.out.println("Authorized: " + handler.authorizeUser(SimilarPatentServer.SUPER_USER, "klerjhdgtklh34h5jkhjkdsfhg39804758gjkhs834jhgs3y5456454bv4x5b5h55y45bfdcgjiytusvg"));
-        try {
-            handler.createUser(SimilarPatentServer.SHARED_USER, "a234643h5jkhjkasdgdsfhg39804ad9giua234x5b5h5dsg2352gjiytusvg", SimilarPatentServer.SUPER_USER);
-        } catch(PasswordException pe) {
-            System.out.println(pe.getMessage());
-        }
-        System.out.println("Authorized: " + handler.authorizeUser(SimilarPatentServer.SHARED_USER, "a234643h5jkhjkasdgdsfhg39804ad9giua234x5b5h5dsg2352gjiytusvg"));
+        System.out.println("Authorized Super User: " + handler.authorizeUser(SimilarPatentServer.SUPER_USER, superPass));
+        System.out.println("Authorized Shared User: " + handler.authorizeUser(SimilarPatentServer.SHARED_USER, sharedPass));
 
     }
 
