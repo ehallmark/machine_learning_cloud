@@ -188,9 +188,10 @@ public class Constants {
 
 	public static final LocalDate DEFAULT_ASSIGNMENT_START_DATE = LocalDate.of(2016, Month.JANUARY, 1);
 	public static final LocalDate DEFAULT_START_DATE = LocalDate.of(2005, Month.JANUARY, 1);
-	public static final String PATENT_ZIP_FOLDER = "data/patents/";
-	public static final String APP_ZIP_FOLDER = "data/applications/";
-	public static final String ASSIGNMENT_ZIP_FOLDER = "data/assignments/";
+	public static final String USB_DRIVE_FOLDER = "/usb/";
+	public static final String PATENT_ZIP_FOLDER = USB_DRIVE_FOLDER+Constants.DATA_FOLDER + "patents/";
+	public static final String APP_ZIP_FOLDER = USB_DRIVE_FOLDER+Constants.DATA_FOLDER + "applications/";
+	public static final String ASSIGNMENT_ZIP_FOLDER = USB_DRIVE_FOLDER+Constants.DATA_FOLDER + "assignments/";
 
 	private static UrlCreator defaultPatentUrlCreator(String baseUrl) {
 		return defaultCreator(baseUrl, "ipg");
