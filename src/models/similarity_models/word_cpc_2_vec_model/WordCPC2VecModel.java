@@ -81,8 +81,8 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
         int minWordFrequency = 5;
         double negativeSampling = -1;
         double sampling = 0.0001;
-        double learningRate = 0.00001;//0.0001;//0.01;
-        double minLearningRate = 0.000001;//0.00001;//0.0001;
+        double learningRate = 0.00001;//0.00001;//0.0001;//0.01;
+        double minLearningRate = 0.000001;//0.000001;//0.00001;//0.0001;
         int testIterations = 4000000;
 
         AtomicInteger nTestsCounter = new AtomicInteger(0);
@@ -108,6 +108,7 @@ public class WordCPC2VecModel extends WordVectorPredictionModel<Map<String,INDAr
                 .windowSize(windowSize)
                 .layerSize(vectorSize)
                 .sampling(sampling)
+                .useVariableWindow(2,4,6)
                 .negativeSample(negativeSampling)
                 .learningRate(learningRate)
                 .minLearningRate(minLearningRate)

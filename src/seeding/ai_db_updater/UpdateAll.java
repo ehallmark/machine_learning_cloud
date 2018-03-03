@@ -38,6 +38,7 @@ public class UpdateAll {
                         HumanNamePredictionPipelineManager.loadPipelineManager().savePredictions(AssetToAssigneeMap.getAssigneeToHumanMap());
                     }
                 } else if (arg.equals("1")) {
+                    System.out.println("Starting applications...");
                     if (AssetToAssigneeMap.getAssigneeToHumanMap() == null) {
                         AssetToAssigneeMap.setAssigneeToHumanMap(HumanNamePredictionPipelineManager.loadPipelineManager().loadPredictions());
                     }
@@ -47,6 +48,7 @@ public class UpdateAll {
                         HumanNamePredictionPipelineManager.loadPipelineManager().savePredictions(AssetToAssigneeMap.getAssigneeToHumanMap());
                     }
                 } else if (arg.equals("2")) {
+                    System.out.println("Starting patents...");
                     if (AssetToAssigneeMap.getAssigneeToHumanMap() == null) {
                         AssetToAssigneeMap.setAssigneeToHumanMap(HumanNamePredictionPipelineManager.loadPipelineManager().loadPredictions());
                     }

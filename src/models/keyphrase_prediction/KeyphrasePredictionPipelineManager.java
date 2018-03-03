@@ -106,7 +106,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         if(filters)wordOrder.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
-
         // kmeans stage
         System.out.println("Pre-grouping data for kNN stage...");
         wordCPC2VecPipelineManager.runPipeline(false,false,false,false,-1,false);
@@ -119,6 +118,8 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
         labelToKeywordMap = Collections.synchronizedMap(new HashMap<>());
         multiStemSet.parallelStream().forEach(stem->labelToKeywordMap.put(stem.getBestPhrase(),stem));
+
+        System.out.println("Final num multistems: "+multiStemSet.size());
     }
 
     @Override
@@ -257,9 +258,11 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     public synchronized Map<MultiStem,INDArray> buildKeywordToLookupTableMap() {
         if(keywordToVectorLookupTable==null) {
+            if(multiStemSet==null) initStages(false,false,false,false);
+
             keywordToVectorLookupTable = (Map<MultiStem, INDArray>) Database.tryLoadObject(keywordToVectorLookupTableFile);
 
-            if(keywordToVectorLookupTable==null) {
+            if(keywordToVectorLookupTable==null||multiStemSet.size()!=keywordToVectorLookupTable.size()) {
                 // get vectors
                 Word2Vec word2Vec = (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet();
                keywordToVectorLookupTable = buildNewKeywordToLookupTableMapHelper(word2Vec,multiStemSet);
@@ -320,6 +323,10 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(encodingPipelineManager);
 
         pipelineManager.initStages(true,true,false,false);
+
+        System.out.println("Num multistem vectors: "+pipelineManager.buildKeywordToLookupTableMap().size());
+
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
+
     }
 }

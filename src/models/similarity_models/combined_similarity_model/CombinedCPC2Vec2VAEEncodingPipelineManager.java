@@ -27,13 +27,13 @@ import java.util.Random;
  */
 public class CombinedCPC2Vec2VAEEncodingPipelineManager extends AbstractEncodingPipelineManager  {
 
-    public static final String MODEL_NAME = "cpc2vec_new_2_vae_vec_encoding_model";
+    public static final String MODEL_NAME = "cpc2vec256_new_2_vae_vec_encoding_model";
     //public static final String MODEL_NAME = "cpc2vec_2_vae_vec_encoding_model";
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"cpc2vec_2_vae_vec_encoding_predictions/predictions_map.jobj");
-    private static final File INPUT_DATA_FOLDER_ALL = new File("combined_cpc2vec_2_vae_vec_encoding_model_input_data");
+    private static final File INPUT_DATA_FOLDER_ALL = new File("combined256_cpc2vec_2_vae_vec_encoding_model_input_data");
     private static final int VECTOR_SIZE = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
     protected static final int BATCH_SIZE = 1024;
-    protected static final int MINI_BATCH_SIZE = 256;
+    protected static final int MINI_BATCH_SIZE = 128;
     private static final int MAX_NETWORK_RECURSION = -1;
     public static final int MAX_SAMPLE = 8;
     protected static final Random rand = new Random(235);

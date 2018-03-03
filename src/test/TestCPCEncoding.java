@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class TestCPCEncoding {
     public static void main(String[] args) {
-        Map<String,INDArray> map = WordCPC2VecPipelineManager.getOrLoadManager(false,-1).getOrLoadCPCVectors();
+        Map<String,INDArray> map = WordCPC2VecPipelineManager.getOrLoadManager(WordCPC2VecPipelineManager.DEEP_MODEL_NAME,false,-1).getOrLoadCPCVectors();
 
         Set<String> cpcs = new HashSet<>(map.keySet());
 

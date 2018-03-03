@@ -193,7 +193,8 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
+        final String wordVectorModelName = WordCPC2VecPipelineManager.DEEP256_MODEL_NAME;
+        int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(wordVectorModelName);
         int hiddenLayerSizeFF1 = 320;
         int input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
 

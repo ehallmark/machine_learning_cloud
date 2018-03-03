@@ -28,15 +28,19 @@ import java.util.stream.Collectors;
 public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIterator,Map<String,INDArray>> {
     public static final String SMALL_MODEL_NAME = "32smallwordcpc2vec_model";
     public static final String DEEP_MODEL_NAME = "wordcpc2vec_model_deep";
+    public static final String DEEP256_MODEL_NAME = "wordcpc2vec256_model_deep";
     private static final int SMALL_VECTOR_SIZE = 32;
     private static final int LARGE_VECTOR_SIZE = 32;
+    private static final int DEEP256_VECTOR_SIZE = 256;
     public static final Map<String,Integer> modelNameToVectorSizeMap = Collections.synchronizedMap(new HashMap<>());
     public static final Map<String,File> modelNameToPredictionFileMap = Collections.synchronizedMap(new HashMap<>());
     static {
         modelNameToVectorSizeMap.put(SMALL_MODEL_NAME,SMALL_VECTOR_SIZE);
+        modelNameToVectorSizeMap.put(DEEP256_MODEL_NAME,DEEP256_VECTOR_SIZE);
         modelNameToVectorSizeMap.put(DEEP_MODEL_NAME,LARGE_VECTOR_SIZE);
         modelNameToPredictionFileMap.put(SMALL_MODEL_NAME,new File(Constants.DATA_FOLDER+"wordcpc2vec_predictions/predictions_map.jobj"));
         modelNameToPredictionFileMap.put(DEEP_MODEL_NAME,new File(Constants.DATA_FOLDER+"wordcpc2vec_deep_predictions/predictions_map.jobj"));
+        modelNameToPredictionFileMap.put(DEEP256_MODEL_NAME,new File(Constants.DATA_FOLDER+"wordcpc2vec256_deep_predictions/predictions_map.jobj"));
 
     }
     private static final File INPUT_DATA_FOLDER = new File("wordcpc2vec_input_data");
@@ -63,7 +67,7 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     @Override
     public void rebuildPrerequisiteData() {
         try {
-            System.out.println("Starting to pull latest text data from elasticsearch...");
+            //System.out.println("Starting to pull latest text data from elasticsearch...");
             //ESTextDataSetIterator.main(null);
             System.out.println("Starting to build vocab map...");
             Stage1 stage1 = new Stage1(KeyphrasePredictionPipelineManager.modelParams);
@@ -178,15 +182,13 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
     }
 
     private static WordCPC2VecPipelineManager MANAGER = null;
-    public static WordCPC2VecPipelineManager getOrLoadManager(boolean loadWord2Vec, int nEpochs) {
+    public static WordCPC2VecPipelineManager getOrLoadManager(String modelName, boolean loadWord2Vec, int nEpochs) {
         if(MANAGER==null) {
 
             final int maxSamples;
             final int windowSize;
-            String modelName;
 
             windowSize = 6;//4;
-            modelName = DEEP_MODEL_NAME;
             maxSamples = 500;
             MANAGER = new WordCPC2VecPipelineManager(modelName,nEpochs,windowSize,maxSamples);
             if(loadWord2Vec) {
@@ -208,9 +210,9 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         boolean runModels = true;
         boolean forceRecreateModels = false;
         boolean runPredictions = true;
-        int nEpochs = 2;//3;//5
+        int nEpochs = 5;
 
-        WordCPC2VecPipelineManager pipelineManager = getOrLoadManager(false, nEpochs);
+        WordCPC2VecPipelineManager pipelineManager = getOrLoadManager(DEEP256_MODEL_NAME,false, nEpochs);
         pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
     }
 
