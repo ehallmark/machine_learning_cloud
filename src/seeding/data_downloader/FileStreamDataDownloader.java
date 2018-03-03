@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -42,6 +43,13 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
             this.failedDates = pastLife.failedDates;
             if(this.failedDates==null)this.failedDates=new HashSet<>();
         }
+        this.finishedFiles = this.finishedFiles.stream().map(f->{
+            if(f.contains("/")) {
+                return f.substring(f.lastIndexOf("/")+1,f.length());
+            } else {
+                return f;
+            }
+        }).collect(Collectors.toSet());
         try {
             this.zipDownloader = zipDownloader.newInstance();
             this.zipFilePrefix = this.zipDownloader.getZipFilePrefix();
@@ -151,6 +159,6 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
         } catch(Exception e) {
 
         }
-        finishedFiles.add(file.getAbsolutePath());
+        finishedFiles.add(file.getName());
     }
 }
