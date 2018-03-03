@@ -95,7 +95,7 @@ public class CombinedCPC2Vec2VAEEncodingPipelineManager extends AbstractEncoding
             Nd4j.setDataType(DataBuffer.Type.DOUBLE);
 
             String modelName = MODEL_NAME;
-            String wordCpc2VecModel = WordCPC2VecPipelineManager.DEEP_MODEL_NAME;
+            String wordCpc2VecModel = WordCPC2VecPipelineManager.DEEP256_MODEL_NAME;
 
 
             WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(wordCpc2VecModel, -1, -1, -1);

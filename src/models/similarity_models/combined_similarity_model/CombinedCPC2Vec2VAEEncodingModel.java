@@ -111,35 +111,6 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
         networks.add(vaeNetwork);
         System.out.println("Initial test: " +getTestFunction().apply(vaeNetwork));
 
-
-        boolean testNet = false;
-        if(testNet) {
-            int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(WordCPC2VecPipelineManager.DEEP_MODEL_NAME);
-            ComputationGraph graph = new ComputationGraph(conf.build());
-            graph.init();
-
-            INDArray data3 = Nd4j.randn(new int[]{3, input1});
-            INDArray data5 = Nd4j.randn(new int[]{5, input1});
-
-
-            for (int j = 1; j < 9; j++) {
-                try {
-                    System.out.println("Shape of " + j + ": " + Arrays.toString(CombinedCPC2Vec2VAEEncodingModel.feedForwardToVertex(graph, String.valueOf(j), data3).shape()));
-                    System.out.println("Shape of " + j + ": " + Arrays.toString(CombinedCPC2Vec2VAEEncodingModel.feedForwardToVertex(graph, String.valueOf(j), data5).shape()));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            for (int j = 0; j < 10; j++) {
-                graph.fit(new INDArray[]{data3}, new INDArray[]{data3});
-                graph.fit(new INDArray[]{data5}, new INDArray[]{data5});
-                System.out.println("Score " + j + ": " + graph.score());
-            }
-
-        }
-
-
         return nameToNetworkMap;
     }
 

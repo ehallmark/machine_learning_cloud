@@ -87,7 +87,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     }
 
     public Stream<File> zipFileStream(Function<File,Boolean> orFilter) {
-        return Arrays.stream(new File(zipFilePrefix).listFiles()).filter(file->orFilter.apply(file)||!finishedFiles.contains(file.getAbsolutePath()));
+        return Arrays.stream(new File(zipFilePrefix).listFiles()).filter(file->orFilter.apply(file)||!finishedFiles.contains(file.getName()));
     }
 
     public synchronized void save() {
