@@ -26,30 +26,12 @@ public class IngestRecentUpdatesPart2 {
     // Completes the initial seed into mongo
     public static void main(String[] args) {
         // run value models
-        List<String> updates;
         try {
-            updates = UpdateModels.runModels(false);
+             UpdateModels.runModels(false);
         } catch(Exception e) {
             System.out.println("Error during value models...");
             e.printStackTrace();
-            updates = null;
             System.exit(1);
-        }
-
-        // update mongo
-        try {
-            if(updates!=null) {
-                UpdateExtraneousComputableAttributeData.update(updates);
-            }
-        } catch(Exception e) {
-            System.out.println("Error updating mongo computable attrs...");
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        // update elasticsearch
-        if(updates!=null) {
-            updateElasticSearch(updates);
         }
 
         System.out.println("Updates completed successfully.");
