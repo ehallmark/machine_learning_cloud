@@ -51,9 +51,7 @@ java -cp target/classes:"target/dependency/*" -Xms20000m -Xmx20000m -Dcom.sun.ma
 
 # backup mongodb
 mv /usb/data/ai_db.gz /usb/data/ai_db.backup.gz
-cd data
 mongodump --archive=/usb/data/ai_db.gz --gzip --db ai_db
-cd ../
 
 # backup
 rsync -arv /home/ehallmark/repos/machine_learning_cloud/data/ /usb/data/
