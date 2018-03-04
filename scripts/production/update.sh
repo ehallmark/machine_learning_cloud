@@ -49,6 +49,11 @@ curl -XPUT 'localhost:9200/ai_db/_settings?pretty' -H 'Content-Type: application
 mv data/elasticsearch_dataset_index.es data/elasticsearch_dataset_index.es.backup
 java -cp target/classes:"target/dependency/*" -Xms20000m -Xmx20000m -Dcom.sun.management.jmxremote.port=4567 -Dcom.sun.management.jmxremote.rmi.port=4567 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=127.0.0.1 elasticsearch.BackupDatasetsIndexToFile
 
+# then turn off elastic search
+cd /home/ehallmark/machine_learning_cloud/scripts/production
+sudo docker-compose down
+cd /home/ehallmark/machine_learning_cloud
+
 # backup mongodb
 mv /usb/data/ai_db.gz /usb/data/ai_db.backup.gz
 mongodump --archive=/usb/data/ai_db.gz --gzip --db ai_db
