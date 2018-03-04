@@ -15,8 +15,10 @@ import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
+import org.nd4j.linalg.ops.transforms.Transforms;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -24,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 /**
@@ -46,13 +49,36 @@ public abstract class AbstractEncodingModel<T extends Model,V extends DefaultPip
 
     protected abstract Function<Object,Double> getTestFunction();
 
-    protected INDArray sampleWordVectors(List<String> words, int samples, Word2Vec wordVectors) {
+    protected static int sample(double[] probabilities) {
+        double d = 0d;
+        double target = rand.nextDouble();
+        for(int i = 0; i < probabilities.length; i++) {
+            d+=probabilities[i];
+            if(d>=target) return i;
+        }
+        return probabilities.length-1;
+    }
+    public static INDArray sampleWordVectors(List<String> words, int samples, Word2Vec wordVectors) {
         if(wordVectors==null) throw new NullPointerException("Word vectors must be preloaded...");
         if(words==null||words.isEmpty()) return null;
         words = words.stream().filter(word->wordVectors.hasWord(word)).collect(Collectors.toList());
         if(words.isEmpty()) return null;
         final List<String> finalWords = words;
-        List<String> randSamples = IntStream.range(0,samples).mapToObj(i->finalWords.get(rand.nextInt(finalWords.size())))
+        double[] tfidfs = new double[finalWords.size()];
+        for(int i = 0; i < tfidfs.length; i++) {
+            tfidfs[i] = 1d/Math.sqrt(wordVectors.getVocab().docAppearedIn(finalWords.get(i)));
+        }
+        double sum = DoubleStream.of(tfidfs).sum();
+        if(sum==0) throw new RuntimeException("Sum must be > 0.");
+        for(int i = 0; i < tfidfs.length; i++) {
+            tfidfs[i]/=sum;
+        }
+        int[] indices = new int[samples];
+        for(int i = 0; i < indices.length; i++) {
+            indices[i] = sample(tfidfs);
+        }
+        Arrays.sort(indices);
+        List<String> randSamples = IntStream.of(indices).sorted().mapToObj(i -> finalWords.get(i))
                 .collect(Collectors.toList());
         return wordVectors.getWordVectors(randSamples);
     }
@@ -68,14 +94,16 @@ public abstract class AbstractEncodingModel<T extends Model,V extends DefaultPip
     }
 
     public static double test(ComputationGraph net, MultiDataSet finalDataSet) {
+        net.setLayerMaskArrays(finalDataSet.getFeaturesMaskArrays(),finalDataSet.getLabelsMaskArrays());
         double score = net.score(finalDataSet,false);
+        net.clearLayerMaskArrays();
         //System.out.println("Raw score: "+score);
         int divisor;
-        if(finalDataSet.getLabels(0).shape().length<=2) {
+       // if(finalDataSet.getLabels(0).shape().length<=2) {
             divisor = finalDataSet.getLabels().length;
-        } else {
-            divisor = finalDataSet.getLabels(0).shape()[finalDataSet.getLabels(0).shape().length-1];
-        }
+       // } else {
+       //     divisor = finalDataSet.getLabels(0).shape()[finalDataSet.getLabels(0).shape().length-1];
+       // }
         return 1d + score/divisor;
     }
 

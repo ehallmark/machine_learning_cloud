@@ -33,7 +33,7 @@ public class KNNStage extends Stage<Set<MultiStem>>  {
             // apply filter 2
             System.out.println("Num keywords before knn stage: " + data.size());
 
-            int numIterations = 3;
+            int numIterations = 2;
             for(int i = 0; i < numIterations; i++) {
                 System.out.println("Computing multi stem encoding map...");
                 Map<MultiStem, INDArray> multiStemToEncodingsMap = KeyphrasePredictionPipelineManager.buildNewKeywordToLookupTableMapHelper(word2Vec, data);

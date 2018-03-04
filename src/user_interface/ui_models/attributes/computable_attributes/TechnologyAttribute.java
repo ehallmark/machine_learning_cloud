@@ -82,7 +82,9 @@ public class TechnologyAttribute extends ComputableAttribute<List<String>> {
     public static String formatTechnologyString(String in) {
         String titleized = titleize(in);
         if(titleized==null) return null;
-        return technologyCorrectionsMap.getOrDefault(titleized,titleized);
+        titleized = technologyCorrectionsMap.getOrDefault(titleized,titleized);
+        if(titleized.isEmpty()) return null;
+        return titleized;
     }
 
     private static String titleize(String str) {
@@ -103,6 +105,15 @@ public class TechnologyAttribute extends ComputableAttribute<List<String>> {
     static {
         technologyCorrectionsMap.put("Electrical Circuits Surrounding","Electrical Circuits");
         technologyCorrectionsMap.put("Reproduction","Content Reproduction");
+        technologyCorrectionsMap.put("Ankara","");
+        technologyCorrectionsMap.put("Ginger","");
+        technologyCorrectionsMap.put("Semen","");
+        technologyCorrectionsMap.put("Penis","");
+        technologyCorrectionsMap.put("Vagina","");
+        technologyCorrectionsMap.put("Lapsed","");
+        technologyCorrectionsMap.put("Stow","");
+        technologyCorrectionsMap.put("Blacks","");
+        technologyCorrectionsMap.put("Whites","");
         technologyCorrectionsMap.put("Reproducing","Content Reproducing");
     }
 }

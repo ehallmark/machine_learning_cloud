@@ -116,8 +116,9 @@ public class AssetKMeans {
 
 
             if(tag==null) tag = "other "+cnt.getAndIncrement();
-
             tag = TechnologyAttribute.formatTechnologyString(tag);
+            if(tag==null) tag = "other "+cnt.getAndIncrement();
+
 
             map.putIfAbsent(tag,Collections.synchronizedList(new ArrayList<>()));
             map.get(tag).addAll(cluster);

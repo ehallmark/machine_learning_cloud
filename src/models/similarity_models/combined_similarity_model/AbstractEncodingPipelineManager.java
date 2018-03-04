@@ -5,11 +5,13 @@ import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
+import models.similarity_models.word_cpc_2_vec_model.AbstractWordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
+import user_interface.ui_models.filters.AbstractExcludeWithRelatedFilter;
 
 import java.io.File;
 
@@ -18,14 +20,14 @@ import java.io.File;
  */
 public abstract class AbstractEncodingPipelineManager extends DefaultPipelineManager<MultiDataSetIterator,INDArray> {
     protected String modelName;
-    protected WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
+    protected AbstractWordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     @Getter
     protected Word2Vec word2Vec;
     protected int vectorSize;
     protected int batchSize;
     protected int miniBatchSize;
     protected DeepCPCVAEPipelineManager deepCPCVAEPipelineManager;
-    public AbstractEncodingPipelineManager(File dataFolder, File predictionFile, String modelName, Word2Vec word2Vec, int vectorSize, int batchSize, int miniBatchSize, WordCPC2VecPipelineManager wordCPC2VecPipelineManager, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager) {
+    public AbstractEncodingPipelineManager(File dataFolder, File predictionFile, String modelName, Word2Vec word2Vec, int vectorSize, int batchSize, int miniBatchSize, AbstractWordCPC2VecPipelineManager wordCPC2VecPipelineManager, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager) {
         super(dataFolder, predictionFile);
         this.word2Vec=word2Vec;
         this.deepCPCVAEPipelineManager=deepCPCVAEPipelineManager;

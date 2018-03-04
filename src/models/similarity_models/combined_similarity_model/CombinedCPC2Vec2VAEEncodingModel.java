@@ -1,20 +1,19 @@
 package models.similarity_models.combined_similarity_model;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import lombok.Getter;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
-import org.deeplearning4j.nn.conf.LearningRatePolicy;
-import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.*;
 import org.deeplearning4j.nn.conf.graph.MergeVertex;
+import org.deeplearning4j.nn.conf.graph.PreprocessorVertex;
 import org.deeplearning4j.nn.conf.graph.SubsetVertex;
-import org.deeplearning4j.nn.conf.layers.DenseLayer;
-import org.deeplearning4j.nn.conf.layers.GravesBidirectionalLSTM;
-import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.graph.rnn.LastTimeStepVertex;
+import org.deeplearning4j.nn.conf.layers.*;
+import org.deeplearning4j.nn.conf.preprocessor.RnnToFeedForwardPreProcessor;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.nd4j.linalg.activations.Activation;
@@ -31,6 +30,7 @@ import tools.ReshapeVertex;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -38,7 +38,7 @@ import java.util.function.Function;
  */
 public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<ComputationGraph,CombinedCPC2Vec2VAEEncodingPipelineManager> {
     public static final String VAE_NETWORK = "vaeNet";
-    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"combined_cpc2vec_2_vae_model_data"); //new File("deep_cpc_2_vec_encoding_data");
+    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"combined_cpc2vec_tfidf_2_vae_model_data"); //new File("deep_cpc_2_vec_encoding_data");
 
     private List<ComputationGraph> networks;
     @Getter
@@ -63,9 +63,10 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
     public synchronized INDArray encodeText(List<String> words, int samples) {
         int maxSample = pipelineManager.getMaxSample();
         INDArray inputs = Nd4j.create(samples,vectorSize,maxSample);
-
         for(int i = 0; i < samples; i ++) { // TODO speed this up (i.e remove loop)
-            inputs.get(NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.all()).assign(sampleWordVectors(words,maxSample,pipelineManager.getWord2Vec()).transpose());
+            INDArray wordVecs = sampleWordVectors(words,maxSample,pipelineManager.getWord2Vec());
+            if(wordVecs==null) return null;
+            inputs.get(NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.all()).assign(wordVecs.transpose());
         }
 
         //System.out.println("Sampled word vectors shape: "+Arrays.toString(inputs.shape()));
@@ -82,7 +83,7 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
 
     @Override
     public int printIterations() {
-        return 2000;
+        return 500;
     }
 
 
@@ -96,7 +97,7 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
         networks = new ArrayList<>();
 
         // build networks
-        double learningRate = 0.05;
+        double learningRate = 0.1;
         ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate);
 
         vaeNetwork = new ComputationGraph(conf.build());
@@ -118,7 +119,7 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.005;
+        double newLearningRate = 0.001;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
@@ -139,14 +140,12 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
         return (v) -> {
             System.gc();
             MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
-            List<MultiDataSet> validationDataSets = Collections.synchronizedList(new ArrayList<>());
 
             int valCount = 0;
             double score = 0d;
             int count = 0;
-            while(validationIterator.hasNext()&&valCount<50000) {
+            while(validationIterator.hasNext()&&valCount<30000) {
                 MultiDataSet dataSet = validationIterator.next();
-                validationDataSets.add(dataSet);
                 valCount+=dataSet.getFeatures()[0].shape()[0];
                 try {
                     score += test(vaeNetwork, dataSet);
@@ -155,8 +154,8 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
                     System.out.println("During testing...");
                 }
                 count++;
-                //System.gc();
             }
+            System.gc();
             validationIterator.reset();
 
             return score/count;
@@ -164,12 +163,12 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        final String wordVectorModelName = WordCPC2VecPipelineManager.DEEP256_MODEL_NAME;
+        final String wordVectorModelName = WordCPC2VecPipelineManager.DEEP_MODEL_NAME;
         int input1 = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(wordVectorModelName);
-        int hiddenLayerSizeFF1 = 320;
+        int hiddenLayerSizeRnn = 256;
+        int hiddenLayerSizeFF = 128;
         int input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
 
-        int maxSample = pipelineManager.getMaxSample();
 
         Updater updater = Updater.RMSPROP;
 
@@ -188,28 +187,29 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
                 .learningRate(learningRate)
                 .learningRateDecayPolicy(LearningRatePolicy.Schedule)
                 .learningRateSchedule(learningRateSchedule)
-                .regularization(true).l2(0.0001)
+               // .regularization(true).l2(0.0001)
                 //.convolutionMode(ConvolutionMode.Same) //This is important so we can 'stack' the results later
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .activation(activation)
                 .graphBuilder()
                 .addInputs("x1")
-                .addVertex("reshape", new ReshapeVertex(-1,input1*maxSample), "x1")
-                .addLayer("6", new DenseLayer.Builder().nIn(input1*maxSample).nOut(hiddenLayerSizeFF1).build(), "reshape")
-                .addLayer("7", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1+input1*maxSample).nOut(hiddenLayerSizeFF1).build(), "6", "reshape")
-                .addLayer("8", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "7","6")
-                .addLayer("9", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "8","7")
-                .addLayer("10", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "9","8")
-                .addLayer("11", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "10","9")
-                .addLayer("12", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "11","10")
-                .addLayer("13", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "12","11")
-                .addLayer("14", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "13","12")
-                .addLayer("15", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "14","13")
-                .addLayer("16", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "15","14")
-                .addLayer("17", new DenseLayer.Builder().nIn(hiddenLayerSizeFF1*2).nOut(hiddenLayerSizeFF1).build(), "16","15")
-                .addLayer("y1", new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeFF1*2).lossFunction(lossFunction).nOut(input2).build(), "17", "16")
+                .addLayer("rnn0", new GravesLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRnn).build(), "x1")
+                .addLayer("rnn1", new GravesLSTM.Builder().nIn(hiddenLayerSizeRnn+input1).nOut(hiddenLayerSizeRnn).build(), "rnn0","x1")
+                .addLayer("rnn2", new GravesLSTM.Builder().nIn(hiddenLayerSizeRnn+hiddenLayerSizeRnn).nOut(hiddenLayerSizeRnn).build(), "rnn1","rnn0")
+                .addVertex("r0", new LastTimeStepVertex("x1"),"rnn1")
+                .addVertex("r1", new LastTimeStepVertex("x1"),"rnn2")
+                .addLayer("ff0", new DenseLayer.Builder().nIn(hiddenLayerSizeRnn*2).nOut(hiddenLayerSizeFF).build(), "r1","r0")
+                .addLayer("ff1", new DenseLayer.Builder().nIn(hiddenLayerSizeFF+hiddenLayerSizeRnn).nOut(hiddenLayerSizeFF).build(), "ff0","r1")
+                .addLayer("ff2", new DenseLayer.Builder().nIn(hiddenLayerSizeFF*2).nOut(hiddenLayerSizeFF).build(), "ff1","ff0")
+                .addLayer("ff3", new DenseLayer.Builder().nIn(hiddenLayerSizeFF*2).nOut(hiddenLayerSizeFF).build(), "ff2","ff1")
+                .addLayer("ff4", new DenseLayer.Builder().nIn(hiddenLayerSizeFF*2).nOut(hiddenLayerSizeFF).build(), "ff3","ff2")
+                .addLayer("ff5", new DenseLayer.Builder().nIn(hiddenLayerSizeFF*2).nOut(hiddenLayerSizeFF).build(), "ff4","ff3")
+                .addLayer("ff6", new DenseLayer.Builder().nIn(hiddenLayerSizeFF*2).nOut(hiddenLayerSizeFF).build(), "ff5","ff4")
+                .addLayer("y1", new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeFF).lossFunction(lossFunction).nOut(input2).build(), "ff6")
+
                 .setOutputs("y1")
                 .backprop(true)
+                .backpropType(BackpropType.Standard)
                 .pretrain(false);
     }
 
@@ -223,11 +223,20 @@ public class CombinedCPC2Vec2VAEEncodingModel extends AbstractEncodingModel<Comp
     protected void train(MultiDataSetIterator dataSetIterator, int nEpochs, AtomicBoolean stoppingCondition) {
         try {
             for (int i = 0; i < nEpochs; i++) {
+                AtomicInteger cnt = new AtomicInteger(0);
+                AtomicDouble gradient = new AtomicDouble(0d);
+                final double beta = 0.7;
+                int gradientIterations = 400;
                 while(dataSetIterator.hasNext()) {
                     MultiDataSet ds = dataSetIterator.next();
                     networks.forEach(vaeNetwork->{
                         try {
                             vaeNetwork.fit(ds);
+                            if(cnt.getAndIncrement()%gradientIterations==gradientIterations-1) {
+                                double grad = Transforms.abs(vaeNetwork.gradient().gradient(), false).meanNumber().doubleValue();
+                                gradient.set((gradient.get()*beta)+(1d-beta)*grad);
+                                System.out.println("Gradient: " + grad+", Avg Gradient: " + gradient.get());
+                            }
                         } catch(Exception e) {
                             e.printStackTrace();
                             System.out.println("Error occurred during network.fit();");

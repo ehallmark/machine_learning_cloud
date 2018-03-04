@@ -90,31 +90,13 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
             if(sequence.size()==0) continue;
 
             String label = document.getSequenceLabels().get(0).getLabel();
-            if(!vaePredictions.containsKey(label)) continue;
-
-            INDArray featureVec;
-            {
-                List<Integer> indexes = new ArrayList<>();
-                for (int i = 0; i < sequence.size(); i++) {
-                    String l = sequence.get(i);
-                    if (word2Vec.getVocab().containsWord(l)) {
-                        indexes.add(word2Vec.getVocab().indexOf(l));
-                        if(indexes.size()==maxSamples) {
-                            break;
-                        }
-                    }
-                }
-
-
-                if (indexes.size() == 0) {
-                    System.out.print("no indices...");
-                    continue;
-                }
-
-                featureVec = Nd4j.pullRows(word2Vec.getLookupTable().getWeights(),1,indexes.stream().limit(maxSamples).mapToInt(i->i).toArray());
-
-
+            if(!vaePredictions.containsKey(label)) {
+                //System.out.print("missing label");
+                continue;
             }
+
+            INDArray featureVec = AbstractEncodingModel.sampleWordVectors(sequence,maxSamples,word2Vec);
+            if(featureVec==null) continue;
             if(featureVec.rows()<maxSamples) continue;
 
             assets.add(label);

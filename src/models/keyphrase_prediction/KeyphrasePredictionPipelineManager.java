@@ -9,6 +9,8 @@ import models.keyphrase_prediction.models.DefaultModel3;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
 import models.similarity_models.paragraph_vectors.FloatFrequencyPair;
+import models.similarity_models.word_cpc_2_vec_model.AbstractWordCPC2VecPipelineManager;
+import models.similarity_models.word_cpc_2_vec_model.ParagraphCPCVecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
 import org.deeplearning4j.models.word2vec.Word2Vec;
@@ -34,7 +36,7 @@ import java.util.stream.Stream;
 public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<WordCPCIterator,Set<String>> {
     public static final Model modelParams = new DefaultModel3();
     @Getter
-    private WordCPC2VecPipelineManager wordCPC2VecPipelineManager;
+    private AbstractWordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     private static final File INPUT_DATA_FOLDER = new File("keyphrase_prediction_input_data/");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyphrase_prediction_model_predictions/predictions_map.jobj");
     private static Map<MultiStem,INDArray> keywordToVectorLookupTable;
@@ -43,7 +45,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     private Set<MultiStem> multiStemSet;
     private static Map<String,Collection<CPC>> cpcMap;
     private static Map<String,MultiStem> labelToKeywordMap;
-    public KeyphrasePredictionPipelineManager(WordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
+    public KeyphrasePredictionPipelineManager(AbstractWordCPC2VecPipelineManager wordCPC2VecPipelineManager) {
         super(INPUT_DATA_FOLDER, PREDICTION_DATA_FILE);
         this.wordCPC2VecPipelineManager=wordCPC2VecPipelineManager;
     }
@@ -243,7 +245,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     @Override
     public Map<String,Set<String>> predict(List<String> assets, List<String> assignees, List<String> cpcs) {
-        final double minScore = 0.5;
+        final double minScore = 0.4;
         final int maxTags = 15;
 
         if(keywordToVectorLookupTable==null) {

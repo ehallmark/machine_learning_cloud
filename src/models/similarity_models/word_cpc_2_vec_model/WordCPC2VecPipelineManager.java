@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 11/21/17.
  */
-public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIterator,Map<String,INDArray>> {
+public class WordCPC2VecPipelineManager extends AbstractWordCPC2VecPipelineManager<WordCPCIterator> {
     public static final String SMALL_MODEL_NAME = "32smallwordcpc2vec_model";
     public static final String DEEP_MODEL_NAME = "wordcpc2vec_model_deep";
     public static final String DEEP256_MODEL_NAME = "wordcpc2vec256_model_deep";
@@ -43,40 +43,17 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         modelNameToPredictionFileMap.put(DEEP256_MODEL_NAME,new File(Constants.DATA_FOLDER+"wordcpc2vec256_deep_predictions/predictions_map.jobj"));
 
     }
+    protected String modelName;
     private static final File INPUT_DATA_FOLDER = new File("wordcpc2vec_input_data");
-    protected Map<String,Collection<CPC>> cpcMap;
-    private CPCHierarchy hierarchy;
-    private String modelName;
     @Getter
-    private int numEpochs;
-    @Getter
-    private List<String> testWords;
-    @Getter @Setter
-    private int maxSamples;
-    @Getter
-    private int windowSize;
+    protected int windowSize;
     public WordCPC2VecPipelineManager(String modelName, int numEpochs, int windowSize, int maxSamples) {
-        super(INPUT_DATA_FOLDER, modelNameToPredictionFileMap.get(modelName));
+        super(INPUT_DATA_FOLDER, modelNameToPredictionFileMap.get(modelName),numEpochs,maxSamples);
         this.numEpochs=numEpochs;
         this.maxSamples=maxSamples;
         this.modelName=modelName;
         this.windowSize=windowSize;
         this.testWords = Arrays.asList("A","B","C","D","E","F","G","A02","BO3Q","Y","C07F","A02A1/00","semiconductor","computer","internet","virtual","intelligence","artificial","chemistry","biology","electricity","agriculture","automobile","robot");
-    }
-
-    @Override
-    public void rebuildPrerequisiteData() {
-        try {
-            //System.out.println("Starting to pull latest text data from elasticsearch...");
-            //ESTextDataSetIterator.main(null);
-            System.out.println("Starting to build vocab map...");
-            Stage1 stage1 = new Stage1(KeyphrasePredictionPipelineManager.modelParams);
-            stage1.run(true);
-
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
     }
 
     public Map<String,INDArray> getOrLoadWordVectors() {
@@ -103,82 +80,12 @@ public class WordCPC2VecPipelineManager extends DefaultPipelineManager<WordCPCIt
         }
     }
 
-    public synchronized CPCHierarchy getHierarchy() {
-        if(hierarchy==null) {
-            hierarchy = new CPCHierarchy();
-            hierarchy.loadGraph();
-        }
-        return hierarchy;
-    }
-
-    public synchronized Map<String,Collection<CPC>> getCPCMap() {
-        if(cpcMap==null) {
-
-            //cpcMap = (Map<String,Collection<CPC>>) Database.tryLoadObject(cpcMapFile);
-
-            if(cpcMap == null) {
-                Map<String, String> patentToFiling = new AssetToFilingMap().getPatentDataMap();
-                Map<String, String> appToFiling = new AssetToFilingMap().getApplicationDataMap();
-                getHierarchy();
-                Map<String, Set<String>> assetToCPCStringMap = new HashMap<>();
-                new AssetToCPCMap().getApplicationDataMap().entrySet().forEach(e -> {
-                    assetToCPCStringMap.put(appToFiling.get(e.getKey()), e.getValue());
-                });
-                new AssetToCPCMap().getPatentDataMap().entrySet().forEach(e -> {
-                    assetToCPCStringMap.put(patentToFiling.get(e.getKey()), e.getValue());
-                });
-                cpcMap = assetToCPCStringMap.entrySet().parallelStream()
-                        .filter(e -> assetToCPCStringMap.containsKey(e.getKey()))
-                        .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().stream().map(label -> hierarchy.getLabelToCPCMap().get(ClassCodeHandler.convertToLabelFormat(label)))
-                                .filter(cpc -> cpc != null)
-                                .flatMap(cpc -> hierarchy.cpcWithAncestors(cpc).stream())
-                                .distinct()
-                                .collect(Collectors.toSet())))
-                        .entrySet().parallelStream()
-                        .filter(e -> e.getValue().size() > 0)
-                        .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
-
-                //Database.trySaveObject(cpcMap,cpcMapFile);
-            }
-
-        }
-        return cpcMap;
-    }
 
     @Override
-    protected void splitData() {
-        // purposefully do nothing
-    }
-
-
-    @Override
-    public DataSetManager<WordCPCIterator> getDatasetManager() {
-        if(datasetManager==null) {
-            setDatasetManager();
-        }
-        return datasetManager;
-    }
-
-    @Override
-    protected void setDatasetManager() {
-        if(datasetManager==null) {
-            File baseDir = FileTextDataSetIterator.BASE_DIR;
-            File trainFile = new File(baseDir, FileTextDataSetIterator.trainFile.getName());
-            File testFile = new File(baseDir, FileTextDataSetIterator.testFile.getName());
-            File devFile = new File(baseDir, FileTextDataSetIterator.devFile2.getName());
-
-            FileTextDataSetIterator trainIter = new FileTextDataSetIterator(trainFile);
-            FileTextDataSetIterator testIter = new FileTextDataSetIterator(testFile);
-            FileTextDataSetIterator devIter = new FileTextDataSetIterator(devFile);
-
-            boolean fullText = baseDir.getName().equals(FileTextDataSetIterator.BASE_DIR.getName());
-            System.out.println("Using full text: "+fullText);
-            datasetManager = new NoSaveDataSetManager<>(
-                    new WordCPCIterator(trainIter,numEpochs,getCPCMap(), maxSamples,fullText),
-                    new WordCPCIterator(testIter,1,getCPCMap(), maxSamples,fullText),
-                    new WordCPCIterator(devIter,1,getCPCMap(), maxSamples,fullText)
-            );
-        }
+    protected WordCPCIterator getSequenceIterator(FileTextDataSetIterator iterator, int nEpochs) {
+        File baseDir = FileTextDataSetIterator.BASE_DIR;
+        boolean fullText = baseDir.getName().equals(FileTextDataSetIterator.BASE_DIR.getName());
+        return new WordCPCIterator(iterator,nEpochs,getCPCMap(), maxSamples,fullText);
     }
 
     private static WordCPC2VecPipelineManager MANAGER = null;
