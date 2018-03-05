@@ -59,25 +59,26 @@ public class TestSimModels extends TestModelHelper {
 
 
     public static void runTest(Tester tester) {
+        String testName = "Similarity Test";
+
         // load input data
         final int numFilingSamples = 100000;
-        Map<String,Pair<String,String>> filingData = loadFilingCPCData(new AssetToCPCMap().getPatentDataMap(), numFilingSamples);
+        Map<String,Pair<String,String>> data = loadFilingCPCData(new AssetToCPCMap().getPatentDataMap(), numFilingSamples);
 
+        double randomScore = testModel(data,RANDOM_MODEL);
+        System.out.println("Random score: "+randomScore);
+        tester.scoreModel("Random",testName,randomScore);
         // new model
 
         // older model
 
         // vae model
         DeepCPCVAEPipelineManager encodingPipelineManager3 = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME);
-
-        System.out.println("Num filing samples used: "+filingData.size());
+        System.out.println("Num filing samples used: "+data.size());
 
         // run tests
-        double score3 = test(encodingPipelineManager3, "Model 3",filingData);
-
-        String testName = "Similarity Test";
+        double score3 = test(encodingPipelineManager3, "Model 3",data);
         tester.scoreModel("Model 3",testName,score3);
-
         System.out.println("Score for Model 3: "+score3);
     }
 }

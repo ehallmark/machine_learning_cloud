@@ -7,6 +7,8 @@ import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManage
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
@@ -24,25 +26,24 @@ import wiki.ScrapeWikipedia;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TestTextModels extends TestModelHelper {
-
-
-
-    public static double testModel(Map<String,Pair<String[],Set<String>>> keywordToWikiAndAssetsMap, Function2<String[],Integer,Set<String>> model, int n) {
+    public static double testModel(Map<String,Pair<String[],String>> cpcToTextAndNegMap, Function<String,INDArray> cpcModel, Function<String[],INDArray> textModel) {
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicDouble sum = new AtomicDouble(0d);
-        keywordToWikiAndAssetsMap.forEach((keyword,pair)->{
+        cpcToTextAndNegMap.forEach((cpc,pair)->{
             String[] text = pair.getFirst();
-            Set<String> predictions = model.apply(text,n);
-            if(predictions!=null&&predictions.size()>0) {
-                Set<String> actual = pair.getSecond();
-                if(actual!=null&&actual.size()>0) {
-                    sum.getAndAdd(((double)intersect(predictions,actual))/((double)(union(predictions,actual))));
-                    cnt.getAndIncrement();
-                }
+            String neg = pair.getSecond();
+            INDArray posVec = textModel.apply(text);
+            INDArray negVec = cpcModel.apply(neg);
+            INDArray vec = cpcModel.apply(cpc);
+            if(posVec!=null&&negVec!=null&&vec!=null) {
+                double score = Transforms.cosineSim(vec,posVec) > Transforms.cosineSim(vec,negVec) ? 1d : 0d;
+                sum.getAndAdd(score);
+                cnt.getAndIncrement();
             }
             if(cnt.get()%100==99) {
                 System.out.print("-");
@@ -54,134 +55,44 @@ public class TestTextModels extends TestModelHelper {
         return sum.get()/cnt.get();
     }
 
-    private static Map<String,Set<String>> keywordToFilingMap;
-    private static final File keywordToFilingMapFile = new File(Constants.DATA_FOLDER+"keyword_to_filing_map_for_test_text_models.jobj");
-    private static Map<String,Set<String>> loadKeywordToFilingsMap(List<String> keywords) {
-        if(keywordToFilingMap==null) {
-            keywordToFilingMap = (Map<String,Set<String>>) Database.tryLoadObject(keywordToFilingMapFile);
-            if(keywordToFilingMap==null) {
-                System.out.println("Rebuilding keyword to filing map...");
-                AtomicInteger ttl = new AtomicInteger(0);
-                AtomicInteger missing = new AtomicInteger(0);
-                keywordToFilingMap = Collections.synchronizedMap(new HashMap<>(keywords.size()));
-                keywords.parallelStream().forEach(keyword->{
-                    Set<String> results = searchForFilings(keyword);
-                    if(results!=null&&results.size()>0) {
-                        System.out.println("Num results for "+keyword+": "+results.size());
-                        keywordToFilingMap.put(keyword,results);
-                    } else {
-                        missing.getAndIncrement();
-                    }
-                    System.out.println("Missing: "+missing.get()+" out of "+ttl.getAndIncrement());
-                });
-                System.out.println("Saving...");
-                Database.trySaveObject(keywordToFilingMap,keywordToFilingMapFile);
-            }
-        }
-        return keywordToFilingMap;
-    }
 
-    private static Set<String> searchForFilings(String keyword) {
-        String comparator = Constants.SCORE;
-        Collection<AbstractAttribute> attributes = Collections.singleton(new FilingNameAttribute());
-        AcclaimExpertSearchFilter filter = new AcclaimExpertSearchFilter();
-        QueryBuilder builder = new Parser(SimilarPatentServer.SUPER_USER).parseAcclaimQuery("TAC:("+keyword+")");
-        filter.setQuery(builder);
-        Collection<AbstractFilter> filters = Arrays.asList(filter, new AbstractBooleanExcludeFilter(new IsGrantedApplicationAttribute(), AbstractFilter.FilterType.BoolFalse));
-        List<Item> items = DataSearcher.searchForAssets(attributes,filters,comparator, SortOrder.DESC, 500, new HashMap<>(),false,false);
-        if(items==null) return null;
-        return items.stream().map(item->item.getData(Constants.FILING_NAME)).filter(obj->obj!=null).map(obj->obj.toString()).collect(Collectors.toSet());
-    };
-
-    public static void main(String[] args) {
+    public static void runTest(Tester tester) {
+        String testName = "Text Similarity Test";
         // load input data
-        Map<String,List<String>> wikipediaData = ScrapeWikipedia.loadWikipediaMap();
-        Map<String,Set<String>> filingData = loadKeywordToFilingsMap(new ArrayList<>(wikipediaData.keySet()));
-
-        final int maxSentences = 30;
-        final int maxSamples = 100000;
-        // need to run searches on the keys
-
-        Set<String> allFilings = Collections.synchronizedSet(new HashSet<>());
-        final Map<String,Pair<String[],Set<String>>> keywordToWikiAndAssetsMap = wikipediaData.entrySet().stream()
-                .map(e->{
-                    if(allFilings.size()>maxSamples) return null;
-                    String[] text = e.getValue().stream().limit(maxSentences)
-                            .flatMap(sentence-> Stream.of(sentence.split("\\s+")))
-                            .toArray(size->new String[size]);
-                    if(text.length==0) return null;
-                    Set<String> relevantFilings = filingData.get(e.getKey());
-                    if(relevantFilings!=null&&relevantFilings.size()>0) {
-                        allFilings.addAll(relevantFilings);
-                        return new Pair<>(e.getKey(), new Pair<>(text, relevantFilings));
-                    } else return null;
-                }).filter(p->p!=null)
-                .collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
-
-        {
-            Random rand = new Random(20);
-            List<String> randFilings = new ArrayList<>(Database.getAllFilings());
-            for(int i = 0; i < maxSamples; i++) {
-                allFilings.add(randFilings.remove(rand.nextInt(randFilings.size())));
+        Map<String,Pair<String[],String>> cpcToTextAndNegMap = Collections.synchronizedMap(new HashMap<>());
+        Map<String,String> cpcToTitleMap = Database.getClassCodeToClassTitleMap();
+        List<String> cpcs = new ArrayList<>(cpcToTitleMap.keySet());
+        Random rand = new Random(23);
+        cpcs.forEach(cpc->{
+            String text = cpcToTitleMap.get(cpc);
+            if(text!=null) {
+                String[] words = text.toLowerCase().split("\\s+");
+                if(words.length>0) {
+                    cpcToTextAndNegMap.put(cpc,new Pair<>(words,cpcs.get(rand.nextInt(cpcs.size()))));
+                }
             }
-        }
+        });
 
+        System.out.println("Num cpcs found: "+cpcToTextAndNegMap.size());
+
+        // random model
+        Function<String,INDArray> randCpcModel = str -> Nd4j.randn(1,32);
+        Function<String[],INDArray> randTextModel = str -> Nd4j.randn(1,32);
+
+        double randomScore = testModel(cpcToTextAndNegMap, randCpcModel, randTextModel);
+        System.out.println("Random score: " + randomScore);
+        tester.scoreModel("Random",testName,randomScore);
         // new model
         CombinedCPC2Vec2VAEEncodingPipelineManager encodingPipelineManager1 = CombinedCPC2Vec2VAEEncodingPipelineManager.getOrLoadManager(true);
         encodingPipelineManager1.runPipeline(false,false,false,false,-1,false);
         CombinedCPC2Vec2VAEEncodingModel encodingModel1 = (CombinedCPC2Vec2VAEEncodingModel)encodingPipelineManager1.getModel();
         Map<String,INDArray> allPredictions1 = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME).loadPredictions();
-        Map<String,INDArray> predictions1 = allFilings.stream().filter(allPredictions1::containsKey).collect(Collectors.toMap(e->e,e->allPredictions1.get(e)));
 
-        final Pair<List<String>,INDArray> filingsWithMatrix1 = createFilingMatrix(predictions1);
-        final List<String> filings1 = filingsWithMatrix1.getFirst();
-        final INDArray filingsMatrix1 = filingsWithMatrix1.getSecond();
-        Function2<String[],Integer,Set<String>> model1_1 = (text,n) -> {
-            INDArray encodingVec = encodingModel1.encodeText(Arrays.asList(text),1);
-            if(encodingVec==null)return null;
-            return topNByCosineSim(filings1,filingsMatrix1,encodingVec,n);
-        };
+        Function<String,INDArray> cpcModel1 = str -> allPredictions1.get(str);
+        Function<String[],INDArray> textModel1 = str -> encodingModel1.encodeText(Arrays.asList(str),10);
 
-        Function2<String[],Integer,Set<String>> model1_5 = (text,n) -> {
-            INDArray encodingVec = encodingModel1.encodeText(Arrays.asList(text),5);
-            if(encodingVec==null)return null;
-            return topNByCosineSim(filings1,filingsMatrix1,encodingVec,n);
-        };
-
-        Function2<String[],Integer,Set<String>> model1_10 = (text,n) -> {
-            INDArray encodingVec = encodingModel1.encodeText(Arrays.asList(text),10);
-            if(encodingVec==null)return null;
-            return topNByCosineSim(filings1,filingsMatrix1,encodingVec,n);
-        };
-
-
-        System.out.println("All relevant filings size: "+allFilings.size());
-        System.out.println("Size of filings (Model 1): "+filings1.size());
-        System.out.println("Max Sentences: "+maxSentences);
-
-        List<String> allFilingsList = new ArrayList<>(allFilings);
-
-        Random rand = new Random(23);
-        Function2<String[],Integer,Set<String>> randomModel = (text,n) ->{
-            Set<String> ret = new HashSet<>(n);
-            List<String> filingsCopy = new ArrayList<>(allFilingsList);
-            for(int i = 0; i < n; i++) {
-                ret.add(filingsCopy.remove(rand.nextInt(filingsCopy.size())));
-            }
-            return ret;
-        };
-
-        for(int n = 10; n <= 1000; n*=10) {
-            double randomScore = testModel(keywordToWikiAndAssetsMap, randomModel, n);
-            System.out.println("Random score [n=" + n + "]: " + randomScore);
-
-            double score1_1 = testModel(keywordToWikiAndAssetsMap, model1_1, n);
-            System.out.println("Score for model [n=" + n + "] 1-1: " + score1_1);
-            double score1_5 = testModel(keywordToWikiAndAssetsMap, model1_5, n);
-            System.out.println("Score for model [n=" + n + "] 1-5: " + score1_5);
-            double score1_10 = testModel(keywordToWikiAndAssetsMap, model1_10, n);
-            System.out.println("Score for model [n=" + n + "] 1-10: " + score1_10);
-
-        }
+        double score1 = testModel(cpcToTextAndNegMap, cpcModel1, textModel1);
+        System.out.println("Score for model 3: " + score1);
+        tester.scoreModel("Model 3",testName,score1);
     }
 }

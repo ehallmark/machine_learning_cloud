@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class TestModelHelper {
+    private static final Random rand = new Random(23);
+    public static final Function3<String,String,String,Double> RANDOM_MODEL = (a,b,c)->rand.nextBoolean()?0d:1d;
     protected static int intersect(Collection<String> c1, Collection<String> c2) {
         Set<String> s = new HashSet<>(c1);
         s.removeAll(c2);
@@ -93,14 +95,13 @@ public class TestModelHelper {
     public static void main(String[] args) {
         // test
         Tester tester = new Tester();
-        tester.registerModel("Model 1");
-        tester.registerModel("Model 2");
+        tester.registerModel("Random");
         tester.registerModel("Model 3");
 
+        TestTextModels.runTest(tester);
         TestSimModels.runTest(tester);
         TestCPCModels.runTest(tester);
         TestAssigneeModels.runTest(tester);
-
         System.out.println(tester.resultsToString());
     }
 

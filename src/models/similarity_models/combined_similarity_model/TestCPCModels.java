@@ -40,21 +40,23 @@ public class TestCPCModels extends TestModelHelper {
     }
 
     public static void runTest(Tester tester) {
+        String testName = "CPC Test";
         // load input data
         final int numSamples = 100000;
-        Map<String,Pair<String,String>> cpcData = loadData(numSamples);
+        Map<String,Pair<String,String>> data = loadData(numSamples);
+
+        double randomScore = testModel(data,RANDOM_MODEL);
+        System.out.println("Random score: "+randomScore);
+        tester.scoreModel("Random",testName,randomScore);
 
         // vae model
         DeepCPCVAEPipelineManager encodingPipelineManager3 = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME);
 
-        System.out.println("Num cpc samples used: "+cpcData.size());
+        System.out.println("Num cpc samples used: "+data.size());
 
         // run tests
-        double score3 = test(encodingPipelineManager3, "Model 3",cpcData);
-
-        String testName = "CPC Test";
+        double score3 = test(encodingPipelineManager3, "Model 3",data);
         tester.scoreModel("Model 3",testName,score3);
-
         System.out.println("Score for Model 3: "+score3);
     }
 }

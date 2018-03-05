@@ -34,7 +34,7 @@ public abstract class BaseTrainablePredictionModel<T,N> implements TrainablePred
     protected AtomicBoolean isSaved;
     protected String modelName;
     @Getter
-    protected N net;
+    protected transient N net;
 
     protected BaseTrainablePredictionModel(String modelName) {
         this.modelName = modelName;
