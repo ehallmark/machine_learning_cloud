@@ -5,7 +5,7 @@ import graphical_modeling.model.nodes.FactorNode;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -45,7 +45,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         this.defaultCollectType=defaultCollectType;
     }
 
-    protected static List<PairBackup<Item,DeepList<Object>>> groupTableData(List<Item> data, List<String> attrList) {
+    protected static List<Pair<Item,DeepList<Object>>> groupTableData(List<Item> data, List<String> attrList) {
         // group 1 level
         String[] parentAttrs = attrList.stream().map(attr->attr.contains(".")?attr.substring(0,attr.indexOf(".")):null).filter(attr->attr!=null).distinct().toArray(size->new String[size]);
 
@@ -55,12 +55,12 @@ public abstract class TableAttribute extends AbstractChartAttribute {
                 }).filter(p->p!=null).collect(Collectors.toSet());
 
         Map<String,List<String>> parentAttrToChildMap = attrList.stream().map(attr-> {
-            if (attr.contains(".")) return new PairBackup<>(attr.substring(0,attr.indexOf(".")),attr);
+            if (attr.contains(".")) return new Pair<>(attr.substring(0,attr.indexOf(".")),attr);
             else return null;
         }).filter(p->p!=null).collect(Collectors.groupingBy(p->p.getFirst(),Collectors.mapping(p->p.getSecond(),Collectors.toList())));
 
         String[] topLevelAttrsArray = Stream.of(Stream.of(parentAttrs),attrList.stream().filter(attr->!children.contains(attr))).flatMap(stream->stream).toArray(size->new String[size]);
-        return (List<PairBackup<Item,DeepList<Object>>>)data.stream().flatMap(item-> {
+        return (List<Pair<Item,DeepList<Object>>>)data.stream().flatMap(item-> {
             List<Map<String,List<?>>> rs = Stream.of(topLevelAttrsArray).map(attribute-> {
                 return parentAttrToChildMap.getOrDefault(attribute,Collections.singletonList(attribute)).stream().collect(Collectors.toMap(a->a,a-> {
                     Object r = item.getData(a);
@@ -90,7 +90,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
                 }
             }).filter(v->v>0).toArray();
             if(validAssignments.length==0) {
-                return Stream.of(new PairBackup<>(item,new DeepList<Object>(Collections.singletonList(""))));
+                return Stream.of(new Pair<>(item,new DeepList<Object>(Collections.singletonList(""))));
             }
 
             String[] validAttrsArray = IntStream.range(0,assignments.length).filter(i->preIdxToPostIdx.containsKey(i)).mapToObj(i->topLevelAttrsArray[i]).toArray(size->new String[size]);
@@ -98,7 +98,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
             //System.out.println("Factors for attrs "+String.join(", ",topLevelAttrsArray)+": "+ Arrays.toString(assignments));
             FactorNode factor = new FactorNode(null,validAttrsArray,validAssignments);
             return factor.assignmentPermutationsStream().map(assignment->{
-                return new PairBackup<>(item,
+                return new Pair<>(item,
                         new DeepList<>(
                                 IntStream.range(0,assignments.length).mapToObj(i->{
                                     if(i>=rs.size()) System.out.println("WARNING 1: "+factor.toString());
@@ -126,17 +126,17 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         }).collect(Collectors.toList());
     }
 
-    protected static List<PairBackup<DeepList<Object>,Set<Item>>> collectData(List<PairBackup<Item,DeepList<Object>>> groups, int limit) {
-        Stream<PairBackup<DeepList<Object>,Set<Item>>> stream = groups.stream()
+    protected static List<Pair<DeepList<Object>,Set<Item>>> collectData(List<Pair<Item,DeepList<Object>>> groups, int limit) {
+        Stream<Pair<DeepList<Object>,Set<Item>>> stream = groups.stream()
                 .collect(Collectors.groupingBy(t->t.getSecond(),Collectors.mapping(t->t.getFirst(),Collectors.toSet())))
                 .entrySet().stream().sorted((e1, e2)->Integer.compare(e2.getValue().size(),e1.getValue().size()))
-                .map(e->new PairBackup<>(e.getKey(),e.getValue()));
+                .map(e->new Pair<>(e.getKey(),e.getValue()));
         if(limit>0) stream = stream.limit(limit);
         return stream.collect(Collectors.toList());
 
     }
 
-    protected static List<Map<String,String>> collectData(List<PairBackup<Item,DeepList<Object>>> groups, List<String> attrs, CollectorType collectorType, Collector<PairBackup<Item,DeepList<Object>>,?,? extends Number> collector, boolean includeBlank) {
+    protected static List<Map<String,String>> collectData(List<Pair<Item,DeepList<Object>>> groups, List<String> attrs, CollectorType collectorType, Collector<Pair<Item,DeepList<Object>>,?,? extends Number> collector, boolean includeBlank) {
         return groups.stream()
                 .collect(Collectors.groupingBy(t->t.getSecond(),collector))
                 .entrySet().stream().sorted((e1, e2)->Double.compare(e2.getValue().doubleValue(),e1.getValue().doubleValue()))
@@ -223,11 +223,11 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         )   ;
     }
 
-    Collector<PairBackup<Item,DeepList<Object>>,?,? extends Number> getCollectorFromCollectorType() {
-        ToDoubleFunction<? super PairBackup<Item,DeepList<Object>>> toDoubleFunction = pair -> collectByAttrName == null ? 0 : Double.valueOf(pair.getFirst().getDataMap().getOrDefault(collectByAttrName,"0").toString());
-        ToLongFunction<? super PairBackup<Item,DeepList<Object>>> toLongFunction = pair -> collectByAttrName == null ? 1L : pair.getFirst().getDataMap().getOrDefault(collectByAttrName,"").toString().split(DataSearcher.ARRAY_SEPARATOR).length;
-        Collector<PairBackup<Item,DeepList<Object>>,?,Double> doubleCollector = null;
-        Collector<PairBackup<Item,DeepList<Object>>,?,Long> longCollector = null;
+    Collector<Pair<Item,DeepList<Object>>,?,? extends Number> getCollectorFromCollectorType() {
+        ToDoubleFunction<? super Pair<Item,DeepList<Object>>> toDoubleFunction = pair -> collectByAttrName == null ? 0 : Double.valueOf(pair.getFirst().getDataMap().getOrDefault(collectByAttrName,"0").toString());
+        ToLongFunction<? super Pair<Item,DeepList<Object>>> toLongFunction = pair -> collectByAttrName == null ? 1L : pair.getFirst().getDataMap().getOrDefault(collectByAttrName,"").toString().split(DataSearcher.ARRAY_SEPARATOR).length;
+        Collector<Pair<Item,DeepList<Object>>,?,Double> doubleCollector = null;
+        Collector<Pair<Item,DeepList<Object>>,?,Long> longCollector = null;
         switch (collectorType) {
             case Average: {
                 doubleCollector = Collectors.averagingDouble(toDoubleFunction);
@@ -243,7 +243,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
             }
             case Max: {
                 doubleCollector = Collectors.collectingAndThen(Collectors.maxBy(Comparator.comparing(p->toDoubleFunction.applyAsDouble(p))),option->{
-                    PairBackup<Item,DeepList<Object>> pair = option.orElse(null);
+                    Pair<Item,DeepList<Object>> pair = option.orElse(null);
                     if(pair == null) {
                         return null;
                     } else {
@@ -254,7 +254,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
             }
             case Min: {
                 doubleCollector = Collectors.collectingAndThen(Collectors.minBy(Comparator.comparing(p->toDoubleFunction.applyAsDouble(p))),option->{
-                    PairBackup<Item,DeepList<Object>> pair = option.orElse(null);
+                    Pair<Item,DeepList<Object>> pair = option.orElse(null);
                     if(pair == null) {
                         return null;
                     } else {

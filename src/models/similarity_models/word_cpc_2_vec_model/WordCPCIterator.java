@@ -8,7 +8,7 @@ import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -29,7 +29,7 @@ public class WordCPCIterator implements SequenceIterator<VocabWord> {
         return Stream.of(content.split(",")).map(str->{
             String[] pair = str.split(":");
             if(pair.length==1) return null;
-            return new PairBackup<>(pair[0],Integer.valueOf(pair[1]));
+            return new Pair<>(pair[0],Integer.valueOf(pair[1]));
         }).filter(p->p!=null).collect(Collectors.toMap(p->p.getFirst(), p->p.getSecond()));
     };
 

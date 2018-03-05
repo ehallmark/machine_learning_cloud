@@ -2,7 +2,7 @@ package models.classification_models.svm;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import models.classification_models.NaiveGatherClassifier;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import models.classification_models.svm.libsvm.*;
 
 import java.util.*;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class SVMHelper {
 
     // helper for gather data
-    public static PairBackup<double[][],double[][]> mapToSVMData(Map<String,Collection<String>> gatherMap, List<String> technologies, Map<String,INDArray> lookupTable) {
+    public static Pair<double[][],double[][]> mapToSVMData(Map<String,Collection<String>> gatherMap, List<String> technologies, Map<String,INDArray> lookupTable) {
         Map<String,Collection<String>> invertedGatherMap = NaiveGatherClassifier.invert(gatherMap).entrySet().stream()
                 .filter(e-> e.getValue().size()>0&&lookupTable.get(e.getKey())!=null)
                 .collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
@@ -34,7 +34,7 @@ public class SVMHelper {
             });
         });
 
-        return new PairBackup<>(x,y);
+        return new Pair<>(x,y);
     }
 
     public static svm_model svmTrain(double[][] xtrain, double[][] ytrain, svm_parameter param) {

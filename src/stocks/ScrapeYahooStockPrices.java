@@ -1,6 +1,6 @@
 package stocks;
 
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import stocks.util.StockResponse;
 
 import java.io.BufferedReader;
@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class ScrapeYahooStockPrices {
 
-    public static List<PairBackup<LocalDate,Double>> getStocksFromSymbols(String symbol, long from, long to) throws Exception {
+    public static List<Pair<LocalDate,Double>> getStocksFromSymbols(String symbol, long from, long to) throws Exception {
         StringBuilder result = new StringBuilder();
         URL url = new URL(urlFromSymbol(symbol,from,to));
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -38,7 +38,7 @@ public class ScrapeYahooStockPrices {
 
             if(response.getDates()==null||response.getPrices()==null) return null;
 
-            List<PairBackup<LocalDate,Double>> data = new ArrayList<>();
+            List<Pair<LocalDate,Double>> data = new ArrayList<>();
             for(int i = 0; i < Math.min(response.getDates().size(),response.getPrices().size()); i++) {
                 if(response.getPrices().get(i)==null||response.getDates().get(i)==null) continue;
 
@@ -46,7 +46,7 @@ public class ScrapeYahooStockPrices {
                         Instant.ofEpochMilli(response.getDates().get(i).longValue()*1000).atZone(ZoneId.of("America/Los_Angeles")).toLocalDate();
                 date = date.withDayOfMonth(1);
 
-                PairBackup<LocalDate,Double> record = new PairBackup<>(date,response.getPrices().get(i));
+                Pair<LocalDate,Double> record = new Pair<>(date,response.getPrices().get(i));
                 data.add(record);
             }
             if(data.isEmpty()) return null;

@@ -17,7 +17,7 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 
 import java.io.BufferedWriter;
@@ -65,7 +65,7 @@ public class HumanNamePredictionModel extends ComputationGraphPredictionModel<Bo
         List<INDArray> allMasks = new ArrayList<>();
         List<INDArray> allFeatures = new ArrayList<>();
         for(String name : names) {
-            PairBackup<INDArray,INDArray> featuresAndMask = ((HumanNamePredictionPipelineManager)pipelineManager).getFeaturesAndFeatureMask(name);
+            Pair<INDArray,INDArray> featuresAndMask = ((HumanNamePredictionPipelineManager)pipelineManager).getFeaturesAndFeatureMask(name);
             allFeatures.add(featuresAndMask.getFirst());
             allMasks.add(featuresAndMask.getSecond());
         }

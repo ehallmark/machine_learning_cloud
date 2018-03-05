@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import elasticsearch.DataIngester;
 import elasticsearch.MyClient;
 import models.classification_models.TechnologyClassifier;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import seeding.Constants;
@@ -37,7 +37,7 @@ public class GatherClassificationServer {
     }
 
 
-    private static String handleRequest(Request req, Response res, Function2<Collection<String>,Integer,List<PairBackup<String,Double>>> function) throws Exception {
+    private static String handleRequest(Request req, Response res, Function2<Collection<String>,Integer,List<Pair<String,Double>>> function) throws Exception {
         try {
             res.type("application/json");
             if (req.queryParams("reelFrames") == null || req.queryParams("reelFrames").length() == 0)
@@ -67,12 +67,12 @@ public class GatherClassificationServer {
                     .get().getHits().getHits()).map(hit -> hit.getId()).collect(Collectors.toList());
             System.out.println("Found " + patents.size() + " patents");
 
-            List<PairBackup<String, Double>> topTags = new ArrayList<>(function.apply(patents, tagLimit));
+            List<Pair<String, Double>> topTags = new ArrayList<>(function.apply(patents, tagLimit));
 
             long designCount = patents.stream().filter(p -> p.startsWith("D")).count();
             long plantCount = patents.stream().filter(p -> p.startsWith("PP")).count();
-            if (designCount > 0) topTags.add(new PairBackup<>("Design", new Double(designCount) / patents.size()));
-            if (plantCount > 0) topTags.add(new PairBackup<>("Plant", new Double(plantCount) / patents.size()));
+            if (designCount > 0) topTags.add(new Pair<>("Design", new Double(designCount) / patents.size()));
+            if (plantCount > 0) topTags.add(new Pair<>("Plant", new Double(plantCount) / patents.size()));
 
             topTags = topTags.stream().sorted((p1, p2) -> Double.compare(p2.getSecond(), p1.getSecond())).limit(tagLimit).collect(Collectors.toList());
 

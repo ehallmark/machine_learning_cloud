@@ -1,6 +1,6 @@
 package models.classification_models;
 
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,6 +19,6 @@ public abstract class ClassificationAttr {
     public String getType() {
         return "keyword";
     }
-    public abstract List<PairBackup<String,Double>> attributesFor(Collection<String> portfolio, int limit);
+    public abstract List<Pair<String,Double>> attributesFor(Collection<String> portfolio, int limit);
 
 }

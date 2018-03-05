@@ -7,7 +7,7 @@ import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 
 import java.util.*;
 import java.util.function.Function;
@@ -23,7 +23,7 @@ public class WordVectorizerAutoEncoderIterator implements DataSetIterator {
         return Stream.of(content.split(",")).map(str->{
             String[] pair = str.split(":");
             if(pair.length==1) return null;
-            return new PairBackup<>(pair[0],Integer.valueOf(pair[1]));
+            return new Pair<>(pair[0],Integer.valueOf(pair[1]));
         }).filter(p->p!=null).collect(Collectors.toMap(p->p.getFirst(), p->p.getSecond()));
     };
 

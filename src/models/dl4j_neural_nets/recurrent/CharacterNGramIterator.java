@@ -5,7 +5,7 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,9 +30,9 @@ public class CharacterNGramIterator implements DataSetIterator {
 
     private int k;
     private int batchSize;
-    private Iterator<PairBackup<String,INDArray>> textAndLabelIterator;
+    private Iterator<Pair<String,INDArray>> textAndLabelIterator;
     private DataSet next;
-    public CharacterNGramIterator(int k, Iterator<PairBackup<String,INDArray>> textAndLabelIterator, int batchSize) {
+    public CharacterNGramIterator(int k, Iterator<Pair<String,INDArray>> textAndLabelIterator, int batchSize) {
         this.k=k;
         this.batchSize=batchSize;
         this.textAndLabelIterator=textAndLabelIterator;
@@ -123,7 +123,7 @@ public class CharacterNGramIterator implements DataSetIterator {
     public boolean hasNext() {
         next=null;
         while(textAndLabelIterator.hasNext()&&next==null) {
-            PairBackup<String, INDArray> textAndLabelPair = textAndLabelIterator.next();
+            Pair<String, INDArray> textAndLabelPair = textAndLabelIterator.next();
             String text = textAndLabelPair.getFirst().toLowerCase().replaceAll("[^a-z ]", " ");
             List<INDArray> vectors = Collections.synchronizedList(new ArrayList<>());
             if (text.length() > k) {
@@ -150,9 +150,9 @@ public class CharacterNGramIterator implements DataSetIterator {
 
     public static void main(String[] args) {
         // test
-        Iterator<PairBackup<String,INDArray>> test = Stream.of(
-                new PairBackup<>("here is some text",Nd4j.ones(10)),
-                new PairBackup<>("and more tesxt 029385lkzdjg zzjx weriwht other bad nuaad''a3 chars", Nd4j.zeros(20))
+        Iterator<Pair<String,INDArray>> test = Stream.of(
+                new Pair<>("here is some text",Nd4j.ones(10)),
+                new Pair<>("and more tesxt 029385lkzdjg zzjx weriwht other bad nuaad''a3 chars", Nd4j.zeros(20))
         ).iterator();
         CharacterNGramIterator iter = new CharacterNGramIterator(8,test,10);
         while(iter.hasNext()) {

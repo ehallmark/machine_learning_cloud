@@ -12,7 +12,7 @@ import org.nd4j.linalg.dataset.api.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import tools.ClassCodeHandler;
@@ -121,7 +121,7 @@ public class DeepCPCVAEPipelineManager extends CPCVAEPipelineManager {
             assetToCPCStringMap.putAll(new AssetToCPCMap().getPatentDataMap());
 
             cpcMap = allAssets.parallelStream()
-                    .map(filing->new PairBackup<>(filing,
+                    .map(filing->new Pair<>(filing,
                             Stream.of(new FilingToAssetMap().getPatentDataMap().getOrDefault(filing,Collections.emptyList()),new FilingToAssetMap().getApplicationDataMap().getOrDefault(filing,Collections.emptyList()))
                                     .flatMap(list->list.stream()).filter(asset->asset!=null)
                                     .flatMap(asset->assetToCPCStringMap.getOrDefault(asset,Collections.emptySet()).stream()).collect(Collectors.toSet())

@@ -13,7 +13,7 @@ import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 
@@ -67,9 +67,9 @@ public class CPC2VecModel extends WordVectorPredictionModel<INDArray> {
         assets.forEach(asset->{
             Collection<CPC> cpcs = cpcMap.get(asset);
             if(cpcs!=null) {
-                List<PairBackup<INDArray,Double>> vectorsWithWeights = cpcs.stream()
+                List<Pair<INDArray,Double>> vectorsWithWeights = cpcs.stream()
                         .filter(cpc->predictions.containsKey(cpc.getName()))
-                        .map(cpc->new PairBackup<>(predictions.get(cpc.getName()),Math.exp(cpc.getNumParts())))
+                        .map(cpc->new Pair<>(predictions.get(cpc.getName()),Math.exp(cpc.getNumParts())))
                         .collect(Collectors.toList());
                 AtomicDouble sum = new AtomicDouble(0d);
                 List<INDArray> weightedVectors = vectorsWithWeights.stream().map(pair->{

@@ -2,7 +2,7 @@ package models.classification_models;
 
 import elasticsearch.DataSearcher;
 import org.elasticsearch.search.sort.SortOrder;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import user_interface.ui_models.attributes.AssetNumberAttribute;
 import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
@@ -48,16 +48,16 @@ public class WIPOTechnologyClassifier extends ClassificationAttr {
     }
 
 
-    private static List<PairBackup<String,Double>> wipoHelper(Collection<String> patents, int limit) {
+    private static List<Pair<String,Double>> wipoHelper(Collection<String> patents, int limit) {
         if(patents.isEmpty()) return Collections.emptyList();
         List<Item> items = DataSearcher.searchForAssets(Arrays.asList(new WIPOTechnologyAttribute()), Arrays.asList(new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, patents)), null, SortOrder.ASC, 10000, new HashMap<>(),false,false);
         return items.stream().map(item->item.getData(Constants.WIPO_TECHNOLOGY)).filter(tech->tech!=null).collect(Collectors.groupingBy(tech->tech.toString(),Collectors.counting()))
                 .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(limit)
-                .map(e->new PairBackup<>(e.getKey(),e.getValue().doubleValue()/patents.size())).collect(Collectors.toList());
+                .map(e->new Pair<>(e.getKey(),e.getValue().doubleValue()/patents.size())).collect(Collectors.toList());
     }
 
     @Override
-    public List<PairBackup<String, Double>> attributesFor(Collection<String> portfolio, int n) {
+    public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int n) {
         return wipoHelper(portfolio,n);
     }
 

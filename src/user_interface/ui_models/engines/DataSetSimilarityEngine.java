@@ -1,7 +1,7 @@
 package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
@@ -29,7 +29,7 @@ public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
         Collection<String> labels = SimilarPatentServer.extractArray(req, getId());
         if(labels==null) return Collections.emptyList();
         Collection<String> patents = labels.stream().flatMap(label->{
-            PairBackup<String,Set<String>> p = DatasetAttribute.createDatasetFor(label);
+            Pair<String,Set<String>> p = DatasetAttribute.createDatasetFor(label);
             if(p==null) return Stream.empty();
             return p.getSecond().stream();
         }).collect(Collectors.toList());

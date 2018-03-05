@@ -4,7 +4,7 @@ import com.googlecode.concurrenttrees.radix.RadixTree;
 import info.debatty.java.stringsimilarity.JaroWinkler;
 import models.assignee.normalization.name_correction.AssigneeTrimmer;
 import models.assignee.normalization.name_correction.NormalizeAssignees;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
@@ -63,11 +63,11 @@ public class ScrapeCompaniesWithAssigneeName {
             final String normalizedCompany = normalizer.normalizedAssignee(company);
             List<String> possible = new ArrayList<>();
             trie.getValuesForClosestKeys(company).forEach(a->possible.add(a));
-            PairBackup<String,Double> companyScorePair = possible.stream()
+            Pair<String,Double> companyScorePair = possible.stream()
                     .map(p->normalizer.normalizedAssignee(p))
                     .distinct()
                     .filter(p->Math.max(Database.getNormalizedAssetCountFor(p),Database.getAssetCountFor(p))>=100)
-                    .map(p->new PairBackup<>(p,distance.similarity(p,normalizedCompany)))
+                    .map(p->new Pair<>(p,distance.similarity(p,normalizedCompany)))
                     .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).findFirst().orElse(null);
             if(companyScorePair==null) return null;
             double score = companyScorePair.getSecond();
@@ -79,7 +79,7 @@ public class ScrapeCompaniesWithAssigneeName {
                         companyToExchangeMap.get(assignee).add(exchange);
                     }
                 }
-                return new PairBackup<>(assignee, symbol);
+                return new Pair<>(assignee, symbol);
             } else return null;
 
         }).filter(p->p!=null).collect(Collectors.groupingBy(p->p.getFirst(),Collectors.mapping(p->p.getSecond(),Collectors.toSet())));
@@ -101,13 +101,13 @@ public class ScrapeCompaniesWithAssigneeName {
         final long to = System.currentTimeMillis()/1000;
         final long from = LocalDateTime.of(startYear,1,1,0,0).atZone(ZoneId.of("America/Los_Angeles")).toInstant().toEpochMilli()/1000;
 
-        Map<String,List<PairBackup<LocalDate,Double>>> assigneeToStockPriceOverTimeMap = Collections.synchronizedMap(new HashMap<>());
+        Map<String,List<Pair<LocalDate,Double>>> assigneeToStockPriceOverTimeMap = Collections.synchronizedMap(new HashMap<>());
 
         AtomicInteger cnt = new AtomicInteger(0);
         companyToTickersMap.entrySet().parallelStream().forEach(e->{
             System.out.println(""+cnt.getAndIncrement()+" / "+companyToTickersMap.size());
             try {
-                List<PairBackup<LocalDate, Double>> data = stockDataFor(e.getValue(), from, to);
+                List<Pair<LocalDate, Double>> data = stockDataFor(e.getValue(), from, to);
                 if (data != null) {
                     assigneeToStockPriceOverTimeMap.put(e.getKey(), data);
                 }
@@ -131,7 +131,7 @@ public class ScrapeCompaniesWithAssigneeName {
         for (String assignee : assigneeToStockPriceOverTimeMap.keySet()) {
             Set<String> tickers = companyToTickersMap.get(assignee);
             StringJoiner priceJoiner = new StringJoiner(",","","\n");
-            List<PairBackup<LocalDate,Double>> stocks = assigneeToStockPriceOverTimeMap.get(assignee);
+            List<Pair<LocalDate,Double>> stocks = assigneeToStockPriceOverTimeMap.get(assignee);
             for(int i = startYear; i <= endYear; i++) {
                 // prices
                 final int year = i;
@@ -197,18 +197,18 @@ public class ScrapeCompaniesWithAssigneeName {
         return "\""+assignee+"\",\""+String.join("; ",tickers)+"\",\""+String.join("; ",exchanges)+"\",\""+wipoTechnology1+"\",\""+wipoTechnology2+"\","+portfolioSize+","+aiValue+","+isNormalized;
     }
 
-    public static Map<String,List<PairBackup<LocalDate,Double>>> getAssigneeToStockPriceOverTimeMap() {
+    public static Map<String,List<Pair<LocalDate,Double>>> getAssigneeToStockPriceOverTimeMap() {
         //return (Map<String,List<Pair<LocalDate,Double>>>)Database.tryLoadObject(assigneeToStockPriceOverTimeMapFile);
         return null;
     }
 
-    private static List<PairBackup<LocalDate,Double>> stockDataFor(Set<String> symbols, long from, long to) throws Exception {
+    private static List<Pair<LocalDate,Double>> stockDataFor(Set<String> symbols, long from, long to) throws Exception {
         // find best symbol
-        List<PairBackup<LocalDate,Double>> data = null;
+        List<Pair<LocalDate,Double>> data = null;
         List<String> sortedSymbols = new ArrayList<>(symbols);
         Collections.sort(sortedSymbols,(s1,s2)->Integer.compare(s1.length(),s2.length()));
         for(String symbol : sortedSymbols) {
-            List<PairBackup<LocalDate,Double>> tmp = ScrapeYahooStockPrices.getStocksFromSymbols(symbol, from, to);
+            List<Pair<LocalDate,Double>> tmp = ScrapeYahooStockPrices.getStocksFromSymbols(symbol, from, to);
             if(tmp==null) continue;
             if(data==null || tmp.size()>data.size()) data = tmp;
         }

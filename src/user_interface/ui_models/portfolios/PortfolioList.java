@@ -4,7 +4,7 @@ import elasticsearch.DataSearcher;
 import lombok.Getter;
 import lombok.Setter;
 import graphical_modeling.model.nodes.FactorNode;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.charts.tables.DeepList;
 import user_interface.ui_models.portfolios.items.Item;
@@ -41,13 +41,13 @@ public class PortfolioList implements Comparable<PortfolioList> {
         return Double.compare(o.avgSimilarity,avgSimilarity);
     }
 
-    public Stream<PairBackup<String,PortfolioList>> groupedBy(List<String> fields) {
-        if(fields==null||fields.isEmpty()) return Stream.of(new PairBackup<>("",this));
+    public Stream<Pair<String,PortfolioList>> groupedBy(List<String> fields) {
+        if(fields==null||fields.isEmpty()) return Stream.of(new Pair<>("",this));
 
         if(itemList.size()==0) return Stream.empty();
 
         String[] attrsArray = fields.toArray(new String[]{});
-        List<PairBackup<Item,DeepList<Object>>> items = (List<PairBackup<Item,DeepList<Object>>>)itemList.stream().flatMap(item-> {
+        List<Pair<Item,DeepList<Object>>> items = (List<Pair<Item,DeepList<Object>>>)itemList.stream().flatMap(item-> {
             List<List<?>> rs = fields.stream().map(attribute-> {
                 Object r = item.getData(attribute);
                 if (r != null) {
@@ -63,7 +63,7 @@ public class PortfolioList implements Comparable<PortfolioList> {
             }).collect(Collectors.toList());
             FactorNode factor = new FactorNode(null,attrsArray,rs.stream().mapToInt(r->Math.max(1,r.size())).toArray());
             return factor.assignmentPermutationsStream().map(assignment->{
-                return new PairBackup<>(item,
+                return new Pair<>(item,
                         new DeepList<>(
                                 IntStream.range(0,assignment.length).mapToObj(i->{
                                     if(i>=rs.size()) System.out.println("WARNING 1: "+factor.toString());
@@ -94,7 +94,7 @@ public class PortfolioList implements Comparable<PortfolioList> {
                         }
                         sj.add(String.join(": ", SimilarPatentServer.fullHumanAttributeFor(fields.get(i)),val));
                     }
-                    return new PairBackup<>(sj.toString(),new PortfolioList(e.getValue(),containsBlank));
+                    return new Pair<>(sj.toString(),new PortfolioList(e.getValue(),containsBlank));
                 });
     }
 

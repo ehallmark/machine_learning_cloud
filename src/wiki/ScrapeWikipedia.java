@@ -10,7 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 
@@ -128,12 +128,12 @@ public class ScrapeWikipedia {
         Map<String,List<String>> wikipediaMap = phrases.parallelStream()
                 .map(stem->{
                     List<String> sentences = pullWikipediaPageByPhrase(stem.split(" "));
-                    PairBackup<String,List<String>> pair;
+                    Pair<String,List<String>> pair;
                     if(sentences==null) {
                         missing.getAndIncrement();
                         pair = null;
                     } else {
-                        pair = new PairBackup<>(stem,sentences);
+                        pair = new Pair<>(stem,sentences);
                     }
                     cnt.getAndIncrement();
                     remaining.getAndDecrement();

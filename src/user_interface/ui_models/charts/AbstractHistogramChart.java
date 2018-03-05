@@ -3,7 +3,7 @@ package user_interface.ui_models.charts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -91,9 +91,9 @@ public class AbstractHistogramChart extends ChartAttribute {
     }
 
     private List<Series<?>> collectDistributionData(Collection<Item> data, double min, double max, int nBins, String attribute, String title, List<String> categories) {
-        List<PairBackup<Item,Number>> scores = data.stream().map(item->{
+        List<Pair<Item,Number>> scores = data.stream().map(item->{
             Object d = item.getData(attribute);
-            if(d!=null) return new PairBackup<>(item,(Number) d);
+            if(d!=null) return new Pair<>(item,(Number) d);
             else return null;
         }).filter(d->d!=null).collect(Collectors.toList());
         double step = (max-min)/nBins;

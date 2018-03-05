@@ -6,7 +6,7 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,7 +26,7 @@ public class TestModelHelper {
         return s.size();
     }
 
-    public static double testModel(Map<String,PairBackup<String,String>> filingData, Function3<String,String,String,Double> model) {
+    public static double testModel(Map<String,Pair<String,String>> filingData, Function3<String,String,String,Double> model) {
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicDouble sum = new AtomicDouble(0d);
         filingData.forEach((filing,pair)->{
@@ -39,7 +39,7 @@ public class TestModelHelper {
     }
 
 
-    protected static double test(DefaultPipelineManager<?,INDArray> pipelineManager, String modelName, Map<String,PairBackup<String,String>> filingData) {
+    protected static double test(DefaultPipelineManager<?,INDArray> pipelineManager, String modelName, Map<String,Pair<String,String>> filingData) {
         final Map<String,INDArray> allPredictions = pipelineManager.loadPredictions();
         AtomicInteger numMissing = new AtomicInteger(0);
         AtomicInteger totalSeen = new AtomicInteger(0);
@@ -72,21 +72,21 @@ public class TestModelHelper {
         if(filings.size()!=results.length) {
             throw new IllegalStateException("Filings size ("+filings.size()+") is not equal to results length ("+results.length+")");
         }
-        return IntStream.range(0,results.length).mapToObj(i->new PairBackup<>(filings.get(i),results[i]))
+        return IntStream.range(0,results.length).mapToObj(i->new Pair<>(filings.get(i),results[i]))
                 .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond()))
                 .limit(n)
                 .map(p->p.getFirst())
                 .collect(Collectors.toSet());
     }
 
-    protected static PairBackup<List<String>,INDArray> createFilingMatrix(Map<String,INDArray> filingToVectorMap) {
+    protected static Pair<List<String>,INDArray> createFilingMatrix(Map<String,INDArray> filingToVectorMap) {
         int columns = filingToVectorMap.values().stream().findAny().get().length();
         INDArray mat = Nd4j.create(filingToVectorMap.size(),columns);
         List<String> filings = Collections.synchronizedList(new ArrayList<>(filingToVectorMap.keySet()));
         for(int i = 0; i < filings.size(); i++) {
             mat.putRow(i, Transforms.unitVec(filingToVectorMap.get(filings.get(i))));
         }
-        return new PairBackup<>(filings,mat);
+        return new Pair<>(filings,mat);
     }
 
 

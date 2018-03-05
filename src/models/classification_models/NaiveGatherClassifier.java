@@ -7,7 +7,7 @@ import graphical_modeling.model.nodes.FactorNode;
 import graphical_modeling.model.nodes.Node;
 import models.model_testing.GatherTechnologyScorer;
 import models.model_testing.SplitModelData;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 
@@ -107,7 +107,7 @@ public class NaiveGatherClassifier extends ClassificationAttr implements Seriali
     }
 
     @Override
-    public List<PairBackup<String, Double>> attributesFor(Collection<String> portfolio, int limit) {
+    public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int limit) {
         Set<String> classifications = new HashSet<>();
         portfolio.forEach(token->classifications.addAll(Database.subClassificationsForPatent(token)));
         if(classifications.isEmpty()) return Collections.emptyList();
@@ -120,10 +120,10 @@ public class NaiveGatherClassifier extends ClassificationAttr implements Seriali
         FactorNode condTechFactor = bayesianNet.findNode("Technology").getFactors().get(0);
         FactorNode result = observedFactor.multiply(condTechFactor).sumOut(new String[]{"CPC"});
         result.reNormalize(new DivideByPartition());
-        List<PairBackup<String,Double>> values = new ArrayList<>();
+        List<Pair<String,Double>> values = new ArrayList<>();
         double[] array = result.getWeights();
         for(int i = 0; i < array.length; i++) {
-            values.add(new PairBackup<>(orderedTechnologies.get(i),array[i]));
+            values.add(new Pair<>(orderedTechnologies.get(i),array[i]));
         }
         return values.stream().sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
     }

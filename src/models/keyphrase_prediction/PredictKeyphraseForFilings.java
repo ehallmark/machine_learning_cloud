@@ -7,7 +7,7 @@ import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import tools.MinHeap;
@@ -114,7 +114,7 @@ public class PredictKeyphraseForFilings {
                         incomplete.getAndIncrement();
                         return null;
                     }
-                    return new PairBackup<>(filing,technologies);
+                    return new Pair<>(filing,technologies);
                 }).filter(pair->pair!=null).collect(Collectors.toConcurrentMap(e->e.getFirst(),e->e.getSecond())));
 
 

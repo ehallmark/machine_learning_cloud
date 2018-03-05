@@ -2,7 +2,7 @@ package stocks;
 
 import elasticsearch.DataSearcher;
 import org.elasticsearch.search.sort.SortOrder;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.AssetNumberAttribute;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class CreateAssetToFilingDateMap {
     private static final File assetToFilingDateMapFile = new File(Constants.DATA_FOLDER+"stock_asset_to_filing_date_map.jobj");
     public static void main(String[] args) throws Exception {
-        Map<String,List<PairBackup<LocalDate,Double>>> assigneeToStockPriceOverTimeMap = ScrapeCompanyTickers.getAssigneeToStockPriceOverTimeMap();
+        Map<String,List<Pair<LocalDate,Double>>> assigneeToStockPriceOverTimeMap = ScrapeCompanyTickers.getAssigneeToStockPriceOverTimeMap();
 
         Map<String,Set<String>> assigneeToAssetsMap = getAssigneeToAssetsMap(assigneeToStockPriceOverTimeMap);
 
@@ -68,7 +68,7 @@ public class CreateAssetToFilingDateMap {
         return (Map<String,LocalDate>) Database.tryLoadObject(assetToFilingDateMapFile);
     }
 
-    public static Map<String,Set<String>> getAssigneeToAssetsMap(Map<String,List<PairBackup<LocalDate,Double>>> assigneeToStockPriceOverTimeMap) {
+    public static Map<String,Set<String>> getAssigneeToAssetsMap(Map<String,List<Pair<LocalDate,Double>>> assigneeToStockPriceOverTimeMap) {
         Map<String,Set<String>> assigneeToAssetsMap = Collections.synchronizedMap(new HashMap<>());
         {
             Map<String, Collection<String>> allAssigneesToAssetsMap = Database.getNormalizedAssigneeToPatentsMap();

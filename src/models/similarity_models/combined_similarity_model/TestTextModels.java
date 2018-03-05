@@ -7,7 +7,7 @@ import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManage
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.acclaim_compatibility.Parser;
@@ -31,7 +31,7 @@ public class TestTextModels extends TestModelHelper {
 
 
 
-    public static double testModel(Map<String,PairBackup<String[],Set<String>>> keywordToWikiAndAssetsMap, Function2<String[],Integer,Set<String>> model, int n) {
+    public static double testModel(Map<String,Pair<String[],Set<String>>> keywordToWikiAndAssetsMap, Function2<String[],Integer,Set<String>> model, int n) {
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicDouble sum = new AtomicDouble(0d);
         keywordToWikiAndAssetsMap.forEach((keyword,pair)->{
@@ -103,7 +103,7 @@ public class TestTextModels extends TestModelHelper {
         // need to run searches on the keys
 
         Set<String> allFilings = Collections.synchronizedSet(new HashSet<>());
-        final Map<String,PairBackup<String[],Set<String>>> keywordToWikiAndAssetsMap = wikipediaData.entrySet().stream()
+        final Map<String,Pair<String[],Set<String>>> keywordToWikiAndAssetsMap = wikipediaData.entrySet().stream()
                 .map(e->{
                     if(allFilings.size()>maxSamples) return null;
                     String[] text = e.getValue().stream().limit(maxSentences)
@@ -113,7 +113,7 @@ public class TestTextModels extends TestModelHelper {
                     Set<String> relevantFilings = filingData.get(e.getKey());
                     if(relevantFilings!=null&&relevantFilings.size()>0) {
                         allFilings.addAll(relevantFilings);
-                        return new PairBackup<>(e.getKey(), new PairBackup<>(text, relevantFilings));
+                        return new Pair<>(e.getKey(), new Pair<>(text, relevantFilings));
                     } else return null;
                 }).filter(p->p!=null)
                 .collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
@@ -133,7 +133,7 @@ public class TestTextModels extends TestModelHelper {
         Map<String,INDArray> allPredictions1 = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME).loadPredictions();
         Map<String,INDArray> predictions1 = allFilings.stream().filter(allPredictions1::containsKey).collect(Collectors.toMap(e->e,e->allPredictions1.get(e)));
 
-        final PairBackup<List<String>,INDArray> filingsWithMatrix1 = createFilingMatrix(predictions1);
+        final Pair<List<String>,INDArray> filingsWithMatrix1 = createFilingMatrix(predictions1);
         final List<String> filings1 = filingsWithMatrix1.getFirst();
         final INDArray filingsMatrix1 = filingsWithMatrix1.getSecond();
         Function2<String[],Integer,Set<String>> model1_1 = (text,n) -> {

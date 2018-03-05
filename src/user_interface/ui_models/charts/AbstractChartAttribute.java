@@ -4,7 +4,7 @@ import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
@@ -170,7 +170,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         );
     }
 
-    protected Stream<PairBackup<String,PortfolioList>> groupPortfolioListForGivenAttribute(PortfolioList portfolioList, String attribute) {
+    protected Stream<Pair<String,PortfolioList>> groupPortfolioListForGivenAttribute(PortfolioList portfolioList, String attribute) {
         List<String> groupedBy = attrNameToGroupByAttrNameMap.get(attribute);
         Integer maxLimit = attrNameToMaxGroupSizeMap.get(attribute);
         Boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attribute,false);

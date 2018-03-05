@@ -1,6 +1,6 @@
 package models.value_models.regression;
 
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Database;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
@@ -18,7 +18,7 @@ public abstract class RegressionValueModel extends ValueAttr {
     private static final boolean debug = false;
     protected List<AbstractAttribute> attributes;
     protected List<Double> weights;
-    protected List<PairBackup<AbstractAttribute,Double>> attributesAndWeights;
+    protected List<Pair<AbstractAttribute,Double>> attributesAndWeights;
     protected double intercept;
     public RegressionValueModel(double intercept, List<AbstractAttribute> attributes, List<Double> weights) {
         this.attributes=attributes;
@@ -27,7 +27,7 @@ public abstract class RegressionValueModel extends ValueAttr {
         attributesAndWeights = new ArrayList<>();
         if(weights!=null&&attributes!=null) {
             for (int i = 0; i < attributes.size(); i++) {
-                attributesAndWeights.add(new PairBackup<>(attributes.get(i), weights.get(i)));
+                attributesAndWeights.add(new Pair<>(attributes.get(i), weights.get(i)));
             }
         }
     }

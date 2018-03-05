@@ -5,7 +5,7 @@ import models.genetics.Listener;
 import models.genetics.SolutionCreator;
 import lombok.Getter;
 import models.model_testing.SplitModelData;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import models.similarity_models.class_vectors.CPCSimilarityFinder;
@@ -83,19 +83,19 @@ public class GatherSVMClassifier extends ClassificationAttr {
     }
 
     @Override
-    public List<PairBackup<String, Double>> attributesFor(Collection<String> portfolio, int limit) {
+    public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int limit) {
         return portfolio.stream().map(token->{
             INDArray vector = lookupTable.get(token);
             if(vector!=null) {
                 double[] results = SVMHelper.svmPredictionDistribution(new double[][]{vector.data().asDouble()},model)[0];
-                List<PairBackup<String,Double>> maxResults = new ArrayList<>();
+                List<Pair<String,Double>> maxResults = new ArrayList<>();
                 for(int i = 0; i < results.length; i++) {
-                    maxResults.add(new PairBackup<>(orderedTechnologies.get(model.label[i]),results[i]));
+                    maxResults.add(new Pair<>(orderedTechnologies.get(model.label[i]),results[i]));
                 }
                 return maxResults.stream().sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
             } else return null;
         }).filter(d->d!=null).flatMap(list->list.stream()).collect(Collectors.groupingBy(p->p.getFirst(), Collectors.summingDouble(p->p.getSecond()))).entrySet().stream()
-                .map(e->new PairBackup<>(e.getKey(),e.getValue().doubleValue())).sorted((p1, p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit)
+                .map(e->new Pair<>(e.getKey(),e.getValue().doubleValue())).sorted((p1, p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit)
                 .collect(Collectors.toList());
     }
 
@@ -103,7 +103,7 @@ public class GatherSVMClassifier extends ClassificationAttr {
     public void train(Map<String, Collection<String>> trainingData) {
         System.out.println("Building models.svm data...");
         this.orderedTechnologies=new ArrayList<>(trainingData.keySet());
-        PairBackup<double[][],double[][]> training = SVMHelper.mapToSVMData(trainingData,this.orderedTechnologies, this.lookupTable);
+        Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(trainingData,this.orderedTechnologies, this.lookupTable);
 
         System.out.println("Training models.svm model...");
         model = SVMHelper.svmTrain(training.getFirst(),training.getSecond(),param);
@@ -112,7 +112,7 @@ public class GatherSVMClassifier extends ClassificationAttr {
     @Override
     public ClassificationAttr optimizeHyperParameters(Map<String, Collection<String>> trainingData, Map<String, Collection<String>> validationData) {
         System.out.println("Building models.svm data...");
-        PairBackup<double[][],double[][]> training = SVMHelper.mapToSVMData(trainingData,this.orderedTechnologies,this.lookupTable);
+        Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(trainingData,this.orderedTechnologies,this.lookupTable);
 
         System.out.println("Starting genetic algorithm...");
         SolutionCreator creator = new SVMSolutionCreator(training,validationData,orderedTechnologies, lookupTable);
@@ -177,7 +177,7 @@ public class GatherSVMClassifier extends ClassificationAttr {
 
 
         System.out.println("Building models.svm data...");
-        PairBackup<double[][],double[][]> training = SVMHelper.mapToSVMData(gatherTrainingMap,orderedTechnologies,SimilarPatentFinder.getLookupTable());
+        Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(gatherTrainingMap,orderedTechnologies,SimilarPatentFinder.getLookupTable());
 
         System.out.println("Training models.svm model...");
         svm_model m = SVMHelper.svmTrain(training.getFirst(),training.getSecond(),param);
@@ -203,7 +203,7 @@ public class GatherSVMClassifier extends ClassificationAttr {
         param.p=0.5;
 
         System.out.println("Building models.svm data...");
-        PairBackup<double[][],double[][]> training = SVMHelper.mapToSVMData(gatherTrainingMap,orderedTechnologies, CPCSimilarityFinder.getLookupTable());
+        Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(gatherTrainingMap,orderedTechnologies, CPCSimilarityFinder.getLookupTable());
 
         System.out.println("Training models.svm model...");
         svm_model m = SVMHelper.svmTrain(training.getFirst(),training.getSecond(),param);

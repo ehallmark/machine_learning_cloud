@@ -21,7 +21,7 @@ import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
@@ -96,7 +96,7 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
         System.out.println("Rebuilding prerequisite data... this may take awhile");
         wipoTechnologyMap = Collections.synchronizedMap(new HashMap<>());
 
-        Consumer<PairBackup<String,String>> assetWipoConsumer = pair -> {
+        Consumer<Pair<String,String>> assetWipoConsumer = pair -> {
             wipoTechnologyMap.put(pair.getFirst(), pair.getSecond());
         };
 
@@ -149,7 +149,7 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
         return new AbstractAssetDataSetIterator(assets,featuresFunc,labelsFunc,nInputs,getWipoTechnologyList().size(),batchSize,shuffle);
     }
 
-    public static void iterateOverDocuments(Consumer<PairBackup<String,String>> assetWipoConsumer, Function<Void,Void> finallyDo) {
+    public static void iterateOverDocuments(Consumer<Pair<String,String>> assetWipoConsumer, Function<Void,Void> finallyDo) {
         BoolQueryBuilder query = QueryBuilders.boolQuery()
                 .must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(2039852)));
 
@@ -172,7 +172,7 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
             if(assets!=null&&assets.size()>0) {
                 Object wipo = hit.getSource().get(Constants.WIPO_TECHNOLOGY);
                 if(wipo!=null) {
-                    assetWipoConsumer.accept(new PairBackup<>(assets.stream().findAny().get(), (String)wipo));
+                    assetWipoConsumer.accept(new Pair<>(assets.stream().findAny().get(), (String)wipo));
                 }
             }
             return null;

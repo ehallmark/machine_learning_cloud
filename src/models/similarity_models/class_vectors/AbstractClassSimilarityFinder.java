@@ -1,6 +1,6 @@
 package models.similarity_models.class_vectors;
 
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
@@ -20,9 +20,9 @@ public abstract class AbstractClassSimilarityFinder {
         Map<String,INDArray> lookupTable = Collections.synchronizedMap(new HashMap<>());
 
         // Batching
-        List<PairBackup<String,List<String>>> collections = Collections.synchronizedList(new ArrayList<>());
+        List<Pair<String,List<String>>> collections = Collections.synchronizedList(new ArrayList<>());
         allAssets.parallelStream().forEach(patent->{
-            collections.add(new PairBackup<>(patent,Arrays.asList(patent)));
+            collections.add(new Pair<>(patent,Arrays.asList(patent)));
         });
 
         System.out.println("Starting assignees");
@@ -30,12 +30,12 @@ public abstract class AbstractClassSimilarityFinder {
             List assets = new ArrayList(Database.selectPatentNumbersFromExactAssignee(assignee));
             assets.addAll(Database.selectApplicationNumbersFromExactAssignee(assignee));
             if(assets.isEmpty()) return;
-            collections.add(new PairBackup<>(assignee,assets));
+            collections.add(new Pair<>(assignee,assets));
         });
 
         int batchSize = 10000;
         System.out.println("Batching...");
-        List<PairBackup<List<String>,INDArray>> data = new ArrayList<>();
+        List<Pair<List<String>,INDArray>> data = new ArrayList<>();
         for(int i = 0; i < collections.size(); i+=batchSize) {
             List<INDArray> list = new ArrayList<>();
             List<String> names = new ArrayList<>();
@@ -43,7 +43,7 @@ public abstract class AbstractClassSimilarityFinder {
                 names.add(collections.get(j).getFirst());
                 list.add(Nd4j.create(vectorizer.classVectorForPatents(collections.get(j).getSecond(),orderedClassifications,classDepth)));
             }
-            data.add(new PairBackup<>(names,Nd4j.vstack(list)));
+            data.add(new Pair<>(names,Nd4j.vstack(list)));
             System.out.println("i: "+i);
         }
 

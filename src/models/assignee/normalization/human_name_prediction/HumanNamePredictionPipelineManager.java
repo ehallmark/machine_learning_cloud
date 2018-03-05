@@ -22,7 +22,7 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.portfolios.items.Item;
@@ -302,7 +302,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
         }
     }
 
-    public PairBackup<INDArray,INDArray> getFeaturesAndFeatureMask(@NonNull String name) {
+    public Pair<INDArray,INDArray> getFeaturesAndFeatureMask(@NonNull String name) {
         name = name.toLowerCase().trim()+" ";
         float[][] x = new float[MAX_NAME_LENGTH][this.inputSize()];
         float[] mask = new float[MAX_NAME_LENGTH];
@@ -319,7 +319,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                 xi[xi.length-1]=1;
             }
         }
-        return new PairBackup<>(Nd4j.create(x).transposei(),Nd4j.create(mask));
+        return new Pair<>(Nd4j.create(x).transposei(),Nd4j.create(mask));
     }
 
     private DataSetIterator getRawIterator(List<String> _humans, List<String> _companies, int numSamples, int batchSize, boolean replace) {
@@ -345,7 +345,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                     int randIdx = rand.nextInt(toSampleFrom.size());
                     String name = (replace ? toSampleFrom.get(randIdx) : toSampleFrom.remove(randIdx));
 
-                    PairBackup<INDArray,INDArray> featuresAndMask = getFeaturesAndFeatureMask(name);
+                    Pair<INDArray,INDArray> featuresAndMask = getFeaturesAndFeatureMask(name);
                     features.put(new INDArrayIndex[]{NDArrayIndex.point(idx),NDArrayIndex.all(),NDArrayIndex.all()},featuresAndMask.getFirst());
                     featureMask.putRow(idx,featuresAndMask.getSecond());
 

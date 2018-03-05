@@ -2,7 +2,7 @@ package models.classification_models.svm.genetics;
 
 import models.genetics.Solution;
 import models.genetics.SolutionCreator;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 
 import java.util.*;
 
@@ -13,13 +13,13 @@ import models.classification_models.svm.libsvm.svm_parameter;
  * Created by Evan on 5/24/2017.
  */
 public class SVMSolutionCreator implements SolutionCreator {
-    protected PairBackup<double[][],double[][]> trainingData;
+    protected Pair<double[][],double[][]> trainingData;
     protected Map<String,Collection<String>> validationData;
     protected List<String> technologies;
     private static final Random rand = new Random(69);
     private Map<String,INDArray> lookupTable;
 
-    public SVMSolutionCreator(PairBackup<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies, Map<String,INDArray> lookupTable) {
+    public SVMSolutionCreator(Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies, Map<String,INDArray> lookupTable) {
         this.trainingData=trainingData;
         this.validationData=validationData;
         this.lookupTable=lookupTable;

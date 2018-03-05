@@ -1,7 +1,7 @@
 package models.similarity_models.paragraph_vectors;
 
 
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 
 /**
  * Created by ehallmark on 9/5/16.
@@ -27,8 +27,8 @@ public class WordFrequencyPair<T,V extends Comparable<V>> implements Comparable<
         return getSecond().compareTo(other.getSecond());
     }
 
-    public PairBackup<T,V> toPair() {
-        return new PairBackup<>(first,second);
+    public Pair<T,V> toPair() {
+        return new Pair<>(first,second);
     }
 
     @Override

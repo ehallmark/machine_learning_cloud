@@ -9,13 +9,12 @@ import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.scorers.TechnologyScorer;
 
 import org.apache.commons.math3.linear.RealMatrix;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Database;
 import tools.ClassCodeHandler;
 import tools.OpenMapBigRealMatrix;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
-import graphical_modeling.util.Pair;
 
 import java.io.File;
 import java.util.*;
@@ -45,7 +44,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             }
             // apply filter 3
             System.out.println("Num keywords before stage 4: " + data.size());
-            RealMatrix T = buildTMatrix()._2;
+            RealMatrix T = buildTMatrix().getSecond();
 
             System.out.println("Applying filters...");
             data = applyFilters(new TechnologyScorer(), T, data, defaultLower, defaultUpper, minValue);
@@ -111,7 +110,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             System.out.println("Num filings with cpcs: " + filingToCPCMap.size());
         }
 
-        Function<PairBackup<String,Map<MultiStem,Integer>>,Void> attributesFunction = pair-> {
+        Function<Pair<String,Map<MultiStem,Integer>>,Void> attributesFunction = pair-> {
             String asset = pair.getFirst();
             Map<MultiStem,Integer> wordCounts = pair.getSecond();
             total.getAndIncrement();

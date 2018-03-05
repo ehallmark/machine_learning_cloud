@@ -6,7 +6,7 @@ import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Constants;
 import tools.Stemmer;
@@ -41,7 +41,7 @@ public class WordToCPCIterator extends WordVectorizerToCPCVectorIterator {
     public void buildVocabMap(int minDocCount, int maxDocCount) {
         wordToDocCountMap = Collections.synchronizedMap(new HashMap<>());
         AtomicInteger cnt = new AtomicInteger(0);
-        Consumer<PairBackup<String,Collection<String>>> consumer = pair -> {
+        Consumer<Pair<String,Collection<String>>> consumer = pair -> {
             if(cnt.getAndIncrement()%10000==9999) System.out.println("Seen vocab for: "+cnt.get());
             pair.getSecond().forEach(word -> {
                 synchronized (wordToDocCountMap) {
@@ -54,7 +54,7 @@ public class WordToCPCIterator extends WordVectorizerToCPCVectorIterator {
         while(documentIterator.hasNext()) {
             LabelledDocument doc = documentIterator.nextDocument();
             if(doc!=null&&doc.getLabels().size()>0&&doc.getContent()!=null&&doc.getContent().length()>0) {
-                consumer.accept(new PairBackup<>(doc.getLabels().get(0), defaultTokenizer.apply(doc.getContent())));
+                consumer.accept(new Pair<>(doc.getLabels().get(0), defaultTokenizer.apply(doc.getContent())));
             }
         }
         documentIterator.reset();

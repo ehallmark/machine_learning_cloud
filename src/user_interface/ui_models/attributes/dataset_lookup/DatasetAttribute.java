@@ -2,7 +2,7 @@ package user_interface.ui_models.attributes.dataset_lookup;
 
 import elasticsearch.DatasetIndex;
 import j2html.tags.Tag;
-import org.nd4j.linalg.primitives.PairBackup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  */
 public class DatasetAttribute extends TermsLookupAttribute {
 
-    private List<PairBackup<String,Set<String>>> currentDatasets;
+    private List<Pair<String,Set<String>>> currentDatasets;
 
     @Override
     public List<String> termsFor(String asset) {
@@ -63,7 +63,7 @@ public class DatasetAttribute extends TermsLookupAttribute {
         return SimilarPatentServer.technologySelectWithCustomClass(name, id, "dataset-multiselect", Collections.emptyList());
     }
 
-    public static PairBackup<String,Set<String>> createDatasetFor(String label) {
+    public static Pair<String,Set<String>> createDatasetFor(String label) {
         // need to get latest folder name for this dataset and assets
         String[] tmp = label.split("_",2);
         if(tmp.length==2) {
@@ -72,7 +72,7 @@ public class DatasetAttribute extends TermsLookupAttribute {
             String user = tmp[1];
             String file = tmp[0];
             String datasetName = SimilarPatentServer.datasetNameFrom(user, file);
-            return new PairBackup<>(datasetName, new HashSet<>(assets));
+            return new Pair<>(datasetName, new HashSet<>(assets));
         }
         return null;
     }
@@ -80,14 +80,14 @@ public class DatasetAttribute extends TermsLookupAttribute {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        currentDatasets = Collections.synchronizedList(new ArrayList<PairBackup<String, Set<String>>>());
+        currentDatasets = Collections.synchronizedList(new ArrayList<Pair<String, Set<String>>>());
         AbstractIncludeFilter filter = new AbstractIncludeFilter(this, AbstractFilter.FilterType.Include,getFieldType(),null);
         filter.extractRelevantInformationFromParams(params);
         if(filter.isActive()) {
             Collection<String> labels = ((AbstractIncludeFilter)filter).getLabels();
             if(labels!=null) {
                 labels.forEach(label->{
-                    PairBackup<String,Set<String>> ds = createDatasetFor(label);
+                    Pair<String,Set<String>> ds = createDatasetFor(label);
                     if(ds!=null) {
                         currentDatasets.add(ds);
                     }
