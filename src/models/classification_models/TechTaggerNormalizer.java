@@ -3,11 +3,10 @@ package models.classification_models;
 import models.genetics.GeneticAlgorithm;
 import models.genetics.Listener;
 import models.genetics.SolutionCreator;
-import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import tools.MinHeap;
 import models.classification_models.genetics.TechTaggerSolution;
 import models.classification_models.genetics.TechTaggerSolutionCreator;
@@ -15,13 +14,11 @@ import models.classification_models.genetics.TechTaggerSolutionCreator;
 import java.io.File;
 import java.util.*;
 
-import static j2html.TagCreator.div;
-
 /**
  * Created by Evan on 3/4/2017.
  */
 public class TechTaggerNormalizer extends ClassificationAttr {
-    private List<Pair<ClassificationAttr,Double>> taggerPairs;
+    private List<PairBackup<ClassificationAttr,Double>> taggerPairs;
     private List<ClassificationAttr> taggers;
     private List<Double> weights;
     private static List<Double> DEFAULT_WEIGHTS;
@@ -69,7 +66,7 @@ public class TechTaggerNormalizer extends ClassificationAttr {
         this.taggers=taggers;
         this.taggerPairs=new ArrayList<>(taggers.size());
         for(int i = 0; i < taggers.size(); i++) {
-            this.taggerPairs.add(new Pair<>(taggers.get(i),weights.get(i)));
+            this.taggerPairs.add(new PairBackup<>(taggers.get(i),weights.get(i)));
         }
     }
 
@@ -111,14 +108,14 @@ public class TechTaggerNormalizer extends ClassificationAttr {
         }
     }
 
-    private List<Pair<String,Double>> technologyHelper(Collection<String> portfolio, int n) {
+    private List<PairBackup<String,Double>> technologyHelper(Collection<String> portfolio, int n) {
         Map<String,Double> technologyScores = new HashMap<>();
         taggerPairs.forEach(taggerPair->{
             ClassificationAttr tagger = taggerPair.getFirst();
             double weight = taggerPair.getSecond();
-            List<Pair<String, Double>> data = tagger.attributesFor(portfolio,n);
+            List<PairBackup<String, Double>> data = tagger.attributesFor(portfolio,n);
             if (data != null && data.size() >= 1) {
-                for (Pair<String, Double> pair : data) {
+                for (PairBackup<String, Double> pair : data) {
                     double val = pair.getSecond() * weight;
                     if (technologyScores.containsKey(pair.getFirst())) {
                         technologyScores.put(pair.getFirst(), Math.max(technologyScores.get(pair.getFirst()), val));
@@ -134,16 +131,16 @@ public class TechTaggerNormalizer extends ClassificationAttr {
             double val = e.getValue();
             heap.add(new WordFrequencyPair<>(name, val));
         });
-        List<Pair<String,Double>> data = new ArrayList<>(n);
+        List<PairBackup<String,Double>> data = new ArrayList<>(n);
         while(!heap.isEmpty()) {
             WordFrequencyPair<String,Double> pair = heap.remove();
-            data.add(0,new Pair<>(pair.getFirst(),pair.getSecond()));
+            data.add(0,new PairBackup<>(pair.getFirst(),pair.getSecond()));
         }
         return data;
     }
 
     @Override
-    public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int n) {
+    public List<PairBackup<String, Double>> attributesFor(Collection<String> portfolio, int n) {
         return technologyHelper(portfolio,n);
     }
 

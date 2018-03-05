@@ -22,6 +22,8 @@ import lombok.Data;
 import org.deeplearning4j.nn.conf.graph.GraphVertex;
 import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.inputs.InvalidInputTypeException;
+import org.deeplearning4j.nn.conf.memory.LayerMemoryReport;
+import org.deeplearning4j.nn.conf.memory.MemoryReport;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.shade.jackson.annotation.JsonProperty;
@@ -37,7 +39,7 @@ import java.util.Arrays;
  * @author Justin Long (crockpotveggies)
  */
 @Data
-public class ReshapeVertex extends GraphVertex {
+public class ReshapeVertex  {/*
     public static final char DEFAULT_RESHAPE_ORDER = 'c';
 
     protected char reshapeOrder = 'c';
@@ -77,6 +79,7 @@ public class ReshapeVertex extends GraphVertex {
         return 0;
     }
 
+
     @Override
     public org.deeplearning4j.nn.graph.vertex.GraphVertex instantiate(ComputationGraph graph, String name, int idx,
                                                                       INDArray paramsView, boolean initializeParams) {
@@ -99,4 +102,5 @@ public class ReshapeVertex extends GraphVertex {
         }
     }
 
+  */
 }

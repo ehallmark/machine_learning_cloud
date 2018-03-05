@@ -3,12 +3,12 @@ package models.value_models.graphical;
 import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.NonNull;
-import model.functions.inference_methods.BeliefPropagation;
-import model.functions.normalization.DivideByPartition;
-import model.graphs.Graph;
-import model.learning.algorithms.BayesianLearningAlgorithm;
-import model.learning.algorithms.ExpectationMaximizationAlgorithm;
-import model.nodes.FactorNode;
+import graphical_modeling.model.functions.inference_methods.BeliefPropagation;
+import graphical_modeling.model.functions.normalization.DivideByPartition;
+import graphical_modeling.model.graphs.Graph;
+import graphical_modeling.model.learning.algorithms.BayesianLearningAlgorithm;
+import graphical_modeling.model.learning.algorithms.ExpectationMaximizationAlgorithm;
+import graphical_modeling.model.nodes.FactorNode;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 import user_interface.ui_models.portfolios.items.Item;
 

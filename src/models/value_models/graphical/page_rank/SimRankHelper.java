@@ -1,6 +1,6 @@
 package models.value_models.graphical.page_rank;
 
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import seeding.Database;
 import java.io.File;
 import java.util.*;
@@ -33,21 +33,21 @@ public class SimRankHelper {
 
     private static void saveRankTable(File file, Map<String,Collection<String>> map, SimRank algorithm) {
         System.out.println("Starting to create similarity map!");
-        Map<String, List<Pair<String, Float>>> similarityMap = Collections.synchronizedMap(new HashMap<>(map.size()));
+        Map<String, List<PairBackup<String, Float>>> similarityMap = Collections.synchronizedMap(new HashMap<>(map.size()));
         algorithm.rankTable.forEach((edge, sim) -> {
             if (!similarityMap.containsKey(edge.getNode1())) {
                 similarityMap.put(edge.getNode1(), new ArrayList<>());
             }
-            similarityMap.get(edge.getNode1()).add(new Pair<>(edge.getNode2(), sim));
+            similarityMap.get(edge.getNode1()).add(new PairBackup<>(edge.getNode2(), sim));
             if (!similarityMap.containsKey(edge.getNode2())) {
                 similarityMap.put(edge.getNode2(), new ArrayList<>());
             }
-            similarityMap.get(edge.getNode2()).add(new Pair<>(edge.getNode1(), sim));
+            similarityMap.get(edge.getNode2()).add(new PairBackup<>(edge.getNode1(), sim));
         });
         System.out.println("Sorting similarity map!");
         // sort
         similarityMap.entrySet().stream().parallel().forEach(e -> {
-            List<Pair<String,Float>> list = e.getValue();
+            List<PairBackup<String,Float>> list = e.getValue();
             Collections.sort(list, (p1, p2) -> p2.getSecond().compareTo(p1.getSecond()));
         });
 

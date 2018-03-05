@@ -17,7 +17,7 @@ import org.apache.commons.io.LineIterator;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.gephi.graph.api.Node;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import seeding.Constants;
 import seeding.Database;
 import tools.Stemmer;
@@ -315,7 +315,7 @@ public abstract class Stage<V> {
             Map<MultiStem, Integer> data = Stream.of(text.split(",")).map(str -> {
                 String[] pair = str.split(":");
                 if (pair.length == 1) return null;
-                return new Pair<>(new MultiStem(pair[0].split("_"), -1), Integer.valueOf(pair[1]));
+                return new PairBackup<>(new MultiStem(pair[0].split("_"), -1), Integer.valueOf(pair[1]));
             }).filter(p -> p != null).collect(Collectors.toMap(p -> p.getFirst(), p -> p.getSecond()));
             attributesFunction.apply(data);
             return null;
@@ -323,7 +323,7 @@ public abstract class Stage<V> {
         samplingIteratorHelper(lineTransformer,sampling);
     }
 
-    public static void runSamplingIteratorWithLabels(Function<Pair<String, Map<MultiStem, Integer>>, Void> attributesFunction, int sampling) {
+    public static void runSamplingIteratorWithLabels(Function<PairBackup<String, Map<MultiStem, Integer>>, Void> attributesFunction, int sampling) {
         Function<String, Void> lineTransformer = line -> {
             String[] cells = line.split(",", 3);
             String asset = cells[0];
@@ -333,9 +333,9 @@ public abstract class Stage<V> {
             Map<MultiStem, Integer> data = Stream.of(text.split(",")).map(str -> {
                 String[] pair = str.split(":");
                 if (pair.length == 1) return null;
-                return new Pair<>(new MultiStem(pair[0].split("_"), -1), Integer.valueOf(pair[1]));
+                return new PairBackup<>(new MultiStem(pair[0].split("_"), -1), Integer.valueOf(pair[1]));
             }).filter(p -> p != null).collect(Collectors.toMap(p -> p.getFirst(), p -> p.getSecond()));
-            attributesFunction.apply(new Pair<>(asset, data));
+            attributesFunction.apply(new PairBackup<>(asset, data));
             return null;
         };
         samplingIteratorHelper(lineTransformer,sampling);

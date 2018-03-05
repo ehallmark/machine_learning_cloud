@@ -1,10 +1,10 @@
 package models.value_models.graphical;
 
 import elasticsearch.DataSearcher;
-import model.graphs.BayesianNet;
-import model.graphs.Graph;
-import model.nodes.FactorNode;
-import model.nodes.Node;
+import graphical_modeling.model.graphs.BayesianNet;
+import graphical_modeling.model.graphs.Graph;
+import graphical_modeling.model.nodes.FactorNode;
+import graphical_modeling.model.nodes.Node;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.Database;

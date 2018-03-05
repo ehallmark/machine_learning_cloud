@@ -1,9 +1,7 @@
 package test;
 
-import com.googlecode.concurrenttrees.radix.RadixTree;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import seeding.Database;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCitedAssetsMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
@@ -29,7 +27,7 @@ public class BMCTest {
         // citations
         AssetToCitedAssetsMap assetToCitedAssetsMap = new AssetToCitedAssetsMap();
 
-        Collection<Pair<String,Collection<String>>> citedAssets = assets.stream().map(asset->new Pair<>(asset,assetToCitedAssetsMap.getPatentDataMap().getOrDefault(asset,Collections.emptyList()))).collect(Collectors.toList());
+        Collection<PairBackup<String,Collection<String>>> citedAssets = assets.stream().map(asset->new PairBackup<>(asset,assetToCitedAssetsMap.getPatentDataMap().getOrDefault(asset,Collections.emptyList()))).collect(Collectors.toList());
 
         Map<String,Collection<String>> assetToBMCMap = new HashMap<>();
         citedAssets.forEach(p->{

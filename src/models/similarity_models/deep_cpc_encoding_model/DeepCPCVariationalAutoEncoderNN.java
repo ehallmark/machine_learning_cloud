@@ -5,7 +5,6 @@ import cpc_normalization.CPCHierarchy;
 import data_pipeline.helpers.Function2;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
-import data_pipeline.optimize.nn_optimization.NNRefactorer;
 import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -22,7 +21,6 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
@@ -31,7 +29,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 

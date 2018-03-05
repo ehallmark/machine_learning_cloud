@@ -8,7 +8,7 @@ import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import seeding.Database;
 import user_interface.ui_models.attributes.computable_attributes.TechnologyAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
@@ -55,7 +55,7 @@ public class AssetKMeans {
             List<INDArray> cpcVecs = cpcs.stream().map(cpc->cpcVectors.get(cpc)).filter(vec->vec!=null).collect(Collectors.toList());
             if(cpcVecs.size()>0) {
                 INDArray cpcVec = Transforms.unitVec(Nd4j.vstack(cpcVecs).mean(0));
-                return new Pair<>(asset,cpcVec);
+                return new PairBackup<>(asset,cpcVec);
             }
             else return null;
         }).filter(p->p!=null).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
@@ -109,8 +109,8 @@ public class AssetKMeans {
                     .entrySet().stream()
                     .map(e->{
                         double tfidf = e.getValue().doubleValue()*Math.log(1d/overallTagFrequencyMap.get(e.getKey()).doubleValue());
-                        return new Pair<>(e.getKey(),tfidf);
-                    }).max(Comparator.comparing(e->e.getSecond())).orElse(new Pair<>(null,null)).getFirst();
+                        return new PairBackup<>(e.getKey(),tfidf);
+                    }).max(Comparator.comparing(e->e.getSecond())).orElse(new PairBackup<>(null,null)).getFirst();
 
 
 

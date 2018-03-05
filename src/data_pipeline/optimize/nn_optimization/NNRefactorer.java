@@ -17,8 +17,8 @@ public class NNRefactorer {
     public static MultiLayerNetwork updateNetworkLearningRate(MultiLayerNetwork orig, double learningRate, boolean dup) {
         Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier = builder -> builder.learningRate(learningRate).biasLearningRate(learningRate);
         Function<Layer,Void> layerApplier = layer -> {
-            layer.setLearningRate(learningRate);
-            layer.setBiasLearningRate(learningRate);
+           // layer.setLearningRate(learningRate);
+           // layer.setBiasLearningRate(learningRate);
             return null;
         };
         return updateNetwork(orig,netApplier,layerApplier,false,true,dup);
@@ -34,7 +34,7 @@ public class NNRefactorer {
     public static MultiLayerNetwork updateNetworkUpdater(MultiLayerNetwork orig, Updater updater, boolean dup) {
         Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier = builder -> builder.updater(updater);
         Function<Layer,Void> layerApplier = layer -> {
-            layer.setUpdater(updater);
+            //layer.setUpdater(updater);
             return null;
         };
         return updateNetwork(orig,netApplier,layerApplier,false,true,dup);
@@ -43,7 +43,7 @@ public class NNRefactorer {
     public static MultiLayerNetwork updateNetworkRegularization(MultiLayerNetwork orig, boolean regularize, double l2, boolean dup) {
         Function<NeuralNetConfiguration.Builder,NeuralNetConfiguration.Builder> netApplier = builder -> builder.regularization(regularize).l2(l2);
         Function<Layer,Void> layerApplier = layer -> {
-            layer.setL2(l2);
+            //layer.setL2(l2);
             return null;
         };
         return updateNetwork(orig,netApplier,layerApplier,false,true,dup);

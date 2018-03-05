@@ -7,7 +7,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.*;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import seeding.Constants;
 import user_interface.ui_models.attributes.script_attributes.CalculatedExpirationDateAttribute;
 import user_interface.ui_models.attributes.script_attributes.CalculatedPriorityDateAttribute;
@@ -401,7 +401,7 @@ public class Parser {
         }
     }
 
-    private Pair<SpanQueryBuilder,String> spanQueryFrom(BooleanClause clause, String defaultField) {
+    private PairBackup<SpanQueryBuilder,String> spanQueryFrom(BooleanClause clause, String defaultField) {
         Query query = clause.getQuery();
         if(query instanceof BooleanQuery) {
             SpanOrQueryBuilder orBuilder = null;
@@ -412,7 +412,7 @@ public class Parser {
             String nestedAttr = null;
             for(int i = 0; i < ((BooleanQuery) query).clauses().size(); i++) {
                 BooleanClause c = ((BooleanQuery) query).clauses().get(i);
-                Pair<SpanQueryBuilder,String> inner = spanQueryFrom(c,defaultField);
+                PairBackup<SpanQueryBuilder,String> inner = spanQueryFrom(c,defaultField);
                 if(inner!=null) {
                     nestedAttr = inner.getSecond();
                     if(c.isProhibited()) {
@@ -437,8 +437,8 @@ public class Parser {
                     lastInner = inner.getFirst();
                 }
             }
-            if(useAnd) return new Pair<>(andBuilder,nestedAttr);
-            else return new Pair<>(orBuilder,nestedAttr);
+            if(useAnd) return new PairBackup<>(andBuilder,nestedAttr);
+            else return new PairBackup<>(orBuilder,nestedAttr);
         } else {
             if(defaultField!=null) {
                 // check nested
@@ -450,7 +450,7 @@ public class Parser {
                 if(queryStr.startsWith("TAC:")||queryStr.startsWith("ICLM:")||queryStr.startsWith("DCLM:")) {
                     queryStr = queryStr.substring(queryStr.indexOf(":")+1);
                 }
-                return new Pair<>(new SpanTermQueryBuilder(defaultField, queryStr),nestedAttr);
+                return new PairBackup<>(new SpanTermQueryBuilder(defaultField, queryStr),nestedAttr);
             } else {
                 String[] fields = query.toString().split(":",2);
                 String field = fields[0];
@@ -463,7 +463,7 @@ public class Parser {
                         if(Constants.NESTED_ATTRIBUTES.contains(attr)||(attr.contains(".")&&Constants.NESTED_ATTRIBUTES.contains(attr.substring(0,attr.indexOf("."))))) {
                             nestedAttr = attr.substring(0,attr.indexOf("."));
                         }
-                        return new Pair<>(new SpanTermQueryBuilder(attr, val),nestedAttr);
+                        return new PairBackup<>(new SpanTermQueryBuilder(attr, val),nestedAttr);
                     }
                 }
             }
@@ -550,8 +550,8 @@ public class Parser {
                         }
                         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
                         for(String field : fields) {
-                            Pair<SpanQueryBuilder,String> builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx),field);
-                            Pair<SpanQueryBuilder,String> builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),field);
+                            PairBackup<SpanQueryBuilder,String> builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx),field);
+                            PairBackup<SpanQueryBuilder,String> builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),field);
                             QueryBuilder innerQuery =  new SpanNearQueryBuilder(builder1.getFirst(), slop).inOrder(useOrder)
                                     .addClause(builder2.getFirst());
                             if(additionalFilter!=null) {
@@ -566,8 +566,8 @@ public class Parser {
                         }
                         builder = boolQueryBuilder;
                     } else {
-                        Pair<SpanQueryBuilder,String> builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx),null);
-                        Pair<SpanQueryBuilder,String> builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),null);
+                        PairBackup<SpanQueryBuilder,String> builder1 = spanQueryFrom(booleanQuery.clauses().get(preIdx),null);
+                        PairBackup<SpanQueryBuilder,String> builder2 = spanQueryFrom(booleanQuery.clauses().get(postIdx),null);
                         if(builder1!=null&&builder2!=null) {
                             builder = new SpanNearQueryBuilder(builder1.getFirst(), slop).inOrder(useOrder)
                                     .addClause(builder2.getFirst());

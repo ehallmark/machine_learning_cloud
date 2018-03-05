@@ -4,7 +4,7 @@ import models.genetics.GeneticAlgorithm;
 import models.genetics.Listener;
 import models.genetics.SolutionCreator;
 import models.model_testing.SplitModelData;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import models.classification_models.svm.SVMHelper;
 import models.classification_models.GatherSVMClassifier;
 
@@ -27,7 +27,7 @@ public class OptimizeModelsHelper {
         Map<String,Collection<String>> gatherValidationMap = SplitModelData.getBroadDataMap(SplitModelData.validation1File);
 
         System.out.println("Building models.svm data...");
-        Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(gatherTrainingMap,classifier.getOrderedTechnologies(),classifier.getLookupTable());
+        PairBackup<double[][],double[][]> training = SVMHelper.mapToSVMData(gatherTrainingMap,classifier.getOrderedTechnologies(),classifier.getLookupTable());
 
         System.out.println("Starting genetic algorithm...");
         SolutionCreator creator = new SVMSolutionCreator(training,gatherValidationMap,classifier.getOrderedTechnologies(), classifier.getLookupTable());

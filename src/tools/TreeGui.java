@@ -3,8 +3,7 @@
 package tools;
 
 
-import org.apache.xpath.operations.Bool;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -61,7 +60,7 @@ public class TreeGui<T> extends Panel {
         return success;
     }
 
-    public Pair<Point,Point> DrawHelper(TreeNode<T> node, Graphics g, int StartWidth, int EndWidth, int StartHeight, int Level) {
+    public PairBackup<Point,Point> DrawHelper(TreeNode<T> node, Graphics g, int StartWidth, int EndWidth, int StartHeight, int Level) {
         String data = node.getData().toString();
         String[] lines = data.split("\\n");
         int maxDataWidth = 0;
@@ -104,12 +103,12 @@ public class TreeGui<T> extends Panel {
             g.drawString(line, widthAvg - dataWidth / 2, topY + i*FontSize + 2*VERTICAL_PADDING);
         }
 
-        return new Pair<>(topConnection,bottomConnection);
+        return new PairBackup<>(topConnection,bottomConnection);
     }
 
     // x coord, y coord, data width
-    public Pair<Point,Point> RenderTree(Graphics g, int StartWidth, int EndWidth, int StartHeight, int Level, TreeNode<T> node) {
-        Pair<Point,Point> coordinates = DrawHelper(node,g,StartWidth,EndWidth,StartHeight,Level);
+    public PairBackup<Point,Point> RenderTree(Graphics g, int StartWidth, int EndWidth, int StartHeight, int Level, TreeNode<T> node) {
+        PairBackup<Point,Point> coordinates = DrawHelper(node,g,StartWidth,EndWidth,StartHeight,Level);
 
         if(!node.getChildren().isEmpty()) {
 
@@ -117,7 +116,7 @@ public class TreeGui<T> extends Panel {
             int idx = 0;
             for (TreeNode<T> child : node.getChildren()) {
                 // draw child
-                Pair<Point, Point> childCoords = RenderTree(g, StartWidth + (idx * interval), StartWidth + ((idx + 1) * interval), StartHeight + Level, Level, child);
+                PairBackup<Point, Point> childCoords = RenderTree(g, StartWidth + (idx * interval), StartWidth + ((idx + 1) * interval), StartHeight + Level, Level, child);
                 if (childCoords != null) {
                     // draw lines
                     g.drawLine(coordinates.getSecond().x,coordinates.getSecond().y,childCoords.getFirst().x,childCoords.getFirst().y);

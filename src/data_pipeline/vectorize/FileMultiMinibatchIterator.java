@@ -34,6 +34,11 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
         this.dataSetPreProcessor=multiDataSetPreProcessor;
     }
 
+    @Override
+    public MultiDataSetPreProcessor getPreProcessor() {
+        return dataSetPreProcessor;
+    }
+
     private final List<RecursiveTask<List<MultiDataSet>>> dataSetQueue;
     private Iterator<MultiDataSet> currentIterator;
     private int miniBatch;

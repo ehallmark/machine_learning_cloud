@@ -2,7 +2,7 @@ package models.genetics;
 
 import models.genetics.keyword_analysis.ProbabilityHelper;
 import tools.SimpleTimer;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,7 +50,7 @@ public class GeneticAlgorithm<T extends Solution> {
                 Double lastLastCurrentScore = null;
                 while(globalTimer<=timeLimit) {
                     timer.start();
-                    Pair<Integer,Integer> counts = simulateEpoch(probMutation,probCrossover);
+                    PairBackup<Integer,Integer> counts = simulateEpoch(probMutation,probCrossover);
                     timer.finish();
                     globalTimer+=timer.getElapsedTime();
 
@@ -96,7 +96,7 @@ public class GeneticAlgorithm<T extends Solution> {
         }
     }
 
-    private Pair<Integer,Integer> simulateEpoch(double probMutation, double probCrossover) {
+    private PairBackup<Integer,Integer> simulateEpoch(double probMutation, double probCrossover) {
         assertValidProbability(probMutation);
         assertValidProbability(probCrossover);
 
@@ -175,7 +175,7 @@ public class GeneticAlgorithm<T extends Solution> {
         // evaluate
         calculateSolutionsAndKillOfTheWeak();
 
-        return new Pair<>(mutationCounter.get(),crossoverCounter.get());
+        return new PairBackup<>(mutationCounter.get(),crossoverCounter.get());
     }
 
 

@@ -31,6 +31,11 @@ public class CombinedFileMultiMinibatchIterator implements MultiDataSetIterator{
         this.dataSetPreProcessor=multiDataSetPreProcessor;
     }
 
+    @Override
+    public MultiDataSetPreProcessor getPreProcessor() {
+        return dataSetPreProcessor;
+    }
+
     public MultiDataSet next(int num) {
         throw new UnsupportedOperationException("Unable to load custom number of examples");
     }

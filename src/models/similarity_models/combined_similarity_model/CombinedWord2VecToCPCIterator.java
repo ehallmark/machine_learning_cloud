@@ -24,6 +24,7 @@ public class CombinedWord2VecToCPCIterator implements MultiDataSetIterator {
     private MultiDataSet currentDataSet;
     private DeepCPCVariationalAutoEncoderNN net2;
     private Map<String,INDArray> wordCpcVectors;
+    private MultiDataSetPreProcessor preProcessor;
     public CombinedWord2VecToCPCIterator(SequenceIterator<VocabWord> documentIterator, Map<String,INDArray> wordCpcVectors, DeepCPCVariationalAutoEncoderNN net2, int batchSize) {
         this.documentIterator=documentIterator;
         this.wordCpcVectors=wordCpcVectors;
@@ -39,7 +40,12 @@ public class CombinedWord2VecToCPCIterator implements MultiDataSetIterator {
 
     @Override
     public void setPreProcessor(MultiDataSetPreProcessor multiDataSetPreProcessor) {
+        this.preProcessor=multiDataSetPreProcessor;
+    }
 
+    @Override
+    public MultiDataSetPreProcessor getPreProcessor() {
+        return preProcessor;
     }
 
     public int inputColumns1() {
@@ -104,6 +110,9 @@ public class CombinedWord2VecToCPCIterator implements MultiDataSetIterator {
                 }
                 INDArray[] allFeatures = new INDArray[]{features1,vae2};
                 currentDataSet = new MultiDataSet(allFeatures, allFeatures);
+                if(preProcessor!=null) {
+                    preProcessor.preProcess(currentDataSet);
+                }
             }
         }
         return currentDataSet!=null;

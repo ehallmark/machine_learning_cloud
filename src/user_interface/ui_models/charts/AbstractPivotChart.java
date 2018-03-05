@@ -1,8 +1,6 @@
 package user_interface.ui_models.charts;
 
-import j2html.tags.ContainerTag;
-import org.nd4j.linalg.primitives.Pair;
-import seeding.Constants;
+import org.nd4j.linalg.primitives.PairBackup;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.charts.tables.DeepList;
@@ -10,16 +8,12 @@ import user_interface.ui_models.charts.tables.TableResponse;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static j2html.TagCreator.*;
 
 /**
  * Created by Evan on 12/16/2017.
@@ -53,18 +47,18 @@ public abstract class AbstractPivotChart extends TableAttribute {
         response.title=yTitle + (subTitle!=null&&subTitle.length()>0 ? (" (Grouped by "+subTitle+")") : "");
 
 
-        List<Pair<Item,DeepList<Object>>> columnGroups = columnAttrs == null ? Collections.emptyList() : groupTableData(data,columnAttrs);
-        List<Pair<Item,DeepList<Object>>> rowGroups = rowAttrs == null ? Collections.emptyList() : groupTableData(data,rowAttrs);
+        List<PairBackup<Item,DeepList<Object>>> columnGroups = columnAttrs == null ? Collections.emptyList() : groupTableData(data,columnAttrs);
+        List<PairBackup<Item,DeepList<Object>>> rowGroups = rowAttrs == null ? Collections.emptyList() : groupTableData(data,rowAttrs);
 
         System.out.println("Row groups size: "+rowGroups.size());
         System.out.println("Column groups size: "+columnGroups.size());
 
         System.out.println("Starting to group table...");
-        Collector<Pair<Item,DeepList<Object>>,?,? extends Number> collector = getCollectorFromCollectorType();
+        Collector<PairBackup<Item,DeepList<Object>>,?,? extends Number> collector = getCollectorFromCollectorType();
 
         // build matrix
-        List<Pair<DeepList<Object>,Set<Item>>> columnData = collectData(columnGroups, maxLimit);
-        List<Pair<DeepList<Object>,Set<Item>>> rowData = collectData(rowGroups, -1);
+        List<PairBackup<DeepList<Object>,Set<Item>>> columnData = collectData(columnGroups, maxLimit);
+        List<PairBackup<DeepList<Object>,Set<Item>>> rowData = collectData(rowGroups, -1);
 
         response.headers = new ArrayList<>();
         response.headers.addAll(rowAttrs);
@@ -114,7 +108,7 @@ public abstract class AbstractPivotChart extends TableAttribute {
                         columnData.forEach(colPair -> {
                             if(includeBlank || !colPair.getFirst().stream().anyMatch(p->p==null||p.toString().length()==0)) {
                                 List<Item> intersection = rowSet.stream().filter(item -> colPair.getSecond().contains(item)).collect(Collectors.toList());
-                                Number value = intersection.stream().map(item -> new Pair<>(item, new DeepList<>())).collect(collector);
+                                Number value = intersection.stream().map(item -> new PairBackup<>(item, new DeepList<>())).collect(collector);
                                 if(value!=null) {
                                     totals.add(value);
                                 }

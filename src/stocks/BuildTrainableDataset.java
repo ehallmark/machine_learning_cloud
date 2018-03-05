@@ -1,26 +1,19 @@
 package stocks;
 
-import models.similarity_models.cpc_encoding_model.CPCSimilarityVectorizer;
-import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import seeding.Constants;
 import seeding.Database;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 11/17/17.
@@ -36,7 +29,7 @@ public class BuildTrainableDataset {
         if(!trainFolder.getParentFile().exists())trainFolder.getParentFile().mkdirs();
     }
 
-    private static INDArray createFeatures(List<Pair<LocalDate,Double>> data, int start, int end) {
+    private static INDArray createFeatures(List<PairBackup<LocalDate,Double>> data, int start, int end) {
         double[][] x = new double[(end-start)-1][];
         int xIdx = 0;
         for(int i = start; i < end-1; i++) {
@@ -58,7 +51,7 @@ public class BuildTrainableDataset {
         return Nd4j.create(x);
     }
 
-    private static INDArray createLabels(List<Pair<LocalDate,Double>> data, int start, int end) {
+    private static INDArray createLabels(List<PairBackup<LocalDate,Double>> data, int start, int end) {
         double[][] x = new double[(end-start)-1][];
         int xIdx = 0;
         for(int i = start; i < end-1; i++) {
@@ -79,7 +72,7 @@ public class BuildTrainableDataset {
     }
 
     public static void main(String[] args) throws Exception {
-        Map<String,List<Pair<LocalDate,Double>>> stockOverTimeMap = ScrapeCompanyTickers.getAssigneeToStockPriceOverTimeMap();
+        Map<String,List<PairBackup<LocalDate,Double>>> stockOverTimeMap = ScrapeCompanyTickers.getAssigneeToStockPriceOverTimeMap();
 
 
         final int totalWindowSize = windowSizeMonthsBefore+windowSizeMonthsAfter;
@@ -88,7 +81,7 @@ public class BuildTrainableDataset {
         AtomicInteger cnt = new AtomicInteger(0);
         stockOverTimeMap.entrySet().parallelStream().forEach(e->{
             System.out.println(""+(cnt.getAndIncrement()+1));
-            List<Pair<LocalDate,Double>> data = e.getValue();
+            List<PairBackup<LocalDate,Double>> data = e.getValue();
             final int numEntries = data.size()/totalWindowSize;
             for(int q = 0; q < numEntries; q++) {
                 int inputStart = q * totalWindowSize;

@@ -3,7 +3,7 @@ package models.classification_models.svm.genetics;
 import models.genetics.Solution;
 import lombok.Getter;
 import models.model_testing.GatherTechnologyScorer;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import models.classification_models.GatherSVMClassifier;
 import models.classification_models.svm.SVMHelper;
@@ -22,7 +22,7 @@ import java.util.Random;
  */
 public class SVMSolution implements Solution {
     protected svm_parameter param;
-    protected Pair<double[][],double[][]> trainingData;
+    protected PairBackup<double[][],double[][]> trainingData;
     protected Map<String,Collection<String>> validationData;
     @Getter
     protected svm_model model;
@@ -31,7 +31,7 @@ public class SVMSolution implements Solution {
     private Map<String,INDArray> lookupTable;
     protected List<String> technologies;
     private static final Random rand = new Random(782);
-    public SVMSolution(File modelFile, svm_parameter param, Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies, Map<String,INDArray> lookupTable) {
+    public SVMSolution(File modelFile, svm_parameter param, PairBackup<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies, Map<String,INDArray> lookupTable) {
         this.param=param;
         this.modelFile=modelFile;
         this.trainingData=trainingData;

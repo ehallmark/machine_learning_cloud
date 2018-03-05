@@ -1,6 +1,6 @@
 package models.classification_models;
 
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 
 import java.util.*;
@@ -43,7 +43,7 @@ public class TechnologyClassifier extends ClassificationAttr {
     }
 
 
-    private List<Pair<String,Double>> technologyHelper(Collection<String> patents, int limit, Boolean isApp) {
+    private List<PairBackup<String,Double>> technologyHelper(Collection<String> patents, int limit, Boolean isApp) {
         if(patents.isEmpty()) return Collections.emptyList();
         return patents.stream().flatMap(item->{
             Collection<String> attributes = attribute.attributesFor(Arrays.asList(item),1,isApp);
@@ -51,15 +51,15 @@ public class TechnologyClassifier extends ClassificationAttr {
             else return attributes.stream();
         }).filter(tech->tech!=null).collect(Collectors.groupingBy(tech->tech,Collectors.counting()))
                 .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(limit)
-                .map(e->new Pair<>(e.getKey(),e.getValue().doubleValue()/patents.size())).collect(Collectors.toList());
+                .map(e->new PairBackup<>(e.getKey(),e.getValue().doubleValue()/patents.size())).collect(Collectors.toList());
     }
 
     @Override
-    public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int n) {
+    public List<PairBackup<String, Double>> attributesFor(Collection<String> portfolio, int n) {
         return attributesFor(portfolio,n,null);
     }
 
-    public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int n, Boolean isApp) {
+    public List<PairBackup<String, Double>> attributesFor(Collection<String> portfolio, int n, Boolean isApp) {
         return technologyHelper(portfolio,n, isApp);
     }
 

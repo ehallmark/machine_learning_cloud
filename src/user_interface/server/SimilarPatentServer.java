@@ -25,7 +25,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import seeding.Constants;
 import seeding.Database;
 import spark.QueryParamsMap;
@@ -1745,7 +1745,7 @@ public class SimilarPatentServer {
 
                             System.out.println("Parent dirs of cluster: "+Arrays.toString(parentDirs));
 
-                            Pair<String, Map<String, Object>> pair = saveFormToFile(formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user), saveDatasetUpdatesFunction());
+                            PairBackup<String, Map<String, Object>> pair = saveFormToFile(formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user), saveDatasetUpdatesFunction());
 
                             Map<String, Object> clusterData = pair.getSecond();
                             clusterData.put("name",name);
@@ -1852,7 +1852,7 @@ public class SimilarPatentServer {
     }
 
 
-    private static Pair<String,Map<String,Object>> saveFormToFile(Map<String,Object> formMap, String name, String[] parentDirs, String actualUsername, String baseFolder, Function3<Map<String,Object>,File,Boolean,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
+    private static PairBackup<String,Map<String,Object>> saveFormToFile(Map<String,Object> formMap, String name, String[] parentDirs, String actualUsername, String baseFolder, Function3<Map<String,Object>,File,Boolean,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
         String message;
         Random random = new Random(System.currentTimeMillis());
         Map<String,Object> responseMap = new HashMap<>();
@@ -1926,7 +1926,7 @@ public class SimilarPatentServer {
                 message = "Unable to create form. Data missing.";
             }
         }
-        return new Pair<>(message, responseMap);
+        return new PairBackup<>(message, responseMap);
     }
 
     private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction, Function3<Map<String,Object>,File,Boolean,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
@@ -1948,7 +1948,7 @@ public class SimilarPatentServer {
         String actualUsername = req.session().attribute("username");
         Map<String,Object> formMap = formMapFunction.apply(req);
 
-        Pair<String,Map<String,Object>> pairResponse = saveFormToFile(formMap,name,parentDirs,actualUsername,baseFolder,saveFunction,saveUpdatesFunction);
+        PairBackup<String,Map<String,Object>> pairResponse = saveFormToFile(formMap,name,parentDirs,actualUsername,baseFolder,saveFunction,saveUpdatesFunction);
 
         String message = pairResponse.getFirst();
         Map<String,Object> responseMap = pairResponse.getSecond();
@@ -2408,17 +2408,17 @@ public class SimilarPatentServer {
         if(username!=null && username.length()>0) {
             File folder = new File(baseFolder+username+"/");
             if(!folder.exists()) folder.mkdirs();
-            Pair<Map<String,Object>,List<FormTemplate>> directoryStructure = new Pair<>(new HashMap<>(),new ArrayList<>());
+            PairBackup<Map<String,Object>,List<FormTemplate>> directoryStructure = new PairBackup<>(new HashMap<>(),new ArrayList<>());
             Arrays.stream(folder.listFiles(file->!file.getName().endsWith("_updates"))).forEach(file->{
                 Map<String,Object> templateMap = getMapFromFile(file, loadData);
 
                 String[] parentDirs = (String[])templateMap.get("parentDirs");
-                Pair<Map<String, Object>, List<FormTemplate>> currentDirectory = directoryStructure;
+                PairBackup<Map<String, Object>, List<FormTemplate>> currentDirectory = directoryStructure;
                 if (parentDirs != null) { // build directory as necessary
                     //System.out.println("Parent Dirs for "+file.getName()+": "+Arrays.toString(parentDirs));
                     for (String dir : parentDirs) {
-                        currentDirectory.getFirst().putIfAbsent(dir, new Pair<>(new HashMap<>(), new ArrayList<>()));
-                        currentDirectory = (Pair<Map<String, Object>, List<FormTemplate>>) currentDirectory.getFirst().get(dir);
+                        currentDirectory.getFirst().putIfAbsent(dir, new PairBackup<>(new HashMap<>(), new ArrayList<>()));
+                        currentDirectory = (PairBackup<Map<String, Object>, List<FormTemplate>>) currentDirectory.getFirst().get(dir);
                     }
                 }
 
@@ -2436,7 +2436,7 @@ public class SimilarPatentServer {
     }
 
 
-    public static Tag templateHelper(Pair<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable, List<String> parentDirs, boolean loadData, boolean topLevel) {
+    public static Tag templateHelper(PairBackup<Map<String,Object>,List<FormTemplate>> directoryStructure, String folderName, boolean deletable, List<String> parentDirs, boolean loadData, boolean topLevel) {
         // find nested
         if(!topLevel&&directoryStructure.getFirst().isEmpty()&&directoryStructure.getSecond().isEmpty()) return span();
 
@@ -2447,7 +2447,7 @@ public class SimilarPatentServer {
                                 .map(e->{
                                     List<String> parentDirsCopy = new ArrayList<>(parentDirs);
                                     parentDirsCopy.add(e.getKey());
-                                    return templateHelper((Pair<Map<String,Object>,List<FormTemplate>>)e.getValue(),e.getKey(),deletable,parentDirsCopy, loadData, false);
+                                    return templateHelper((PairBackup<Map<String,Object>,List<FormTemplate>>)e.getValue(),e.getKey(),deletable,parentDirsCopy, loadData, false);
                                 })
                         .collect(Collectors.toList())
                 ).with(
@@ -2479,7 +2479,7 @@ public class SimilarPatentServer {
         res.type("text/html");
         String message = req.session().attribute("message");
         req.session().removeAttribute("message");
-        List<Pair<String,String>> acclaimAttrs;
+        List<PairBackup<String,String>> acclaimAttrs;
         if(authorized) {
             acclaimAttrs = Constants.acclaimAttrs;
         } else {

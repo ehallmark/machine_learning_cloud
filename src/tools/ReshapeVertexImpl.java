@@ -18,7 +18,6 @@
 
 package tools;
 
-import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.api.MaskState;
 import org.deeplearning4j.nn.gradient.Gradient;
@@ -26,6 +25,7 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.graph.vertex.BaseGraphVertex;
 import org.deeplearning4j.nn.graph.vertex.VertexIndices;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.primitives.Pair;
 
 /**
  * Adds the ability to reshape and flatten the tensor in the computation graph. This is the equivalent
@@ -98,7 +98,7 @@ public class ReshapeVertexImpl extends BaseGraphVertex {
     }
 
     @Override
-    public org.deeplearning4j.berkeley.Pair<Gradient, INDArray[]> doBackward(boolean b) {
+    public Pair<Gradient, INDArray[]> doBackward(boolean b) {
         if (!canDoBackward())
             throw new IllegalStateException("Cannot do backward pass: errors not set");
 
@@ -108,7 +108,7 @@ public class ReshapeVertexImpl extends BaseGraphVertex {
     }
 
     @Override
-    public org.deeplearning4j.berkeley.Pair<INDArray, MaskState> feedForwardMaskArrays(INDArray[] maskArrays, MaskState currentMaskState, int minibatchSize) {
+    public Pair<INDArray, MaskState> feedForwardMaskArrays(INDArray[] maskArrays, MaskState currentMaskState, int minibatchSize) {
         if (maskArrays == null || maskArrays.length < 1 || maskArrays[0] == null) {
             return new Pair<>(null, currentMaskState);
         }

@@ -1,25 +1,14 @@
 package models.similarity_models.word2vec_model;
 
-import models.keyphrase_prediction.MultiStem;
-import models.keyphrase_prediction.stages.Stage;
 import models.text_streaming.FileTextDataSetIterator;
-import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
-import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
-import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
-import org.deeplearning4j.text.documentiterator.LabelsSource;
 import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
-import org.nd4j.linalg.primitives.Pair;
 
-import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Created by ehallmark on 11/21/17.

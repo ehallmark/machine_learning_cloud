@@ -1,7 +1,7 @@
 package user_interface.ui_models.attributes.hidden_attributes;
 
 import models.assignee.normalization.name_correction.NormalizeAssignees;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import seeding.Constants;
 
 import java.util.*;
@@ -35,7 +35,7 @@ public class AssetToNormalizedAssigneeMap extends AssetToAssigneeMap {
     }
 
     private Map<String,String> normalizeHelper(Map<String,String> raw) {
-        Map<String,String> map = raw.entrySet().parallelStream().map(e->new Pair<>(e.getKey(),normalizer.normalizedAssignee(e.getValue()))).filter(p->p.getSecond()!=null).collect(Collectors.toMap(e->e.getFirst(), e->e.getSecond()));
+        Map<String,String> map = raw.entrySet().parallelStream().map(e->new PairBackup<>(e.getKey(),normalizer.normalizedAssignee(e.getValue()))).filter(p->p.getSecond()!=null).collect(Collectors.toMap(e->e.getFirst(), e->e.getSecond()));
         return Collections.synchronizedMap(map);
     }
 

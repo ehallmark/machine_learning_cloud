@@ -2,7 +2,7 @@ package models.kmeans;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,7 +32,7 @@ public class UnitCosineKNN<T> {
     }
 
     private Map<T,Integer> createIdxMap(List<T> items) {
-        return IntStream.range(0,items.size()).mapToObj(i->new Pair<>(items.get(i),i))
+        return IntStream.range(0,items.size()).mapToObj(i->new PairBackup<>(items.get(i),i))
                 .collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
     }
 
@@ -63,7 +63,7 @@ public class UnitCosineKNN<T> {
         float[] scores = res.data().asFloat();
         return IntStream.range(0,scores.length).mapToObj(i->{
             if(i==idx) return null;
-            return new Pair<>(i,scores[i]);
+            return new PairBackup<>(i,scores[i]);
         }).filter(obj->obj!=null).sorted((e1,e2)->e2.getSecond().compareTo(e1.getSecond()))
                 .limit(k)
                 .map(e->items.get(e.getFirst().intValue()))
@@ -78,7 +78,7 @@ public class UnitCosineKNN<T> {
         float[] scores = res.data().asFloat();
         return IntStream.range(0,scores.length).mapToObj(i->{
             if(i==idx) return null;
-            return new Pair<>(i,scores[i]);
+            return new PairBackup<>(i,scores[i]);
         }).filter(obj->obj!=null&&obj.getSecond()>threshold).sorted((e1,e2)->e2.getSecond().compareTo(e1.getSecond()))
                 .map(e->items.get(e.getFirst().intValue()))
                 .collect(Collectors.toList());

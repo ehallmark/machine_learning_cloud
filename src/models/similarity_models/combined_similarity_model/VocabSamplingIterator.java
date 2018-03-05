@@ -23,6 +23,7 @@ public class VocabSamplingIterator implements MultiDataSetIterator {
     private Function<Integer,INDArray> vectorFunction;
     private int vectorSize;
     private int maxSamples;
+    private MultiDataSetPreProcessor preProcessor;
     public VocabSamplingIterator(int[] indices, Function<Integer,INDArray> vectorFunction, int vectorSize, int maxSamples, int limit, int batchSize, boolean randomize) {
         if(limit <= 0) limit = indices.length;
         this.vectorFunction=vectorFunction;
@@ -44,13 +45,22 @@ public class VocabSamplingIterator implements MultiDataSetIterator {
             cnt.getAndIncrement();
         }
         INDArray[] fArray = new INDArray[]{features};
-        return new org.nd4j.linalg.dataset.MultiDataSet(fArray,fArray);
+        MultiDataSet ds = new org.nd4j.linalg.dataset.MultiDataSet(fArray,fArray);
+        if(preProcessor!=null) {
+            preProcessor.preProcess(ds);
+        }
+        return ds;
     }
 
 
     @Override
     public void setPreProcessor(MultiDataSetPreProcessor multiDataSetPreProcessor) {
+        this.preProcessor=preProcessor;
+    }
 
+    @Override
+    public MultiDataSetPreProcessor getPreProcessor() {
+        return preProcessor;
     }
 
     @Override

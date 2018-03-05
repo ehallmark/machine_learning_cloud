@@ -1,11 +1,11 @@
 package models.value_models.graphical.page_rank;
 
 import com.google.common.util.concurrent.AtomicDouble;
-import model.edges.Edge;
-import model.edges.UndirectedEdge;
-import model.graphs.BayesianNet;
-import model.learning.algorithms.LearningAlgorithm;
-import model.nodes.Node;
+import graphical_modeling.model.edges.Edge;
+import graphical_modeling.model.edges.UndirectedEdge;
+import graphical_modeling.model.graphs.BayesianNet;
+import graphical_modeling.model.learning.algorithms.LearningAlgorithm;
+import graphical_modeling.model.nodes.Node;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;

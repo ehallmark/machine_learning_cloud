@@ -1,6 +1,6 @@
 package user_interface.ui_models.charts;
 
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.charts.tables.DeepList;
@@ -51,12 +51,12 @@ public abstract class AbstractGroupedChart extends TableAttribute {
             protected List<Map<String,String>> compute() {
                 if(data.size()==0) return Collections.emptyList();
 
-                List<Pair<Item,DeepList<Object>>> items = groupTableData(data,attrList);
+                List<PairBackup<Item,DeepList<Object>>> items = groupTableData(data,attrList);
 
                 if(items.isEmpty()) return Collections.emptyList();
 
                 System.out.println("Starting to group table...");
-                Collector<Pair<Item,DeepList<Object>>,?,? extends Number> collector = getCollectorFromCollectorType();
+                Collector<PairBackup<Item,DeepList<Object>>,?,? extends Number> collector = getCollectorFromCollectorType();
 
                 return collectData(items,attrList,collectorType,collector,includeBlanks);
             }

@@ -2,12 +2,12 @@ package models.kmeans;
 
 import lombok.Getter;
 import lombok.NonNull;
-import org.deeplearning4j.berkeley.Triple;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.impl.indexaccum.IMax;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.ops.transforms.Transforms;
+import org.nd4j.linalg.primitives.Triple;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;

@@ -1,13 +1,11 @@
 package seeding.ai_db_updater.handlers.flags;
 
 import lombok.Getter;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 /**
  * Created by Evan on 8/6/2017.
@@ -16,7 +14,7 @@ public abstract class EndFlag extends Flag {
     protected Map<Flag,String> dataMap = new HashMap<>();
     public final Map<String,Flag> flagMap = new HashMap<>();
     public List<Map<String,Object>> dataQueue = new ArrayList<>();
-    private List<Pair<String,Object>> additionalData = new ArrayList<>();
+    private List<PairBackup<String,Object>> additionalData = new ArrayList<>();
     @Getter
     public boolean isArray = false;
     public EndFlag(String localName) {
@@ -34,7 +32,7 @@ public abstract class EndFlag extends Flag {
     }
 
     public void addData(String name, Object data) {
-        additionalData.add(new Pair<>(name,data));
+        additionalData.add(new PairBackup<>(name,data));
     }
 
     public Map<String,Object> getTransform(Collection<String> flagsToIngest) {

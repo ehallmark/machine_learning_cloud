@@ -7,7 +7,7 @@ import data_pipeline.helpers.Function2;
 import elasticsearch.DataSearcher;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
@@ -116,13 +116,13 @@ public class AbstractDistributionChart extends ChartAttribute {
 
         if(items.isEmpty()) return Collections.emptyList();
 
-        List<Pair<Object,Long>> itemPairs = items.stream()
+        List<PairBackup<Object,Long>> itemPairs = items.stream()
                 .collect(Collectors.groupingBy(t->t,Collectors.counting()))
                 .entrySet().stream().sorted((e1, e2)->e2.getValue().compareTo(e1.getValue()))
-                .map(e->new Pair<>(e.getKey(),e.getValue())).collect(Collectors.toList());
+                .map(e->new PairBackup<>(e.getKey(),e.getValue())).collect(Collectors.toList());
 
         if(itemPairs.size()>limit) {
-            Pair<Object,Long> remaining = itemPairs.subList(limit,itemPairs.size()).stream().reduce((p1,p2)->new Pair<>("Remaining",p1.getSecond()+p2.getSecond())).get();
+            PairBackup<Object,Long> remaining = itemPairs.subList(limit,itemPairs.size()).stream().reduce((p1, p2)->new PairBackup<>("Remaining",p1.getSecond()+p2.getSecond())).get();
             itemPairs = new ArrayList<>(itemPairs.subList(0,limit));
             itemPairs.add(remaining);
         }

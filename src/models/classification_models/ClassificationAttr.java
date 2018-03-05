@@ -1,8 +1,6 @@
 package models.classification_models;
 
-import org.nd4j.linalg.primitives.Pair;
-import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.filters.AbstractFilter;
+import org.nd4j.linalg.primitives.PairBackup;
 
 import java.util.Collection;
 import java.util.List;
@@ -21,6 +19,6 @@ public abstract class ClassificationAttr {
     public String getType() {
         return "keyword";
     }
-    public abstract List<Pair<String,Double>> attributesFor(Collection<String> portfolio, int limit);
+    public abstract List<PairBackup<String,Double>> attributesFor(Collection<String> portfolio, int limit);
 
 }

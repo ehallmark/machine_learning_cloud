@@ -1,9 +1,9 @@
 package models.value_models.graphical.page_rank;
 
 import com.google.common.util.concurrent.AtomicDouble;
-import model.learning.algorithms.LearningAlgorithm;
-import model.nodes.Node;
-import util.ObjectIO;
+import graphical_modeling.model.learning.algorithms.LearningAlgorithm;
+import graphical_modeling.model.nodes.Node;
+import graphical_modeling.util.ObjectIO;
 
 import java.io.File;
 import java.util.*;

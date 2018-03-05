@@ -31,6 +31,7 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
     private MultiDataSet currentDataSet;
     private int maxSamples;
     private Map<String,INDArray> vaePredictions;
+    private MultiDataSetPreProcessor preProcessor;
     public Word2VecToCPCIterator(SequenceIterator<VocabWord> documentIterator, Word2Vec word2Vec, Map<String,INDArray> vaePredictions, int batchSize, int maxSamples) {
         this.documentIterator=documentIterator;
         this.vaePredictions=vaePredictions;
@@ -47,7 +48,12 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
 
     @Override
     public void setPreProcessor(MultiDataSetPreProcessor multiDataSetPreProcessor) {
+        this.preProcessor=multiDataSetPreProcessor;
+    }
 
+    @Override
+    public MultiDataSetPreProcessor getPreProcessor() {
+        return preProcessor;
     }
 
     public int inputColumns() {
@@ -110,6 +116,9 @@ public class Word2VecToCPCIterator implements MultiDataSetIterator {
                 System.out.println("Shape1: "+ Arrays.toString(features.shape()));
                 System.out.println("Shape2: "+Arrays.toString(vae2.shape()));
                 currentDataSet = new MultiDataSet(new INDArray[]{features}, new INDArray[]{vae2});
+                if(preProcessor!=null) {
+                    preProcessor.preProcess(currentDataSet);
+                }
             }
         }
         return currentDataSet!=null;

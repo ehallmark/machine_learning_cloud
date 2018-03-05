@@ -1,16 +1,13 @@
 package models.similarity_models.combined_similarity_model;
 
-import cpc_normalization.CPC;
-import cpc_normalization.CPCHierarchy;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class TestAssigneeModels extends TestModelHelper {
     private static Map<String,List<String>> getAssigneeToFilingMap(List<String> assignees) {
@@ -20,12 +17,12 @@ public class TestAssigneeModels extends TestModelHelper {
         return assignees.parallelStream().map(assignee->{
             Collection<String> assets = assigneeToPatentMap.get(assignee);
             if(assets==null)return null;
-            return new Pair<>(assignee,assets.stream().map(asset->patentToFilingMap.get(asset)).filter(asset->asset!=null).collect(Collectors.toList()));
+            return new PairBackup<>(assignee,assets.stream().map(asset->patentToFilingMap.get(asset)).filter(asset->asset!=null).collect(Collectors.toList()));
         }).filter(p->p!=null&&p.getSecond().size()>0)
                 .collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
     }
 
-    private static Map<String,Pair<String,String>> loadData(int n) {
+    private static Map<String,PairBackup<String,String>> loadData(int n) {
         List<String> assignees = new ArrayList<>(Database.getAssignees());
         Collections.shuffle(assignees, new Random(2352));
         assignees = assignees.subList(0,Math.min(n,assignees.size()));
@@ -33,7 +30,7 @@ public class TestAssigneeModels extends TestModelHelper {
 
         Map<String,List<String>> assigneeToFilingMap = getAssigneeToFilingMap(assignees);
 
-        Map<String,Pair<String,String>> data = Collections.synchronizedMap(new HashMap<>(n));
+        Map<String,PairBackup<String,String>> data = Collections.synchronizedMap(new HashMap<>(n));
 
         List<String> allFilings = assigneeToFilingMap.values().parallelStream().flatMap(s->s.stream()).distinct().collect(Collectors.toList());
 
@@ -48,7 +45,7 @@ public class TestAssigneeModels extends TestModelHelper {
                     neg = null;
                 }
             }
-            data.put(assignee, new Pair<>(pos,neg));
+            data.put(assignee, new PairBackup<>(pos,neg));
         });
 
         return data;
@@ -57,7 +54,7 @@ public class TestAssigneeModels extends TestModelHelper {
     public static void runTest(Tester tester) {
         // load input data
         final int numSamples = 100000;
-        Map<String,Pair<String,String>> data = loadData(numSamples);
+        Map<String,PairBackup<String,String>> data = loadData(numSamples);
 
         // vae model
         DeepCPCVAEPipelineManager encodingPipelineManager3 = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME);

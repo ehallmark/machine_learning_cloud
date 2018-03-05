@@ -5,9 +5,9 @@ import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
 import lombok.Getter;
-import model.graphs.BayesianNet;
-import model.graphs.Graph;
-import model.nodes.Node;
+import graphical_modeling.model.graphs.BayesianNet;
+import graphical_modeling.model.graphs.Graph;
+import graphical_modeling.model.nodes.Node;
 import seeding.Constants;
 import seeding.Database;
 

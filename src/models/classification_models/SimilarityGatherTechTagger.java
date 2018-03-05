@@ -1,13 +1,12 @@
 package models.classification_models;
 
-import j2html.tags.Tag;
 import lombok.Getter;
 import models.model_testing.SplitModelData;
 import models.similarity_models.class_vectors.CPCSimilarityFinder;
 import models.similarity_models.class_vectors.WIPOSimilarityFinder;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
@@ -18,8 +17,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static j2html.TagCreator.div;
 
 /**
  * Created by Evan on 3/4/2017.
@@ -103,7 +100,7 @@ public class SimilarityGatherTechTagger extends ClassificationAttr {
         return new SimilarityGatherTechTagger(nameToInputMap,lookupTable);
     }
 
-    private List<Pair<String,Double>> technologiesFor(INDArray vec, int n) {
+    private List<PairBackup<String,Double>> technologiesFor(INDArray vec, int n) {
         if(vec==null)return new ArrayList<>();
         MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(n);
         for(int i = 0; i < vectors.size(); i++) {
@@ -111,16 +108,16 @@ public class SimilarityGatherTechTagger extends ClassificationAttr {
             INDArray tech = vectors.get(i);
             heap.add(new WordFrequencyPair<>(name,Transforms.cosineSim(tech,vec)));
         }
-        List<Pair<String,Double>> data = new ArrayList<>(n);
+        List<PairBackup<String,Double>> data = new ArrayList<>(n);
         while(!heap.isEmpty()) {
             WordFrequencyPair<String,Double> pair = heap.remove();
-            data.add(0,new Pair<>(pair.getFirst(),pair.getSecond()));
+            data.add(0,new PairBackup<>(pair.getFirst(),pair.getSecond()));
         }
         return data;
     }
 
     @Override
-    public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int n) {
+    public List<PairBackup<String, Double>> attributesFor(Collection<String> portfolio, int n) {
         List<INDArray> vecs = portfolio.stream().map(input->lookupTable.get(input)).filter(input->input!=null).collect(Collectors.toList());
         if(vecs.size()>0) {
             return technologiesFor(Nd4j.vstack(vecs).mean(0),n);

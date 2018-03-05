@@ -1,11 +1,7 @@
 package tools;
 
-import org.nd4j.linalg.primitives.Pair;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
-import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
-import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 
@@ -13,11 +9,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.*;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**

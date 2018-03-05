@@ -1,21 +1,12 @@
 package user_interface.ui_models.charts;
 
 import j2html.tags.ContainerTag;
-import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.charts.tables.DeepList;
-import user_interface.ui_models.charts.tables.TableResponse;
-import user_interface.ui_models.portfolios.PortfolioList;
-import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static j2html.TagCreator.*;
 

@@ -2,7 +2,6 @@ package models.keyphrase_prediction.stages;
 
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
-import elasticsearch.DataIngester;
 import lombok.Getter;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
@@ -10,26 +9,19 @@ import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.scorers.TechnologyScorer;
 
 import org.apache.commons.math3.linear.RealMatrix;
-import org.elasticsearch.search.SearchHit;
-import seeding.Constants;
+import org.nd4j.linalg.primitives.PairBackup;
 import seeding.Database;
 import tools.ClassCodeHandler;
 import tools.OpenMapBigRealMatrix;
-import tools.Stemmer;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
-import user_interface.ui_models.portfolios.items.Item;
-import util.Pair;
+import graphical_modeling.util.Pair;
 
 import java.io.File;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 9/12/17.
@@ -119,7 +111,7 @@ public class CPCDensityStage extends Stage<Set<MultiStem>> {
             System.out.println("Num filings with cpcs: " + filingToCPCMap.size());
         }
 
-        Function<org.nd4j.linalg.primitives.Pair<String,Map<MultiStem,Integer>>,Void> attributesFunction = pair-> {
+        Function<PairBackup<String,Map<MultiStem,Integer>>,Void> attributesFunction = pair-> {
             String asset = pair.getFirst();
             Map<MultiStem,Integer> wordCounts = pair.getSecond();
             total.getAndIncrement();

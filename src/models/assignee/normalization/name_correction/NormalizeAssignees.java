@@ -9,7 +9,7 @@ import models.assignee.database.MergeRawAssignees;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
-import util.Pair;
+import graphical_modeling.util.Pair;
 
 import java.io.BufferedWriter;
 import java.io.File;

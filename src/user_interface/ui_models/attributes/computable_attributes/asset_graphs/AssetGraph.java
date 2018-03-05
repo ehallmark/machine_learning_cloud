@@ -1,9 +1,9 @@
 package user_interface.ui_models.attributes.computable_attributes.asset_graphs;
 
-import model.graphs.BayesianNet;
-import model.graphs.Graph;
-import model.graphs.MarkovNet;
-import model.nodes.Node;
+import graphical_modeling.model.graphs.BayesianNet;
+import graphical_modeling.model.graphs.Graph;
+import graphical_modeling.model.graphs.MarkovNet;
+import graphical_modeling.model.nodes.Node;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 

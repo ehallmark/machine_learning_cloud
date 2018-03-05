@@ -19,11 +19,10 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Database;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -126,10 +125,10 @@ public class CPCTitleModel {
     }
 
     private static CharacterNGramIterator getIterator(int numCPCs, int k, int batchSize) {
-        Iterator<Pair<String,INDArray>> textAndLabelIterator = mainGroups.parallelStream().map(cpc->{
+        Iterator<PairBackup<String,INDArray>> textAndLabelIterator = mainGroups.parallelStream().map(cpc->{
             INDArray vec = Nd4j.zeros(numCPCs);
             vec.putScalar(cpcToIdxMap.get(cpc.getName()),1);
-            return new Pair<>(cpcToTitleMap.get(cpc.getName()),vec);
+            return new PairBackup<>(cpcToTitleMap.get(cpc.getName()),vec);
         }).iterator();
 
         CharacterNGramIterator iterator = new CharacterNGramIterator(k,textAndLabelIterator,batchSize);

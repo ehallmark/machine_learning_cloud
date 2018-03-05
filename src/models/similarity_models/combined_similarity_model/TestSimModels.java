@@ -1,22 +1,16 @@
 package models.similarity_models.combined_similarity_model;
 
-import com.google.common.util.concurrent.AtomicDouble;
-import data_pipeline.helpers.Function3;
-import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.ops.transforms.Transforms;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.PairBackup;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class TestSimModels extends TestModelHelper {
 
-    private static Map<String,Pair<String,String>> loadFilingCPCData(Map<String,Set<String>> patentCpcMap, int numFilings) {
+    private static Map<String,PairBackup<String,String>> loadFilingCPCData(Map<String,Set<String>> patentCpcMap, int numFilings) {
         Map<String,String> filingToAssetMap = Collections.synchronizedMap(new HashMap<>());
         patentCpcMap.keySet().parallelStream().forEach(k->{
             String filing = new AssetToFilingMap().getPatentDataMap().get(k);
@@ -40,7 +34,7 @@ public class TestSimModels extends TestModelHelper {
 
         List<String> filings = new ArrayList<>(filingCpcMap.keySet());
         Collections.shuffle(filings, new Random(2352));
-        Map<String,Pair<String,String>> data = Collections.synchronizedMap(new HashMap<>(numFilings));
+        Map<String,PairBackup<String,String>> data = Collections.synchronizedMap(new HashMap<>(numFilings));
         for(int i = 0; i < Math.min(filings.size(),numFilings); i++) {
             String filing = filings.get(i);
             Set<String> cpcs = filingCpcMap.get(filing);
@@ -58,7 +52,7 @@ public class TestSimModels extends TestModelHelper {
 
             String negativeSample = filings.get(rand.nextInt(filings.size()));
 
-            data.put(filing, new Pair<>(positiveSample,negativeSample));
+            data.put(filing, new PairBackup<>(positiveSample,negativeSample));
         }
         return data;
     }
@@ -67,7 +61,7 @@ public class TestSimModels extends TestModelHelper {
     public static void runTest(Tester tester) {
         // load input data
         final int numFilingSamples = 100000;
-        Map<String,Pair<String,String>> filingData = loadFilingCPCData(new AssetToCPCMap().getPatentDataMap(), numFilingSamples);
+        Map<String,PairBackup<String,String>> filingData = loadFilingCPCData(new AssetToCPCMap().getPatentDataMap(), numFilingSamples);
 
         // new model
 
