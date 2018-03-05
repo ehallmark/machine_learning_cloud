@@ -76,7 +76,6 @@ public class AssetKMeans {
 
         final int keywordSamples = 30;
 
-        Map<String,Long> overallTagFrequencyMap = new HashMap<>();
         Map<Integer,Map<String,Long>> clusterIdxToTagFrequencyMap = new HashMap<>();
         for(int i = 0; i < clusters.size(); i++) {
             Set<String> cluster = clusters.get(i);
@@ -89,13 +88,6 @@ public class AssetKMeans {
 
             Map<String,Long> freqMap = keywords.stream().collect(Collectors.groupingBy(keyword->keyword,Collectors.counting()))
                     .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(keywordSamples).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
-            freqMap.keySet().forEach(k->{
-                if(overallTagFrequencyMap.containsKey(k)) {
-                    overallTagFrequencyMap.put(k,overallTagFrequencyMap.get(k)+1);
-                } else {
-                    overallTagFrequencyMap.put(k,1L);
-                }
-            });
 
             clusterIdxToTagFrequencyMap.put(i,freqMap);
         }
@@ -108,7 +100,7 @@ public class AssetKMeans {
             String tag = clusterIdxToTagFrequencyMap.get(i)
                     .entrySet().stream()
                     .map(e->{
-                        double tfidf = e.getValue().doubleValue()*Math.log(1d/overallTagFrequencyMap.get(e.getKey()).doubleValue());
+                        double tfidf = e.getValue().doubleValue();
                         return new Pair<>(e.getKey(),tfidf);
                     }).max(Comparator.comparing(e->e.getSecond())).orElse(new Pair<>(null,null)).getFirst();
 
