@@ -6,8 +6,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.util.ModelSerializer;
 import seeding.Database;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,9 +38,10 @@ public abstract class CombinedNeuralNetworkPredictionModel<T,N extends Model> ex
     }
 
     @Override
-    protected void restoreFromFile(File modelFile) throws IOException {
+    protected void restoreFromFile(File modelFile) {
         if(modelFile!=null&&modelFile.exists()) {
             this.net = (CombinedModel)Database.tryLoadObject(modelFile);
+            if(this.net==null) this.net = (CombinedModel)tryLoadObjectOld(modelFile);
             if(net!=null) {
                 Map<String,N> map = Collections.synchronizedMap(new HashMap<>());
                 if(net.getNetworkNames()!=null) {
@@ -66,4 +66,48 @@ public abstract class CombinedNeuralNetworkPredictionModel<T,N extends Model> ex
         }
     }
 
+    public static Object tryLoadObjectOld(File file) {
+        System.out.println("Starting to load file: "+file.getName()+"...");
+        try {
+            ObjectInputStream ois = new DecompressibleInputStream(new BufferedInputStream(new FileInputStream(file)));
+            Object toReturn = ois.readObject();
+            ois.close();
+            return toReturn;
+        } catch(Exception e) {
+            e.printStackTrace();
+            //throw new RuntimeException("Unable to open file: "+file.getPath());
+            return null;
+        }
+    }
+
+}
+class DecompressibleInputStream extends ObjectInputStream {
+
+    public DecompressibleInputStream(InputStream in) throws IOException {
+        super(in);
+    }
+
+
+    protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
+        ObjectStreamClass resultClassDescriptor = super.readClassDescriptor(); // initially streams descriptor
+        Class localClass = Class.forName(resultClassDescriptor.getName()); // the class in the local JVM that this descriptor represents.
+        if (localClass == null) {
+            System.out.println("No local class for " + resultClassDescriptor.getName());
+            return resultClassDescriptor;
+        }
+        ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);
+        if (localClassDescriptor != null) { // only if class implements serializable
+            final long localSUID = localClassDescriptor.getSerialVersionUID();
+            final long streamSUID = resultClassDescriptor.getSerialVersionUID();
+            if (streamSUID != localSUID) { // check for serialVersionUID mismatch.
+                final StringBuffer s = new StringBuffer("Overriding serialized class version mismatch: ");
+                s.append("local serialVersionUID = ").append(localSUID);
+                s.append(" stream serialVersionUID = ").append(streamSUID);
+                Exception e = new InvalidClassException(s.toString());
+                System.out.println("Potentially Fatal Deserialization Operation. " + e);
+                resultClassDescriptor = localClassDescriptor; // Use local class descriptor for deserialization
+            }
+        }
+        return resultClassDescriptor;
+    }
 }

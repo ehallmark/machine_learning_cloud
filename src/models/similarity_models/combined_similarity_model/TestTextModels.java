@@ -43,12 +43,13 @@ public class TestTextModels extends TestModelHelper {
             if(posVec!=null&&negVec!=null&&vec!=null) {
                 double score = Transforms.cosineSim(vec,posVec) > Transforms.cosineSim(vec,negVec) ? 1d : 0d;
                 sum.getAndAdd(score);
-                cnt.getAndIncrement();
             }
+            cnt.getAndIncrement();
             if(cnt.get()%100==99) {
                 System.out.print("-");
             }
             if(cnt.get()%1000==999) {
+                System.out.print(" "+sum.get()/cnt.get());
                 System.out.println();
             }
         });
@@ -58,12 +59,15 @@ public class TestTextModels extends TestModelHelper {
 
     public static void runTest(Tester tester) {
         String testName = "Text Similarity Test";
+        int limit = 100000;
+
         // load input data
         Map<String,Pair<String[],String>> cpcToTextAndNegMap = Collections.synchronizedMap(new HashMap<>());
         Map<String,String> cpcToTitleMap = Database.getClassCodeToClassTitleMap();
         List<String> cpcs = new ArrayList<>(cpcToTitleMap.keySet());
+        Collections.shuffle(cpcs);
         Random rand = new Random(23);
-        cpcs.forEach(cpc->{
+        cpcs.stream().limit(limit).forEach(cpc->{
             String text = cpcToTitleMap.get(cpc);
             if(text!=null) {
                 String[] words = text.toLowerCase().split("\\s+");
@@ -89,7 +93,7 @@ public class TestTextModels extends TestModelHelper {
         Map<String,INDArray> allPredictions1 = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME).loadPredictions();
 
         Function<String,INDArray> cpcModel1 = str -> allPredictions1.get(str);
-        Function<String[],INDArray> textModel1 = str -> encodingModel1.encodeText(Arrays.asList(str),10);
+        Function<String[],INDArray> textModel1 = str -> encodingModel1.encodeText(Arrays.asList(str),1);
 
         double score1 = testModel(cpcToTextAndNegMap, cpcModel1, textModel1);
         System.out.println("Score for model 3: " + score1);
