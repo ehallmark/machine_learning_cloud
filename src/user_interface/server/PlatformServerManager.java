@@ -4,8 +4,9 @@ import org.apache.commons.io.FileUtils;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.util.concurrent.TimeUnit;
+import java.io.InputStreamReader;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -15,7 +16,14 @@ public class PlatformServerManager implements Job {
 
     public static void runBashProcess(String statement) throws Exception {
         ProcessBuilder ps = new ProcessBuilder("/bin/bash", "-c", statement);
+        ps.redirectErrorStream(true);
         Process process = ps.start();
+        BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        while ((line = in.readLine()) != null) {
+            System.out.println(line);
+        }
+        System.out.println("Ok.");
         process.waitFor();
     }
 
@@ -33,9 +41,9 @@ public class PlatformServerManager implements Job {
                 pid=pid.trim();
                 int p = Integer.valueOf(pid);
                 runBashProcess("kill "+p);
+                runBashProcess("while ps -p "+p+"; do sleep 1; done;");
             }
             pidFile.delete();
-            TimeUnit.SECONDS.sleep(5);
         }
     }
 
