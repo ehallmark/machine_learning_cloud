@@ -29,7 +29,14 @@ public class PlatformServerManager implements Job {
 
     public static void runScriptProcess(File scriptFile) throws Exception {
         ProcessBuilder ps = new ProcessBuilder("/bin/sh", scriptFile.getAbsolutePath());
+        ps.redirectErrorStream(true);
         Process process = ps.start();
+        BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        while ((line = in.readLine()) != null) {
+            System.out.println(line);
+        }
+        System.out.println("Ok.");
         process.waitFor();
     }
 
