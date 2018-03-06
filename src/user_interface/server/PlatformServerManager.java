@@ -28,7 +28,8 @@ public class PlatformServerManager implements Job {
         if(pidFile.exists()) {
             System.out.println("Stopping server...");
             String pid = FileUtils.readFileToString(pidFile);
-            if(pid!=null&&pid.length()>0) {
+            if(pid!=null&&pid.trim().length()>0) {
+                pid=pid.trim();
                 int p = Integer.valueOf(pid);
                 runBashProcess("kill "+p);
             }
