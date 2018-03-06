@@ -5,6 +5,7 @@ import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -34,6 +35,7 @@ public class PlatformServerManager implements Job {
                 runBashProcess("kill "+p);
             }
             pidFile.delete();
+            TimeUnit.SECONDS.sleep(5);
         }
     }
 
