@@ -1,11 +1,13 @@
 package project_box;
 
-import java.io.IOException;
-
-import org.quartz.*;
+import org.quartz.CronScheduleBuilder;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.Trigger;
 import org.quartz.impl.StdSchedulerFactory;
-import static org.quartz.JobBuilder.*;
-import static org.quartz.TriggerBuilder.*;
+
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 /**
  * Created by ehallmark on 9/29/17.
@@ -21,7 +23,7 @@ public class PGDumpLatest {
                     .build();
             Trigger compDbTrigger = newTrigger()
                     .withIdentity("trigger1", "group1")
-                    .withSchedule(CronScheduleBuilder.cronSchedule("0 30 9 ? * SAT"))
+                    .withSchedule(CronScheduleBuilder.cronSchedule("0 0 1 ? * SAT"))
                     .build();
             scheduler.scheduleJob(compDBJob, compDbTrigger);
         }
@@ -32,7 +34,7 @@ public class PGDumpLatest {
                     .build();
             Trigger gatherDBTrigger = newTrigger()
                     .withIdentity("trigger2", "group2")
-                    .withSchedule(CronScheduleBuilder.cronSchedule("0 30 10 ? * SAT"))
+                    .withSchedule(CronScheduleBuilder.cronSchedule("0 30 1 ? * SAT"))
                     .build();
             scheduler.scheduleJob(gatherDBJob, gatherDBTrigger);
         }
