@@ -99,7 +99,7 @@ public class PlatformServerManager implements Job {
                     .build();
             Trigger weeklyTrigger = newTrigger()
                     .withIdentity("trigger1", "group1")
-                    .withSchedule(CronScheduleBuilder.cronSchedule("0 30 9 ? * SAT"))
+                    .withSchedule(CronScheduleBuilder.cronSchedule("0 30 3 ? * SAT"))
                     .build();
             scheduler.scheduleJob(runPlatformJob, weeklyTrigger);
         }
