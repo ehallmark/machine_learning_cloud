@@ -23,7 +23,8 @@ import java.util.stream.Collectors;
 public class PredictKeyphraseForFilings {
     private static final File technologyMapFile = new File(Constants.DATA_FOLDER+"filing_to_keyphrase_map.jobj");
     private static Map<String,List<String>> technologyMap;
-    public static void main(String[] args) throws Exception {
+
+    public static void runPredictions(boolean rerunModel) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
 
@@ -37,7 +38,6 @@ public class PredictKeyphraseForFilings {
         pipelineManager.runPipeline(false,false,false,false,-1,false);
 
         Map<String,Set<String>> cpcToKeyphraseMap = pipelineManager.loadPredictions();
-        Map<String,Collection<CPC>> filingToCPCMap = pipelineManager.getCPCMap();
 
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
@@ -68,6 +68,18 @@ public class PredictKeyphraseForFilings {
             keyphraseMatrix.putRow(i,Transforms.unitVec(e.getValue()));
         });
         System.out.println("Finished");
+
+
+        Map<String,Collection<CPC>> filingToCPCMap = new HashMap<>(pipelineManager.getCPCMap());
+        if(!rerunModel) {
+            System.out.println("Updating model only...");
+            Map<String,List<String>> previousMap = loadOrGetTechnologyMap();
+            if(previousMap!=null) {
+                Set<String> assets = new HashSet<>(previousMap.keySet());
+                assets.forEach(filingToCPCMap::remove);
+            }
+        }
+        System.out.println("Num new predictions to make: "+filingToCPCMap.size());
 
         technologyMap = Collections.synchronizedMap(filingToCPCMap.entrySet().parallelStream()
                 .map(e->{
@@ -131,4 +143,7 @@ public class PredictKeyphraseForFilings {
         return technologyMap;
     }
 
+    public static void main(String[] args) {
+        runPredictions(true);
+    }
 }

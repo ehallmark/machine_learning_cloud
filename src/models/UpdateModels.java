@@ -25,7 +25,6 @@ public class UpdateModels {
         UpdateCompDBAndGatherData.update();
 
         // MODELS
-        //UpdateSimilarityModels.updateLatest();
         UpdateClassificationModels.updateLatest();
 
         Collection<String> unknownAssets = null;

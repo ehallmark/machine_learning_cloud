@@ -1,8 +1,6 @@
 package models.classification_models;
 
-import models.keyphrase_prediction.KeywordModelRunner;
-
-import java.util.Collection;
+import models.keyphrase_prediction.PredictKeyphraseForFilings;
 
 /**
  * Created by ehallmark on 7/11/17.
@@ -14,6 +12,6 @@ public class UpdateClassificationModels {
 
     // TODO
     public static void updateLatest() {
-       // KeywordModelRunner.runModel(newAssetsOnly);
+        PredictKeyphraseForFilings.runPredictions(false);
     }
 }
