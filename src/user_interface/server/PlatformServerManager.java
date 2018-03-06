@@ -26,20 +26,28 @@ public class PlatformServerManager implements Job {
 
     public static void stopServer() throws Exception {
         if(pidFile.exists()) {
+            System.out.println("Stopping server...");
             String pid = FileUtils.readFileToString(pidFile);
             if(pid!=null&&pid.length()>0) {
                 int p = Integer.valueOf(pid);
                 runBashProcess("kill "+p);
             }
+            pidFile.delete();
         }
     }
 
     public static void backupServer() throws Exception {
+        System.out.println("Backing up server...");
         final File scriptFile = new File("/home/ehallmark/repos/machine_learning_cloud/scripts/production/backup.sh");
         runScriptProcess(scriptFile);
     }
 
     public static void startServer() throws Exception {
+        System.out.println("Starting server...");
+        if(pidFile.exists()) {
+            System.out.println("Previous server instance exists...");
+            stopServer();
+        }
         final File scriptFile = new File("/home/ehallmark/repos/machine_learning_cloud/scripts/production/start.sh");
         runScriptProcess(scriptFile);
     }
