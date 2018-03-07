@@ -943,7 +943,6 @@ public class SimilarPatentServer {
                                                 }).collect(Collectors.toList())
                                         )
                                 ) : div().with(
-                                        p("Please log off and log back in for these changes to take effect."),
                                         input().withType("hidden").withName("username").withValue(username)
                                 )
                         , br(), br(), label("User Group").with(
@@ -961,7 +960,7 @@ public class SimilarPatentServer {
                         ), br(), br(), button("Update User Group").withClass("btn btn-secondary")
                 );
             }
-            return templateWrapper(true, req, res, form);
+            return templateWrapper(true, req, res, form, false);
         });
 
         post("/new_user_group", (req,res)->{
@@ -1016,7 +1015,7 @@ public class SimilarPatentServer {
                             )
                     )
             );
-            return templateWrapper(true, req, res, form);
+            return templateWrapper(true, req, res, form, false);
         });
 
         get("/edit_user", (req, res)->{
@@ -1034,7 +1033,7 @@ public class SimilarPatentServer {
                             input().withType("password").withClass("form-control").withName("new_password")
                     ), br(), br(), button("Change Password").withClass("btn btn-secondary")
             );
-            return templateWrapper(true, req, res, form);
+            return templateWrapper(true, req, res, form, false);
         });
 
         get("/create_user", (req, res)->{
@@ -1058,7 +1057,7 @@ public class SimilarPatentServer {
                             )
                     ), br(), br(), button("Create User").withClass("btn btn-secondary")
             );
-            return templateWrapper(true, req, res, form);
+            return templateWrapper(true, req, res, form, false);
         });
 
         post("/remove_user", (req,res)->{
@@ -1115,7 +1114,7 @@ public class SimilarPatentServer {
                         p("Unable to access this page. Only administrators can delete user accounts.")
                 );
             }
-            return templateWrapper(true, req, res, form);
+            return templateWrapper(true, req, res, form,false);
         });
 
         get("/", (req, res)->{
@@ -1126,12 +1125,12 @@ public class SimilarPatentServer {
                     ), br(), br(), label("Password").with(
                             input().withType("password").withClass("form-control").withName("password")
                     ), br(), br(), button("Login").withType("submit").withClass("btn btn-secondary")
-            ));
+            ),false);
         });
 
         get(HOME_URL, (req, res) -> {
             if(softAuthorize(req,res)) {
-                return templateWrapper(true, req, res, candidateSetModelsForm(req.session().attribute("role")));
+                return templateWrapper(true, req, res, candidateSetModelsForm(req.session().attribute("role")),true);
             } else {
                 return null;
             }
@@ -1139,7 +1138,7 @@ public class SimilarPatentServer {
 
         get(UPDATE_DEFAULT_ATTRIBUTES_URL, (req,res) -> {
             authorize(req,res);
-            return templateWrapper(true,req,res, defaultAttributesModelForm(req.session().attribute("username"),req.session().attribute("role")));
+            return templateWrapper(true,req,res, defaultAttributesModelForm(req.session().attribute("username"),req.session().attribute("role")),true);
         });
 
         get(RESET_DEFAULT_TEMPLATE_URL, (req,res)->{
@@ -2483,7 +2482,7 @@ public class SimilarPatentServer {
     }
 
 
-    static Tag templateWrapper(boolean authorized, Request req, Response res, Tag form) {
+    static Tag templateWrapper(boolean authorized, Request req, Response res, Tag form, boolean showTemplates) {
         res.type("text/html");
         String message = req.session().attribute("message");
         req.session().removeAttribute("message");
@@ -2565,7 +2564,7 @@ public class SimilarPatentServer {
                                                                                 .withHref("#datasets-tree")
                                                                 )
                                                         ), br(),
-                                                        div().withClass("tab-content").withId("sidebar-jstree-wrapper").attr("style","max-height: 75%; overflow-y: auto; text-align: left; display: none;").with(
+                                                        (showTemplates ? div().withClass("tab-content").withId("sidebar-jstree-wrapper").attr("style","max-height: 75%; overflow-y: auto; text-align: left; display: none;").with(
                                                                 div().withClass("tab-pane active").attr("role","tabpanel").withId("templates-tree").with(
                                                                         ul().with(
                                                                                 getTemplatesForUser(SUPER_USER,false,"Preset Templates",true),
@@ -2580,7 +2579,7 @@ public class SimilarPatentServer {
                                                                                 getDatasetsForUser(userGroup,true, "Shared Datasets")
                                                                         )
                                                                 )
-                                                        )
+                                                        ) : div())
                                                 )
                                         ),div().withClass("col-9 offset-3").attr("style","padding-top: 58px; padding-left:0px; padding-right:0px;").with(
                                                 customFormHeader(),
