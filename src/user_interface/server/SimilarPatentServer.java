@@ -2369,6 +2369,7 @@ public class SimilarPatentServer {
     }
 
     public static Tag getTemplatesForUser(String username, boolean deletable, String rootName, boolean loadData) {
+        if(username==null) return div();
         Function2<Map<String,Object>,File,FormTemplate> formTemplateFunction = (templateMap,file) -> {
             FormTemplate template;
 
@@ -2399,6 +2400,7 @@ public class SimilarPatentServer {
     }
 
     public static Tag getDatasetsForUser(String username, boolean deletable, String rootName) {
+        if(username==null) return div();
         Function2<Map<String,Object>,File,FormTemplate> formTemplateFunction = (templateMap,file) -> {
             FormTemplate template;
             Object name = templateMap.get("name");
@@ -2493,9 +2495,6 @@ public class SimilarPatentServer {
         }
         String role = req.session().attribute("role");
         String userGroup = req.session().attribute("userGroup");
-        if(userGroup == null) {
-            return div().with(p("No usergroup assigned."));
-        }
         return html().with(
                 head().with(
                         title("AI Search Platform"),
