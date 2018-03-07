@@ -120,7 +120,6 @@ public class SimilarPatentServer {
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
     public static final String RANDOM_TOKEN = "<><><>";
     public static final String SUPER_USER = "form_creator";
-    public static final String SHARED_USER = "shared_user";
     public static final String USE_HIGHLIGHTER_FIELD = "useHighlighter";
     public static final String FILTER_NESTED_OBJECTS_FIELD = "filterNestedObjects";
     public static final String ANALYST_USER = "analyst";
