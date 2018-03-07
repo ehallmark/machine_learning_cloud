@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# turn off elasticsearch
+cd /home/ehallmark/repos/machine_learning_cloud/scripts/production
+sudo docker-compose down
+cd /home/ehallmark/repos/machine_learning_cloud
 
 # run part 1 of updates
 java -cp target/classes:"target/dependency/*" -Xms100000m -Xmx100000m seeding.IngestRecentUpdatesPart1
