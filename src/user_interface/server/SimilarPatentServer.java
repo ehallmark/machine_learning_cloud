@@ -2777,7 +2777,7 @@ public class SimilarPatentServer {
     private static Tag customFormHeader() {
         return div().withClass("row header-main header-top").with(
                 div().withClass("col-3").attr("style","padding-top: 30px; border-right: 1px lightgray solid;").with(
-                        a().attr("href", "/").with(
+                        a().attr("href", HOME_URL).with(
                                 img().attr("style","display: block; margin-left: auto; margin-right: auto; margin-top: -20px")
                                         .attr("src", "/images/brand.png")
                         )
