@@ -935,7 +935,7 @@ public class SimilarPatentServer {
                                                 passwordHandler.getAllUsers().stream().sorted().map(user -> {
                                                     try {
                                                         String group = passwordHandler.getUserGroup(user);
-                                                        if (group == null) group = "(No user group)";
+                                                        if (group == null) group = "(Revoke Access)";
                                                         return option(user + " - " + group).withValue(user);
                                                     } catch (Exception e) {
                                                         return option(user).withValue(user);
