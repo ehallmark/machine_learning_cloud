@@ -7,7 +7,13 @@ java -cp target/classes:"target/dependency/*" -Xms100000m -Xmx100000m seeding.In
 cd /home/ehallmark/repos/machine_learning_cloud/scripts/production
 sudo docker-compose up -d
 cd /home/ehallmark/repos/machine_learning_cloud
-sleep 200s
+# wait for elastic search
+echo "Waiting for Elasticsearch to start..."
+until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9200); do
+    printf '.'
+    sleep 5
+done
+echo "Elasticsearch started."
 
 # then run part 2 of updates
 java -cp target/classes:"target/dependency/*" -Xms40000m -Xmx40000m seeding.IngestRecentUpdatesPart2
@@ -24,7 +30,13 @@ java -cp target/classes:"target/dependency/*" -Xms100000m -Xmx100000m seeding.ai
 cd /home/ehallmark/repos/machine_learning_cloud/scripts/production
 sudo docker-compose up -d
 cd /home/ehallmark/repos/machine_learning_cloud
-sleep 200s
+# wait for elastic search
+echo "Waiting for Elasticsearch to start..."
+until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9200); do
+    printf '.'
+    sleep 5
+done
+echo "Elasticsearch started."
 
 curl -XDELETE localhost:9200/ai_db
 sleep 10s

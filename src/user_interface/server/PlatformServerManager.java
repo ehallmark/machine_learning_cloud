@@ -14,7 +14,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 public class PlatformServerManager implements Job {
     private static final File pidFile = new File("/home/ehallmark/repos/machine_learning_cloud/app.pid");
 
-    public static void runBashProcess(String statement) throws Exception {
+    private static void runBashProcess(String statement) throws Exception {
         ProcessBuilder ps = new ProcessBuilder("/bin/bash", "-c", statement);
         ps.redirectErrorStream(true);
         Process process = ps.start();
@@ -27,7 +27,7 @@ public class PlatformServerManager implements Job {
         process.waitFor();
     }
 
-    public static void runScriptProcess(File scriptFile) throws Exception {
+    private static void runScriptProcess(File scriptFile) throws Exception {
         ProcessBuilder ps = new ProcessBuilder("/bin/sh", scriptFile.getAbsolutePath());
         ps.redirectErrorStream(true);
         Process process = ps.start();
@@ -40,7 +40,7 @@ public class PlatformServerManager implements Job {
         process.waitFor();
     }
 
-    public static void stopServer() throws Exception {
+    private static void stopServer() throws Exception {
         if(pidFile.exists()) {
             System.out.println("Stopping server...");
             String pid = FileUtils.readFileToString(pidFile);
@@ -54,13 +54,13 @@ public class PlatformServerManager implements Job {
         }
     }
 
-    public static void backupServer() throws Exception {
+    private static void backupServer() throws Exception {
         System.out.println("Backing up server...");
         final File scriptFile = new File("/home/ehallmark/repos/machine_learning_cloud/scripts/production/backup.sh");
         runScriptProcess(scriptFile);
     }
 
-    public static void startServer() throws Exception {
+    private static void startServer() throws Exception {
         System.out.println("Starting server...");
         if(pidFile.exists()) {
             System.out.println("Previous server instance exists...");
@@ -70,13 +70,17 @@ public class PlatformServerManager implements Job {
         runScriptProcess(scriptFile);
     }
 
-    public static void updateServer() throws Exception {
+    private static void updateServer() throws Exception {
         final File scriptFile = new File("/home/ehallmark/repos/machine_learning_cloud/scripts/production/update.sh");
         runScriptProcess(scriptFile);
     }
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        performFullUpdateCycle();
+    }
+
+    protected static void performFullUpdateCycle() {
         // stop server
         try{
             stopServer();
@@ -109,7 +113,6 @@ public class PlatformServerManager implements Job {
             System.out.println("Error while backing up server...");
         }
     }
-
 
     public static void main(String[] args) throws Exception {
         System.out.println("Starting server initially...");
