@@ -791,7 +791,8 @@ public class SimilarPatentServer {
             }
             session.attribute("username",username);
             session.attribute("role", role);
-            session.attribute("userGroup", passwordHandler.getUserGroup(username));
+            String userGroup = passwordHandler.getUserGroup(username);
+            session.attribute("userGroup", userGroup);
             res.status(200);
             res.redirect(HOME_URL);
             return null;
@@ -889,7 +890,7 @@ public class SimilarPatentServer {
                 if(message == null && (role.equals(INTERNAL_USER)||role.equals(SUPER_USER))) {
                     try {
                         passwordHandler.changeUserGroup(usernameToChange, newUserGroup);
-                        if(usernameToChange.equals(newUserGroup)) {
+                        if(usernameToChange.equals(username)) {
                             // update session
                             req.session(false).removeAttribute("userGroup");
                             req.session(false).attribute("userGroup", newUserGroup);
@@ -977,7 +978,7 @@ public class SimilarPatentServer {
             if(message == null) {
                 try {
                     passwordHandler.createUserGroup(userGroup);
-                    redirect = "/user_groups";
+                    redirect = "/edit_user_group";
                     message = "Successfully created user group.";
                 } catch (Exception e) {
                     System.out.println("Error while creating user group...");
@@ -1146,8 +1147,9 @@ public class SimilarPatentServer {
             authorize(req,res);
             String actualUser = req.session().attribute("username");
             if(actualUser==null) return null;
+            String userGroup = req.session().attribute("userGroup");
             String fileName = actualUser;
-            String message = deleteForm(fileName,Constants.USER_DEFAULT_ATTRIBUTES_FOLDER,actualUser,false,false);
+            String message = deleteForm(fileName,Constants.USER_DEFAULT_ATTRIBUTES_FOLDER,actualUser,userGroup,false,false);
             System.out.println("Delete form message: "+message);
             res.redirect(HOME_URL);
             return null;
@@ -1191,7 +1193,8 @@ public class SimilarPatentServer {
         post(SAVE_DATASET_URL, (req, res) -> {
             authorize(req,res);
             String user = req.session().attribute("username");
-            return handleSaveForm(req,res,Constants.USER_DATASET_FOLDER,datasetFormMapFunction(),saveDatasetsFunction(user),saveDatasetUpdatesFunction());
+            String userGroup = req.session().attribute("userGroup");
+            return handleSaveForm(req,res,Constants.USER_DATASET_FOLDER,datasetFormMapFunction(),saveDatasetsFunction(user,userGroup),saveDatasetUpdatesFunction());
         });
 
         post(GET_DATASET_URL, (req, res) -> {
@@ -1328,11 +1331,11 @@ public class SimilarPatentServer {
         };
     }
 
-    private static Function3<Map<String,Object>,File,Boolean,Void> saveDatasetsFunction(String user) {
+    private static Function3<Map<String,Object>,File,Boolean,Void> saveDatasetsFunction(String user, String userGroup) {
         return (formMap, file, shared) -> {
             String[] assets = (String[])formMap.get("assets");
             if(assets!=null&&file!=null) {
-                String username = shared ? SHARED_USER : user;
+                String username = shared ? userGroup : user;
                 DatasetIndex.index(username,file.getName(),Arrays.asList(assets));
             }
             formMap.remove("assets");
@@ -1572,6 +1575,7 @@ public class SimilarPatentServer {
         String filename = req.queryParams("file");
         String name = req.queryParams("name");
         String[] parentDirs = req.queryParamsValues("parentDirs[]");
+        String userGroup = req.session(false).attribute("userGroup");
         String message;
         Map<String,Object> responseMap = new HashMap<>();
         if(filename!=null&&name!=null&&name.length()>0) {
@@ -1586,7 +1590,7 @@ public class SimilarPatentServer {
             if(parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
                 isShared = true;
             }
-            String username = isShared ? SHARED_USER : req.session().attribute("username");
+            String username = isShared ? userGroup : req.session().attribute("username");
             if(username!=null&&username.length()>0) {
                 String templateFolderStr = baseFolder+username+"/";
                 File formFile = new File(templateFolderStr+filename);
@@ -1646,7 +1650,7 @@ public class SimilarPatentServer {
         String file = req.queryParams("file");
         boolean defaultFile = Boolean.valueOf(req.queryParamOrDefault("defaultFile","false"));
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
-
+        String userGroup = req.session().attribute("userGroup");
         String user = req.session().attribute("username");
         if(user==null||user.isEmpty()) {
             return null;
@@ -1660,13 +1664,13 @@ public class SimilarPatentServer {
                 filename = Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+SUPER_USER+"/"+SUPER_USER;
             }
         } else {
-            filename = baseFolder + (shared ? SHARED_USER : user) + "/" + file;
+            filename = baseFolder + (shared ? userGroup : user) + "/" + file;
         }
 
         Map<String,Object> data = getMapFromFile(new File(filename),true);
 
         if(dataset) {
-            String username = shared ? SHARED_USER : user;
+            String username = shared ? userGroup : user;
             data.put("assets", DatasetIndex.get(username,file));
         }
 
@@ -1675,6 +1679,7 @@ public class SimilarPatentServer {
 
     private static Object handleClusterForm(Request req, Response res, String baseFolder) {
         Map<String, Object> response = new HashMap<>();
+        String userGroup = req.session().attribute("userGroup");
 
         String file = req.queryParams("file");
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
@@ -1695,7 +1700,7 @@ public class SimilarPatentServer {
             message.add("no user found");
         } else {
 
-            String filename = baseFolder + (shared ? SHARED_USER : user) + "/" + file;
+            String filename = baseFolder + (shared ? userGroup : user) + "/" + file;
 
             Map<String, Object> data = getMapFromFile(new File(filename), false);
 
@@ -1705,7 +1710,7 @@ public class SimilarPatentServer {
             if (parentName == null) {
                 message.add("no parent name");
             } else {
-                String username = shared ? SHARED_USER : user;
+                String username = shared ? userGroup : user;
                 List<String> assets = DatasetIndex.get(username, file);
 
                 String[] parentParentDirs = Stream.of(new String[]{shared ? "Shared Datasets":"My Datasets"},(String[]) data.getOrDefault("parentDirs",new String[]{}))
@@ -1745,7 +1750,7 @@ public class SimilarPatentServer {
 
                             System.out.println("Parent dirs of cluster: "+Arrays.toString(parentDirs));
 
-                            Pair<String, Map<String, Object>> pair = saveFormToFile(formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user), saveDatasetUpdatesFunction());
+                            Pair<String, Map<String, Object>> pair = saveFormToFile(userGroup, formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user,userGroup), saveDatasetUpdatesFunction());
 
                             Map<String, Object> clusterData = pair.getSecond();
                             clusterData.put("name",name);
@@ -1807,6 +1812,7 @@ public class SimilarPatentServer {
 
     private static Function<Request,Map<String,Object>> datasetFormMapFunction() {
         return req -> {
+            String userGroup = req.session().attribute("userGroup");
             String[] assets = req.queryParamsValues("assets[]");
             if(assets==null) assets = req.session(false).attribute("assets"); // default to last seen report
             String name = req.queryParams("name");
@@ -1824,7 +1830,7 @@ public class SimilarPatentServer {
                         if (parentDirs != null && parentDirs.length > 0 && parentDirs[0].startsWith("Shared")) {
                             isShared = true;
                         }
-                        String username = isShared ? SHARED_USER : req.session(false).attribute("username");
+                        String username = isShared ? userGroup : req.session(false).attribute("username");
                         List<String> prevAssets = DatasetIndex.get(username, file);
                         if (prevAssets == null) prevAssets = Collections.emptyList();
                         List<String> allAssets = Stream.of(prevAssets, Arrays.asList(assets)).flatMap(s -> s.stream()).distinct().collect(Collectors.toList());
@@ -1852,7 +1858,7 @@ public class SimilarPatentServer {
     }
 
 
-    private static Pair<String,Map<String,Object>> saveFormToFile(Map<String,Object> formMap, String name, String[] parentDirs, String actualUsername, String baseFolder, Function3<Map<String,Object>,File,Boolean,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
+    private static Pair<String,Map<String,Object>> saveFormToFile(String userGroup, Map<String,Object> formMap, String name, String[] parentDirs, String actualUsername, String baseFolder, Function3<Map<String,Object>,File,Boolean,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
         String message;
         Random random = new Random(System.currentTimeMillis());
         Map<String,Object> responseMap = new HashMap<>();
@@ -1872,7 +1878,7 @@ public class SimilarPatentServer {
             if(parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
                 isShared = true;
             }
-            String username = isShared ? SHARED_USER : actualUsername;
+            String username = isShared ? userGroup : actualUsername;
             if(username!=null&&username.length()>0) {
                 String templateFolderStr = baseFolder+username+"/";
                 File templateFolder = new File(templateFolderStr);
@@ -1931,6 +1937,7 @@ public class SimilarPatentServer {
 
     private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction, Function3<Map<String,Object>,File,Boolean,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
         String name = req.queryParams("name");
+        String userGroup = req.session().attribute("userGroup");
         String[] parentDirs = req.queryParamsValues("parentDirs[]");
         if(parentDirs==null) {
             System.out.println("Parent dirs is null...");
@@ -1948,7 +1955,7 @@ public class SimilarPatentServer {
         String actualUsername = req.session().attribute("username");
         Map<String,Object> formMap = formMapFunction.apply(req);
 
-        Pair<String,Map<String,Object>> pairResponse = saveFormToFile(formMap,name,parentDirs,actualUsername,baseFolder,saveFunction,saveUpdatesFunction);
+        Pair<String,Map<String,Object>> pairResponse = saveFormToFile(userGroup,formMap,name,parentDirs,actualUsername,baseFolder,saveFunction,saveUpdatesFunction);
 
         String message = pairResponse.getFirst();
         Map<String,Object> responseMap = pairResponse.getSecond();
@@ -1956,12 +1963,12 @@ public class SimilarPatentServer {
         return new Gson().toJson(responseMap);
     }
 
-    private static String deleteForm(String fileName, String baseFolder, String actualUser, boolean shared, boolean deleteFromES) {
+    private static String deleteForm(String fileName, String baseFolder, String actualUser, String userGroup, boolean shared, boolean deleteFromES) {
         String message;
         if(fileName!=null && fileName.replaceAll(PasswordHandler.USER_NAME_REGEX,"").length() > 0) {
             fileName = fileName.replaceAll(PasswordHandler.USER_NAME_REGEX,"");
             try {
-                String username = shared ? SHARED_USER : actualUser;
+                String username = shared ? userGroup : actualUser;
                 if(username==null||username.isEmpty()) {
                     message = "Unable to locate user.";
                 } else {
@@ -2011,8 +2018,8 @@ public class SimilarPatentServer {
         String fileName = req.queryParams("path_to_remove");
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
         String actualUser = req.session().attribute("username");
-
-        String message = deleteForm(fileName,baseFolder,actualUser,shared,deleteFromES);
+        String userGroup = req.session().attribute("userGroup");
+        String message = deleteForm(fileName,baseFolder,actualUser,userGroup,shared,deleteFromES);
 
         return new Gson().toJson(new SimpleAjaxMessage(message));
     };
@@ -2488,7 +2495,7 @@ public class SimilarPatentServer {
         String role = req.session().attribute("role");
         String userGroup = req.session().attribute("userGroup");
         if(userGroup == null) {
-            userGroup = SHARED_USER; // default to shared user
+            return div().with(p("No usergroup assigned."));
         }
         return html().with(
                 head().with(

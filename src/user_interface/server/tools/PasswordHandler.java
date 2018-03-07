@@ -253,13 +253,11 @@ public class PasswordHandler {
 
         PasswordHandler handler = new PasswordHandler();
         final String superPass = "Ekbj223KSjvj!~2kjJSk3e3";
-        final String sharedPass = "kdfjg@#kdjgkjS@#%(2322KDSJG";
         boolean reGeneratePasswords = true;
         if(reGeneratePasswords) {
             String myPass = "Changeme123";
             String myUsername = "ehallmark";
             handler.forceChangePassword(SimilarPatentServer.SUPER_USER,superPass);
-            handler.forceChangePassword(SimilarPatentServer.SHARED_USER,sharedPass);
             handler.forceChangePassword(myUsername,myPass);
         } else {
             try {
@@ -267,15 +265,9 @@ public class PasswordHandler {
             } catch (PasswordException pe) {
                 System.out.println(pe.getMessage());
             }
-            try {
-                handler.createUser(SimilarPatentServer.SHARED_USER, sharedPass, SimilarPatentServer.SUPER_USER);
-            } catch (PasswordException pe) {
-                System.out.println(pe.getMessage());
-            }
         }
 
         System.out.println("Authorized Super User: " + handler.authorizeUser(SimilarPatentServer.SUPER_USER, superPass));
-        System.out.println("Authorized Shared User: " + handler.authorizeUser(SimilarPatentServer.SHARED_USER, sharedPass));
 
     }
 
