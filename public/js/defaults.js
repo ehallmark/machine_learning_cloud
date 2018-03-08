@@ -871,11 +871,11 @@ var addMultipleDatasetFunction = function(data,tree,node){
 
     var $filter = $('#multiselect-nested-filter-select-attributesNested_filter');
     var prevFilters = $filter.val();
-    if(prevFilters==null) {
+    if(prevFilters===null) {
         prevFilters = [];
     }
     if(!prevFilters.includes($datasetInput.attr('name'))) {
-        prevFilters.add($datasetInput.attr('name'));
+        prevFilters.push($datasetInput.attr('name'));
     }
     $filter.val(prevFilters).trigger('change');
     if(node.children) {
