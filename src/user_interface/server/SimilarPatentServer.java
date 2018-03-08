@@ -40,6 +40,7 @@ import user_interface.ui_models.attributes.computable_attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.BackwardCitationAttribute;
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.RelatedAssetsAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
+import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 import user_interface.ui_models.attributes.script_attributes.*;
 import user_interface.ui_models.charts.*;
@@ -174,6 +175,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Reinstated", Constants.REINSTATED);
             humanAttrToJavaAttrMap.put("Result Type", Constants.DOC_TYPE);
             humanAttrToJavaAttrMap.put("Dataset Name", Constants.DATASET_NAME);
+            humanAttrToJavaAttrMap.put("2nd Dataset Name", Constants.DATASET2_NAME);
             humanAttrToJavaAttrMap.put("Expired", Constants.EXPIRED);
             humanAttrToJavaAttrMap.put("Technology", Constants.COMPDB_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Deal ID", Constants.COMPDB_DEAL_ID);
@@ -541,6 +543,7 @@ public class SimilarPatentServer {
         if(attributesMap.isEmpty()) {
             attributesMap.put(Constants.MAINTENANCE_EVENT, new MaintenanceEventAttribute());
             attributesMap.put(Constants.DATASET_NAME, new DatasetAttribute());
+            attributesMap.put(Constants.DATASET2_NAME, new DatasetAttribute2());
             attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
             attributesMap.put(Constants.TECHNOLOGY, TechnologyAttribute.getOrCreate());
