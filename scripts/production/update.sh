@@ -28,13 +28,13 @@ sudo docker-compose down
 cd /home/ehallmark/repos/machine_learning_cloud
 
 # ingest computable
-java -cp target/classes:"target/dependency/*" -Xms100000m -Xmx100000m seeding.ai_db_updater.UpdateAll 12
+java -cp target/classes:"target/dependency/*" -Xms100000m -Xmx100000m seeding.ai_db_updater.UpdateAll 14
 
 # update elastic search
 cd /home/ehallmark/repos/machine_learning_cloud/scripts/production
 sudo docker-compose up -d
 cd /home/ehallmark/repos/machine_learning_cloud
-# wait for elastic search
+# wait for elastic search to start
 echo "Waiting for Elasticsearch to start..."
 until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9200); do
     printf '.'

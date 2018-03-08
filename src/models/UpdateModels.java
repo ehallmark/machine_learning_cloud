@@ -17,31 +17,10 @@ import java.util.stream.Collectors;
  */
 public class UpdateModels {
     public static void main(String[] args) throws Exception {
-        runModels(false);
+        runModels();
     }
 
-    public static List<String> runModels(boolean rerunModels) throws Exception{
-        // PRE DATA
-        UpdateCompDBAndGatherData.update();
-
-        // MODELS
-        UpdateClassificationModels.updateLatest();
-
-        Collection<String> unknownAssets = null;
-        if(!rerunModels) {
-            unknownAssets = Collections.synchronizedCollection(new HashSet<>());
-            unknownAssets.addAll(Database.getAllPatentsAndApplications());
-            unknownAssets.removeAll(new OverallEvaluator(false).getApplicationDataMap().keySet());
-            unknownAssets.removeAll(new OverallEvaluator(false).getPatentDataMap().keySet());
-        }
-        UpdateValueModels.updateLatest(unknownAssets);
-
-       // if(unknownAssets==null) {
-       //     return gatherCompdbAssets;
-       // } else if(gatherCompdbAssets==null) {
-            return unknownAssets.stream().collect(Collectors.toList());
-       // } else {
-       //     return Stream.of(unknownAssets,gatherCompdbAssets).flatMap(list->list.stream()).collect(Collectors.toList());
-       // }
+    public static void runModels() throws Exception{
+        UpdateValueModels.updateLatest(null);
     }
 }

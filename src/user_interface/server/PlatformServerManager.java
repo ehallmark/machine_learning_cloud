@@ -134,6 +134,6 @@ public class PlatformServerManager implements Job {
         }
 
         // and start it off
-        scheduler.start();
+       // TODO automatically start with cmd: scheduler.start();
     }
 }

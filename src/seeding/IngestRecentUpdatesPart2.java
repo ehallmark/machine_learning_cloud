@@ -27,7 +27,7 @@ public class IngestRecentUpdatesPart2 {
     public static void main(String[] args) {
         // run value models
         try {
-             UpdateModels.runModels(false);
+             UpdateModels.runModels();
         } catch(Exception e) {
             System.out.println("Error during value models...");
             e.printStackTrace();

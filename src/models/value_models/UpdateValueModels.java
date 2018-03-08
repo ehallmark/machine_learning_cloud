@@ -1,6 +1,7 @@
 package models.value_models;
 
 import elasticsearch.DataSearcher;
+import models.value_models.graphical.UpdateGraphicalModels;
 import models.value_models.graphical.WIPOValueModel;
 import models.value_models.regression.AIValueModel;
 import org.elasticsearch.index.query.QueryBuilder;

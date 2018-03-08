@@ -2,7 +2,9 @@ package seeding.ai_db_updater;
 
 import elasticsearch.DataIngester;
 import models.assignee.normalization.human_name_prediction.HumanNamePredictionPipelineManager;
+import models.classification_models.UpdateClassificationModels;
 import models.similarity_models.UpdateSimilarityModels;
+import models.value_models.graphical.UpdateGraphicalModels;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.CleanseAttributesAndMongoBeforeReseed;
@@ -86,15 +88,26 @@ public class UpdateAll {
 
                 } else if (arg.equals("10")) {
                     UpdateAssetGraphs.update(false);
+                    // rerun page rank
+                    UpdateGraphicalModels.main(null);
+
                 } else if (arg.equals("11")) {
                     try {
                         // add encodings
                         UpdateSimilarityModels.main(null);
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         System.out.println("Error updating encodings...");
                         e.printStackTrace();
                     }
                 } else if (arg.equals("12")) {
+                    // PRE DATA
+                    UpdateCompDBAndGatherData.update();
+
+                } else if (arg.equals("13")) {
+                    // MODELS
+                    UpdateClassificationModels.updateLatest();
+
+                } else if (arg.equals("14")) {
                     UpdateExtraneousComputableAttributeData.update(null);
                 }
             }
