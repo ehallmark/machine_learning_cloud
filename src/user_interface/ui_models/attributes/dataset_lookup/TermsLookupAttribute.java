@@ -37,5 +37,4 @@ public abstract class TermsLookupAttribute extends AbstractAttribute implements 
         return AbstractFilter.FieldType.Multiselect;
     }
 
-    public abstract Tag getFilterTag(String name, String id);
 }

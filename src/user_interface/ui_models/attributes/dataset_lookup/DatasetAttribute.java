@@ -7,6 +7,7 @@ import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 12/23/2017.
  */
-public class DatasetAttribute extends TermsLookupAttribute {
+public class DatasetAttribute extends TermsLookupAttribute implements AjaxMultiselect {
 
     private List<Pair<String,Set<String>>> currentDatasets;
 
@@ -58,11 +59,6 @@ public class DatasetAttribute extends TermsLookupAttribute {
         return Constants.DATASET_NAME;
     }
 
-    @Override
-    public Tag getFilterTag(String name, String id) {
-        return SimilarPatentServer.technologySelectWithCustomClass(name, id, "dataset-multiselect", Collections.emptyList());
-    }
-
     public static Pair<String,Set<String>> createDatasetFor(String label) {
         // need to get latest folder name for this dataset and assets
         String[] tmp = label.split("_",2);
@@ -99,5 +95,10 @@ public class DatasetAttribute extends TermsLookupAttribute {
     @Override
     public AbstractAttribute dup() {
         return new DatasetAttribute();
+    }
+
+    @Override
+    public String ajaxUrl() {
+        return Constants.DATASET_NAME_AJAX_URL;
     }
 }

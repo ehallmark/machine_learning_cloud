@@ -2,6 +2,9 @@ package user_interface.server;
 
 import ch.qos.logback.classic.Level;
 import com.google.gson.Gson;
+import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
+import com.googlecode.concurrenttrees.radix.RadixTree;
+import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharSequenceNodeFactory;
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import data_pipeline.helpers.Function2;
 import data_pipeline.helpers.Function3;
@@ -1241,6 +1244,43 @@ public class SimilarPatentServer {
             return response.body();
         });
 
+        // setup select2 ajax remote data sources
+        get(Constants.DATASET_NAME_AJAX_URL, (req,res)->{
+            String username = req.session(false).attribute("username");
+            String userGroup = req.session(false).attribute("userGroup");
+            if(username==null||userGroup==null) {
+                throw halt("No username and/or usergroup.");
+            }
+            Long lastSearchTime = req.session(false).attribute("dataset-lastSearchTime");
+            if(lastSearchTime==null) lastSearchTime= System.currentTimeMillis();
+            Long currentSearchTime = System.currentTimeMillis();
+
+            RadixTree<String> trie = req.session(false).attribute("dataset-trie");
+            Map<String,String> idToNameMap;
+            if(trie==null||currentSearchTime>lastSearchTime+(5000)) {
+                trie = new ConcurrentRadixTree<>(new DefaultCharSequenceNodeFactory());
+                idToNameMap = getDatasetIdToNameMaps(username,userGroup);
+                for(String id : idToNameMap.keySet()) {
+                    trie.put(idToNameMap.get(id).toLowerCase(),id);
+                }
+                req.session(false).attribute("dataset-trie",trie);
+                req.session(false).attribute("dataset-map",idToNameMap);
+            } else {
+                idToNameMap = req.session(false).attribute("dataset-map");
+            }
+            final RadixTree<String> finalTrie = trie;
+            Function<String,List<String>> resultsSearchFunction = search -> {
+                if(search==null) return new ArrayList<>(idToNameMap.keySet());
+                List<String> list = new ArrayList<>();
+                finalTrie.getValuesForClosestKeys(search.toLowerCase()).forEach(k->list.add(k));
+                return list;
+            };
+            Function<String,String> displayFunction = result ->  idToNameMap.get(result);
+
+            req.session(false).attribute("dataset-lastSearchTime",currentSearchTime);
+            return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
+        });
+
 
         // setup select2 ajax remote data sources
         get(Constants.ASSIGNEE_NAME_AJAX_URL, (req,res)->{
@@ -1799,12 +1839,10 @@ public class SimilarPatentServer {
 
     public static String decodeURLString(String in) {
         try {
-            //System.out.println("Name before: "+in);
             in = in.replace("&amp;","&");
             in = in.replace("&lt;","<");
             in = in.replace("&gt;",">");
             in = in.replace("&quot;","\"");
-            //System.out.println("Name after: "+in);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -2412,6 +2450,23 @@ public class SimilarPatentServer {
             return template;
         };
         return getDataForUser(username,deletable,rootName,Constants.USER_DATASET_FOLDER,false,formTemplateFunction);
+    }
+
+    private static Map<String,String> getDatasetIdToNameMaps(String username, String userGroup) {
+        if(username!=null&&userGroup!=null) {
+            File folder = new File(Constants.USER_DATASET_FOLDER+username+"/");
+            if(!folder.exists()) folder.mkdirs();
+            Map<String,String> results = new HashMap<>();
+            Arrays.stream(folder.listFiles(file->!file.getName().endsWith("_updates"))).forEach(file->{
+                Map<String,Object> templateMap = getMapFromFile(file, false);
+                String[] parentDirs = (String[])templateMap.get("parentDirs");
+                String name = (String)templateMap.get("name");
+                if(parentDirs!=null&&name!=null) {
+                    results.put(name,String.join("/",parentDirs));
+                }
+            });
+            return results;
+        } else return null;
     }
 
     public static Tag getDataForUser(String username, boolean deletable, String rootName, String baseFolder, boolean loadData, Function2<Map<String,Object>,File,FormTemplate> formTemplateFunction) {

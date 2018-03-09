@@ -516,55 +516,6 @@ $(document).ready(function() {
         }).filter(function() { return this!==null; });
     };
 
-    $('.dataset-multiselect').select2({
-        minimumResultsForSearch: 5,
-        width: "100%",
-    })
-
-    var datasetMultiselect = function(e,returnFalse,name) {
-        var $select = createDatasetSelect2(this);
-        if(returnFalse==true) {
-            $(this).val(name).trigger('change');
-            $('#generate-reports-form').trigger('submit');
-            e.preventDefault();
-            $select.select2('close');
-            return false;
-        } else {
-            return true;
-        }
-    };
-
-    var createDatasetSelect2 = function(elem) {
-        // get datasets
-        var $this = $(elem);
-        var previousVal = cleanArray($this.val());
-        $this.select2('destroy');
-        $this.empty();
-        $this.select2({
-            minimumResultsForSearch: 5,
-            width: '100%',
-            data: getDatasetSelectData()
-        });
-        $this.find('option').not("[value]").remove();
-        $this.val(previousVal).trigger('change');
-        $this.off('select2:opening');
-        $this.on('select2:opening', function(e) {
-            return true;
-        });
-        $this.select2('open');
-        return $this;
-    };
-
-    $('.dataset-multiselect').on('select2:opening',datasetMultiselect);
-
-    $('.dataset-multiselect').on('select2:open',function(e) {
-        $(this).off('select2:opening');
-        $(this).on('select2:opening',datasetMultiselect);
-    });
-
-    $('.dataset-multiselect').each(function() {
-       createDatasetSelect2(this);
-    });
 
 
     $('.single-select2').select2({

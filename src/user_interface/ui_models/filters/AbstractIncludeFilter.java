@@ -148,16 +148,9 @@ public class AbstractIncludeFilter extends AbstractFilter {
                         ajaxMultiSelect(getName(), ((AjaxMultiselect) attribute).ajaxUrl(), getId())
                 );
             } else {
-                if(attribute instanceof TermsLookupAttribute) {
-                    TermsLookupAttribute termsLookupAttribute = (TermsLookupAttribute)attribute;
-                    tag = div().with(
-                            termsLookupAttribute.getFilterTag(getName(),getId())
-                    );
-                } else {
-                    tag = div().with(
-                            SimilarPatentServer.technologySelectWithCustomClass(getName(), getId(), clazz, getAllValues())
-                    );
-                }
+                tag = div().with(
+                        SimilarPatentServer.technologySelectWithCustomClass(getName(), getId(), clazz, getAllValues())
+                );
             }
         }
         // check if include
