@@ -83,7 +83,7 @@ public class AbstractGreaterThanFilter extends AbstractFilter {
         String type = getFieldType().equals(FieldType.Date) ? "text" : "number";
         String additionalClasses = getFieldType().equals(FieldType.Date) ? "datepicker" : "";
         return div().with(
-                input().attr("style","height: 28px;").withClass("form-control "+additionalClasses).withId(getId()).withType(type).withName(getName())
+                input().withClass("form-control "+additionalClasses).withId(getId()).withType(type).withName(getName())
         );
     }
 }
