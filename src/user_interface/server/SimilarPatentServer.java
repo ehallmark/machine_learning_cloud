@@ -1259,7 +1259,9 @@ public class SimilarPatentServer {
             Map<String,String> idToNameMap;
             if(trie==null||currentSearchTime>lastSearchTime+(5000)) {
                 trie = new ConcurrentRadixTree<>(new DefaultCharSequenceNodeFactory());
-                idToNameMap = getDatasetIdToNameMaps(username,userGroup);
+                idToNameMap = new HashMap<>();
+                idToNameMap.putAll(getDatasetIdToNameMaps(username));
+                idToNameMap.putAll(getDatasetIdToNameMaps(userGroup));
                 for(String id : idToNameMap.keySet()) {
                     trie.put(idToNameMap.get(id).toLowerCase(),id);
                 }
@@ -2452,8 +2454,8 @@ public class SimilarPatentServer {
         return getDataForUser(username,deletable,rootName,Constants.USER_DATASET_FOLDER,false,formTemplateFunction);
     }
 
-    private static Map<String,String> getDatasetIdToNameMaps(String username, String userGroup) {
-        if(username!=null&&userGroup!=null) {
+    private static Map<String,String> getDatasetIdToNameMaps(String username) {
+        if(username!=null) {
             File folder = new File(Constants.USER_DATASET_FOLDER+username+"/");
             if(!folder.exists()) folder.mkdirs();
             Map<String,String> results = new HashMap<>();
@@ -2466,7 +2468,7 @@ public class SimilarPatentServer {
                 }
             });
             return results;
-        } else return null;
+        } else return Collections.emptyMap();
     }
 
     public static Tag getDataForUser(String username, boolean deletable, String rootName, String baseFolder, boolean loadData, Function2<Map<String,Object>,File,FormTemplate> formTemplateFunction) {
