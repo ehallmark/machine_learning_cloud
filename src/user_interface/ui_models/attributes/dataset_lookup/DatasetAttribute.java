@@ -73,6 +73,10 @@ public class DatasetAttribute extends TermsLookupAttribute implements AjaxMultis
         return null;
     }
 
+    public Tag getFilterTag(String name, String id) {
+        return AbstractIncludeFilter.ajaxMultiSelect(name,ajaxUrl(),id);
+    }
+
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
