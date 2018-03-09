@@ -1256,26 +1256,31 @@ public class SimilarPatentServer {
             if(lastSearchTime==null) lastSearchTime= System.currentTimeMillis();
             Long currentSearchTime = System.currentTimeMillis();
 
-            RadixTree<String> trie = req.session(false).attribute("dataset-trie");
+            SortedMap<String,String> sortedNameToIdMap = req.session(false).attribute("dataset-trie");
             Map<String,String> idToNameMap;
-            if(trie==null||currentSearchTime>lastSearchTime+(2000)) {
-                trie = new ConcurrentRadixTree<>(new DefaultCharSequenceNodeFactory());
+            if(sortedNameToIdMap==null||currentSearchTime>lastSearchTime+(2000)) {
+                sortedNameToIdMap = new TreeMap<>();
                 idToNameMap = new HashMap<>();
                 idToNameMap.putAll(getDatasetIdToNameMaps(username,"My Datasets"));
                 idToNameMap.putAll(getDatasetIdToNameMaps(userGroup, "Shared Datasets"));
                 for(String id : idToNameMap.keySet()) {
-                    trie.put(idToNameMap.get(id).toLowerCase(),id);
+                    sortedNameToIdMap.put(idToNameMap.get(id).toLowerCase(),id);
                 }
-                req.session(false).attribute("dataset-trie",trie);
+                req.session(false).attribute("dataset-trie",sortedNameToIdMap);
                 req.session(false).attribute("dataset-map",idToNameMap);
             } else {
                 idToNameMap = req.session(false).attribute("dataset-map");
             }
-            final RadixTree<String> finalTrie = trie;
+            final SortedMap<String,String> finalTrie = sortedNameToIdMap;
             Function<String,List<String>> resultsSearchFunction = search -> {
                 if(search==null) return new ArrayList<>(idToNameMap.keySet());
                 List<String> list = new ArrayList<>();
-                finalTrie.getValuesForClosestKeys(search.toLowerCase()).forEach(k->list.add(k));
+                final String lowerSearch = search.toLowerCase();
+                finalTrie.forEach((name,id)->{
+                    if(name.contains(lowerSearch)) {
+                        list.add(id);
+                    }
+                });
                 return list;
             };
             Function<String,String> displayFunction = result ->  idToNameMap.get(result);
