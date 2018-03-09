@@ -493,31 +493,6 @@ $(document).ready(function() {
         });
     });
 
-    var getDatasetSelectData = function() {
-        var $tree = $('#datasets-tree').jstree(true);
-        var data = $tree.get_json('#', {
-            flat: true
-        });
-        return data.map(function(obj) {
-            var node = $tree.get_node(obj.id);
-            var preName="";
-            for(var i = node.parents.length-2; i>=0; i--) {
-                var parent = $tree.get_node(node.parents[i]);
-                preName+=parent.text+"/";
-            }
-            if(node.type==='file'&&node.data.hasOwnProperty('user')&&node.data.hasOwnProperty('file')) {
-                return {
-                    id: node.data.file.toString().concat("_").concat(node.data.user.toString()),
-                    text: preName.concat(node.text)
-                };
-            } else {
-                return null;
-            }
-        }).filter(function() { return this!==null; });
-    };
-
-
-
     $('.single-select2').select2({
         minimumResultsForSearch: 10,
         width: "100%",

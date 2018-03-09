@@ -15,6 +15,7 @@ import elasticsearch.DatasetIndex;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
+import lombok.NonNull;
 import models.assignee.database.MergeRawAssignees;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
 import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
@@ -1257,11 +1258,11 @@ public class SimilarPatentServer {
 
             RadixTree<String> trie = req.session(false).attribute("dataset-trie");
             Map<String,String> idToNameMap;
-            if(trie==null||currentSearchTime>lastSearchTime+(5000)) {
+            if(trie==null||currentSearchTime>lastSearchTime+(2000)) {
                 trie = new ConcurrentRadixTree<>(new DefaultCharSequenceNodeFactory());
                 idToNameMap = new HashMap<>();
-                idToNameMap.putAll(getDatasetIdToNameMaps(username));
-                idToNameMap.putAll(getDatasetIdToNameMaps(userGroup));
+                idToNameMap.putAll(getDatasetIdToNameMaps(username,"My Datasets"));
+                idToNameMap.putAll(getDatasetIdToNameMaps(userGroup, "Shared Datasets"));
                 for(String id : idToNameMap.keySet()) {
                     trie.put(idToNameMap.get(id).toLowerCase(),id);
                 }
@@ -2454,7 +2455,7 @@ public class SimilarPatentServer {
         return getDataForUser(username,deletable,rootName,Constants.USER_DATASET_FOLDER,false,formTemplateFunction);
     }
 
-    private static Map<String,String> getDatasetIdToNameMaps(String username) {
+    private static Map<String,String> getDatasetIdToNameMaps(String username,@NonNull String topLevelFolderName) {
         if(username!=null) {
             File folder = new File(Constants.USER_DATASET_FOLDER+username+"/");
             if(!folder.exists()) folder.mkdirs();
@@ -2464,7 +2465,7 @@ public class SimilarPatentServer {
                 String[] parentDirs = (String[])templateMap.get("parentDirs");
                 String name = (String)templateMap.get("name");
                 if(parentDirs!=null&&name!=null) {
-                    results.put(name,String.join("/",parentDirs));
+                    results.put(file.getName()+"_"+username,topLevelFolderName+"/"+String.join("/",parentDirs)+"/"+name);
                 }
             });
             return results;
