@@ -26,58 +26,66 @@ public class PredictKeyphraseForFilings {
 
     public static void runPredictions(boolean rerunModel) {
         Nd4j.setDataType(DataBuffer.Type.DOUBLE);
-        System.setProperty("org.bytedeco.javacpp.maxretries","100");
+        System.setProperty("org.bytedeco.javacpp.maxretries", "100");
 
         final int maxTags = 5;
         final double minScore = 0.65;
 
         String CPC2VecModelName = WordCPC2VecPipelineManager.DEEP_MODEL_NAME;
         final int vectorSize = WordCPC2VecPipelineManager.modelNameToVectorSizeMap.get(CPC2VecModelName);
-        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(CPC2VecModelName,-1,-1,-1);
+        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(CPC2VecModelName, -1, -1, -1);
         KeyphrasePredictionPipelineManager pipelineManager = new KeyphrasePredictionPipelineManager(wordCPC2VecPipelineManager);
-        pipelineManager.runPipeline(false,false,false,false,-1,false);
+        pipelineManager.runPipeline(false, false, false, false, -1, false);
 
-        Map<String,Set<String>> cpcToKeyphraseMap = pipelineManager.loadPredictions();
+        Map<String, Set<String>> cpcToKeyphraseMap = pipelineManager.loadPredictions();
 
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
-        Map<String,INDArray> cpcVectors = wordCPC2VecPipelineManager.getOrLoadCPCVectors();
+        Map<String, INDArray> cpcVectors = wordCPC2VecPipelineManager.getOrLoadCPCVectors();
         pipelineManager.buildKeywordToLookupTableMap();
-        Map<MultiStem,INDArray> _keyphraseVectors = pipelineManager.buildKeywordToLookupTableMap();
-        Map<String,INDArray> keyphraseVectors = Collections.synchronizedMap(new HashMap<>());
-        _keyphraseVectors.entrySet().parallelStream().forEach(e->{
-            keyphraseVectors.put(e.getKey().getBestPhrase(),e.getValue());
+        Map<MultiStem, INDArray> _keyphraseVectors = pipelineManager.buildKeywordToLookupTableMap();
+        Map<String, INDArray> keyphraseVectors = Collections.synchronizedMap(new HashMap<>());
+        _keyphraseVectors.entrySet().parallelStream().forEach(e -> {
+            keyphraseVectors.put(e.getKey().getBestPhrase(), e.getValue());
         });
 
         System.out.println("Building cpc matrix...");
-        Map<String,Integer> cpcToIdx = new HashMap<>();
+        Map<String, Integer> cpcToIdx = new HashMap<>();
         AtomicInteger idx = new AtomicInteger(0);
-        INDArray cpcMatrix = Nd4j.create(cpcVectors.size(),vectorSize);
-        cpcVectors.entrySet().forEach(e->{
+        INDArray cpcMatrix = Nd4j.create(cpcVectors.size(), vectorSize);
+        cpcVectors.entrySet().forEach(e -> {
             int i = idx.getAndIncrement();
-            cpcToIdx.put(e.getKey(),i);
-            cpcMatrix.putRow(i,Transforms.unitVec(e.getValue()));
+            cpcToIdx.put(e.getKey(), i);
+            cpcMatrix.putRow(i, Transforms.unitVec(e.getValue()));
         });
         idx.set(0);
         System.out.println("Building keyphrase matrix...");
-        Map<String,Integer> keyphraseToIdx = new HashMap<>();
-        INDArray keyphraseMatrix = Nd4j.create(keyphraseVectors.size(),vectorSize);
-        keyphraseVectors.entrySet().forEach(e->{
+        Map<String, Integer> keyphraseToIdx = new HashMap<>();
+        INDArray keyphraseMatrix = Nd4j.create(keyphraseVectors.size(), vectorSize);
+        keyphraseVectors.entrySet().forEach(e -> {
             int i = idx.getAndIncrement();
-            keyphraseToIdx.put(e.getKey(),i);
-            keyphraseMatrix.putRow(i,Transforms.unitVec(e.getValue()));
+            keyphraseToIdx.put(e.getKey(), i);
+            keyphraseMatrix.putRow(i, Transforms.unitVec(e.getValue()));
         });
         System.out.println("Finished");
 
 
-        Map<String,Collection<CPC>> filingToCPCMap = new HashMap<>(pipelineManager.getCPCMap());
-        technologyMap = Collections.synchronizedMap(new HashMap<>());
-        if(!rerunModel) {
+        Map<String, Collection<CPC>> filingToCPCMap = new HashMap<>(pipelineManager.getCPCMap());
+        technologyMap = null;
+        if (rerunModel) {
+            technologyMap = Collections.synchronizedMap(new HashMap<>());
+        } else {
             System.out.println("Updating model only...");
+            System.out.println("To predictions before removing previous: "+filingToCPCMap.size());
             technologyMap = loadOrGetTechnologyMap();
             if(technologyMap!=null) {
                 Set<String> assets = new HashSet<>(technologyMap.keySet());
+                System.out.println("TechnologyMap size ="+technologyMap.size());
+                System.out.println("TechnologyMap entry ="+assets.stream().findAny().get());
+                System.out.println("FilingCPCMap entry ="+filingToCPCMap.keySet().stream().findAny().get());
                 assets.forEach(filingToCPCMap::remove);
+            } else {
+                System.out.println("Warning previous tech map was null... Will throw null pointer exception soon...");
             }
         }
         System.out.println("Num new predictions to make: "+filingToCPCMap.size());
