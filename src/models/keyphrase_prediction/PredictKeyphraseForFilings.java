@@ -71,17 +71,18 @@ public class PredictKeyphraseForFilings {
 
 
         Map<String,Collection<CPC>> filingToCPCMap = new HashMap<>(pipelineManager.getCPCMap());
+        technologyMap = Collections.synchronizedMap(new HashMap<>());
         if(!rerunModel) {
             System.out.println("Updating model only...");
-            Map<String,List<String>> previousMap = loadOrGetTechnologyMap();
-            if(previousMap!=null) {
-                Set<String> assets = new HashSet<>(previousMap.keySet());
+            technologyMap = loadOrGetTechnologyMap();
+            if(technologyMap!=null) {
+                Set<String> assets = new HashSet<>(technologyMap.keySet());
                 assets.forEach(filingToCPCMap::remove);
             }
         }
         System.out.println("Num new predictions to make: "+filingToCPCMap.size());
 
-        technologyMap = Collections.synchronizedMap(filingToCPCMap.entrySet().parallelStream()
+        technologyMap.putAll(filingToCPCMap.entrySet().parallelStream()
                 .map(e->{
                     List<String> technologies = Collections.synchronizedList(new ArrayList<>(maxTags));
                     String filing = e.getKey();
