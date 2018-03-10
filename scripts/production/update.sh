@@ -18,6 +18,7 @@ until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9200); d
     sleep 5
 done
 echo "Elasticsearch started."
+sleep 10s
 
 # then run part 2 of updates
 java -cp target/classes:"target/dependency/*" -Xms40000m -Xmx40000m seeding.IngestRecentUpdatesPart2
@@ -41,7 +42,7 @@ until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9200); d
     sleep 5
 done
 echo "Elasticsearch started."
-
+sleep 20s
 curl -XDELETE localhost:9200/ai_db
 sleep 10s
 java -cp target/classes:"target/dependency/*" -Xms20000m -Xmx20000m elasticsearch.CreatePatentDBIndex
