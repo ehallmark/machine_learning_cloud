@@ -88,8 +88,6 @@ public class UpdateAll {
 
                 } else if (arg.equals("10")) {
                     UpdateAssetGraphs.update(false);
-                    // rerun page rank
-                    UpdateGraphicalModels.main(null);
 
                 } else if (arg.equals("11")) {
                     try {
@@ -100,8 +98,8 @@ public class UpdateAll {
                         e.printStackTrace();
                     }
                 } else if (arg.equals("12")) {
-                    // PRE DATA
-                    UpdateCompDBAndGatherData.update();
+                    // rerun page rank
+                    UpdateGraphicalModels.main(null);
 
                 } else if (arg.equals("13")) {
                     // MODELS

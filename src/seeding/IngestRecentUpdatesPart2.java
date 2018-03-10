@@ -25,6 +25,9 @@ import java.util.stream.Collectors;
 public class IngestRecentUpdatesPart2 {
     // Completes the initial seed into mongo
     public static void main(String[] args) {
+        // PRE DATA
+        UpdateCompDBAndGatherData.update();
+
         // run value models
         try {
              UpdateModels.runModels();
