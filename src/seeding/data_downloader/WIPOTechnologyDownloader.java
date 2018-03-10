@@ -39,7 +39,7 @@ public class WIPOTechnologyDownloader extends SingleFileDownloader {
         {
             {// load from internet
                 if(wipoDefinitionDestinationFile.exists()) wipoDefinitionDestinationFile.delete();
-                String baseUrl = "http://www.patentsview.org/data/?/wipo_field.zip";
+                String baseUrl = "http://www.patentsview.org/data/?/wipo_field.tsv.zip";
                 boolean found = false;
                 LocalDate date = LocalDate.now();
                 File wipoDefinitionZipFile = new File("wipo_definition_zip/");

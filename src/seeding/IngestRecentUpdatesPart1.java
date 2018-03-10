@@ -7,7 +7,9 @@ import seeding.ai_db_updater.UpdateAll;
  */
 public class IngestRecentUpdatesPart1 {
     public static void main(String[] args) {
-        String[] updates = new String[]{"-1","1","2","3","4","5","6","7","8","9","10","11","12","13"};
+        String[] updates = new String[]{
+                //"-1","1","2","3","4","5","6",
+                "7","8","9","10","11","12","13"};
 
         try {
             UpdateAll.main(updates);
