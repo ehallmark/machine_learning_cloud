@@ -99,6 +99,7 @@ public class PasswordHandler {
         if(allUsers.contains(group)) {
             throw new PasswordException("User group conflicts with an existing username.");
         }
+        validateUsername(group); // important since a directory will be created
         Set<String> currentGroups = getUserGroups();
         currentGroups.add(group);
         Database.trySaveObject(currentGroups,new File(userGroupNamesFile));
