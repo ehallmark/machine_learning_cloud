@@ -20,7 +20,7 @@ import java.util.*;
 
 public class PullAttributesForRegression {
     private static final File regressionDataFile = new File(Constants.DATA_FOLDER+"regression_data_file_excel.csv");
-    private static final File regressionDataFile = new File(Constants.DATA_FOLDER+"regression_data_file_excel.test.csv");
+    private static final File regressionTestDataFile = new File(Constants.DATA_FOLDER+"regression_data_file_excel.test.csv");
     public static void main(String[] args) {
         Set<String> gatherAssets = Database.getGatherAssets();
         System.out.println("Num gather assets: "+gatherAssets.size());
