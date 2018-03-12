@@ -37,7 +37,7 @@ public abstract class RegressionValueModel extends ValueAttr {
         return 1d/(1d+Math.exp(-(intercept+attributesAndWeights.stream().mapToDouble(pair->(valueFromAttribute(item,pair.getFirst(),defaultVal)).doubleValue()*pair.getSecond()).sum())));
     }
 
-    private static Number valueFromAttribute(Item item, AbstractAttribute attribute, Number defaultVal) {
+    public static Number valueFromAttribute(Item item, AbstractAttribute attribute, Number defaultVal) {
         Number val=null;
         Object obj = item.getDataMap().get(attribute.getFullName());
         if(obj == null && attribute instanceof ComputableAttribute) {

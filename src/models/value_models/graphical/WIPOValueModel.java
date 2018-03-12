@@ -73,7 +73,6 @@ public class WIPOValueModel extends ValueAttr {
         System.out.println("Num items: "+items.size());
         allItems = items.toArray(new Item[items.size()]);
 
-        Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
         final Map<String,List<String>> variableToValuesMap = Collections.synchronizedMap(new HashMap<>());
         Arrays.stream(allItems).parallel().forEach(item->{
             // add values

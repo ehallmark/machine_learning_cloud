@@ -72,6 +72,10 @@ public class ParentSubsidiaryGraph {
         return results;
     }
 
+    public static Map<String,String> loadChildToParentMap() {
+        return (Map<String,String>)Database.tryLoadObject(childToParentMapFile);
+    }
+
     public static void main(String[] args) {
         Map<String,Map<String,Object>> data = (Map<String,Map<String,Object>>) Database.tryLoadObject(rawDataFile);
         Map<String,String> childToParentMap = Collections.synchronizedMap(new HashMap<>());
