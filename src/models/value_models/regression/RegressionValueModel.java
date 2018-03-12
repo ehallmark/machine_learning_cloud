@@ -9,6 +9,7 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,7 +43,7 @@ public abstract class RegressionValueModel extends ValueAttr {
         Object obj = item.getDataMap().get(attribute.getFullName());
         if(obj == null && attribute instanceof ComputableAttribute) {
             // check for filing
-            obj = ((ComputableAttribute) attribute).getApplicationDataMap().getOrDefault(item.getName(),((ComputableAttribute) attribute).getPatentDataMap().get(item.getName()));
+            obj = ((ComputableAttribute)attribute).attributesFor(Collections.singleton(item.getName()),1,null);
         }
         if(obj!=null) {
             if(obj.toString().equals("false")) obj = "0";
