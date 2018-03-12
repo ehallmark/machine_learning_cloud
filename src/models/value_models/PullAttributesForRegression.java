@@ -6,7 +6,6 @@ import models.value_models.regression.RegressionValueModel;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.Database;
-import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.AssetNumberAttribute;
 import user_interface.ui_models.attributes.computable_attributes.GatherBoolValueAttribute;
@@ -28,7 +27,7 @@ public class PullAttributesForRegression {
         Collection<AbstractAttribute> attributes = new ArrayList<>(AIValueModel.MODELS);
         attributes.add(new GatherBoolValueAttribute());
 
-        List<Item> items = DataSearcher.searchForAssets(attributes,Collections.singletonList(new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text,new ArrayList<>(gatherAssets))), Constants.NO_SORT, SortOrder.ASC, gatherAssets.size(), SimilarPatentServer.getNestedAttrMap(),false,false);
+        List<Item> items = DataSearcher.searchForAssets(attributes,Collections.singletonList(new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text,new ArrayList<>(gatherAssets))), Constants.NO_SORT, SortOrder.ASC, gatherAssets.size(), Collections.emptyMap(),false,false);
 
         StringJoiner header = new StringJoiner("\",\"","\"","\"\n");
         attributes.forEach(attr->header.add(attr.getName()));
