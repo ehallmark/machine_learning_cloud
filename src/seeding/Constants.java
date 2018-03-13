@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 public class Constants {
 	public static final String CPC_CODE_AJAX_URL = "/data/cpc/02395328523985293085923dgkld0938592385902835902";
 	public static final String ASSIGNEE_NAME_AJAX_URL = "/data/assignee/02395328523985293085923dgkld0938592385902835902";
-	public static final String DATASET_NAME_AJAX_URL = "/data/assignee/02395328523985293085923dgkld0938592385902835902";
+	public static final String DATASET_NAME_AJAX_URL = "/data/dataset_name/02395328523985293085923dgkld0938592385902835902";
 	public static final String NORMALIZED_ASSIGNEE_NAME_AJAX_URL = "/data/normalized_assignee/02395328523985293085923dgkld0938592385902835902";
 	public static final String GTT_TECHNOLOGY_AJAX_URL = "/data/gtt_tech/02395328523985293085923dgkld0938592385902835902";
 	public static final String GATHER = "gather";
