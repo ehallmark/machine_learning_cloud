@@ -33,8 +33,8 @@ public class DrawGraph {
         childToParentMap.forEach((child,parent)->{
             if(child.equals(parent)) return;
             try {
-                Node childNode = nodeMap.containsKey(child) ? nodeMap.get(child) : visualizer.addNode(child, assigneeToPortfolioSizeMap.getOrDefault(child,1), Color.RED);
-                Node parentNode = nodeMap.containsKey(parent) ? nodeMap.get(parent) : visualizer.addNode(parent, assigneeToPortfolioSizeMap.getOrDefault(parent,1), Color.BLUE);
+                Node childNode = nodeMap.containsKey(child) ? nodeMap.get(child) : visualizer.addNode(child, Math.max(100f,1f+(float)Math.log(assigneeToPortfolioSizeMap.getOrDefault(child,1)))/100f, Color.RED);
+                Node parentNode = nodeMap.containsKey(parent) ? nodeMap.get(parent) : visualizer.addNode(parent, Math.max(100f,1f+(float)Math.log(assigneeToPortfolioSizeMap.getOrDefault(parent,1)))/100f, Color.BLUE);
                 if(!childNode.getColor().equals(Color.RED)) childNode.setColor(Color.RED);
 
                 nodeMap.putIfAbsent(child, childNode);
