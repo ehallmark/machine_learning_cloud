@@ -2,9 +2,6 @@ package user_interface.server;
 
 import ch.qos.logback.classic.Level;
 import com.google.gson.Gson;
-import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
-import com.googlecode.concurrenttrees.radix.RadixTree;
-import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharSequenceNodeFactory;
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import data_pipeline.helpers.Function2;
 import data_pipeline.helpers.Function3;
@@ -145,7 +142,7 @@ public class SimilarPatentServer {
     private static final ForkJoinPool pool = new ForkJoinPool(Math.max(10,Runtime.getRuntime().availableProcessors()/2));
 
     static {
-        roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.startsWith("gather"));
+        roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.toLowerCase().startsWith("gather")&& !str.toLowerCase().startsWith("compdb")&& !str.equals(Constants.GTT_RESERVOIR));
         roleToAttributeFunctionMap.put(INTERNAL_USER, str -> true);
         roleToAttributeFunctionMap.put(SUPER_USER, str -> true);
     }

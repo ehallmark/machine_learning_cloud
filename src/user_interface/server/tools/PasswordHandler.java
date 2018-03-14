@@ -271,5 +271,4 @@ public class PasswordHandler {
         System.out.println("Authorized Super User: " + handler.authorizeUser(SimilarPatentServer.SUPER_USER, superPass));
 
     }
-
 }
