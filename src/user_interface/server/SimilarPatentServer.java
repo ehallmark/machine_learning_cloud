@@ -775,11 +775,7 @@ public class SimilarPatentServer {
         port(8080);
 
         // HOST ASSETS
-        if(new File("/home/ehallmark1122/machine_learning_cloud/public").exists()) {
-            staticFiles.externalLocation("/home/ehallmark1122/machine_learning_cloud/public");
-        } else {
-            staticFiles.externalLocation("/home/ehallmark/repos/machine_learning_cloud/public");
-        }
+        staticFiles.externalLocation(new File("public").getAbsolutePath());
 
         final PasswordHandler passwordHandler = new PasswordHandler();
 
