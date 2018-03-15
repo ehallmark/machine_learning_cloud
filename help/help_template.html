@@ -10,7 +10,6 @@
     <script src="/js/offline-exporting.js"></script>
     <script src="/js/customEvents.js"></script>
     <script src="/js/jquery.dynatable.js"></script>
-    <script src="/js/defaults.js"></script>
     <script src="/js/jquery.miniTip.js"></script>
     <script src="/js/jstree.min.js"></script>
     <script src="/js/select2.min.js"></script>
@@ -23,16 +22,153 @@
     <link rel="stylesheet" href="/css/miniTip.css">
     <link rel="stylesheet" href="/css/jstree.min.css">
     <link rel="stylesheet" href="/css/jquery-ui.min.css">
+    <script>
+        $(document).ready(function() {
+            $('.accordion .accordion-toggle').click(function(e) {
+                e.preventDefault();
+                var $this = $(this);
+                if ($this.next().hasClass('show')) {
+                    $this.next().removeClass('show');
+                    $this.next().slideUp(350, function() {
+                        $this.next().find('.inner').hide().removeClass('show');
+                    });
+                } else {
+                    //$this.parent().parent().find('li .inner').removeClass('show');
+                    //$this.parent().parent().find('li .inner').slideUp(350);
+                    $this.next().toggleClass('show');
+                    $this.next().slideToggle(350);
+                }
+            });
+        });
+    </script>
+    <style>
+        .accordion * {
+            box-sizing: border-box;
+            font-family: 'Open Sans',sans-serif;
+            font-weight: 300;
+        }
+
+        .accordion .inner {
+            display: none;
+        }
+
+        .accordion a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .accordion ul {
+            font-size: 22px;
+        }
+
+        .accordion ul ul {
+            font-size: 18px;
+        }
+
+        .accordion ul ul ul{
+            font-size: 14px;
+        }
+
+        .accordion ul ul ul ul {
+            font-size: 12px;
+        }
+
+        .accordion ul {
+            list-style: none;
+            padding: 0;
+
+            .inner {
+                padding-left: 1em;
+                overflow: hidden;
+                display: none;
+
+                &.show {
+                  /*display: block;*/
+                }
+            }
+
+            li {
+                margin: .5em 0;
+
+                a {
+                    width: 100%;
+                    display: block;
+                    background-color: rgba(0,0,0,0.78);
+                    color: #fefefe;
+                    padding: .75em;
+                    border-radius: 0.15em;
+                    transition: background .3s ease;
+
+                    :hover {
+                        background-color: rgba(0, 0, 0, 0.9);
+                        text-decoration: underline;
+                    }
+                }
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container-fluid text-center">
         <div class="row">
-            <nav class="col-3 sidebar" style="z-index: 2; overflow-y: auto; height: 100%; position: fixed; padding-top: 75px;">
-                <p>Getting Started</p>
-                <p>Filters</p>
-                <p>Sorting</p>
-                <p>Attributes</p>
-                <p>Charts</p>
+            <nav class="col-3 sidebar accordion" style="z-index: 2; overflow-y: auto; height: 100%; position: fixed; padding-top: 75px;">
+                <ul id="dropdown-menu">
+                    <li>
+                        <a class="accordion-toggle" href="javascript:void(0);"> Getting Started </a>
+                        <ul class="inner">
+                            <li>
+                                <a class="accordion-toggle" href="#header-getting-started-introduction"> Introduction </a>
+                                <ul class="inner">
+                                    <li>Test 1</li>
+                                    <li>Test 2</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#header-getting-started-basics"> Basics </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="accordion-toggle" href="javascript:void(0);"> Filters </a>
+                        <ul class="inner">
+                            <li>
+                                <a href="#header-filters-overview"> Overview </a>
+                            </li>
+                            <li>
+                                <a href="#header-filters-types"> Filter Types </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="accordion-toggle" href="javascript:void(0);"> Sorting </a>
+                        <ul class="inner">
+                            <li>
+                                <a href="#header-sorting-overview"> Overview </a>
+                            </li>
+                            <li>
+                                <a href="#header-sorting-direction"> Sort Direction </a>
+                            </li>
+                            <li>
+                                <a href="#header-sorting-limit"> Result Limit </a>
+                            </li>
+                            <li>
+                                <a href="#header-sorting-fields"> Sort Fields </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="accordion-toggle" href="javascript:void(0);"> Attributes </a>
+                        <ul class="inner">
+                            <li>Overview</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="accordion-toggle" href="javascript:void(0);"> Charts </a>
+                        <ul class="inner">
+                            <li>Overview</li>
+                        </ul>
+                    </li>
+                </ul>
             </nav>
             <div class="col-9">
                 <div class="row header-main header-top">
