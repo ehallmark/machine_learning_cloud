@@ -22,7 +22,7 @@ public class PasswordHandler {
     private static final String roleFolder = Constants.DATA_FOLDER+"roles/";
     private static final String userGroupFolder = Constants.DATA_FOLDER+"userGroups/";
     private static final String userGroupNamesFile = Constants.DATA_FOLDER+"userGroupNames.jobj";
-    public static final String USER_NAME_REGEX = "[^a-zA-Z0-9_\\-]";
+    public static final String USER_NAME_REGEX = "[^a-zA-Z0-9_\\-\\.]";
     // Returns the role of the user (or null if not authorized)
     public synchronized String authorizeUser(String username, String password) throws PasswordException {
         if(username == null || password == null) return null;
