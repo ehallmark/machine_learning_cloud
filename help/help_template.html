@@ -45,7 +45,14 @@
                 return $li;
 
             } else {
-                var $link = $('<li><a class="accordion-toggle" href="#'+parent.parent().attr('id')+'">'+parent.text()+'</a></li>');
+                var $link = $('<li><a href="#'+parent.parent().attr('id')+'">'+parent.text()+'</a></li>');
+                $link.children().click(function(e) {
+                    e.preventDefault();
+                    var href = $(this).attr('href');
+                    $('html,body').animate({
+                        scrollTop: $(href).offset().top-200
+                    }, 500);
+                });
                 return $link;
             }
         };
@@ -82,6 +89,12 @@
         });
     </script>
     <style>
+        h3 {
+            margin-top: 30px;
+        }
+        h4 {
+            margin-top: 24px;
+        }
         .accordion * {
             box-sizing: border-box;
             font-family: 'Open Sans',sans-serif;
@@ -169,7 +182,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="row" style="margin-top:90px;">
+                <div class="row" style="margin-top:70px;">
                     <div id="document" class="col-9 offset-3">
                         <div class="col-12" id="header-getting-started">
                             <h3>Getting Started</h3>
