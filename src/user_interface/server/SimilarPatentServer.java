@@ -3081,6 +3081,6 @@ public class SimilarPatentServer {
             System.out.println("Error during presearch: "+e.getMessage());
         }
 
-        HelpPage.helpPage();
+        HelpPage.helpPage(false);
     }
 }

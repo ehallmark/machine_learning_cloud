@@ -23,7 +23,47 @@
     <link rel="stylesheet" href="/css/jstree.min.css">
     <link rel="stylesheet" href="/css/jquery-ui.min.css">
     <script>
+        var dropdownFunc = function(parent,tags,idx) {
+            var $elems = null;
+            if(idx>=tags.length) {
+                $elems = [];
+            } else {
+                $elems = parent.parent().find(tags[idx]);
+            }
+            if($elems.length>0) {
+                var menuClass = "inner";
+                var $link = $('<a class="accordion-toggle" href="javascript:void(0);">'+parent.text()+'</a>');
+                var $ul = $('<ul class="'+menuClass+'"></ul>');
+                var $li = $('<li></li>');
+                $li.append($link).append($ul);
+                $elems.each(function() {
+                    var subMenu = dropdownFunc($(this),tags,idx+1);
+                    if(subMenu!=null) {
+                        $ul.append(subMenu);
+                    }
+                });
+                return $li;
+
+            } else {
+                var $link = $('<li><a class="accordion-toggle" href="#'+parent.parent().attr('id')+'">'+parent.text()+'</a></li>');
+                return $link;
+            }
+        };
+
+        var dropdown = function(doc,tags) {
+            var ul = $('<ul class="accordion"></ul>');
+            var $topLevel = doc.find(tags[0]);
+            $topLevel.each(function() {
+                ul.append(dropdownFunc($(this),tags,1));
+            });
+            return ul;
+        }
+
         $(document).ready(function() {
+            var tags = ['h3','h4','h5'];
+            var menu = dropdown($('#document'),tags);
+            $('#navbar').append(menu);
+
             $('.accordion .accordion-toggle').click(function(e) {
                 e.preventDefault();
                 var $this = $(this);
@@ -45,7 +85,7 @@
         .accordion * {
             box-sizing: border-box;
             font-family: 'Open Sans',sans-serif;
-            font-weight: 300;
+            font-weight: 400;
         }
 
         .accordion .inner {
@@ -62,15 +102,15 @@
         }
 
         .accordion ul ul {
-            font-size: 18px;
+            font-size: 20px;
         }
 
         .accordion ul ul ul{
-            font-size: 14px;
+            font-size: 16px;
         }
 
         .accordion ul ul ul ul {
-            font-size: 12px;
+            font-size: 14px;
         }
 
         .accordion ul {
@@ -111,66 +151,10 @@
 <body>
     <div class="container-fluid text-center">
         <div class="row">
-            <nav class="col-3 sidebar accordion" style="z-index: 2; overflow-y: auto; height: 100%; position: fixed; padding-top: 75px;">
-                <ul id="dropdown-menu">
-                    <li>
-                        <a class="accordion-toggle" href="javascript:void(0);"> Getting Started </a>
-                        <ul class="inner">
-                            <li>
-                                <a class="accordion-toggle" href="#header-getting-started-introduction"> Introduction </a>
-                                <ul class="inner">
-                                    <li>Test 1</li>
-                                    <li>Test 2</li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="#header-getting-started-basics"> Basics </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="accordion-toggle" href="javascript:void(0);"> Filters </a>
-                        <ul class="inner">
-                            <li>
-                                <a href="#header-filters-overview"> Overview </a>
-                            </li>
-                            <li>
-                                <a href="#header-filters-types"> Filter Types </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="accordion-toggle" href="javascript:void(0);"> Sorting </a>
-                        <ul class="inner">
-                            <li>
-                                <a href="#header-sorting-overview"> Overview </a>
-                            </li>
-                            <li>
-                                <a href="#header-sorting-direction"> Sort Direction </a>
-                            </li>
-                            <li>
-                                <a href="#header-sorting-limit"> Result Limit </a>
-                            </li>
-                            <li>
-                                <a href="#header-sorting-fields"> Sort Fields </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="accordion-toggle" href="javascript:void(0);"> Attributes </a>
-                        <ul class="inner">
-                            <li>Overview</li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="accordion-toggle" href="javascript:void(0);"> Charts </a>
-                        <ul class="inner">
-                            <li>Overview</li>
-                        </ul>
-                    </li>
-                </ul>
+            <nav id="navbar" class="col-3 sidebar accordion" style="z-index: 2; overflow-y: auto; height: 100%; position: fixed; padding-top: 90px;">
+
             </nav>
-            <div class="col-9">
+            <div class="col-12">
                 <div class="row header-main header-top">
                     <div class="col-3" style="padding-top: 30px; border-right: 1px lightgray solid;">
                         <a href="/secure/home">
@@ -185,9 +169,74 @@
                         </div>
                     </div>
                 </div>
+                <div class="row" style="margin-top:90px;">
+                    <div id="document" class="col-9 offset-3">
+                        <div class="col-12" id="header-getting-started">
+                            <h3>Getting Started</h3>
+                            <div id="header-getting-started-introduction">
+                                <h4>Introduction</h4>
+                            </div>
+                            <div id="header-getting-started-basics">
+                                <h4>Basics</h4>
+                            </div>
+                        </div>
+                        <div class="col-12" id="header-filters">
+                            <h3>Filters</h3>
+                            <div id="header-filters-overview">
+                                <h4>Overview</h4>
+                                <p>Filters are how we narrow down a search. Filters can be applied in the Filters tab by clicking the Filters dropdown menu and selecting the desired filter. Multiple filters can also be applied.</p>
+                            </div>
+                            <div id="header-filters-types">
+                                <h4>Filter Types</h4>
+                                <p>There are many different types of filters, mostly based on the type of attribute being filtered on (numeric, date, text, etc.).</p>
+                                <div id="header-filters-types-include">
+                                    <h5>Include Filter</h5>
+                                </div>
+                                <div id="header-filters-types-exclude">
+                                    <h5>Exclude Filter</h5>
+                                </div>
+                                <div id="header-filters-types-between">
+                                    <h5>Between Filter</h5>
+                                </div>
+                                <div id="header-filters-types-prefix-include">
+                                    <h5>Exists Filter</h5>
+                                </div>
+                                <div id="header-filters-types-prefix-exclude">
+                                    <h5>Exists Filter</h5>
+                                </div>
+                                <div id="header-filters-types-exists">
+                                    <h5>Exists Filter</h5>
+                                </div>
+                                <div id="header-filters-types-not-exists">
+                                    <h5>Does Not Exist Filter</h5>
+                                </div>
+                                <div id="header-filters-types-advanced-text">
+                                    <h5>Advanced Text Filter</h5>
+                                </div>
+                                <div id="header-filters-types-regexp">
+                                    <h5>Regexp Filter</h5>
+                                </div>
+                                <div id="header-filters-types-asset-deduplication">
+                                    <h5>Asset Deduplication Filter</h5>
+                                </div>
+                                <div id="header-filters-types-nested">
+                                    <h5>Nested Filter</h5>
+                                </div>
+                                <div id="header-filters-types-acclaim">
+                                    <h5>Acclaim Expert Filter</h5>
+                                </div>
+                                <div id="header-filters-types-include-with-related">
+                                    <h5>Include with Related Assets Filter</h5>
+                                </div>
+                                <div id="header-filters-types-exclude-with-related">
+                                    <h5>Exclude with Related Assets Filter</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
     </div>
 </body>
 </html>

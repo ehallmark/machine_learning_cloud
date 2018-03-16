@@ -7,8 +7,7 @@ import java.io.File;
 import static spark.Spark.*;
 public class HelpPage {
     private static final File templateFile = new File("help/help_template.html");
-    public static void helpPage() {
-        final boolean debugging = true;
+    public static void helpPage(boolean debugging) {
         if(debugging) {
             // HOST ASSETS
             staticFiles.externalLocation(new File("public").getAbsolutePath());
@@ -28,6 +27,6 @@ public class HelpPage {
     }
 
     public static void main(String[] args) {
-        helpPage();
+        helpPage(true);
     }
 }
