@@ -2608,7 +2608,8 @@ public class SimilarPatentServer {
                                                         div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Change User Group").withHref("/edit_user_group") : span()),
                                                         div().withClass("col-12").with(authorized ? a("Change Password").withHref("/edit_user") : span()),
                                                         div().withClass("col-12").with(authorized && (role!=null&&role.equals(SUPER_USER)) ? a("Remove Users").withHref("/delete_user") : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Update Defaults").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span())
+                                                        div().withClass("col-12").with(authorized ? a("Update Defaults").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span()),
+                                                        div().withClass("col-12").with(authorized ? a("Help").withHref("/help") : span())
                                                 ), hr(),
                                                 (!authorized) ? div() : div().with(
                                                         ul().withClass("nav nav-tabs nav-fill").attr("role","tablist").with(

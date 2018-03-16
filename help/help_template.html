@@ -197,25 +197,43 @@
                             <h3>Filters</h3>
                             <div id="header-filters-overview">
                                 <h4>Overview</h4>
-                                <p>Filters are how we narrow down a search. Filters can be applied in the Filters tab by clicking the Filters dropdown menu and selecting the desired filter. Multiple filters can also be applied.</p>
+                                <p>
+                                    Filters are how we narrow down a search. Filters can be applied in the Filters tab by clicking the Filters drop-down menu and selecting the desired filter. Most attributes have at least one available filter, and these filters can be combined to form more complex searches. Multiple filters can also be applied to the same attribute.
+                                </p>
                             </div>
                             <div id="header-filters-types">
                                 <h4>Filter Types</h4>
-                                <p>There are many different types of filters, mostly based on the type of attribute being filtered on (numeric, date, text, etc.).</p>
+                                <p>
+                                    There are many different types of filters, mostly based on the type of attribute being filtered on (numeric, date, text, etc.).
+                                </p>
                                 <div id="header-filters-types-include">
                                     <h5>Include Filter</h5>
+                                    <p>
+                                        The Include Filter returns results that match a term. This is useful for matching assets by assignee, classification codes, and many other text fields.
+                                    </p>
                                 </div>
                                 <div id="header-filters-types-exclude">
                                     <h5>Exclude Filter</h5>
+                                    <p>
+                                        The Exclude Filter is the negation of the Include Filter. Results matched by the Exclude Filter will be removed from the returned results.
+                                    </p>
                                 </div>
                                 <div id="header-filters-types-between">
                                     <h5>Between Filter</h5>
+                                    <p>
+                                        The Between Filter is applicable only to date fields and number fields. This filter only includes assets where the search field is between a specified range. If the Max value is omitted,
+                                        the filter will only include results greater than or equal to the Min value. If the Min value is omitted, the filter will only include results less than or equal
+                                        to the Max value.
+                                    </p>
                                 </div>
                                 <div id="header-filters-types-prefix-include">
-                                    <h5>Exists Filter</h5>
+                                    <h5>Prefix Include Filter</h5>
+                                    <p>
+                                        The Prefix Include Filter only includes results where the search field starts with the search input. This can be useful for searching subclasses of a CPC class code.
+                                    </p>
                                 </div>
                                 <div id="header-filters-types-prefix-exclude">
-                                    <h5>Exists Filter</h5>
+                                    <h5>Prefix Exclude Filter</h5>
                                 </div>
                                 <div id="header-filters-types-exists">
                                     <h5>Exists Filter</h5>

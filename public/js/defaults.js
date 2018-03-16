@@ -690,7 +690,7 @@ var showTemplateFunction = function(data,tree,node){
         $loaders.hide();
     } else if(data.hasOwnProperty('file')) {
         // need to get data
-        var defaultFile = node === null;
+        var defaultFile = node === null || !node.data.deletable;
         var shared = false;
         if(node!==null) {
             var nodeData = node;
