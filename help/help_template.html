@@ -193,6 +193,9 @@
                                 <h4>Basics</h4>
                             </div>
                         </div>
+                        <div class="col-12" id="header-attributes">
+                            <h3>Attributes</h3>
+                        </div>
                         <div class="col-12" id="header-filters">
                             <h3>Filters</h3>
                             <div id="header-filters-overview">
@@ -234,35 +237,70 @@
                                 </div>
                                 <div id="header-filters-types-prefix-exclude">
                                     <h5>Prefix Exclude Filter</h5>
+                                    <p>
+                                        The Prefix Exclude Filter negates the Prefix Include Filter. This can be useful when omitting assets containing a subclass of a particular CPC classification.
+                                    </p>
                                 </div>
                                 <div id="header-filters-types-exists">
                                     <h5>Exists Filter</h5>
+                                    <p>
+                                        The Exists Filter return results only if the search field is not blank or empty. For example, this could be used to filter out assets that do not have any citations.
+                                    </p>
                                 </div>
                                 <div id="header-filters-types-not-exists">
                                     <h5>Does Not Exist Filter</h5>
+                                    <p>
+                                        The Does Not Exist Filter is the negation of the Exists Filter. This filter will only return results where the specified search field does not exist.
+                                    </p>
                                 </div>
                                 <div id="header-filters-types-advanced-text">
                                     <h5>Advanced Text Filter</h5>
+                                    <p>
+                                        The Advanced Text Filter provides a syntax for more complex text searching. This filter is particularly useful for searching the larger text fields, such as Claim Text or Abstracts.
+                                        This has also proved useful for searching assignee names.
+                                    </p>
                                 </div>
                                 <div id="header-filters-types-regexp">
                                     <h5>Regexp Filter</h5>
+                                    <p>
+                                        The Regexp Filter provides users who are familiar with Regular Expressions the ability to leverage the syntax for text searching. Unless you are already familiar with Regexp,
+                                        we suggest trying the Advanced Text Filter first.
+                                    </p>
                                 </div>
                                 <div id="header-filters-types-asset-deduplication">
                                     <h5>Asset Deduplication Filter</h5>
+                                    <p>
+                                        The Asset Deduplication Filter uses the available information from the USPTO to remove counterparts of assets. This can be useful when the user does
+                                        not wish to return more than one asset in any particular asset family.
+                                    </p>
                                 </div>
                                 <div id="header-filters-types-nested">
                                     <h5>Nested Filter</h5>
+                                    <p>The Nested Filter allows filtering on nested attributes. This filter will include various other filters based on the available sub-attributes.</p>
                                 </div>
                                 <div id="header-filters-types-acclaim">
                                     <h5>Acclaim Expert Filter</h5>
+                                    <p>
+                                        The Acclaim Expert Filter provides compatibility with the Acclaim Patent Search tool. With a few exceptions, Acclaim Expert Search queries can be copied and pasted back and forth between platforms.
+                                    </p>
                                 </div>
                                 <div id="header-filters-types-include-with-related">
                                     <h5>Include with Related Assets Filter</h5>
+                                    <p>
+                                        This filter builds off the Include Filter for Asset Numbers, but additionally will return results matching a related asset of the search input.
+                                    </p>
                                 </div>
                                 <div id="header-filters-types-exclude-with-related">
                                     <h5>Exclude with Related Assets Filter</h5>
+                                    <p>
+                                        This filter builds off the Exclude Filter for Asset Numbers, but additionally will omit results matching a related asset of the search input.
+                                    </p>
                                 </div>
                             </div>
+                        </div>
+                        <div class="col-12" id="header-sorting">
+                            <h3>Sort/Limit</h3>
+                            
                         </div>
                     </div>
                 </div>
