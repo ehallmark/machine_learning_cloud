@@ -14,12 +14,8 @@ public class HelpPage {
             port(6969);
         }
         try {
-            String helpTemplate = FileUtils.readFileToString(templateFile);
             get("/help", (req,res)->{
-                if(debugging) {
-                    return FileUtils.readFileToString(templateFile);
-                }
-                return helpTemplate;
+                return FileUtils.readFileToString(templateFile);
             });
         } catch(Exception e) {
             e.printStackTrace();
