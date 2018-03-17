@@ -5,7 +5,7 @@ sudo docker-compose down
 cd /home/ehallmark/repos/machine_learning_cloud
 
 # run part 1 of updates
-java -cp target/classes:"target/dependency/*" -Xms100000m -Xmx100000m seeding.IngestRecentUpdatesPart1
+java -cp target/classes:"target/dependency/*" -Xms90000m -Xmx90000m seeding.IngestRecentUpdatesPart1
 
 # turn on elastic search
 cd /home/ehallmark/repos/machine_learning_cloud/scripts/production
@@ -29,7 +29,7 @@ sudo docker-compose down
 cd /home/ehallmark/repos/machine_learning_cloud
 
 # ingest computable
-java -cp target/classes:"target/dependency/*" -Xms100000m -Xmx100000m seeding.ai_db_updater.UpdateAll 14
+java -cp target/classes:"target/dependency/*" -Xms90000m -Xmx90000m seeding.ai_db_updater.UpdateAll 14
 
 # update elastic search
 cd /home/ehallmark/repos/machine_learning_cloud/scripts/production
