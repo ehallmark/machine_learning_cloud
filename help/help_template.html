@@ -208,47 +208,55 @@
                                             </p>
                                             <p>
                                                 Key Features include
-                                                <ul>
-                                                    <li>
-                                                        Asset Valuation Model
-                                                    </li>
-                                                    <li>
-                                                        Asset Clustering
-                                                    </li>
-                                                    <li>
-                                                        Asset Technology Tagging
-                                                    </li>
-                                                    <li>
-                                                        Advanced Text Querying
-                                                    </li>
-                                                    <li>
-                                                        Arbitrary Text Similarity
-                                                    </li>
-                                                    <li>
-                                                        Patent Similarity
-                                                    </li>
-                                                    <li>
-                                                        Assignee Similarity
-                                                    </li>
-                                                    <li>
-                                                        CPC Class Code Similarity
-                                                    </li>
-                                                    <li>
-                                                        Assignee Normalization
-                                                    </li>
-                                                    <li>
-                                                        Save and Share Search Templates
-                                                    </li>
-                                                    <li>
-                                                        Save and Share Datasets
-                                                    </li>
-                                                    <li>
-                                                        Acclaim Expert Syntax Compatible
-                                                    </li>
-                                                    <li>
-                                                        Generate Advanced Charts and Tables
-                                                    </li>
-                                                </ul>
+                                            </p>
+                                            <ul>
+                                                <li>
+                                                    Asset Valuation Model
+                                                </li>
+                                                <li>
+                                                    Asset Clustering
+                                                </li>
+                                                <li>
+                                                    Asset Technology Tagging
+                                                </li>
+                                                <li>
+                                                    Advanced Text Querying
+                                                </li>
+                                                <li>
+                                                    Arbitrary Text Similarity
+                                                </li>
+                                                <li>
+                                                    Patent Similarity
+                                                </li>
+                                                <li>
+                                                    Assignee Similarity
+                                                </li>
+                                                <li>
+                                                    CPC Class Code Similarity
+                                                </li>
+                                                <li>
+                                                    Assignee Normalization
+                                                </li>
+                                                <li>
+                                                    Save and Share Search Templates
+                                                </li>
+                                                <li>
+                                                    Save and Share Datasets
+                                                </li>
+                                                <li>
+                                                    Acclaim Expert Syntax Compatible
+                                                </li>
+                                                <li>
+                                                    Generate Advanced Charts and Tables
+                                                </li>
+                                            </ul>
+                                            <p>
+                                                The system currently contains US patents issued in the past 25 years and US applications published since 2005.
+                                                Patent data includes USPTO Assignment data, PAIR application data, CPC Classification data, Maintenance Event data,
+                                                and other data sources.
+                                                The system is updated on a weekly basis, usually on Saturday mornings. During these updates, new data is ingested and integrated into the system.
+                                                To speed up this process, the user interface is shutdown while the system is updating. Updates typically take several hours to complete.
+                                                The inclusion of more patent collections and patent data is expected in future releases.
                                             </p>
                                         </div>
                                         <div id="header-getting-started-basics">
@@ -547,7 +555,9 @@
                                         <div id="header-charts-overview">
                                             <h4>Overview</h4>
                                             <p>
-                                                Charts are ...
+                                                Charts are useful for visualizing the results of a search.
+                                                This platform has many different chart types to visualize data in a variety of different ways.
+                                                The following section contains examples for using each chart type.
                                             </p>
                                         </div>
                                         <div id="header-charts-types">
@@ -555,31 +565,109 @@
                                             <div id="header-charts-types-pie">
                                                 <h5>Pie Chart</h5>
                                                 <p>
-                                                    Pie Charts are ...
+                                                    Pie Charts are useful for visualizing a distribution of assets along a particular attribute.
+                                                </p>
+                                                <p>
+                                                    The following example shows how to generate a Pie Chart showing the distribution of assignees with assets
+                                                    containing a particular keyword.
+                                                </p>
+                                                <p>
+                                                    The following example shows how to generate a series of Pie Charts grouped by Dataset showing the distribution
+                                                    of WIPO Technologies.
                                                 </p>
                                             </div>
                                             <div id="header-charts-types-line">
                                                 <h5>Timeline Chart</h5>
                                                 <p>
-                                                    Timeline Charts are ...
+                                                    Timeline Charts are useful for visualizing the asset counts over time.
+                                                </p>
+                                                <p>
+                                                    The following example shows how to generate a Timeline Chart plotting the Filing Dates over time
+                                                    of a particular Original Assignee. (TODO)
+                                                </p>
+                                                <p>
+                                                    The following example shows how to generate a Timeline Chart with multiples series grouped by Original Assignee
+                                                    with assets containing a particular keyword. (TODO)
                                                 </p>
                                             </div>
                                             <div id="header-charts-types-histogram">
                                                 <h5>Histogram Chart</h5>
                                                 <p>
-                                                    Histogram Charts are ...
+                                                    Histogram Charts are useful for visualizing a count of assets in various ranges.
+                                                    Currently, the only attributes available for histograms are
+                                                </p>
+                                                <ul>
+                                                    <li>
+                                                        AI Value - grouped into 5 quantiles
+                                                    </li>
+                                                    <li>
+                                                        (Est.) Remaining Life - grouped by 5 year periods
+                                                    </li>
+                                                    <li>
+                                                        Similarity - grouped into 5 quantiles
+                                                    </li>
+                                                </ul>
+                                                <p>
+                                                    The following example shows how to generate a Histogram of Remaining Life for a given search. (TODO)
                                                 </p>
                                             </div>
                                             <div id="header-charts-types-column-combination">
                                                 <h5>Column Combination Table</h5>
                                                 <p>
-                                                    Column Combination Tables are ...
+                                                    Column Combination Tables are designed to group and aggregate data of a single attribute. To group and aggregate data for two attributes, please see the section on Pivot Tables.
+                                                </p>
+                                                <p>Column Combination Count Table</p>
+                                                <p>
+                                                    Column Combination Count Tables contain a main attribute and a collecting attribute.
+                                                    The main attribute determines the groups, and the collecting attribute determines the attribute
+                                                    being counted for each group. For example, to count the number of assets for the assignees in a search,
+                                                    the grouping attribute would be the assignee name, and the collecting attribute would be the asset number.
+                                                </p>
+                                                <p>
+                                                    The following example shows how to create a basic Column Combination Count Table. (TODO)
+                                                </p>
+                                                <p>Column Combination Function Table</p>
+                                                <p>
+                                                    Column Combination Function Tables are similar to Column Combination Count Tables, but instead of counting the collecting
+                                                    attribute for each group, you can select a collecting function to apply. For example, since the AI Value attribute represents a
+                                                    probability, you could estimate the expected number of valuable assets in each main attribute group by collecting the sum of AI Values.
+                                                </p>
+                                                <p>
+                                                    Available collector functions are:
+                                                </p>
+                                                <ul>
+                                                    <li>
+                                                        Sum
+                                                    </li>
+                                                    <li>
+                                                        Average (mean)
+                                                    </li>
+                                                    <li>
+                                                        Max
+                                                    </li>
+                                                    <li>
+                                                        Min
+                                                    </li>
+                                                </ul>
+                                                <p>
+                                                    The following example ...
                                                 </p>
                                             </div>
                                             <div id="header-charts-types-pivot-table">
                                                 <h5>Pivot Table</h5>
                                                 <p>
-                                                    Pivot Tables are ...
+                                                    Pivot Tables are Column Combination Tables with an added dimension. Please see the section on Column Combination Tables before reading about Pivot Tables.
+                                                    This allows you to group data based on the intersection of two main grouping attributes.
+                                                    You can think of the resulting table as a two dimensional matrix or grid. For example,
+                                                    a Pivot Table with CPC Code and Assignee Name as the two grouping attributes would produce a
+                                                    table with CPC Codes one one axis and Assignee Names on the other. The actual table values would
+                                                    be calculated for each group based on the collecting attribute and collector function (or count function for Pivot Count Tables).
+                                                </p>
+                                                <p>
+                                                    The following is an example of a Pivot Count Table ... (TODO)
+                                                </p>
+                                                <p>
+                                                    The following is an example of a Pivot Function Table ... (TODO)
                                                 </p>
                                             </div>
                                         </div>
