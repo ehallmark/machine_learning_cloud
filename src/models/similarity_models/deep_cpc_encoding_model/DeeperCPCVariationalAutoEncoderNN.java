@@ -137,8 +137,9 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
 
         //Neural net configuration
         int[] hiddenLayerEncoder = new int[]{
-                2048,
-                2048
+                1024,
+                1024,
+                1024
         };
 
         int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
