@@ -89,16 +89,26 @@
         });
     </script>
     <style>
-        h3 {
+        #document h3 {
             margin-top: 30px;
+            font-weight: 600;
         }
-        h4 {
+        #document h4 {
             margin-top: 24px;
+            font-weight: 600;
+        }
+        #document h5 {
+            margin-top: 20px;
+            font-weight: 600;
         }
         .accordion * {
             box-sizing: border-box;
             font-family: 'Open Sans',sans-serif;
             font-weight: 400;
+        }
+
+        #document {
+            text-align: left;
         }
 
         .accordion .inner {
@@ -108,10 +118,11 @@
         .accordion a {
             text-decoration: none;
             color: inherit;
+            font-weight: 500;
         }
 
         .accordion ul {
-            font-size: 22px;
+            font-size: 24px;
         }
 
         .accordion ul ul {
@@ -127,6 +138,7 @@
         }
 
         .accordion ul {
+            text-align: center;
             list-style: none;
             padding: 0;
 
@@ -184,198 +196,263 @@
                 </div>
                 <div class="row" style="margin-top:70px;">
                     <div id="document" class="col-9 offset-3">
-                        <div class="col-12" id="header-getting-started">
-                            <h3>Getting Started</h3>
-                            <div id="header-getting-started-introduction">
-                                <h4>Introduction</h4>
-                            </div>
-                            <div id="header-getting-started-basics">
-                                <h4>Basics</h4>
-                            </div>
-                        </div>
-                        <div class="col-12" id="header-attributes">
-                            <h3>Attributes</h3>
-                        </div>
-                        <div class="col-12" id="header-filters">
-                            <h3>Filters</h3>
-                            <div id="header-filters-overview">
-                                <h4>Overview</h4>
-                                <p>
-                                    Filters are how we narrow down a search. Filters can be applied in the Filters tab by clicking the Filters drop-down menu and selecting the desired filter. Most attributes have at least one available filter, and these filters can be combined to form more complex searches. Multiple filters can also be applied to the same attribute.
-                                </p>
-                            </div>
-                            <div id="header-filters-types">
-                                <h4>Filter Types</h4>
-                                <p>
-                                    There are many different types of filters, mostly based on the type of attribute being filtered on (numeric, date, text, etc.).
-                                </p>
-                                <div id="header-filters-types-include">
-                                    <h5>Include Filter</h5>
-                                    <p>
-                                        The Include Filter returns results that match a term. This is useful for matching assets by assignee, classification codes, and many other text fields.
-                                    </p>
+                        <div class="row">
+                            <div class="col-10 offset-1">
+                                <div class="row">
+                                    <div class="col-12" id="header-getting-started">
+                                        <h3>Getting Started</h3>
+                                        <div id="header-getting-started-introduction">
+                                            <h4>Introduction</h4>
+                                        </div>
+                                        <div id="header-getting-started-basics">
+                                            <h4>Basics</h4>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" id="header-attributes">
+                                        <h3>Attributes</h3>
+                                    </div>
+                                    <div class="col-12" id="header-filters">
+                                        <h3>Filters</h3>
+                                        <div id="header-filters-overview">
+                                            <h4>Overview</h4>
+                                            <p>
+                                                Filters are how we narrow down a search. Filters can be applied in the Filters tab by clicking the Filters drop-down menu and selecting the desired filter. Most attributes have at least one available filter, and these filters can be combined to form more complex searches. Multiple filters can also be applied to the same attribute.
+                                            </p>
+                                        </div>
+                                        <div id="header-filters-types">
+                                            <h4>Filter Types</h4>
+                                            <p>
+                                                There are many different types of filters, mostly based on the type of attribute being filtered on (numeric, date, text, etc.).
+                                            </p>
+                                            <div id="header-filters-types-include">
+                                                <h5>Include Filter</h5>
+                                                <p>
+                                                    The Include Filter returns results that match a term. This is useful for matching assets by assignee, classification codes, and many other text fields.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-exclude">
+                                                <h5>Exclude Filter</h5>
+                                                <p>
+                                                    The Exclude Filter is the negation of the Include Filter. Results matched by the Exclude Filter will be removed from the returned results.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-between">
+                                                <h5>Between Filter</h5>
+                                                <p>
+                                                    The Between Filter is applicable only to date fields and number fields. This filter only includes assets where the search field is between a specified range. If the Max value is omitted,
+                                                    the filter will only include results greater than or equal to the Min value. If the Min value is omitted, the filter will only include results less than or equal
+                                                    to the Max value.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-prefix-include">
+                                                <h5>Prefix Include Filter</h5>
+                                                <p>
+                                                    The Prefix Include Filter only includes results where the search field starts with the search input. This can be useful for searching subclasses of a CPC class code.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-prefix-exclude">
+                                                <h5>Prefix Exclude Filter</h5>
+                                                <p>
+                                                    The Prefix Exclude Filter negates the Prefix Include Filter. This can be useful when omitting assets containing a subclass of a particular CPC classification.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-exists">
+                                                <h5>Exists Filter</h5>
+                                                <p>
+                                                    The Exists Filter return results only if the search field is not blank or empty. For example, this could be used to filter out assets that do not have any citations.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-not-exists">
+                                                <h5>Does Not Exist Filter</h5>
+                                                <p>
+                                                    The Does Not Exist Filter is the negation of the Exists Filter. This filter will only return results where the specified search field does not exist.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-advanced-text">
+                                                <h5>Advanced Text Filter</h5>
+                                                <p>
+                                                    The Advanced Text Filter provides a syntax for more complex text searching. This filter is particularly useful for searching the larger text fields, such as Claim Text or Abstracts.
+                                                    This has also proved useful for searching assignee names.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-regexp">
+                                                <h5>Regexp Filter</h5>
+                                                <p>
+                                                    The Regexp Filter provides users who are familiar with Regular Expressions the ability to leverage the syntax for text searching. Unless you are already familiar with Regexp,
+                                                    we suggest trying the Advanced Text Filter first.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-similarity">
+                                                <h5>Similarity Filters</h5>
+                                                <p>
+                                                    Similarity Filters provide access to the platform's internal deep-learning based similarity models. Current implementations include:
+                                                </p>
+                                                <ul>
+                                                    <li>
+                                                        Asset Similarity
+                                                    </li>
+                                                    <li>
+                                                        Assignee Similarity
+                                                    </li>
+                                                    <li>
+                                                        CPC Code Similarity
+                                                    </li>
+                                                    <li>
+                                                        Dataset Similarity
+                                                    </li>
+                                                    <li>
+                                                        Text Similarity
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div id="header-filters-types-asset-deduplication">
+                                                <h5>Asset Deduplication Filter</h5>
+                                                <p>
+                                                    The Asset Deduplication Filter uses the available information from the USPTO to remove counterparts of assets. This can be useful when the user does
+                                                    not wish to return more than one asset in any particular asset family.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-nested">
+                                                <h5>Nested Filter</h5>
+                                                <p>The Nested Filter allows filtering on nested attributes. This filter will include various other filters based on the available sub-attributes.</p>
+                                            </div>
+                                            <div id="header-filters-types-acclaim">
+                                                <h5>Acclaim Expert Filter</h5>
+                                                <p>
+                                                    The Acclaim Expert Filter provides compatibility with the Acclaim Patent Search tool. With a few exceptions, Acclaim Expert Search queries can be copied and pasted back and forth between platforms.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-include-with-related">
+                                                <h5>Include with Related Assets Filter</h5>
+                                                <p>
+                                                    This filter builds off the Include Filter for Asset Numbers, but additionally will return results matching a related asset of the search input.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-exclude-with-related">
+                                                <h5>Exclude with Related Assets Filter</h5>
+                                                <p>
+                                                    This filter builds off the Exclude Filter for Asset Numbers, but additionally will omit results matching a related asset of the search input.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" id="header-sorting">
+                                        <h3>Sort/Limit</h3>
+                                        <div id="header-sorting-sort">
+                                            <h4>Sorting</h4>
+                                            <div id="header-sorting-sort-overview">
+                                                <h5>Overview</h5>
+                                                <p>
+                                                    Sorting is an important tool for displaying the best results first. Our platform allows many sort options, including
+                                                    the ability to sort by any numeric or date attribute, and more.
+                                                </p>
+                                            </div>
+                                            <div id="header-sorting-sort-score">
+                                                <h5>Overall Score</h5>
+                                                <p>
+                                                    Sort by Overall Score when using text based queries to provide better rankings of assets based on text search algorithms.
+                                                    The following text attributes are effected: Invention Title, Claim Text, Abstract Text.
+                                                    In addition, if a similarity filter is also used, then the Overall Score will also incorporate the similarity score.
+                                                </p>
+                                            </div>
+                                            <div id="header-sorting-sort-similarity">
+                                                <h5>Similarity Score</h5>
+                                                <p>
+                                                    Sort by Similarity score when using text based queries to provide better rankings of assets based on text search algorithms.
+                                                    Be careful, sorting by Similarity Score without providing a similarity filter will result in an exception. Usually, it is preferred
+                                                    to use the Overall Score for sorting.
+                                                </p>
+                                            </div>
+                                            <div id="header-sorting-sort-nosort">
+                                                <h5>No Sort</h5>
+                                                <p>
+                                                    When no sorting is desired, there is an option for No Sort, which will omit sorting. This option can be useful to speed up searching of large collections.
+                                                </p>
+                                            </div>
+                                            <div id="header-sorting-sort-random">
+                                                <h5>Random Sort</h5>
+                                                <p>
+                                                    In some cases when the number of matched results is large and no sorting is desired, it may make sense to randomly sort the
+                                                    possible results and apply a search limit to quickly obtain a sample of the desired results. This method is slower than choosing the
+                                                    No Sort option, but provides a better random selection.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div id="header-sorting-limit">
+                                            <h4>Sort Limit</h4>
+                                            <p>
+                                                In the Sorting tab, there is an option to specify the Sort Limit. This limits the maximum number of results that the system will return.
+                                                Please note there is a soft limit of 10,000, and a hard limit of 100,000. This is a consequence of the high computation cost required to sort large numbers of documents.
+                                                You are allowed to search for more than the soft limit (10,000), but the search will be significantly slower. Searching for more than the hard limit (100,000) is not supported.
+                                            </p>
+                                        </div>
+                                        <div id="header-sorting-direction">
+                                            <h4>Sort Direction</h4>
+                                            <p>
+                                                In the Sorting tab, one can elect to sort in Descending (default) or Ascending order.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" id="header-templates">
+                                        <h3>Templates</h3>
+                                        <div id="header-templates-overview">
+                                            <h4>Overview</h4>
+                                            <p>
+                                                Templates allow a user to save forms to use later. This saves the user time recreating forms.
+                                                Templates can also be shared with users in your user group. The Default Templates provide a good starting point
+                                                for creating your own customized templates.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" id="header-datasets">
+                                        <h3>Datasets</h3>
+                                        <div id="header-datasets-overview">
+                                            <h4>Overview</h4>
+                                            <p>
+                                                Datasets allow a user to save an asset list into the system.
+                                                You can then reference the datasets you create later on when searching, generating tables, or creating charts.
+                                            </p>
+                                        </div>
+                                        <div id="headers-datasets-importing">
+                                            <h4>Importing</h4>
+                                            <p>
+                                                Datasets can be created in one of two ways.
+                                                <ol>
+                                                    <li>
+                                                        Create a dataset from the results of the last search.<br/>
+                                                        Right click on a dataset folder and click <i>Create Dataset -> From Last Generated Report</i>
+                                                    </li>
+                                                    <li>
+                                                        Create a dataset from a list.
+                                                        Right click on a dataset folder and click <i>Create Dataset -> From Asset List</i>. Then paste an asset list into the prompted text box.
+                                                    </li>
+                                                </ol>
+                                                Once created, you may choose a name for the new dataset.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" id="header-clustering">
+                                        <h3>Clustering</h3>
+                                        <div id="header-clustering-overview">
+                                            <h4>Overview</h4>
+                                            <p>
+                                                Clustering is an algorithm for grouping together similar assets in a Dataset.
+                                                This can be useful for identifying natural subsets in a portfolio. In order to perform a clustering on a dataset,
+                                                right click on the dataset and click <i>Cluster this Dataset</i>.
+                                                There is currently no limit on the number of assets that can be clustered; however, clustering a very large dataset into a large number of clusters
+                                                could take several minutes, so please be aware of the time commitment.
+                                            </p>
+                                        </div>
+                                        <div id="header-clustering-number-of-clusters">
+                                            <h4>Number of Clusters</h4>
+                                            <p>
+                                                When clustering a dataset, a prompt will ask you to enter a desired number of clusters or leave blank to determine an optimal number for you.
+                                                If you already have a rough sense of how many clusters you want, it can be faster to enter in that number directly, otherwise it is usually fine
+                                                to leave the number blank and let the algorithm automatically determine the number of clusters.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div id="header-filters-types-exclude">
-                                    <h5>Exclude Filter</h5>
-                                    <p>
-                                        The Exclude Filter is the negation of the Include Filter. Results matched by the Exclude Filter will be removed from the returned results.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-between">
-                                    <h5>Between Filter</h5>
-                                    <p>
-                                        The Between Filter is applicable only to date fields and number fields. This filter only includes assets where the search field is between a specified range. If the Max value is omitted,
-                                        the filter will only include results greater than or equal to the Min value. If the Min value is omitted, the filter will only include results less than or equal
-                                        to the Max value.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-prefix-include">
-                                    <h5>Prefix Include Filter</h5>
-                                    <p>
-                                        The Prefix Include Filter only includes results where the search field starts with the search input. This can be useful for searching subclasses of a CPC class code.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-prefix-exclude">
-                                    <h5>Prefix Exclude Filter</h5>
-                                    <p>
-                                        The Prefix Exclude Filter negates the Prefix Include Filter. This can be useful when omitting assets containing a subclass of a particular CPC classification.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-exists">
-                                    <h5>Exists Filter</h5>
-                                    <p>
-                                        The Exists Filter return results only if the search field is not blank or empty. For example, this could be used to filter out assets that do not have any citations.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-not-exists">
-                                    <h5>Does Not Exist Filter</h5>
-                                    <p>
-                                        The Does Not Exist Filter is the negation of the Exists Filter. This filter will only return results where the specified search field does not exist.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-advanced-text">
-                                    <h5>Advanced Text Filter</h5>
-                                    <p>
-                                        The Advanced Text Filter provides a syntax for more complex text searching. This filter is particularly useful for searching the larger text fields, such as Claim Text or Abstracts.
-                                        This has also proved useful for searching assignee names.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-regexp">
-                                    <h5>Regexp Filter</h5>
-                                    <p>
-                                        The Regexp Filter provides users who are familiar with Regular Expressions the ability to leverage the syntax for text searching. Unless you are already familiar with Regexp,
-                                        we suggest trying the Advanced Text Filter first.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-similarity">
-                                    <h5>Similarity Filters</h5>
-                                    <p>
-                                        Similarity Filters provide access to the platform's internal deep-learning based similarity models. Current implementations include:
-                                    </p>
-                                    <ul>
-                                        <li>
-                                            Asset Similarity
-                                        </li>
-                                        <li>
-                                            Assignee Similarity
-                                        </li>
-                                        <li>
-                                            CPC Code Similarity
-                                        </li>
-                                        <li>
-                                            Dataset Similarity
-                                        </li>
-                                        <li>
-                                            Text Similarity
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div id="header-filters-types-asset-deduplication">
-                                    <h5>Asset Deduplication Filter</h5>
-                                    <p>
-                                        The Asset Deduplication Filter uses the available information from the USPTO to remove counterparts of assets. This can be useful when the user does
-                                        not wish to return more than one asset in any particular asset family.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-nested">
-                                    <h5>Nested Filter</h5>
-                                    <p>The Nested Filter allows filtering on nested attributes. This filter will include various other filters based on the available sub-attributes.</p>
-                                </div>
-                                <div id="header-filters-types-acclaim">
-                                    <h5>Acclaim Expert Filter</h5>
-                                    <p>
-                                        The Acclaim Expert Filter provides compatibility with the Acclaim Patent Search tool. With a few exceptions, Acclaim Expert Search queries can be copied and pasted back and forth between platforms.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-include-with-related">
-                                    <h5>Include with Related Assets Filter</h5>
-                                    <p>
-                                        This filter builds off the Include Filter for Asset Numbers, but additionally will return results matching a related asset of the search input.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-exclude-with-related">
-                                    <h5>Exclude with Related Assets Filter</h5>
-                                    <p>
-                                        This filter builds off the Exclude Filter for Asset Numbers, but additionally will omit results matching a related asset of the search input.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12" id="header-sorting">
-                            <h3>Sort/Limit</h3>
-                            <div id="header-sorting-sort">
-                                <h4>Sorting</h4>
-                                <div id="header-sorting-sort-overview">
-                                    <h5>Overview</h5>
-                                    <p>
-                                        Sorting is an important tool for displaying the best results first. Our platform allows many sort options, including
-                                        the ability to sort by any numeric or date attribute, and more.
-                                    </p>
-                                </div>
-                                <div id="header-sorting-sort-score">
-                                    <h5>Overall Score</h5>
-                                    <p>
-                                        Sort by Overall Score when using text based queries to provide better rankings of assets based on text search algorithms.
-                                        The following text attributes are effected: Invention Title, Claim Text, Abstract Text.
-                                        In addition, if a similarity filter is also used, then the Overall Score will also incorporate the similarity score.
-                                    </p>
-                                </div>
-                                <div id="header-sorting-sort-similarity">
-                                    <h5>Similarity Score</h5>
-                                    <p>
-                                        Sort by Similarity score when using text based queries to provide better rankings of assets based on text search algorithms.
-                                        Be careful, sorting by Similarity Score without providing a similarity filter will result in an exception. Usually, it is preferred
-                                        to use the Overall Score for sorting.
-                                    </p>
-                                </div>
-                                <div id="header-sorting-sort-nosort">
-                                    <h5>No Sort</h5>
-                                    <p>
-                                        When no sorting is desired, there is an option for No Sort, which will omit sorting. This option can be useful to speed up searching of large collections.
-                                    </p>
-                                </div>
-                                <div id="header-sorting-sort-random">
-                                    <h5>Random Sort</h5>
-                                    <p>
-                                        In some cases when the number of matched results is large and no sorting is desired, it may make sense to randomly sort the
-                                        possible results and apply a search limit to quickly obtain a sample of the desired results. This method is slower than choosing the
-                                        No Sort option, but provides a better random selection.
-                                    </p>
-                                </div>
-                            </div>
-                            <div id="header-sorting-limit">
-                                <h4>Sort Limit</h4>
-                                <p>
-                                    In the Sorting tab, there is an option to specify the Sort Limit. This limits the maximum number of results that the system will return.
-                                    Please note there is a soft limit of 10,000, and a hard limit of 100,000. This is a consequence of the high computation cost required to sort large numbers of documents.
-                                    You are allowed to search for more than the soft limit (10,000), but the search will be significantly slower. Searching for more than the hard limit (100,000) is not supported.
-                                </p>
-                            </div>
-                            <div id="header-sorting-direction">
-                                <h4>Sort Direction</h4>
-                                <p>
-                                    In the Sorting tab, one can elect to sort in Descending (default) or Ascending order.
-                                </p>
                             </div>
                         </div>
                     </div>
