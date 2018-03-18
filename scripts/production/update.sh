@@ -23,7 +23,7 @@ echo "Elasticsearch started."
 sleep 10s
 
 # then run part 2 of updates
-java -cp target/classes:"target/dependency/*" -Xms40000m -Xmx40000m seeding.IngestRecentUpdatesPart2
+java -cp target/classes:"target/dependency/*" -Xms60000m -Xmx60000m seeding.IngestRecentUpdatesPart2
 
 # then turn off elastic search
 cd /home/ehallmark/repos/machine_learning_cloud/scripts/production
