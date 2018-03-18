@@ -31,8 +31,10 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     private static CombinedCPC2Vec2VAEEncodingModel encodingModel;
     private static final int maxNumSamples = 30;
 
-    public TextSimilarityEngine() {
-        loadSimilarityNetworks();
+    private boolean loadVectors;
+    public TextSimilarityEngine(boolean loadVectors) {
+        this.loadVectors=loadVectors;
+        if(loadVectors)loadSimilarityNetworks();
     }
 
     private void loadSimilarityNetworks() {
@@ -90,6 +92,6 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public AbstractSimilarityEngine dup() {
-        return new TextSimilarityEngine();
+        return new TextSimilarityEngine(loadVectors);
     }
 }
