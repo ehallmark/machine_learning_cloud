@@ -9,6 +9,7 @@ services:
       - node.name=elasticsearch1
       - node.local=true
       - bootstrap.memory_lock=true
+      - "discovery.zen.ping.unicast.hosts=false"
       - "ES_JAVA_OPTS=-Xms32000m -Xmx32000m"
     ulimits:
       memlock:
