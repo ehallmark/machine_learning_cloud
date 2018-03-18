@@ -30,9 +30,9 @@ public class MyClient {
                     .put("client.transport.sniff", sniff)
                     .put("cluster.name","elasticsearch").build();
             TransportClient client = new PreBuiltTransportClient(settings)
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300))
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9301))
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9302));
+                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
+                   // .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9301))
+                   // .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9302));
                     //.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9303));
             CLIENT = client;
         } catch (UnknownHostException e) {
