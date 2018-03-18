@@ -267,6 +267,29 @@
                                         we suggest trying the Advanced Text Filter first.
                                     </p>
                                 </div>
+                                <div>
+                                    <h5>Similarity Filters</h5>
+                                    <p>
+                                        Similarity Filters provide access to the platforms internal deep-learning based similarity models. Current implementations include:
+                                    </p>
+                                    <ul>
+                                        <li>
+                                            Asset Similarity
+                                        </li>
+                                        <li>
+                                            Assignee Similarity
+                                        </li>
+                                        <li>
+                                            CPC Code Similarity
+                                        </li>
+                                        <li>
+                                            Dataset Similarity
+                                        </li>
+                                        <li>
+                                            Text Similarity
+                                        </li>
+                                    </ul>
+                                </div>
                                 <div id="header-filters-types-asset-deduplication">
                                     <h5>Asset Deduplication Filter</h5>
                                     <p>
@@ -300,7 +323,52 @@
                         </div>
                         <div class="col-12" id="header-sorting">
                             <h3>Sort/Limit</h3>
-
+                            <div id="header-sorting-sort">
+                                <h4>Sorting</h4>
+                                <div id="header-sorting-sort-overview">
+                                    <h5>Overview</h5>
+                                    <p>
+                                        Sorting is an important tool for displaying the best results first. Our platform allows many sort options, including
+                                        the ability to sort by any numeric or date attribute, and more.
+                                    </p>
+                                </div>
+                                <div id="header-sorting-sort-score">
+                                    <h5>Overall Score</h5>
+                                    <p>
+                                        Sort by Overall Score when using text based queries to provide better rankings of assets based on text search algorithms.
+                                        The following text attributes are effected: Invention Title, Claim Text, Abstract Text.
+                                        In addition, if a similarity filter is also used, then the Overall Score will also incorporate the similarity score.
+                                    </p>
+                                </div>
+                                <div id="header-sorting-sort-similarity">
+                                    <h5>Similarity Score</h5>
+                                    <p>
+                                        Sort by Similarity score when using text based queries to provide better rankings of assets based on text search algorithms.
+                                        Be careful, sorting by Similarity Score without providing a similarity filter will result in an exception. Usually, it is preferred
+                                        to use the Overall Score for sorting.
+                                    </p>
+                                </div>
+                                <div id="header-sorting-sort-nosort">
+                                    <h5>No Sort</h5>
+                                    <p>
+                                        When no sorting is desired, there is an option for No Sort, which will omit sorting. This option can be useful to speed up searching of large collections.
+                                    </p>
+                                </div>
+                                <div id="header-sorting-sort-random">
+                                    <h5>Random Sort</h5>
+                                    <p>
+                                        In some cases when the number of matched results is large and no sorting is desired, it may make sense to randomly sort the
+                                        possible results and apply a search limit to quickly obtain a sample of the desired results. This method is slower than choosing the
+                                        No Sort option, but provides a better random selection.
+                                    </p>
+                                </div>
+                            </div>
+                            <div id="header-sorting-direction">
+                                <h4>Sort Direction</h4>
+                                <p>
+                                    In the Sorting tab, one can elect to sort in Descending (default) or Ascending order.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
