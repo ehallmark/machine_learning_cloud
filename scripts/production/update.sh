@@ -6,6 +6,8 @@ cd /home/ehallmark/repos/machine_learning_cloud
 
 # run part 1 of updates
 java -cp target/classes:"target/dependency/*" -Xms90000m -Xmx90000m seeding.IngestRecentUpdatesPart1
+java -cp target/classes:"target/dependency/*" -Xms90000m -Xmx90000m models.classification_models.UpdateClassificationModels
+
 
 # turn on elastic search
 cd /home/ehallmark/repos/machine_learning_cloud/scripts/production

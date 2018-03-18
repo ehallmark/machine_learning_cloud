@@ -103,7 +103,7 @@ public class UpdateAll {
 
                 } else if (arg.equals("13")) {
                     // MODELS
-                    UpdateClassificationModels.updateLatest();
+                    //UpdateClassificationModels.updateLatest();
 
                 } else if (arg.equals("14")) {
                     UpdateExtraneousComputableAttributeData.update(null);
