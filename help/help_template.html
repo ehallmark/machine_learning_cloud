@@ -89,16 +89,26 @@
         });
     </script>
     <style>
-        h3 {
+        #document h3 {
             margin-top: 30px;
+            font-weight: 600;
         }
-        h4 {
+        #document h4 {
             margin-top: 24px;
+            font-weight: 600;
+        }
+        #document h5 {
+            margin-top: 20px;
+            font-weight: 600;
         }
         .accordion * {
             box-sizing: border-box;
             font-family: 'Open Sans',sans-serif;
             font-weight: 400;
+        }
+
+        #document {
+            text-align: left;
         }
 
         .accordion .inner {
@@ -108,10 +118,11 @@
         .accordion a {
             text-decoration: none;
             color: inherit;
+            font-weight: 500;
         }
 
         .accordion ul {
-            font-size: 22px;
+            font-size: 24px;
         }
 
         .accordion ul ul {
@@ -127,6 +138,7 @@
         }
 
         .accordion ul {
+            text-align: center;
             list-style: none;
             padding: 0;
 
@@ -184,123 +196,853 @@
                 </div>
                 <div class="row" style="margin-top:70px;">
                     <div id="document" class="col-9 offset-3">
-                        <div class="col-12" id="header-getting-started">
-                            <h3>Getting Started</h3>
-                            <div id="header-getting-started-introduction">
-                                <h4>Introduction</h4>
+                        <div class="row">
+                            <div class="col-10 offset-1">
+                                <div class="row">
+                                    <div class="col-12" id="header-getting-started">
+                                        <h3>Getting Started</h3>
+                                        <div id="header-getting-started-introduction">
+                                            <h4>Introduction</h4>
+                                            <p>
+                                                The AI Search Platform is a patent search tool optimized for advanced search and analytics.
+                                            </p>
+                                            <p>
+                                                Key Features include
+                                            </p>
+                                            <ul>
+                                                <li>
+                                                    Asset Valuation Model
+                                                </li>
+                                                <li>
+                                                    Asset Clustering
+                                                </li>
+                                                <li>
+                                                    Asset Technology Tagging
+                                                </li>
+                                                <li>
+                                                    Advanced Text Querying
+                                                </li>
+                                                <li>
+                                                    Arbitrary Text Similarity
+                                                </li>
+                                                <li>
+                                                    Patent Similarity
+                                                </li>
+                                                <li>
+                                                    Assignee Similarity
+                                                </li>
+                                                <li>
+                                                    CPC Class Code Similarity
+                                                </li>
+                                                <li>
+                                                    Assignee Normalization
+                                                </li>
+                                                <li>
+                                                    Save and Share Search Templates
+                                                </li>
+                                                <li>
+                                                    Save and Share Datasets
+                                                </li>
+                                                <li>
+                                                    Acclaim Expert Syntax Compatible
+                                                </li>
+                                                <li>
+                                                    Generate Advanced Charts and Tables
+                                                </li>
+                                            </ul>
+                                            <p>
+                                                The system currently contains US patents issued in the past 25 years and US applications published since 2005.
+                                                Patent data includes USPTO Assignment data, PAIR application data, CPC Classification data, Maintenance Event data,
+                                                and other data sources.
+                                                The system is updated on a weekly basis, usually on Saturday mornings. During these updates, new data is ingested and integrated into the system.
+                                                To speed up this process, the user interface is shutdown while the system is updating. Updates typically take several hours to complete.
+                                                The inclusion of more patent collections and patent data is expected in future releases.
+                                            </p>
+                                        </div>
+                                        <div id="header-getting-started-basics">
+                                            <h4>Examples  (IN PROGRESS)</h4>
+                                            <div id="header-getting-started-basics-simple-keyword-search">
+                                                <h5>Simple Keyword Search</h5>
+                                                <p>
+                                                    This is an example search for assets containing 'semiconductor' in the Invention Title.
+                                                </p>
+                                            </div>
+                                            <div id="header-getting-started-basics-simple-assignee-search">
+                                                <h5>Simple Assignee Search</h5>
+                                                <p>
+                                                    This is an example search for assets owned by a particular assignee.
+                                                </p>
+                                            </div>
+                                            <div id="header-getting-started-basics-asset-similarity-search">
+                                                <h5>Asset Similarity Search</h5>
+                                                <p>
+                                                    This is an example search for assets similar to an input asset.
+                                                </p>
+                                            </div>
+                                            <div id="header-getting-started-basics-advanced-keyword-search">
+                                                <h5>Simple Keyword Search</h5>
+                                                <p>
+                                                    This is a more advanced text search example using the Advanced Text query syntax.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" id="header-filters">
+                                        <h3>Filters</h3>
+                                        <div id="header-filters-overview">
+                                            <h4>Overview</h4>
+                                            <p>
+                                                Filters are how we narrow down a search. Filters can be applied in the Filters tab by clicking the Filters drop-down menu and selecting the desired filter. Most attributes have at least one available filter, and these filters can be combined to form more complex searches. Multiple filters can also be applied to the same attribute.
+                                            </p>
+                                        </div>
+                                        <div id="header-filters-types">
+                                            <h4>Filter Types</h4>
+                                            <p>
+                                                There are many different types of filters, mostly based on the type of attribute being filtered on (numeric, date, text, etc.).
+                                            </p>
+                                            <div id="header-filters-types-include">
+                                                <h5>Include Filter</h5>
+                                                <p>
+                                                    The Include Filter returns results that match a term. This is useful for matching assets by assignee, classification codes, and many other text fields.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-exclude">
+                                                <h5>Exclude Filter</h5>
+                                                <p>
+                                                    The Exclude Filter is the negation of the Include Filter. Results matched by the Exclude Filter will be removed from the returned results.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-between">
+                                                <h5>Between Filter</h5>
+                                                <p>
+                                                    The Between Filter is applicable only to date fields and number fields. This filter only includes assets where the search field is between a specified range. If the Max value is omitted,
+                                                    the filter will only include results greater than or equal to the Min value. If the Min value is omitted, the filter will only include results less than or equal
+                                                    to the Max value.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-prefix-include">
+                                                <h5>Prefix Include Filter</h5>
+                                                <p>
+                                                    The Prefix Include Filter only includes results where the search field starts with the search input. This can be useful for searching subclasses of a CPC class code.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-prefix-exclude">
+                                                <h5>Prefix Exclude Filter</h5>
+                                                <p>
+                                                    The Prefix Exclude Filter negates the Prefix Include Filter. This can be useful when omitting assets containing a subclass of a particular CPC classification.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-exists">
+                                                <h5>Exists Filter</h5>
+                                                <p>
+                                                    The Exists Filter return results only if the search field is not blank or empty. For example, this could be used to filter out assets that do not have any citations.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-not-exists">
+                                                <h5>Does Not Exist Filter</h5>
+                                                <p>
+                                                    The Does Not Exist Filter is the negation of the Exists Filter. This filter will only return results where the specified search field does not exist.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-advanced-text">
+                                                <h5>Advanced Text Filter</h5>
+                                                <p>
+                                                    The Advanced Text Filter provides a syntax for more complex text searching. This filter is particularly useful for searching the larger text fields, such as Claim Text or Abstracts.
+                                                    This has also proved useful for searching assignee names.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-regexp">
+                                                <h5>Regexp Filter</h5>
+                                                <p>
+                                                    The Regexp Filter provides users who are familiar with Regular Expressions the ability to leverage the syntax for text searching. Unless you are already familiar with Regexp,
+                                                    we suggest trying the Advanced Text Filter first.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-similarity">
+                                                <h5>Similarity Filters</h5>
+                                                <p>
+                                                    Similarity Filters provide access to the platform's internal deep-learning based similarity models. Current implementations include:
+                                                </p>
+                                                <ul>
+                                                    <li>
+                                                        Asset Similarity
+                                                    </li>
+                                                    <li>
+                                                        Assignee Similarity
+                                                    </li>
+                                                    <li>
+                                                        CPC Code Similarity
+                                                    </li>
+                                                    <li>
+                                                        Dataset Similarity
+                                                    </li>
+                                                    <li>
+                                                        Text Similarity
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div id="header-filters-types-asset-deduplication">
+                                                <h5>Asset Deduplication Filter</h5>
+                                                <p>
+                                                    The Asset Deduplication Filter uses the available information from the USPTO to remove counterparts of assets. This can be useful when the user does
+                                                    not wish to return more than one asset in any particular asset family.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-nested">
+                                                <h5>Nested Filter</h5>
+                                                <p>The Nested Filter allows filtering on nested attributes. This filter will include various other filters based on the available sub-attributes.</p>
+                                            </div>
+                                            <div id="header-filters-types-acclaim">
+                                                <h5>Acclaim Expert Filter</h5>
+                                                <p>
+                                                    The Acclaim Expert Filter provides compatibility with the Acclaim Patent Search tool. With a few exceptions, Acclaim Expert Search queries can be copied and pasted back and forth between platforms.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-include-with-related">
+                                                <h5>Include with Related Assets Filter</h5>
+                                                <p>
+                                                    This filter builds off the Include Filter for Asset Numbers, but additionally will return results matching a related asset of the search input.
+                                                </p>
+                                            </div>
+                                            <div id="header-filters-types-exclude-with-related">
+                                                <h5>Exclude with Related Assets Filter</h5>
+                                                <p>
+                                                    This filter builds off the Exclude Filter for Asset Numbers, but additionally will omit results matching a related asset of the search input.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" id="header-sorting">
+                                        <h3>Sort/Limit</h3>
+                                        <div id="header-sorting-sort">
+                                            <h4>Sorting</h4>
+                                            <div id="header-sorting-sort-overview">
+                                                <h5>Overview</h5>
+                                                <p>
+                                                    Sorting is an important tool for displaying the best results first. Our platform allows many sort options, including
+                                                    the ability to sort by any numeric or date attribute, and more.
+                                                </p>
+                                            </div>
+                                            <div id="header-sorting-sort-score">
+                                                <h5>Overall Score</h5>
+                                                <p>
+                                                    Sort by Overall Score when using text based queries to provide better rankings of assets based on text search algorithms.
+                                                    The following text attributes are effected: Invention Title, Claim Text, Abstract Text.
+                                                    In addition, if a similarity filter is also used, then the Overall Score will also incorporate the similarity score.
+                                                </p>
+                                            </div>
+                                            <div id="header-sorting-sort-similarity">
+                                                <h5>Similarity Score</h5>
+                                                <p>
+                                                    Sort by Similarity score to rank documents by the score of a similarity algorithm. This is useful for ranking documents
+                                                    by a similarity model without incorporating scores from other attributes.
+                                                    Be careful, sorting by Similarity Score without providing a similarity filter will result in an exception. Usually, it is preferred
+                                                    to sort with Overall Score than with Similarity Score.
+                                                </p>
+                                            </div>
+                                            <div id="header-sorting-sort-nosort">
+                                                <h5>No Sort</h5>
+                                                <p>
+                                                    When no sorting is desired, there is an option for No Sort, which will omit sorting. This option can be useful to speed up searching of large collections.
+                                                </p>
+                                            </div>
+                                            <div id="header-sorting-sort-random">
+                                                <h5>Random Sort</h5>
+                                                <p>
+                                                    In some cases when the number of matched results is large and no sorting is desired, it may make sense to randomly sort the
+                                                    possible results and apply a search limit to quickly obtain a sample of the desired results. This method is slower than choosing the
+                                                    No Sort option, but provides a better random selection.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div id="header-sorting-limit">
+                                            <h4>Sort Limit</h4>
+                                            <p>
+                                                In the Sorting tab, there is an option to specify the Sort Limit. This limits the maximum number of results that the system will return.
+                                                Please note there is a soft limit of 10,000, and a hard limit of 100,000. This is a consequence of the high computation cost required to sort large numbers of documents.
+                                                You are allowed to search for more than the soft limit (10,000), but the search will be significantly slower. Searching for more than the hard limit (100,000) is not supported.
+                                            </p>
+                                        </div>
+                                        <div id="header-sorting-direction">
+                                            <h4>Sort Direction</h4>
+                                            <p>
+                                                In the Sorting tab, one can elect to sort in Descending (default) or Ascending order.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" id="header-templates">
+                                        <h3>Templates</h3>
+                                        <div id="header-templates-overview">
+                                            <h4>Overview</h4>
+                                            <p>
+                                                Templates allow a user to save forms to use later. This saves the user time recreating forms.
+                                                Templates can also be shared with users in your user group. The Default Templates provide a good starting point
+                                                for creating your own customized templates.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" id="header-datasets">
+                                        <h3>Datasets</h3>
+                                        <div id="header-datasets-overview">
+                                            <h4>Overview</h4>
+                                            <p>
+                                                Datasets allow a user to save an asset list into the system.
+                                                You can then reference the datasets you create later on when searching, generating tables, or creating charts.
+                                            </p>
+                                        </div>
+                                        <div id="headers-datasets-importing">
+                                            <h4>Importing</h4>
+                                            <p>
+                                                Datasets can be created in one of two ways.
+                                                <ol>
+                                                    <li>
+                                                        Create a dataset from the results of the last search.<br/>
+                                                        Right click on a dataset folder and click <i>Create Dataset -> From Last Generated Report</i>
+                                                    </li>
+                                                    <li>
+                                                        Create a dataset from a list.
+                                                        Right click on a dataset folder and click <i>Create Dataset -> From Asset List</i>. Then paste an asset list into the prompted text box.
+                                                    </li>
+                                                </ol>
+                                                Once created, it is recommended to choose a new name for the dataset.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" id="header-clustering">
+                                        <h3>Clustering</h3>
+                                        <div id="header-clustering-overview">
+                                            <h4>Overview</h4>
+                                            <p>
+                                                Clustering is an algorithm for grouping together similar assets in a Dataset.
+                                                This can be useful for identifying natural subsets in a portfolio. In order to perform a clustering on a dataset,
+                                                right click on the dataset and click <i>Cluster this Dataset</i>.
+                                                There is currently no limit on the number of assets that can be clustered; however, clustering a very large dataset into a large number of clusters
+                                                could take several minutes, so please be aware of the time commitment.
+                                            </p>
+                                        </div>
+                                        <div id="header-clustering-number-of-clusters">
+                                            <h4>Number of Clusters</h4>
+                                            <p>
+                                                When clustering a dataset, a prompt will ask you to enter a desired number of clusters or leave blank to determine an optimal number for you.
+                                                If you already have a rough sense of how many clusters you want, it can be faster to enter in that number directly, otherwise it is usually fine
+                                                to leave the number blank and let the algorithm automatically determine the number of clusters.
+                                            </p>
+                                        </div>
+                                        <div id="header-clustering-autotagging">
+                                            <h4>Technology Tagging</h4>
+                                            <p>
+                                                Once the assets are clustered, we use a deep learning based algorithm to label each cluster with
+                                                the a likely technology. This helps get a quick sense of each cluster, and the labels can also be used
+                                                for filters and charts in future searches.
+                                            </p>
+                                        </div>
+                                        <div id="header-clustering-advanced">
+                                            <h4>Advanced</h4>
+                                            <p>
+                                                If a cluster is significantly larger than others, one thing to try is to subcluster the larger cluster
+                                                into smaller clusters by rerunning the algorithm only on the larger cluster.
+                                            </p>
+                                            <p>
+                                                An interesting way to visualize an asset list is two perform two clusterings: one with a few clusters (3-10), and one with
+                                                more clusters (20-50), and then plot the two different clusterings along a Pivot Count Table to see the intersections.
+                                                In an ideal world, the clustering with fewer clusters would capture broad technology categories, and the clustering with
+                                                more clusters (and thus, fewer assets per cluster) would capture specifc technology categories. Plotting the intersection
+                                                shows the co-occurrence of the broad and specific clusterings.
+                                            </p>
+                                            <p>
+                                                Clustering contains randomness in the algorithm due to how the initial centroids are picked. This means that
+                                                two separate clusterings of the same asset list could result in different clusterings.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" id="header-charts">
+                                        <h3>Charts</h3>
+                                        <div id="header-charts-overview">
+                                            <h4>Overview</h4>
+                                            <p>
+                                                Charts are useful for visualizing the results of a search.
+                                                This platform has many different chart types to visualize data in a variety of different ways.
+                                                The following section contains examples for using each chart type.
+                                            </p>
+                                        </div>
+                                        <div id="header-charts-types">
+                                            <h4>Chart Types</h4>
+                                            <div id="header-charts-types-pie">
+                                                <h5>Pie Chart</h5>
+                                                <p>
+                                                    Pie Charts are useful for visualizing a distribution of assets along a particular attribute.
+                                                </p>
+                                                <p>
+                                                    The following example shows how to generate a Pie Chart showing the distribution of assignees with assets
+                                                    containing a particular keyword.
+                                                </p>
+                                                <p>
+                                                    The following example shows how to generate a series of Pie Charts grouped by Dataset showing the distribution
+                                                    of WIPO Technologies.
+                                                </p>
+                                            </div>
+                                            <div id="header-charts-types-line">
+                                                <h5>Timeline Chart</h5>
+                                                <p>
+                                                    Timeline Charts are useful for visualizing the asset counts over time.
+                                                </p>
+                                                <p>
+                                                    The following example shows how to generate a Timeline Chart plotting the Filing Dates over time
+                                                    of a particular Original Assignee. (TODO)
+                                                </p>
+                                                <p>
+                                                    The following example shows how to generate a Timeline Chart with multiples series grouped by Original Assignee
+                                                    with assets containing a particular keyword. (TODO)
+                                                </p>
+                                            </div>
+                                            <div id="header-charts-types-histogram">
+                                                <h5>Histogram Chart</h5>
+                                                <p>
+                                                    Histogram Charts are useful for visualizing a count of assets in various ranges.
+                                                    Currently, the only attributes available for histograms are
+                                                </p>
+                                                <ul>
+                                                    <li>
+                                                        AI Value - grouped into 5 quantiles
+                                                    </li>
+                                                    <li>
+                                                        (Est.) Remaining Life - grouped by 5 year periods
+                                                    </li>
+                                                    <li>
+                                                        Similarity - grouped into 5 quantiles
+                                                    </li>
+                                                </ul>
+                                                <p>
+                                                    The following example shows how to generate a Histogram of Remaining Life for a given search. (TODO)
+                                                </p>
+                                            </div>
+                                            <div id="header-charts-types-column-combination">
+                                                <h5>Column Combination Table</h5>
+                                                <p>
+                                                    Column Combination Tables are designed to group and aggregate data of a single attribute. To group and aggregate data for two attributes, please see the section on Pivot Tables.
+                                                </p>
+                                                <p>Column Combination Count Table</p>
+                                                <p>
+                                                    Column Combination Count Tables contain a main attribute and a collecting attribute.
+                                                    The main attribute determines the groups, and the collecting attribute determines the attribute
+                                                    being counted for each group. For example, to count the number of assets for the assignees in a search,
+                                                    the grouping attribute would be the assignee name, and the collecting attribute would be the asset number.
+                                                </p>
+                                                <p>
+                                                    The following example shows how to create a basic Column Combination Count Table. (TODO)
+                                                </p>
+                                                <p>Column Combination Function Table</p>
+                                                <p>
+                                                    Column Combination Function Tables are similar to Column Combination Count Tables, but instead of counting the collecting
+                                                    attribute for each group, you can select a collecting function to apply. For example, since the AI Value attribute represents a
+                                                    probability, you could estimate the expected number of valuable assets in each main attribute group by collecting the sum of AI Values.
+                                                </p>
+                                                <p>
+                                                    Available collector functions are:
+                                                </p>
+                                                <ul>
+                                                    <li>
+                                                        Sum
+                                                    </li>
+                                                    <li>
+                                                        Average (mean)
+                                                    </li>
+                                                    <li>
+                                                        Max
+                                                    </li>
+                                                    <li>
+                                                        Min
+                                                    </li>
+                                                </ul>
+                                                <p>
+                                                    The following example (TODO)
+                                                </p>
+                                            </div>
+                                            <div id="header-charts-types-pivot-table">
+                                                <h5>Pivot Table</h5>
+                                                <p>
+                                                    Pivot Tables are Column Combination Tables with an added dimension. Please see the section on Column Combination Tables before reading about Pivot Tables.
+                                                    This allows you to group data based on the intersection of two main grouping attributes.
+                                                    You can think of the resulting table as a two dimensional matrix or grid. For example,
+                                                    a Pivot Table with CPC Code and Assignee Name as the two grouping attributes would produce a
+                                                    table with CPC Codes one one axis and Assignee Names on the other. The actual table values would
+                                                    be calculated for each group based on the collecting attribute and collector function (or count function for Pivot Count Tables).
+                                                </p>
+                                                <p>
+                                                    The following is an example of a Pivot Count Table ... (TODO)
+                                                </p>
+                                                <p>
+                                                    The following is an example of a Pivot Function Table ... (TODO)
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" id="header-attributes">
+                                        <h3>Attributes</h3>
+                                        <div id="header-attributes-overview">
+                                            <h4>Overview</h4>
+                                            <p>
+                                                Attributes are data fields stored for each asset. Examples of attributes include Invention Title, Assignee Name, and Inventor Country.
+                                                Attributes can be applied in filters, sorted on, used in charts and tables, and exported in spreadsheets.
+                                                The attributes selected in the Attributes tab of the search form determines which attributes will be returned in search results.
+                                                Please see the following section for a description of each attribute.
+                                            </p>
+                                        </div>
+                                        <div id="header-attributes-list">
+                                            <h4>Attribute List (IN PROGRESS)</h4>
+                                            <div id="header-attributes-list-aiValue">
+                                                <h5>AI Value</h5>
+                                                <p>
+                                                    AI Value is an asset valuation metric developed internally by GTT Group to identify assets with a higher chance of value.
+                                                    The AI Value takes on values from 0 to 100, and can intuitively be interpreted as the percent probability that an asset is valuable.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-abstract">
+                                                <h5>Abstract</h5>
+                                                <p>
+                                                    The abstract.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-agents">
+                                                <h5>Agents</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>First name of an agent.</div><div>Last name of an agent.</div><div>City of an agent.</div><div>Country of an agent.</div><div>State of an agent.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-applicants">
+                                                <h5>Applicants</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>First name of an applicant.</div><div>Last name of an applicant.</div><div>City of an applicant.</div><div>Country of an applicant.</div><div>State of an applicant.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-name">
+                                                <h5>Asset Number</h5>
+                                                <p>
+                                                    The asset number.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-assignments">
+                                                <h5>Assignments</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Assignee name of an assignment.</div><div>Assignor name of an assignment.</div><div>Recorded date of an assignment.</div><div>Correspondent address of an assignment.</div><div>Correspondent name of an assignment.</div><div>Latest execution date of an assignment.</div><div>Reel frames of an assignment.</div><div>Conveyance text of an assignment.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-citations">
+                                                <h5>Backward Citations</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Asset number of a backward citation.</div><div>Document kind of a backward citation.</div><div>Cited date of a backward citation.</div><div>Country of a backward citation.</div><div>Citationcategory of a backward citation.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-cpcCodes">
+                                                <h5>CPC Code</h5>
+                                                <p>
+                                                    The cpc code.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-nestedCpcCodes">
+                                                <h5>CPC Data</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Cpc code of a cpc data.</div><div>Cpc title of a cpc data.</div><div>Cpc section of a cpc data.</div><div>Cpc class of a cpc data.</div><div>Cpc subclass of a cpc data.</div><div>Cpc main group of a cpc data.</div><div>Cpc subgroup of a cpc data.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-claims">
+                                                <h5>Claims</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Number of the claim in the document.</div><div>Full text of a claim.</div><div>Number of words in a claim.</div><div>Parent claim number of the claim.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-compDB">
+                                                <h5>CompDB</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Technology of the compdb.</div><div>Deal id of the compdb.</div><div>Reel frames of the compdb.</div><div>Asset number of the compdb.</div><div>Inactive deal of the compdb.</div><div>Acquisition deal of the compdb.</div><div>Buyer of the compdb.</div><div>Seller of the compdb.</div><div>Recorded date of the compdb.</div><div>Number of reel frames of the compdb.</div><div>And more...</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-datasetName">
+                                                <h5>Dataset Name</h5>
+                                                <p>
+                                                    The dataset name.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-dataset2Name">
+                                                <h5>2nd Dataset Name</h5>
+                                                <p>
+                                                    The 2nd dataset name.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-docKind">
+                                                <h5>Document Kind</h5>
+                                                <p>
+                                                    The document kind.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-remainingLife">
+                                                <h5>Est. Remaining Life (Years)</h5>
+                                                <p>
+                                                    The est. remaining life (years).
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-estimatedExpirationDate">
+                                                <h5>Expiration Date (estimated)</h5>
+                                                <p>
+                                                    The expiration date computed from the original expiration date and any term adjustment information.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-expired">
+                                                <h5>Expired</h5>
+                                                <p>
+                                                    The asset is expired.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-filingCountry">
+                                                <h5>Filing Country</h5>
+                                                <p>
+                                                    The filing country.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-filingDate">
+                                                <h5>Filing Date</h5>
+                                                <p>
+                                                    The date of the patent filing.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-filingName">
+                                                <h5>Filing Number</h5>
+                                                <p>
+                                                    The filing number.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-backwardCitation">
+                                                <h5>Forward Citation</h5>
+                                                <p>
+                                                    The forward citation.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-technology">
+                                                <h5>GTT Group Technology</h5>
+                                                <p>
+                                                    The gtt group technology.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-gttReservoir">
+                                                <h5>GTT Reservoir</h5>
+                                                <p>
+                                                    The asset is gtt reservoir.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-gather">
+                                                <h5>Gather</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Patent rating of the gather.</div><div>Stage complete of the gather.</div><div>Gather technology of the gather.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-granted">
+                                                <h5>Granted</h5>
+                                                <p>
+                                                    The asset is granted.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-inventionTitle">
+                                                <h5>Invention Title</h5>
+                                                <p>
+                                                    The invention title.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-inventors">
+                                                <h5>Inventors</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>First name of an inventor.</div><div>Last name of an inventor.</div><div>City of an inventor.</div><div>Country of an inventor.</div><div>State of an inventor.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-lapsed">
+                                                <h5>Lapsed</h5>
+                                                <p>
+                                                    The asset is lapsed.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-latestAssignee">
+                                                <h5>Latest Assignee</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>(normalized) portfolio size of the latest assignee.</div><div>Original assignee entity type of the latest assignee.</div><div>(normalized) assignee of the latest assignee.</div><div>Assignee acquisitions (compdb) of the latest assignee.</div><div>Assignee divestments (compdb) of the latest assignee.</div><div>Is human of the latest assignee.</div><div>Latest execution date of the latest assignee.</div><div>Assignee name of the latest assignee.</div><div>Portfolio size of the latest assignee.</div><div>Assignee role of the latest assignee.</div><div>And more...</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-smallestIndClaimLength">
+                                                <h5>Length of Smallest Independent Claim</h5>
+                                                <p>
+                                                    The number of words in the document's smallest independent claim.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-maintenanceEvent">
+                                                <h5>Maintenance Fee Event Code</h5>
+                                                <p>
+                                                    The maintenance fee event code.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-meansPresent">
+                                                <h5>Means Present</h5>
+                                                <p>
+                                                    The asset is means present.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-agents_countSuffix">
+                                                <h5>Number of Agents</h5>
+                                                <p>
+                                                    The number of agents.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-applicants_countSuffix">
+                                                <h5>Number of Applicants</h5>
+                                                <p>
+                                                    The number of applicants.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-assignments_countSuffix">
+                                                <h5>Number of Assignments</h5>
+                                                <p>
+                                                    The number of assignments.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-citations_countSuffix">
+                                                <h5>Number of Backward Citations</h5>
+                                                <p>
+                                                    The number of backward citations.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-nestedCpcCodes_countSuffix">
+                                                <h5>Number of CPC Data</h5>
+                                                <p>
+                                                    The number of cpc data.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-claims_countSuffix">
+                                                <h5>Number of Claims</h5>
+                                                <p>
+                                                    The number of claims.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-backwardCitation_countSuffix">
+                                                <h5>Number of Forward Citations</h5>
+                                                <p>
+                                                    The number of forward citations.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-inventors_countSuffix">
+                                                <h5>Number of Inventors</h5>
+                                                <p>
+                                                    The number of inventors.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-assignees_countSuffix">
+                                                <h5>Number of Original Assignee</h5>
+                                                <p>
+                                                    The number of original assignee.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-patentFamily_countSuffix">
+                                                <h5>Number of Prior Related Docs</h5>
+                                                <p>
+                                                    The number of prior related docs.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-reelFrame_countSuffix">
+                                                <h5>Number of Reel Frames</h5>
+                                                <p>
+                                                    The number of reel frames.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-allRelatedAssets_countSuffix">
+                                                <h5>Number of Related Docs</h5>
+                                                <p>
+                                                    The number of related docs.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-assignees">
+                                                <h5>Original Assignee</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Assignee name of an original assignee.</div><div>Assignee role of an original assignee.</div><div>First name of an original assignee.</div><div>Last name of an original assignee.</div><div>City of an original assignee.</div><div>Country of an original assignee.</div><div>State of an original assignee.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-assigneeEntityType">
+                                                <h5>Original Assignee Entity Type</h5>
+                                                <p>
+                                                    The original assignee entity type.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-expirationDate">
+                                                <h5>Original Expiration Date</h5>
+                                                <p>
+                                                    The original expiration date.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-priorityDate">
+                                                <h5>Original Priority Date</h5>
+                                                <p>
+                                                    The original priority date.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-patentFamily">
+                                                <h5>Prior Related Docs</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Asset number of a prior related doc.</div><div>Document kind of a prior related doc.</div><div>Country of a prior related doc.</div><div>Relation type of a prior related doc.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-estimatedPriorityDate">
+                                                <h5>Priority Date (estimated)</h5>
+                                                <p>
+                                                    The priority date (estimated).
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-publicationDate">
+                                                <h5>Publication Date</h5>
+                                                <p>
+                                                    The publication date of the asset.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-reelFrame">
+                                                <h5>Reel Frames</h5>
+                                                <p>
+                                                    The reel frames.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-reinstated">
+                                                <h5>Reinstated</h5>
+                                                <p>
+                                                    The asset is reinstated.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-allRelatedAssets">
+                                                <h5>Related Docs</h5>
+                                                <p>
+                                                    The related docs.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-docType">
+                                                <h5>Result Type</h5>
+                                                <p>
+                                                    The result type.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-similarity">
+                                                <h5>Similarity</h5>
+                                                <p>
+                                                    The similarity.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-patentTermAdjustment">
+                                                <h5>Term Adjustments (Days)</h5>
+                                                <p>
+                                                    The term adjustments (days).
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-wipoTechnology">
+                                                <h5>WIPO Technology</h5>
+                                                <p>
+                                                    The wipo technology.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="header-getting-started-basics">
-                                <h4>Basics</h4>
-                            </div>
-                        </div>
-                        <div class="col-12" id="header-attributes">
-                            <h3>Attributes</h3>
-                        </div>
-                        <div class="col-12" id="header-filters">
-                            <h3>Filters</h3>
-                            <div id="header-filters-overview">
-                                <h4>Overview</h4>
-                                <p>
-                                    Filters are how we narrow down a search. Filters can be applied in the Filters tab by clicking the Filters drop-down menu and selecting the desired filter. Most attributes have at least one available filter, and these filters can be combined to form more complex searches. Multiple filters can also be applied to the same attribute.
-                                </p>
-                            </div>
-                            <div id="header-filters-types">
-                                <h4>Filter Types</h4>
-                                <p>
-                                    There are many different types of filters, mostly based on the type of attribute being filtered on (numeric, date, text, etc.).
-                                </p>
-                                <div id="header-filters-types-include">
-                                    <h5>Include Filter</h5>
-                                    <p>
-                                        The Include Filter returns results that match a term. This is useful for matching assets by assignee, classification codes, and many other text fields.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-exclude">
-                                    <h5>Exclude Filter</h5>
-                                    <p>
-                                        The Exclude Filter is the negation of the Include Filter. Results matched by the Exclude Filter will be removed from the returned results.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-between">
-                                    <h5>Between Filter</h5>
-                                    <p>
-                                        The Between Filter is applicable only to date fields and number fields. This filter only includes assets where the search field is between a specified range. If the Max value is omitted,
-                                        the filter will only include results greater than or equal to the Min value. If the Min value is omitted, the filter will only include results less than or equal
-                                        to the Max value.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-prefix-include">
-                                    <h5>Prefix Include Filter</h5>
-                                    <p>
-                                        The Prefix Include Filter only includes results where the search field starts with the search input. This can be useful for searching subclasses of a CPC class code.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-prefix-exclude">
-                                    <h5>Prefix Exclude Filter</h5>
-                                    <p>
-                                        The Prefix Exclude Filter negates the Prefix Include Filter. This can be useful when omitting assets containing a subclass of a particular CPC classification.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-exists">
-                                    <h5>Exists Filter</h5>
-                                    <p>
-                                        The Exists Filter return results only if the search field is not blank or empty. For example, this could be used to filter out assets that do not have any citations.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-not-exists">
-                                    <h5>Does Not Exist Filter</h5>
-                                    <p>
-                                        The Does Not Exist Filter is the negation of the Exists Filter. This filter will only return results where the specified search field does not exist.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-advanced-text">
-                                    <h5>Advanced Text Filter</h5>
-                                    <p>
-                                        The Advanced Text Filter provides a syntax for more complex text searching. This filter is particularly useful for searching the larger text fields, such as Claim Text or Abstracts.
-                                        This has also proved useful for searching assignee names.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-regexp">
-                                    <h5>Regexp Filter</h5>
-                                    <p>
-                                        The Regexp Filter provides users who are familiar with Regular Expressions the ability to leverage the syntax for text searching. Unless you are already familiar with Regexp,
-                                        we suggest trying the Advanced Text Filter first.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-asset-deduplication">
-                                    <h5>Asset Deduplication Filter</h5>
-                                    <p>
-                                        The Asset Deduplication Filter uses the available information from the USPTO to remove counterparts of assets. This can be useful when the user does
-                                        not wish to return more than one asset in any particular asset family.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-nested">
-                                    <h5>Nested Filter</h5>
-                                    <p>The Nested Filter allows filtering on nested attributes. This filter will include various other filters based on the available sub-attributes.</p>
-                                </div>
-                                <div id="header-filters-types-acclaim">
-                                    <h5>Acclaim Expert Filter</h5>
-                                    <p>
-                                        The Acclaim Expert Filter provides compatibility with the Acclaim Patent Search tool. With a few exceptions, Acclaim Expert Search queries can be copied and pasted back and forth between platforms.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-include-with-related">
-                                    <h5>Include with Related Assets Filter</h5>
-                                    <p>
-                                        This filter builds off the Include Filter for Asset Numbers, but additionally will return results matching a related asset of the search input.
-                                    </p>
-                                </div>
-                                <div id="header-filters-types-exclude-with-related">
-                                    <h5>Exclude with Related Assets Filter</h5>
-                                    <p>
-                                        This filter builds off the Exclude Filter for Asset Numbers, but additionally will omit results matching a related asset of the search input.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12" id="header-sorting">
-                            <h3>Sort/Limit</h3>
-
                         </div>
                     </div>
                 </div>

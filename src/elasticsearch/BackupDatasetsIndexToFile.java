@@ -32,7 +32,6 @@ public class BackupDatasetsIndexToFile {
             for(int i = 0; i < hits.length; i++) {
                 SearchHit hit = hits[i];
                 data.put(hit.getId(),hit.getSource());
-                //System.out.println("Data for "+hit.getId()+": "+hit.getSourceAsString());
             }
             response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(120000)).execute().actionGet();
         }

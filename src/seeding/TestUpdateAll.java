@@ -33,7 +33,7 @@ public class TestUpdateAll {
         };*/
 
         // test update patent grant
-        SimilarPatentServer.loadAttributes(true);
+        SimilarPatentServer.loadAttributes(true,false);
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
         computableAttributes.forEach(attr->attr.initMaps());
         USPTOHandler.setComputableAttributes(computableAttributes);

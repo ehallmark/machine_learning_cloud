@@ -2,6 +2,7 @@ package data_pipeline.vectorize;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
@@ -10,7 +11,9 @@ import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -146,7 +149,11 @@ public class PreSaveDataSetManager<T extends Iterator> implements DataSetManager
                 if(dataSetPreProcessor!=null) {
                     dataSetPreProcessor.preProcess(ds);
                 }
-                ds.save(new File(folder, filename));
+                try {
+                    ds.save(new GzipCompressorOutputStream(new BufferedOutputStream(new FileOutputStream(new File(folder, filename)))));
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
                 idx++;
                 System.out.println("Saved [" + idx + " / " + total + "] to " + filename);
             }
@@ -159,10 +166,13 @@ public class PreSaveDataSetManager<T extends Iterator> implements DataSetManager
             String filename = EXAMPLE+idx+BINARY_SUFFIX;
             MultiDataSet ds = iterator.next();
             if(ds!=null) {
+                if(multiDataSetPreProcessor!=null) {
+                    multiDataSetPreProcessor.preProcess(ds);
+                }
                 try {
-                    ds.save(new File(folder, filename));
+                    ds.save(new GzipCompressorOutputStream(new BufferedOutputStream(new FileOutputStream(new File(folder, filename)))));
                 } catch(Exception e) {
-
+                    e.printStackTrace();
                 }
                 idx++;
                 System.out.println("Saved [" + idx + "] to " + filename);
@@ -200,12 +210,16 @@ public class PreSaveDataSetManager<T extends Iterator> implements DataSetManager
                 String filename = EXAMPLE+idx+BINARY_SUFFIX;
                 if(ds instanceof MultiDataSet) {
                     try {
-                        ((MultiDataSet) ds).save(new File(folder, filename));
+                        ((MultiDataSet) ds).save(new GzipCompressorOutputStream(new BufferedOutputStream(new FileOutputStream(new File(folder, filename)))));
                     } catch(Exception e) {
-
+                        e.printStackTrace();
                     }
                 } else {
-                    ((DataSet)ds).save(new File(folder, filename));
+                    try {
+                        ((DataSet) ds).save(new GzipCompressorOutputStream(new BufferedOutputStream(new FileOutputStream(new File(folder, filename)))));
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
                 }
                 System.out.println("Saved [" + idx + "] to " + filename);
             }

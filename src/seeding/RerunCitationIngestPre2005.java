@@ -11,7 +11,7 @@ import java.util.HashSet;
 
 public class RerunCitationIngestPre2005 {
     public static void ingestData() {
-        SimilarPatentServer.loadAttributes(true);
+        SimilarPatentServer.loadAttributes(true,false);
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
         computableAttributes.forEach(attr->attr.getPatentDataMap());
         DatabaseIterator.setComputableAttributes(computableAttributes);

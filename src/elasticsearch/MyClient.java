@@ -30,9 +30,9 @@ public class MyClient {
                     .put("client.transport.sniff", sniff)
                     .put("cluster.name","elasticsearch").build();
             TransportClient client = new PreBuiltTransportClient(settings)
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300))
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9301))
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9302));
+                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
+                   // .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9301))
+                   // .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9302));
                     //.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9303));
             CLIENT = client;
         } catch (UnknownHostException e) {
@@ -72,10 +72,10 @@ public class MyClient {
 
                 }
             })
-                    .setBulkActions(10000)
-                    .setBulkSize(new ByteSizeValue(50, ByteSizeUnit.MB))
-                    .setFlushInterval(TimeValue.timeValueSeconds(10))
-                    .setConcurrentRequests(10)
+                    .setBulkActions(1000)
+                    .setBulkSize(new ByteSizeValue(32, ByteSizeUnit.MB))
+                    .setFlushInterval(TimeValue.timeValueSeconds(5))
+                    .setConcurrentRequests(5)
                     .build();
         }
         return BULK_PROCESSOR;

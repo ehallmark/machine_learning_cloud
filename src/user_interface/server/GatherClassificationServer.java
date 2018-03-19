@@ -61,10 +61,10 @@ public class GatherClassificationServer {
 
             Collection<String> patents = Stream.of(client.prepareSearch(DataIngester.INDEX_NAME)
                     .setTypes(DataIngester.TYPE_NAME)
-                    .setFetchSource(false)
+                    .setFetchSource(new String[]{Constants.NAME},new String[]{})
                     .setSize(100)
                     .setQuery(QueryBuilders.termsQuery(Constants.REEL_FRAME, reelFrames))
-                    .get().getHits().getHits()).map(hit -> hit.getId()).collect(Collectors.toList());
+                    .get().getHits().getHits()).map(hit -> (String)hit.getSource().get(Constants.NAME)).collect(Collectors.toList());
             System.out.println("Found " + patents.size() + " patents");
 
             List<Pair<String, Double>> topTags = new ArrayList<>(function.apply(patents, tagLimit));

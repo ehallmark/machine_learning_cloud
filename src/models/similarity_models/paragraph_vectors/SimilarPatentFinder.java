@@ -101,24 +101,5 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         save();
     }
 
-    public static void updateLatest(Collection<String> newAssets) throws IOException {
-        ParagraphVectors model = ParagraphVectorModel.loadParagraphsModel();
-        Map<String,INDArray> vectorMap = SimilarPatentFinder.getLookupTable();
-        // get paragraphs for new assets
-        Function<SearchHit,Item> transformer = searchHit -> {
-            Sequence<VocabWord> sequence = DatabaseIteratorFactory.extractSequence(searchHit);
-            INDArray vec = model.inferVector(sequence.getElements());
-            if(vec!=null) {
-                vec = vec.div(vec.norm2Number());
-                vectorMap.put(sequence.getSequenceLabel().getLabel(),vec);
-            }
-            return null;
-        };
 
-        SearchRequestBuilder searchRequest = DatabaseIteratorFactory.getRequestBuilder(MyClient.get());
-        searchRequest = searchRequest.setQuery(QueryBuilders.idsQuery().addIds(newAssets.toArray(new String[]{})));
-        DataSearcher.iterateOverSearchResults(searchRequest.get(), transformer, -1, false);
-        // save
-        SimilarPatentFinder.save();
-    }
 }

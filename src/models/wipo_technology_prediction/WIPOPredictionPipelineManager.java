@@ -161,13 +161,13 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
                 .setExplain(false)
                 .setFrom(0)
                 .setSize(10000)
-                .setFetchSource(new String[]{Constants.WIPO_TECHNOLOGY},new String[]{})
+                .setFetchSource(new String[]{Constants.NAME,Constants.WIPO_TECHNOLOGY},new String[]{})
                 .setQuery(query)
                 .addSort(SortBuilders.scoreSort());
 
 
         Function<SearchHit,Item> transformer = hit -> {
-            String filing = hit.getId();
+            String filing = (String)hit.getSource().get(Constants.FILING_NAME);
             Collection<String> assets = filingToAssetMap.get(filing);
             if(assets!=null&&assets.size()>0) {
                 Object wipo = hit.getSource().get(Constants.WIPO_TECHNOLOGY);

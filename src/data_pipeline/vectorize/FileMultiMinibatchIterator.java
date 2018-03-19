@@ -2,6 +2,7 @@ package data_pipeline.vectorize;
 
 import data_pipeline.helpers.ShuffleArray;
 import lombok.Setter;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
@@ -12,7 +13,9 @@ import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
@@ -220,7 +223,7 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
     private MultiDataSet read(int idx) throws IOException {
         File path = new File(this.rootDir, String.format(this.pattern, new Object[]{Integer.valueOf(idx)}));
         MultiDataSet d =new org.nd4j.linalg.dataset.MultiDataSet();
-        d.load(path);
+        d.load(new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(path))));
         return d;
     }
 }

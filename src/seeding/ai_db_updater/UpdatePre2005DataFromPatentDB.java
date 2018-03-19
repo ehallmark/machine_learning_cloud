@@ -14,7 +14,7 @@ import java.util.HashSet;
  */
 public class UpdatePre2005DataFromPatentDB {
     public static void ingestData() {
-        SimilarPatentServer.loadAttributes(true);
+        SimilarPatentServer.loadAttributes(true,false);
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
         computableAttributes.forEach(attr->attr.getPatentDataMap());
         DatabaseIterator.setComputableAttributes(computableAttributes);

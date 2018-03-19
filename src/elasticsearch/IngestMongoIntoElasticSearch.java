@@ -41,7 +41,8 @@ public class IngestMongoIntoElasticSearch {
     public static void ingestByType(String type, Document query) {
         Consumer<Document> consumer = doc -> {
             String id = doc.getString("_id");
-            DataIngester.ingestBulkFromMongoDB(type, id, addCountsToDoc(doc));
+            doc.putIfAbsent(Constants.NAME,id);
+            DataIngester.ingestBulkFromMongoDB(type, addCountsToDoc(doc));
         };
 
         iterateOverCollection(consumer,query,type);

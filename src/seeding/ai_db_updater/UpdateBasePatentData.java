@@ -17,7 +17,7 @@ import java.util.HashSet;
  */
 public class UpdateBasePatentData {
     public static void ingestData(boolean seedApplications) {
-        SimilarPatentServer.loadAttributes(true);
+        SimilarPatentServer.loadAttributes(true,false);
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
         computableAttributes.forEach(attr->{
             if(seedApplications) {

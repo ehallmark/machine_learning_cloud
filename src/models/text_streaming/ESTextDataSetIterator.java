@@ -140,13 +140,12 @@ public class ESTextDataSetIterator {
                 .setFrom(0)
                 .setSize(10000)
                 .addDocValueField("_parent")
-                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE, Constants.CLAIMS+"."+Constants.CLAIM,Constants.FILING_DATE},new String[]{})
+                .setFetchSource(new String[]{Constants.NAME,Constants.ABSTRACT,Constants.INVENTION_TITLE, Constants.CLAIMS+"."+Constants.CLAIM,Constants.FILING_DATE},new String[]{})
                 .setQuery(query)
                 .addSort(SortBuilders.scoreSort());
 
 
         Function<SearchHit,Item> transformer = hit -> {
-            //String asset = hit.getId();
             String filing = hit.getField("_parent").getValue();
             Object filingDate = hit.getSource().get(Constants.FILING_DATE);
             if(filing != null && filingDate!=null) {

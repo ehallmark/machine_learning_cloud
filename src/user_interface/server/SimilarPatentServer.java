@@ -401,7 +401,7 @@ public class SimilarPatentServer {
     }
 
     public static void initialize(boolean onlyAttributes, boolean loadHidden) {
-        loadAttributes(loadHidden);
+        loadAttributes(loadHidden,!onlyAttributes);
         if(!onlyAttributes) {
             loadFilterModels();
             loadChartModels();
@@ -540,7 +540,7 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void loadAttributes(boolean loadHidden) {
+    public static void loadAttributes(boolean loadHidden, boolean loadVectors) {
         if(attributesMap.isEmpty()) {
             attributesMap.put(Constants.MAINTENANCE_EVENT, new MaintenanceEventAttribute());
             attributesMap.put(Constants.DATASET_NAME, new DatasetAttribute());
@@ -614,7 +614,7 @@ public class SimilarPatentServer {
             // nested attribute names
             buildJavaToHumanAttrMap();
 
-            SimilarityEngineController.setAllEngines(Arrays.asList(new DataSetSimilarityEngine(), new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(), new CPCSimilarityEngine()));
+            SimilarityEngineController.setAllEngines(Arrays.asList(new DataSetSimilarityEngine(), new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(loadVectors), new CPCSimilarityEngine()));
 
             // similarity engine
             similarityEngine = new RecursiveTask<SimilarityEngineController>() {
@@ -3001,7 +3001,7 @@ public class SimilarPatentServer {
         DefaultPipelineManager.setLoggingLevel(Level.INFO);
         boolean testFilterNames = false;
         if(testFilterNames) {
-            loadAttributes(false);
+            loadAttributes(false,false);
             loadFilterModels();
             return;
         }

@@ -137,8 +137,9 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
 
         //Neural net configuration
         int[] hiddenLayerEncoder = new int[]{
-                2048,
-                2048
+                1024,
+                1024,
+                1024
         };
 
         int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
@@ -149,7 +150,7 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
         Activation activation = Activation.TANH;
         Nd4j.getRandom().setSeed(rngSeed);
 
-        int numExamples = 4000000;
+        int numExamples = 5000000;
         int stepsPerEpoch = 1;
         int batchSize = ((DeeperCPCVAEPipelineManager)pipelineManager).getMiniBatchSize();
 
