@@ -93,14 +93,15 @@ public class DataSearcher {
 
     public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
         try {
-            String[] attrNames = (String[]) attributes.stream().map(attr->{
+            String[] attrNames = Stream.of(attributes.stream().map(attr->{
                 String name = attr.getFullName();
                 if(name.contains(".")) {
                     return name.substring(0,name.indexOf("."))+".*";
                 } else {
                     return name;
                 }
-            }).toArray(size->new String[size]);
+            }),Stream.of(Constants.NAME)).distinct().flatMap(s->s).toArray(size->new String[size]);
+
             // Run elasticsearch
             String comparator = _comparator == null ? Constants.NO_SORT : _comparator;
             boolean isOverallScore = comparator.equals(Constants.SCORE);
@@ -124,10 +125,6 @@ public class DataSearcher {
                         Script sortScript = ((AbstractScriptAttribute) comparatorAttr).getSortScript();
                         if(sortScript!=null) {
                             sortBuilder = SortBuilders.scriptSort(sortScript, scriptType).order(sortOrder);
-                            if(comparator.equals(Constants.SIMILARITY)&& SimilarityAttribute.dimensionsForSort<SimilarityAttribute.vectorSize) {
-                                // need to rescore
-                                resortBuilder = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(((AbstractScriptAttribute) comparatorAttr).getScript()));
-                            }
                         } else {
                             throw new RuntimeException("Unable to create sort script for attribute "+ SimilarPatentServer.humanAttributeFor(comparator));
                             //System.out.println("WARNING:: DEFAULTING TO NO SORT!");
