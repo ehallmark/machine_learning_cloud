@@ -74,7 +74,7 @@ public class DatabaseIteratorFactory {
             if(sequence!=null) {
                 // add to queue
                 try {
-                    String id = hit.getId();
+                    String id = (String)hit.getSource().get(Constants.NAME);
                     queue.put(sequence);
                     Object docType = hit.getSource().get(Constants.DOC_TYPE);
                     String assigneeName;

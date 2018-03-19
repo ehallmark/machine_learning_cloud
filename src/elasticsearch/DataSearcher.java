@@ -375,7 +375,7 @@ public class DataSearcher {
     }
 
     private static Item hitToItem(SearchHit hit, Map<String,NestedAttribute> nestedAttrNameMap, boolean isUsingScore, boolean filterNestedObjects) {
-        Item item = new Item(hit.getId());
+        Item item = new Item((String)hit.getSource().get(Constants.NAME));
 
         Set<String> foundInnerHits = new HashSet<>();
         if(filterNestedObjects) {

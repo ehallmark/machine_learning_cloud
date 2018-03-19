@@ -146,7 +146,6 @@ public class ESTextDataSetIterator {
 
 
         Function<SearchHit,Item> transformer = hit -> {
-            //String asset = hit.getId();
             String filing = hit.getField("_parent").getValue();
             Object filingDate = hit.getSource().get(Constants.FILING_DATE);
             if(filing != null && filingDate!=null) {

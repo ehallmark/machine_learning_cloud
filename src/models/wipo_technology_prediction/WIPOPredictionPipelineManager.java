@@ -167,7 +167,7 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
 
 
         Function<SearchHit,Item> transformer = hit -> {
-            String filing = hit.getId();
+            String filing = (String)hit.getSource().get(Constants.FILING_NAME);
             Collection<String> assets = filingToAssetMap.get(filing);
             if(assets!=null&&assets.size()>0) {
                 Object wipo = hit.getSource().get(Constants.WIPO_TECHNOLOGY);
