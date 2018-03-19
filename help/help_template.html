@@ -260,7 +260,7 @@
                                             </p>
                                         </div>
                                         <div id="header-getting-started-basics">
-                                            <h4>Examples</h4>
+                                            <h4>Examples  (IN PROGRESS)</h4>
                                             <div id="header-getting-started-basics-simple-keyword-search">
                                                 <h5>Simple Keyword Search</h5>
                                                 <p>
@@ -283,28 +283,6 @@
                                                 <h5>Simple Keyword Search</h5>
                                                 <p>
                                                     This is a more advanced text search example using the Advanced Text query syntax.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-12" id="header-attributes">
-                                        <h3>Attributes</h3>
-                                        <div id="header-attributes-overview">
-                                            <h4>Overview</h4>
-                                            <p>
-                                                Attributes are data fields stored for each asset. Examples of attributes include Invention Title, Assignee Name, and Inventor Country.
-                                                Attributes can be applied in filters, sorted on, used in charts and tables, and exported in spreadsheets.
-                                                The attributes selected in the Attributes tab of the search form determines which attributes will be returned in search results.
-                                                Please see the following section for a description of each attribute.
-                                            </p>
-                                        </div>
-                                        <div id="header-attributes-list">
-                                            <h4>Attribute List</h4>
-                                            <div id="header-attributes-list-aiValue">
-                                                <h5>AI Value</h5>
-                                                <p>
-                                                    AI Value is an asset valuation metric developed internally by GTT Group to identify assets with a higher chance of value.
-                                                    The AI Value takes on values from 0 to 100, and can intuitively be interpreted as the percent probability that an asset is valuable.
                                                 </p>
                                             </div>
                                         </div>
@@ -456,9 +434,10 @@
                                             <div id="header-sorting-sort-similarity">
                                                 <h5>Similarity Score</h5>
                                                 <p>
-                                                    Sort by Similarity score when using text based queries to provide better rankings of assets based on text search algorithms.
+                                                    Sort by Similarity score to rank documents by the score of a similarity algorithm. This is useful for ranking documents
+                                                    by a similarity model without incorporating scores from other attributes.
                                                     Be careful, sorting by Similarity Score without providing a similarity filter will result in an exception. Usually, it is preferred
-                                                    to use the Overall Score for sorting.
+                                                    to sort with Overall Score than with Similarity Score.
                                                 </p>
                                             </div>
                                             <div id="header-sorting-sort-nosort">
@@ -525,7 +504,7 @@
                                                         Right click on a dataset folder and click <i>Create Dataset -> From Asset List</i>. Then paste an asset list into the prompted text box.
                                                     </li>
                                                 </ol>
-                                                Once created, you may choose a name for the new dataset.
+                                                Once created, it is recommended to choose a new name for the dataset.
                                             </p>
                                         </div>
                                     </div>
@@ -547,6 +526,32 @@
                                                 When clustering a dataset, a prompt will ask you to enter a desired number of clusters or leave blank to determine an optimal number for you.
                                                 If you already have a rough sense of how many clusters you want, it can be faster to enter in that number directly, otherwise it is usually fine
                                                 to leave the number blank and let the algorithm automatically determine the number of clusters.
+                                            </p>
+                                        </div>
+                                        <div id="header-clustering-autotagging">
+                                            <h4>Technology Tagging</h4>
+                                            <p>
+                                                Once the assets are clustered, we use a deep learning based algorithm to label each cluster with
+                                                the a likely technology. This helps get a quick sense of each cluster, and the labels can also be used
+                                                for filters and charts in future searches.
+                                            </p>
+                                        </div>
+                                        <div id="header-clustering-advanced">
+                                            <h4>Advanced</h4>
+                                            <p>
+                                                If a cluster is significantly larger than others, one thing to try is to subcluster the larger cluster
+                                                into smaller clusters by rerunning the algorithm only on the larger cluster.
+                                            </p>
+                                            <p>
+                                                An interesting way to visualize an asset list is two perform two clusterings: one with a few clusters (3-10), and one with
+                                                more clusters (20-50), and then plot the two different clusterings along a Pivot Count Table to see the intersections.
+                                                In an ideal world, the clustering with fewer clusters would capture broad technology categories, and the clustering with
+                                                more clusters (and thus, fewer assets per cluster) would capture specifc technology categories. Plotting the intersection
+                                                shows the co-occurrence of the broad and specific clusterings.
+                                            </p>
+                                            <p>
+                                                Clustering contains randomness in the algorithm due to how the initial centroids are picked. This means that
+                                                two separate clusterings of the same asset list could result in different clusterings.
                                             </p>
                                         </div>
                                     </div>
@@ -650,7 +655,7 @@
                                                     </li>
                                                 </ul>
                                                 <p>
-                                                    The following example ...
+                                                    The following example (TODO)
                                                 </p>
                                             </div>
                                             <div id="header-charts-types-pivot-table">
@@ -668,6 +673,370 @@
                                                 </p>
                                                 <p>
                                                     The following is an example of a Pivot Function Table ... (TODO)
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" id="header-attributes">
+                                        <h3>Attributes</h3>
+                                        <div id="header-attributes-overview">
+                                            <h4>Overview</h4>
+                                            <p>
+                                                Attributes are data fields stored for each asset. Examples of attributes include Invention Title, Assignee Name, and Inventor Country.
+                                                Attributes can be applied in filters, sorted on, used in charts and tables, and exported in spreadsheets.
+                                                The attributes selected in the Attributes tab of the search form determines which attributes will be returned in search results.
+                                                Please see the following section for a description of each attribute.
+                                            </p>
+                                        </div>
+                                        <div id="header-attributes-list">
+                                            <h4>Attribute List (IN PROGRESS)</h4>
+                                            <div id="header-attributes-list-aiValue">
+                                                <h5>AI Value</h5>
+                                                <p>
+                                                    AI Value is an asset valuation metric developed internally by GTT Group to identify assets with a higher chance of value.
+                                                    The AI Value takes on values from 0 to 100, and can intuitively be interpreted as the percent probability that an asset is valuable.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-abstract">
+                                                <h5>Abstract</h5>
+                                                <p>
+                                                    The abstract.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-agents">
+                                                <h5>Agents</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>First name of an agent.</div><div>Last name of an agent.</div><div>City of an agent.</div><div>Country of an agent.</div><div>State of an agent.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-applicants">
+                                                <h5>Applicants</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>First name of an applicant.</div><div>Last name of an applicant.</div><div>City of an applicant.</div><div>Country of an applicant.</div><div>State of an applicant.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-name">
+                                                <h5>Asset Number</h5>
+                                                <p>
+                                                    The asset number.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-assignments">
+                                                <h5>Assignments</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Assignee name of an assignment.</div><div>Assignor name of an assignment.</div><div>Recorded date of an assignment.</div><div>Correspondent address of an assignment.</div><div>Correspondent name of an assignment.</div><div>Latest execution date of an assignment.</div><div>Reel frames of an assignment.</div><div>Conveyance text of an assignment.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-citations">
+                                                <h5>Backward Citations</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Asset number of a backward citation.</div><div>Document kind of a backward citation.</div><div>Cited date of a backward citation.</div><div>Country of a backward citation.</div><div>Citationcategory of a backward citation.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-cpcCodes">
+                                                <h5>CPC Code</h5>
+                                                <p>
+                                                    The cpc code.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-nestedCpcCodes">
+                                                <h5>CPC Data</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Cpc code of a cpc data.</div><div>Cpc title of a cpc data.</div><div>Cpc section of a cpc data.</div><div>Cpc class of a cpc data.</div><div>Cpc subclass of a cpc data.</div><div>Cpc main group of a cpc data.</div><div>Cpc subgroup of a cpc data.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-claims">
+                                                <h5>Claims</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Number of the claim in the document.</div><div>Full text of a claim.</div><div>Number of words in a claim.</div><div>Parent claim number of the claim.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-compDB">
+                                                <h5>CompDB</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Technology of the compdb.</div><div>Deal id of the compdb.</div><div>Reel frames of the compdb.</div><div>Asset number of the compdb.</div><div>Inactive deal of the compdb.</div><div>Acquisition deal of the compdb.</div><div>Buyer of the compdb.</div><div>Seller of the compdb.</div><div>Recorded date of the compdb.</div><div>Number of reel frames of the compdb.</div><div>And more...</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-datasetName">
+                                                <h5>Dataset Name</h5>
+                                                <p>
+                                                    The dataset name.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-dataset2Name">
+                                                <h5>2nd Dataset Name</h5>
+                                                <p>
+                                                    The 2nd dataset name.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-docKind">
+                                                <h5>Document Kind</h5>
+                                                <p>
+                                                    The document kind.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-remainingLife">
+                                                <h5>Est. Remaining Life (Years)</h5>
+                                                <p>
+                                                    The est. remaining life (years).
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-estimatedExpirationDate">
+                                                <h5>Expiration Date (estimated)</h5>
+                                                <p>
+                                                    The expiration date computed from the original expiration date and any term adjustment information.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-expired">
+                                                <h5>Expired</h5>
+                                                <p>
+                                                    The asset is expired.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-filingCountry">
+                                                <h5>Filing Country</h5>
+                                                <p>
+                                                    The filing country.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-filingDate">
+                                                <h5>Filing Date</h5>
+                                                <p>
+                                                    The date of the patent filing.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-filingName">
+                                                <h5>Filing Number</h5>
+                                                <p>
+                                                    The filing number.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-backwardCitation">
+                                                <h5>Forward Citation</h5>
+                                                <p>
+                                                    The forward citation.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-technology">
+                                                <h5>GTT Group Technology</h5>
+                                                <p>
+                                                    The gtt group technology.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-gttReservoir">
+                                                <h5>GTT Reservoir</h5>
+                                                <p>
+                                                    The asset is gtt reservoir.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-gather">
+                                                <h5>Gather</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Patent rating of the gather.</div><div>Stage complete of the gather.</div><div>Gather technology of the gather.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-granted">
+                                                <h5>Granted</h5>
+                                                <p>
+                                                    The asset is granted.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-inventionTitle">
+                                                <h5>Invention Title</h5>
+                                                <p>
+                                                    The invention title.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-inventors">
+                                                <h5>Inventors</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>First name of an inventor.</div><div>Last name of an inventor.</div><div>City of an inventor.</div><div>Country of an inventor.</div><div>State of an inventor.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-lapsed">
+                                                <h5>Lapsed</h5>
+                                                <p>
+                                                    The asset is lapsed.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-latestAssignee">
+                                                <h5>Latest Assignee</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>(normalized) portfolio size of the latest assignee.</div><div>Original assignee entity type of the latest assignee.</div><div>(normalized) assignee of the latest assignee.</div><div>Assignee acquisitions (compdb) of the latest assignee.</div><div>Assignee divestments (compdb) of the latest assignee.</div><div>Is human of the latest assignee.</div><div>Latest execution date of the latest assignee.</div><div>Assignee name of the latest assignee.</div><div>Portfolio size of the latest assignee.</div><div>Assignee role of the latest assignee.</div><div>And more...</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-smallestIndClaimLength">
+                                                <h5>Length of Smallest Independent Claim</h5>
+                                                <p>
+                                                    The number of words in the document's smallest independent claim.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-maintenanceEvent">
+                                                <h5>Maintenance Fee Event Code</h5>
+                                                <p>
+                                                    The maintenance fee event code.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-meansPresent">
+                                                <h5>Means Present</h5>
+                                                <p>
+                                                    The asset is means present.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-agents_countSuffix">
+                                                <h5>Number of Agents</h5>
+                                                <p>
+                                                    The number of agents.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-applicants_countSuffix">
+                                                <h5>Number of Applicants</h5>
+                                                <p>
+                                                    The number of applicants.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-assignments_countSuffix">
+                                                <h5>Number of Assignments</h5>
+                                                <p>
+                                                    The number of assignments.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-citations_countSuffix">
+                                                <h5>Number of Backward Citations</h5>
+                                                <p>
+                                                    The number of backward citations.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-nestedCpcCodes_countSuffix">
+                                                <h5>Number of CPC Data</h5>
+                                                <p>
+                                                    The number of cpc data.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-claims_countSuffix">
+                                                <h5>Number of Claims</h5>
+                                                <p>
+                                                    The number of claims.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-backwardCitation_countSuffix">
+                                                <h5>Number of Forward Citations</h5>
+                                                <p>
+                                                    The number of forward citations.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-inventors_countSuffix">
+                                                <h5>Number of Inventors</h5>
+                                                <p>
+                                                    The number of inventors.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-assignees_countSuffix">
+                                                <h5>Number of Original Assignee</h5>
+                                                <p>
+                                                    The number of original assignee.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-patentFamily_countSuffix">
+                                                <h5>Number of Prior Related Docs</h5>
+                                                <p>
+                                                    The number of prior related docs.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-reelFrame_countSuffix">
+                                                <h5>Number of Reel Frames</h5>
+                                                <p>
+                                                    The number of reel frames.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-allRelatedAssets_countSuffix">
+                                                <h5>Number of Related Docs</h5>
+                                                <p>
+                                                    The number of related docs.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-assignees">
+                                                <h5>Original Assignee</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Assignee name of an original assignee.</div><div>Assignee role of an original assignee.</div><div>First name of an original assignee.</div><div>Last name of an original assignee.</div><div>City of an original assignee.</div><div>Country of an original assignee.</div><div>State of an original assignee.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-assigneeEntityType">
+                                                <h5>Original Assignee Entity Type</h5>
+                                                <p>
+                                                    The original assignee entity type.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-expirationDate">
+                                                <h5>Original Expiration Date</h5>
+                                                <p>
+                                                    The original expiration date.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-priorityDate">
+                                                <h5>Original Priority Date</h5>
+                                                <p>
+                                                    The original priority date.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-patentFamily">
+                                                <h5>Prior Related Docs</h5>
+                                                <p>
+                                                <div>Contains the following nested attributes:<div>Asset number of a prior related doc.</div><div>Document kind of a prior related doc.</div><div>Country of a prior related doc.</div><div>Relation type of a prior related doc.</div></div>
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-estimatedPriorityDate">
+                                                <h5>Priority Date (estimated)</h5>
+                                                <p>
+                                                    The priority date (estimated).
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-publicationDate">
+                                                <h5>Publication Date</h5>
+                                                <p>
+                                                    The publication date of the asset.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-reelFrame">
+                                                <h5>Reel Frames</h5>
+                                                <p>
+                                                    The reel frames.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-reinstated">
+                                                <h5>Reinstated</h5>
+                                                <p>
+                                                    The asset is reinstated.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-allRelatedAssets">
+                                                <h5>Related Docs</h5>
+                                                <p>
+                                                    The related docs.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-docType">
+                                                <h5>Result Type</h5>
+                                                <p>
+                                                    The result type.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-similarity">
+                                                <h5>Similarity</h5>
+                                                <p>
+                                                    The similarity.
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-patentTermAdjustment">
+                                                <h5>Term Adjustments (Days)</h5>
+                                                <p>
+                                                    The term adjustments (days).
+                                                </p>
+                                            </div>
+                                            <div id="header-attributes-list-wipoTechnology">
+                                                <h5>WIPO Technology</h5>
+                                                <p>
+                                                    The wipo technology.
                                                 </p>
                                             </div>
                                         </div>
