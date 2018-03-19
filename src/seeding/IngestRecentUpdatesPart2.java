@@ -39,19 +39,5 @@ public class IngestRecentUpdatesPart2 {
 
         System.out.println("Updates completed successfully.");
     }
-
-    public static void updateElasticSearch(Collection<String> newAssets) {
-        try {
-            if(newAssets==null) {
-                IngestMongoIntoElasticSearch.ingestByType(DataIngester.TYPE_NAME);
-            } else {
-                Document query = new Document("_id", new Document("$in", newAssets));
-                IngestMongoIntoElasticSearch.ingestByType(DataIngester.TYPE_NAME, query);
-            }
-        } catch(Exception e) {
-            System.out.println("Error during elasticsearch ingest...");
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
+    
 }
