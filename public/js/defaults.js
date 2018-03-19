@@ -740,7 +740,7 @@ var showDatasetFunction = function(data,tree,node){
     $filter.val([$datasetInput.attr('name')]).trigger('change');
     var name = data.file+"_"+data.user;
     if(!$datasetInput.find('option[value="'+name+'"]').length) {
-        var newVal = new Option(name,node.text,true,true);
+        var newVal = new Option(node.text,name,true,true);
         $datasetInput.append(newVal);
     }
     $datasetInput.val(name).trigger('change');
@@ -776,7 +776,7 @@ var showMultipleDatasetFunction = function(data,tree,node){
                     var name = file + "_" + user;
                     names.push(name);
                     if(!$datasetInput.find('option[value="'+name+'"]').length) {
-                        var newVal = new Option(name,child.text,true,true);
+                        var newVal = new Option(child.text,name,true,true);
                         $datasetInput.append(newVal);
                     }
                 }
@@ -824,7 +824,7 @@ var addMultipleDatasetFunction = function(data,tree,node){
                     if(!names.includes(name)) {
                         names.push(name);
                         if(!$datasetInput.find('option[value="'+name+'"]').length) {
-                            var newVal = new Option(name,child.text,true,true);
+                            var newVal = new Option(child.text,name,true,true);
                             $datasetInput.append(newVal);
                         }
                     }
