@@ -154,7 +154,7 @@ public class DatabaseIteratorFactory {
                 .setTypes(DataIngester.TYPE_NAME)
                 .addStoredField("_parent")
                 .addStoredField("_source")
-                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.DOC_TYPE,"_parent"}, new String[]{})
+                .setFetchSource(new String[]{Constants.NAME,Constants.ABSTRACT,Constants.DOC_TYPE,"_parent"}, new String[]{})
                 .setFrom(0)
                 .setSize(10000)
                 .setScroll(new TimeValue(60000))

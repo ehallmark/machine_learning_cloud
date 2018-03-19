@@ -161,7 +161,7 @@ public class WIPOPredictionPipelineManager extends DefaultPipelineManager<DataSe
                 .setExplain(false)
                 .setFrom(0)
                 .setSize(10000)
-                .setFetchSource(new String[]{Constants.WIPO_TECHNOLOGY},new String[]{})
+                .setFetchSource(new String[]{Constants.NAME,Constants.WIPO_TECHNOLOGY},new String[]{})
                 .setQuery(query)
                 .addSort(SortBuilders.scoreSort());
 

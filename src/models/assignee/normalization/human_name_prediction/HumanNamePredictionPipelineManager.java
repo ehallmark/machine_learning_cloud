@@ -186,6 +186,7 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
                 .setFrom(0)
                 .setSize(10000)
                 .setFetchSource(new String[]{
+                        Constants.NAME,
                         Constants.ASSIGNEES+"."+Constants.ASSIGNEE_ROLE,
                         Constants.ASSIGNEES+"."+Constants.ASSIGNEE,
                         Constants.ASSIGNEES+"."+Constants.FIRST_NAME,
