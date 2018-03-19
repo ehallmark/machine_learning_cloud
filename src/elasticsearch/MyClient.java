@@ -72,10 +72,10 @@ public class MyClient {
 
                 }
             })
-                    .setBulkActions(10000)
-                    .setBulkSize(new ByteSizeValue(50, ByteSizeUnit.MB))
-                    .setFlushInterval(TimeValue.timeValueSeconds(10))
-                    .setConcurrentRequests(10)
+                    .setBulkActions(1000)
+                    .setBulkSize(new ByteSizeValue(32, ByteSizeUnit.MB))
+                    .setFlushInterval(TimeValue.timeValueSeconds(5))
+                    .setConcurrentRequests(5)
                     .build();
         }
         return BULK_PROCESSOR;
