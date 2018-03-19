@@ -739,7 +739,11 @@ var showDatasetFunction = function(data,tree,node){
     var $filter = $('#multiselect-nested-filter-select-attributesNested_filter');
     $filter.val([$datasetInput.attr('name')]).trigger('change');
     var name = data.file+"_"+data.user;
-    $datasetInput.trigger('select2:opening', [true,[name]]);
+    if(!$datasetInput.find('option[value="'+name+'"]').length) {
+        var newVal = new Option(name,node.text,true,true);
+        $datasetInput.append(newVal);
+    }
+    $datasetInput.val(name).trigger('change');
     return false;
 };
 
@@ -771,11 +775,15 @@ var showMultipleDatasetFunction = function(data,tree,node){
                     var user = child.data.user;
                     var name = file + "_" + user;
                     names.push(name);
+                    if(!$datasetInput.find('option[value="'+name+'"]').length) {
+                        var newVal = new Option(name,child.text,true,true);
+                        $datasetInput.append(newVal);
+                    }
                 }
             }
         }
     }
-    $datasetInput.trigger('select2:opening', [true,names]);
+    $datasetInput.val(names).trigger('change');
     return false;
 };
 
@@ -815,12 +823,16 @@ var addMultipleDatasetFunction = function(data,tree,node){
                     var name = file + "_" + user;
                     if(!names.includes(name)) {
                         names.push(name);
+                        if(!$datasetInput.find('option[value="'+name+'"]').length) {
+                            var newVal = new Option(name,child.text,true,true);
+                            $datasetInput.append(newVal);
+                        }
                     }
                 }
             }
         }
     }
-    $datasetInput.trigger('select2:opening', [true,names]);
+    $datasetInput.val(names).trigger('change');
     return false;
 };
 
