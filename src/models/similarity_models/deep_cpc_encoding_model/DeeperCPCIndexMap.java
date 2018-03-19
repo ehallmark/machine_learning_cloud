@@ -9,7 +9,9 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -41,15 +43,18 @@ public class DeeperCPCIndexMap {
                 Set<String> topCPCs = Collections.synchronizedSet(new HashSet<>());
                 Map<String,List<String>> parentToTopCpcCounts = new HashMap<>();
                 fourthLevel.forEach(level->{
-                    if(level.getChildren().isEmpty()) return;
-                    parentToTopCpcCounts.put(level.getName(),level.getChildren().stream().collect(Collectors.toMap(c->c.getName(),c->cpcCountMap.getOrDefault(c.getName(),0L)))
-                    .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).map(e->e.getKey()).collect(Collectors.toList()));
+                    if(level.getChildren().size()<4) return;
+                    Map<String,Long> map = level.getChildren().stream().collect(Collectors.toMap(c->c.getName(),c->cpcCountMap.getOrDefault(c.getName(),0L)));
+                    parentToTopCpcCounts.put(level.getName(),map.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).map(e->e.getKey()).collect(Collectors.toList()));
                 });
                 AtomicInteger iter = new AtomicInteger(0);
-                while(topCPCs.size()<maxNum) {
+                AtomicBoolean anyLeft = new AtomicBoolean(true);
+                while(topCPCs.size()<maxNum&&anyLeft.get()) {
+                    anyLeft.set(false);
                     parentToTopCpcCounts.forEach((parent,sortedChildren) -> {
                         if(sortedChildren.size()>iter.get()) {
                             topCPCs.add(sortedChildren.get(iter.get()));
+                            anyLeft.set(true);
                         }
                     });
                     iter.getAndIncrement();

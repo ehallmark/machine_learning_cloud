@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 11/7/17.
  */
 public class DeeperCPCVAEPipelineManager extends CPCVAEPipelineManager {
-    public static final String MODEL_NAME = "deeper32_cpc_autoencoder";
+    public static final String MODEL_NAME = "deeper32spread_cpc_autoencoder";
     public static final int MAX_CPC_DEPTH = 5;
     private static final int BATCH_SIZE = 1024;
     private static final int MINI_BATCH_SIZE = 128;
