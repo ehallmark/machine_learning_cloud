@@ -104,7 +104,7 @@ public class ExcelHandler {
     }
 
     private static int[] computeColWidths(List<Map<String,String>> data, List<String> attributes) {
-        Stream<int[]> stream = data.parallelStream().limit(100).map(row->{
+        Stream<int[]> stream = data.stream().limit(30).map(row->{
             int[] rowWidths = new int[attributes.size()];
             for(int i = 0; i < attributes.size(); i++) {
                 rowWidths[i] = charToPixelLength(row.get(attributes.get(i)).length());
@@ -141,11 +141,14 @@ public class ExcelHandler {
         sheet.setColumnView(col, width);
         sheet.addCell(new Label(col, 0, ""));
 
+        long t1 = System.currentTimeMillis();
         int[] colWidths = computeColWidths(data, headers);
         System.out.println("Col widths: "+Arrays.toString(colWidths));
         for(int i = 0; i < colWidths.length; i++) {
             sheet.setColumnView(1+i, colWidths[i]);
         }
+        long t2 = System.currentTimeMillis();
+        System.out.println("Time to compute col widths: "+((t2-t1)/1000)+ " seconds.");
 
         // gtt logo
         String pathToImage = "public/images/brand.png";
