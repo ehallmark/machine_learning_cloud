@@ -175,7 +175,10 @@ public class ExcelHandler {
         sheet.addCell(new Label(1, row, "Privileged and Confidential Work Product", CellFormatMap.get("disclaimerStyle")));
         row++;
 
+        t1 = System.currentTimeMillis();
         writeHeadersAndData(sheet,  data, row, headers, humanHeaders);
+        t2 = System.currentTimeMillis();
+        System.out.println("Time to compute headers and data: "+((t2-t1)/1000)+ " seconds.");
 
         return sheet;
     }
