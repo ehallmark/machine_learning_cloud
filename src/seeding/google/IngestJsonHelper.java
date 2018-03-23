@@ -38,7 +38,7 @@ public class IngestJsonHelper {
             return model;
         };
 
-        Stream.of(dataDir.listFiles()).parallel().forEach(file-> {
+        Stream.of(dataDir.listFiles()).forEach(file-> {
             final List<WriteModel<Document>> documentList = new ArrayList<>(batchSize);
             try(InputStream stream = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(file)))) {
                 IngestJsonHelper.streamJsonFile(stream).forEach(map->{
