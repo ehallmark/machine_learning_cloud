@@ -1,12 +1,10 @@
 package seeding.google;
 
-import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
-import elasticsearch.MongoDBClient;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.bson.Document;
 
@@ -20,12 +18,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class IngestJsonHelper {
     private static final int batchSize = 1000;
-    private static final int maximumStringLength = 50000;
+    private static final int maximumStringLength = 100000;
 
     public static void ingestJsonDump(String idField, File dataDir, MongoCollection collection, boolean create, Function<Map<String,Object>,Boolean> filter) {
         final AtomicInteger counter = new AtomicInteger(0);
