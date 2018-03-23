@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,13 +35,13 @@ public class IngestPatents {
         final File dataDir = new File("/media/ehallmark/My Passport/data/google-big-query/patents/");
         final MongoClient client = MongoDBClient.get();
         final MongoCollection collection = client.getDatabase(INDEX_NAME).getCollection(TYPE_NAME);
-        final int twentyFiveYearsAgo = LocalDate.now().getYear()*10000;
+        final LocalDate twentyFiveYearsAgo = LocalDate.now().minusYears(25);
         final Function<Map<String,Object>,Boolean> filterDocumentFunction = doc -> {
-            Integer filingDate = (Integer)doc.get("filing_date");
-            if(filingDate==null||filingDate==0) return false;
-            return filingDate >= twentyFiveYearsAgo;
+            String filingDate = (String)doc.get("filing_date");
+            if(filingDate==null||filingDate.length()!=8) return false;
+            return LocalDate.parse(filingDate, DateTimeFormatter.BASIC_ISO_DATE).isAfter(twentyFiveYearsAgo);
         };
-        
+
         ingestJsonDump(idField,dataDir,collection,true,filterDocumentFunction);
     }
 }
