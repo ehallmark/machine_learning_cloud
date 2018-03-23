@@ -52,12 +52,17 @@ public class IngestPatents {
                     String applicationNumber = (String)map.get(APPLICATION_NUMBER_GOOGLE);
                     if(applicationNumber!=null) {
                         String[] parts = applicationNumber.split("-");
-                        String fullNumber = String.join("",parts);
-                        String countryAndNumber = parts[0]+parts[1];
-                        String number = parts[1];
-                        map.put(FULL_APPLICATION_NUMBER,fullNumber);
-                        map.put(APPLICATION_NUMBER_WITH_COUNTRY,countryAndNumber);
-                        map.put(APPLICATION_NUMBER,number);
+                        if(parts.length==3) {
+                            String fullNumber = String.join("", parts);
+                            String countryAndNumber = parts[0] + parts[1];
+                            String number = parts[1];
+                            map.put(FULL_APPLICATION_NUMBER, fullNumber);
+                            map.put(APPLICATION_NUMBER_WITH_COUNTRY, countryAndNumber);
+                            map.put(APPLICATION_NUMBER, number);
+                        } else {
+
+                        System.out.println("Error with publication number: "+applicationNumber);
+                    }
                     }
                     return null;
                 }
