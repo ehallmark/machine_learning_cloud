@@ -11,6 +11,8 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.bson.Document;
 
 import java.io.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +27,7 @@ public class IngestJsonHelper {
     private static final int batchSize = 1000;
     private static final int maximumStringLength = 50000;
 
-    public static void ingestJsonDump(String idField, File dataDir, MongoCollection collection, boolean create) {
+    public static void ingestJsonDump(String idField, File dataDir, MongoCollection collection, boolean create, Function<Map<String,Object>,Boolean> filter) {
         final AtomicInteger counter = new AtomicInteger(0);
         final AtomicInteger idx = new AtomicInteger(0);
 
@@ -43,6 +45,10 @@ public class IngestJsonHelper {
             final List<WriteModel<Document>> documentList = new ArrayList<>(batchSize);
             try(InputStream stream = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(file)))) {
                 IngestJsonHelper.streamJsonFile(stream).forEach(map->{
+                    if(filter!=null&&!filter.apply(map)) {
+                        return;
+                    }
+
                     if(idx.getAndIncrement()%10000==9999) {
                         System.out.println("Completed: "+idx.get());
                     }
@@ -139,9 +145,13 @@ public class IngestJsonHelper {
         File file = dir.listFiles()[0];
         GzipCompressorInputStream gzip = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(file)));
         streamJsonFile(gzip).forEach(map->{
-          //  if(map.containsKey("case_name")&&map.get("case_name").toString().toLowerCase().contains("google")) {
-               // System.out.println("Line: " + String.join("; ", map.entrySet().stream().map(e -> e.getKey() + ": " + e.getValue()).collect(Collectors.toList())));
-          //  }
+            if(!map.containsKey("filing_date")||map.get("filing_date").toString().length()<2) {
+                System.out.println("Line: " + String.join("; ", map.entrySet().stream().map(e -> e.getKey() + ": " + e.getValue()).collect(Collectors.toList())));
+                throw new RuntimeException("No filing date...");
+            } else {
+                LocalDate date = LocalDate.parse((String)map.get("filing_date"), DateTimeFormatter.BASIC_ISO_DATE);
+                System.out.println("Date: "+date);
+            }
         });
     }
 }
