@@ -22,7 +22,7 @@ public class IngestMongoIntoElasticSearch {
     static AtomicLong cnt = new AtomicLong(0);
     public static void main(String[] args) {
         // ingest assets (aka children)
-        ingestByType(DataIngester.TYPE_NAME);
+        ingestByType(DataIngester.INDEX_NAME,DataIngester.TYPE_NAME);
         DataIngester.close();
     }
 
@@ -34,18 +34,18 @@ public class IngestMongoIntoElasticSearch {
         }
     }
 
-    public static void ingestByType(String type) {
-        ingestByType(type, new Document());
+    public static void ingestByType(String index, String type) {
+        ingestByType(index, type, new Document());
     }
 
-    public static void ingestByType(String type, Document query) {
+    public static void ingestByType(String index, String type, Document query) {
         Consumer<Document> consumer = doc -> {
             String id = doc.getString("_id");
             doc.putIfAbsent(Constants.NAME,id);
             DataIngester.ingestBulkFromMongoDB(type, addCountsToDoc(doc));
         };
 
-        iterateOverCollection(consumer,query,type);
+        iterateOverCollection(consumer,query,index,type,new String[]{});
     }
 
     private static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor, Consumer<Document> consumer) {
@@ -64,10 +64,6 @@ public class IngestMongoIntoElasticSearch {
             });
             cursor.next(helper(cursor, consumer));
         };
-    }
-
-    public static void iterateOverCollection(Consumer<Document> consumer, Document query, String type, String... fields) {
-        iterateOverCollection(consumer,query,DataIngester.INDEX_NAME,type,fields);
     }
 
     public static void iterateOverCollection(Consumer<Document> consumer, Document query, String index, String type, String... fields) {

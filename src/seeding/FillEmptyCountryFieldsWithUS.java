@@ -26,6 +26,7 @@ public class FillEmptyCountryFieldsWithUS {
         final String[] fields = new String[]{Constants.ASSIGNEES,Constants.INVENTORS,Constants.APPLICANTS,Constants.AGENTS,Constants.PATENT_FAMILY,Constants.CITATIONS};
 
         final String type = DataIngester.TYPE_NAME;
+        final String index = DataIngester.INDEX_NAME;
         final Document query = new Document();
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger valid = new AtomicInteger(0);
@@ -72,7 +73,7 @@ public class FillEmptyCountryFieldsWithUS {
             }
         };
 
-        IngestMongoIntoElasticSearch.iterateOverCollection(consumer,query,type,fields);
+        IngestMongoIntoElasticSearch.iterateOverCollection(consumer,query,index,type,fields);
 
         fieldToNumChanged.entrySet().forEach(e->{
             System.out.println("Updated "+e.getKey()+": "+e.getValue().get());

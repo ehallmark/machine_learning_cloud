@@ -30,6 +30,7 @@ public class CleanUpCitationDocumentNamesFromMongo {
         assetToCitedAssetsMap.getPatentDataMap();
 
         final String type = DataIngester.TYPE_NAME;
+        final String index = DataIngester.INDEX_NAME;
         final Document query = new Document();
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger valid = new AtomicInteger(0);
@@ -79,7 +80,7 @@ public class CleanUpCitationDocumentNamesFromMongo {
             }
         };
 
-        IngestMongoIntoElasticSearch.iterateOverCollection(consumer,query,type,fields);
+        IngestMongoIntoElasticSearch.iterateOverCollection(consumer,query,index,type,fields);
 
         assetToCitedAssetsMap.save();
     }

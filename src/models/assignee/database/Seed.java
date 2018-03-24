@@ -186,7 +186,7 @@ public class Seed {
                 Constants.FILING_NAME
         };
 
-        IngestMongoIntoElasticSearch.iterateOverCollection(consumer,new Document(), DataIngester.TYPE_NAME,fields);
+        IngestMongoIntoElasticSearch.iterateOverCollection(consumer,new Document(), DataIngester.INDEX_NAME, DataIngester.TYPE_NAME,fields);
 
         if(updateQueue.size()>0) flush(conn, new ArrayList<>(updateQueue));
         conn.commit();
