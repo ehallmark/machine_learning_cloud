@@ -1,5 +1,9 @@
 package seeding.google.attributes;
 
+import user_interface.ui_models.attributes.NestedAttribute;
+
+import java.util.Arrays;
+
 public class Constants {
     public static final String COUNTRY_CODE = "country_code";
     public static final String KIND_CODE = "kind_code";
@@ -51,5 +55,48 @@ public class Constants {
     public static final String APPLICATION_NUMBER_GOOGLE = "application_number";
     public static final String APPLICATION_NUMBER_FORMATTED = "app_num_formatted";
 
-
+    public static NestedAttribute buildNestedAttributes() {
+        return new NestedAttribute(Arrays.asList(
+                new PublicationNumberWithCountry(),
+                new PublicationNumber(),
+                new PublicationNumberFull(),
+                new ApplicationNumberWithCountry(),
+                new ApplicationNumber(),
+                new ApplicationNumberFull(),
+                new CountryCode(),
+                new KindCode(),
+                new ApplicationKind(),
+                new ApplicationNumberFormattedWithCountry(),
+                new ApplicationNumberFormatted(),
+                new PCTNumber(),
+                new FamilyId(),
+                new TitleLocalized(),
+                new AbstractLocalized(),
+                new ClaimsLocalized(),
+                new DescriptionLocalized(),
+                new PublicationDate(),
+                new FilingDate(),
+                new GrantDate(),
+                new PriorityDate(),
+                new PriorityClaim(),
+                new Inventor(),
+                new InventorHarmonized(),
+                new Assignee(),
+                new AssigneeHarmonized(),
+                new Examiner(),
+                new USPC(),
+                new IPC(),
+                new CPC(),
+                new FI(),
+                new Fterm(),
+                new Citation(),
+                new EntityStatus(),
+                new ArtUnit()
+        ),false) {
+            @Override
+            public String getName() {
+                return null;
+            }
+        };
+    }
 }
