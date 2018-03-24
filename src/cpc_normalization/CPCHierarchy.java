@@ -4,17 +4,22 @@ import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
+import elasticsearch.IngestMongoIntoElasticSearch;
 import lombok.Getter;
 import graphical_modeling.model.graphs.BayesianNet;
 import graphical_modeling.model.graphs.Graph;
 import graphical_modeling.model.nodes.Node;
+import org.bson.Document;
 import seeding.Constants;
 import seeding.Database;
+import seeding.google.IngestCPCDefinitions;
 
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,78 +50,41 @@ public class CPCHierarchy {
         return list;
     }
 
-    public void run(Collection<String> allCPCs) {
+    public void run() {
         topLevel = Collections.synchronizedCollection(new HashSet<>());
         labelToCPCMap = Collections.synchronizedMap(new HashMap<>());
 
         AtomicInteger i = new AtomicInteger(0);
-        Collection<CPC> allNodes = allCPCs.parallelStream().map(cpc->{
-            if(cpc==null||cpc.length()==0) return null;
-            CPC c = new CPC(cpc);
-            if(i.getAndIncrement()%10000==9999) {
-                System.out.println("Completed "+i.get()+" / "+allCPCs.size()+" cpcs.");
-            }
-            labelToCPCMap.put(cpc,c);
-            return c;
-        }).filter(n->n!=null).collect(Collectors.toList());
-
-        i.set(0);
-        RadixTree<CPC> prefixTrie = new ConcurrentRadixTree<>(new DefaultCharArrayNodeFactory());
-        allNodes.forEach(node->{
-            prefixTrie.put(new String(node.getName()),node);
-        });
-
         AtomicInteger connectionCounter = new AtomicInteger(0);
-        allNodes.parallelStream().forEach(n1->{
+        Consumer<Document> consumer = doc -> {
+            String id = doc.getString("_id");
+            CPC cpc = labelToCPCMap.getOrDefault(id,new CPC(id));
+            labelToCPCMap.putIfAbsent(id,cpc);
             if(i.getAndIncrement() % 10000==9999) {
                 System.out.println("Completed "+i.get()+" cpcs.");
                 System.out.println("Num connections: "+connectionCounter.get());
             }
-            String name = String.join("", Stream.of(n1.getParts()).filter(p->p!=null).collect(Collectors.toList()));
-            prefixTrie.getValuesForKeysStartingWith(name).forEach(n2->{
-                if(!n1.equals(n2)) {
-                    if(n1.isParentOf(n2)) {
-                        n2.setParent(n1);
-                        n1.addChild(n2);
-                        connectionCounter.getAndIncrement();
-                    }
-                }
-            });
-        });
+            List<String> parents = (List<String>)doc.get("parents");
+            if(parents!=null) {
+                parents.forEach(parent->{
+                    connectionCounter.getAndIncrement();
+                    CPC parentCpc = labelToCPCMap.getOrDefault(parent,new CPC(parent));
+                    labelToCPCMap.putIfAbsent(parent,parentCpc);
+                    cpc.setParent(parentCpc);
+                    parentCpc.addChild(cpc);
+                });
+            }
+        };
+
+        IngestMongoIntoElasticSearch.iterateOverCollection(consumer,new Document(), IngestCPCDefinitions.INDEX_NAME, IngestCPCDefinitions.TYPE_NAME,new String[]{});
+
+        List<CPC> allNodes = new ArrayList<>(labelToCPCMap.values());
 
         AtomicInteger noParents = new AtomicInteger(0);
         allNodes.parallelStream().forEach(cpc->{
-            if(cpc.getParent()==null) {
-                AtomicBoolean found = new AtomicBoolean(false);
+            if(cpc.getParent()==null&&cpc.getNumParts()>1) {
                 noParents.getAndIncrement();
-                if(cpc.getNumParts()==5) {
-                    String group = cpc.getParts()[3];
-                    if (group != null && group.length() == 4) {
-                        group = group.substring(1);
-                        cpc.getParts()[3]=group;
-                        while (group.length() > 0 && !found.get()) {
-                            String name = String.join("", Arrays.copyOfRange(cpc.getParts(), 0, 4));
-                            prefixTrie.getValuesForKeysStartingWith(name).forEach(n2->{
-                                if (!cpc.equals(n2)) {
-                                    if (n2.isParentOf(cpc)) {
-                                        cpc.setParent(n2);
-                                        n2.addChild(cpc);
-                                        connectionCounter.getAndIncrement();
-                                        found.set(true);
-                                    }
-                                }
-                            });
-                            if (group.length() == 1) group = "";
-                            else group = group.substring(1);
-                            cpc.getParts()[3] = group;
-                        }
-                    }
-                }
-                if(!found.get()) {
-                    System.out.println("NO PARENT FOR: " + cpc.toString());
-                } else {
-                    noParents.getAndDecrement();
-                }
+                System.out.println("NO PARENT FOR: " + cpc.toString());
             }
         });
 
@@ -148,7 +116,7 @@ public class CPCHierarchy {
         CPCHierarchy hierarchy = new CPCHierarchy();
         Set<String> cpcs = new HashSet<>(Database.getClassCodes());
         cpcs.addAll(Database.getClassCodeToClassTitleMap().keySet());
-        hierarchy.run(new ArrayList<>(cpcs));
+        hierarchy.run();
         hierarchy.save();
         return hierarchy;
     }

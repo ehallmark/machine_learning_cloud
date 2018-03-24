@@ -67,7 +67,10 @@ public class IngestMongoIntoElasticSearch {
     }
 
     public static void iterateOverCollection(Consumer<Document> consumer, Document query, String type, String... fields) {
-        String index = DataIngester.INDEX_NAME;
+        iterateOverCollection(consumer,query,DataIngester.INDEX_NAME,type,fields);
+    }
+
+    public static void iterateOverCollection(Consumer<Document> consumer, Document query, String index, String type, String... fields) {
         MongoCollection<Document> collection = MongoDBClient.get().getDatabase(index).getCollection(type);
         AtomicLong total = new AtomicLong(0);
         collection.count(query, (count,t)->{
