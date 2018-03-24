@@ -19,6 +19,7 @@ public class Constants {
     public static final String PRIORITY_CLAIM = "priority_claim";
     public static final String NPL_TEXT = "npl_text";
     public static final String CATEGORY = "category";
+    public static final String ABSTRACT_LOCALIZED = "abstract_localized";
     public static final String INVENTOR = "inventor";
     public static final String INVENTOR_HARMONIZED = "inventor_harmonized";
     public static final String NAME = "name";

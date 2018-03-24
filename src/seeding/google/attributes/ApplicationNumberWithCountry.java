@@ -12,7 +12,7 @@ public class ApplicationNumberWithCountry extends AbstractAttribute {
 
     @Override
     public String getName() {
-        return Constants.PUBLICATION_NUMBER;
+        return Constants.APPLICATION_NUMBER_WITH_COUNTRY;
     }
 
     @Override

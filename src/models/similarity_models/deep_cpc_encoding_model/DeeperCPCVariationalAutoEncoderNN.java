@@ -213,7 +213,7 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
         Function<Object,Double> testErrorFunction = (v) -> {
             double total = 0d;
             int count = 0;
-            while(validationIterator.hasNext()) {
+            while(validationIterator.hasNext()&&count<20) {
                 INDArray features = validationIterator.next().getFeatures();
                 double score = test(features, vae);
                 count++;

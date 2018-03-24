@@ -5,14 +5,14 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 
-public class PublicationNumberFull extends AbstractAttribute {
-    public PublicationNumberFull() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.IncludeWithRelated, AbstractFilter.FilterType.ExcludeWithRelated, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
+public class Language extends AbstractAttribute {
+    public Language() {
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
 
     @Override
     public String getName() {
-        return Constants.FULL_PUBLICATION_NUMBER;
+        return Constants.LANGUAGE;
     }
 
     @Override

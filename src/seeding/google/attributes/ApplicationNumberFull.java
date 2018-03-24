@@ -12,7 +12,7 @@ public class ApplicationNumberFull extends AbstractAttribute {
 
     @Override
     public String getName() {
-        return Constants.PUBLICATION_NUMBER;
+        return Constants.FULL_APPLICATION_NUMBER;
     }
 
     @Override

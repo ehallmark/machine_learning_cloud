@@ -12,7 +12,7 @@ public class PublicationNumberWithCountry extends AbstractAttribute {
 
     @Override
     public String getName() {
-        return Constants.PUBLICATION_NUMBER;
+        return Constants.PUBLICATION_NUMBER_WITH_COUNTRY;
     }
 
     @Override
