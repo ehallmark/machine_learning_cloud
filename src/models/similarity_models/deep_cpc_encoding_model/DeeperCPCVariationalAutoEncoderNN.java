@@ -22,6 +22,7 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Constants;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
@@ -138,8 +139,9 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
 
         //Neural net configuration
         int[] hiddenLayerEncoder = new int[]{
-                2048,
-                2048
+                1024,
+                1024,
+                1024
         };
 
         int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
@@ -161,20 +163,20 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
                 .learningRateDecayPolicy(LearningRatePolicy.Schedule)
                 .learningRateSchedule(iterationLearningRate)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .updater(Updater.RMSPROP)
-                //.updater(Updater.ADAM)
+                //.updater(Updater.RMSPROP)
+                .updater(Updater.ADAM)
                 .miniBatch(true)
                 .weightInit(WeightInit.XAVIER)
                 //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
                 //.gradientNormalizationThreshold(1d)
-                .regularization(true).l2(1e-4)
+                //.regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .encoderLayerSizes(hiddenLayerEncoder)
                         .decoderLayerSizes(hiddenLayerDecoder)
-                        //.lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
                         .activation(activation)
                         .pzxActivationFunction(Activation.IDENTITY)
+                        //.lossFunction(Activation.SIGMOID, LossFunctions.LossFunction.MSE)
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID))
                         .nIn(numInputs)
                         .nOut(VECTOR_SIZE)
@@ -187,7 +189,7 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
     public void train(int nEpochs) {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
-        final int printIterations = 100;
+        final int printIterations = 20;
 
         if(net==null) {
             final double learningRate = 0.001;
