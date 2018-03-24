@@ -5,6 +5,7 @@ import com.mongodb.async.client.MongoCollection;
 import elasticsearch.MongoDBClient;
 
 import java.io.File;
+import java.util.Collections;
 
 import static seeding.google.IngestJsonHelper.ingestJsonDump;
 
@@ -18,6 +19,6 @@ public class IngestCPCDefinitions {
         final MongoClient client = MongoDBClient.get();
         final MongoCollection collection = client.getDatabase(INDEX_NAME).getCollection(TYPE_NAME);
 
-        ingestJsonDump(idField,dataDir,collection,true,null);
+        ingestJsonDump(idField,dataDir,collection,true,null, Collections.emptyList());
     }
 }

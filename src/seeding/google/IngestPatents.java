@@ -3,6 +3,7 @@ package seeding.google;
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoCollection;
 import elasticsearch.MongoDBClient;
+import org.bson.Document;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -13,22 +14,15 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static seeding.google.IngestJsonHelper.ingestJsonDump;
+import static seeding.google.attributes.Constants.*;
 
 public class IngestPatents {
     public static final String INDEX_NAME = "big_query";
     public static final String TYPE_NAME = "patents";
 
-    public static final String FULL_PUBLICATION_NUMBER = "pub_num_full";
-    public static final String PUBLICATION_NUMBER_WITH_COUNTRY = "pub_num_country";
-    public static final String PUBLICATION_NUMBER = "pub_num";
-    public static final String PUBLICATION_NUMBER_GOOGLE = "publication_number";
-    public static final String FULL_APPLICATION_NUMBER = "app_num_full";
-    public static final String APPLICATION_NUMBER_WITH_COUNTRY = "app_num_country";
-    public static final String APPLICATION_NUMBER = "app_num";
-    public static final String APPLICATION_NUMBER_GOOGLE = "application_number";
 
     public static void main(String[] args) {
-        final List<Function<Map<String,Object>,Void>> attributeFunctions = Arrays.asList(
+        final List<Function<Document,Void>> attributeFunctions = Arrays.asList(
                 map -> {
                     // handle publication numbers
                     String publicationNumber = (String)map.get(PUBLICATION_NUMBER_GOOGLE);
@@ -56,6 +50,13 @@ public class IngestPatents {
                             String fullNumber = String.join("", parts);
                             String countryAndNumber = parts[0] + parts[1];
                             String number = parts[1];
+                            String formatted = (String)map.get(APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY);
+                            if(formatted!=null) {
+                                if(formatted.startsWith(parts[0])&&formatted.length()>parts[0].length()) {
+                                    formatted = formatted.substring(parts[0].length(),formatted.length());
+                                }
+                                map.put(APPLICATION_NUMBER_FORMATTED,formatted);
+                            }
                             map.put(FULL_APPLICATION_NUMBER, fullNumber);
                             map.put(APPLICATION_NUMBER_WITH_COUNTRY, countryAndNumber);
                             map.put(APPLICATION_NUMBER, number);
@@ -69,24 +70,17 @@ public class IngestPatents {
         );
 
 
-        final String idField = "publication_number";
+        final String idField = PUBLICATION_NUMBER_GOOGLE;
         final File dataDir = new File("/usb2/data/google-big-query/patents/");
         final MongoClient client = MongoDBClient.get();
         final MongoCollection collection = client.getDatabase(INDEX_NAME).getCollection(TYPE_NAME);
         final LocalDate twentyFiveYearsAgo = LocalDate.now().minusYears(25);
         final Function<Map<String,Object>,Boolean> filterDocumentFunction = doc -> {
-            String filingDate = (String)doc.get("filing_date");
+            String filingDate = (String)doc.get(FILING_DATE);
             if(filingDate==null||filingDate.length()!=8) return false;
-            boolean valid = LocalDate.parse(filingDate, DateTimeFormatter.BASIC_ISO_DATE).isAfter(twentyFiveYearsAgo);
-            if(valid) {
-                // add other attributes
-                attributeFunctions.forEach(function->{
-                    function.apply(doc);
-                });
-            }
-            return valid;
+            return LocalDate.parse(filingDate, DateTimeFormatter.BASIC_ISO_DATE).isAfter(twentyFiveYearsAgo);
         };
 
-        ingestJsonDump(idField,dataDir,collection,true,filterDocumentFunction);
+        ingestJsonDump(idField,dataDir,collection,true,filterDocumentFunction,attributeFunctions);
     }
 }

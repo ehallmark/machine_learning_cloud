@@ -69,6 +69,7 @@ public class CPCDataSetIterator implements DataSetIterator {
     @Override
     public DataSet next(int i) {
         INDArray features = iterator.next();
+        //System.gc();
         return new DataSet(features,features);
     }
 

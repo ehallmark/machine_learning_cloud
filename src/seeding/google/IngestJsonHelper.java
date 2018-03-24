@@ -12,6 +12,7 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +25,7 @@ public class IngestJsonHelper {
     private static final int batchSize = 1000;
     private static final int maximumStringLength = 100000;
 
-    public static void ingestJsonDump(String idField, File dataDir, MongoCollection collection, boolean create, Function<Map<String,Object>,Boolean> filter) {
+    public static void ingestJsonDump(String idField, File dataDir, MongoCollection collection, boolean create, Function<Map<String,Object>,Boolean> filter, List<Function<Document,Void>> attributeFunctions) {
         final AtomicInteger counter = new AtomicInteger(0);
         final AtomicInteger idx = new AtomicInteger(0);
 
@@ -38,10 +39,10 @@ public class IngestJsonHelper {
             return model;
         };
 
-        Stream.of(dataDir.listFiles()).forEach(file-> {
+        Stream.of(dataDir.listFiles()).parallel().forEach(file-> {
             final List<WriteModel<Document>> documentList = new ArrayList<>(batchSize);
             try(InputStream stream = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-                IngestJsonHelper.streamJsonFile(stream).forEach(map->{
+                IngestJsonHelper.streamJsonFile(stream,attributeFunctions).forEach(map->{
                     if(filter!=null&&!filter.apply(map)) {
                         return;
                     }
@@ -91,11 +92,11 @@ public class IngestJsonHelper {
         }
     }
 
-    private static List<Document> handleList(List<Document> list, int level) {
-        return list.stream().map(d->handleMap(d,level)).collect(Collectors.toList());
+    private static List<Document> handleList(List<Document> list, int level, List<Function<Document,Void>> attributeFunctions) {
+        return list.stream().map(d->handleMap(d,level,attributeFunctions)).collect(Collectors.toList());
     }
 
-    private static Document handleMap(Document document, int level) {
+    private static Document handleMap(Document document, int level, List<Function<Document,Void>> attributeFunctions) {
         Document doc = new Document(document.entrySet().stream().collect(Collectors.toMap(e->e.getKey(),e->{
             Object v = e.getValue();
             //System.out.println(String.join("", IntStream.range(0,level).mapToObj(i->" ").collect(Collectors.toList()))+e.getKey());
@@ -106,16 +107,21 @@ public class IngestJsonHelper {
                 if(list.isEmpty()) return list;
                 Object i = list.get(0);
                 if(i instanceof Document) {
-                    return handleList((List<Document>)v,level+1);
+                    return handleList((List<Document>)v,level+1,attributeFunctions);
                 } else {
                     return list.stream().map(li->handleValue(e.getKey(),li)).collect(Collectors.toList());
                 }
             } else if (v instanceof Document) {
-                return handleMap((Document) v,level+1);
+                return handleMap((Document) v,level+1, attributeFunctions);
             } else {
                 return handleValue(e.getKey(),v);
             }
         })));
+        // add other attributes
+        attributeFunctions.forEach(function->{
+            function.apply(doc);
+        });
+
         //System.out.println();
         return doc;
     }
@@ -128,11 +134,11 @@ public class IngestJsonHelper {
     }
 
 
-    public static Stream<Map<String,Object>> streamJsonFile(InputStream is) {
+    public static Stream<Map<String,Object>> streamJsonFile(InputStream is, List<Function<Document,Void>> attributeFunctions) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         return reader.lines().map(line-> {
             Document map = Document.parse(line);
-            return handleMap(map,1);
+            return handleMap(map,1,attributeFunctions);
         });
     }
 
@@ -141,7 +147,7 @@ public class IngestJsonHelper {
         File dir = new File("/media/ehallmark/My Passport/data/google-big-query/patents/");
         File file = dir.listFiles()[0];
         GzipCompressorInputStream gzip = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(file)));
-        streamJsonFile(gzip).forEach(map->{
+        streamJsonFile(gzip, Collections.emptyList()).forEach(map->{
             if(!map.containsKey("filing_date")||map.get("filing_date").toString().length()<2) {
                 //System.out.println("Line: " + String.join("; ", map.entrySet().stream().map(e -> e.getKey() + ": " + e.getValue()).collect(Collectors.toList())));
                 //throw new RuntimeException("No filing date...");
