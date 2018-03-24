@@ -7,6 +7,7 @@ import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.bson.Document;
+import org.nd4j.linalg.primitives.Pair;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -97,26 +98,27 @@ public class IngestJsonHelper {
     }
 
     private static Document handleMap(Document document, int level, List<Function<Document,Void>> attributeFunctions) {
-        Document doc = new Document(document.entrySet().stream().collect(Collectors.toMap(e->e.getKey(),e->{
+        Document doc = new Document(document.entrySet().stream().map(e->{
+
             Object v = e.getValue();
             //System.out.println(String.join("", IntStream.range(0,level).mapToObj(i->" ").collect(Collectors.toList()))+e.getKey());
             if(v==null) {
-                return v;
+                return new Pair<>(e.getKey(),v);
             } else if(v instanceof List) {
                 List list = (List)v;
-                if(list.isEmpty()) return list;
+                if(list.isEmpty()) return new Pair<>(e.getKey(),list);
                 Object i = list.get(0);
                 if(i instanceof Document) {
-                    return handleList((List<Document>)v,level+1,attributeFunctions);
+                    return new Pair<>(e.getKey(),handleList((List<Document>)v,level+1,attributeFunctions));
                 } else {
-                    return list.stream().map(li->handleValue(e.getKey(),li)).collect(Collectors.toList());
+                    return new Pair<>(e.getKey(),list.stream().map(li->handleValue(e.getKey(),li)).collect(Collectors.toList()));
                 }
             } else if (v instanceof Document) {
-                return handleMap((Document) v,level+1, attributeFunctions);
+                return new Pair<>(e.getKey(),handleMap((Document) v,level+1, attributeFunctions));
             } else {
-                return handleValue(e.getKey(),v);
+                return new Pair<>(e.getKey(),handleValue(e.getKey(),v));
             }
-        })));
+        }).filter(e->e.getSecond()!=null).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond())));
         // add other attributes
         attributeFunctions.forEach(function->{
             function.apply(doc);
