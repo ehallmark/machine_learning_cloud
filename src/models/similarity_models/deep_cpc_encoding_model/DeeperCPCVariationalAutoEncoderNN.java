@@ -137,9 +137,8 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
 
         //Neural net configuration
         int[] hiddenLayerEncoder = new int[]{
-                1024,
-                1024,
-                1024
+                2048,
+                2048
         };
 
         int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
@@ -189,7 +188,7 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
         final int printIterations = 200;
 
         if(net==null) {
-            final double learningRate = 0.05;
+            final double learningRate = 0.001;
             net = new MultiLayerNetwork(getConf(learningRate,nEpochs));
             net.init();
         } else {
@@ -213,7 +212,7 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
         Function<Object,Double> testErrorFunction = (v) -> {
             double total = 0d;
             int count = 0;
-            while(validationIterator.hasNext()&&count<20) {
+            while(validationIterator.hasNext()) {
                 INDArray features = validationIterator.next().getFeatures();
                 double score = test(features, vae);
                 count++;

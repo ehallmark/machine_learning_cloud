@@ -32,8 +32,8 @@ public class DeeperCPCVAEPipelineManager extends CPCVAEPipelineManager {
     public static final String MODEL_NAME = "deeper32spread_cpc_autoencoder";
     public static final int MAX_CPC_DEPTH = 5;
     private static final int BATCH_SIZE = 1024;
-    private static final int MINI_BATCH_SIZE = 64;
-    public static final int MAX_NUM_CPCS = 40000;
+    private static final int MINI_BATCH_SIZE = 128;
+    public static final int MAX_NUM_CPCS = 160000;
     private static final File INPUT_DATA_FOLDER = new File("deeper_cpc_vae_data");
     private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"deeper_cpc_vae_predictions/predictions_map.jobj");
 
@@ -143,8 +143,8 @@ public class DeeperCPCVAEPipelineManager extends CPCVAEPipelineManager {
     @Override
     protected void splitData() {
         System.out.println("Starting to recreate datasets...");
-        int limit = 5000000;
-        int numTest = 40000;
+        int limit = 2000000;
+        int numTest = 20000;
         getCPCMap();
         System.out.println("Loaded cpcMap");
         List<String> allAssets = new ArrayList<>(cpcMap.keySet().parallelStream().filter(asset->cpcMap.containsKey(asset)).sorted().collect(Collectors.toList()));
