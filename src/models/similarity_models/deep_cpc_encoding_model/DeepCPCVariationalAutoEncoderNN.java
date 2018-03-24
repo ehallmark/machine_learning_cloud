@@ -195,7 +195,7 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             while(validationIterator.hasNext()) {
                 INDArray features = validationIterator.next().getFeatures();
                 Pair<Double,Double> p = test(features, vae);
-                double score = p.getFirst()+p.getSecond()/2);
+                double score = (p.getFirst()+p.getSecond()/2);
                 count++;
                 total+=score;
             }
