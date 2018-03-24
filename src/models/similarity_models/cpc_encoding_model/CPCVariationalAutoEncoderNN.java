@@ -3,6 +3,7 @@ package models.similarity_models.cpc_encoding_model;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import data_pipeline.models.NeuralNetworkPredictionModel;
+import graphical_modeling.util.Pair;
 import models.NDArrayHelper;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
@@ -253,7 +254,8 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         }
         INDArray validationMatrix = Nd4j.vstack(partialValidationMatrices);
         Function<Object,Double> testErrorFunction = (v) -> {
-            return test(validationMatrix, vae);
+            org.nd4j.linalg.primitives.Pair<Double,Double> p = test(validationMatrix, vae);
+            return (p.getFirst()+p.getSecond())/2;
         };
 
         Function<Object,Double> trainErrorFunction = (v) -> {
@@ -286,10 +288,13 @@ public class CPCVariationalAutoEncoderNN extends NeuralNetworkPredictionModel<IN
         }
     }
 
-    public static double test(INDArray inputs, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
+    public static org.nd4j.linalg.primitives.Pair<Double,Double> test(INDArray inputs, org.deeplearning4j.nn.layers.variational.VariationalAutoencoder model) {
         INDArray latentValues = model.activate(inputs,false);
         INDArray outputs = model.generateAtMeanGivenZ(latentValues);
-        return outputs.subi(inputs).norm1(1).div(inputs.columns()).meanNumber().doubleValue();
+        double s1 = outputs.mul(inputs).norm1(1).divi(inputs.sum(1)).meanNumber().doubleValue();
+        INDArray negInputs = inputs.rsub(1);
+        double s2 = outputs.mul(negInputs).norm1(1).divi(negInputs.sum(1)).meanNumber().doubleValue();
+        return new org.nd4j.linalg.primitives.Pair<>(s1,s2);
     }
 
 }

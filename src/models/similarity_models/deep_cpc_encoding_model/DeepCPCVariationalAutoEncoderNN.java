@@ -21,6 +21,7 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
@@ -193,7 +194,8 @@ public class DeepCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN
             int count = 0;
             while(validationIterator.hasNext()) {
                 INDArray features = validationIterator.next().getFeatures();
-                double score = test(features, vae);
+                Pair<Double,Double> p = test(features, vae);
+                double score = p.getFirst()+p.getSecond()/2);
                 count++;
                 total+=score;
             }

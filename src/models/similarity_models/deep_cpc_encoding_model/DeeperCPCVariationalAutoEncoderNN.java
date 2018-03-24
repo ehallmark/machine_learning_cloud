@@ -5,6 +5,7 @@ import cpc_normalization.CPCHierarchy;
 import data_pipeline.helpers.Function2;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
+import graphical_modeling.util.Pair;
 import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
 import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -212,12 +213,18 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
         Function<Object,Double> testErrorFunction = (v) -> {
             double total = 0d;
             int count = 0;
+            double t1 = 0d;
+            double t2 = 0d;
             while(validationIterator.hasNext()) {
                 INDArray features = validationIterator.next().getFeatures();
-                double score = test(features, vae);
+                org.nd4j.linalg.primitives.Pair<Double,Double> p = test(features, vae);
+                double score = (p.getFirst()+p.getSecond())/2;
+                t1+=p.getFirst();
+                t2+=p.getSecond();
                 count++;
                 total+=score;
             }
+            System.out.print(" Score 1: "+t1/count+", Score2: "+t2/count);
             validationIterator.reset();
             return total/count;
         };
