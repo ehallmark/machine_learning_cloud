@@ -61,9 +61,8 @@ public class IngestPatents {
                             map.put(APPLICATION_NUMBER_WITH_COUNTRY, countryAndNumber);
                             map.put(APPLICATION_NUMBER, number);
                         } else {
-
-                        System.out.println("Error with publication number: "+applicationNumber);
-                    }
+                            System.out.println("Error with publication number: "+applicationNumber);
+                        }
                     }
                     return null;
                 }

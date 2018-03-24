@@ -127,8 +127,21 @@ public class IngestJsonHelper {
     }
 
     private static Object handleValue(String k, Object v) {
-        if(v!=null && v instanceof String && ((String) v).length()>maximumStringLength) {
-            v = ((String) v).substring(0,maximumStringLength);
+        if(v!=null && v instanceof String) {
+            if(((String) v).length()>maximumStringLength) {
+                v = ((String) v).substring(0, maximumStringLength);
+            }
+            v = ((String) v).trim();
+            if(((String) v).length()==0) {
+                return null;
+            }
+            if(k.endsWith("_date")&&v.equals("0")) {
+
+            }
+        } else if(k.endsWith("_date") && v!=null&& v instanceof Integer) {
+            if(v.equals(0)) {
+                return null;
+            }
         }
         return v;
     }
