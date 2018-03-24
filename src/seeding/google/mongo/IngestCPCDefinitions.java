@@ -1,4 +1,4 @@
-package seeding.google;
+package seeding.google.mongo;
 
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoCollection;
@@ -7,7 +7,7 @@ import elasticsearch.MongoDBClient;
 import java.io.File;
 import java.util.Collections;
 
-import static seeding.google.IngestJsonHelper.ingestJsonDump;
+import static seeding.google.mongo.IngestJsonHelper.ingestJsonDump;
 
 public class IngestCPCDefinitions {
     public static final String INDEX_NAME = "big_query";

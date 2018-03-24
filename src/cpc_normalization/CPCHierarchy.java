@@ -1,27 +1,17 @@
 package cpc_normalization;
 
-import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
-import com.googlecode.concurrenttrees.radix.RadixTree;
-import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
-import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
 import elasticsearch.IngestMongoIntoElasticSearch;
 import lombok.Getter;
-import graphical_modeling.model.graphs.BayesianNet;
-import graphical_modeling.model.graphs.Graph;
-import graphical_modeling.model.nodes.Node;
 import org.bson.Document;
 import seeding.Constants;
 import seeding.Database;
-import seeding.google.IngestCPCDefinitions;
+import seeding.google.mongo.IngestCPCDefinitions;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by Evan on 10/24/2017.

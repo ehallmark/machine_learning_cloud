@@ -150,15 +150,16 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
         Activation activation = Activation.TANH;
         Nd4j.getRandom().setSeed(rngSeed);
 
-        int numExamples = 5000000;
-        int stepsPerEpoch = 1;
-        int batchSize = ((DeeperCPCVAEPipelineManager)pipelineManager).getMiniBatchSize();
+        Map<Integer,Double> iterationLearningRate = new HashMap<>();
+        iterationLearningRate.put(0,learningRate);
+      //  iterationLearningRate.put(100,learningRate/2);
+      //  iterationLearningRate.put(200,learningRate/4);
 
         return new NeuralNetConfiguration.Builder()
                 .seed(rngSeed)
                 .learningRate(learningRate)
                 .learningRateDecayPolicy(LearningRatePolicy.Schedule)
-                .learningRateSchedule(createSchedule(learningRate,nEpochs,batchSize,numExamples,stepsPerEpoch))
+                .learningRateSchedule(iterationLearningRate)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .updater(Updater.RMSPROP)
                 //.updater(Updater.ADAM)
@@ -166,7 +167,7 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
                 .weightInit(WeightInit.XAVIER)
                 //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
                 //.gradientNormalizationThreshold(1d)
-                //.regularization(true).l2(1e-4)
+                .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .encoderLayerSizes(hiddenLayerEncoder)
@@ -186,14 +187,14 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
     public void train(int nEpochs) {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
-        final int printIterations = 200;
+        final int printIterations = 100;
 
         if(net==null) {
             final double learningRate = 0.001;
             net = new MultiLayerNetwork(getConf(learningRate,nEpochs));
             net.init();
         } else {
-            final double learningRate =  0.001;
+            final double learningRate =  0.0001;
             INDArray params = net.params();
             net = new MultiLayerNetwork(getConf(learningRate,nEpochs));
             net.init(params,false);
@@ -215,7 +216,7 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
             int count = 0;
             double t1 = 0d;
             double t2 = 0d;
-            while(validationIterator.hasNext()) {
+            while(validationIterator.hasNext()&&count<10) {
                 INDArray features = validationIterator.next().getFeatures();
                 org.nd4j.linalg.primitives.Pair<Double,Double> p = test(features, vae);
                 double score = (p.getFirst()+p.getSecond())/2;
@@ -224,6 +225,7 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
                 count++;
                 total+=score;
             }
+            System.gc();
             System.out.print(" Score 1: "+t1/count+", Score2: "+t2/count);
             validationIterator.reset();
             return total/count;
@@ -233,7 +235,7 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
             return 0d;//test(pipelineManager.getDatasetManager().getTrainingIterator(10000/pipelineManager.getBatchSize()), vae);
         };
 
-        System.out.println("Initial test: "+testErrorFunction.apply(net));
+        System.out.println(", Initial test: "+testErrorFunction.apply(net));
 
         Function2<LocalDateTime,Double,Void> saveFunction = (datetime,score) -> {
             try {

@@ -1,8 +1,10 @@
 package seeding.google.attributes;
 
+import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 public class Constants {
     public static final String COUNTRY_CODE = "country_code";
@@ -55,8 +57,8 @@ public class Constants {
     public static final String APPLICATION_NUMBER_GOOGLE = "application_number";
     public static final String APPLICATION_NUMBER_FORMATTED = "app_num_formatted";
 
-    public static NestedAttribute buildNestedAttributes() {
-        return new NestedAttribute(Arrays.asList(
+    public static Collection<AbstractAttribute> buildAttributes() {
+        return Arrays.asList(
                 new PublicationNumberWithCountry(),
                 new PublicationNumber(),
                 new PublicationNumberFull(),
@@ -92,11 +94,6 @@ public class Constants {
                 new Citation(),
                 new EntityStatus(),
                 new ArtUnit()
-        ),false) {
-            @Override
-            public String getName() {
-                return null;
-            }
-        };
+        );
     }
 }

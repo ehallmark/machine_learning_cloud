@@ -1,4 +1,4 @@
-package seeding.google;
+package seeding.google.mongo;
 
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoCollection;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static seeding.google.IngestJsonHelper.ingestJsonDump;
+import static seeding.google.mongo.IngestJsonHelper.ingestJsonDump;
 import static seeding.google.attributes.Constants.*;
 
 public class IngestPatents {
