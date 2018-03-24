@@ -22,7 +22,7 @@ public class IngestMongoIntoElasticSearch {
     static AtomicLong cnt = new AtomicLong(0);
     public static void main(String[] args) {
         // ingest assets (aka children)
-        ingestByType(DataIngester.INDEX_NAME,DataIngester.TYPE_NAME);
+        ingestByType(DataIngester.INDEX_NAME,DataIngester.TYPE_NAME,true);
         DataIngester.close();
     }
 
@@ -34,15 +34,15 @@ public class IngestMongoIntoElasticSearch {
         }
     }
 
-    public static void ingestByType(String index, String type) {
-        ingestByType(index, type, new Document());
+    public static void ingestByType(String index, String type, boolean addCounts) {
+        ingestByType(index, type, new Document(), addCounts);
     }
 
-    public static void ingestByType(String index, String type, Document query) {
+    public static void ingestByType(String index, String type, Document query, boolean addCounts) {
         Consumer<Document> consumer = doc -> {
             String id = doc.getString("_id");
             doc.putIfAbsent(Constants.NAME,id);
-            DataIngester.ingestBulkFromMongoDB(type, addCountsToDoc(doc));
+            DataIngester.ingestBulkFromMongoDB(index, type, addCounts?addCountsToDoc(doc):doc);
         };
 
         iterateOverCollection(consumer,query,index,type,new String[]{});

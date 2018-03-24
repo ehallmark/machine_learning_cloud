@@ -41,9 +41,9 @@ public class DataIngester {
         });
     }
 
-    public static void ingestBulkFromMongoDB(String type,Document doc) {
-        doc.remove("_id");
-        IndexRequest request = new IndexRequest(INDEX_NAME,type);
+    public static void ingestBulkFromMongoDB(String index, String type,Document doc) {
+        String id = (String)doc.remove("_id");
+        IndexRequest request = new IndexRequest(index,type,id);
         request = request.source(doc);
         synchronized (bulkProcessor) { bulkProcessor.add(request); }
     }

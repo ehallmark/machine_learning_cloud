@@ -139,9 +139,8 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
 
         //Neural net configuration
         int[] hiddenLayerEncoder = new int[]{
-                1024,
-                1024,
-                1024
+                2048,
+                2048
         };
 
         int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
@@ -218,7 +217,7 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
             int count = 0;
             double t1 = 0d;
             double t2 = 0d;
-            while(validationIterator.hasNext()&&count<10) {
+            while(validationIterator.hasNext()&&count<15) {
                 INDArray features = validationIterator.next().getFeatures();
                 org.nd4j.linalg.primitives.Pair<Double,Double> p = test(features, vae);
                 double score = (p.getFirst()+p.getSecond())/2;
