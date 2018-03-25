@@ -34,18 +34,18 @@ public class IngestMongoIntoElasticSearch {
         }
     }
 
-    public static void ingestByType(String index, String type, boolean addCounts) {
-        ingestByType(index, type, new Document(), addCounts);
+    public static void ingestByType(String index, String type, boolean addCounts, String... fields) {
+        ingestByType(index, type, new Document(), addCounts, fields);
     }
 
-    public static void ingestByType(String index, String type, Document query, boolean addCounts) {
+    public static void ingestByType(String index, String type, Document query, boolean addCounts, String... fields) {
         Consumer<Document> consumer = doc -> {
             String id = doc.getString("_id");
             doc.putIfAbsent(Constants.NAME,id);
             DataIngester.ingestBulkFromMongoDB(index, type, addCounts?addCountsToDoc(doc):doc);
         };
 
-        iterateOverCollection(consumer,query,index,type,new String[]{});
+        iterateOverCollection(consumer,query,index,type,fields);
     }
 
     private static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor, Consumer<Document> consumer) {

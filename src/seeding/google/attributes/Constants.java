@@ -75,7 +75,7 @@ public class Constants {
                 new TitleLocalized(),
                 new AbstractLocalized(),
                 new ClaimsLocalized(),
-                new DescriptionLocalized(),
+               // new DescriptionLocalized(),
                 new PublicationDate(),
                 new FilingDate(),
                 new GrantDate(),

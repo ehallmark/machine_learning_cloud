@@ -1,6 +1,7 @@
 package seeding.google.elasticsearch;
 
 import elasticsearch.IngestMongoIntoElasticSearch;
+import seeding.google.attributes.Constants;
 import seeding.google.mongo.IngestPatents;
 
 public class IngestBigQueryFromMongo {
@@ -9,6 +10,8 @@ public class IngestBigQueryFromMongo {
         final String index = IngestPatents.INDEX_NAME;
         final String type = IngestPatents.TYPE_NAME;
 
-        IngestMongoIntoElasticSearch.ingestByType(index,type,false);
+        String[] fields = Constants.buildAttributes().stream().map(a->a.getName()).toArray(s->new String[s]);
+
+        IngestMongoIntoElasticSearch.ingestByType(index,type,false,fields);
     }
 }
