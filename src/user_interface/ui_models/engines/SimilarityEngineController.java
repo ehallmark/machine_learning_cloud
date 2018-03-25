@@ -90,12 +90,19 @@ public class SimilarityEngineController {
         preFilters = preFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());
     }
 
+    private static int getResultLimitForRole(String role) {
+        if(role==null) return 1;
+        if(role.equals(SimilarPatentServer.SUPER_USER)) return 10000000;
+        if(role.equals(SimilarPatentServer.INTERNAL_USER)) return 100000;
+        if(role.equals(SimilarPatentServer.ANALYST_USER)) return 10000;
+        return 1;
+    }
     public void extractRelevantInformationFromParams(Request req) {
         System.out.println("Beginning extract relevant info...");
         // init
         int limit = extractInt(req, LIMIT_FIELD, 10);
         if (limit <= 0) limit = 1; // VERY IMPORTANT!!!!! limit < 0 means it will scroll through EVERYTHING
-        int maxResultLimit = 100000;
+        int maxResultLimit = getResultLimitForRole(req.session(false).attribute("role"));
         if (limit > maxResultLimit) {
             throw new RuntimeException("Error: Maximum result limit is " + maxResultLimit + " which is less than " + limit);
         }
