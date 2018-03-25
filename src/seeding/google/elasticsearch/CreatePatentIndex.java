@@ -26,7 +26,7 @@ public class CreatePatentIndex {
                 .setSettings(Settings.builder()
                         .put("index.number_of_replicas",0)
                 );
-        
+
         Collection<AbstractAttribute> allAttributes = Constants.buildAttributes();
 
         Map<String,Object> properties = createPropertiesMap(allAttributes);
