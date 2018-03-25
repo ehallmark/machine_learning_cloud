@@ -1,9 +1,11 @@
 package seeding.google.elasticsearch;
 
 import com.google.gson.Gson;
+import elasticsearch.DataIngester;
 import elasticsearch.MyClient;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.Settings;
 import seeding.google.attributes.Constants;
 import seeding.google.mongo.IngestPatents;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -20,8 +22,11 @@ import java.util.Map;
 public class CreatePatentIndex {
     public static void main(String[] args) {
         TransportClient client = MyClient.get();
-        CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(IngestPatents.INDEX_NAME);
-
+        CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(IngestPatents.INDEX_NAME)
+                .setSettings(Settings.builder()
+                        .put("index.number_of_replicas",0)
+                );
+        
         Collection<AbstractAttribute> allAttributes = Constants.buildAttributes();
 
         Map<String,Object> properties = createPropertiesMap(allAttributes);

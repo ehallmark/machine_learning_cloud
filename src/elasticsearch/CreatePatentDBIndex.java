@@ -2,7 +2,9 @@ package elasticsearch;
 
 import com.google.gson.Gson;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
+import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.Settings;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
@@ -22,7 +24,10 @@ public class CreatePatentDBIndex {
     public static void main(String[] args) {
         SimilarPatentServer.initialize(true,false);
         TransportClient client = MyClient.get();
-        CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(DataIngester.INDEX_NAME);
+        CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(DataIngester.INDEX_NAME)
+                .setSettings(Settings.builder()
+                        .put("index.number_of_replicas",0)
+                );
         Collection<? extends AbstractAttribute> allAttributes = SimilarPatentServer.getAllTopLevelAttributes().stream().filter(attr->!(attr instanceof HiddenAttribute)).collect(Collectors.toList());
 
         Map<String,Object> properties = createPropertiesMap(allAttributes);
