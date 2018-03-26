@@ -159,19 +159,11 @@ public class IngestJsonHelper {
 
     // test
     public static void main(String[] args) throws Exception {
-        File dir = new File("/media/ehallmark/My Passport/data/google-big-query/patents/");
+        File dir = new File("/usb2/data/google-big-query/cases/");
         File file = dir.listFiles()[0];
         GzipCompressorInputStream gzip = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(file)));
         streamJsonFile(gzip, Collections.emptyList()).forEach(map->{
-            if(!map.containsKey("filing_date")||map.get("filing_date").toString().length()<2) {
-                //System.out.println("Line: " + String.join("; ", map.entrySet().stream().map(e -> e.getKey() + ": " + e.getValue()).collect(Collectors.toList())));
-                //throw new RuntimeException("No filing date...");
-            } else {
-                LocalDate date = LocalDate.parse((String)map.get("filing_date"), DateTimeFormatter.BASIC_ISO_DATE);
-                if(date.isAfter(LocalDate.now().minusYears(25))) {
-                    System.out.println("Date: " + date);
-                }
-            }
+            System.out.println("Line: " + String.join("; ", map.entrySet().stream().map(e -> e.getKey() + ": " + e.getValue()).collect(Collectors.toList())));
         });
     }
 }
