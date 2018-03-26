@@ -2997,14 +2997,9 @@ public class SimilarPatentServer {
     }
 
     public static void loadStuff() throws Exception {
-        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
+        Nd4j.setDataType(DataBuffer.Type.FLOAT);
         DefaultPipelineManager.setLoggingLevel(Level.INFO);
-        boolean testFilterNames = false;
-        if(testFilterNames) {
-            loadAttributes(false,false);
-            loadFilterModels();
-            return;
-        }
+
         long t1 = System.currentTimeMillis();
         //Database.setupSeedConn();
         boolean preLoad =  true;
@@ -3073,6 +3068,8 @@ public class SimilarPatentServer {
     }
 
     public static void main(String[] args) throws Exception {
+        
+
         loadStuff();
 
         // perform quick search
