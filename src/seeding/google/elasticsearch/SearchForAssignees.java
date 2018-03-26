@@ -11,9 +11,10 @@ import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AdvancedKeywordFilter;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SearchForAssignees {
@@ -27,18 +28,51 @@ public class SearchForAssignees {
                 .filter(attr->attr instanceof NestedAttribute)
                 .collect(Collectors.toMap(e->e.getFullName(),e->(NestedAttribute)e));
 
-        AdvancedKeywordFilter assigneeFilter = new AdvancedKeywordFilter(new AssigneeHarmonized(), AbstractFilter.FilterType.AdvancedKeyword);
-        assigneeFilter.setQueryStr("amazon | google");
-
-
-        ItemTransformer transformer = item -> {
-            // TODO implement item transformer body
-
-            return null;
+        final String[] assignees = new String[]{
+            "amazon",
+            "google",
+            "disney",
+            "apple",
+            "verizon",
+            "\"at&t\" | att | bellsouth | \"bell labs\" | directv",
+            "comcast | \"cox communications\"",
+            "facebook",
+            "netflix",
+            "\"time warner\""
         };
 
-        DataSearcher.searchForAssets(index,type,attributes, Collections.singleton(assigneeFilter), seeding.Constants.NO_SORT, SortOrder.ASC, 1000000,nestedAttributeMap,transformer,false,false,true);
+        final BufferedWriter csv = new BufferedWriter(new FileWriter(new File("disney_assignee_foreign.csv")));
+        csv.write("Search,Asset,Family ID,Filing Date,Country,Assignee(s) Raw");
+        for(String assignee : assignees) {
+            AdvancedKeywordFilter assigneeFilter = new AdvancedKeywordFilter(new AssigneeHarmonized(), AbstractFilter.FilterType.AdvancedKeyword);
+            assigneeFilter.setQueryStr(assignee);
+
+            ItemTransformer transformer = item -> {
+                String asset = (String) item.getDataMap().get(Constants.FULL_PUBLICATION_NUMBER);
+                String familyId = (String) item.getDataMap().get(Constants.FAMILY_ID);
+                String date = (String) item.getDataMap().get(Constants.FILING_DATE);
+                String country = (String) item.getDataMap().get(Constants.COUNTRY_CODE);
+                List<String> assigneeHarmonized = (List<String>) item.getDataMap().get(Constants.ASSIGNEE_HARMONIZED);
+                try {
+                    StringJoiner sj = new StringJoiner("\",\"", "\"", "\"\n");
+                    sj.add(assignee).add(asset).add(familyId).add(date).add(country).add(String.join("; ", assigneeHarmonized));
+                    String line = sj.toString();
+                    System.out.println(line);
+                    synchronized (csv) {
+                        csv.write(line);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            };
 
 
+            DataSearcher.searchForAssets(index, type, attributes, Collections.singleton(assigneeFilter), seeding.Constants.NO_SORT, SortOrder.ASC, 1000000, nestedAttributeMap, transformer, false, false, true);
+
+            csv.flush();
+        }
+
+        csv.close();
     }
 }
