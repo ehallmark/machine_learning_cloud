@@ -3068,7 +3068,7 @@ public class SimilarPatentServer {
     }
 
     public static void main(String[] args) throws Exception {
-        
+
 
         loadStuff();
 
