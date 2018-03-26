@@ -4,10 +4,14 @@ import elasticsearch.DataSearcher;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.google.attributes.AssigneeHarmonized;
 import seeding.google.attributes.Constants;
+import seeding.google.attributes.Language;
+import seeding.google.attributes.Text;
 import seeding.google.mongo.IngestPatents;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.filters.AbstractIncludeFilter;
+import user_interface.ui_models.filters.AbstractNestedFilter;
 import user_interface.ui_models.filters.AdvancedKeywordFilter;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
 
@@ -44,8 +48,15 @@ public class SearchForAssignees {
         final BufferedWriter csv = new BufferedWriter(new FileWriter(new File("disney_assignee_foreign.csv")));
         csv.write("Search,Asset,Family ID,Filing Date,Country,Assignee(s) Raw");
         for(String assignee : assignees) {
-            AdvancedKeywordFilter assigneeFilter = new AdvancedKeywordFilter(new AssigneeHarmonized(), AbstractFilter.FilterType.AdvancedKeyword);
+            NestedAttribute assigneeAttr = new AssigneeHarmonized();
+
+            AbstractAttribute assigneeText = assigneeAttr.getAttributes().stream().filter(attr->attr instanceof Text).findFirst().orElse(null);
+            AbstractAttribute language = assigneeAttr.getAttributes().stream().filter(attr->attr instanceof Language).findFirst().orElse(null);
+            AdvancedKeywordFilter assigneeFilter = new AdvancedKeywordFilter(assigneeText, AbstractFilter.FilterType.AdvancedKeyword);
             assigneeFilter.setQueryStr(assignee);
+            AbstractIncludeFilter languageFilter = new AbstractIncludeFilter(language, AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, Arrays.asList("EN","DE","FR","CA","AU"));
+
+            AbstractNestedFilter filter = new AbstractNestedFilter(assigneeAttr,true,assigneeFilter,languageFilter);
 
             ItemTransformer transformer = item -> {
                 String asset = (String) item.getDataMap().get(Constants.FULL_PUBLICATION_NUMBER);
@@ -68,7 +79,7 @@ public class SearchForAssignees {
             };
 
 
-            DataSearcher.searchForAssets(index, type, attributes, Collections.singleton(assigneeFilter), seeding.Constants.NO_SORT, SortOrder.ASC, 1000000, nestedAttributeMap, transformer, false, false, true);
+            DataSearcher.searchForAssets(index, type, attributes, Collections.singleton(filter), seeding.Constants.NO_SORT, SortOrder.ASC, -1, nestedAttributeMap, transformer, false, false, true);
 
             csv.flush();
         }

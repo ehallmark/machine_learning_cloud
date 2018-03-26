@@ -1,7 +1,6 @@
 package seeding.google.attributes;
 
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.NestedAttribute;
 
 import java.util.Arrays;
 import java.util.Collection;
