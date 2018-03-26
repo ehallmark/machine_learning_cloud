@@ -6,63 +6,99 @@ import seeding.google.mongo.IngestJsonHelper;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class IngestLitigation {
 
+    private static boolean anyMatch(String c, Collection<String> collection) {
+        return collection.stream().anyMatch(p->c.contains(p));
+    }
+
     public static void main(String[] args) throws Exception {
+        List<String> companies = Arrays.asList(
+                "apple",
+                "google",
+                "amazon",
+                "netflix",
+                "facebook",
+                "at&t",
+                "directv",
+                "time warner cable",
+                "cox communications",
+                "verizon",
+                "comcast",
+                "universal pictures",
+                "disney"
+        );
+
+
         File caseFile = new File("/usb2/data/google-big-query/cases/").listFiles()[0];
         File pacerCaseFile = new File("/usb2/data/google-big-query/pacer-cases/").listFiles()[0];
-        Map<String,Map<String,Object>> pacerCases = new HashMap<>();
-        Map<String,Map<String,Object>> cases = new HashMap<>();
+        Map<String,List<Map<String,Object>>> pacerCasesAsDefendant = new HashMap<>();
+        Map<String,List<Map<String,Object>>> pacerCasesAsPlaintiff = new HashMap<>();
+        Map<String,List<Map<String,Object>>> casesAsDefendant = new HashMap<>();
+        Map<String,List<Map<String,Object>>> casesAsPlaintiff = new HashMap<>();
+
         GzipCompressorInputStream gzip = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(caseFile)));
         IngestJsonHelper.streamJsonFile(gzip, Collections.emptyList()).forEach(map->{
             if(map.containsKey("case_number") && map.containsKey("case_cause")&& ((String)map.get("case_cause")).toLowerCase().contains("patent infringement")) {
-                cases.put((String)map.get("case_number"),map);
+                String involved = (String)map.get("case_name");
+                if(involved!=null) {
+                    String[] parties = involved.toLowerCase().split("v\\.");
+                    if(parties.length==2) {
+                        String plaintiff = parties[0].trim();
+                        String defendant = parties[1].trim();
+                        System.out.println("Plaintiff: "+plaintiff);
+                        System.out.println("Defendant: "+defendant);
+                        System.out.println("Date: "+map.get("date_filed"));
+                        map.put("plaintiff",plaintiff);
+                        map.put("defendant",defendant);
+                        if(anyMatch(plaintiff,companies)) {
+                            casesAsPlaintiff.putIfAbsent(plaintiff, new ArrayList<>());
+                            casesAsPlaintiff.get(plaintiff).add(map);
+                        }
+                        if(anyMatch(defendant,companies)) {
+                            casesAsDefendant.putIfAbsent(defendant, new ArrayList<>());
+                            casesAsDefendant.get(defendant).add(map);
+                        }
+                    }
+                }
             }
         });
 
         GzipCompressorInputStream gzip2 = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(pacerCaseFile)));
         IngestJsonHelper.streamJsonFile(gzip2, Collections.emptyList()).forEach(map->{
-            if(map.containsKey("date_filed")&& map.containsKey("case_number")) {
-                pacerCases.put((String)map.get("case_number"),map);
-            }
-        });
-
-        Map<String,Map<String,Object>> matchingCases = new HashMap<>();
-        cases.forEach((caseNum,map)->{
-            if(pacerCases.containsKey(caseNum)) {
-                Map<String,Object> newMap = new HashMap<>(map);
-                newMap.putAll(pacerCases.get(caseNum));
-                matchingCases.put(caseNum,newMap);
-            }
-        });
-
-        System.out.println("Total normal cases: "+cases.size());
-        System.out.println("Total pacer cases: "+pacerCases.size());
-        System.out.println("Total matching cases: "+matchingCases.size());
-
-        matchingCases.forEach((caseNum,map)->{
-            String involved = (String)map.get("case_name");
-            if(involved!=null) {
-                String[] parties = involved.toUpperCase().split("V\\.");
-                if(parties.length==2) {
-                    String plaintiff = parties[0].trim();
-                    String defendant = parties[1].trim();
-                    System.out.println("Plaintiff: "+plaintiff);
-                    System.out.println("Defendant: "+defendant);
-                    System.out.println("Date: "+map.get("date_filed"));
+            if(map.containsKey("date_filed") && map.get("date_filed").toString().length()>1 && map.containsKey("case_number")) {
+                if(map.containsKey("case_name")&&anyMatch(map.get("case_name").toString().toLowerCase(),companies)) {
+                    String involved = (String)map.get("case_name");
+                    if(involved!=null) {
+                        String[] parties = involved.toLowerCase().split("v\\.");
+                        if(parties.length==2) {
+                            String plaintiff = parties[0].trim();
+                            String defendant = parties[1].trim();
+                            System.out.println("Plaintiff: "+plaintiff);
+                            System.out.println("Defendant: "+defendant);
+                            System.out.println("Date: "+map.get("date_filed"));
+                            map.put("plaintiff",plaintiff);
+                            map.put("defendant",defendant);
+                            if(anyMatch(plaintiff,companies)) {
+                                pacerCasesAsPlaintiff.putIfAbsent(plaintiff, new ArrayList<>());
+                                pacerCasesAsPlaintiff.get(plaintiff).add(map);
+                            }
+                            if(anyMatch(defendant,companies)) {
+                                pacerCasesAsDefendant.putIfAbsent(defendant, new ArrayList<>());
+                                pacerCasesAsDefendant.get(defendant).add(map);
+                            }
+                        }
+                    }
                 }
             }
         });
 
-
-        System.out.println("Total normal cases: "+cases.size());
-        System.out.println("Total pacer cases: "+pacerCases.size());
-        System.out.println("Total matching cases: "+matchingCases.size());
+        System.out.println("Total matched normal cases plaintiff: "+casesAsPlaintiff.size());
+        System.out.println("Total matched normal cases defendant: "+casesAsDefendant.size());
+        System.out.println("Total matched pacer cases plaintiff: "+pacerCasesAsPlaintiff.size());
+        System.out.println("Total matched pacer cases defendant: "+pacerCasesAsDefendant.size());
 
         gzip.close();
     }
