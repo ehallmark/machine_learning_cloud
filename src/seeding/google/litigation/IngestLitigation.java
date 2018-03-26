@@ -15,7 +15,7 @@ public class IngestLitigation {
 
     public static void main(String[] args) throws Exception {
         File caseFile = new File("/usb2/data/google-big-query/cases/").listFiles()[0];
-        File pacerCaseFile = new File("/usb2/data/google-big-query/pacer_cases/").listFiles()[0];
+        File pacerCaseFile = new File("/usb2/data/google-big-query/pacer-cases/").listFiles()[0];
         Map<String,Map<String,Object>> pacerCases = new HashMap<>();
         Map<String,Map<String,Object>> cases = new HashMap<>();
         GzipCompressorInputStream gzip = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(caseFile)));
@@ -63,7 +63,7 @@ public class IngestLitigation {
         System.out.println("Total normal cases: "+cases.size());
         System.out.println("Total pacer cases: "+pacerCases.size());
         System.out.println("Total matching cases: "+matchingCases.size());
-        
+
         gzip.close();
     }
 }
