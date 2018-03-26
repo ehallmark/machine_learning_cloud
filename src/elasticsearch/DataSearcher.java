@@ -33,7 +33,6 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.attributes.script_attributes.DefaultValueScriptAttribute;
-import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractGreaterThanFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
@@ -62,10 +61,10 @@ public class DataSearcher {
             .preTags("<span style=\"background-color: yellow;\">")
             .requireFieldMatch(true)
             .highlightFilter(true)
-            .field(Constants.CLAIMS+"."+Constants.CLAIM)
+            .field(Constants.CLAIMS + "." + Constants.CLAIM)
             .field(Constants.ABSTRACT)
             .field(Constants.INVENTION_TITLE)
-            .field(Constants.ASSIGNMENTS+"."+Constants.CONVEYANCE_TEXT);
+            .field(Constants.ASSIGNMENTS + "." + Constants.CONVEYANCE_TEXT);
 
     public static final String ARRAY_SEPARATOR = ">>>><<<<";
     @Getter
@@ -76,22 +75,26 @@ public class DataSearcher {
     private static final boolean debug = false;
     private static final Lock lock = new ReentrantLock();
 
-    public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, boolean highlight, boolean filterNestedObjects) {
-        return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true, highlight,filterNestedObjects);
+    public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String, NestedAttribute> nestedAttrNameMap, boolean highlight, boolean filterNestedObjects) {
+        return searchForAssets(attributes, filters, comparator, sortOrder, maxLimit, nestedAttrNameMap, item -> item, true, highlight, filterNestedObjects);
     }
 
     private static AbstractAttribute findAttribute(Collection<AbstractAttribute> attributes, String comparator) {
-        if(comparator==null) return null;
-        return attributes.stream().filter(attr->comparator.startsWith(attr.getFullName()))
-                .flatMap(attr->{
-                    if(attr instanceof NestedAttribute) {
+        if (comparator == null) return null;
+        return attributes.stream().filter(attr -> comparator.startsWith(attr.getFullName()))
+                .flatMap(attr -> {
+                    if (attr instanceof NestedAttribute) {
                         return ((NestedAttribute) attr).getAttributes().stream();
                     } else return Stream.of(attr);
-                }).filter(attr->attr.getFullName().equals(comparator))
+                }).filter(attr -> attr.getFullName().equals(comparator))
                 .findAny().orElse(null);
     }
 
     public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
+        return searchForAssets(INDEX_NAME,TYPE_NAME,attributes,filters,_comparator,sortOrder,maxLimit,nestedAttrNameMap,transformer,merge,highlight,filterNestedObjects);
+    }
+
+    public static List<Item> searchForAssets(String index, String type, Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
         try {
             String[] attrNames = Stream.of(attributes.stream().map(attr->{
                 String name = attr.getFullName();
@@ -141,8 +144,8 @@ public class DataSearcher {
             //System.out.println("Filtering by score: "+isOverallScore);
 
             //String[] attrArray = attributes.stream().flatMap(attr->SimilarPatentServer.attributeNameHelper(attr,"").stream()).toArray(size -> new String[size]);
-            AtomicReference<SearchRequestBuilder> request = new AtomicReference<>(client.prepareSearch(INDEX_NAME)
-                    .setTypes(TYPE_NAME)
+            AtomicReference<SearchRequestBuilder> request = new AtomicReference<>(client.prepareSearch(index)
+                    .setTypes(type)
                     .setFetchSource(attrNames,new String[]{})
                     .setFrom(0));
 

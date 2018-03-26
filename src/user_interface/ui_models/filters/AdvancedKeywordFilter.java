@@ -33,6 +33,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
         super(attribute,filterType);
     }
 
+
     @Override
     public AbstractFilter dup() {
         return new AdvancedKeywordFilter(attribute,filterType);
