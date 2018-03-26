@@ -3,9 +3,7 @@ package seeding.google.litigation;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import seeding.google.mongo.IngestJsonHelper;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 import java.util.*;
 
 public class IngestLitigation {
@@ -83,9 +81,6 @@ public class IngestLitigation {
                         if(parties.length==2) {
                             String plaintiff = parties[0].trim();
                             String defendant = parties[1].trim();
-                            System.out.println("Plaintiff: "+plaintiff);
-                            System.out.println("Defendant: "+defendant);
-                            System.out.println("Date: "+map.get("date_filed"));
                             map.put("plaintiff",plaintiff);
                             map.put("defendant",defendant);
                             String pla = anyMatch(plaintiff,companies);
@@ -116,6 +111,49 @@ public class IngestLitigation {
         System.out.println("Total matched normal cases defendant: "+casesAsDefendant.size());
         System.out.println("Total matched pacer cases plaintiff: "+pacerCasesAsPlaintiff.size());
         System.out.println("Total matched pacer cases defendant: "+pacerCasesAsDefendant.size());
+
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(new File("disney_project_litigation.json")));
+        writer.write("Company,Is Plaintiff?,Count,Plaintiff Name,Defendant Name,Date Filed,Case Number");
+        pacerCasesAsDefendant.forEach((company,data)->{
+            for(Map<String,Object> point : data) {
+                StringJoiner sj = new StringJoiner("\",\"","\"","\"\n");
+                sj
+                        .add(company)
+                        .add("FALSE")
+                        .add(point.get("plaintiff").toString())
+                        .add(String.valueOf(data.size()))
+                        .add(point.get("defendant").toString())
+                        .add(point.getOrDefault("date_filed","").toString())
+                        .add(point.get("case_number").toString());
+                try {
+                    writer.write(sj.toString());
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        pacerCasesAsPlaintiff.forEach((company,data)->{
+            for(Map<String,Object> point : data) {
+                StringJoiner sj = new StringJoiner("\",\"","\"","\"\n");
+                sj
+                        .add(company)
+                        .add("TRUE")
+                        .add(point.get("plaintiff").toString())
+                        .add(String.valueOf(data.size()))
+                        .add(point.get("defendant").toString())
+                        .add(point.getOrDefault("date_filed","").toString())
+                        .add(point.get("case_number").toString());
+                try {
+                    writer.write(sj.toString());
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        writer.flush();
+        writer.close();
 
         gzip.close();
     }
