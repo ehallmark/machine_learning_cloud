@@ -59,7 +59,7 @@ java -cp target/classes:"target/dependency/*" -Xms20000m -Xmx20000m elasticsearc
 curl -XPUT 'localhost:9200/ai_db/_settings?pretty' -H 'Content-Type: application/json' -d'
 {
     "index" : {
-        "refresh_interval" : "15s"
+        "refresh_interval" : "125s"
     }
 }
 '

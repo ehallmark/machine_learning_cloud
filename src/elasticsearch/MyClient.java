@@ -1,5 +1,6 @@
 package elasticsearch;
 
+import org.elasticsearch.action.bulk.BackoffPolicy;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -72,10 +73,11 @@ public class MyClient {
 
                 }
             })
-                    .setBulkActions(1000)
-                    .setBulkSize(new ByteSizeValue(32, ByteSizeUnit.MB))
+                    .setBulkActions(5000)
+                    .setBulkSize(new ByteSizeValue(8, ByteSizeUnit.MB))
                     .setFlushInterval(TimeValue.timeValueSeconds(5))
-                    .setConcurrentRequests(5)
+                    .setConcurrentRequests(3)
+                    .setBackoffPolicy(BackoffPolicy.exponentialBackoff(TimeValue.timeValueMillis(500),8))
                     .build();
         }
         return BULK_PROCESSOR;
