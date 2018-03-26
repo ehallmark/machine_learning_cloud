@@ -85,7 +85,7 @@ public class IngestMongoIntoElasticSearch {
             iterator = iterator.projection(Projections.include(fields));
         }
 
-        iterator.batchSize(500).batchCursor((cursor,t)->{
+        iterator.batchSize(100).batchCursor((cursor,t)->{
             cursor.next(helper(cursor, consumer));
         });
         System.out.println("Total count of "+type+": "+cnt.get());
