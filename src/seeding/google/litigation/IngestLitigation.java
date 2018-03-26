@@ -10,8 +10,8 @@ import java.util.*;
 
 public class IngestLitigation {
 
-    private static boolean anyMatch(String c, Collection<String> collection) {
-        return collection.stream().anyMatch(p->c.contains(p));
+    private static String anyMatch(String c, Collection<String> collection) {
+        return collection.stream().filter(p->c.contains(p)).findFirst().orElse(null);
     }
 
     public static void main(String[] args) throws Exception {
@@ -48,18 +48,25 @@ public class IngestLitigation {
                     if(parties.length==2) {
                         String plaintiff = parties[0].trim();
                         String defendant = parties[1].trim();
-                        System.out.println("Plaintiff: "+plaintiff);
-                        System.out.println("Defendant: "+defendant);
-                        System.out.println("Date: "+map.get("date_filed"));
                         map.put("plaintiff",plaintiff);
                         map.put("defendant",defendant);
-                        if(anyMatch(plaintiff,companies)) {
-                            casesAsPlaintiff.putIfAbsent(plaintiff, new ArrayList<>());
-                            casesAsPlaintiff.get(plaintiff).add(map);
+                        String pla = anyMatch(plaintiff,companies);
+                        if(pla!=null) {
+                            casesAsPlaintiff.putIfAbsent(pla, new ArrayList<>());
+                            casesAsPlaintiff.get(pla).add(map);
+                            System.out.println("Plaintiff: "+plaintiff);
+                            System.out.println("Defendant: "+defendant);
+                            System.out.println("Date: "+map.get("date_filed"));
+
                         }
-                        if(anyMatch(defendant,companies)) {
-                            casesAsDefendant.putIfAbsent(defendant, new ArrayList<>());
-                            casesAsDefendant.get(defendant).add(map);
+                        String def = anyMatch(defendant,companies);
+                        if(def!=null) {
+                            casesAsDefendant.putIfAbsent(def, new ArrayList<>());
+                            casesAsDefendant.get(def).add(map);
+                            System.out.println("Plaintiff: "+plaintiff);
+                            System.out.println("Defendant: "+defendant);
+                            System.out.println("Date: "+map.get("date_filed"));
+
                         }
                     }
                 }
@@ -69,7 +76,7 @@ public class IngestLitigation {
         GzipCompressorInputStream gzip2 = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(pacerCaseFile)));
         IngestJsonHelper.streamJsonFile(gzip2, Collections.emptyList()).forEach(map->{
             if(map.containsKey("date_filed") && map.get("date_filed").toString().length()>1 && map.containsKey("case_number")) {
-                if(map.containsKey("case_name")&&anyMatch(map.get("case_name").toString().toLowerCase(),companies)) {
+                if(map.containsKey("case_name")) {
                     String involved = (String)map.get("case_name");
                     if(involved!=null) {
                         String[] parties = involved.toLowerCase().split("v\\.");
@@ -81,13 +88,23 @@ public class IngestLitigation {
                             System.out.println("Date: "+map.get("date_filed"));
                             map.put("plaintiff",plaintiff);
                             map.put("defendant",defendant);
-                            if(anyMatch(plaintiff,companies)) {
-                                pacerCasesAsPlaintiff.putIfAbsent(plaintiff, new ArrayList<>());
-                                pacerCasesAsPlaintiff.get(plaintiff).add(map);
+                            String pla = anyMatch(plaintiff,companies);
+                            if(pla!=null) {
+                                pacerCasesAsPlaintiff.putIfAbsent(pla, new ArrayList<>());
+                                pacerCasesAsPlaintiff.get(pla).add(map);
+                                System.out.println("Plaintiff: "+plaintiff);
+                                System.out.println("Defendant: "+defendant);
+                                System.out.println("Date: "+map.get("date_filed"));
+
                             }
-                            if(anyMatch(defendant,companies)) {
-                                pacerCasesAsDefendant.putIfAbsent(defendant, new ArrayList<>());
-                                pacerCasesAsDefendant.get(defendant).add(map);
+                            String def = anyMatch(defendant,companies);
+                            if(def!=null) {
+                                pacerCasesAsDefendant.putIfAbsent(def, new ArrayList<>());
+                                pacerCasesAsDefendant.get(def).add(map);
+                                System.out.println("Plaintiff: "+plaintiff);
+                                System.out.println("Defendant: "+defendant);
+                                System.out.println("Date: "+map.get("date_filed"));
+
                             }
                         }
                     }
