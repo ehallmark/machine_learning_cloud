@@ -114,15 +114,15 @@ public class IngestLitigation {
 
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(new File("disney_project_litigation.json")));
-        writer.write("Company,Is Plaintiff?,Count,Plaintiff Name,Defendant Name,Date Filed,Case Number");
+        writer.write("Company,Is Plaintiff?,Count,Plaintiff Name,Defendant Name,Date Filed,Case Number\n");
         pacerCasesAsDefendant.forEach((company,data)->{
             for(Map<String,Object> point : data) {
                 StringJoiner sj = new StringJoiner("\",\"","\"","\"\n");
                 sj
                         .add(company)
                         .add("FALSE")
-                        .add(point.get("plaintiff").toString())
                         .add(String.valueOf(data.size()))
+                        .add(point.get("plaintiff").toString())
                         .add(point.get("defendant").toString())
                         .add(point.getOrDefault("date_filed","").toString())
                         .add(point.get("case_number").toString());
