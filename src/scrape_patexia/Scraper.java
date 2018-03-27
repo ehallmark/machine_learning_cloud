@@ -14,11 +14,11 @@ public class Scraper {
         //final String password = "Evan1234";
 
 
-        LocalDate start = LocalDate.now();
+        LocalDate start = LocalDate.of(2000,1,1);//LocalDate.now();
         File dir = new File("patexia_dump");
         if(!dir.exists()) dir.mkdirs();
 
-        while(!start.isBefore(LocalDate.of(2000,1,1))) {
+        while(!start.isBefore(LocalDate.of(1990,1,1))) {
             File outputFile = new File(dir,"patexia-scrape-"+start.toString()+".html");
             if(!outputFile.getParentFile().exists()) {
                 outputFile.getParentFile().mkdir();
