@@ -1,9 +1,6 @@
 package scrape_patexia;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,17 +14,17 @@ public class Scraper {
         //final String password = "Evan1234";
 
 
-        LocalDate start = LocalDate.of(2000,1,1);
+        LocalDate start = LocalDate.now();
         File dir = new File("patexia_dump");
         if(!dir.exists()) dir.mkdirs();
 
-        while(start.isBefore(LocalDate.now())) {
-            File outputFile = new File(dir,"patexia-scrape-"+start.toString()+".html.gz");
+        while(!start.isBefore(LocalDate.of(2000,1,1))) {
+            File outputFile = new File(dir,"patexia-scrape-"+start.toString()+".html");
             if(!outputFile.getParentFile().exists()) {
                 outputFile.getParentFile().mkdir();
             }
 
-            final BufferedWriter outputStream = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile)));
+            final BufferedWriter outputStream = new BufferedWriter(new FileWriter(outputFile));
             int total = 51;
             AtomicInteger cnt = new AtomicInteger(1);
             final LocalDate date = start;
@@ -55,7 +52,7 @@ public class Scraper {
                 System.out.println("None found for "+outputFile.getName());
                 outputFile.delete();
             }
-            start = start.plusDays(1);
+            start = start.minusDays(1);
         }
     }
 
