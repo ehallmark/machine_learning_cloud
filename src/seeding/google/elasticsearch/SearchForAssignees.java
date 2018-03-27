@@ -58,14 +58,15 @@ public class SearchForAssignees {
             filter.setFilterSubset(Arrays.asList(assigneeFilter));
 
             ItemTransformer transformer = item -> {
-                String asset = (String) item.getDataMap().get(Constants.FULL_PUBLICATION_NUMBER);
-                String familyId = (String) item.getDataMap().get(Constants.FAMILY_ID);
-                String date = (String) item.getDataMap().get(Constants.FILING_DATE);
-                String country = (String) item.getDataMap().get(Constants.COUNTRY_CODE);
-                List<String> assigneeHarmonized = (List<String>) item.getDataMap().get(Constants.ASSIGNEE_HARMONIZED);
+                String asset = (String) item.getDataMap().getOrDefault(Constants.FULL_PUBLICATION_NUMBER,"");
+                String familyId = (String) item.getDataMap().getOrDefault(Constants.FAMILY_ID,"");
+                String date = (String) item.getDataMap().getOrDefault(Constants.FILING_DATE,"");
+                String country = (String) item.getDataMap().getOrDefault(Constants.COUNTRY_CODE,"");
+                List<Map<String,Object>> assigneeHarmonized = (List<Map<String,Object>>) item.getDataMap().getOrDefault(Constants.ASSIGNEE_HARMONIZED,Collections.emptyList());
                 try {
+                    List<String> assigneeNames = assigneeHarmonized.stream().map(obj->(String)obj.get(Constants.NAME)).filter(n->n!=null).collect(Collectors.toList());
                     StringJoiner sj = new StringJoiner("\",\"", "\"", "\"\n");
-                    sj.add(assignee).add(asset).add(familyId).add(date).add(country).add(String.join("; ", assigneeHarmonized));
+                    sj.add(assignee).add(asset).add(familyId).add(date).add(country).add(String.join("; ", assigneeNames));
                     String line = sj.toString();
                     System.out.println(line);
                     synchronized (csv) {
