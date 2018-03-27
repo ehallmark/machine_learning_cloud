@@ -16,6 +16,8 @@ import user_interface.ui_models.portfolios.items.ItemTransformer;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,10 +39,10 @@ public class SearchForAssignees {
             "apple",
             "verizon",
             "\"at&t\" | att | bellsouth | \"bell labs\" | directv",
-            "comcast | \"cox communications\"",
+            "comcast | \"universal pictures\"",
             "facebook",
             "netflix",
-            "\"time warner\""
+            "\"time warner\" | \"cox communications\""
         };
 
         final BufferedWriter csv = new BufferedWriter(new FileWriter(new File("disney_assignee_foreign.csv")));
@@ -60,11 +62,13 @@ public class SearchForAssignees {
             ItemTransformer transformer = item -> {
                 String asset = (String) item.getDataMap().getOrDefault(Constants.FULL_PUBLICATION_NUMBER,"");
                 String familyId = (String) item.getDataMap().getOrDefault(Constants.FAMILY_ID,"");
-                String date = (String) item.getDataMap().getOrDefault(Constants.FILING_DATE,"");
+                String year = (String) item.getDataMap().get(Constants.FILING_DATE);
+                if(year==null) return null;
+                year = String.valueOf(LocalDate.parse(year, DateTimeFormatter.BASIC_ISO_DATE).getYear());
                 String country = (String) item.getDataMap().getOrDefault(Constants.COUNTRY_CODE,"");
                 try {
                     StringJoiner sj = new StringJoiner("\",\"", "\"", "\"\n");
-                    sj.add(assignee).add(asset).add(familyId).add(date).add(country);
+                    sj.add(assignee).add(asset).add(familyId).add(year).add(country);
                     String line = sj.toString();
                     System.out.println(line);
                     synchronized (csv) {
