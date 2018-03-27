@@ -5,12 +5,11 @@ import org.elasticsearch.search.sort.SortOrder;
 import seeding.google.attributes.AssigneeHarmonized;
 import seeding.google.attributes.Constants;
 import seeding.google.attributes.Language;
-import seeding.google.attributes.Text;
+import seeding.google.attributes.Name;
 import seeding.google.mongo.IngestPatents;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.filters.AbstractIncludeFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
 import user_interface.ui_models.filters.AdvancedKeywordFilter;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
@@ -50,13 +49,14 @@ public class SearchForAssignees {
         for(String assignee : assignees) {
             NestedAttribute assigneeAttr = new AssigneeHarmonized();
 
-            AbstractAttribute assigneeText = assigneeAttr.getAttributes().stream().filter(attr->attr instanceof Text).findFirst().orElse(null);
+            AbstractAttribute assigneeText = assigneeAttr.getAttributes().stream().filter(attr->attr instanceof Name).findFirst().orElse(null);
             AbstractAttribute language = assigneeAttr.getAttributes().stream().filter(attr->attr instanceof Language).findFirst().orElse(null);
+
+
             AdvancedKeywordFilter assigneeFilter = new AdvancedKeywordFilter(assigneeText, AbstractFilter.FilterType.AdvancedKeyword);
             assigneeFilter.setQueryStr(assignee);
-            AbstractIncludeFilter languageFilter = new AbstractIncludeFilter(language, AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, Arrays.asList("EN","DE","FR","CA","AU"));
 
-            AbstractNestedFilter filter = new AbstractNestedFilter(assigneeAttr,true,assigneeFilter,languageFilter);
+            AbstractNestedFilter filter = new AbstractNestedFilter(assigneeAttr,true,assigneeFilter);
 
             ItemTransformer transformer = item -> {
                 String asset = (String) item.getDataMap().get(Constants.FULL_PUBLICATION_NUMBER);
