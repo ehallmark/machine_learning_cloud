@@ -45,11 +45,11 @@ public class SearchForAssignees {
             "\"time warner\" | \"cox communications\""
         };
 
-        final BufferedWriter csv = new BufferedWriter(new FileWriter(new File("disney_assignee_foreign.csv")));
-
-        csv.write("Search,Asset,Family ID,Filing Date,Country");
+        Map<String,Map<String,Map<Integer,Set<String>>>> companyToCountryToFamilyIdsToYearMap = Collections.synchronizedMap(new HashMap<>());
         for(String assignee : assignees) {
             NestedAttribute assigneeAttr = new AssigneeHarmonized();
+            Map<String,Map<Integer,Set<String>>> countryToFamilyIdsToYearMap = Collections.synchronizedMap(new HashMap<>());
+            companyToCountryToFamilyIdsToYearMap.put(assignee,countryToFamilyIdsToYearMap);
 
             AbstractAttribute assigneeText = assigneeAttr.getAttributes().stream().filter(attr->attr instanceof Name).findFirst().orElse(null);
 
@@ -60,22 +60,16 @@ public class SearchForAssignees {
             filter.setFilterSubset(Arrays.asList(assigneeFilter));
 
             ItemTransformer transformer = item -> {
-                String asset = (String) item.getDataMap().getOrDefault(Constants.FULL_PUBLICATION_NUMBER,"");
-                String familyId = (String) item.getDataMap().getOrDefault(Constants.FAMILY_ID,"");
-                String year = (String) item.getDataMap().get(Constants.FILING_DATE);
-                if(year==null) return null;
+                String familyId = (String) item.getDataMap().get(Constants.FAMILY_ID);
+                String year = (String) item.getDataMap().getOrDefault(Constants.PRIORITY_DATE, item.getDataMap().get(Constants.FILING_DATE));
+                String country = (String) item.getDataMap().get(Constants.COUNTRY_CODE);
+                if(year==null||familyId==null||country==null) return null;
                 year = String.valueOf(LocalDate.parse(year, DateTimeFormatter.BASIC_ISO_DATE).getYear());
-                String country = (String) item.getDataMap().getOrDefault(Constants.COUNTRY_CODE,"");
-                try {
-                    StringJoiner sj = new StringJoiner("\",\"", "\"", "\"\n");
-                    sj.add(assignee).add(asset).add(familyId).add(year).add(country);
-                    String line = sj.toString();
-                    System.out.println(line);
-                    synchronized (csv) {
-                        csv.write(line);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                synchronized (countryToFamilyIdsToYearMap) {
+                    countryToFamilyIdsToYearMap.putIfAbsent(country, Collections.synchronizedMap(new HashMap<>()));
+                    Map<Integer,Set<String>> familyIdToYearMap = countryToFamilyIdsToYearMap.get(country);
+                    familyIdToYearMap.putIfAbsent(Integer.valueOf(year),Collections.synchronizedSet(new HashSet<>()));
+                    familyIdToYearMap.get(Integer.valueOf(year)).add(familyId);
                 }
                 return null;
             };
@@ -84,9 +78,28 @@ public class SearchForAssignees {
 
             DataSearcher.searchForAssets(index, type, attributes, Collections.singleton(filter), seeding.Constants.NO_SORT, SortOrder.ASC, 100000000, nestedAttributeMap, transformer, false, false, true);
 
-            csv.flush();
         }
 
+        final BufferedWriter csv = new BufferedWriter(new FileWriter(new File("disney_assignee_foreign.csv")));
+
+        csv.write("Search,Country,Year,Family Count\n");
+        companyToCountryToFamilyIdsToYearMap.forEach((company,countryToFamilyIdsToYearMap)->{
+            countryToFamilyIdsToYearMap.forEach((country,yearToFamilyIdsMap)-> {
+                yearToFamilyIdsMap.forEach((year, familyIds) -> {
+                    try {
+                        StringJoiner sj = new StringJoiner("\",\"", "\"", "\"\n");
+                        sj.add(company).add(country).add(year.toString()).add(String.valueOf(familyIds.size()));
+                        String line = sj.toString();
+                        System.out.println("Line: "+line);
+                        csv.write(line);
+                    }catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            });
+        });
+
+        csv.flush();
         csv.close();
     }
 }
