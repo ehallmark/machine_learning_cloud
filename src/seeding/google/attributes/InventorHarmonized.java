@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 public class InventorHarmonized extends NestedAttribute {
     public InventorHarmonized() {
-        super(Arrays.asList(new Name(), new CountryCode()));
+        super(Arrays.asList(new Name(), new Language()));
     }
 
     @Override
