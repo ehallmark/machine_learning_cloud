@@ -1,7 +1,5 @@
 package scrape_patexia;
 
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,7 +27,7 @@ public class Scraper {
                 outputFile.getParentFile().mkdir();
             }
 
-            final BufferedWriter outputStream = new BufferedWriter(new OutputStreamWriter(new GzipCompressorOutputStream(new FileOutputStream(outputFile))));
+            final BufferedWriter outputStream = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile)));
             int total = 51;
             AtomicInteger cnt = new AtomicInteger(1);
             final LocalDate date = start;
