@@ -49,7 +49,7 @@ public class ReadScrapedData {
                     String caseNumber = tds.get(0).text().trim();
                     String caseName = tds.get(1).text().trim();
                     String caseDate = tds.get(2).text().trim();
-                    LocalDate caseDateFormatted = LocalDate.parse(caseDate, DateTimeFormatter.ofPattern("MMM dd, yyyy"));
+                    LocalDate caseDateFormatted = LocalDate.parse(caseDate, DateTimeFormatter.ofPattern("MMM d, yyyy"));
                     String[] caseNameSplit = caseName.split(" [vV]\\. ");
 
                     if(caseNameSplit.length<2) {
