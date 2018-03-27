@@ -14,7 +14,7 @@ public class Name extends AbstractAttribute {
 
     @Override
     public String getName() {
-        return Constants.TEXT;
+        return Constants.NAME;
     }
 
     @Override

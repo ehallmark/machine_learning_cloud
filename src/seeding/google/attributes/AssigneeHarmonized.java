@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 public class AssigneeHarmonized extends NestedAttribute {
     public AssigneeHarmonized() {
-        super(Arrays.asList(new Name(), new Language()));
+        super(Arrays.asList(new Name(), new CountryCode()));
     }
 
     @Override

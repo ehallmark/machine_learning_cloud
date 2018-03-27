@@ -44,6 +44,7 @@ public class SearchForAssignees {
         };
 
         final BufferedWriter csv = new BufferedWriter(new FileWriter(new File("disney_assignee_foreign.csv")));
+
         csv.write("Search,Asset,Family ID,Filing Date,Country,Assignee(s) Raw");
         for(String assignee : assignees) {
             NestedAttribute assigneeAttr = new AssigneeHarmonized();
