@@ -4,7 +4,6 @@ import elasticsearch.DataSearcher;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.google.attributes.AssigneeHarmonized;
 import seeding.google.attributes.Constants;
-import seeding.google.attributes.Language;
 import seeding.google.attributes.Name;
 import seeding.google.mongo.IngestPatents;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -50,13 +49,12 @@ public class SearchForAssignees {
             NestedAttribute assigneeAttr = new AssigneeHarmonized();
 
             AbstractAttribute assigneeText = assigneeAttr.getAttributes().stream().filter(attr->attr instanceof Name).findFirst().orElse(null);
-            AbstractAttribute language = assigneeAttr.getAttributes().stream().filter(attr->attr instanceof Language).findFirst().orElse(null);
-
 
             AdvancedKeywordFilter assigneeFilter = new AdvancedKeywordFilter(assigneeText, AbstractFilter.FilterType.AdvancedKeyword);
             assigneeFilter.setQueryStr(assignee);
 
             AbstractNestedFilter filter = new AbstractNestedFilter(assigneeAttr,true,assigneeFilter);
+            filter.setFilterSubset(Arrays.asList(assigneeFilter));
 
             ItemTransformer transformer = item -> {
                 String asset = (String) item.getDataMap().get(Constants.FULL_PUBLICATION_NUMBER);
@@ -78,6 +76,7 @@ public class SearchForAssignees {
                 return null;
             };
 
+            System.out.println("Starting to search for: "+assignee);
 
             DataSearcher.searchForAssets(index, type, attributes, Collections.singleton(filter), seeding.Constants.NO_SORT, SortOrder.ASC, -1, nestedAttributeMap, transformer, false, false, true);
 

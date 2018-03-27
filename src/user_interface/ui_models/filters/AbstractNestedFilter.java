@@ -69,6 +69,7 @@ public class AbstractNestedFilter extends AbstractFilter {
 
 
     private QueryBuilder queryHelper(Collection<AbstractFilter> subset, boolean usingScore, boolean useAll) {
+        if(subset==null) throw new NullPointerException("Subset is null. Please set subset before calling queryHelper().");
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         BoolQueryBuilder filterQuery = QueryBuilders.boolQuery();
         for(AbstractFilter filter : subset) {
