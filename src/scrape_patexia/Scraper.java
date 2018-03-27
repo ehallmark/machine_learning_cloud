@@ -2,12 +2,13 @@ package scrape_patexia;
 
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.IntStream;
 
 public class Scraper {
 
@@ -17,28 +18,56 @@ public class Scraper {
         //final String username = "Evan Hallmark";
         //final String password = "Evan1234";
 
-        File outputFile = new File("patexia-scrape.html.gz");
-        final OutputStream outputStream = new GzipCompressorOutputStream(new FileOutputStream(outputFile));
 
-        final int total = (100000/20)+1;
-        AtomicInteger cnt = new AtomicInteger(0);
-        IntStream.range(1,total).parallel().forEach(i->{
-            System.out.println(cnt.getAndIncrement() + " / "+total);
-            try {
-                synchronized (outputStream) {
-                    scrapePage(i, outputStream);
-                }
-                //TimeUnit.MILLISECONDS.sleep(10);
-            } catch(Exception e) {
-                e.printStackTrace();
+        LocalDate start = LocalDate.of(2000,1,1);
+        File dir = new File("patexia_dump");
+        if(!dir.exists()) dir.mkdirs();
+
+        while(start.isBefore(LocalDate.now())) {
+            File outputFile = new File(dir,"patexia-scrape-"+start.toString()+".html.gz");
+            if(!outputFile.getParentFile().exists()) {
+                outputFile.getParentFile().mkdir();
             }
-        });
 
-        outputStream.close();
+            final BufferedWriter outputStream = new BufferedWriter(new OutputStreamWriter(new GzipCompressorOutputStream(new FileOutputStream(outputFile))));
+            int total = 51;
+            AtomicInteger cnt = new AtomicInteger(1);
+            final LocalDate date = start;
+            boolean foundAny = false;
+            for(int i = 1; i <= total; i++) {
+                System.out.println(date.toString()+": "+cnt.getAndIncrement() + " / " + (total-1));
+                try {
+                    String page = scrapePage(i,date);
+                    if(page==null||page.trim().isEmpty()||page.contains("We couldn't find that page!")||page.contains("No lawsuits found")) {
+                        break;
+                    }
+                    synchronized (outputStream) {
+                        outputStream.write(page+"\n   \n  \n \n\n");
+                        outputStream.flush();
+                        foundAny=true;
+                    }
+
+                    //TimeUnit.MILLISECONDS.sleep(10);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            };
+            outputStream.close();
+            if(!foundAny) {
+                System.out.println("None found for "+outputFile.getName());
+                outputFile.delete();
+            }
+            start = start.plusDays(1);
+        }
     }
 
-    private static void scrapePage(int page, OutputStream outputStream) throws Exception {
-        URL url = new URL("https://www.patexia.com/ip-research/lawsuits/page/"+page);
-        HttpBasicAuth.downloadFileWithAuth(url,outputStream);
+    private static String toDate(LocalDate d) {
+        return String.valueOf(d.getYear())+"-"+d.getMonthValue()+"-"+d.getDayOfMonth();
+    }
+
+    private static String scrapePage(int page, LocalDate date) throws Exception {
+        LocalDate start = date;
+        URL url = new URL("https://www.patexia.com/ip-research/lawsuits/page/"+page+"?startFilingDateRange="+toDate(start)+"&endFilingDateRange="+toDate(date));
+        return HttpBasicAuth.downloadFileWithAuth(url);
     }
 }
