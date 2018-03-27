@@ -45,7 +45,7 @@ public class SearchForAssignees {
 
         final BufferedWriter csv = new BufferedWriter(new FileWriter(new File("disney_assignee_foreign.csv")));
 
-        csv.write("Search,Asset,Family ID,Filing Date,Country,Assignee(s) Raw");
+        csv.write("Search,Asset,Family ID,Filing Date,Country");
         for(String assignee : assignees) {
             NestedAttribute assigneeAttr = new AssigneeHarmonized();
 
@@ -62,11 +62,9 @@ public class SearchForAssignees {
                 String familyId = (String) item.getDataMap().getOrDefault(Constants.FAMILY_ID,"");
                 String date = (String) item.getDataMap().getOrDefault(Constants.FILING_DATE,"");
                 String country = (String) item.getDataMap().getOrDefault(Constants.COUNTRY_CODE,"");
-                List<Map<String,Object>> assigneeHarmonized = (List<Map<String,Object>>) item.getDataMap().getOrDefault(Constants.ASSIGNEE_HARMONIZED,Collections.emptyList());
                 try {
-                    List<String> assigneeNames = assigneeHarmonized.stream().map(obj->(String)obj.get(Constants.NAME)).filter(n->n!=null).collect(Collectors.toList());
                     StringJoiner sj = new StringJoiner("\",\"", "\"", "\"\n");
-                    sj.add(assignee).add(asset).add(familyId).add(date).add(country).add(String.join("; ", assigneeNames));
+                    sj.add(assignee).add(asset).add(familyId).add(date).add(country);
                     String line = sj.toString();
                     System.out.println(line);
                     synchronized (csv) {
@@ -80,7 +78,7 @@ public class SearchForAssignees {
 
             System.out.println("Starting to search for: "+assignee);
 
-            DataSearcher.searchForAssets(index, type, attributes, Collections.singleton(filter), seeding.Constants.NO_SORT, SortOrder.ASC, -1, nestedAttributeMap, transformer, false, false, true);
+            DataSearcher.searchForAssets(index, type, attributes, Collections.singleton(filter), seeding.Constants.NO_SORT, SortOrder.ASC, 100000000, nestedAttributeMap, transformer, false, false, true);
 
             csv.flush();
         }
