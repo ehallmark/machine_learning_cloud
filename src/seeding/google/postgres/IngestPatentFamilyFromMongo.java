@@ -29,7 +29,7 @@ public class IngestPatentFamilyFromMongo {
         };
 
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("insert into big_query_patent_family ("+String.join(",",fields)+") values (?,?,?,?,?,?,?) on conflict (publication_number_full) do update set ("+ String.join(",", Arrays.copyOfRange(fields,1,fields.length))+") = (?,?,?,?,?,?)");
+        PreparedStatement ps = conn.prepareStatement("insert into big_query_patent_family ("+String.join(",",fields)+") values (?,?,?,?,?,?,?) on conflict ("+fields[0]+") do update set ("+ String.join(",", Arrays.copyOfRange(fields,1,fields.length))+") = (?,?,?,?,?,?)");
         Consumer<Document> consumer = doc -> {
             try {
                 for(int i = 0; i < fields.length; i++) {

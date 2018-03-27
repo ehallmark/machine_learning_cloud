@@ -36,7 +36,7 @@ public class IngestSEPFromMongo {
         };
 
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("insert into big_query_sep ("+String.join(",",fields)+") values (?,?,?,?,?,?,?::date,?,?,?::integer,?,?::boolean,?::boolean,?) on conflict (record_id) do update set ("+ String.join(",",Arrays.copyOfRange(fields,1,fields.length))+") = (?,?,?,?,?,?::date,?,?,?::integer,?,?::boolean,?::boolean,?)");
+        PreparedStatement ps = conn.prepareStatement("insert into big_query_sep ("+String.join(",",fields)+") values (?,?,?,?,?,?,?::date,?,?,?::integer,?,?::boolean,?::boolean,?) on conflict ("+fields[0]+") do update set ("+ String.join(",",Arrays.copyOfRange(fields,1,fields.length))+") = (?,?,?,?,?,?::date,?,?,?::integer,?,?::boolean,?::boolean,?)");
         Consumer<Document> consumer = doc -> {
             try {
                 for(int i = 0; i < fields.length; i++) {

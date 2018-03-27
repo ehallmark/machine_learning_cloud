@@ -14,7 +14,7 @@ public class Scraper {
         //final String password = "Evan1234";
 
 
-        LocalDate start = LocalDate.of(2000,1,1);//LocalDate.now();
+        LocalDate start = LocalDate.now();
         File dir = new File("patexia_dump");
         if(!dir.exists()) dir.mkdirs();
 

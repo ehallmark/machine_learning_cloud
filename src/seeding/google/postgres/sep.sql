@@ -14,8 +14,8 @@ create table big_query_sep (
     blanket_type integer,
     blanket_scope text,
     third_party boolean not null default('f'),
-    reciprocity boolean not null default('f');
-    publication_number
+    reciprocity boolean not null default('f'),
+    publication_number text
 );
 
 create index big_query_sep_family_id on big_query_sep (family_id);
