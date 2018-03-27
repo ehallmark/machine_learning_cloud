@@ -50,9 +50,22 @@ public class ReadScrapedData {
                     String caseName = tds.get(1).text().trim();
                     String caseDate = tds.get(2).text().trim();
                     LocalDate caseDateFormatted = LocalDate.parse(caseDate, DateTimeFormatter.ofPattern("MMM d, yyyy"));
-                    String[] caseNameSplit = caseName.split(" [vV]\\. ");
 
-                    if(caseNameSplit.length<2) {
+                    String caseNameUpper = caseName.toUpperCase();
+                    String[] caseNameSplit;
+                    if(caseNameUpper.contains(" VS. ")) {
+                        caseNameSplit = caseNameUpper.split(" VS\\. ",2);
+                    } else if(caseNameUpper.contains(" V. ")) {
+                        caseNameSplit = caseNameUpper.split(" V\\. ",2);
+                    } else if(caseNameUpper.contains(" VS ")) {
+                        caseNameSplit = caseNameUpper.split(" VS ",2);
+                    } else if (caseNameUpper.contains(" V ")) {
+                        caseNameSplit = caseNameUpper.split(" V ", 2);
+                    } else {
+                        caseNameSplit=null;
+                    }
+
+                    if(caseNameSplit==null||caseNameSplit.length<2) {
                         System.out.println("WARNING::Could not split case name. Case Name: "+caseName);
                         continue;
                     }
@@ -81,10 +94,11 @@ public class ReadScrapedData {
                         System.exit(1);
                     }
 
-                    total.getAndIncrement();
+                    if(total.getAndIncrement()%1000==999) {
+                        System.out.println("Completed: "+total.get());
+                    }
                 }
             });
-            System.out.println("Finished file: "+inputFile.getName());
             try {
                 Database.commit();
             } catch(Exception e) {
