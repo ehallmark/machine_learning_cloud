@@ -85,6 +85,12 @@ public class ReadScrapedData {
                 }
             });
             System.out.println("Finished file: "+inputFile.getName());
+            try {
+                Database.commit();
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
 
         System.out.println("Total: "+total.get());

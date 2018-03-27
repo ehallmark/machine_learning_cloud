@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class IngestSEPFromMongo {
@@ -37,6 +38,7 @@ public class IngestSEPFromMongo {
 
         Connection conn = Database.getConn();
         PreparedStatement ps = conn.prepareStatement("insert into big_query_sep ("+String.join(",",fields)+") values (?,?,?,?,?,?,?::date,?,?,?::integer,?,?::boolean,?::boolean,?) on conflict ("+fields[0]+") do update set ("+ String.join(",",Arrays.copyOfRange(fields,1,fields.length))+") = (?,?,?,?,?,?::date,?,?,?::integer,?,?::boolean,?::boolean,?)");
+        AtomicInteger cnt = new AtomicInteger(0);
         Consumer<Document> consumer = doc -> {
             try {
                 for(int i = 0; i < fields.length; i++) {
@@ -47,6 +49,9 @@ public class IngestSEPFromMongo {
                     }
                 }
                 ps.executeUpdate();
+                if(cnt.getAndIncrement()%10000==9999) {
+                    Database.commit();
+                }
             } catch(Exception e) {
                 e.printStackTrace();
                 System.exit(1);
@@ -55,6 +60,7 @@ public class IngestSEPFromMongo {
 
         IngestMongoIntoElasticSearch.iterateOverCollection(consumer, new Document(), index, type, fields);
 
+        Database.commit();
         ps.close();
         conn.close();
     }
