@@ -14,7 +14,7 @@ import java.util.*;
 public class IngestLitigation {
 
     private static String anyMatch(String c, Collection<String> collection) {
-        return collection.stream().filter(p->c.startsWith(p)).findFirst().orElse(null);
+        return collection.stream().filter(p->c.toLowerCase().startsWith(p.toLowerCase())).findFirst().orElse(null);
     }
 
     public static void main(String[] args) throws Exception {
