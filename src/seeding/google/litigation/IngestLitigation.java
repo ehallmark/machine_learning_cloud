@@ -85,7 +85,7 @@ public class IngestLitigation {
 
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(new File("disney_project_litigation_final.csv")));
-        writer.write("Company,Is Plaintiff?,Total,Plaintiff Name,Defendant Name,Date Filed,Year,Case Number\n");
+        writer.write("Company,Is Plaintiff?,Total,Plaintiff Name,Defendant Name,Date Filed,Year,Case Number,Case Name\n");
         casesAsDefendant.forEach((company,data)->{
             for(Map<String,Object> point : data) {
                 StringJoiner sj = new StringJoiner("\",\"","\"","\"\n");
@@ -97,7 +97,8 @@ public class IngestLitigation {
                         .add(point.get("defendant").toString())
                         .add(point.getOrDefault("date_filed","").toString())
                         .add(point.get("year").toString())
-                        .add(point.get("case_number").toString());
+                        .add(point.get("case_number").toString())
+                        .add(point.get("case_name").toString());
                 try {
                     writer.write(sj.toString());
                 } catch(Exception e) {
@@ -112,12 +113,13 @@ public class IngestLitigation {
                 sj
                         .add(company)
                         .add("TRUE")
-                        .add(point.get("plaintiff").toString())
                         .add(String.valueOf(data.size()))
+                        .add(point.get("plaintiff").toString())
                         .add(point.get("defendant").toString())
                         .add(point.getOrDefault("date_filed","").toString())
                         .add(point.get("year").toString())
-                        .add(point.get("case_number").toString());
+                        .add(point.get("case_number").toString())
+                        .add(point.get("case_name").toString());
                 try {
                     writer.write(sj.toString());
                 } catch(Exception e) {
