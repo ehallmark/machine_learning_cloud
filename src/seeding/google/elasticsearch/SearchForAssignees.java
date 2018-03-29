@@ -77,12 +77,14 @@ public class SearchForAssignees {
                     familyIdToYearMap.putIfAbsent(Integer.valueOf(year),Collections.synchronizedSet(new HashSet<>()));
                     familyIdToYearMap.get(Integer.valueOf(year)).add(familyId);
                 }
+                String assigneesMatched = String.join("; ",((String)item.getDataMap().getOrDefault(Constants.ASSIGNEE_HARMONIZED+"."+Constants.NAME,"")).split(DataSearcher.ARRAY_SEPARATOR));
+                System.out.println("Assignees matched: "+assigneesMatched);
                 StringJoiner sj = new StringJoiner("\",\"", "\"", "\"\n")
                         .add((String)item.getDataMap().get(Constants.FULL_PUBLICATION_NUMBER))
                         .add(country)
                         .add(familyId)
                         .add(date.format(DateTimeFormatter.ISO_DATE))
-                        .add(String.join("; ",(List<String>)item.getDataMap().getOrDefault(Constants.ASSIGNEE_HARMONIZED+"."+Constants.NAME, Collections.emptyList())))
+                        .add(assigneesMatched)
                         .add(assignee);
                 synchronized (writer) {
                     try {
