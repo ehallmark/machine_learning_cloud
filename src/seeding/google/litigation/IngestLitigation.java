@@ -116,6 +116,7 @@ public class IngestLitigation {
                         .add(String.valueOf(data.size()))
                         .add(point.get("defendant").toString())
                         .add(point.getOrDefault("date_filed","").toString())
+                        .add(point.get("year").toString())
                         .add(point.get("case_number").toString());
                 try {
                     writer.write(sj.toString());
