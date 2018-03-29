@@ -33,19 +33,24 @@ public class SearchForAssignees {
                 .collect(Collectors.toMap(e->e.getFullName(),e->(NestedAttribute)e));
 
         final String[] assignees = new String[]{
-            "amazon",
-            "google",
-            "disney",
-            "apple",
-            "verizon",
-            "\"at&t\" | att | bellsouth | \"bell labs\" | directv",
-            "comcast | \"universal pictures\"",
-            "facebook",
-            "netflix",
-            "\"time warner\" | \"cox communications\""
+                "amazon",
+                "google",
+                "disney",
+                "apple",
+                "verizon",
+                "\"at&t\" | att | bellsouth | \"bell labs\"",
+                "directv",
+                "comcast",
+                "\"universal pictures\"",
+                "facebook",
+                "netflix",
+                "\"time warner cable\"",
+                "\"cox communications\""
         };
 
         Map<String,Map<String,Map<Integer,Set<String>>>> companyToCountryToFamilyIdsToYearMap = Collections.synchronizedMap(new HashMap<>());
+        final BufferedWriter writer = new BufferedWriter(new FileWriter(new File("disney_assignee_foreign.csv")));
+        writer.write("Asset Number, Country, Family ID, Priority Date (est.), Assignee(s), Search Term\n");
         for(String assignee : assignees) {
             NestedAttribute assigneeAttr = new AssigneeHarmonized();
             Map<String,Map<Integer,Set<String>>> countryToFamilyIdsToYearMap = Collections.synchronizedMap(new HashMap<>());
@@ -64,12 +69,27 @@ public class SearchForAssignees {
                 String year = (String) item.getDataMap().getOrDefault(Constants.PRIORITY_DATE, item.getDataMap().get(Constants.FILING_DATE));
                 String country = (String) item.getDataMap().get(Constants.COUNTRY_CODE);
                 if(year==null||familyId==null||country==null) return null;
-                year = String.valueOf(LocalDate.parse(year, DateTimeFormatter.BASIC_ISO_DATE).getYear());
+                LocalDate date = LocalDate.parse(year,DateTimeFormatter.BASIC_ISO_DATE);
+                year = String.valueOf(date.getYear());
                 synchronized (countryToFamilyIdsToYearMap) {
                     countryToFamilyIdsToYearMap.putIfAbsent(country, Collections.synchronizedMap(new HashMap<>()));
                     Map<Integer,Set<String>> familyIdToYearMap = countryToFamilyIdsToYearMap.get(country);
                     familyIdToYearMap.putIfAbsent(Integer.valueOf(year),Collections.synchronizedSet(new HashSet<>()));
                     familyIdToYearMap.get(Integer.valueOf(year)).add(familyId);
+                }
+                StringJoiner sj = new StringJoiner("\",\"", "\"", "\"\n")
+                        .add((String)item.getDataMap().get(Constants.FULL_PUBLICATION_NUMBER))
+                        .add(country)
+                        .add(familyId)
+                        .add(date.format(DateTimeFormatter.ISO_DATE))
+                        .add(String.join("; ",(List<String>)item.getDataMap().getOrDefault(Constants.ASSIGNEE_HARMONIZED+"."+Constants.NAME, Collections.emptyList())))
+                        .add(assignee);
+                synchronized (writer) {
+                    try {
+                        writer.write(sj.toString());
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
                 }
                 return null;
             };
@@ -79,9 +99,11 @@ public class SearchForAssignees {
             DataSearcher.searchForAssets(index, type, attributes, Collections.singleton(filter), seeding.Constants.NO_SORT, SortOrder.ASC, 100000000, nestedAttributeMap, transformer, false, false, true);
 
         }
+        writer.flush();
+        writer.close();
 
-        final BufferedWriter csv = new BufferedWriter(new FileWriter(new File("disney_assignee_foreign.csv")));
 
+        final BufferedWriter csv = new BufferedWriter(new FileWriter(new File("disney_assignee_foreign_grouped.csv")));
         csv.write("Search,Country,Year,Family Count\n");
         companyToCountryToFamilyIdsToYearMap.forEach((company,countryToFamilyIdsToYearMap)->{
             countryToFamilyIdsToYearMap.forEach((country,yearToFamilyIdsMap)-> {
