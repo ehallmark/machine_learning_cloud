@@ -75,15 +75,9 @@ public class IngestPatentResearch {
         final MongoCollection collection = client.getDatabase(INDEX_NAME).getCollection(TYPE_NAME);
         final LocalDate twentyFiveYearsAgo = LocalDate.now().minusYears(25);
         final Function<Map<String,Object>,Boolean> filterDocumentFunction = doc -> {
-            Object filingDate = doc.get(FILING_DATE);
-            if(filingDate==null) return false;
-            if(filingDate instanceof LocalDate) {
-                return ((LocalDate) filingDate).isAfter(twentyFiveYearsAgo);
-            } else {
-                System.out.println("Filing date is not LocalDate.class");
-                System.exit(1);
-            }
-            return false;
+            String filingDate = (String)doc.get(FILING_DATE);
+            if(filingDate==null||filingDate.length()!=10) return false;
+            return LocalDate.parse(filingDate, DateTimeFormatter.ISO_DATE).isAfter(twentyFiveYearsAgo);
         };
 
         ingestJsonDump(idField,dataDir,collection,false,filterDocumentFunction,attributeFunctions);
