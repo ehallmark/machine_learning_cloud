@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 10/26/17.
  */
 public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoderNN {
-    public static final int VECTOR_SIZE = 32;
+    public static final int VECTOR_SIZE = 16;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"deeper_cpc_deep_vae_nn_model_data");
 
     public DeeperCPCVariationalAutoEncoderNN(DeeperCPCVAEPipelineManager pipelineManager, String modelName, int maxCpcDepth) {
@@ -139,8 +139,8 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
 
         //Neural net configuration
         int[] hiddenLayerEncoder = new int[]{
-                2500,
-                2500
+                4000,
+                4000
         };
 
         int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
@@ -153,8 +153,8 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
 
         Map<Integer,Double> iterationLearningRate = new HashMap<>();
         iterationLearningRate.put(0,learningRate);
-      //  iterationLearningRate.put(100,learningRate/2);
-      //  iterationLearningRate.put(200,learningRate/4);
+        iterationLearningRate.put(1000,learningRate/2);
+        iterationLearningRate.put(5000,learningRate/4);
 
         return new NeuralNetConfiguration.Builder()
                 .seed(rngSeed)
@@ -162,8 +162,8 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
                 .learningRateDecayPolicy(LearningRatePolicy.Schedule)
                 .learningRateSchedule(iterationLearningRate)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .updater(Updater.RMSPROP)
-                //.updater(Updater.ADAM)
+                //.updater(Updater.RMSPROP)
+                .updater(Updater.ADAM)
                 .miniBatch(true)
                 .weightInit(WeightInit.XAVIER)
                 //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
@@ -191,7 +191,7 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
         final int printIterations = 100;
 
         if(net==null) {
-            final double learningRate = 0.001;
+            final double learningRate = 0.0001;
             net = new MultiLayerNetwork(getConf(learningRate,nEpochs));
             net.init();
         } else {

@@ -1,4 +1,4 @@
-package seeding.google.mongo;
+package seeding.google.mongo.ingest;
 
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.client.model.BulkWriteOptions;

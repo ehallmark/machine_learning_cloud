@@ -1,13 +1,12 @@
 package seeding.google.elasticsearch;
 
 import com.google.gson.Gson;
-import elasticsearch.DataIngester;
 import elasticsearch.MyClient;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import seeding.google.attributes.Constants;
-import seeding.google.mongo.IngestPatents;
+import seeding.google.mongo.ingest.IngestPatents;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;

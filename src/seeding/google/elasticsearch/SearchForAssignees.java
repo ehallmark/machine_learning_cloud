@@ -5,7 +5,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import seeding.google.attributes.AssigneeHarmonized;
 import seeding.google.attributes.Constants;
 import seeding.google.attributes.Name;
-import seeding.google.mongo.IngestPatents;
+import seeding.google.mongo.ingest.IngestPatents;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.filters.AbstractFilter;

@@ -2,7 +2,7 @@ package seeding.google.elasticsearch;
 
 import elasticsearch.IngestMongoIntoElasticSearch;
 import seeding.google.attributes.Constants;
-import seeding.google.mongo.IngestPatents;
+import seeding.google.mongo.ingest.IngestPatents;
 
 public class IngestBigQueryFromMongo {
 

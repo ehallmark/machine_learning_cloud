@@ -1,4 +1,4 @@
-package seeding.google.mongo;
+package seeding.google.mongo.ingest;
 
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoCollection;
@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static seeding.google.mongo.IngestJsonHelper.ingestJsonDump;
 import static seeding.google.attributes.Constants.*;
+import static seeding.google.mongo.ingest.IngestJsonHelper.ingestJsonDump;
 
-public class IngestPatents {
+public class IngestPatentResearch {
     public static final String INDEX_NAME = "big_query";
     public static final String TYPE_NAME = "patents";
 
@@ -70,7 +70,7 @@ public class IngestPatents {
 
 
         final String idField = PUBLICATION_NUMBER_GOOGLE;
-        final File dataDir = new File("/usb2/data/google-big-query/patents/");
+        final File dataDir = new File("/usb2/data/google-big-query/google-patents-research/");
         final MongoClient client = MongoDBClient.get();
         final MongoCollection collection = client.getDatabase(INDEX_NAME).getCollection(TYPE_NAME);
         final LocalDate twentyFiveYearsAgo = LocalDate.now().minusYears(25);
@@ -80,6 +80,6 @@ public class IngestPatents {
             return LocalDate.parse(filingDate, DateTimeFormatter.BASIC_ISO_DATE).isAfter(twentyFiveYearsAgo);
         };
 
-        ingestJsonDump(idField,dataDir,collection,true,filterDocumentFunction,attributeFunctions);
+        ingestJsonDump(idField,dataDir,collection,false,filterDocumentFunction,attributeFunctions);
     }
 }

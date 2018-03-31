@@ -4,7 +4,7 @@ import elasticsearch.IngestMongoIntoElasticSearch;
 import org.bson.Document;
 import seeding.Database;
 import seeding.google.attributes.Constants;
-import seeding.google.mongo.IngestPatents;
+import seeding.google.mongo.ingest.IngestPatents;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

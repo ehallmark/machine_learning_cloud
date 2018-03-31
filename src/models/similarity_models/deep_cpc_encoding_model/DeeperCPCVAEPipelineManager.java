@@ -189,9 +189,9 @@ public class DeeperCPCVAEPipelineManager extends CPCVAEPipelineManager {
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         boolean rebuildPrerequisites = false;
         boolean rebuildDatasets = false;
-        boolean runModels = true;
+        boolean runModels = false;
         boolean forceRecreateModels = false;
-        boolean runPredictions = false;
+        boolean runPredictions = true;
         int nEpochs = 5;
         String modelName = MODEL_NAME;
 

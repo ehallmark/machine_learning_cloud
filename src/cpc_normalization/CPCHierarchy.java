@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.bson.Document;
 import seeding.Constants;
 import seeding.Database;
-import seeding.google.mongo.IngestCPCDefinitions;
+import seeding.google.mongo.ingest.IngestCPCDefinitions;
 
 import java.io.File;
 import java.util.*;
@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 10/24/2017.
  */
 public class CPCHierarchy {
+    private static CPCHierarchy MODEL;
     private static final File cpcHierarchyTopLevelFile = new File(Constants.DATA_FOLDER+"cpc_toplevel_hierarchy.jobj");
     private static final File cpcHierarchyMapFile = new File(Constants.DATA_FOLDER+"cpc_map_hierarchy.jobj");
     @Getter
@@ -24,6 +25,18 @@ public class CPCHierarchy {
     @Getter
     protected Map<String,CPC> labelToCPCMap;
     public CPCHierarchy() {
+        if(MODEL!=null) {
+            topLevel=MODEL.topLevel;
+            labelToCPCMap=MODEL.labelToCPCMap;
+        }
+    }
+
+    public static synchronized CPCHierarchy get() {
+        if(MODEL == null) {
+            MODEL = new CPCHierarchy();
+            MODEL.loadGraph();
+        }
+        return MODEL;
     }
 
     public Collection<CPC> cpcWithAncestors(String label) {
@@ -90,11 +103,15 @@ public class CPCHierarchy {
     }
 
     public void loadGraph() {
-        topLevel = (Collection<CPC> ) Database.tryLoadObject(cpcHierarchyTopLevelFile);
-        labelToCPCMap = (Map<String,CPC>) Database.tryLoadObject(cpcHierarchyMapFile);
-        labelToCPCMap.values().forEach(v->{
-            if(v.getName()==null) throw new RuntimeException("Should not be null...");
-        });
+        if(topLevel==null) {
+            topLevel = (Collection<CPC>) Database.tryLoadObject(cpcHierarchyTopLevelFile);
+        }
+        if(labelToCPCMap==null) {
+            labelToCPCMap = (Map<String, CPC>) Database.tryLoadObject(cpcHierarchyMapFile);
+            labelToCPCMap.values().forEach(v -> {
+                if (v.getName() == null) throw new RuntimeException("Should not be null...");
+            });
+        }
     }
 
 
