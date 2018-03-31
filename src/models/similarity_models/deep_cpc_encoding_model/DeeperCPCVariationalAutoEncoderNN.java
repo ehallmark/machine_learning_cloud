@@ -139,8 +139,8 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
 
         //Neural net configuration
         int[] hiddenLayerEncoder = new int[]{
-                2048,
-                2048
+                2500,
+                2500
         };
 
         int[] hiddenLayerDecoder = new int[hiddenLayerEncoder.length];
@@ -162,13 +162,13 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
                 .learningRateDecayPolicy(LearningRatePolicy.Schedule)
                 .learningRateSchedule(iterationLearningRate)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                //.updater(Updater.RMSPROP)
-                .updater(Updater.ADAM)
+                .updater(Updater.RMSPROP)
+                //.updater(Updater.ADAM)
                 .miniBatch(true)
                 .weightInit(WeightInit.XAVIER)
                 //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
                 //.gradientNormalizationThreshold(1d)
-                //.regularization(true).l2(1e-4)
+                .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .encoderLayerSizes(hiddenLayerEncoder)
@@ -188,14 +188,14 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
     public void train(int nEpochs) {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         DataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
-        final int printIterations = 20;
+        final int printIterations = 100;
 
         if(net==null) {
             final double learningRate = 0.001;
             net = new MultiLayerNetwork(getConf(learningRate,nEpochs));
             net.init();
         } else {
-            final double learningRate =  0.0001;
+            final double learningRate =  0.00001;
             INDArray params = net.params();
             net = new MultiLayerNetwork(getConf(learningRate,nEpochs));
             net.init(params,false);

@@ -30,41 +30,27 @@ public class DeeperCPCIndexMap {
                 cpcIdxMap = null;
             }
             if(cpcIdxMap==null) {
-                Map<String,Set<String>> appToCPCStringMap = Collections.synchronizedMap(new HashMap<>(new AssetToCPCMap().getApplicationDataMap()));
-                // limit cpcs based on frequency
-                Map<String,Long> cpcCountMap = appToCPCStringMap.values().parallelStream().flatMap(v->v.stream())
-                        .collect(Collectors.groupingBy(v->v,Collectors.counting()));
-
                 CPCHierarchy hierarchy = hierarchyTask.invoke();
 
-                Collection<CPC> fourthLevel = hierarchy.getLabelToCPCMap().values().stream().filter(cpc->cpc.getNumParts()==4)
-                        .collect(Collectors.toList());
-
-                Set<String> topCPCs = Collections.synchronizedSet(new HashSet<>());
-                Map<String,List<String>> parentToTopCpcCounts = new HashMap<>();
-                fourthLevel.forEach(level->{
-                    if(level.getChildren().size()<4) return;
-                    Map<String,Long> map = level.getChildren().stream().collect(Collectors.toMap(c->c.getName(),c->cpcCountMap.getOrDefault(c.getName(),0L)));
-                    parentToTopCpcCounts.put(level.getName(),map.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).map(e->e.getKey()).collect(Collectors.toList()));
-                });
-                AtomicInteger iter = new AtomicInteger(0);
-                AtomicBoolean anyLeft = new AtomicBoolean(true);
-                while(topCPCs.size()<maxNum&&anyLeft.get()) {
-                    anyLeft.set(false);
-                    parentToTopCpcCounts.forEach((parent,sortedChildren) -> {
-                        if(sortedChildren.size()>iter.get()) {
-                            topCPCs.add(sortedChildren.get(iter.get()));
-                            anyLeft.set(true);
-                        }
+                Set<String> cpcs = Collections.synchronizedSet(new HashSet<>());
+                int i = 0;
+                Collection<CPC> nodes = hierarchy.getTopLevel();
+                System.out.println("Nodes at start: "+nodes.size());
+                while(i < depth) {
+                    nodes.forEach(node->cpcs.add(node.getName()));
+                    List<CPC> nodesCopy = new ArrayList<>(nodes);
+                    nodes.clear();
+                    nodesCopy.forEach(node->{
+                        nodes.addAll(node.getChildren());
                     });
-                    iter.getAndIncrement();
+                    System.out.println("Nodes at iter "+i+": "+nodes.size());
+                    i++;
                 }
 
                 AtomicInteger idx = new AtomicInteger(0);
                 System.out.println("Could not find cpc idx map... creating new one now.");
-                cpcIdxMap = hierarchyTask.invoke().getLabelToCPCMap().entrySet().stream().filter(e->e.getValue().getNumParts()<=depth)
-                        .filter(e->e.getValue().getNumParts()<depth||topCPCs.contains(e.getValue().getName()))
-                        .sorted(Comparator.comparing(e->e.getKey())).sequential().collect(Collectors.toMap(e -> e.getKey(), e -> idx.getAndIncrement()));
+                cpcIdxMap = cpcs.stream()
+                        .sorted().sequential().collect(Collectors.toMap(e -> e, e -> idx.getAndIncrement()));
                 System.out.println("Input size: " + cpcIdxMap.size());
                 System.out.println("Saving cpc idx map...");
                 Database.trySaveObject(cpcIdxMap,new File(CPC_TO_INDEX_FILENAME+depth+"_"+maxNum));

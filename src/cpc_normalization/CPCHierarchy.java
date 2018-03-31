@@ -56,7 +56,7 @@ public class CPCHierarchy {
             }
             List<String> parents = (List<String>)doc.get("parents");
             if(parents!=null) {
-                parents.forEach(parent->{
+                parents.stream().sorted((p1,p2)->Integer.compare(p2.length(),p1.length())).limit(1).forEach(parent->{
                     connectionCounter.getAndIncrement();
                     CPC parentCpc = labelToCPCMap.getOrDefault(parent,new CPC(parent));
                     labelToCPCMap.putIfAbsent(parent,parentCpc);
