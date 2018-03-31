@@ -141,14 +141,14 @@ public class IngestJsonHelper {
                 if(v.equals("0")) {
                     return null;
                 } else {
-                    return LocalDate.parse(v.toString(), DateTimeFormatter.BASIC_ISO_DATE);
+                    return LocalDate.parse(v.toString(), DateTimeFormatter.BASIC_ISO_DATE).format(DateTimeFormatter.ISO_DATE);
                 }
             }
         } else if(v!=null&& k.endsWith("_date") && v instanceof Integer) {
             if(v.equals(0)) {
                 return null;
             }
-            return LocalDate.parse(v.toString(),DateTimeFormatter.BASIC_ISO_DATE);
+            return LocalDate.parse(v.toString(),DateTimeFormatter.BASIC_ISO_DATE).format(DateTimeFormatter.ISO_DATE);
         }
         return v;
     }

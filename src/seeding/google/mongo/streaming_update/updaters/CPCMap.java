@@ -63,31 +63,7 @@ public class CPCMap implements StreamableUpdater {
 
     @Override
     public void updateDocument(Document doc, Map<String, Object> set, Map<String, Object> unset) {
-        // add cpc tree
-        List<Map<String,Object>> cpcs = (List<Map<String,Object>>)doc.get(Constants.CPC);
-        if(cpcs!=null&&cpcs.size()>0) {
-            AtomicBoolean updated = new AtomicBoolean(false);
-            cpcs = cpcs.stream().map(map->{
-                String cpc = (String)map.get(Constants.CODE);
-                if(cpc!=null) {
-                    if(hierarchy.getLabelToCPCMap().containsKey(cpc)) {
-                        List<String> tree = hierarchy.cpcWithAncestors(cpc)
-                                .stream().map(t->t.getName())
-                                .collect(Collectors.toList());
-                        map.put(Constants.TREE,tree);
-                        updated.set(true);
-                    }
-                    return map;
-                } else return null;
-            }).filter(cpc->cpc!=null).collect(Collectors.toList());
-            if(cpcs.isEmpty()) {
-                unset.put(Constants.CPC,1);
-            } else if(updated.get()){
-                set.put(Constants.CPC,cpcs);
-            }
-        } else {
-            unset.put(Constants.CPC,1);
-        }
+        // do nothing
     }
 
     @Override
