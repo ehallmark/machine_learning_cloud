@@ -76,7 +76,7 @@ public class IngestPatentResearch {
         final LocalDate twentyFiveYearsAgo = LocalDate.now().minusYears(25);
         final Function<Map<String,Object>,Boolean> filterDocumentFunction = doc -> {
             String filingDate = (String)doc.get(FILING_DATE);
-            if(filingDate==null||filingDate.length()!=8) return false;
+            if(filingDate==null||filingDate.length()!=10) return false;
             return LocalDate.parse(filingDate, DateTimeFormatter.BASIC_ISO_DATE).isAfter(twentyFiveYearsAgo);
         };
 
