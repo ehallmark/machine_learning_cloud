@@ -38,7 +38,7 @@ public class CreateScripts {
             Map<String,Object> json = new HashMap<>();
             Map<String,Object> scriptMap = new HashMap<>();
             scriptMap.put("lang",script.getLang());
-            scriptMap.put("_source",script.getIdOrCode());
+            scriptMap.put("source",script.getIdOrCode());
             json.put("script", scriptMap);
             client.admin().cluster().preparePutStoredScript()
                     .setId(attr.getFullName())
