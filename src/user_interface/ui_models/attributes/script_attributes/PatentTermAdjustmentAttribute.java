@@ -9,6 +9,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
@@ -31,4 +32,5 @@ public class PatentTermAdjustmentAttribute extends DefaultValueScriptAttribute {
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Integer;
     }
+
 }

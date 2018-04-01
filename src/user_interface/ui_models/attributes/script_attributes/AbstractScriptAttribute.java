@@ -12,6 +12,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Map;
 
 
 /**
@@ -20,6 +21,8 @@ import java.util.Collection;
 public abstract class AbstractScriptAttribute extends AbstractAttribute  {
     protected static final long millisecondsPerYear = 31557600000L;
     protected static final long millisecondsPerDay = 86400000L;
+    protected static final String TREND_PARAM_EXPRESSION = "trend";
+    protected static final String TREND_PARAM_PAINLESS = "params.trend";
 
     public static double getCurrentYearAndMonth() {
         return new Double(LocalDate.now().getYear()) + (new Double(LocalDate.now().getMonthValue() - 1) / 12d);
@@ -41,15 +44,17 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute  {
         return "(doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].empty ? 0 : doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].value)";
     }
 
-    public abstract Script getScript();
+    public abstract Map<String,Object> getParams();
+
+    public abstract Script getScript(boolean requireParams, boolean idOnly);
 
     // override
     public Script getSortScript() {
-        return getScript();
+        return getScript(true, true);
     }
 
-    public String getRemainingLifeQuery() {
-        return "("+getPriorityDateField("date.year")+"+20+("+getPriorityDateField("date.monthOfYear")+"-1)/12)+("+getTermExtensionField()+"/365.25)-"+getCurrentYearAndMonth();
+    public String getRemainingLifeQuery(boolean expression) {
+        return "("+getPriorityDateField("date.year")+"+20+("+getPriorityDateField("date.monthOfYear")+"-1)/12)+("+getTermExtensionField()+"/365.25)- "+(expression?TREND_PARAM_EXPRESSION:TREND_PARAM_PAINLESS);
     }
 
 

@@ -10,9 +10,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Created by ehallmark on 7/20/17.
@@ -38,7 +36,13 @@ public class CalculatedPriorityDateAttribute extends AbstractScriptAttribute {
     }
 
     @Override
-    public Script getScript() {
-        return new Script(ScriptType.INLINE, "expression", getCalculatedPriorityDateField(), new HashMap<>());
+    public Map<String, Object> getParams() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public Script getScript(boolean requireParams, boolean idOnly) {
+        if(idOnly) return new Script(ScriptType.STORED,"expression",getFullName(),getParams());
+        return new Script(ScriptType.INLINE, "expression", getCalculatedPriorityDateField(), getParams());
     }
 }

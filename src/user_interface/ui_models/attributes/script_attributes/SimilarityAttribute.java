@@ -46,32 +46,40 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
 
 
     @Override
-    public Script getScript() {
-        return getScriptHelper(EXPRESSION_SIMILARITY_SCRIPT);
+    public Map<String, Object> getParams() {
+        Map<String, Object> params = new HashMap<>();
+        INDArray avgVector = simVectors.size() == 1 ? simVectors.get(0) : Nd4j.vstack(simVectors).mean(0);
+        double[] data = avgVector.data().asDouble();
+        for(int i = 0; i < vectorSize; i++) {
+            params.put("avg_vector"+i,data[i]);
+        }
+        return params;
+    }
+
+    @Override
+    public Script getScript(boolean requireParams, boolean idOnly) {
+        return getScriptHelper(EXPRESSION_SIMILARITY_SCRIPT,requireParams,idOnly);
     }
 
 
     // WARNING THIS IS JUST AN APPROXIMATION...
     @Override
     public Script getSortScript() {
-        return getScriptHelper(EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT);
+        return getScriptHelper(EXPRESSION_SIMILARITY_SCRIPT_FOR_SORT,true,true);
     }
 
-    private Script getScriptHelper(String script) {
+    private Script getScriptHelper(String script, boolean requireParams, boolean idOnly) {
+        if(idOnly&&simVectors!=null&&simVectors.size()>0) return new Script(ScriptType.STORED,"expression",getFullName(),getParams());
+
         Script searchScript = null;
-        if(simVectors!=null&&simVectors.size()>0) {
+        if((!requireParams)||(simVectors!=null&&simVectors.size()>0)) {
             System.out.println("Found similarity vectors!!!");
-            Map<String, Object> params = new HashMap<>();
-            INDArray avgVector = simVectors.size() == 1 ? simVectors.get(0) : Nd4j.vstack(simVectors).mean(0);
-            double[] data = avgVector.data().asDouble();
-            for(int i = 0; i < vectorSize; i++) {
-                params.put("avg_vector"+i,data[i]);
-            }
+
             searchScript = new Script(
                     ScriptType.INLINE,
                     "expression",
                     script,
-                    params
+                    getParams()
             );
         }
         return searchScript;

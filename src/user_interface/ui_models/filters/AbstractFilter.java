@@ -11,10 +11,7 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import static j2html.TagCreator.span;
@@ -106,10 +103,11 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
         return QueryBuilders.scriptQuery(filterScript);
     }
 
+
     public Script getScript() {
         if(attribute!=null && !(attribute instanceof AbstractScriptAttribute)) throw new RuntimeException("Getting script filter for non script attribute: "+attribute.getName());
         AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
-        Script searchScript = scriptAttribute.getScript();
+        Script searchScript = scriptAttribute.getScript(true,false);
         if(searchScript==null) return null;
         String transformedScript = transformAttributeScript(searchScript.getIdOrCode());
         System.out.println("Transformed script for: "+attribute.getFullName()+": "+transformedScript);

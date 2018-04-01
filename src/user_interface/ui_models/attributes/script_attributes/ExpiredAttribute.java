@@ -9,10 +9,7 @@ import user_interface.ui_models.attributes.computable_attributes.ComputableAttri
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by ehallmark on 7/20/17.
@@ -33,9 +30,15 @@ public class ExpiredAttribute extends AbstractScriptAttribute {
     }
 
     @Override
-    public Script getScript() {
-        String script = "doc['"+Constants.LAPSED+"'].value > 0.5 ? 1 : ("+getRemainingLifeQuery()+" <= 0)";
-        return new Script(ScriptType.INLINE,"expression",script, new HashMap<>());
+    public Map<String, Object> getParams() {
+        return Collections.singletonMap(TREND_PARAM_EXPRESSION,getCurrentYearAndMonth());
+    }
+
+    @Override
+    public Script getScript(boolean requireParams, boolean idOnly) {
+        if(idOnly) return new Script(ScriptType.STORED,"expression",getFullName(),getParams());
+        String script = "doc['"+Constants.LAPSED+"'].value > 0.5 ? 1 : ("+getRemainingLifeQuery(true)+" <= 0)";
+        return new Script(ScriptType.INLINE,"expression",script, getParams());
     }
 
     @Override

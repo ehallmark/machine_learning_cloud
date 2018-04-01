@@ -27,12 +27,20 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
     }
 
     @Override
-    public Script getScript() {
+    public Script getScript(boolean requireFilter, boolean idOnly) {
+        if(idOnly) {
+            return new Script(ScriptType.STORED,language,getFullName(),getParams());
+        }
         String script = createScriptFor(type,language,fieldName);
+        System.out.println("Script: "+script);
+        return new Script(ScriptType.INLINE,language,script, getParams());
+    }
+
+    @Override
+    public Map<String,Object> getParams() {
         Map<String,Object> params = new HashMap<>();
         params.put("defaultVal",defaultVal);
-        System.out.println("Script: "+script);
-        return new Script(ScriptType.INLINE,language,script, params);
+        return params;
     }
 
     private String createScriptFor(String type, String language, String field) {

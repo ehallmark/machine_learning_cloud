@@ -121,6 +121,7 @@ public class DeeperCPCVariationalAutoEncoderNN extends CPCVariationalAutoEncoder
         // get filings
         Map<String,Collection<CPC>> cpcMap = getCPCMap();
         List<String> filings = assets.parallelStream().map(asset->new AssetToFilingMap().getApplicationDataMap().getOrDefault(asset,new AssetToFilingMap().getPatentDataMap().getOrDefault(asset,asset)))
+                .distinct()
                 .filter(cpcMap::containsKey)
                 .collect(Collectors.toList());
         predictions = encodeVAE(Collections.synchronizedList(filings),assignees,classCodes,predictions,cpcMap,getCpcToIdxMap(),pipelineManager.getHierarchy(),getNet(),pipelineManager.getBatchSize());

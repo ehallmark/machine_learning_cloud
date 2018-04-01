@@ -317,7 +317,7 @@ public class DataSearcher {
 
         if (attribute instanceof AbstractScriptAttribute) {
             AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute) attribute;
-            Script script = scriptAttribute.getScript();
+            Script script = scriptAttribute.getScript(true,true);
             if (script != null) {
                 request.set(request.get().addScriptField(scriptAttribute.getFullName(), script));
 
