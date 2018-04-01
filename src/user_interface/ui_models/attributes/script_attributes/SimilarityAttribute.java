@@ -47,6 +47,8 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
 
     @Override
     public Map<String, Object> getParams() {
+        if(simVectors==null||simVectors.size()==0) return Collections.emptyMap();
+
         Map<String, Object> params = new HashMap<>();
         INDArray avgVector = simVectors.size() == 1 ? simVectors.get(0) : Nd4j.vstack(simVectors).mean(0);
         double[] data = avgVector.data().asDouble();
