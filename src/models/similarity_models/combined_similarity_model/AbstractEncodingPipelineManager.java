@@ -4,6 +4,7 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
 import lombok.Getter;
+import models.similarity_models.cpc_encoding_model.CPCVAEPipelineManager;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.AbstractWordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
@@ -20,14 +21,13 @@ import java.io.File;
  */
 public abstract class AbstractEncodingPipelineManager extends DefaultPipelineManager<MultiDataSetIterator,INDArray> {
     protected String modelName;
-    protected AbstractWordCPC2VecPipelineManager wordCPC2VecPipelineManager;
     @Getter
     protected Word2Vec word2Vec;
     protected int vectorSize;
     protected int batchSize;
     protected int miniBatchSize;
-    protected DeepCPCVAEPipelineManager deepCPCVAEPipelineManager;
-    public AbstractEncodingPipelineManager(File dataFolder, File predictionFile, String modelName, Word2Vec word2Vec, int vectorSize, int batchSize, int miniBatchSize, AbstractWordCPC2VecPipelineManager wordCPC2VecPipelineManager, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager) {
+    protected CPCVAEPipelineManager deepCPCVAEPipelineManager;
+    public AbstractEncodingPipelineManager(File dataFolder, File predictionFile, String modelName, Word2Vec word2Vec, int vectorSize, int batchSize, int miniBatchSize, CPCVAEPipelineManager deepCPCVAEPipelineManager) {
         super(dataFolder, predictionFile);
         this.word2Vec=word2Vec;
         this.deepCPCVAEPipelineManager=deepCPCVAEPipelineManager;
@@ -36,7 +36,6 @@ public abstract class AbstractEncodingPipelineManager extends DefaultPipelineMan
         this.modelName=modelName;
         this.batchSize=batchSize;
         this.vectorSize=vectorSize;
-        this.wordCPC2VecPipelineManager=wordCPC2VecPipelineManager;
     }
 
     @Override

@@ -85,7 +85,7 @@ public class WordCPC2VecPipelineManager extends AbstractWordCPC2VecPipelineManag
     protected WordCPCIterator getSequenceIterator(FileTextDataSetIterator iterator, int nEpochs) {
         File baseDir = FileTextDataSetIterator.BASE_DIR;
         boolean fullText = baseDir.getName().equals(FileTextDataSetIterator.BASE_DIR.getName());
-        return new WordCPCIterator(iterator,nEpochs,getCPCMap(), maxSamples,fullText);
+        return new WordCPCIterator(iterator,nEpochs, maxSamples,fullText);
     }
 
     private static WordCPC2VecPipelineManager MANAGER = null;

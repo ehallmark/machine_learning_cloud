@@ -2,44 +2,44 @@ package models.similarity_models.combined_similarity_model;
 
 import ch.qos.logback.classic.Level;
 import data_pipeline.vectorize.PreSaveDataSetManager;
-import models.keyphrase_prediction.stages.Stage;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
-import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
-import models.similarity_models.word_cpc_2_vec_model.*;
+import models.similarity_models.deep_cpc_encoding_model.DeeperCPCVariationalAutoEncoderNN;
+import models.similarity_models.deep_cpc_encoding_model.DeeperCPCVAEPipelineManager;
+import models.similarity_models.word_cpc_2_vec_model.AbstractWordCPC2VecPipelineManager;
+import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
+import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
 import models.text_streaming.FileTextDataSetIterator;
+import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.NDArrayIndex;
 import seeding.Constants;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Random;
 
 /**
  * Created by ehallmark on 11/7/17.
  */
-public class CombinedCPC2Vec2VAEEncodingPipelineManager extends AbstractEncodingPipelineManager  {
+public class CombinedCPC2Vec2DeeperVAEEncodingPipelineManager extends AbstractEncodingPipelineManager  {
 
-    public static final String MODEL_NAME = "cpc2vec_tfidf_new_2_vae_vec_encoding_model";
+    public static final String MODEL_NAME = "cpc2vec_tfidf_new_2_deeper_vae_vec_encoding_model";
     //public static final String MODEL_NAME = "cpc2vec_new_2_vae_vec_encoding_model";
-    public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"cpc2vec_2_vae_vec_encoding_predictions/predictions_map.jobj");
-    private static final File INPUT_DATA_FOLDER_ALL = new File("combined_tfidf_cpc2vec_2_vae_vec_encoding_model_input_data");
-    private static final int VECTOR_SIZE = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
+    public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"cpc2vec_2_deeper_vae_vec_encoding_predictions/predictions_map.jobj");
+    private static final File INPUT_DATA_FOLDER_ALL = new File("combined_tfidf_cpc2vec_2_deeper_vae_vec_encoding_model_input_data");
+    private static final int VECTOR_SIZE = DeeperCPCVariationalAutoEncoderNN.VECTOR_SIZE;
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 256;
     private static final int MAX_NETWORK_RECURSION = -1;
     public static final int MAX_SAMPLE = 8;
     protected static final Random rand = new Random(235);
-    private static CombinedCPC2Vec2VAEEncodingPipelineManager MANAGER;
-    public CombinedCPC2Vec2VAEEncodingPipelineManager(String modelName, Word2Vec word2Vec, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager) {
+    private static CombinedCPC2Vec2DeeperVAEEncodingPipelineManager MANAGER;
+    public CombinedCPC2Vec2DeeperVAEEncodingPipelineManager(String modelName, Word2Vec word2Vec, DeeperCPCVAEPipelineManager deepCPCVAEPipelineManager) {
         super(new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,deepCPCVAEPipelineManager);
     }
 
@@ -53,7 +53,7 @@ public class CombinedCPC2Vec2VAEEncodingPipelineManager extends AbstractEncoding
 
     public void initModel(boolean forceRecreateModels) {
         if(model==null) {
-            model = new CombinedCPC2Vec2VAEEncodingModel(this,modelName,VECTOR_SIZE);
+            model = new CombinedCPC2Vec2DeeperVAEEncodingModel(this,modelName,VECTOR_SIZE);
         }
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
@@ -88,7 +88,7 @@ public class CombinedCPC2Vec2VAEEncodingPipelineManager extends AbstractEncoding
     protected MultiDataSetPreProcessor getSeedTimeMultiDataSetPreProcessor() {
         return new MultiDataSetPreProcessor() {
             @Override
-            public void preProcess(org.nd4j.linalg.dataset.api.MultiDataSet dataSet) {
+            public void preProcess(MultiDataSet dataSet) {
             }
         };
     }
@@ -99,22 +99,22 @@ public class CombinedCPC2Vec2VAEEncodingPipelineManager extends AbstractEncoding
         return FileTextDataSetIterator.devFile3;
     }
 
-    public static synchronized CombinedCPC2Vec2VAEEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec) {
+    public static synchronized CombinedCPC2Vec2DeeperVAEEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec) {
         if(MANAGER==null) {
             Nd4j.setDataType(DataBuffer.Type.DOUBLE);
 
             String modelName = MODEL_NAME;
-            String wordCpc2VecModel = WordCPC2VecPipelineManager.DEEP_MODEL_NAME;
+            String wordCpc2VecModel = new File("data/reddit_wiki_word2vec.nn").getAbsolutePath();
 
 
-            WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(wordCpc2VecModel, -1, -1, -1);
-            if(loadWord2Vec) wordCPC2VecPipelineManager.runPipeline(false, false, false, false, -1, false);
+            Word2Vec word2Vec = null;
+            if(loadWord2Vec) word2Vec = WordVectorSerializer.readWord2VecModel(wordCpc2VecModel);
 
-            DeepCPCVAEPipelineManager deepCPCVAEPipelineManager = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME);
+            DeeperCPCVAEPipelineManager deepCPCVAEPipelineManager = new DeeperCPCVAEPipelineManager(DeeperCPCVAEPipelineManager.MODEL_NAME);
             if(loadWord2Vec) deepCPCVAEPipelineManager.runPipeline(false,false,false,false,-1,false);
 
             setLoggingLevel(Level.INFO);
-            MANAGER = new CombinedCPC2Vec2VAEEncodingPipelineManager(modelName, loadWord2Vec ? (Word2Vec) wordCPC2VecPipelineManager.getModel().getNet() : null, deepCPCVAEPipelineManager);
+            MANAGER = new CombinedCPC2Vec2DeeperVAEEncodingPipelineManager(modelName, word2Vec, deepCPCVAEPipelineManager);
         }
         return MANAGER;
     }
@@ -158,7 +158,7 @@ public class CombinedCPC2Vec2VAEEncodingPipelineManager extends AbstractEncoding
     }
 
     public static void main(String[] args) {
-        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
+        Nd4j.setDataType(DataBuffer.Type.FLOAT);
         setCudaEnvironment();
 
         System.setProperty("org.bytedeco.javacpp.maxretries","100");
@@ -172,7 +172,7 @@ public class CombinedCPC2Vec2VAEEncodingPipelineManager extends AbstractEncoding
 
         rebuildDatasets = runModels && !new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)).exists();
 
-        CombinedCPC2Vec2VAEEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets||runPredictions);
+        CombinedCPC2Vec2DeeperVAEEncodingPipelineManager pipelineManager = getOrLoadManager(rebuildDatasets||runPredictions);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
 
