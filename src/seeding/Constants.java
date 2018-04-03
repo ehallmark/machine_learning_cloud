@@ -115,6 +115,7 @@ public class Constants {
 	public static final String FILING_COUNTRY = "filingCountry";
 	public static final String COUNT_SUFFIX = "_countSuffix";
 	public static final String SIMILARITY = "similarity";
+	public static final String SIMILARITY_FAST = "similarityFast";
 	public static final String TOTAL_ASSET_COUNT = "totalAssetCount";
 	public static final String AI_VALUE = "aiValue";
 	public static final String COMPDB_ASSETS_PURCHASED = "compdbAssetsPurchased";

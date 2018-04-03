@@ -9,6 +9,7 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import elasticsearch.DatasetIndex;
+import elasticsearch.TestNewFastVectors;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
@@ -657,6 +658,11 @@ public class SimilarPatentServer {
         return obj;
     }
 
+    public static String vectorToFastElasticSearchObject(INDArray vector) {
+        double[] data = vector.data().asDouble();
+        return TestNewFastVectors.vectorToHex(data);
+    }
+
     public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, PortfolioList.Type type, Map<String,Vectorizer> vectorizers) {
         Map<String,String> assetToFiling = type.equals(PortfolioList.Type.patents) ? new AssetToFilingMap().getPatentDataMap() : new AssetToFilingMap().getApplicationDataMap();
         AtomicInteger cnt = new AtomicInteger(0);
@@ -709,7 +715,12 @@ public class SimilarPatentServer {
                         vec = vectorizer.vectorFor(label); // default to regular asset name
                     }
                     if(vec!=null) {
-                        item.addData(name, vectorToElasticSearchObject(vec));
+                        // TODO remove old slow vector
+                        if(name.equals(SimilarityAttribute.VECTOR_NAME)) {
+                            item.addData(name, vectorToElasticSearchObject(vec));
+                        } else {
+                            item.addData(name, vectorToFastElasticSearchObject(vec));
+                        }
                     } else {
                         attributesToRemove.add(name);
                     }
