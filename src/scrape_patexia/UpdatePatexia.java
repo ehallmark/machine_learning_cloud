@@ -4,6 +4,9 @@ import java.time.LocalDate;
 
 public class UpdatePatexia {
     public static void main(String[] args) {
+
+
+
         // step 1: scrape latest data
         try {
             Scraper.main(args);
