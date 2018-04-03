@@ -10,6 +10,7 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
+import user_interface.ui_models.attributes.script_attributes.FastSimilarityAttribute;
 import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 
 import java.util.Collection;
@@ -38,6 +39,11 @@ public class CreatePatentDBIndex {
         }
         properties.put(SimilarityAttribute.VECTOR_NAME,typeMap("object",vectorProperties,null));
 
+        // faster similarity embedding
+        Map<String,Object> type = new HashMap<>();
+        type.put("doc_values", true);
+        type.put("type","binary");
+        properties.put(FastSimilarityAttribute.VECTOR_NAME,type);
 
         builder = createMapping(builder, properties, DataIngester.TYPE_NAME, null);
 
