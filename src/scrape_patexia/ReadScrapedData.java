@@ -68,6 +68,10 @@ public class ReadScrapedData {
                         caseNameSplit = caseNameUpper.split(" VS ",2);
                     } else if (caseNameUpper.contains(" V ")) {
                         caseNameSplit = caseNameUpper.split(" V ", 2);
+                    } else if (caseNameUpper.contains("-V-")) {
+                        caseNameSplit = caseNameUpper.split("-V-", 2);
+                    } else if(caseNameUpper.contains(".V,")) {
+                        caseNameSplit = caseNameUpper.split("\\.V,",2);
                     } else {
                         caseNameSplit=null;
                     }
