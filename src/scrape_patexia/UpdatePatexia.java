@@ -38,7 +38,7 @@ public class UpdatePatexia implements Job {
         Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
 
         {
-            JobDetail runPlatformJob = newJob(PlatformServerManager.class)
+            JobDetail runPlatformJob = newJob(UpdatePatexia.class)
                     .withIdentity("update_patexia", "scraper")
                     .build();
             Trigger weeklyTrigger = newTrigger()
