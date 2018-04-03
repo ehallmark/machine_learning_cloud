@@ -4,10 +4,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.net.URL;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -24,10 +22,6 @@ public class Scraper {
     public static void main(String[] args) throws Exception {
         System.setProperty("jsse.enableSNIExtension", "false"); // VERY IMPORTANT!!!
 
-        //final String username = "Evan Hallmark";
-        //final String password = "Evan1234";
-
-
         LocalDate start = LocalDate.now();
         File dir = new File("patexia_dump");
         if(!dir.exists()) dir.mkdirs();
@@ -35,10 +29,10 @@ public class Scraper {
         LocalDate earliestDateToScrape = null;
         File[] alreadyScrapedFiles = dir.listFiles();
         if(alreadyScrapedFiles!=null) {
-            Duration durationPadding = Duration.of(30L, ChronoUnit.DAYS);
+            int numPaddingDays = 60;
             LocalDate lastSeenDate = getLastSeenDateFromExistingFiles(alreadyScrapedFiles);
             if (lastSeenDate!=null) {
-                earliestDateToScrape = lastSeenDate.minus(durationPadding);
+                earliestDateToScrape = lastSeenDate.minusDays(numPaddingDays);
                 System.out.println("Starting to scrape from: "+earliestDateToScrape.toString()+" to "+start.toString());
             } else {
                 System.out.println("Warning: files exist, but could not extract date...");
