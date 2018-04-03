@@ -1,13 +1,11 @@
 package scrape_patexia;
 
-import elasticsearch.IngestMongoIntoElasticSearch;
 import org.apache.commons.io.FileUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import seeding.Database;
-import seeding.google.attributes.Constants;
 
 import java.io.File;
 import java.sql.Connection;
@@ -15,9 +13,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class ReadScrapedData {
@@ -30,7 +26,7 @@ public class ReadScrapedData {
         AtomicInteger total = new AtomicInteger(0);
 
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("insert into patexia_litigation (case_number,case_name,plaintiff,defendant,case_date) values (?,?,?,?,?) on conflict (case_number) do update set (case_name,plaintiff,defendant,case_date) = (?,?,?,?)");
+        PreparedStatement ps = conn.prepareStatement("insert into patexia_litigation (case_number,case_name,plaintiff,defendant,case_date,case_type) values (?,?,?,?,?,?) on conflict (case_number) do update set (case_name,plaintiff,defendant,case_date,case_type) = (?,?,?,?,?)");
 
         for(File inputFile : inputDir.listFiles()) {
             String document = FileUtils.readFileToString(inputFile);
@@ -47,6 +43,17 @@ public class ReadScrapedData {
                     if(tds.size()!=3) continue;
 
                     String caseNumber = tds.get(0).text().trim();
+                    String caseType;
+                    String upperCaseNumber = caseNumber.toUpperCase();
+                    if(upperCaseNumber.startsWith("IPR")) {
+                        caseType = "IPR";
+                    } else if(upperCaseNumber.startsWith("CBM")) {
+                        caseType = "CBM";
+                    } else if(upperCaseNumber.startsWith("PGR")) {
+                        caseType = "PGR";
+                    } else {
+                        caseType = "District Court";
+                    }
                     String caseName = tds.get(1).text().trim();
                     String caseDate = tds.get(2).text().trim();
                     LocalDate caseDateFormatted = LocalDate.parse(caseDate, DateTimeFormatter.ofPattern("MMM d, yyyy"));
@@ -84,10 +91,12 @@ public class ReadScrapedData {
                         ps.setString(3,plaintiff);
                         ps.setString(4,defendant);
                         ps.setDate(5, toSqlDate(caseDateFormatted));
-                        ps.setString(6,caseName);
-                        ps.setString(7,plaintiff);
-                        ps.setString(8,defendant);
-                        ps.setDate(9, toSqlDate(caseDateFormatted));
+                        ps.setString(6, caseType);
+                        ps.setString(7,caseName);
+                        ps.setString(8,plaintiff);
+                        ps.setString(9,defendant);
+                        ps.setDate(10, toSqlDate(caseDateFormatted));
+                        ps.setString(11, caseType);
                         ps.executeUpdate();
                     } catch(Exception e) {
                         e.printStackTrace();

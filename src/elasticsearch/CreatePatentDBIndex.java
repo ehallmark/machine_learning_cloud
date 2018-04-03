@@ -2,7 +2,6 @@ package elasticsearch;
 
 import com.google.gson.Gson;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
-import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import user_interface.server.SimilarPatentServer;
@@ -49,6 +48,9 @@ public class CreatePatentDBIndex {
 
         // get response
         builder.get();
+
+        // Create attribute scripts
+        CreateScripts.main(null);
     }
 
     private static CreateIndexRequestBuilder createMapping(CreateIndexRequestBuilder builder, Map<String,Object> properties, String typeName, String parentType) {

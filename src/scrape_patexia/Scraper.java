@@ -1,11 +1,25 @@
 package scrape_patexia;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.net.URL;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 public class Scraper {
+
+    private static LocalDate getLastSeenDateFromExistingFiles(File[] files) {
+        return Stream.of(files).map(file->{
+            String dateStr = file.getName().replace("patexia-scrape-","").replace(".html","");
+            return LocalDate.parse(dateStr, DateTimeFormatter.ISO_DATE);
+        }).sorted(Comparator.reverseOrder()).limit(1).findFirst().orElse(null);
+    }
 
     public static void main(String[] args) throws Exception {
         System.setProperty("jsse.enableSNIExtension", "false"); // VERY IMPORTANT!!!
@@ -18,11 +32,24 @@ public class Scraper {
         File dir = new File("patexia_dump");
         if(!dir.exists()) dir.mkdirs();
 
-        while(!start.isBefore(LocalDate.of(1990,1,1))) {
-            File outputFile = new File(dir,"patexia-scrape-"+start.toString()+".html");
-            if(!outputFile.getParentFile().exists()) {
-                outputFile.getParentFile().mkdir();
+        LocalDate earliestDateToScrape = null;
+        File[] alreadyScrapedFiles = dir.listFiles();
+        if(alreadyScrapedFiles!=null) {
+            Duration durationPadding = Duration.of(30L, ChronoUnit.DAYS);
+            LocalDate lastSeenDate = getLastSeenDateFromExistingFiles(alreadyScrapedFiles);
+            if (lastSeenDate!=null) {
+                earliestDateToScrape = lastSeenDate.minus(durationPadding);
+                System.out.println("Starting to scrape from: "+earliestDateToScrape.toString()+" to "+start.toString());
+            } else {
+                System.out.println("Warning: files exist, but could not extract date...");
+                System.exit(1);
             }
+        } else {
+            earliestDateToScrape = LocalDate.of(1990,1,1);
+        }
+
+        while(!start.isBefore(earliestDateToScrape)) {
+            File outputFile = new File(dir,"patexia-scrape-"+start.toString()+".html");
 
             final BufferedWriter outputStream = new BufferedWriter(new FileWriter(outputFile));
             int total = 51;
@@ -41,8 +68,6 @@ public class Scraper {
                         outputStream.flush();
                         foundAny=true;
                     }
-
-                    //TimeUnit.MILLISECONDS.sleep(10);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

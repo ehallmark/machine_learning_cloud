@@ -6,7 +6,8 @@ create table patexia_litigation (
     case_name text not null,
     plaintiff text not null,
     defendant text not null,
-    case_date date not null
+    case_date date not null,
+    case_type text not null
 );
 
 create index patexia_litigation_plaintiff on patexia_litigation (plaintiff);
