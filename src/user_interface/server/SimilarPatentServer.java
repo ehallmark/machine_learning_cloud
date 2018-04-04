@@ -143,7 +143,7 @@ public class SimilarPatentServer {
     private static final ForkJoinPool pool = new ForkJoinPool(Math.max(10,Runtime.getRuntime().availableProcessors()/2));
 
     static {
-        roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.toLowerCase().startsWith("gather")&& !str.toLowerCase().startsWith("compdb")&& !str.equals(Constants.GTT_RESERVOIR));
+        roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.toLowerCase().startsWith("gather")&& !str.toLowerCase().startsWith("compdb"));
         roleToAttributeFunctionMap.put(INTERNAL_USER, str -> true);
         roleToAttributeFunctionMap.put(SUPER_USER, str -> true);
     }
@@ -267,7 +267,6 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("City", Constants.CITY);
             humanAttrToJavaAttrMap.put("State", Constants.STATE);
             humanAttrToJavaAttrMap.put("Zip Code", Constants.POSTAL_CODE);
-            humanAttrToJavaAttrMap.put("GTT Reservoir", Constants.GTT_RESERVOIR);
             humanAttrToJavaAttrMap.put("Claim Number", Constants.CLAIM_NUM);
             humanAttrToJavaAttrMap.put("Parent Claim Number", Constants.PARENT_CLAIM_NUM);
             humanAttrToJavaAttrMap.put("Document Kind", Constants.DOC_KIND);
@@ -581,7 +580,6 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.NUM_BACKWARD_CITATIONS, new NumBackwardCitationsAttribute());
             attributesMap.put(Constants.GRANTED,new IsGrantedApplicationAttribute());
             attributesMap.put(Constants.ASSIGNEE_ENTITY_TYPE, new EntityTypeAttribute());
-            attributesMap.put(Constants.GTT_RESERVOIR, new IsGTTReservoirAttribute());
 
             // nested attrs
             attributesMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());

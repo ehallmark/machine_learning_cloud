@@ -52,7 +52,6 @@ public class Constants {
 	public static final String REINSTATED = "reinstated";
 	public static final String FRAME_NO = "frameNo";
 	public static final String BUYER = "buyer";
-	public static final String GTT_RESERVOIR = "gttReservoir";
 	public static final String SELLER = "seller";
 	public static final String ADDRESS_1 = "addressOne";
 	public static final String HIGHLIGHTED = "highlighted";
