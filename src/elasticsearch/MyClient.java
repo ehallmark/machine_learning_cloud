@@ -73,11 +73,11 @@ public class MyClient {
 
                 }
             })
-                    .setBulkActions(5000)
+                    .setBulkActions(100)
                     .setBulkSize(new ByteSizeValue(8, ByteSizeUnit.MB))
                     .setFlushInterval(TimeValue.timeValueSeconds(5))
-                    .setConcurrentRequests(3)
-                    .setBackoffPolicy(BackoffPolicy.exponentialBackoff(TimeValue.timeValueMillis(500),8))
+                    .setConcurrentRequests(5)
+                    .setBackoffPolicy(BackoffPolicy.exponentialBackoff(TimeValue.timeValueMillis(1000),8))
                     .build();
         }
         return BULK_PROCESSOR;

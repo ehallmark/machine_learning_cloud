@@ -27,6 +27,7 @@ public class CreatePatentDBIndex {
         CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(DataIngester.INDEX_NAME)
                 .setSettings(Settings.builder()
                         .put("index.number_of_replicas",0)
+                        .put("index.number_of_shards",3)
                 );
         Collection<? extends AbstractAttribute> allAttributes = SimilarPatentServer.getAllTopLevelAttributes().stream().filter(attr->!(attr instanceof HiddenAttribute)).collect(Collectors.toList());
 
