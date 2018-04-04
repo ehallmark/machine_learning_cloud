@@ -11,10 +11,8 @@ import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 
-import java.io.DataInputStream;
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 public class TestNewFastVectors {
@@ -48,7 +46,6 @@ public class TestNewFastVectors {
             buffer.putDouble(i*BYTES_PER_DOUBLE,vector[i]);
         }
         String encoding = Base64.getEncoder().encodeToString(buffer.array());
-        System.out.println("Encoding: "+encoding);
         return encoding;
     }
 
