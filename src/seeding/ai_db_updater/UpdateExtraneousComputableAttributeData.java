@@ -23,7 +23,6 @@ public class UpdateExtraneousComputableAttributeData {
         Vectorizer combinedVectorizer = new CPCSimilarityVectorizer(similarityVAEPipelineManager,false, true, false,null);
 
         Map<String,Vectorizer> vectorizerMap = Collections.synchronizedMap(new HashMap<>());
-        //vectorizerMap.put("vector_obj",cpcVaeVectorizer);
         vectorizerMap.put(FastSimilarityAttribute.VECTOR_NAME,combinedVectorizer);
         vectorizerMap.put(SimilarityAttribute.VECTOR_NAME,combinedVectorizer);
 
