@@ -8,6 +8,7 @@ import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.elasticsearch.action.delete.DeleteRequest;
 import seeding.Constants;
+import user_interface.server.SimilarPatentServer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,9 @@ public class IngestMongoIntoElasticSearch {
     static AtomicLong cnt = new AtomicLong(0);
     public static void main(String[] args) {
         // ingest assets (aka children)
-        ingestByType(DataIngester.INDEX_NAME,DataIngester.TYPE_NAME,true);
+        SimilarPatentServer.initialize(true,false);
+        String[] fields = SimilarPatentServer.getAllTopLevelAttributes().stream().map(a->a.getName()).toArray(s->new String[s]);
+        ingestByType(DataIngester.INDEX_NAME,DataIngester.TYPE_NAME,true,fields);
         DataIngester.close();
     }
 

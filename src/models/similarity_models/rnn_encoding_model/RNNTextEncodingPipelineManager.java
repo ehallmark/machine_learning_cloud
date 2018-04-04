@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
  */
 public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<MultiDataSetIterator,INDArray> {
     public static final int BATCH_SIZE = 1024;
+    public static final int MAX_SEQUENCE_LENGTH = 128;
     public static final int MINI_BATCH_SIZE = 32;
     public static final String MODEL_NAME256 = "rnn_text_encoding_model256";
 
@@ -62,16 +63,21 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
         // do nothing
     }
 
+    private MultiDataSetIterator getIterator(File[] files, int limit) {
+        return new RNNEncodingIterator(word2Vec,new ZippedFileSequenceIterator(files,limit),BATCH_SIZE,MAX_SEQUENCE_LENGTH);
+    }
+
     @Override
     protected void setDatasetManager() {
         if (datasetManager == null) {
+            File[] trainFiles = new File[]{}; // TODO put correct file locations
+            File[] testFiles = new File[]{};
+            File[] devFiles = new File[]{};
 
 
-
-
-            MultiDataSetIterator trainIter = null;
-            MultiDataSetIterator testIter = null;
-            MultiDataSetIterator devIter = null;
+            MultiDataSetIterator trainIter = getIterator(trainFiles,-1);
+            MultiDataSetIterator testIter = getIterator(testFiles,50000);
+            MultiDataSetIterator devIter = getIterator(devFiles,50000);
 
 
             datasetManager = new PreSaveDataSetManager<>(

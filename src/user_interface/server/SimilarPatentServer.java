@@ -589,13 +589,13 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.ASSIGNMENTS, new AssignmentsNestedAttribute());
             attributesMap.put(Constants.APPLICANTS, new ApplicantsNestedAttribute());
             attributesMap.put(Constants.INVENTORS, new InventorsNestedAttribute());
-            attributesMap.put(Constants.AGENTS, new AgentsNestedAttribute());
+            //attributesMap.put(Constants.AGENTS, new AgentsNestedAttribute());
             attributesMap.put(Constants.CITATIONS, new CitationsNestedAttribute());
             attributesMap.put(Constants.CLAIMS, new ClaimsNestedAttribute());
-            attributesMap.put(Constants.PATENT_FAMILY, new RelatedDocumentsNestedAttribute());
+            //attributesMap.put(Constants.PATENT_FAMILY, new RelatedDocumentsNestedAttribute());
             attributesMap.put(Constants.GATHER, new GatherNestedAttribute());
             attributesMap.put(Constants.COMPDB, new CompDBNestedAttribute());
-            attributesMap.put(Constants.NESTED_CPC_CODES, new CPCNestedAttribute());
+            //attributesMap.put(Constants.NESTED_CPC_CODES, new CPCNestedAttribute());
 
             // include count
             Constants.NESTED_ATTRIBUTES.forEach(attr->{
