@@ -558,7 +558,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.ESTIMATED_EXPIRATION_DATE, new CalculatedExpirationDateAttribute());
             attributesMap.put(Constants.ESTIMATED_PRIORITY_DATE, new CalculatedPriorityDateAttribute());
             attributesMap.put(Constants.PATENT_TERM_ADJUSTMENT, new PatentTermAdjustmentAttribute());
-            attributesMap.put(Constants.SIMILARITY, new SimilarityAttribute());
+            //attributesMap.put(Constants.SIMILARITY, new SimilarityAttribute());
             attributesMap.put(Constants.SIMILARITY_FAST, new FastSimilarityAttribute());
             attributesMap.put(Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH, new LengthOfSmallestIndependentClaimAttribute());
             attributesMap.put(Constants.MEANS_PRESENT, new MeansPresentAttribute());
@@ -585,8 +585,8 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());
             attributesMap.put(Constants.ASSIGNEES, new AssigneesNestedAttribute());
             attributesMap.put(Constants.ASSIGNMENTS, new AssignmentsNestedAttribute());
-            attributesMap.put(Constants.APPLICANTS, new ApplicantsNestedAttribute());
-            attributesMap.put(Constants.INVENTORS, new InventorsNestedAttribute());
+            //attributesMap.put(Constants.APPLICANTS, new ApplicantsNestedAttribute());
+            //attributesMap.put(Constants.INVENTORS, new InventorsNestedAttribute());
             //attributesMap.put(Constants.AGENTS, new AgentsNestedAttribute());
             attributesMap.put(Constants.CITATIONS, new CitationsNestedAttribute());
             attributesMap.put(Constants.CLAIMS, new ClaimsNestedAttribute());
@@ -2902,7 +2902,7 @@ public class SimilarPatentServer {
     }
 
     public static List<String> allSortableAttributes() {
-        return Stream.of(Stream.of(Constants.SCORE, Constants.SIMILARITY, Constants.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
+        return Stream.of(Stream.of(Constants.SCORE, Constants.SIMILARITY_FAST, Constants.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
                 getAllTopLevelAttributes().stream()
                         .flatMap(attr->{
                             if(attr instanceof NestedAttribute) {

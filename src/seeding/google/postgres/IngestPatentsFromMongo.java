@@ -4,7 +4,7 @@ import elasticsearch.IngestMongoIntoElasticSearch;
 import org.bson.Document;
 import seeding.Database;
 import seeding.google.attributes.Constants;
-import seeding.google.mongo.ingest.IngestSEP;
+import seeding.google.mongo.ingest.IngestPatents;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
 
@@ -17,34 +17,33 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class IngestSEPFromMongo {
+public class IngestPatentsFromMongo {
 
     public static void main(String[] args) throws SQLException {
-        final String index = IngestSEP.INDEX_NAME;
-        final String type = IngestSEP.TYPE_NAME;
+        final String index = IngestPatents.INDEX_NAME;
+        final String type = IngestPatents.TYPE_NAME;
 
         String[] fields = new String[]{
-                "record_id",
+                Constants.FULL_PUBLICATION_NUMBER,
+                Constants.PUBLICATION_NUMBER,
+                Constants.FULL_APPLICATION_NUMBER,
+                Constants.APPLICATION_NUMBER,
+                Constants.APPLICATION_NUMBER_FORMATTED,
+                Constants.FILING_DATE,
+                Constants.PUBLICATION_DATE,
+                Constants.PRIORITY_DATE,
+                Constants.COUNTRY_CODE,
+                Constants.KIND_CODE,
+                Constants.APPLICATION_KIND,
                 Constants.FAMILY_ID,
-                "disclosure_event",
-                "sso",
-                "patent_owner_harmonized",
-                "patent_owner_unharmonized",
-                "date",
-                "standard",
-                "licensing_commitment",
-                "blanket_type",
-                "blanket_scope",
-                "third_party",
-                "reciprocity",
-                "pub_cleaned"
+                Constants.ENTITY_STATUS
         };
 
         Connection conn = Database.getConn();
 
         String valueStr = "("+String.join(",", IntStream.range(0,fields.length).mapToObj(i->"?").collect(Collectors.toList()))+")";
         String conflictStr = "("+String.join(",", IntStream.range(0,fields.length-1).mapToObj(i->"?").collect(Collectors.toList()))+")";
-        PreparedStatement ps = conn.prepareStatement("insert into big_query_sep (record_id,family_id,disclosure_event,sso,patent_owner_harmonized,patent_owner_unharmonized,date,standard,licensing_commitment,blanket_type,blanket_scope,third_party,reciprocity,publication_number_with_country) values "+valueStr+" on conflict (record_id) do update set (family_id,disclosure_event,sso,patent_owner_harmonized,patent_owner_unharmonized,date,standard,licensing_commitment,blanket_type,blanket_scope,third_party,reciprocity,publication_number_with_country) = "+conflictStr);
+        PreparedStatement ps = conn.prepareStatement("insert into big_query_patents (publication_number_full,publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_Code,kind_code,application_kind,family_id,original_entity_type) values "+valueStr+" on conflict (publication_number_full) do update set (publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_Code,kind_code,application_kind,family_id,original_entity_type) = "+conflictStr);
 
         DefaultApplier applier = new DefaultApplier(true, conn);
         QueryStream<List<Object>> queryStream = new QueryStream<>(ps,applier);

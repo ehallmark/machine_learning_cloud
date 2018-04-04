@@ -13,9 +13,9 @@ create table big_query_sep (
     licensing_commitment text,
     blanket_type integer,
     blanket_scope text,
-    third_party boolean not null default('f'),
-    reciprocity boolean not null default('f'),
-    publication_number text
+    third_party boolean,
+    reciprocity boolean,
+    publication_number_with_country text
 );
 
 create index big_query_sep_family_id on big_query_sep (family_id);

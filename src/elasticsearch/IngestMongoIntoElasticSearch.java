@@ -9,12 +9,15 @@ import org.bson.Document;
 import org.elasticsearch.action.delete.DeleteRequest;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.script_attributes.FastSimilarityAttribute;
+import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 8/14/17.
@@ -25,6 +28,12 @@ public class IngestMongoIntoElasticSearch {
         // ingest assets (aka children)
         SimilarPatentServer.initialize(true,false);
         String[] fields = SimilarPatentServer.getAllTopLevelAttributes().stream().map(a->a.getName()).toArray(s->new String[s]);
+
+        // add similarity vector attr names
+        fields = Stream.of(Stream.of(SimilarityAttribute.VECTOR_NAME, FastSimilarityAttribute.VECTOR_NAME),Stream.of(fields)).flatMap(l->l)
+                .toArray(size->new String[size]);
+
+        // ingest
         ingestByType(DataIngester.INDEX_NAME,DataIngester.TYPE_NAME,true,fields);
         DataIngester.close();
     }
