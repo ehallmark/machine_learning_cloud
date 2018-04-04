@@ -164,6 +164,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Maintenance Fee Event Code", Constants.MAINTENANCE_EVENT);
             humanAttrToJavaAttrMap.put("Asset Number", Constants.NAME);
             humanAttrToJavaAttrMap.put("Similarity", Constants.SIMILARITY);
+            humanAttrToJavaAttrMap.put("Similarity (Fast)", Constants.SIMILARITY_FAST);
             humanAttrToJavaAttrMap.put("Technology Similarity", Constants.TECHNOLOGY_SIMILARITY);
             humanAttrToJavaAttrMap.put("Assignee Similarity", Constants.ASSIGNEE_SIMILARITY);
             humanAttrToJavaAttrMap.put("Text Similarity", Constants.TEXT_SIMILARITY);
@@ -559,6 +560,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.ESTIMATED_PRIORITY_DATE, new CalculatedPriorityDateAttribute());
             attributesMap.put(Constants.PATENT_TERM_ADJUSTMENT, new PatentTermAdjustmentAttribute());
             attributesMap.put(Constants.SIMILARITY, new SimilarityAttribute());
+            attributesMap.put(Constants.SIMILARITY_FAST, new FastSimilarityAttribute());
             attributesMap.put(Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH, new LengthOfSmallestIndependentClaimAttribute());
             attributesMap.put(Constants.MEANS_PRESENT, new MeansPresentAttribute());
             attributesMap.put(Constants.PRIORITY_DATE, new PriorityDateAttribute());
