@@ -178,10 +178,10 @@ public class DataSearcher {
 
             //System.out.println("Looking for similarity greater than...");
             filters.forEach(filter->{
-                if(filter instanceof AbstractGreaterThanFilter && filter.getAttribute().getFullName().equals(Constants.SIMILARITY)) {
+                if(filter instanceof AbstractGreaterThanFilter && filter.getAttribute().getFullName().equals(Constants.SIMILARITY_FAST)) {
                     AbstractGreaterThanFilter simFilter = (AbstractGreaterThanFilter)filter;
                     attributes.forEach(attr->{
-                        if(attr.getFullName().equals(Constants.SIMILARITY)) {
+                        if(attr.getFullName().equals(Constants.SIMILARITY_FAST)) {
                             //System.out.println("Found and setting similarity attribute for filter...");
                             simFilter.setAttribute(attr);
                         }
@@ -313,7 +313,7 @@ public class DataSearcher {
     }
 
     private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request) {
-        boolean componentOfScore = (usingScore && Constants.SIMILARITY.equals(attribute.getFullName()));
+        boolean componentOfScore = (usingScore && Constants.SIMILARITY_FAST.equals(attribute.getFullName()));
 
         if (attribute instanceof AbstractScriptAttribute) {
             AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute) attribute;
