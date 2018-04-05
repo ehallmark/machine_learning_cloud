@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 
 public class TestNewFastVectors {
     public static final int BYTES_PER_DOUBLE = 8;
+    public static final int BYTES_PER_FLOAT = 4;
     private static void createDatabase(TransportClient client) {
         CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate("test")
                 .setSettings(Settings.builder()
@@ -45,9 +46,17 @@ public class TestNewFastVectors {
         for(int i = 0; i < vector.length; i++) {
             buffer.putDouble(i*BYTES_PER_DOUBLE,vector[i]);
         }
-        String encoding = Base64.getEncoder().encodeToString(buffer.array());
-        return encoding;
+        return Base64.getEncoder().encodeToString(buffer.array());
     }
+
+    public static String vectorToHex(float[] vector) {
+        ByteBuffer buffer = ByteBuffer.allocate(vector.length*BYTES_PER_FLOAT);
+        for(int i = 0; i < vector.length; i++) {
+            buffer.putFloat(i*BYTES_PER_FLOAT,vector[i]);
+        }
+        return Base64.getEncoder().encodeToString(buffer.array());
+    }
+
 
     public static void main(String[] args) {
         TransportClient client = MyClient.get();
@@ -70,7 +79,7 @@ public class TestNewFastVectors {
                 .setQuery(QueryBuilders.functionScoreQuery(
                         QueryBuilders.matchAllQuery(),
                         ScoreFunctionBuilders.scriptFunction(
-                                new Script(ScriptType.INLINE,"knn","binary_vector_score*100.0", params)
+                                new Script(ScriptType.INLINE,"knn","binary_vector_score", params)
                         )
                 ).boostMode(CombineFunction.MAX)).get();
 

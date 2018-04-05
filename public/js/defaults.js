@@ -1275,6 +1275,19 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         }
                     };
                     if(!isFolder) {
+                        var menuName = "Apply "+capitalize(node_type);
+                        items[menuName] = {
+                            "separator_before": false,
+                            "sepeartor_after": false,
+                            "label": menuName,
+                            "title": "Apply this "+node_type+".",
+                            "action": function(obj) {
+                                if(node.type==='file') {
+                                    dblclickFunction(node.data,tree,node);
+                                    return true;
+                                }
+                            }
+                        };
                         var labelToFunctions = {};
                         for(var i = 0; i < jsNodeDataFunctions.length; i++) {
                             var jsNodeDataFunction = jsNodeDataFunctions[i];

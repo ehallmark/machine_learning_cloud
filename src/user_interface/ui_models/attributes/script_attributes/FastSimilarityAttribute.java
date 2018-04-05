@@ -1,6 +1,5 @@
 package user_interface.ui_models.attributes.script_attributes;
 
-import elasticsearch.TestNewFastVectors;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
@@ -17,7 +16,6 @@ import user_interface.ui_models.filters.AbstractFilter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
 
 import static user_interface.server.SimilarPatentServer.PRE_FILTER_ARRAY_FIELD;
 import static user_interface.server.SimilarPatentServer.extractArray;
@@ -40,6 +38,8 @@ public class FastSimilarityAttribute extends AbstractScriptAttribute implements 
         params.put("vector", vector);
         params.put("field", VECTOR_NAME);
         params.put("cosine", false);
+        //params.put("float", true);
+        //params.put("scale", 100D);
         return params;
     }
 
@@ -65,7 +65,7 @@ public class FastSimilarityAttribute extends AbstractScriptAttribute implements 
             searchScript = new Script(
                     ScriptType.INLINE,
                     "knn",
-                    "binary_vector_score * 100.0",
+                    "binary_vector_score",
                     getParams()
             );
         }
