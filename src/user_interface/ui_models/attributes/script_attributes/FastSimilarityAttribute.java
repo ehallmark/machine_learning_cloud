@@ -62,7 +62,7 @@ public class FastSimilarityAttribute extends AbstractScriptAttribute implements 
             searchScript = new Script(
                     ScriptType.INLINE,
                     "knn",
-                    "binary_vector_score",
+                    "binary_vector_score * 100.0",
                     getParams()
             );
         }

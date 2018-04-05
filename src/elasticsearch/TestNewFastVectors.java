@@ -70,7 +70,7 @@ public class TestNewFastVectors {
                 .setQuery(QueryBuilders.functionScoreQuery(
                         QueryBuilders.matchAllQuery(),
                         ScoreFunctionBuilders.scriptFunction(
-                                new Script(ScriptType.INLINE,"knn","binary_vector_score", params)
+                                new Script(ScriptType.INLINE,"knn","binary_vector_score*100.0", params)
                         )
                 ).boostMode(CombineFunction.REPLACE)).get();
 
