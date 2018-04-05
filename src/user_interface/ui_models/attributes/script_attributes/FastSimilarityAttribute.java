@@ -16,6 +16,8 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 import static user_interface.server.SimilarPatentServer.PRE_FILTER_ARRAY_FIELD;
 import static user_interface.server.SimilarPatentServer.extractArray;
@@ -34,7 +36,8 @@ public class FastSimilarityAttribute extends AbstractScriptAttribute implements 
         if(simVectors==null||simVectors.size()==0) return Collections.emptyMap();
         Map<String, Object> params = new HashMap<>();
         INDArray avgVector = simVectors.size() == 1 ? simVectors.get(0) : Nd4j.vstack(simVectors).mean(0);
-        params.put("vector", TestNewFastVectors.vectorToHex(avgVector.data().asDouble()));
+        List<Double> vector = DoubleStream.of(avgVector.data().asDouble()).mapToObj(d->d).collect(Collectors.toList());
+        params.put("vector", vector);
         params.put("field", VECTOR_NAME);
         params.put("cosine", false);
         return params;
