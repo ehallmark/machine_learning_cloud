@@ -56,7 +56,7 @@ public class FastSimilarityAttribute extends AbstractScriptAttribute implements 
     }
 
     private Script getScriptHelper(boolean requireParams, boolean idOnly) {
-       // if(idOnly&&simVectors!=null&&simVectors.size()>0) return new Script(ScriptType.STORED,"knn",getFullName(),getParams());
+        if(idOnly&&simVectors!=null&&simVectors.size()>0) return new Script(ScriptType.STORED,"knn",getFullName(),getParams());
 
         Script searchScript = null;
         if((!requireParams)||(simVectors!=null&&simVectors.size()>0)) {
