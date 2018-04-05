@@ -126,7 +126,7 @@ public class SimilarityEngineController {
         }
 
         if (comparator.equals(Constants.SCORE)) {
-            attributesRequired.add(Constants.SIMILARITY_FAST);
+            attributesRequired.add(Constants.SIMILARITY);
         }
 
         System.out.println("Required attributes: "+String.join("; ",attributesRequired));
