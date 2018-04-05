@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 11/7/17.
@@ -34,6 +35,7 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
     public static final int MAX_SEQUENCE_LENGTH = 128;
     public static final int MINI_BATCH_SIZE = 32;
     public static final String MODEL_NAME256 = "rnn_text_encoding_model256";
+    public static final int VECTOR_SIZE = 32;
 
     private String modelName;
     private int encodingSize;
@@ -70,15 +72,21 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
     @Override
     protected void setDatasetManager() {
         if (datasetManager == null) {
-            File[] trainFiles = new File[]{}; // TODO put correct file locations
-            File[] testFiles = new File[]{};
-            File[] devFiles = new File[]{};
+            int trainSize = 100000000;
+            int testSize = 50000;
 
+            File dir = new File("/home/ehallmark/repos/poi/word2vec_text/");
+            File[] allFiles = Stream.of(dir.listFiles()).sorted(Comparator.comparing(f->f.getName())).toArray(size->new File[size]);
+            Random rand = new Random(2);
+            File testFile = allFiles[allFiles.length-rand.nextInt(200)];
+            File devFile = allFiles[allFiles.length-200-rand.nextInt(200)];
 
-            MultiDataSetIterator trainIter = getIterator(trainFiles,-1);
-            MultiDataSetIterator testIter = getIterator(testFiles,50000);
-            MultiDataSetIterator devIter = getIterator(devFiles,50000);
+            File[] trainFiles = Stream.of(allFiles).filter(f->!f.getName().equals(testFile.getName())&&!f.getName().equals(devFile.getName()))
+                    .toArray(size->new File[size]);
 
+            MultiDataSetIterator trainIter = getIterator(trainFiles,trainSize);
+            MultiDataSetIterator testIter = getIterator(new File[]{testFile},testSize);
+            MultiDataSetIterator devIter = getIterator(new File[]{devFile},testSize);
 
             datasetManager = new PreSaveDataSetManager<>(
                     dataFolder,

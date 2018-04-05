@@ -53,7 +53,7 @@ public class FastSimilarityAttribute extends AbstractScriptAttribute implements 
     }
 
     private Script getScriptHelper(boolean requireParams, boolean idOnly) {
-        if(idOnly&&simVectors!=null&&simVectors.size()>0) return new Script(ScriptType.STORED,"knn",getFullName(),getParams());
+       // if(idOnly&&simVectors!=null&&simVectors.size()>0) return new Script(ScriptType.STORED,"knn",getFullName(),getParams());
 
         Script searchScript = null;
         if((!requireParams)||(simVectors!=null&&simVectors.size()>0)) {
@@ -106,12 +106,12 @@ public class FastSimilarityAttribute extends AbstractScriptAttribute implements 
 
     @Override
     public Number min() {
-        return -1d;
+        return -100d;
     }
 
     @Override
     public Number max() {
-        return 1d;
+        return 100d;
     }
 
     @Override

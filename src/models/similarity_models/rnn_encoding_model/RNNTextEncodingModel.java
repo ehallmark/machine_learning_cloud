@@ -48,7 +48,6 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 10/26/17.
  */
 public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,ComputationGraph> {
-    public static final int VECTOR_SIZE = 32;
     public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"rnn_text_encoding_model_data");
 
     private final int inputSize;

@@ -10,6 +10,8 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
+import org.elasticsearch.search.sort.ScriptSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -66,13 +68,10 @@ public class TestNewFastVectors {
         params.put("cosine",false);
         params.put("field","embedding_vector");
         params.put("vector", Arrays.asList(0.2d,0.15,-0.5,0.1,-0.21));
-        SearchResponse response = client.prepareSearch("test").setTypes("type1").setSize(1)
-                .setQuery(QueryBuilders.functionScoreQuery(
-                        QueryBuilders.matchAllQuery(),
-                        ScoreFunctionBuilders.scriptFunction(
-                                new Script(ScriptType.INLINE,"knn","binary_vector_score*100.0", params)
-                        )
-                ).boostMode(CombineFunction.REPLACE)).get();
+        SearchResponse response = client.prepareSearch("test").setTypes("type1").setSize(2)
+
+                .addSort(SortBuilders.scriptSort(new Script(ScriptType.INLINE,"knn","binary_vector_score*100.0",params), ScriptSortBuilder.ScriptSortType.NUMBER))
+              .get();
 
         Stream.of(response.getHits().getHits()).forEach(hit->{
             System.out.println("Hit: "+new Gson().toJson(hit.getSource()));

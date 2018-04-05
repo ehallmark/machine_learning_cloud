@@ -29,6 +29,5 @@ create table big_query_patents (
     expiration_date_calculated date,
     granted boolean
 );
-create index big_query_patent_family_publication_number_idx on big_query_patents (publication_number);
-create index big_query_patent_family_application_number_full_idx on big_query_patents (application_number_full);
+create index big_query_patent_family_application_number_formatted_idx on big_query_patents (application_number_formatted);
 create index big_query_patent_family_family_id_idx on big_query_patents (family_id);
