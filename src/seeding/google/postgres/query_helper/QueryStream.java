@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class QueryStream<T> {
@@ -25,19 +26,20 @@ public class QueryStream<T> {
 
 
     public void ingest(T data) throws SQLException {
-        final PreparedStatement preparedStatement = statementQueue.poll();
-        applier.apply(preparedStatement,data);
-        preparedStatement.executeUpdate();
-        if(cnt.getAndIncrement()%10000==9999) {
-            System.out.println("Ingested: "+cnt.get());
-            Database.commit();
-        }
         try {
+            final PreparedStatement preparedStatement = statementQueue.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+            applier.apply(preparedStatement, data);
+            preparedStatement.executeUpdate();
             statementQueue.put(preparedStatement);
+
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Error while adding prepared statement back to queue.");
             System.exit(1);
+        }
+        if(cnt.getAndIncrement()%10000==9999) {
+            System.out.println("Ingested: "+cnt.get());
+            Database.commit();
         }
     }
 
