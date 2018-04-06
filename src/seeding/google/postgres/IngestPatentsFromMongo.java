@@ -56,7 +56,6 @@ public class IngestPatentsFromMongo {
                     Object val = doc.get(fields[i]);
                     data.add(val);
                 }
-                System.out.println();
                 queryStream.ingest(data);
             } catch(Exception e) {
                 e.printStackTrace();
