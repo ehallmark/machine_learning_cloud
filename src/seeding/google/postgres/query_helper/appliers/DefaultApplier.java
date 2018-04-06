@@ -44,7 +44,11 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
         } else if(data instanceof String) {
             if(field.endsWith("_date")||field.endsWith("Date")) {
                 // is a date
-                preparedStatement.setDate(idx,Date.valueOf(LocalDate.parse((String)data, DateTimeFormatter.ISO_DATE)));
+                if(data.equals("0")) {
+                    preparedStatement.setObject(idx, null);
+                } else {
+                    preparedStatement.setDate(idx, Date.valueOf(LocalDate.parse((String) data, DateTimeFormatter.ISO_DATE)));
+                }
             } else {
                 preparedStatement.setString(idx, (String) data);
             }
