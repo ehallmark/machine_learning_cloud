@@ -752,6 +752,17 @@ public class SimilarPatentServer {
         return false;
     }
 
+    private static String getUserGroupFor(Session session) {
+        String role = session.attribute("role");
+        String dynamicUserGroup = session.attribute("dynamicUserGroup");
+        if(dynamicUserGroup!=null && dynamicUserGroup.length()>0 && (role.equals(SUPER_USER)||role.equals(INTERNAL_USER))) {
+            // find user group
+            return dynamicUserGroup;
+        } else {
+            return session.attribute("userGroup");
+        }
+    }
+
     private static void authorize(Request req, Response res) {
         try {
             if (req.session().attribute("authorized") == null || ! (Boolean) req.session().attribute("authorized")) {
@@ -812,6 +823,24 @@ public class SimilarPatentServer {
             req.session().removeAttribute("userGroup");
             res.redirect("/");
             res.status(200);
+            return null;
+        });
+
+        post("/change_dynamic_user_group", (req,res) -> {
+            authorize(req,res);
+            String role = req.session().attribute("role");
+            if(!(role.equals(INTERNAL_USER)||role.equals(SUPER_USER))) {
+                return null;
+            }
+            String newUserGroup = req.queryParams("userGroup");
+            if(newUserGroup!=null&&newUserGroup.length()>0) {
+                req.session().attribute("dynamicUserGroup",newUserGroup);
+            } else {
+                if(req.session().attribute("dynamicUserGroup")!=null) {
+                    req.session().removeAttribute("dynamicUserGroup");
+                }
+            }
+            res.redirect(HOME_URL);
             return null;
         });
 
@@ -968,7 +997,7 @@ public class SimilarPatentServer {
                         ), br(), br(), button("Update User Group").withClass("btn btn-secondary")
                 );
             }
-            return templateWrapper(true, req, res, form, false);
+            return templateWrapper(passwordHandler,true, req, res, form, false);
         });
 
         post("/new_user_group", (req,res)->{
@@ -1023,7 +1052,7 @@ public class SimilarPatentServer {
                             )
                     )
             );
-            return templateWrapper(true, req, res, form, false);
+            return templateWrapper(passwordHandler,true, req, res, form, false);
         });
 
         get("/edit_user", (req, res)->{
@@ -1041,7 +1070,7 @@ public class SimilarPatentServer {
                             input().withType("password").withClass("form-control").withName("new_password")
                     ), br(), br(), button("Change Password").withClass("btn btn-secondary")
             );
-            return templateWrapper(true, req, res, form, false);
+            return templateWrapper(passwordHandler,true, req, res, form, false);
         });
 
         get("/create_user", (req, res)->{
@@ -1065,7 +1094,7 @@ public class SimilarPatentServer {
                             )
                     ), br(), br(), button("Create User").withClass("btn btn-secondary")
             );
-            return templateWrapper(true, req, res, form, false);
+            return templateWrapper(passwordHandler,true, req, res, form, false);
         });
 
         post("/remove_user", (req,res)->{
@@ -1122,11 +1151,11 @@ public class SimilarPatentServer {
                         p("Unable to access this page. Only administrators can delete user accounts.")
                 );
             }
-            return templateWrapper(true, req, res, form,false);
+            return templateWrapper(passwordHandler,true, req, res, form,false);
         });
 
         get("/", (req, res)->{
-            return templateWrapper(false, req, res, form().withClass("form-group").withMethod("POST").withAction("/login").attr("style","margin-top: 100px;").with(
+            return templateWrapper(passwordHandler,false, req, res, form().withClass("form-group").withMethod("POST").withAction("/login").attr("style","margin-top: 100px;").with(
                     p("Log in"),
                     label("Username").with(
                             input().withType("text").withClass("form-control").withName("username")
@@ -1138,7 +1167,7 @@ public class SimilarPatentServer {
 
         get(HOME_URL, (req, res) -> {
             if(softAuthorize(req,res)) {
-                return templateWrapper(true, req, res, candidateSetModelsForm(req.session().attribute("role")),true);
+                return templateWrapper(passwordHandler,true, req, res, candidateSetModelsForm(req.session().attribute("role")),true);
             } else {
                 return null;
             }
@@ -1146,14 +1175,14 @@ public class SimilarPatentServer {
 
         get(UPDATE_DEFAULT_ATTRIBUTES_URL, (req,res) -> {
             authorize(req,res);
-            return templateWrapper(true,req,res, defaultAttributesModelForm(req.session().attribute("username"),req.session().attribute("role")),true);
+            return templateWrapper(passwordHandler,true,req,res, defaultAttributesModelForm(req.session().attribute("username"),req.session().attribute("role")),true);
         });
 
         get(RESET_DEFAULT_TEMPLATE_URL, (req,res)->{
             authorize(req,res);
             String actualUser = req.session().attribute("username");
             if(actualUser==null) return null;
-            String userGroup = req.session().attribute("userGroup");
+            String userGroup = getUserGroupFor(req.session());
             String fileName = actualUser;
             String message = deleteForm(fileName,Constants.USER_DEFAULT_ATTRIBUTES_FOLDER,actualUser,userGroup,false,false);
             System.out.println("Delete form message: "+message);
@@ -1199,7 +1228,8 @@ public class SimilarPatentServer {
         post(SAVE_DATASET_URL, (req, res) -> {
             authorize(req,res);
             String user = req.session().attribute("username");
-            String userGroup = req.session().attribute("userGroup");
+
+            String userGroup = getUserGroupFor(req.session());
             return handleSaveForm(req,res,Constants.USER_DATASET_FOLDER,datasetFormMapFunction(),saveDatasetsFunction(user,userGroup),saveDatasetUpdatesFunction());
         });
 
@@ -1210,7 +1240,8 @@ public class SimilarPatentServer {
 
         post(CLUSTER_DATASET_URL, (req, res) -> {
             authorize(req,res);
-            return handleClusterForm(req,res,Constants.USER_DATASET_FOLDER);
+            String userGroup = getUserGroupFor(req.session());
+            return handleClusterForm(req,res,userGroup,Constants.USER_DATASET_FOLDER);
         });
 
         post(DELETE_DATASET_URL, (req, res) -> {
@@ -1249,7 +1280,7 @@ public class SimilarPatentServer {
         // setup select2 ajax remote data sources
         get(Constants.DATASET_NAME_AJAX_URL, (req,res)->{
             String username = req.session(false).attribute("username");
-            String userGroup = req.session(false).attribute("userGroup");
+            String userGroup = getUserGroupFor(req.session());
             if(username==null||userGroup==null) {
                 throw halt("No username and/or usergroup.");
             }
@@ -1625,7 +1656,7 @@ public class SimilarPatentServer {
         String filename = req.queryParams("file");
         String name = req.queryParams("name");
         String[] parentDirs = req.queryParamsValues("parentDirs[]");
-        String userGroup = req.session(false).attribute("userGroup");
+        String userGroup = getUserGroupFor(req.session());
         String message;
         Map<String,Object> responseMap = new HashMap<>();
         if(filename!=null&&name!=null&&name.length()>0) {
@@ -1700,7 +1731,7 @@ public class SimilarPatentServer {
         String file = req.queryParams("file");
         boolean defaultFile = Boolean.valueOf(req.queryParamOrDefault("defaultFile","false"));
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
-        String userGroup = req.session().attribute("userGroup");
+        String userGroup = getUserGroupFor(req.session());
         String user = req.session().attribute("username");
         if(user==null||user.isEmpty()) {
             return null;
@@ -1727,9 +1758,8 @@ public class SimilarPatentServer {
         return new Gson().toJson(data);
     }
 
-    private static Object handleClusterForm(Request req, Response res, String baseFolder) {
+    private static Object handleClusterForm(Request req, Response res, String userGroup, String baseFolder) {
         Map<String, Object> response = new HashMap<>();
-        String userGroup = req.session().attribute("userGroup");
 
         String file = req.queryParams("file");
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
@@ -1860,7 +1890,7 @@ public class SimilarPatentServer {
 
     private static Function<Request,Map<String,Object>> datasetFormMapFunction() {
         return req -> {
-            String userGroup = req.session().attribute("userGroup");
+            String userGroup = getUserGroupFor(req.session());
             String[] assets = req.queryParamsValues("assets[]");
             if(assets==null) assets = req.session(false).attribute("assets"); // default to last seen report
             String name = req.queryParams("name");
@@ -1985,7 +2015,7 @@ public class SimilarPatentServer {
 
     private static Object handleSaveForm(Request req, Response res, String baseFolder, Function<Request,Map<String,Object>> formMapFunction, Function3<Map<String,Object>,File,Boolean,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
         String name = req.queryParams("name");
-        String userGroup = req.session().attribute("userGroup");
+        String userGroup = getUserGroupFor(req.session());
         String[] parentDirs = req.queryParamsValues("parentDirs[]");
         if(parentDirs==null) {
             System.out.println("Parent dirs is null...");
@@ -2066,7 +2096,7 @@ public class SimilarPatentServer {
         String fileName = req.queryParams("path_to_remove");
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
         String actualUser = req.session().attribute("username");
-        String userGroup = req.session().attribute("userGroup");
+        String userGroup = getUserGroupFor(req.session());
         String message = deleteForm(fileName,baseFolder,actualUser,userGroup,shared,deleteFromES);
 
         return new Gson().toJson(new SimpleAjaxMessage(message));
@@ -2549,7 +2579,7 @@ public class SimilarPatentServer {
     }
 
 
-    static Tag templateWrapper(boolean authorized, Request req, Response res, Tag form, boolean showTemplates) {
+    static Tag templateWrapper(PasswordHandler handler, boolean authorized, Request req, Response res, Tag form, boolean showTemplates) {
         res.type("text/html");
         String message = req.session().attribute("message");
         req.session().removeAttribute("message");
@@ -2560,7 +2590,9 @@ public class SimilarPatentServer {
             acclaimAttrs = Collections.emptyList();
         }
         String role = req.session().attribute("role");
-        String userGroup = req.session().attribute("userGroup");
+        String userGroup = getUserGroupFor(req.session());
+        boolean showDynamicUserGroups = role.equals(INTERNAL_USER)||role.equals(SUPER_USER);
+        String dynamicUserGroup = showDynamicUserGroups ? req.session().attribute("dynamicUserGroup") : null;
         return html().with(
                 head().with(
                         title("AI Search Platform"),
@@ -2613,11 +2645,28 @@ public class SimilarPatentServer {
                                                         div().withClass("col-12").with(authorized ? div().withText("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : div().withText("Not signed in.")),
                                                         div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
                                                         div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com")),
-                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Change User Group").withHref("/edit_user_group") : span()),
+                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withHref("/edit_user_group") : span()),
                                                         div().withClass("col-12").with(authorized ? a("Change Password").withHref("/edit_user") : span()),
-                                                        div().withClass("col-12").with(authorized && (role!=null&&role.equals(SUPER_USER)) ? a("Remove Users").withHref("/delete_user") : span()),
+                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withHref("/delete_user") : span()),
                                                         div().withClass("col-12").with(authorized ? a("Update Defaults").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Help").withHref("/help") : span())
+                                                        div().withClass("col-12").with(authorized ? a("Help").withHref("/help") : span()),
+                                                        div().withClass("col-12").with(authorized && showDynamicUserGroups ? span().with(
+                                                                form().withAction("/change_dynamic_user_group").withMethod("POST").with(
+                                                                        label("Change User Group").with(
+                                                                                select().withClass("single-select2 form-control").attr("onchange","this.form.submit()").withName("userGroup").with(
+                                                                                        option(dynamicUserGroup==null?userGroup:dynamicUserGroup).attr("selected","selected").withValue(dynamicUserGroup==null?userGroup:dynamicUserGroup)
+                                                                                ).with(
+                                                                                        handler.getUserGroups().stream().filter(group->{
+                                                                                                    return dynamicUserGroup==null?!userGroup.equals(group):!dynamicUserGroup.equals(group);
+                                                                                                }).map(group->{
+                                                                                                    return option(group).withValue(group);
+                                                                                                }).collect(Collectors.toList())
+                                                                                )
+
+                                                                        )
+                                                                )
+                                                        ) : span())
+
                                                 ), hr(),
                                                 (!authorized) ? div() : div().with(
                                                         ul().withClass("nav nav-tabs nav-fill").attr("role","tablist").with(
