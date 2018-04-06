@@ -8,7 +8,7 @@ create table big_query_patents (
     application_number varchar(32), -- eg. 20012322342
     application_number_formatted varchar(32), -- eg. 12002328
     filing_date date not null,
-    publication_date date not null,
+    publication_date date,
     priority_date date not null,
     country_code varchar(8),
     kind_code varchar(8),
