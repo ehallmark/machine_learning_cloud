@@ -43,10 +43,10 @@ public class IngestPatentsFromMongo {
 
         String valueStr = "(?,?,?,?,?,?,?,?,?,?,?,?,?)";
         String conflictStr = "(?,?,?,?,?,?,?,?,?,?,?,?)";
-        PreparedStatement ps = conn.prepareStatement("insert into big_query_patents (publication_number_full,publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,original_entity_type) values "+valueStr+" on conflict (publication_number_full) do update set (publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,original_entity_type) = "+conflictStr);
+        final String sql = "insert into big_query_patents (publication_number_full,publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,original_entity_type) values "+valueStr+" on conflict (publication_number_full) do update set (publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,original_entity_type) = "+conflictStr;
 
         DefaultApplier applier = new DefaultApplier(true, conn, fields);
-        QueryStream<List<Object>> queryStream = new QueryStream<>(ps,applier);
+        QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
 
 
         Consumer<Document> consumer = doc -> {
@@ -65,7 +65,6 @@ public class IngestPatentsFromMongo {
                 queryStream.ingest(data);
             } catch(Exception e) {
                 e.printStackTrace();
-                System.out.println("Statement: "+ps.toString());
                 System.exit(1);
             }
         };

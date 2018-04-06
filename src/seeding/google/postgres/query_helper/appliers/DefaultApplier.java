@@ -47,7 +47,13 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
                 if(data.equals("0")) {
                     preparedStatement.setObject(idx, null);
                 } else {
-                    preparedStatement.setDate(idx, Date.valueOf(LocalDate.parse((String) data, DateTimeFormatter.ISO_DATE)));
+                    LocalDate date;
+                    if(((String)data).contains("-")) {
+                        date = LocalDate.parse((String)data,DateTimeFormatter.ISO_DATE);
+                    } else {
+                        date = LocalDate.parse((String)data,DateTimeFormatter.BASIC_ISO_DATE);
+                    }
+                    preparedStatement.setDate(idx, Date.valueOf(date));
                 }
             } else {
                 preparedStatement.setString(idx, (String) data);

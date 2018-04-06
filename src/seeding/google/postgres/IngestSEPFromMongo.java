@@ -44,10 +44,10 @@ public class IngestSEPFromMongo {
 
         String valueStr = "("+String.join(",", IntStream.range(0,fields.length).mapToObj(i->"?").collect(Collectors.toList()))+")";
         String conflictStr = "("+String.join(",", IntStream.range(0,fields.length-1).mapToObj(i->"?").collect(Collectors.toList()))+")";
-        PreparedStatement ps = conn.prepareStatement("insert into big_query_sep (record_id,family_id,disclosure_event,sso,patent_owner_harmonized,patent_owner_unharmonized,date,standard,licensing_commitment,blanket_type,blanket_scope,third_party,reciprocity,publication_number_with_country) values "+valueStr+" on conflict (record_id) do update set (family_id,disclosure_event,sso,patent_owner_harmonized,patent_owner_unharmonized,date,standard,licensing_commitment,blanket_type,blanket_scope,third_party,reciprocity,publication_number_with_country) = "+conflictStr);
+        final String sql = "insert into big_query_sep (record_id,family_id,disclosure_event,sso,patent_owner_harmonized,patent_owner_unharmonized,date,standard,licensing_commitment,blanket_type,blanket_scope,third_party,reciprocity,publication_number_with_country) values "+valueStr+" on conflict (record_id) do update set (family_id,disclosure_event,sso,patent_owner_harmonized,patent_owner_unharmonized,date,standard,licensing_commitment,blanket_type,blanket_scope,third_party,reciprocity,publication_number_with_country) = "+conflictStr;
 
         DefaultApplier applier = new DefaultApplier(true, conn, fields);
-        QueryStream<List<Object>> queryStream = new QueryStream<>(ps,applier);
+        QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
 
 
         Consumer<Document> consumer = doc -> {
