@@ -14,7 +14,7 @@ create table big_query_patents (
     kind_code varchar(8),
     application_kind varchar(8),
     family_id varchar(32) not null,
-    ai_value double,
+    ai_value double precision,
     latest_execution_date date,
     term_adjustments integer,
     original_entity_type varchar(32),
@@ -31,3 +31,4 @@ create table big_query_patents (
 );
 create index big_query_patent_family_application_number_formatted_idx on big_query_patents (application_number_formatted);
 create index big_query_patent_family_family_id_idx on big_query_patents (family_id);
+

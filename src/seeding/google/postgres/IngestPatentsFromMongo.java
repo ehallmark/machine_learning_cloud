@@ -43,7 +43,7 @@ public class IngestPatentsFromMongo {
 
         String valueStr = "("+String.join(",", IntStream.range(0,fields.length).mapToObj(i->"?").collect(Collectors.toList()))+")";
         String conflictStr = "("+String.join(",", IntStream.range(0,fields.length-1).mapToObj(i->"?").collect(Collectors.toList()))+")";
-        PreparedStatement ps = conn.prepareStatement("insert into big_query_patents (publication_number_full,publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_Code,kind_code,application_kind,family_id,original_entity_type) values "+valueStr+" on conflict (publication_number_full) do update set (publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_Code,kind_code,application_kind,family_id,original_entity_type) = "+conflictStr);
+        PreparedStatement ps = conn.prepareStatement("insert into big_query_patents (publication_number_full,publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,original_entity_type) values "+valueStr+" on conflict (publication_number_full) do update set (publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,original_entity_type) = "+conflictStr);
 
         DefaultApplier applier = new DefaultApplier(true, conn);
         QueryStream<List<Object>> queryStream = new QueryStream<>(ps,applier);
@@ -54,8 +54,10 @@ public class IngestPatentsFromMongo {
                 List<Object> data = new ArrayList<>(fields.length);
                 for(int i = 0; i < fields.length; i++) {
                     Object val = doc.get(fields[i]);
+                    System.out.print("Field "+i+": "+val+", ");
                     data.add(val);
                 }
+                System.out.println();
                 queryStream.ingest(data);
             } catch(Exception e) {
                 e.printStackTrace();
