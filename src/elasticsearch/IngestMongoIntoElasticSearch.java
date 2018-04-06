@@ -10,7 +10,6 @@ import org.elasticsearch.action.delete.DeleteRequest;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.script_attributes.FastSimilarityAttribute;
-import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +29,7 @@ public class IngestMongoIntoElasticSearch {
         String[] fields = SimilarPatentServer.getAllTopLevelAttributes().stream().map(a->a.getName()).toArray(s->new String[s]);
 
         // add similarity vector attr names
-        fields = Stream.of(Stream.of(SimilarityAttribute.VECTOR_NAME, FastSimilarityAttribute.VECTOR_NAME),Stream.of(fields)).flatMap(l->l)
+        fields = Stream.of(Stream.of(FastSimilarityAttribute.VECTOR_NAME),Stream.of(fields)).flatMap(l->l)
                 .toArray(size->new String[size]);
 
         // ingest

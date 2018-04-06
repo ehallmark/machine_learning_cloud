@@ -21,7 +21,7 @@ import static user_interface.server.SimilarPatentServer.extractArray;
 
 /**
  * Created by ehallmark on 6/15/17.
- */
+ */ // TODO REMOVE THIS CLASS AND REPLACE WITH FAST_SIMILARITY_ATTRIBUTE
 public class SimilarityAttribute extends AbstractScriptAttribute implements DependentAttribute<AbstractScriptAttribute>, RangeAttribute {
     public static final int vectorSize = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
     public static final int dimensionsForSort = vectorSize;

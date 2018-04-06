@@ -709,18 +709,15 @@ public class SimilarPatentServer {
                 } else {
                     attributesToRemove.add(Constants.LATEST_ASSIGNEE);
                 }
+                attributesToRemove.add(SimilarityAttribute.VECTOR_NAME); // TODO remove this line after next pass through mongo
                 vectorizers.forEach((name,vectorizer)->{
                     INDArray vec = vectorizer.vectorFor(filing);
                     if(vec==null) {
                         vec = vectorizer.vectorFor(label); // default to regular asset name
                     }
                     if(vec!=null) {
-                        // TODO remove old slow vector
-                        if(name.equals(SimilarityAttribute.VECTOR_NAME)) {
-                            item.addData(name, vectorToElasticSearchObject(vec));
-                        } else {
-                            item.addData(name, vectorToFastElasticSearchObject(vec));
-                        }
+                        item.addData(name, vectorToFastElasticSearchObject(vec));
+
                     } else {
                         attributesToRemove.add(name);
                     }

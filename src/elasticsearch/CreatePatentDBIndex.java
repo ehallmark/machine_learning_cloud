@@ -10,7 +10,6 @@ import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
 import user_interface.ui_models.attributes.script_attributes.FastSimilarityAttribute;
-import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,12 +31,6 @@ public class CreatePatentDBIndex {
         Collection<? extends AbstractAttribute> allAttributes = SimilarPatentServer.getAllTopLevelAttributes().stream().filter(attr->!(attr instanceof HiddenAttribute)).collect(Collectors.toList());
 
         Map<String,Object> properties = createPropertiesMap(allAttributes);
-
-        Map<String,Object> vectorProperties = new HashMap<>();
-        for(int i = 0; i < SimilarityAttribute.vectorSize; i++) {
-            vectorProperties.put(String.valueOf(i),typeMap("float",null,null));
-        }
-        properties.put(SimilarityAttribute.VECTOR_NAME,typeMap("object",vectorProperties,null));
 
         // faster similarity embedding
         Map<String,Object> type = new HashMap<>();

@@ -7,7 +7,6 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.*;
 import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
 import user_interface.ui_models.attributes.script_attributes.FastSimilarityAttribute;
-import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,7 +23,6 @@ public class UpdateExtraneousComputableAttributeData {
 
         Map<String,Vectorizer> vectorizerMap = Collections.synchronizedMap(new HashMap<>());
         vectorizerMap.put(FastSimilarityAttribute.VECTOR_NAME,combinedVectorizer);
-        vectorizerMap.put(SimilarityAttribute.VECTOR_NAME,combinedVectorizer);
 
         List<ComputableAttribute<?>> computableAttributes = SimilarPatentServer.getAllComputableAttributes().stream().filter(a->!(a instanceof HiddenAttribute)).collect(Collectors.toCollection(ArrayList::new));
         computableAttributes.add(new NestedComputedCPCAttribute());
