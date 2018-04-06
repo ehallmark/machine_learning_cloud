@@ -18,7 +18,7 @@ public class QueryStream<T> {
     }
 
 
-    public void ingest(T data) throws SQLException {
+    public synchronized void ingest(T data) throws SQLException {
         applier.apply(preparedStatement,data);
         preparedStatement.executeUpdate();
         if(cnt.getAndIncrement()%10000==9999) {
@@ -27,7 +27,7 @@ public class QueryStream<T> {
         }
     }
 
-    public void close() throws SQLException {
+    public synchronized void close() throws SQLException {
         preparedStatement.close();
         Database.commit();
     }
