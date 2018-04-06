@@ -48,12 +48,17 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
                     preparedStatement.setObject(idx, null);
                 } else {
                     LocalDate date;
-                    if(((String)data).contains("-")) {
-                        date = LocalDate.parse((String)data,DateTimeFormatter.ISO_DATE);
-                    } else {
-                        date = LocalDate.parse((String)data,DateTimeFormatter.BASIC_ISO_DATE);
+                    if(!((String)data).contains("-")) {
+                        data = LocalDate.parse((String)data,DateTimeFormatter.BASIC_ISO_DATE).format(DateTimeFormatter.ISO_DATE);
                     }
-                    preparedStatement.setDate(idx, Date.valueOf(date));
+                    date = LocalDate.parse((String)data,DateTimeFormatter.ISO_DATE);
+                    try {
+                        preparedStatement.setDate(idx, Date.valueOf(date));
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                        System.out.println("Error on date: "+date.toString());
+                        System.exit(1);
+                    }
                 }
             } else {
                 preparedStatement.setString(idx, (String) data);
