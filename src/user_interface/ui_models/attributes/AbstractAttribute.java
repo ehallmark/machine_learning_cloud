@@ -176,7 +176,7 @@ public abstract class AbstractAttribute {
                     break;
                 }
                 case GreaterThan: {
-                    filter = new AbstractGreaterThanFilter(this, filterType);
+                    filter = new AbstractSimilarityGreaterThanFilter(this, filterType);
                     break;
                 }
                 case Between: {

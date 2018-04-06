@@ -34,7 +34,7 @@ import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.attributes.script_attributes.DefaultValueScriptAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.filters.AbstractGreaterThanFilter;
+import user_interface.ui_models.filters.AbstractSimilarityGreaterThanFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
 import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
@@ -178,8 +178,8 @@ public class DataSearcher {
 
             //System.out.println("Looking for similarity greater than...");
             filters.forEach(filter->{
-                if(filter instanceof AbstractGreaterThanFilter && filter.getAttribute().getFullName().equals(Constants.SIMILARITY_FAST)) {
-                    AbstractGreaterThanFilter simFilter = (AbstractGreaterThanFilter)filter;
+                if(filter instanceof AbstractSimilarityGreaterThanFilter && filter.getAttribute().getFullName().equals(Constants.SIMILARITY_FAST)) {
+                    AbstractSimilarityGreaterThanFilter simFilter = (AbstractSimilarityGreaterThanFilter)filter;
                     attributes.forEach(attr->{
                         if(attr.getFullName().equals(Constants.SIMILARITY_FAST)) {
                             //System.out.println("Found and setting similarity attribute for filter...");

@@ -5,12 +5,16 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.script.Script;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 import static j2html.TagCreator.div;
@@ -19,22 +23,22 @@ import static j2html.TagCreator.input;
 /**
  * Created by Evan on 6/17/2017.
  */
-public class AbstractGreaterThanFilter extends AbstractFilter {
+public class AbstractSimilarityGreaterThanFilter extends AbstractFilter {
     @Getter
     protected Object limit;
 
-    public AbstractGreaterThanFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
+    public AbstractSimilarityGreaterThanFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         this(attribute,filterType,null);
     }
 
-    public AbstractGreaterThanFilter(@NonNull AbstractAttribute attribute, FilterType filterType, Object limit) {
+    public AbstractSimilarityGreaterThanFilter(@NonNull AbstractAttribute attribute, FilterType filterType, Object limit) {
         super(attribute,filterType);
         this.limit=limit;
     }
 
     @Override
     public AbstractFilter dup() {
-        return new AbstractGreaterThanFilter(attribute,filterType);
+        return new AbstractSimilarityGreaterThanFilter(attribute,filterType);
     }
 
 
@@ -52,9 +56,27 @@ public class AbstractGreaterThanFilter extends AbstractFilter {
         }
     }
 
+    public Script getScript() {
+        if(attribute!=null && !(attribute instanceof AbstractScriptAttribute)) throw new RuntimeException("Getting script filter for non script attribute: "+attribute.getName());
+        AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
+        Script searchScript = scriptAttribute.getScript(true,false);
+        if(searchScript==null) return null;
+        String transformedScript = transformAttributeScript(searchScript.getIdOrCode());
+        System.out.println("Transformed script for: "+attribute.getFullName()+": "+transformedScript);
+        Map<String,Object> params = new HashMap<>(searchScript.getParams());
+        params.put("greaterThan", ((Number)limit).doubleValue());
+        Script filterScript = new Script(
+                searchScript.getType(),
+                searchScript.getLang(),
+                transformedScript,
+                params
+        );
+        return filterScript;
+    }
+
     @Override
     protected String transformAttributeScript(String script) {
-        return "("+script+") >= "+limit;
+        return script;
     }
 
     public boolean isActive() { return limit!=null; }
