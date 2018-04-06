@@ -156,7 +156,7 @@ public class IngestJsonHelper {
 
     public static Stream<Map<String,Object>> streamJsonFile(InputStream is, List<Function<Document,Void>> attributeFunctions) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        return reader.lines().parallel().map(line-> {
+        return reader.lines().map(line-> {
             Document map = Document.parse(line);
             return handleMap(map,1,attributeFunctions);
         });

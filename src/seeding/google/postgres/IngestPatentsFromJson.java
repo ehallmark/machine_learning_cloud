@@ -83,8 +83,6 @@ public class IngestPatentsFromJson {
         );
 
         final File dataDir = new File("/usb2/data/google-big-query/patents/");
-        final String index = IngestPatents.INDEX_NAME;
-        final String type = IngestPatents.TYPE_NAME;
 
         String[] fields = new String[]{
                 Constants.FULL_PUBLICATION_NUMBER,

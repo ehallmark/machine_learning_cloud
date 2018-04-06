@@ -17,27 +17,18 @@ public class QueryStream<T> {
 
     private Function2<PreparedStatement,T,Void> applier;
     private AtomicLong cnt = new AtomicLong(0L);
-    private PreparedStatement[] statementQueue;
-    private Lock[] statementLocks;
-    private Random rand = new Random(2352);
+    private PreparedStatement preparedStatement;
+    private Lock lock;
     public QueryStream(String sql, Connection conn, Function2<PreparedStatement, T, Void> applier) throws SQLException {
         this.applier=applier;
-        int channels = 20;
-        this.statementQueue = new PreparedStatement[channels];
-        this.statementLocks = new Lock[channels];
-        for(int i = 0; i < channels; i++) {
-            statementQueue[i] = conn.prepareStatement(sql);
-            statementLocks[i] = new ReentrantLock();
-        }
+        preparedStatement = conn.prepareStatement(sql);
+        lock = new ReentrantLock();
     }
 
 
     public void ingest(T data) throws SQLException {
-        int idx = rand.nextInt(statementLocks.length);
-        Lock lock = statementLocks[idx];
         lock.lock();
         try {
-            final PreparedStatement preparedStatement = statementQueue[idx];
             applier.apply(preparedStatement, data);
             preparedStatement.executeUpdate();
 
@@ -55,9 +46,7 @@ public class QueryStream<T> {
     }
 
     public void close() throws SQLException {
-        for(PreparedStatement preparedStatement : statementQueue) {
-            preparedStatement.close();
-        }
+        preparedStatement.close();
         Database.commit();
     }
 
