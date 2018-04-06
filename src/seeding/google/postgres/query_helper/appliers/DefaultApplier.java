@@ -53,7 +53,7 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
                     }
                     date = LocalDate.parse((String)data,DateTimeFormatter.ISO_DATE);
                     try {
-                        preparedStatement.setDate(idx, Date.valueOf(date));
+                        preparedStatement.setString(idx, date.format(DateTimeFormatter.ISO_DATE));
                     } catch(Exception e) {
                         e.printStackTrace();
                         System.out.println("Error on date: "+date.toString());

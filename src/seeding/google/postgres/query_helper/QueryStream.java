@@ -32,7 +32,7 @@ public class QueryStream<T> {
     }
 
 
-    public void ingest(T data) throws SQLException {
+    public synchronized void ingest(T data) throws SQLException {
         int idx = rand.nextInt(statementLocks.length);
         Lock lock = statementLocks[idx];
         lock.lock();
@@ -54,7 +54,7 @@ public class QueryStream<T> {
         }
     }
 
-    public synchronized void close() throws SQLException {
+    public void close() throws SQLException {
         for(PreparedStatement preparedStatement : statementQueue) {
             preparedStatement.close();
         }
