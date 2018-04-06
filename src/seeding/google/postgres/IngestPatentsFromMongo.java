@@ -54,6 +54,12 @@ public class IngestPatentsFromMongo {
                 List<Object> data = new ArrayList<>(fields.length);
                 for(int i = 0; i < fields.length; i++) {
                     Object val = doc.get(fields[i]);
+                    if(i==7) { // priority date
+                        if(val==null||val.equals("0")) {
+                            // default to filing date
+                            val = data.get(5);
+                        }
+                    }
                     data.add(val);
                 }
                 queryStream.ingest(data);
