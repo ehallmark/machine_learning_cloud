@@ -5,6 +5,7 @@ import data_pipeline.helpers.Function2;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.SQLType;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -34,7 +35,9 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
     }
 
     private static void setObject(PreparedStatement preparedStatement, int idx, Object data, Connection conn) throws Exception {
-        if(data instanceof String) {
+        if(data == null) {
+            preparedStatement.setString(idx,null);
+        } else if(data instanceof String) {
             preparedStatement.setString(idx,(String)data);
         } else if (data instanceof Integer) {
             preparedStatement.setInt(idx,(Integer)data);

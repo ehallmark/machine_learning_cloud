@@ -54,7 +54,6 @@ public class IngestPatentsFromMongo {
                 List<Object> data = new ArrayList<>(fields.length);
                 for(int i = 0; i < fields.length; i++) {
                     Object val = doc.get(fields[i]);
-                    System.out.print("Field "+i+": "+val+", ");
                     data.add(val);
                 }
                 System.out.println();
