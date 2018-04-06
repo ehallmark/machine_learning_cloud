@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 import static seeding.google.attributes.Constants.*;
 import static seeding.google.attributes.Constants.PUBLICATION_NUMBER_GOOGLE;
 
-public class IngestPatentsFromMongo {
+public class IngestPatentsFromJson {
 
     public static void main(String[] args) throws SQLException {
         final List<Function<Document,Void>> attributeFunctions = Arrays.asList(
