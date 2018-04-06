@@ -44,7 +44,7 @@ public class IngestPriorityClaimsFromMongo {
         String conflictStr = "("+String.join(",", IntStream.range(0,numFields-1).mapToObj(i->"?").collect(Collectors.toList()))+")";
         PreparedStatement ps = conn.prepareStatement("insert into big_query_patent_to_priority_claims (publication_number_full,family_id,pc_publication_number_full,pc_application_number_full,pc_filing_date) values "+valueStr+" on conflict (publication_number_full) do update set (family_id,pc_publication_number_full,pc_application_number_full,pc_filing_date) = "+conflictStr);
 
-        DefaultApplier applier = new DefaultApplier(true, conn);
+        DefaultApplier applier = new DefaultApplier(true, conn, new String[]{fields[1],fields[2],priorityClaimFields[0],priorityClaimFields[1],priorityClaimFields[2]});
         QueryStream<List<Object>> queryStream = new QueryStream<>(ps,applier);
 
 
