@@ -7,15 +7,18 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLType;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class DefaultApplier implements Function2<PreparedStatement,List<Object>,Void> {
 
-    private boolean conflictClause;
-    private Connection conn;
-    public DefaultApplier(boolean conflictClause, Connection conn) {
+    private final boolean conflictClause;
+    private final Connection conn;
+    private final String[] fields;
+    public DefaultApplier(boolean conflictClause, Connection conn, String[] fields) {
         this.conflictClause=conflictClause;
         this.conn=conn;
+        this.fields=fields;
     }
 
     @Override
@@ -23,9 +26,10 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
         int n = data.size();
         try {
             for (int i = 0; i < n; i++) {
-                setObject(preparedStatement, i + 1, data.get(i),conn);
+                String field = fields[i];
+                setObject(preparedStatement, field,i + 1, data.get(i),conn);
                 if (conflictClause && i != 0) {
-                    setObject(preparedStatement, n + i, data.get(i),conn);
+                    setObject(preparedStatement, field,n + i, data.get(i),conn);
                 }
             }
         } catch(Exception e) {
@@ -34,11 +38,16 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
         return null;
     }
 
-    private static void setObject(PreparedStatement preparedStatement, int idx, Object data, Connection conn) throws Exception {
+    private static void setObject(PreparedStatement preparedStatement, String field, int idx, Object data, Connection conn) throws Exception {
         if(data == null) {
-            preparedStatement.setString(idx,null);
+            preparedStatement.setObject(idx, null);
         } else if(data instanceof String) {
-            preparedStatement.setString(idx,(String)data);
+            if(field.endsWith("_date")||field.endsWith("Date")) {
+                // is a date
+                preparedStatement.setDate(idx,Date.valueOf(LocalDate.parse((String)data, DateTimeFormatter.ISO_DATE)));
+            } else {
+                preparedStatement.setString(idx, (String) data);
+            }
         } else if (data instanceof Integer) {
             preparedStatement.setInt(idx,(Integer)data);
         } else if (data instanceof Double) {

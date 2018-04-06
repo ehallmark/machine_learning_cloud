@@ -39,7 +39,7 @@ public class FastSimilarityAttribute extends AbstractScriptAttribute implements 
         params.put("field", VECTOR_NAME);
         params.put("cosine", false);
         //params.put("float", true);
-        //params.put("scale", 100D);
+        params.put("scale", 100D);
         return params;
     }
 
