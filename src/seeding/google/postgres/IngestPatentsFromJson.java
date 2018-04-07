@@ -143,6 +143,8 @@ public class IngestPatentsFromJson {
         arrayFields.add(Constants.CPC);
         arrayFields.add(Constants.CITATION);
 
+        Set<String> booleanFields = new HashSet<>();
+        booleanFields.add(Constants.CPC+"."+Constants.INVENTIVE);
         Connection conn = Database.getConn();
 
         int numFields = fields.length;
@@ -163,11 +165,15 @@ public class IngestPatentsFromJson {
                 // is array field
                 if(isDate) {
                     ret += "::date[]";
+                } else if(booleanFields.contains(field)) {
+                    ret += "::boolean[]";
                 }
             } else {
                 // not an array field
                 if(isDate) {
                     ret+= "::date";
+                } else if(booleanFields.contains(field)) {
+                    ret += "::boolean";
                 }
             }
             return ret;
