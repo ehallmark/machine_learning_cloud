@@ -15,11 +15,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class QueryStream<T> {
 
-    private Function2<PreparedStatement,T,Void> applier;
+    private Function2<PreparedStatement,T,Boolean> applier;
     private AtomicLong cnt = new AtomicLong(0L);
     private PreparedStatement preparedStatement;
     private Lock lock;
-    public QueryStream(String sql, Connection conn, Function2<PreparedStatement, T, Void> applier) throws SQLException {
+    public QueryStream(String sql, Connection conn, Function2<PreparedStatement, T, Boolean> applier) throws SQLException {
         this.applier=applier;
         preparedStatement = conn.prepareStatement(sql);
         lock = new ReentrantLock();
@@ -29,8 +29,11 @@ public class QueryStream<T> {
     public void ingest(T data) throws SQLException {
         lock.lock();
         try {
-            applier.apply(preparedStatement, data);
-            preparedStatement.executeUpdate();
+            if(applier.apply(preparedStatement, data)) {
+                preparedStatement.executeUpdate();
+            }
+            preparedStatement.clearParameters();
+
 
         } catch(Exception e) {
             e.printStackTrace();

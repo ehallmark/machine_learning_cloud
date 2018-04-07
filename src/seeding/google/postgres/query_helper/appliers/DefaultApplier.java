@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public class DefaultApplier implements Function2<PreparedStatement,List<Object>,Void> {
+public class DefaultApplier implements Function2<PreparedStatement,List<Object>,Boolean> {
 
     private final boolean conflictClause;
     private final Connection conn;
@@ -22,7 +22,7 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
     }
 
     @Override
-    public Void apply(PreparedStatement preparedStatement, List<Object> data) {
+    public Boolean apply(PreparedStatement preparedStatement, List<Object> data) {
         int n = data.size();
         try {
             for (int i = 0; i < n; i++) {
@@ -34,8 +34,9 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
             }
         } catch(Exception e) {
             e.printStackTrace();
+            return false;
         }
-        return null;
+        return true;
     }
 
     private static void setObject(PreparedStatement preparedStatement, String field, int idx, Object data, Connection conn) throws Exception {
@@ -57,7 +58,8 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
                     } catch(Exception e) {
                         //e.printStackTrace();
                         System.out.println("Error on date: "+data.toString());
-                        //System.exit(1);
+                        //System.exit();
+                        throw new RuntimeException("invalid date");
                     }
                 }
             } else {
