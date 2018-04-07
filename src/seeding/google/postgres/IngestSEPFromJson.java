@@ -48,8 +48,8 @@ public class IngestSEPFromJson extends IngestPatentsFromJson {
 
         Connection conn = Database.getConn();
 
-        String valueStr = "(?,?,?,?,?,?,?::date,?,?,?::integer,?,?,?,?)";
-        String conflictStr = "(?,?,?,?,?,?::date,?,?,?::integer,?,?,?,?)";
+        String valueStr = "(?,?,?,?,?,?,?::date,?,?,?::integer,?,?::boolean,?::boolean,?)";
+        String conflictStr = "(?,?,?,?,?,?::date,?,?,?::integer,?,?::boolean,?::boolean,?)";
         final String sql = "insert into big_query_sep (record_id,family_id,disclosure_event,sso,patent_owner_harmonized,patent_owner_unharmonized,date,standard,licensing_commitment,blanket_type,blanket_scope,third_party,reciprocity,publication_number_with_country) values "+valueStr+" on conflict (record_id) do update set (family_id,disclosure_event,sso,patent_owner_harmonized,patent_owner_unharmonized,date,standard,licensing_commitment,blanket_type,blanket_scope,third_party,reciprocity,publication_number_with_country) = "+conflictStr;
 
         DefaultApplier applier = new DefaultApplier(true, conn, fields);
