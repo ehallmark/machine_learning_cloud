@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 public class IngestPriorityClaimsFromJson extends IngestPatentsFromJson {
 
     public static void main(String[] args) throws SQLException {
-        final File dataDir = new File("/usb2/data/google-big-query/patents/");
+        final File dataDir = new File("/usb2/data/google-big-query/google-patents-research/");
 
         String[] fields = new String[]{
                 Constants.FULL_PUBLICATION_NUMBER,
