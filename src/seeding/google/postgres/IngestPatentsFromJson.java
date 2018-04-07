@@ -191,20 +191,20 @@ public class IngestPatentsFromJson {
                             Object[] objs = new Object[fieldData.size()];
                             for(int j = 0; j < fieldData.size(); j++) {
                                 Map<String,Object> obj = fieldData.get(j);
-                                objs[i]=obj.get(field.substring(field.indexOf(".")+1,field.length()));
-                                if(objs[i]!=null&&objs[i]instanceof String) objs[i] = ((String)objs[i]).trim();
-                                if(objs[i]!=null&&objs[i].toString().isEmpty()) objs[i]=null;
+                                objs[j]=obj.get(field.substring(field.indexOf(".")+1,field.length()));
+                                if(objs[j]!=null&&objs[j]instanceof String) objs[j] = ((String)objs[j]).trim();
+                                if(objs[j]!=null&&objs[j].toString().isEmpty()) objs[j]=null;
                                 if(isDate) {
-                                    if(objs[i]!=null&&objs[i].equals("0")) objs[i] = null;
-                                    if(objs[i]!=null) {
-                                        String date = (String)objs[i];
+                                    if(objs[j]!=null&&objs[j].equals("0")) objs[j] = null;
+                                    if(objs[j]!=null) {
+                                        String date = (String)objs[j];
                                         if(date.endsWith("00")) {
                                             date = date.substring(0,date.length()-1)+"1";
                                         }
                                         if(!date.contains("-")) {
                                             date = LocalDate.parse(date,DateTimeFormatter.BASIC_ISO_DATE).format(DateTimeFormatter.ISO_DATE);
                                         }
-                                        objs[i]=date;
+                                        objs[j]=date;
                                     }
                                 }
                             }
