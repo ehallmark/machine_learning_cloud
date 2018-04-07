@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 public class IngestSEPFromJson extends IngestPatentsFromJson {
 
     public static void main(String[] args) throws SQLException {
-        final File dataDir = new File("/usb2/data/google-big-query/sep/");
+        final File dataDir = new File("/home/ehallmark/google-big-query/google-big-query/sep/");
 
         String[] fields = new String[]{
                 "record_id",
