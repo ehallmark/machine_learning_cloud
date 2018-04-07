@@ -44,7 +44,7 @@ public class IngestCitationsFromJson extends IngestPatentsFromJson {
 
         String valueStr = "(?,?,?,?,?,?,?,?::date)";
         String conflictStr = "(?,?,?,?,?,?,?::date)";
-        final String sql = "insert into big_query_patent_to_citations (publication_number_full,family_id,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date::date) values "+valueStr+" on conflict (publication_number_full) do update set (family_id,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date::date) = "+conflictStr;
+        final String sql = "insert into big_query_patent_to_citations (publication_number_full,family_id,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date) values "+valueStr+" on conflict (publication_number_full) do update set (family_id,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date) = "+conflictStr;
 
         DefaultApplier applier = new DefaultApplier(true, conn, new String[]{fields[1],fields[2],citationFields[0],citationFields[1],citationFields[2],citationFields[3],citationFields[4],citationFields[5]});
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
