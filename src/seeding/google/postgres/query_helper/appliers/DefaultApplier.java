@@ -43,22 +43,21 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
         if(data == null) {
             preparedStatement.setObject(idx, null);
         } else if(data instanceof String) {
-            if(field.endsWith("_date")||field.endsWith("Date")) {
+            if(field.equals("date")||field.endsWith("_date")||field.endsWith("Date")) {
                 // is a date
                 if(data.equals("0")) {
                     preparedStatement.setObject(idx, null);
                 } else {
-                    LocalDate date;
-                    if(!((String)data).contains("-")) {
-                        data = LocalDate.parse((String)data,DateTimeFormatter.BASIC_ISO_DATE).format(DateTimeFormatter.ISO_DATE);
-                    }
-                    date = LocalDate.parse((String)data,DateTimeFormatter.ISO_DATE);
                     try {
+                        if(!((String)data).contains("-")) {
+                             data = LocalDate.parse((String)data,DateTimeFormatter.BASIC_ISO_DATE).format(DateTimeFormatter.ISO_DATE);
+                        }
+                        LocalDate date = LocalDate.parse((String)data,DateTimeFormatter.ISO_DATE);
                         preparedStatement.setString(idx, date.format(DateTimeFormatter.ISO_DATE));
                     } catch(Exception e) {
-                        e.printStackTrace();
-                        System.out.println("Error on date: "+date.toString());
-                        System.exit(1);
+                        //e.printStackTrace();
+                        System.out.println("Error on date: "+data.toString());
+                        //System.exit(1);
                     }
                 }
             } else {
@@ -100,6 +99,10 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
             preparedStatement.setArray(idx,conn.createArrayOf("int8",toPrimitive((long[])data)));
         } else if (data instanceof boolean[]) {
             preparedStatement.setArray(idx,conn.createArrayOf("bool",toPrimitive((boolean[])data)));
+        } else if (data instanceof Object[]) {
+            preparedStatement.setArray(idx,conn.createArrayOf("varchar",(Object[])data));
+        } else {
+            System.out.println("Unable to find class for: "+data.getClass().getName());
         }
     }
 
