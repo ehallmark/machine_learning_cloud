@@ -6,7 +6,7 @@ import org.bson.Document;
 import seeding.Database;
 import seeding.google.attributes.Constants;
 import seeding.google.mongo.ingest.IngestJsonHelper;
-import seeding.google.mongo.ingest.IngestSEP;
+import seeding.google.mongo.ingest.IngestPatents;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
 
@@ -19,42 +19,37 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class IngestSEPFromMongo extends IngestPatentsFromJson {
+public class IngestPriorityClaimsFromJson extends IngestPatentsFromJson {
 
     public static void main(String[] args) throws SQLException {
-        final File dataDir = new File("/usb2/data/google-big-query/sep/");
+        final File dataDir = new File("/usb2/data/google-big-query/patents/");
 
         String[] fields = new String[]{
-                "record_id",
+                Constants.FULL_PUBLICATION_NUMBER,
                 Constants.FAMILY_ID,
-                "disclosure_event",
-                "sso",
-                "patent_owner_harmonized",
-                "patent_owner_unharmonized",
-                "date",
-                "standard",
-                "licensing_commitment",
-                "blanket_type",
-                "blanket_scope",
-                "third_party",
-                "reciprocity",
-                "pub_cleaned"
+                Constants.PRIORITY_CLAIM
+        };
+
+        String[] priorityClaimFields = new String[]{
+                Constants.FULL_PUBLICATION_NUMBER,
+                Constants.FULL_APPLICATION_NUMBER,
+                Constants.FILING_DATE
         };
 
         Connection conn = Database.getConn();
 
-        String valueStr = "("+String.join(",", IntStream.range(0,fields.length).mapToObj(i->"?").collect(Collectors.toList()))+")";
-        String conflictStr = "("+String.join(",", IntStream.range(0,fields.length-1).mapToObj(i->"?").collect(Collectors.toList()))+")";
-        final String sql = "insert into big_query_sep (record_id,family_id,disclosure_event,sso,patent_owner_harmonized,patent_owner_unharmonized,date,standard,licensing_commitment,blanket_type,blanket_scope,third_party,reciprocity,publication_number_with_country) values "+valueStr+" on conflict (record_id) do update set (family_id,disclosure_event,sso,patent_owner_harmonized,patent_owner_unharmonized,date,standard,licensing_commitment,blanket_type,blanket_scope,third_party,reciprocity,publication_number_with_country) = "+conflictStr;
+        String valueStr = "(?,?,?,?,?::date)";
+        String conflictStr = "(?,?,?,?::date)";
+        final String sql = "insert into big_query_patent_to_priority_claims (publication_number_full,family_id,pc_publication_number_full,pc_application_number_full,pc_filing_date) values "+valueStr+" on conflict (publication_number_full) do update set (family_id,pc_publication_number_full,pc_application_number_full,pc_filing_date) = "+conflictStr;
 
-        DefaultApplier applier = new DefaultApplier(true, conn, fields);
+        DefaultApplier applier = new DefaultApplier(true, conn, new String[]{fields[1],fields[2],priorityClaimFields[0],priorityClaimFields[1],priorityClaimFields[2]});
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
-
 
         Consumer<Document> consumer = doc -> {
             try {
@@ -72,7 +67,7 @@ public class IngestSEPFromMongo extends IngestPatentsFromJson {
 
         Stream.of(dataDir.listFiles()).forEach(file-> {
             try(InputStream stream = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-                IngestJsonHelper.streamJsonFile(stream,attributeFunctions).forEach(map->{
+                IngestJsonHelper.streamJsonFile(stream,attributeFunctions).filter(map->filterDocumentFunction.apply(map)).forEach(map->{
                     consumer.accept(new Document(map));
                 });
 

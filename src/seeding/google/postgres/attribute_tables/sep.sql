@@ -19,3 +19,4 @@ create table big_query_sep (
 );
 
 create index big_query_sep_family_id on big_query_sep (family_id);
+

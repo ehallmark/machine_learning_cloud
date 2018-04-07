@@ -44,7 +44,7 @@ public class IngestCPCFromJson extends IngestPatentsFromJson {
 
         String valueStr = "("+String.join(",", IntStream.range(0,numFields).mapToObj(i->"?").collect(Collectors.toList()))+")";
         String conflictStr = "("+String.join(",", IntStream.range(0,numFields-1).mapToObj(i->"?").collect(Collectors.toList()))+")";
-        final String sql = "insert into big_query_patent_to_priority_claims (publication_number_full,family_id,pc_publication_number_full,code,inventive,tree) values "+valueStr+" on conflict (publication_number_full) do update set (family_id,pc_publication_number_full,code,inventive,tree) = "+conflictStr;
+        final String sql = "insert into big_query_patent_to_cpc (publication_number_full,family_id,pc_publication_number_full,code,inventive,tree) values "+valueStr+" on conflict (publication_number_full) do update set (family_id,pc_publication_number_full,code,inventive,tree) = "+conflictStr;
 
         DefaultApplier applier = new DefaultApplier(true, conn, new String[]{fields[1],fields[2],cpcFields[0],cpcFields[1],cpcFields[2]});
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
