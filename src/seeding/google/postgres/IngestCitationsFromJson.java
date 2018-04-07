@@ -31,7 +31,7 @@ public class IngestCitationsFromJson extends IngestPatentsFromJson {
                 Constants.CITATION
         };
 
-        String[] priorityClaimFields = new String[]{
+        String[] citationFields = new String[]{
                 Constants.FULL_PUBLICATION_NUMBER,
                 Constants.FULL_APPLICATION_NUMBER,
                 Constants.NPL_TEXT,
@@ -46,7 +46,7 @@ public class IngestCitationsFromJson extends IngestPatentsFromJson {
         String conflictStr = "(?,?,?,?,?,?,?::date)";
         final String sql = "insert into big_query_patent_to_citations (publication_number_full,family_id,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date::date) values "+valueStr+" on conflict (publication_number_full) do update set (family_id,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date::date) = "+conflictStr;
 
-        DefaultApplier applier = new DefaultApplier(true, conn, new String[]{fields[1],fields[2],priorityClaimFields[0],priorityClaimFields[1],priorityClaimFields[2]});
+        DefaultApplier applier = new DefaultApplier(true, conn, new String[]{fields[1],fields[2],citationFields[0],citationFields[1],citationFields[2],citationFields[3],citationFields[4],citationFields[5]});
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
 
         Consumer<Document> consumer = doc -> {
@@ -57,12 +57,12 @@ public class IngestCitationsFromJson extends IngestPatentsFromJson {
                         List<Object> data = new ArrayList<>(fields.length);
                         data.add(doc.get(fields[0]));
                         data.add(doc.get(fields[1]));
-                        data.add(map.get(priorityClaimFields[0]));
-                        data.add(map.get(priorityClaimFields[1]));
-                        data.add(map.get(priorityClaimFields[2]));
-                        data.add(map.get(priorityClaimFields[3]));
-                        data.add(map.get(priorityClaimFields[4]));
-                        data.add(map.get(priorityClaimFields[5]));
+                        data.add(map.get(citationFields[0]));
+                        data.add(map.get(citationFields[1]));
+                        data.add(map.get(citationFields[2]));
+                        data.add(map.get(citationFields[3]));
+                        data.add(map.get(citationFields[4]));
+                        data.add(map.get(citationFields[5]));
                         queryStream.ingest(data);
                     }
                 }
