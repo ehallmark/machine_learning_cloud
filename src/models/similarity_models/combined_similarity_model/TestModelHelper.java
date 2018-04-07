@@ -40,9 +40,7 @@ public class TestModelHelper {
         return sum.get()/cnt.get();
     }
 
-
-    protected static double test(DefaultPipelineManager<?,INDArray> pipelineManager, String modelName, Map<String,Pair<String,String>> filingData) {
-        final Map<String,INDArray> allPredictions = pipelineManager.loadPredictions();
+    protected static double test(Map<String,INDArray> allPredictions, String modelName, Map<String,Pair<String,String>> filingData) {
         AtomicInteger numMissing = new AtomicInteger(0);
         AtomicInteger totalSeen = new AtomicInteger(0);
         Function3<String,String,String,Double> model = (filing, posSample, negSample) -> {
@@ -67,6 +65,10 @@ public class TestModelHelper {
         System.out.println("Score for model "+modelName+": " + score);
         System.out.println("Missing vectors for "+numMissing.get()+" out of "+totalSeen.get());
         return score;
+    }
+
+    protected static double test(DefaultPipelineManager<?,INDArray> pipelineManager, String modelName, Map<String,Pair<String,String>> filingData) {
+        return test(pipelineManager.loadPredictions(),modelName,filingData);
     }
 
     protected static Set<String> topNByCosineSim(List<String> filings, INDArray filingMatrix, INDArray encodingVec, int n) {
@@ -96,9 +98,10 @@ public class TestModelHelper {
         // test
         Tester tester = new Tester();
         tester.registerModel("Random");
-        tester.registerModel("Model 3");
+        tester.registerModel("Deep Model");
+        tester.registerModel("Deeper Model");
 
-        TestTextModels.runTest(tester);
+        //TestTextModels.runTest(tester);
         TestSimModels.runTest(tester);
         TestCPCModels.runTest(tester);
         TestAssigneeModels.runTest(tester);

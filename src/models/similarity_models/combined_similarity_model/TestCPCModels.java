@@ -11,14 +11,16 @@ import java.util.stream.IntStream;
 public class TestCPCModels extends TestModelHelper {
 
 
-    private static Map<String,Pair<String,String>> loadData(int n) {
+    public static Map<String,Pair<String,String>> loadData(int n) {
         CPCHierarchy hierarchy = new CPCHierarchy();
         hierarchy.loadGraph();
 
         Random rand = new Random(235);
 
         List<CPC> cpcs = new ArrayList<>(hierarchy.getLabelToCPCMap().values());
-        Collections.shuffle(cpcs);
+        cpcs.sort((c1,c2)->c1.getName().compareTo(c2.getName()));
+        Collections.shuffle(cpcs,rand);
+
         Map<String,Pair<String,String>> data = Collections.synchronizedMap(new HashMap<>());
         IntStream.range(0,Math.min(n,cpcs.size())).parallel().forEach(i->{
             CPC cpc = cpcs.get(i);
@@ -48,15 +50,21 @@ public class TestCPCModels extends TestModelHelper {
         double randomScore = testModel(data,RANDOM_MODEL);
         System.out.println("Random score: "+randomScore);
         tester.scoreModel("Random",testName,randomScore);
-
-        // vae model
-        DeepCPCVAEPipelineManager encodingPipelineManager3 = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME);
-
         System.out.println("Num cpc samples used: "+data.size());
 
+        // vae model
+        DeepCPCVAEPipelineManager encodingPipelineManagerDeep = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME);
+
+        //DeeperCPCVAEPipelineManager encodingPipelineManagerDeeper = new DeeperCPCVAEPipelineManager(DeeperCPCVAEPipelineManager.MODEL_NAME);
+
         // run tests
-        double score3 = test(encodingPipelineManager3, "Model 3",data);
-        tester.scoreModel("Model 3",testName,score3);
-        System.out.println("Score for Model 3: "+score3);
+        double deepScore = test(encodingPipelineManagerDeep, "Deep Model",data);
+       // double deeperScore = test(encodingPipelineManagerDeeper, "Deeper Model",data);
+        tester.scoreModel("Deep Model",testName,deepScore);
+        //tester.scoreModel("Deeper Model",testName,deeperScore);
+        System.out.println();
+        System.out.println("Num samples used: "+data.size());
+        System.out.println("Score for Deep Model: "+deepScore);
+       // System.out.println("Score for Deeper Model: "+deeperScore);
     }
 }

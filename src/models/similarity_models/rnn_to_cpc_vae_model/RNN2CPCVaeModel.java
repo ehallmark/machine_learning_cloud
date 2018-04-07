@@ -1,11 +1,12 @@
-package models.similarity_models.combined_similarity_model;
+package models.similarity_models.rnn_to_cpc_vae_model;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import lombok.Getter;
-import models.similarity_models.deep_cpc_encoding_model.DeeperCPCVariationalAutoEncoderNN;
-import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
+import models.similarity_models.combined_similarity_model.AbstractEncodingModel;
+import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
+import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.*;
 import org.deeplearning4j.nn.conf.graph.rnn.LastTimeStepVertex;
@@ -30,19 +31,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-/**
- * Created by Evan on 12/24/2017.
- */
-public class CombinedCPC2Vec2DeeperVAEEncodingModel extends AbstractEncodingModel<ComputationGraph,CombinedCPC2Vec2DeeperVAEEncodingPipelineManager> {
+public class RNN2CPCVaeModel extends AbstractEncodingModel<ComputationGraph,RNN2CPCVaePipelineManager> {
     public static final String VAE_NETWORK = "vaeNet";
-    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"combined_cpc2vec_tfidf_2_deeper_vae_model_data"); //new File("deep_cpc_2_vec_encoding_data");
+    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"rnn_2_cpc_vae_model_data"); //new File("deep_cpc_2_vec_encoding_data");
 
     private List<ComputationGraph> networks;
     @Getter
     private ComputationGraph vaeNetwork;
 
     private int vectorSize;
-    public CombinedCPC2Vec2DeeperVAEEncodingModel(CombinedCPC2Vec2DeeperVAEEncodingPipelineManager pipelineManager, String modelName, int vectorSize) {
+    public RNN2CPCVaeModel(RNN2CPCVaePipelineManager pipelineManager, String modelName, int vectorSize) {
         super(pipelineManager,ComputationGraph.class,modelName);
         this.vectorSize=vectorSize;
     }
@@ -53,7 +51,7 @@ public class CombinedCPC2Vec2DeeperVAEEncodingModel extends AbstractEncodingMode
 
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-       throw new UnsupportedOperationException("Predictions not support with this model.");
+        throw new UnsupportedOperationException("Predictions not support with this model.");
     }
 
 
@@ -160,10 +158,10 @@ public class CombinedCPC2Vec2DeeperVAEEncodingModel extends AbstractEncodingMode
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int input1 = 128;
+        int input1 = 256;
         int hiddenLayerSizeRnn = 256;
         int hiddenLayerSizeFF = 128;
-        int input2 = DeeperCPCVariationalAutoEncoderNN.VECTOR_SIZE;
+        int input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
 
 
         Updater updater = Updater.RMSPROP;
@@ -174,10 +172,10 @@ public class CombinedCPC2Vec2DeeperVAEEncodingModel extends AbstractEncodingMode
         Activation outputActivation = Activation.IDENTITY;
         Map<Integer,Double> learningRateSchedule = new HashMap<>();
         learningRateSchedule.put(0,learningRate);
-        learningRateSchedule.put(50000,learningRate/2);
-        learningRateSchedule.put(100000,learningRate/5);
-        learningRateSchedule.put(200000,learningRate/10);
-        learningRateSchedule.put(400000,learningRate/25);
+        //learningRateSchedule.put(50000,learningRate/2);
+        //learningRateSchedule.put(100000,learningRate/5);
+        //learningRateSchedule.put(200000,learningRate/10);
+        //learningRateSchedule.put(400000,learningRate/25);
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)
@@ -190,18 +188,13 @@ public class CombinedCPC2Vec2DeeperVAEEncodingModel extends AbstractEncodingMode
                 .graphBuilder()
                 .addInputs("x1")
                 .addLayer("rnn0", new GravesLSTM.Builder().dropOut(0.2).nIn(input1).nOut(hiddenLayerSizeRnn).build(), "x1")
-                .addLayer("rnn1", new GravesLSTM.Builder().dropOut(0.2).nIn(hiddenLayerSizeRnn+input1).nOut(hiddenLayerSizeRnn).build(), "rnn0","x1")
-                .addLayer("rnn2", new GravesLSTM.Builder().dropOut(0.2).nIn(hiddenLayerSizeRnn+hiddenLayerSizeRnn).nOut(hiddenLayerSizeRnn).build(), "rnn1","rnn0")
-                .addVertex("r0", new LastTimeStepVertex("x1"),"rnn1")
-                .addVertex("r1", new LastTimeStepVertex("x1"),"rnn2")
-                .addLayer("ff0", new DenseLayer.Builder().dropOut(0.2).nIn(hiddenLayerSizeRnn*2).nOut(hiddenLayerSizeFF).build(), "r1","r0")
-                .addLayer("ff1", new DenseLayer.Builder().dropOut(0.2).nIn(hiddenLayerSizeFF+hiddenLayerSizeRnn).nOut(hiddenLayerSizeFF).build(), "ff0","r1")
-                .addLayer("ff2", new DenseLayer.Builder().dropOut(0.2).nIn(hiddenLayerSizeFF*2).nOut(hiddenLayerSizeFF).build(), "ff1","ff0")
-                .addLayer("ff3", new DenseLayer.Builder().dropOut(0.2).nIn(hiddenLayerSizeFF*2).nOut(hiddenLayerSizeFF).build(), "ff2","ff1")
-                .addLayer("ff4", new DenseLayer.Builder().dropOut(0.2).nIn(hiddenLayerSizeFF*2).nOut(hiddenLayerSizeFF).build(), "ff3","ff2")
-                .addLayer("ff5", new DenseLayer.Builder().dropOut(0.2).nIn(hiddenLayerSizeFF*2).nOut(hiddenLayerSizeFF).build(), "ff4","ff3")
-                .addLayer("ff6", new DenseLayer.Builder().dropOut(0.2).nIn(hiddenLayerSizeFF*2).nOut(hiddenLayerSizeFF).build(), "ff5","ff4")
-                .addLayer("y1", new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeFF).lossFunction(lossFunction).nOut(input2).build(), "ff6")
+                .addLayer("rnn1", new GravesLSTM.Builder().dropOut(0.2).nIn(hiddenLayerSizeRnn+input1).nOut(hiddenLayerSizeRnn).build(), "rnn0")
+                .addLayer("rnn2", new GravesLSTM.Builder().dropOut(0.2).nIn(hiddenLayerSizeRnn+hiddenLayerSizeRnn).nOut(hiddenLayerSizeRnn).build(), "rnn1")
+                .addVertex("r0", new LastTimeStepVertex("x1"),"rnn2")
+                .addLayer("ff0", new DenseLayer.Builder().dropOut(0.2).nIn(hiddenLayerSizeRnn).nOut(hiddenLayerSizeFF).build(), "r2")
+                .addLayer("ff1", new DenseLayer.Builder().dropOut(0.2).nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "ff0")
+                .addLayer("ff2", new DenseLayer.Builder().dropOut(0.2).nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "ff1")
+                .addLayer("y1", new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeFF).lossFunction(lossFunction).nOut(input2).build(), "ff2")
                 .setOutputs("y1")
                 .backprop(true)
                 .backpropType(BackpropType.Standard)

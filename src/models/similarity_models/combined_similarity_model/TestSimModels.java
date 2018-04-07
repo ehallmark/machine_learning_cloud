@@ -68,17 +68,20 @@ public class TestSimModels extends TestModelHelper {
         double randomScore = testModel(data,RANDOM_MODEL);
         System.out.println("Random score: "+randomScore);
         tester.scoreModel("Random",testName,randomScore);
-        // new model
-
-        // older model
 
         // vae model
-        DeepCPCVAEPipelineManager encodingPipelineManager3 = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME);
-        System.out.println("Num filing samples used: "+data.size());
+        DeepCPCVAEPipelineManager encodingPipelineManagerDeep = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME);
+
+        //DeeperCPCVAEPipelineManager encodingPipelineManagerDeeper = new DeeperCPCVAEPipelineManager(DeeperCPCVAEPipelineManager.MODEL_NAME);
 
         // run tests
-        double score3 = test(encodingPipelineManager3, "Model 3",data);
-        tester.scoreModel("Model 3",testName,score3);
-        System.out.println("Score for Model 3: "+score3);
+        double deepScore = test(encodingPipelineManagerDeep, "Deep Model",data);
+       // double deeperScore = test(encodingPipelineManagerDeeper, "Deeper Model",data);
+        tester.scoreModel("Deep Model",testName,deepScore);
+       // tester.scoreModel("Deeper Model",testName,deeperScore);
+        System.out.println();
+        System.out.println("Num samples used: "+data.size());
+        System.out.println("Score for Deep Model: "+deepScore);
+       // System.out.println("Score for Deeper Model: "+deeperScore);
     }
 }

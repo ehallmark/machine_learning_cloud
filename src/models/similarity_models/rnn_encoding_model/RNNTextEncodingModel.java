@@ -1,48 +1,30 @@
 package models.similarity_models.rnn_encoding_model;
 
-import cpc_normalization.CPC;
-import cpc_normalization.CPCHierarchy;
 import data_pipeline.helpers.Function2;
 import data_pipeline.models.BaseTrainablePredictionModel;
-import data_pipeline.models.ComputationGraphPredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
-import data_pipeline.optimize.nn_optimization.LayerWrapper;
-import data_pipeline.optimize.nn_optimization.VertexWrapper;
-import data_pipeline.optimize.parameters.HyperParameter;
-import data_pipeline.vectorize.DataSetManager;
-import models.similarity_models.cpc_encoding_model.CPCDataSetIterator;
-import models.similarity_models.cpc_encoding_model.CPCVariationalAutoEncoderNN;
-import models.similarity_models.deep_cpc_encoding_model.DeeperCPCIndexMap;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.*;
 import org.deeplearning4j.nn.conf.layers.GravesLSTM;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
-import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
-import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.graph.ComputationGraph;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Constants;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 10/26/17.
