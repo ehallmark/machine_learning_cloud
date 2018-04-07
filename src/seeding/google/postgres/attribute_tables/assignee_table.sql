@@ -2,7 +2,7 @@
 \connect patentdb
 
 create table big_query_assignee (
-    name varchar(32) primary key, -- eg. US9923222B1
+    name varchar(32) primary key,
     country_code varchar(8),
     portfolio_size integer,
 
