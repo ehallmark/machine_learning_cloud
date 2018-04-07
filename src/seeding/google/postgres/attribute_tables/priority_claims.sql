@@ -6,7 +6,9 @@ create table big_query_patent_to_priority_claims (
     family_id varchar(32) not null,
     pc_publication_number_full varchar(32),
     pc_application_number_full varchar(32),
-    pc_filing_date date
+    pc_filing_date date,
+    CONSTRAINT big_query_patent_to_priority_claims_pk
+        unique (reel_frame,name);
 );
 create index big_query_patent_to_priority_claims_pc_publication_number_full_idx on big_query_patent_to_priority_claims (pc_publication_number_full);
 create index big_query_patent_to_priority_claims_pc_application_number_full_idx on big_query_patent_to_priority_claims (pc_application_number_full);

@@ -20,10 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -106,23 +103,118 @@ public class IngestPatentsFromJson {
                 Constants.KIND_CODE,
                 Constants.APPLICATION_KIND,
                 Constants.FAMILY_ID,
-                Constants.ENTITY_STATUS
+                Constants.ENTITY_STATUS,
+                Constants.TITLE_LOCALIZED+"."+Constants.TEXT,
+                Constants.TITLE_LOCALIZED+"."+Constants.LANGUAGE,
+                Constants.ABSTRACT_LOCALIZED+"."+Constants.TEXT,
+                Constants.ABSTRACT_LOCALIZED+"."+Constants.LANGUAGE,
+                Constants.CLAIMS_LOCALIZED+"."+Constants.TEXT,
+                Constants.CLAIMS_LOCALIZED+"."+Constants.LANGUAGE,
+                Constants.DESCRIPTION_LOCALIZED+"."+Constants.TEXT,
+                Constants.DESCRIPTION_LOCALIZED+"."+Constants.LANGUAGE,
+                Constants.INVENTOR,
+                Constants.ASSIGNEE,
+                Constants.INVENTOR_HARMONIZED+"."+Constants.NAME,
+                Constants.INVENTOR_HARMONIZED+"."+Constants.COUNTRY_CODE,
+                Constants.ASSIGNEE_HARMONIZED+"."+Constants.NAME,
+                Constants.ASSIGNEE_HARMONIZED+"."+Constants.COUNTRY_CODE,
+                Constants.PRIORITY_CLAIM+"."+Constants.FULL_PUBLICATION_NUMBER,
+                Constants.PRIORITY_CLAIM+"."+Constants.FULL_APPLICATION_NUMBER,
+                Constants.PRIORITY_CLAIM+"."+Constants.FILING_DATE,
+                Constants.CPC+"."+ Constants.CODE,
+                Constants.CPC+"."+ Constants.INVENTIVE,
+                Constants.CITATION+"."+Constants.FULL_PUBLICATION_NUMBER,
+                Constants.CITATION+"."+Constants.FULL_APPLICATION_NUMBER,
+                Constants.CITATION+"."+Constants.NPL_TEXT,
+                Constants.CITATION+"."+Constants.TYPE,
+                Constants.CITATION+"."+Constants.CATEGORY,
+                Constants.CITATION+"."+Constants.FILING_DATE
         };
+
+        Set<String> arrayFields = new HashSet<>();
+        arrayFields.add(Constants.TITLE_LOCALIZED);
+        arrayFields.add(Constants.DESCRIPTION_LOCALIZED);
+        arrayFields.add(Constants.CLAIMS_LOCALIZED);
+        arrayFields.add(Constants.INVENTOR);
+        arrayFields.add(Constants.ASSIGNEE);
+        arrayFields.add(Constants.ASSIGNEE_HARMONIZED);
+        arrayFields.add(Constants.INVENTOR_HARMONIZED);
+        arrayFields.add(Constants.PRIORITY_CLAIM);
+        arrayFields.add(Constants.CPC);
+        arrayFields.add(Constants.CITATION);
 
         Connection conn = Database.getConn();
 
-        String valueStr = "(?,?,?,?,?,?::date,?::date,?::date,?,?,?,?,?)";
-        String conflictStr = "(?,?,?,?,?::date,?::date,?::date,?,?,?,?,?)";
-        final String sql = "insert into big_query_patents (publication_number_full,publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,original_entity_type) values "+valueStr+" on conflict (publication_number_full) do update set (publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,original_entity_type) = "+conflictStr;
+        int numFields = fields.length;
+        String valueStr = "("+String.join(",",IntStream.range(0,numFields).mapToObj(i->{
+            String field = fields[i];
+            String parentField;
+            String childField;
+            if(field.contains(".")) {
+                parentField = field.substring(0,field.indexOf("."));
+                childField = field.substring(field.indexOf(".")+1,field.length());
+            } else {
+                parentField = field;
+                childField = field;
+            }
+            boolean isDate = childField.equals("date")||childField.endsWith("_date")||childField.endsWith("Date");
+            String ret = "?";
+            if(arrayFields.contains(parentField)) {
+                // is array field
+                if(isDate) {
+                    ret += "::date[]";
+                }
+            } else {
+                // not an array field
+                if(isDate) {
+                    ret+= "::date";
+                }
+            }
+            return ret;
+        }).collect(Collectors.toList()))+")";
 
-        DefaultApplier applier = new DefaultApplier(true, conn, fields);
+        final String sql = "insert into patents_global (publication_number_full,publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,original_entity_type,invention_title,invention_title_lang,abstract,abstract_lang,claims,claims_lang,description,description_lang,inventor_harmonized,inventor_harmonized_cc,assignee_harmonized,assignee_harmonized_cc,pc_publication_number_full,pc_application_number_full,pc_filing_date,code,inventive,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date) values "+valueStr+" on conflict do nothing";
+
+        DefaultApplier applier = new DefaultApplier(false, conn, fields);
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
 
         Consumer<Document> consumer = doc -> {
             try {
                 List<Object> data = new ArrayList<>(fields.length);
                 for(int i = 0; i < fields.length; i++) {
-                    Object val = doc.get(fields[i]);
+                    String field = fields[i];
+                    Object val;
+                    if(field.contains(".")) {
+                        boolean isDate = field.equals("date")||field.endsWith("_date")||field.endsWith("Date");
+                        List<Map<String,Object>> fieldData = (List<Map<String,Object>>)doc.get(field.substring(0,field.indexOf(".")));
+                        if(fieldData!=null&&fieldData.size()>0) {
+                            Object[] objs = new Object[fieldData.size()];
+                            for(int j = 0; j < fieldData.size(); j++) {
+                                Map<String,Object> obj = fieldData.get(j);
+                                objs[i]=obj.get(field.substring(field.indexOf(".")+1,field.length()));
+                                if(objs[i]!=null&&objs[i]instanceof String) objs[i] = ((String)objs[i]).trim();
+                                if(objs[i]!=null&&objs[i].toString().isEmpty()) objs[i]=null;
+                                if(isDate) {
+                                    if(objs[i]!=null&&objs[i].equals("0")) objs[i] = null;
+                                    if(objs[i]!=null) {
+                                        String date = (String)objs[i];
+                                        if(date.endsWith("00")) {
+                                            date = date.substring(0,date.length()-1)+"1";
+                                        }
+                                        if(!date.contains("-")) {
+                                            date = LocalDate.parse(date,DateTimeFormatter.BASIC_ISO_DATE).format(DateTimeFormatter.ISO_DATE);
+                                        }
+                                        objs[i]=date;
+                                    }
+                                }
+                            }
+                            val = objs;
+                        } else {
+                            val = null;
+                        }
+                    } else {
+                        val = doc.get(fields[i]);
+                    }
                     if(i==7) { // priority date
                         if(val==null||val.equals("0")) {
                             // default to filing date
