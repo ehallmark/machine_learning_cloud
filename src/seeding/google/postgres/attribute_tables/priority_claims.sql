@@ -11,3 +11,4 @@ create table big_query_patent_to_priority_claims (
 create index big_query_patent_to_priority_claims_pc_publication_number_full_idx on big_query_patent_to_priority_claims (pc_publication_number_full);
 create index big_query_patent_to_priority_claims_pc_application_number_full_idx on big_query_patent_to_priority_claims (pc_application_number_full);
 create index big_query_patent_to_priority_claims_family_id_idx on big_query_patent_to_priority_claims (family_id);
+

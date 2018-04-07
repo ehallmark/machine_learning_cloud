@@ -9,3 +9,4 @@ create table big_query_patent_to_cpc (
 );
 create index big_query_cpc_code_idx on big_query_patent_to_cpc (code);
 create index big_query_cpc_family_id_idx on big_query_patent_to_cpc (family_id);
+

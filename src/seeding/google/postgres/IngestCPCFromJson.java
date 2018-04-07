@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -24,7 +25,7 @@ import java.util.stream.Stream;
 public class IngestCPCFromJson extends IngestPatentsFromJson {
 
     public static void main(String[] args) throws SQLException {
-        final File dataDir = new File("/usb2/data/google-big-query/google-patent-research/");
+        final File dataDir = new File("/usb2/data/google-big-query/google-patents-research/");
 
         String[] fields = new String[]{
                 Constants.FULL_PUBLICATION_NUMBER,
@@ -51,12 +52,18 @@ public class IngestCPCFromJson extends IngestPatentsFromJson {
 
         Consumer<Document> consumer = doc -> {
             try {
-                List<Object> data = new ArrayList<>(fields.length);
-                for(int i = 0; i < fields.length; i++) {
-                    Object val = doc.get(fields[i]);
-                    data.add(val);
+                List<Map<String,Object>> maps = (List<Map<String,Object>>)doc.get(fields[2]);
+                if(maps!=null) {
+                    List<Object> data = new ArrayList<>(fields.length);
+                    data.add(doc.get(fields[0]));
+                    data.add(doc.get(fields[1]));
+                    for(Map<String,Object> map: maps) {
+                        data.add(map.get(cpcFields[0]));
+                        data.add(map.get(cpcFields[1]));
+                        data.add(map.get(cpcFields[2]));
+                        queryStream.ingest(data);
+                    }
                 }
-                queryStream.ingest(data);
             } catch(Exception e) {
                 e.printStackTrace();
                 System.exit(1);
