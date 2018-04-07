@@ -30,6 +30,7 @@ public class QueryStream<T> {
         lock.lock();
         try {
             if(applier.apply(preparedStatement, data)) {
+                System.out.println("Prepared statement: "+ preparedStatement.toString());
                 preparedStatement.executeUpdate();
             }
             preparedStatement.clearParameters();
