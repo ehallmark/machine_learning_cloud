@@ -55,10 +55,10 @@ public class IngestPriorityClaimsFromJson extends IngestPatentsFromJson {
             try {
                 List<Map<String,Object>> maps = (List<Map<String,Object>>)doc.get(fields[2]);
                 if(maps!=null) {
-                    List<Object> data = new ArrayList<>(fields.length);
-                    data.add(doc.get(fields[0]));
-                    data.add(doc.get(fields[1]));
                     for(Map<String,Object> map: maps) {
+                        List<Object> data = new ArrayList<>(fields.length);
+                        data.add(doc.get(fields[0]));
+                        data.add(doc.get(fields[1]));
                         data.add(map.get(priorityClaimFields[0]));
                         data.add(map.get(priorityClaimFields[1]));
                         data.add(map.get(priorityClaimFields[2]));

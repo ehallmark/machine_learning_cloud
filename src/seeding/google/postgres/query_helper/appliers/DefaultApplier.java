@@ -50,6 +50,9 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
                     preparedStatement.setObject(idx, null);
                 } else {
                     try {
+                        if(((String)data).endsWith("00")) {
+                            data = ((String) data).substring(0,((String)data).length()-1)+"1";
+                        }
                         if(!((String)data).contains("-")) {
                              data = LocalDate.parse((String)data,DateTimeFormatter.BASIC_ISO_DATE).format(DateTimeFormatter.ISO_DATE);
                         }
