@@ -35,52 +35,61 @@ import static seeding.google.attributes.Constants.PUBLICATION_NUMBER_GOOGLE;
 
 public class IngestPatentsFromJson {
 
-    public static void main(String[] args) throws SQLException {
-        final List<Function<Document,Void>> attributeFunctions = Arrays.asList(
-                map -> {
-                    // handle publication numbers
-                    String publicationNumber = (String)map.get(PUBLICATION_NUMBER_GOOGLE);
-                    if(publicationNumber!=null) {
-                        String[] parts = publicationNumber.split("-");
-                        if(parts.length==3) {
-                            String fullNumber = String.join("",parts);
-                            String countryAndNumber = parts[0]+parts[1];
-                            String number = parts[1];
-                            map.put(FULL_PUBLICATION_NUMBER,fullNumber);
-                            map.put(PUBLICATION_NUMBER_WITH_COUNTRY,countryAndNumber);
-                            map.put(PUBLICATION_NUMBER,number);
-                        } else {
+    private static final LocalDate twentyFiveYearsAgo = LocalDate.of(2018,4,7).minusYears(25);
+    protected static final Function<Map<String,Object>,Boolean> filterDocumentFunction = doc -> {
+        String filingDate = (String)doc.get(FILING_DATE);
+        if(filingDate==null||filingDate.length()!=10) return false;
+        return LocalDate.parse(filingDate, DateTimeFormatter.ISO_DATE).isAfter(twentyFiveYearsAgo);
+    };
 
-                            System.out.println("Error with publication number: "+publicationNumber);
-                        }
+    protected static final List<Function<Document,Void>> attributeFunctions = Arrays.asList(
+            map -> {
+                // handle publication numbers
+                String publicationNumber = (String)map.get(PUBLICATION_NUMBER_GOOGLE);
+                if(publicationNumber!=null) {
+                    String[] parts = publicationNumber.split("-");
+                    if(parts.length==3) {
+                        String fullNumber = String.join("",parts);
+                        String countryAndNumber = parts[0]+parts[1];
+                        String number = parts[1];
+                        map.put(FULL_PUBLICATION_NUMBER,fullNumber);
+                        map.put(PUBLICATION_NUMBER_WITH_COUNTRY,countryAndNumber);
+                        map.put(PUBLICATION_NUMBER,number);
+                    } else {
+
+                        System.out.println("Error with publication number: "+publicationNumber);
                     }
-                    return null;
-                }, map -> {
-                    // handle filing numbers
-                    String applicationNumber = (String)map.get(APPLICATION_NUMBER_GOOGLE);
-                    if(applicationNumber!=null) {
-                        String[] parts = applicationNumber.split("-");
-                        if(parts.length==3) {
-                            String fullNumber = String.join("", parts);
-                            String countryAndNumber = parts[0] + parts[1];
-                            String number = parts[1];
-                            String formatted = (String)map.get(APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY);
-                            if(formatted!=null) {
-                                if(formatted.startsWith(parts[0])&&formatted.length()>parts[0].length()) {
-                                    formatted = formatted.substring(parts[0].length(),formatted.length());
-                                }
-                                map.put(APPLICATION_NUMBER_FORMATTED,formatted);
-                            }
-                            map.put(FULL_APPLICATION_NUMBER, fullNumber);
-                            map.put(APPLICATION_NUMBER_WITH_COUNTRY, countryAndNumber);
-                            map.put(APPLICATION_NUMBER, number);
-                        } else {
-                            System.out.println("Error with publication number: "+applicationNumber);
-                        }
-                    }
-                    return null;
                 }
-        );
+                return null;
+            }, map -> {
+                // handle filing numbers
+                String applicationNumber = (String)map.get(APPLICATION_NUMBER_GOOGLE);
+                if(applicationNumber!=null) {
+                    String[] parts = applicationNumber.split("-");
+                    if(parts.length==3) {
+                        String fullNumber = String.join("", parts);
+                        String countryAndNumber = parts[0] + parts[1];
+                        String number = parts[1];
+                        String formatted = (String)map.get(APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY);
+                        if(formatted!=null) {
+                            if(formatted.startsWith(parts[0])&&formatted.length()>parts[0].length()) {
+                                formatted = formatted.substring(parts[0].length(),formatted.length());
+                            }
+                            map.put(APPLICATION_NUMBER_FORMATTED,formatted);
+                        }
+                        map.put(FULL_APPLICATION_NUMBER, fullNumber);
+                        map.put(APPLICATION_NUMBER_WITH_COUNTRY, countryAndNumber);
+                        map.put(APPLICATION_NUMBER, number);
+                    } else {
+                        System.out.println("Error with publication number: "+applicationNumber);
+                    }
+                }
+                return null;
+            }
+    );
+
+    public static void main(String[] args) throws SQLException {
+
 
         final File dataDir = new File("/usb2/data/google-big-query/patents/");
 
@@ -109,7 +118,6 @@ public class IngestPatentsFromJson {
         DefaultApplier applier = new DefaultApplier(true, conn, fields);
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
 
-
         Consumer<Document> consumer = doc -> {
             try {
                 List<Object> data = new ArrayList<>(fields.length);
@@ -128,13 +136,6 @@ public class IngestPatentsFromJson {
                 e.printStackTrace();
                 System.exit(1);
             }
-        };
-
-        final LocalDate twentyFiveYearsAgo = LocalDate.now().minusYears(25);
-        final Function<Map<String,Object>,Boolean> filterDocumentFunction = doc -> {
-            String filingDate = (String)doc.get(FILING_DATE);
-            if(filingDate==null||filingDate.length()!=10) return false;
-            return LocalDate.parse(filingDate, DateTimeFormatter.ISO_DATE).isAfter(twentyFiveYearsAgo);
         };
 
         Stream.of(dataDir.listFiles()).forEach(file-> {

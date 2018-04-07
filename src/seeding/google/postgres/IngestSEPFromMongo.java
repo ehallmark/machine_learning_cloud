@@ -1,13 +1,19 @@
 package seeding.google.postgres;
 
 import elasticsearch.IngestMongoIntoElasticSearch;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.bson.Document;
 import seeding.Database;
 import seeding.google.attributes.Constants;
+import seeding.google.mongo.ingest.IngestJsonHelper;
 import seeding.google.mongo.ingest.IngestSEP;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -16,12 +22,12 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
-public class IngestSEPFromMongo {
+public class IngestSEPFromMongo extends IngestPatentsFromJson {
 
     public static void main(String[] args) throws SQLException {
-        final String index = IngestSEP.INDEX_NAME;
-        final String type = IngestSEP.TYPE_NAME;
+        final File dataDir = new File("/usb2/data/google-big-query/sep/");
 
         String[] fields = new String[]{
                 "record_id",
@@ -64,7 +70,17 @@ public class IngestSEPFromMongo {
             }
         };
 
-        IngestMongoIntoElasticSearch.iterateOverCollection(consumer, new Document(), index, type, fields);
+        Stream.of(dataDir.listFiles()).forEach(file-> {
+            try(InputStream stream = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+                IngestJsonHelper.streamJsonFile(stream,attributeFunctions).forEach(map->{
+                    consumer.accept(new Document(map));
+                });
+
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+        });
 
         queryStream.close();
         conn.close();

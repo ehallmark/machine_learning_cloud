@@ -39,6 +39,7 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
     }
 
     private static void setObject(PreparedStatement preparedStatement, String field, int idx, Object data, Connection conn) throws Exception {
+        if(data!=null&&data instanceof List) data = ((List) data).toArray();
         if(data == null) {
             preparedStatement.setObject(idx, null);
         } else if(data instanceof String) {

@@ -1,12 +1,10 @@
 package seeding.google.postgres;
 
-import elasticsearch.IngestMongoIntoElasticSearch;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.bson.Document;
 import seeding.Database;
 import seeding.google.attributes.Constants;
 import seeding.google.mongo.ingest.IngestJsonHelper;
-import seeding.google.mongo.ingest.IngestPatents;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
 
@@ -15,31 +13,29 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class IngestPriorityClaimsFromMongo extends IngestPatentsFromJson {
+public class IngestCPCFromJson extends IngestPatentsFromJson {
 
     public static void main(String[] args) throws SQLException {
-        final File dataDir = new File("/usb2/data/google-big-query/patents/");
+        final File dataDir = new File("/usb2/data/google-big-query/google-patent-research/");
 
         String[] fields = new String[]{
                 Constants.FULL_PUBLICATION_NUMBER,
                 Constants.FAMILY_ID,
-                Constants.PRIORITY_CLAIM
+                Constants.CPC
         };
 
-        String[] priorityClaimFields = new String[]{
-                Constants.FULL_PUBLICATION_NUMBER,
-                Constants.FULL_APPLICATION_NUMBER,
-                Constants.FILING_DATE
+        String[] cpcFields = new String[]{
+                Constants.CODE,
+                Constants.INVENTIVE,
+                Constants.TREE
         };
 
         int numFields = 5;
@@ -48,9 +44,9 @@ public class IngestPriorityClaimsFromMongo extends IngestPatentsFromJson {
 
         String valueStr = "("+String.join(",", IntStream.range(0,numFields).mapToObj(i->"?").collect(Collectors.toList()))+")";
         String conflictStr = "("+String.join(",", IntStream.range(0,numFields-1).mapToObj(i->"?").collect(Collectors.toList()))+")";
-        final String sql = "insert into big_query_patent_to_priority_claims (publication_number_full,family_id,pc_publication_number_full,pc_application_number_full,pc_filing_date) values "+valueStr+" on conflict (publication_number_full) do update set (family_id,pc_publication_number_full,pc_application_number_full,pc_filing_date) = "+conflictStr;
+        final String sql = "insert into big_query_patent_to_priority_claims (publication_number_full,family_id,pc_publication_number_full,code,inventive,tree) values "+valueStr+" on conflict (publication_number_full) do update set (family_id,pc_publication_number_full,code,inventive,tree) = "+conflictStr;
 
-        DefaultApplier applier = new DefaultApplier(true, conn, new String[]{fields[1],fields[2],priorityClaimFields[0],priorityClaimFields[1],priorityClaimFields[2]});
+        DefaultApplier applier = new DefaultApplier(true, conn, new String[]{fields[1],fields[2],cpcFields[0],cpcFields[1],cpcFields[2]});
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
 
         Consumer<Document> consumer = doc -> {

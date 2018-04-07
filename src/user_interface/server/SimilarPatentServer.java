@@ -63,6 +63,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -1197,7 +1198,8 @@ public class SimilarPatentServer {
 
         post(DOWNLOAD_URL, (req, res) -> {
             authorize(req,res);
-            return handleExcel(req,res);
+            //return handleExcel(req,res);
+            return handleCSV(req,res);
         });
 
         post(SAVE_TEMPLATE_URL, (req, res) -> {
@@ -1432,10 +1434,17 @@ public class SimilarPatentServer {
     }
 
     private static Object handleExcel(Request req, Response res) {
+        return handleSpreadsheet(req,res,true);
+    }
+
+    private static Object handleCSV(Request req, Response res) {
+        return handleSpreadsheet(req,res,false);
+    }
+
+    private static Object handleSpreadsheet(Request req, Response res, boolean excel) {
         try {
             System.out.println("Received excel request");
             long t0 = System.currentTimeMillis();
-            HttpServletResponse raw = res.raw();
             final String paramIdx = req.queryParamOrDefault("tableId","");
             // try to get custom data
             List<String> headers;
@@ -1470,7 +1479,6 @@ public class SimilarPatentServer {
             }
 
             System.out.println("Number of excel headers: "+headers.size());
-            res.header("Content-Disposition", "attachment; filename=download.xls");
             res.type("application/force-download");
             List<String> humanHeaders = headers.stream().map(header->{
                 if(nonHumanAttrs==null || !nonHumanAttrs.contains(header)) {
@@ -1479,10 +1487,34 @@ public class SimilarPatentServer {
                     return header;
                 }
             }).collect(Collectors.toList());
-            ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "Data", title, data,  headers, humanHeaders);
-            long t1 = System.currentTimeMillis();
-            System.out.println("Time to create excel sheet: "+(t1-t0)/1000+ " seconds");
-            return raw;
+            HttpServletResponse raw = res.raw();
+            if(excel) {
+                res.header("Content-Disposition", "attachment; filename=download.xls");
+                ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "Data", title, data, headers, humanHeaders);
+                long t1 = System.currentTimeMillis();
+                System.out.println("Time to create excel sheet: " + (t1 - t0) / 1000 + " seconds");
+                return raw;
+            } else {
+                res.header("Content-Disposition", "attachment; filename=download.csv");
+                res.header("Content-Encoding", "gzip");
+                OutputStream outputStream = raw.getOutputStream();
+                StringJoiner csvLine = new StringJoiner("\",\"","\"","\"\n");
+                for(String header : headers) {
+                    csvLine.add(header);
+                }
+                outputStream.write(csvLine.toString().getBytes(Charset.defaultCharset()));
+                for(Map<String,String> row : data) {
+                    for(int i = 0; i < headers.size(); i++) {
+                        csvLine.add(row.getOrDefault(headers.get(i),""));
+                    }
+                    outputStream.write(csvLine.toString().getBytes(Charset.defaultCharset()));
+                }
+                outputStream.flush();
+                outputStream.close();
+                long t1 = System.currentTimeMillis();
+                System.out.println("Time to create csv sheet: " + (t1 - t0) / 1000 + " seconds");
+                return raw;
+            }
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
             return new Gson().toJson(new SimpleAjaxMessage("ERROR "+e.getClass().getName()+": " + e.getMessage()));
