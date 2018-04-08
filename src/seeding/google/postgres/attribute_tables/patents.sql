@@ -55,7 +55,7 @@ create table patents_global (
     cited_npl_text text[],
     cited_type varchar(32)[],
     cited_category varchar(32)[],
-    cited_filing_date date[]
+    cited_filing_date date[],
 );
 create index patents_global_family_id_idx on patents_global (family_id);
 

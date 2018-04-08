@@ -13,6 +13,10 @@ create table big_query_assignee (
 insert into big_query_assignee (name,country_code,portfolio_size,last_filing,first_filing_date)
 (
     select name,mode() within group (order by name_cc),count(distinct family_id),mode() within group (order by original_entity_type), max(filing_date),min(filing_date)
-    from (select unnest(assignee_harmonized) as name,unnest(assignee_harmonized_cc) as name_cc,family_id,original_entity_type,filing_date from patents_global) as temp
+    from (
+        select temp2.assignee_harmonized as name, temp2.assignee_harmonized_cc as name_cc,family_id,original_entity_type,filing_date
+        from patents_global as t,
+        unnest(t.assignee_harmonized,t.assignee_harmonized_cc) as temp
+    ) as temp
     group by name
 );
