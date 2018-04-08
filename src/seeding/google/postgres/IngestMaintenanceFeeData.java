@@ -45,7 +45,7 @@ public class IngestMaintenanceFeeData {
         String maintenanceSql = "insert into big_query_maintenance (publication_number,original_entity_status,lapsed,reinstated) values (?,?,?::boolean,?::boolean) on conflict (publication_number) do update set (original_entity_status,lapsed,reinstated) = (?,?::boolean,?::boolean);";
         String maintenanceCodesSql = "insert into big_query_maintenance_codes (publication_number,code) values (?,?) on conflict (publication_number,code) do nothing;";
 
-        DefaultApplier maintenanceApplier = new DefaultApplier(false, conn, maintenaceFields);
+        DefaultApplier maintenanceApplier = new DefaultApplier(true, conn, maintenaceFields);
         QueryStream<List<Object>> maintenanceQueryStream = new QueryStream<>(maintenanceSql,conn,maintenanceApplier);
 
         DefaultApplier maintenanceCodeApplier = new DefaultApplier(false, conn, maintenanceCodeFields);
@@ -88,7 +88,7 @@ public class IngestMaintenanceFeeData {
                 large.remove(patent);
             }
             try {
-                maintenanceCodeQueryStream.ingest(Arrays.asList(patent, maintenanceCode));
+           //     maintenanceCodeQueryStream.ingest(Arrays.asList(patent, maintenanceCode));
             } catch(Exception e) {
                 e.printStackTrace();
                 System.exit(1);
