@@ -8,11 +8,11 @@ create table big_query_cpc_definition (
     date_revised date,
     status text,
     parents varchar(32)[],
-    children varchar(32)[]
+    children varchar(32)[],
+    tree varchar(32)[]
 );
 
-create table big_query_cpc_definition_tree (
-    code varchar(32) primary key references big_query_cpc_definition (code),
-    tree varchar(32)[] not null
-);
+-- sets the 'tree' attribute
+update big_query_cpc_definition set tree=ARRAY[code]||coalesce(parents,'{}'::varchar[]);
+
 
