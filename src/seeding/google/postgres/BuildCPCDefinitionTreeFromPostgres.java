@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -63,6 +64,7 @@ public class BuildCPCDefinitionTreeFromPostgres extends IngestPatentsFromJson {
 
         List<String> codes = new ArrayList<>();
         Graph graph = new BayesianNet();
+        AtomicInteger cnt = new AtomicInteger(0);
         while(rs.next()) {
             String code = rs.getString(1);
             String[] parents = (String[])rs.getArray(2).getArray();
@@ -81,6 +83,9 @@ public class BuildCPCDefinitionTreeFromPostgres extends IngestPatentsFromJson {
                     graph.connectNodes(n,n2);
                 }
             }
+            if(cnt.getAndIncrement()%10000==9999) {
+                System.out.println("Added nodes: "+cnt.get());
+            }
         }
         rs.close();
         ps.close();
@@ -98,6 +103,8 @@ public class BuildCPCDefinitionTreeFromPostgres extends IngestPatentsFromJson {
                 }
                 if(parents!=null&&parents.size()==1) {
                     node = node.getParents().get(0);
+                } else {
+                    node = null;
                 }
             }
             doc.put(Constants.TREE,tree);
