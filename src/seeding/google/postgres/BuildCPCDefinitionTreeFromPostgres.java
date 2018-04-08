@@ -59,7 +59,7 @@ public class BuildCPCDefinitionTreeFromPostgres extends IngestPatentsFromJson {
             }
         };
 
-        PreparedStatement ps = conn.prepareStatement("select code,children from big_query_cpc_definition");
+        PreparedStatement ps = conn.prepareStatement("select code,parents,children from big_query_cpc_definition");
         ResultSet rs = ps.executeQuery();
 
         List<String> codes = new ArrayList<>();
@@ -67,9 +67,16 @@ public class BuildCPCDefinitionTreeFromPostgres extends IngestPatentsFromJson {
         AtomicInteger cnt = new AtomicInteger(0);
         while(rs.next()) {
             String code = rs.getString(1);
-            String[] children = (String[])rs.getArray(2).getArray();
+            String[] parents = (String[])rs.getArray(2).getArray();
+            String[] children = (String[])rs.getArray(3).getArray();
             Node n = graph.addBinaryNode(code);
             codes.add(code);
+            if(parents != null && parents.length>0) {
+                Arrays.sort(children, (e1,e2)->Integer.compare(e1.length(),e2.length()));
+                String parent = children[children.length-1];
+                Node n2 = graph.addBinaryNode(parent);
+                graph.connectNodes(n2,n);
+            }
             if(children != null) {
                 for(String child : children) {
                     Node n2 = graph.addBinaryNode(child);
