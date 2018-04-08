@@ -96,7 +96,7 @@ public class BuildCPCDefinitionTreeFromPostgres extends IngestPatentsFromJson {
             Node node = graph.findNode(code);
             List<String> tree = new ArrayList<>();
             while(node!=null) {
-                tree.add(node.getLabel());
+                tree.add(0,node.getLabel());
                 Collection<Node> parents = node.getParents();
                 if(parents!=null&&parents.size()>1) {
                     throw new RuntimeException("Node has multiple parents: "+node.getLabel());
