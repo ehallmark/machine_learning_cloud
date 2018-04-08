@@ -9,5 +9,3 @@ create table big_query_pair (
     abandoned boolean, -- from status, whether app was abandoned
     term_adjustments integer
 );
-
-create index big_query_assignment_documentid_doc_number_idx on big_query_assignment_documentid (doc_number);
