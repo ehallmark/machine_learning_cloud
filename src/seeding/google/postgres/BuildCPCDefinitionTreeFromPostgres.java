@@ -62,54 +62,23 @@ public class BuildCPCDefinitionTreeFromPostgres extends IngestPatentsFromJson {
         PreparedStatement ps = conn.prepareStatement("select code,parents,children from big_query_cpc_definition");
         ResultSet rs = ps.executeQuery();
 
-        List<String> codes = new ArrayList<>();
-        Graph graph = new BayesianNet();
-        AtomicInteger cnt = new AtomicInteger(0);
         while(rs.next()) {
             String code = rs.getString(1);
             String[] parents = (String[])rs.getArray(2).getArray();
-            String[] children = (String[])rs.getArray(3).getArray();
-            Node n = graph.addBinaryNode(code);
-            codes.add(code);
+            List<String> tree = new LinkedList<>();
+            tree.add(0,code);
             if(parents != null && parents.length>0) {
-                Arrays.sort(parents, (e1,e2)->Integer.compare(e1.length(),e2.length()));
-                String parent = parents[parents.length-1];
-                Node n2 = graph.addBinaryNode(parent);
-                graph.connectNodes(n2,n);
-            }
-            if(children != null) {
-                for(String child : children) {
-                    Node n2 = graph.addBinaryNode(child);
-                    graph.connectNodes(n,n2);
+                for(String parent : parents) {
+                    tree.add(0,parent);
                 }
             }
-            if(cnt.getAndIncrement()%10000==9999) {
-                System.out.println("Added nodes: "+cnt.get());
-            }
-        }
-        rs.close();
-        ps.close();
-
-        for(String code : codes) {
             Document doc = new Document();
             doc.put(Constants.CODE,code);
-            Node node = graph.findNode(code);
-            List<String> tree = new ArrayList<>();
-            while(node!=null) {
-                tree.add(0,node.getLabel());
-                Collection<Node> parents = node.getParents();
-                if(parents!=null&&parents.size()>1) {
-                    throw new RuntimeException("Node has multiple parents: "+node.getLabel());
-                }
-                if(parents!=null&&parents.size()==1) {
-                    node = node.getParents().get(0);
-                } else {
-                    node = null;
-                }
-            }
             doc.put(Constants.TREE,tree);
             consumer.accept(doc);
         }
+        rs.close();
+        ps.close();
 
         queryStream.close();
         conn.close();
