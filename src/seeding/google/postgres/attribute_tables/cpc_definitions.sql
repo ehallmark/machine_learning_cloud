@@ -12,7 +12,7 @@ create table big_query_cpc_definition (
 );
 
 create table big_query_cpc_definition_tree (
-    code varchar(32) primary key,
+    code varchar(32) primary key references big_query_cpc_definition (code),
     tree varchar(32)[] not null
 );
 
