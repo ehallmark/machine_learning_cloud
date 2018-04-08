@@ -104,9 +104,9 @@ public class IngestAssignmentData {
         Consumer<Map<String,Object>> ingest = map -> {
             // handle assignments
             Object reelFrame = map.get(seeding.Constants.REEL_FRAME);
-            Object conveyanceText = map.get(seeding.Constants.REEL_FRAME);
+            Object conveyanceText = map.get(seeding.Constants.CONVEYANCE_TEXT);
             Object recordedDate = map.get(seeding.Constants.RECORDED_DATE);
-            if(reelFrame==null||conveyanceText==null||recordedDate==null) {
+            if(reelFrame==null||recordedDate==null) {
                 return;
             }
 
