@@ -86,6 +86,7 @@ public class IngestPairData {
             data.add(publication);
             data.add(entityType);
             data.add(status);
+            data.add(statusDate);
             data.add(abandoned);
             data.add(patentTermAdjustmentsInt);
             try {
