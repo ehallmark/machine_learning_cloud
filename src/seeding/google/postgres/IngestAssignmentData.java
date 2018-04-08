@@ -148,7 +148,7 @@ public class IngestAssignmentData {
             }
             assignmentData.add(assigneeArray);
             // assignors
-            String[] assignorArray = new String[assignees.size()];
+            String[] assignorArray = new String[assignors.size()];
             for(int i = 0; i < assignors.size(); i++) {
                 assignorArray[i] = (String)assignors.get(i).get(seeding.Constants.FULL_NAME);
             }
