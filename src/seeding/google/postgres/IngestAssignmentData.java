@@ -28,40 +28,6 @@ import java.util.stream.IntStream;
  */
 public class IngestAssignmentData {
 
-    private static final String getValueStrFor(String[] fields, Collection<String> arrayFields, Collection<String> booleanFields) {
-        int numFields = fields.length;
-        return "("+String.join(",", IntStream.range(0,numFields).mapToObj(i->{
-            String field = fields[i];
-            String parentField;
-            String childField;
-            if(field.contains(".")) {
-                parentField = field.substring(0,field.indexOf("."));
-                childField = field.substring(field.indexOf(".")+1,field.length());
-            } else {
-                parentField = field;
-                childField = field;
-            }
-            boolean isDate = childField.equals("date")||childField.endsWith("_date")||childField.endsWith("Date");
-            String ret = "?";
-            if(arrayFields.contains(parentField)) {
-                // is array field
-                if(isDate) {
-                    ret += "::date[]";
-                } else if(booleanFields.contains(field)) {
-                    ret += "::boolean[]";
-                }
-            } else {
-                // not an array field
-                if(isDate) {
-                    ret+= "::date";
-                } else if(booleanFields.contains(field)) {
-                    ret += "::boolean";
-                }
-            }
-            return ret;
-        }).collect(Collectors.toList()))+")";
-    }
-
     private static void ingestData()throws Exception {
         final Connection conn = Database.getConn();
 
@@ -89,8 +55,8 @@ public class IngestAssignmentData {
         arrayFields.add(Constants.ASSIGNOR);
         Set<String> booleanFields = new HashSet<>();
 
-        final String valueStrAssignments = getValueStrFor(assignmentFields,arrayFields,booleanFields);
-        final String valueStrDocumentId = getValueStrFor(documentIdFields,arrayFields,booleanFields);
+        final String valueStrAssignments = Util.getValueStrFor(assignmentFields,arrayFields,booleanFields);
+        final String valueStrDocumentId = Util.getValueStrFor(documentIdFields,arrayFields,booleanFields);
 
         final String assignments = "insert into big_query_assignments (reel_frame,conveyance_text,recorded_date,execution_date,assignee,assignor) values "+valueStrAssignments+" on conflict do nothing";
         final String assignmentDocumentId = "insert into big_query_assignment_documentid (reel_frame,doc_number,doc_kind,is_filing,country_code,date) values "+valueStrDocumentId+" on conflict do nothing";

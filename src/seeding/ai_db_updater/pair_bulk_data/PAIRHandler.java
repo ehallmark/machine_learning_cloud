@@ -16,6 +16,7 @@ import user_interface.ui_models.attributes.computable_attributes.TermAdjustmentA
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -28,23 +29,22 @@ public class PAIRHandler extends NestedHandler {
     protected int batchSize = 10000;
     protected boolean updatePostgres;
     protected boolean updateElasticSearch;
-    protected boolean loadExternalAssignees;
     protected Map<String,Integer> termAdjustmentMap;
     private boolean onlyUpdateTermAdjustments;
-    public PAIRHandler(boolean loadExternalAssignees, boolean updatePostgres, boolean updateElasticSearch, boolean onlyUpdateTermAdjustments) {
-        this.updatePostgres=updatePostgres;
-        this.termAdjustmentMap=termAdjustmentAttribute.loadMap();
-        this.loadExternalAssignees=loadExternalAssignees;
-        this.onlyUpdateTermAdjustments=onlyUpdateTermAdjustments;
-        this.updateElasticSearch=updateElasticSearch;
+    private Consumer<Map<String,Object>> postgresConsumer;
+    public PAIRHandler(Consumer<Map<String,Object>> postgresConsumer, boolean updateElasticSearch, boolean onlyUpdateTermAdjustments) {
+        this.updatePostgres = postgresConsumer!=null;
+        this.postgresConsumer=postgresConsumer;
+        this.termAdjustmentMap = updateElasticSearch ? termAdjustmentAttribute.loadMap() : null;
+        this.onlyUpdateTermAdjustments = onlyUpdateTermAdjustments;
+        this.updateElasticSearch = updateElasticSearch;
     }
 
     @Override
     protected void initAndAddFlagsAndEndFlags() {
 
         // application flags
-        Flag assigneeFlag = Flag.fakeFlag("assignee");
-        Flag grantNumber = Flag.customFlag("PatentNumber",Constants.GRANT_NAME,"text",(str)->!str.equals("0"),null);
+        Flag grantNumber = Flag.customFlag("PatentNumber",Constants.GRANT_NAME,"text",(str)->!str.isEmpty()&&!str.equals("0"),null);
         Flag publicationNumber = Flag.customFlag("PublicationNumber",Constants.PUBLICATION_NAME,"text",(str)->!str.equals("0"),null);
         Flag applicationNumber = Flag.simpleFlag("ApplicationNumberText",Constants.FILING_NAME,null);
         EndFlag applicationEndFlag = new EndFlag("PatentData") {
@@ -53,36 +53,23 @@ public class PAIRHandler extends NestedHandler {
                 String filingNumber = dataMap.get(applicationNumber);
                 if (filingNumber != null) {
                     filingNumber = Flag.filingDocumentHandler.apply(applicationNumber).apply(filingNumber).toString();
+                    if(updatePostgres) filingNumber = filingNumber.replace("/","");
                     dataMap.put(applicationNumber,filingNumber);
-                    Set<String> assignees = new HashSet<>();
 
                     if (dataMap.containsKey(publicationNumber)) {
                         String standardizedPubNumber = dataMap.get(publicationNumber).toString();
                         if (standardizedPubNumber.startsWith("US") && standardizedPubNumber.length() == 15) {
                             standardizedPubNumber = standardizedPubNumber.substring(2, 13);
-                            if (loadExternalAssignees) {
-                                String assignee = Database.assigneeFor(standardizedPubNumber);
-                                if(assignee!=null) {
-                                    assignees.add(assignee);
-                                }
-                            }
                             dataMap.put(publicationNumber, standardizedPubNumber);
                         } else {
                             dataMap.remove(publicationNumber);
                         }
                     }
-                    if (loadExternalAssignees && !assignees.isEmpty()) {
-                        dataMap.put(assigneeFlag, assignees.stream().findAny().get());
-                    }
+                    Map<String,Object> cleanData = dataMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey().dbName,e->e.getValue()));
                     if(updatePostgres) {
-                        try {
-                            Database.ingestPairRecords(dataMap, "pair_applications");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        postgresConsumer.accept(cleanData);
                     }
                     if(updateElasticSearch) {
-                        Map<String,Object> cleanData = dataMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey().dbName,e->e.getValue()));
                         if(cleanData.size() > 0) {
                             if(termAdjustmentMap!=null) {
                                 if(cleanData.containsKey(Constants.PATENT_TERM_ADJUSTMENT)) {
@@ -109,14 +96,10 @@ public class PAIRHandler extends NestedHandler {
         applicationEndFlag.addChild(Flag.dateFlag("FilingDate",Constants.FILING_DATE,applicationEndFlag));
         applicationEndFlag.addChild(Flag.simpleFlag("ApplicationTypeCategory",Constants.APPLICATION_TYPE,applicationEndFlag));
         applicationEndFlag.addChild(Flag.customFlag("PartyIdentifier",Constants.CORRESPONDENT_ADDRESS_ID,"text", (str)->!str.equalsIgnoreCase("null"),applicationEndFlag));
-        if(updatePostgres) applicationEndFlag.addChild(Flag.simpleFlag("GroupArtUnitNumber","groupArtUnitNumber",applicationEndFlag));
         applicationEndFlag.addChild(Flag.simpleFlag("ApplicationConfirmationNumber",Constants.APPLICATION_CONFIRMATION_NUM,applicationEndFlag));
         applicationEndFlag.addChild(Flag.simpleFlag("BusinessEntityStatusCategory", Constants.ASSIGNEE_ENTITY_TYPE,applicationEndFlag));
-        if(updatePostgres) applicationEndFlag.addChild(Flag.simpleFlag("InventionTitle",Constants.INVENTION_TITLE,applicationEndFlag));
         applicationEndFlag.addChild(Flag.simpleFlag("ApplicationStatusCategory",Constants.APPLICATION_STATUS,applicationEndFlag));
         applicationEndFlag.addChild(Flag.dateFlag("ApplicationStatusDate",Constants.APPLICATION_STATUS_DATE,applicationEndFlag));
-        if(updatePostgres) applicationEndFlag.addChild(Flag.dateFlag("GrantDate","grantDate",applicationEndFlag));
-        if(updatePostgres) applicationEndFlag.addChild(Flag.dateFlag("PublicationDate","publicationDate",applicationEndFlag));
         applicationEndFlag.addChild(Flag.integerFlag("AdjustmentTotalQuantity",Constants.PATENT_TERM_ADJUSTMENT,applicationEndFlag));
         applicationEndFlag.addChild(Flag.simpleFlag("ApplicantFileReference",Constants.APPLICANT_FILE_REFERENCE,applicationEndFlag));
 
@@ -124,40 +107,11 @@ public class PAIRHandler extends NestedHandler {
         grantNumber.setEndFlag(applicationEndFlag);
         publicationNumber.setEndFlag(applicationEndFlag);
         applicationNumber.setEndFlag(applicationEndFlag);
-
-        if(updatePostgres) {
-            // invention flags
-            EndFlag inventorEndFlag = new EndFlag("Inventor") {
-                @Override
-                public void save() {
-                    String appNum = applicationEndFlag.getDataMap().get(applicationNumber);
-                    if (appNum != null) {
-                        dataMap.put(applicationNumber, appNum);
-                        try {
-                            Database.ingestPairRecords(dataMap, "pair_application_inventors");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    dataMap = new HashMap<>();
-                }
-            };
-
-            Flag inventorFirstName = Flag.simpleFlag("FirstName", Constants.FIRST_NAME, inventorEndFlag);
-            Flag inventorLastName = Flag.simpleFlag("LastName", Constants.LAST_NAME, inventorEndFlag);
-            Flag inventorCity = Flag.simpleFlag("CityName", Constants.CITY, inventorEndFlag);
-            Flag inventorCountry = Flag.simpleFlag("CountryCode", Constants.COUNTRY, inventorEndFlag);
-            inventorEndFlag.addChild(inventorFirstName);
-            inventorEndFlag.addChild(inventorLastName);
-            inventorEndFlag.addChild(inventorCity);
-            inventorEndFlag.addChild(inventorCountry);
-            endFlags.add(inventorEndFlag);
-        }
     }
 
     @Override
     public CustomHandler newInstance() {
-        PAIRHandler handler = new PAIRHandler(loadExternalAssignees,updatePostgres,updateElasticSearch,onlyUpdateTermAdjustments);
+        PAIRHandler handler = new PAIRHandler(postgresConsumer,updateElasticSearch,onlyUpdateTermAdjustments);
         handler.init();
         return handler;
     }
@@ -166,16 +120,6 @@ public class PAIRHandler extends NestedHandler {
     public void save() {
         if(termAdjustmentAttribute!=null) {
             termAdjustmentAttribute.saveMap(termAdjustmentMap);
-        }
-        commit();
-    }
-
-    public void commit() {
-        try {
-            if (updatePostgres) Database.commit();
-
-        } catch(Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -186,7 +130,6 @@ public class PAIRHandler extends NestedHandler {
         if(localName.equals("PatentData")) {
             if(cnt.getAndIncrement() % batchSize == batchSize-1) {
                 System.out.println("Commit of pair data: "+cnt.get());
-                commit();
             }
         }
     }

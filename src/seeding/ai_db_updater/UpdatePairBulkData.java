@@ -12,7 +12,6 @@ import java.time.LocalDate;
 public class UpdatePairBulkData {
     public static void main(String[] args) {
         boolean updateElasticSearch = true;
-        boolean updatePostgres = false;
         boolean onlyUpdateTermAdjustments = true;
 
         PAIRDataDownloader downloader = new PAIRDataDownloader();
@@ -24,12 +23,11 @@ public class UpdatePairBulkData {
                 return false;
             }
         });
-        PAIRHandler handler = new PAIRHandler(updatePostgres,updatePostgres,updateElasticSearch,onlyUpdateTermAdjustments);
+        PAIRHandler handler = new PAIRHandler(null,updateElasticSearch,onlyUpdateTermAdjustments);
         handler.init();
         pairIterator.applyHandlers(handler);
 
         handler.save();
-
         downloader.cleanUp();
 
     }

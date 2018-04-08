@@ -53,6 +53,10 @@ public class Constants {
     public static final String CITATION = "citation";
     public static final String TYPE = "type";
     public static final String ENTITY_STATUS = "entity_status";
+    public static final String APPLICATION_STATUS = "app_status";
+    public static final String STATUS_DATE = "status_date";
+    public static final String TERM_ADJUSTMENTS = "term_adjustments";
+    public static final String LAPSED = "lapsed";
     public static final String ART_UNIT = "art_unit";
     public static final String FULL_PUBLICATION_NUMBER = "pub_num_full";
     public static final String PUBLICATION_NUMBER_WITH_COUNTRY = "pub_num_country";
