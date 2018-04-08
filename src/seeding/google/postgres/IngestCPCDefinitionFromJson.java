@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -22,7 +23,7 @@ import java.util.stream.Stream;
 public class IngestCPCDefinitionFromJson extends IngestPatentsFromJson {
 
     public static void main(String[] args) throws SQLException {
-        final File dataDir = new File("/home/ehallmark/google-big-query/google-big-query/sep/");
+        final File dataDir = new File("/home/ehallmark/google-big-query/google-big-query/cpc/");
 
         String[] fields = new String[]{
                 "symbol",
@@ -50,6 +51,10 @@ public class IngestCPCDefinitionFromJson extends IngestPatentsFromJson {
                 List<Object> data = new ArrayList<>(fields.length);
                 for(int i = 0; i < fields.length; i++) {
                     Object val = doc.get(fields[i]);
+                    if(i==0&&val==null) {
+                        System.out.println("Missing code!");
+                        return;
+                    }
                     data.add(val);
                 }
                 queryStream.ingest(data);
@@ -61,7 +66,7 @@ public class IngestCPCDefinitionFromJson extends IngestPatentsFromJson {
 
         Stream.of(dataDir.listFiles()).forEach(file-> {
             try(InputStream stream = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-                IngestJsonHelper.streamJsonFile(stream,attributeFunctions).forEach(map->{
+                IngestJsonHelper.streamJsonFile(stream, Collections.emptyList()).forEach(map->{
                     consumer.accept(new Document(map));
                 });
 
