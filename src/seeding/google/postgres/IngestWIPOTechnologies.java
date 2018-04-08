@@ -77,6 +77,7 @@ public class IngestWIPOTechnologies {
             }
         });
 
+        queryStream.close();
         downloader.cleanUp();
     }
 }
