@@ -18,7 +18,7 @@ public class UpdateMaintenanceFeeData {
         MaintenanceFeeDataDownloader downloader = new MaintenanceFeeDataDownloader();
         downloader.pullMostRecentData();
         System.out.println("Starting to ingest data...");
-        ingestMaintenanceFeeData(downloader.getDestinationFile(), new MaintenanceEventHandler());
+        ingestMaintenanceFeeData(downloader.getDestinationFile(), new MaintenanceEventHandler(null));
         downloader.cleanUp();
     }
 

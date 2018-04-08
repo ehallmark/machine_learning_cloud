@@ -68,7 +68,8 @@ public class Constants {
     public static final String APPLICATION_NUMBER = "app_num";
     public static final String APPLICATION_NUMBER_GOOGLE = "application_number";
     public static final String APPLICATION_NUMBER_FORMATTED = "app_num_formatted";
-
+    public static final String REINSTATED = "reinstated";
+    public static final String EVENT_CODE = "event_code";
     public static Collection<AbstractAttribute> buildAttributes() {
         return Arrays.asList(
                 new PublicationNumberWithCountry(),
