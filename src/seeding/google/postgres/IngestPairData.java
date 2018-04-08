@@ -50,7 +50,7 @@ public class IngestPairData {
 
         final String valueStr = Util.getValueStrFor(fields,arrayFields,booleanFields);
         final String conflictStr = Util.getValueStrFor(IntStream.range(1,fields.length).mapToObj(i->fields[i]).toArray(s->new String[s]),arrayFields,booleanFields);
-        final String sql = "insert into big_query_pair (application_number_formatted,publication_number,original_entity_type,status,status_date,abandoned,term_adjustments) values "+valueStr+" on conflict (application_number_formatted) do update set (publication_number,original_entity_type,status,status_date,abandoned,term_adjustments) = "+conflictStr+" where big_query_pair.status_date<excluded.status_date;";
+        final String sql = "insert into big_query_pair (application_number_formatted,publication_number,original_entity_type,status,status_date,abandoned,term_adjustments) values "+valueStr+" on conflict (application_number_formatted) do update set (publication_number,original_entity_type,status,status_date,abandoned,term_adjustments) = "+conflictStr+" where big_query_pair.status_date is null OR big_query_pair.status_date<excluded.status_date;";
 
         DefaultApplier applier = new DefaultApplier(true, conn, fields);
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
@@ -62,7 +62,7 @@ public class IngestPairData {
             String publication = (String)map.getOrDefault(seeding.Constants.GRANT_NAME, (String)map.get(seeding.Constants.PUBLICATION_NAME));
             String status = (String)map.get(seeding.Constants.APPLICATION_STATUS);
             String statusDate = (String)map.get(seeding.Constants.APPLICATION_STATUS_DATE);
-            boolean abandoned = status.toLowerCase().contains("abandoned") && !status.toLowerCase().contains("restored");
+            Boolean abandoned = status==null?null:(status.toLowerCase().contains("abandoned") && !status.toLowerCase().contains("restored"));
             String patentTermAdjustments = (String)map.get(seeding.Constants.PATENT_TERM_ADJUSTMENT);
             Integer patentTermAdjustmentsInt;
             if(patentTermAdjustments!=null&&patentTermAdjustments.length()>0) {
@@ -79,7 +79,7 @@ public class IngestPairData {
                 }
             }
 
-            if(filing==null||statusDate==null) {
+            if(filing==null) {
                 return;
             }
             data.add(filing);
