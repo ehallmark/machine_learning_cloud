@@ -72,8 +72,8 @@ public class BuildCPCDefinitionTreeFromPostgres extends IngestPatentsFromJson {
             Node n = graph.addBinaryNode(code);
             codes.add(code);
             if(parents != null && parents.length>0) {
-                Arrays.sort(children, (e1,e2)->Integer.compare(e1.length(),e2.length()));
-                String parent = children[children.length-1];
+                Arrays.sort(parents, (e1,e2)->Integer.compare(e1.length(),e2.length()));
+                String parent = parents[parents.length-1];
                 Node n2 = graph.addBinaryNode(parent);
                 graph.connectNodes(n2,n);
             }
