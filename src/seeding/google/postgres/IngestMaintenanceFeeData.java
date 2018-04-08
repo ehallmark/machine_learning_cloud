@@ -88,7 +88,7 @@ public class IngestMaintenanceFeeData {
                 large.remove(patent);
             }
             try {
-           //     maintenanceCodeQueryStream.ingest(Arrays.asList(patent, maintenanceCode));
+                maintenanceCodeQueryStream.ingest(Arrays.asList(patent, maintenanceCode));
             } catch(Exception e) {
                 e.printStackTrace();
                 System.exit(1);

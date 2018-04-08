@@ -137,14 +137,14 @@ public class IngestJsonHelper {
             if(((String) v).length()==0) {
                 return null;
             }
-            if(k.endsWith("_date")) {
+            if(k.endsWith("_date")||k.equals("date")||k.endsWith("Date")) {
                 if(v.equals("0")) {
                     return null;
                 } else {
                     return LocalDate.parse(v.toString(), DateTimeFormatter.BASIC_ISO_DATE).format(DateTimeFormatter.ISO_DATE);
                 }
             }
-        } else if(v!=null&& k.endsWith("_date") && v instanceof Integer) {
+        } else if(v!=null&& (k.endsWith("_date")||k.equals("date")||k.endsWith("Date")) && v instanceof Integer) {
             if(v.equals(0)) {
                 return null;
             }

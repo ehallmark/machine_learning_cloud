@@ -1,9 +1,12 @@
 
 \connect patentdb
 
-create table big_query_patent_to_embedding (
-    publication_number_full varchar(32) primary key, -- eg. US9923222B1
-    family_id varchar(32) not null,
-    embedding float[] not null
+create table big_query_embedding1 (
+    family_id varchar(32) primary key, -- eg. US9923222B1
+    cpc_vae float[] not null
 );
-create index big_query_patent_to_embedding_family_id_idx on big_query_patent_to_embedding (family_id);
+
+create table big_query_embedding2 (
+    family_id varchar(32) primary key, -- eg. US9923222B1
+    rnn_enc float[] not null
+);

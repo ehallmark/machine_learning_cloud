@@ -5,6 +5,14 @@ create table big_query_assignee (
     name varchar(32) primary key,
     country_code varchar(8),
     portfolio_size integer,
-
+    entity_type varchar(32),
+    last_filing_date date,
+    first_filing_date date
 );
-create index big_query_patent_to_embedding_family_id_idx on big_query_patent_to_embedding (family_id);
+
+insert into big_query_assignee (name,country_code,portfolio_size,last_filing,first_filing_date)
+(
+    select name,mode() within group (order by name_cc),count(distinct family_id),mode() within group (order by original_entity_type), max(filing_date),min(filing_date)
+    from (select unnest(assignee_harmonized) as name,unnest(assignee_harmonized_cc) as name_cc,family_id,original_entity_type,filing_date from patents_global) as temp
+    group by name
+);
