@@ -2,14 +2,14 @@
 
 create table big_query_assignment_documentid (
     reel_frame varchar(50) references big_query_assignments (reel_frame),
-    publication_number varchar(32),
-    publication_kind varchar(8),
-    application_number_formatted varchar(32),
-    application_kind varchar(8),
+    doc_number varchar(32) not null,
+    doc_kind varchar(8) not null,
+    is_filing boolean not null, -- convenience field
+    country_code varchar(8) not null default('US'),
+    date date -- could be useful for matching
 
     constraint big_query_assignment_documentid_id
-        unique (reel_frame,publication_number,application_number)
+        primary key (reel_frame,doc_number)
 );
 
-create index big_query_assignment_documentid_publication_number_idx on big_query_assignment_documentid (publication_number);
-create index big_query_assignment_documentid_application_number_formatted_idx on big_query_assignment_documentid (application_number_formatted);
+create index big_query_assignment_documentid_doc_number_idx on big_query_assignment_documentid (doc_number);

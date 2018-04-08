@@ -29,6 +29,14 @@ public class Constants {
     public static final String INVENTOR_HARMONIZED = "inventor_harmonized";
     public static final String NAME = "name";
     public static final String ASSIGNEE = "assignee";
+    public static final String ASSIGNOR = "assignor";
+    public static final String CONVEYANCE_TEXT = "conveyance_text";
+    public static final String RECORDED_DATE = "recorded_date";
+    public static final String EXECUTION_DATE = "execution_date";
+    public static final String REEL_FRAME = "reel_frame";
+    public static final String DATE = "date";
+    public static final String DOC_NUMBER = "doc_number";
+    public static final String IS_FILING = "is_filing";
     public static final String ASSIGNEE_HARMONIZED = "assignee_harmonized";
     public static final String EXAMINER = "examiner";
     public static final String DEPARTMENT = "department";
