@@ -1488,7 +1488,6 @@ public class SimilarPatentServer {
             }
 
             System.out.println("Number of excel headers: "+headers.size());
-            res.type("application/force-download");
             List<String> humanHeaders = headers.stream().map(header->{
                 if(nonHumanAttrs==null || !nonHumanAttrs.contains(header)) {
                     return SimilarPatentServer.fullHumanAttributeFor(header);
@@ -1496,33 +1495,33 @@ public class SimilarPatentServer {
                     return header;
                 }
             }).collect(Collectors.toList());
-            HttpServletResponse raw = res.raw();
             if(excel) {
+                HttpServletResponse raw = res.raw();
+                res.type("application/force-download");
                 res.header("Content-Disposition", "attachment; filename=download.xls");
                 ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "Data", title, data, headers, humanHeaders);
                 long t1 = System.currentTimeMillis();
                 System.out.println("Time to create excel sheet: " + (t1 - t0) / 1000 + " seconds");
                 return raw;
             } else {
+                res.type("text/csv");
                 res.header("Content-Disposition", "attachment; filename=download.csv");
-                res.header("Content-Encoding", "gzip");
-                OutputStream outputStream = raw.getOutputStream();
-                StringJoiner csvLine = new StringJoiner("\",\"","\"","\"\n");
+                StringJoiner csvFile = new StringJoiner("\n");
+                StringJoiner csvLine = new StringJoiner("\",\"","\"","\"");
                 for(String header : headers) {
                     csvLine.add(header);
                 }
-                outputStream.write(csvLine.toString().getBytes(Charset.defaultCharset()));
+                csvFile.add(csvLine.toString());
                 for(Map<String,String> row : data) {
+                    csvLine = new StringJoiner("\",\"","\"","\"");
                     for(int i = 0; i < headers.size(); i++) {
                         csvLine.add(row.getOrDefault(headers.get(i),""));
                     }
-                    outputStream.write(csvLine.toString().getBytes(Charset.defaultCharset()));
+                    csvFile.add(csvLine.toString());
                 }
-                outputStream.flush();
-                outputStream.close();
                 long t1 = System.currentTimeMillis();
                 System.out.println("Time to create csv sheet: " + (t1 - t0) / 1000 + " seconds");
-                return raw;
+                return csvFile.toString();
             }
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
