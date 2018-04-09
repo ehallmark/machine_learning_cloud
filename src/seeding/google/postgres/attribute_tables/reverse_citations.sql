@@ -7,7 +7,7 @@ create table big_query_reverse_citations (
     rcite_application_number_full varchar(32)[] not null,
     rcite_family_id varchar(32)[] not null,
     rcite_type varchar(32)[] not null,
-    rcite_category varchar(8)[] not null,
+    rcite_category varchar(32)[] not null,
     rcite_filing_date date[] not null,
     primary key (doc_number_full,is_filing)
 );
