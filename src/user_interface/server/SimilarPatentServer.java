@@ -63,7 +63,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -2721,7 +2720,7 @@ public class SimilarPatentServer {
                                                                                 .withHref("#datasets-tree")
                                                                 )
                                                         ), br(),
-                                                        (showTemplates ? div().withClass("tab-content").withId("sidebar-jstree-wrapper").attr("style","max-height: 75%; overflow-y: auto; text-align: left; display: none;").with(
+                                                        (showTemplates ? div().withClass("tab-content").withId("sidebar-jstree-wrapper").attr("style","max-height: 50%; overflow-y: auto; text-align: left; display: none;").with(
                                                                 div().withClass("tab-pane active").attr("role","tabpanel").withId("templates-tree").with(
                                                                         ul().with(
                                                                                 getTemplatesForUser(SUPER_USER,false,"Preset Templates",false),
