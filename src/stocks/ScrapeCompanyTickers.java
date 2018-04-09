@@ -2,13 +2,14 @@ package stocks;
 
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
-import seeding.Database;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -17,69 +18,70 @@ import java.util.stream.Collectors;
  */
 public class ScrapeCompanyTickers {
     private static final File csvFile = new File(Constants.DATA_FOLDER+"yahoo_companies_and_symbols.csv");
-    private static final File assigneeToStockPriceOverTimeMapFile = new File(Constants.DATA_FOLDER+"assignee_to_stock_prices_over_time_map.jobj");
-    private static final File assigneeToStockPriceOverTimeMapCSVFile = new File(Constants.DATA_FOLDER+"assignee_to_stock_prices_over_time_map.csv");
 
     public static void main(String[] args) throws IOException {
-        final int startYear = 1970;
         BufferedReader reader = new BufferedReader(new FileReader(csvFile));
-
-        //Set<String> allAssignees = new HashSet<>(Database.getAssignees());
-
-        //RadixTree<String> trie = Database.getNormalizedAssigneePrefixTrie();
-        //JaroWinkler distance = new JaroWinkler();
-
-        //NormalizeAssignees normalizer = new NormalizeAssignees();
-
         AtomicInteger idx = new AtomicInteger(0);
-        Set<String> tickers = reader.lines().parallel().map(line->{
+        Map<String,String> tickerToNameMap = reader.lines().parallel().map(line->{
             if(idx.getAndIncrement()%10000==9999) {
                 System.out.println("Read: "+idx.get());
             }
             String[] cells = line.split(",");
-            if(cells.length<2) return null;
+            if(cells.length<5) return null;
             String symbol = cells[0];
             if(symbol!=null) symbol = symbol.trim();
-            if(symbol.isEmpty()) {
+            if(symbol.isEmpty()||symbol.contains(".")||symbol.contains("-")) {
                 return null;
             }
+            String country = cells[4];
+            if(country==null||!country.equals("USA")) {
+                return null;
+            }
+            String name = cells[1];
+            if(name==null||name.trim().isEmpty()) return null;
+            return new Pair<>(symbol,name);
+        }).filter(p->p!=null).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
 
-            return symbol;
-        }).filter(p->p!=null).collect(Collectors.toSet());
-
-        System.out.println("Companies found: "+tickers.size());
+        System.out.println("Companies found: "+tickerToNameMap.size());
 
         // no pull stock info
-        final long to = System.currentTimeMillis()/1000;
-        final long from = LocalDateTime.of(startYear,1,1,0,0).atZone(ZoneId.of("America/Los_Angeles")).toInstant().toEpochMilli()/1000;
-
-        Map<String,List<Pair<LocalDate,Double>>> assigneeToStockPriceOverTimeMap = Collections.synchronizedMap(new HashMap<>());
-
-        BufferedWriter writer = new BufferedWriter(new FileWriter(assigneeToStockPriceOverTimeMapCSVFile));
+        final long to = ScrapeYahooStockPrices.dateToLong(LocalDate.now().plusDays(1));
+        final long from = ScrapeYahooStockPrices.dateToLong(LocalDate.now().minusMonths(1));
         AtomicInteger cnt = new AtomicInteger(0);
-        tickers.parallelStream().forEach(ticker->{
-            System.out.println(""+cnt.getAndIncrement()+" / "+tickers.size());
+        tickerToNameMap.entrySet().parallelStream().forEach(e->{
+            String ticker = e.getKey();
+            String company = e.getValue();
+            //System.out.println(""+cnt.getAndIncrement()+" / "+tickers.size());
             try {
                 List<Pair<LocalDate, Double>> data = stockDataFor(ticker, from, to);
-                if (data != null && data.size()>0) {
-                    List<String> dataStr = data.stream().map(d->d.getFirst().toString()+":"+d.getSecond()).collect(Collectors.toList());
-                    writer.write("\""+ticker+"\","+String.join(",",dataStr)+"\n");
-                    assigneeToStockPriceOverTimeMap.put(ticker, data);
+                if (data != null && data.size()>10 && data.get(data.size()-1).getFirst().equals(LocalDate.now())) {
+                    double lastPrice = data.get(data.size()-1).getSecond();
+                    // don't want penny stocks
+                    if(lastPrice>2d) {
+                        double lastLastPrice = data.get(data.size() - 2).getSecond();
+                        double lastLastLastPrice = data.get(data.size() - 3).getSecond();
+
+                        double averageIncreaseRecent = 0.5 * (lastPrice - lastLastPrice) / lastPrice + 0.5 * (lastLastPrice - lastLastLastPrice) / lastLastPrice;
+                        double averageIncreaseOld = 0d;
+                        for (int i = 0; i < data.size() - 4; i++) {
+                            double d1 = data.get(i).getSecond();
+                            double d2 = data.get(i + 1).getSecond();
+                            averageIncreaseOld += (d2 - d1) / d1;
+                        }
+                        averageIncreaseOld /= data.size() - 4;
+
+                        if (averageIncreaseOld > 0.01 && averageIncreaseRecent < 0.05) {
+                            System.out.println();
+                            System.out.println("Found candidate: " + ticker + " -> " + company);
+                        } else {
+                            System.out.print("-");
+                        }
+                    }
                 }
             } catch(Exception e2) {
 
             }
         });
-        writer.flush();
-        writer.close();
-
-        System.out.println("Num assignees with stock prices: "+assigneeToStockPriceOverTimeMap.size());
-        // Save
-        Database.trySaveObject(assigneeToStockPriceOverTimeMap,assigneeToStockPriceOverTimeMapFile);
-    }
-
-    public static Map<String,List<Pair<LocalDate,Double>>> getAssigneeToStockPriceOverTimeMap() {
-        return (Map<String,List<Pair<LocalDate,Double>>>)Database.tryLoadObject(assigneeToStockPriceOverTimeMapFile);
     }
 
     private static List<Pair<LocalDate,Double>> stockDataFor(String symbol, long from, long to) throws Exception {

@@ -15,12 +15,12 @@ insert into big_query_reverse_citations (doc_number_full,is_filing,rcite_publica
     select
         coalesce(temp.cited_publication_number_full,temp.cited_application_number_full),
         temp.cited_publication_number_full is null,
-        array_agg(publication_number_full),
-        array_agg(application_number_full),
-        array_agg(family_id),
-        array_agg(filing_date)
+        (array_agg(publication_number_full))[1:10000], -- limit rcites
+        (array_agg(application_number_full))[1:10000], -- limit rcites
+        (array_agg(family_id))[1:10000], -- limit rcites
+        (array_agg(filing_date))[1:10000] -- limit rcites
     from patents_global as t, unnest(t.cited_publication_number_full,t.cited_application_number_full) with ordinality as temp(cited_publication_number_full,cited_application_number_full,n)
-    where t.cited_application_number_full is not null OR t.cited_publication_number_full is not null
+    where (temp.cited_application_number_full is not null OR temp.cited_publication_number_full is not null)
     group by (coalesce(temp.cited_publication_number_full,temp.cited_application_number_full),temp.cited_publication_number_full is null)
 );
 

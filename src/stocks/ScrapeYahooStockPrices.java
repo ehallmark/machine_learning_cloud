@@ -9,7 +9,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +43,6 @@ public class ScrapeYahooStockPrices {
 
                 LocalDate date =
                         Instant.ofEpochMilli(response.getDates().get(i).longValue()*1000).atZone(ZoneId.of("America/Los_Angeles")).toLocalDate();
-                date = date.withDayOfMonth(1);
 
                 Pair<LocalDate,Double> record = new Pair<>(date,response.getPrices().get(i));
                 data.add(record);
@@ -62,14 +60,20 @@ public class ScrapeYahooStockPrices {
     private static String urlFromSymbol(String symbol, long from, long to) {
        // return "https://query1.finance.yahoo.com/v7/finance/download/"+symbol+"?period1=1092898800&period2=1510819200&interval=1mo&events=history";
        // return "https://finance.yahoo.com/quote/"+symbol+"/history?period1=1092898800&period2=1510819200&interval=1mo&filter=history&frequency=1mo";
-        String url = "https://query2.finance.yahoo.com/v8/finance/chart/"+symbol+"?formatted=true&crumb=6iPfwrHM.4i&lang=en-IN&region=IN&period1="+from+"&period2="+to+"&interval=1mo&events=div|split&corsDomain=in.finance.yahoo.com";
+        String url = "https://query2.finance.yahoo.com/v8/finance/chart/"+symbol+"?formatted=true&crumb=6iPfwrHM.4i&lang=en-IN&region=IN&period1="+from+"&period2="+to+"&interval=1d&events=div|split&corsDomain=in.finance.yahoo.com";
         //System.out.println("Searching for url: "+url);
         return url;
     }
 
+
+    public static long dateToLong(LocalDate date) {
+        return date.atStartOfDay().plusHours(12).atZone(ZoneId.of("America/Los_Angeles")).toInstant().toEpochMilli()/1000;
+    }
+
     public static void main(String[] args) throws Exception {
-        long to = System.currentTimeMillis()/1000;
-        long from = LocalDateTime.of(1970,1,1,0,0).atZone(ZoneId.of("America/Los_Angeles")).toInstant().toEpochMilli()/1000;
+        // test
+        long to = dateToLong(LocalDate.now().plusDays(1));
+        long from = dateToLong(LocalDate.now().minusMonths(2));
 
         //test
         System.out.println(getStocksFromSymbols("KR",from,to));
