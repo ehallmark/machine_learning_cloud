@@ -89,7 +89,6 @@ public class GatherClassificationServer {
 
     public static void main(String[] args) throws Exception {
         port(4567);
-        Database.initializeDatabase();
         StartServer();
     }
 

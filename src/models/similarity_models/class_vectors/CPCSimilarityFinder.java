@@ -36,8 +36,6 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
         return LOOKUP_TABLE;
     }
     public static void main(String[] args) throws IOException {
-        Database.initializeDatabase();
-
         int classDepth = 4;
         System.out.println("Starting to add patent data...");
         Map<String,Set<String>> dataMap = new HashMap<>(Database.getPatentToClassificationMap());

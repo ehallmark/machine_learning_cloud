@@ -99,7 +99,6 @@ public class GatherClassificationOptimizer {
 
     public static void main(String[] args) throws Exception{
         // SETUP
-        Database.initializeDatabase();
 
         Map<String,Collection<String>> rawTrainingData = SplitModelData.getRawDataMap(SplitModelData.trainFile);
         Map<String,Collection<String>> rawTestingData = SplitModelData.getRawDataMap(SplitModelData.testFile);
