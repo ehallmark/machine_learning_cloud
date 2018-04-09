@@ -261,11 +261,6 @@ public class Database {
 		getClassCodes();
 	}
 
-	public synchronized static void initializeDatabase() {
-		if(init==true)return;
-		init=true;
-		// nothing to do
-	}
 
 	public synchronized static Map<String,Collection<String>> getAssigneeToPatentsMap() {
 		if(assigneeToPatentsMap==null) {

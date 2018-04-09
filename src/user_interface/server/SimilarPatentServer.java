@@ -411,7 +411,7 @@ public class SimilarPatentServer {
             keyphrasePredictionPipelineManagerTask = new RecursiveTask<KeyphrasePredictionPipelineManager>() {
                 @Override
                 protected KeyphrasePredictionPipelineManager compute() {
-                    if(!TEST) return null;
+                    if(TEST) return null;
                     KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.SMALL_MODEL_NAME, -1, -1, -1));
                     keyphrasePredictionPipelineManager.runPipeline(false, false, false, false, -1, false);
                     keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors();
@@ -3093,9 +3093,6 @@ public class SimilarPatentServer {
         long t1 = System.currentTimeMillis();
         //Database.setupSeedConn();
         boolean preLoad =  true;
-        boolean initDatabase = false;
-
-        if(initDatabase) Database.initializeDatabase();
 
         System.out.println("Starting to load base finder...");
         initialize(false,false);
