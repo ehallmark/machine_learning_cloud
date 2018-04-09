@@ -84,7 +84,7 @@ import static spark.Spark.*;
  * Created by ehallmark on 7/27/16.
  */
 public class SimilarPatentServer {
-    private static final boolean TEST = true;
+    private static final boolean TEST = false;
     private static final boolean debug = false;
     private static final Map<String,Lock> fileSynchronizationMap = Collections.synchronizedMap(new HashMap<>());
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
@@ -2684,13 +2684,6 @@ public class SimilarPatentServer {
                                         nav().withClass("sidebar col-3").attr("style","z-index: 2; overflow-y: auto; height: 100%; position: fixed; padding-top: 75px;").with(
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").with(authorized ? div().withText("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : div().withText("Not signed in.")),
-                                                        div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
-                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com")),
-                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withHref("/edit_user_group") : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Change Password").withHref("/edit_user") : span()),
-                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withHref("/delete_user") : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Update Defaults").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Help").withHref("/help") : span()),
                                                         div().withClass("col-12").with(authorized && showDynamicUserGroups ? span().with(
                                                                 form().withAction("/change_dynamic_user_group").withMethod("POST").with(
                                                                         label("Change User Group").with(
@@ -2698,15 +2691,22 @@ public class SimilarPatentServer {
                                                                                         option(dynamicUserGroup==null?userGroup:dynamicUserGroup).attr("selected","selected").withValue(dynamicUserGroup==null?userGroup:dynamicUserGroup)
                                                                                 ).with(
                                                                                         handler.getUserGroups().stream().filter(group->{
-                                                                                                    return dynamicUserGroup==null?!userGroup.equals(group):!dynamicUserGroup.equals(group);
-                                                                                                }).map(group->{
-                                                                                                    return option(group).withValue(group);
-                                                                                                }).collect(Collectors.toList())
+                                                                                            return dynamicUserGroup==null?!userGroup.equals(group):!dynamicUserGroup.equals(group);
+                                                                                        }).map(group->{
+                                                                                            return option(group).withValue(group);
+                                                                                        }).collect(Collectors.toList())
                                                                                 )
 
                                                                         )
                                                                 )
-                                                        ) : span())
+                                                        ) : span()),
+                                                        div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
+                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com")),
+                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withHref("/edit_user_group") : span()),
+                                                        div().withClass("col-12").with(authorized ? a("Change Password").withHref("/edit_user") : span()),
+                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withHref("/delete_user") : span()),
+                                                        div().withClass("col-12").with(authorized ? a("Update Defaults").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span()),
+                                                        div().withClass("col-12").with(authorized ? a("Help").withHref("/help") : span())
 
                                                 ), hr(),
                                                 (!authorized) ? div() : div().with(
