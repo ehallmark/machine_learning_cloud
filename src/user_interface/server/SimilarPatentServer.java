@@ -84,6 +84,7 @@ import static spark.Spark.*;
  * Created by ehallmark on 7/27/16.
  */
 public class SimilarPatentServer {
+    private static final boolean TEST = true;
     private static final boolean debug = false;
     private static final Map<String,Lock> fileSynchronizationMap = Collections.synchronizedMap(new HashMap<>());
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
@@ -410,8 +411,9 @@ public class SimilarPatentServer {
             keyphrasePredictionPipelineManagerTask = new RecursiveTask<KeyphrasePredictionPipelineManager>() {
                 @Override
                 protected KeyphrasePredictionPipelineManager compute() {
-                    KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.SMALL_MODEL_NAME,-1,-1,-1));
-                    keyphrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
+                    if(!TEST) return null;
+                    KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.SMALL_MODEL_NAME, -1, -1, -1));
+                    keyphrasePredictionPipelineManager.runPipeline(false, false, false, false, -1, false);
                     keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors();
                     keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadWordVectors();
                     keyphrasePredictionPipelineManager.loadPredictions();
@@ -419,7 +421,7 @@ public class SimilarPatentServer {
                     try {
                         AssetKMeans kMeans = new AssetKMeans(Collections.emptyList(), keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors(), 2);
                         kMeans.clusterAssets();
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         System.out.println("Error while initializing asset K Means");
                         e.printStackTrace();
                     }
@@ -427,7 +429,6 @@ public class SimilarPatentServer {
                     return keyphrasePredictionPipelineManager;
                 }
             };
-
         }
     }
 
@@ -3119,27 +3120,30 @@ public class SimilarPatentServer {
             }
         });
 
-        pool.execute(keyphrasePredictionPipelineManagerTask);
-        pool.execute(similarityEngine);
-        pool.execute(new RecursiveAction() {
-            @Override
-            protected void compute() {
-                new RelatedAssetsAttribute().getPatentDataMap();
-                new RelatedAssetsAttribute().getApplicationDataMap();
-                new AssetToFilingMap().getPatentDataMap();
-                new AssetToFilingMap().getApplicationDataMap();
-                new FilingToAssetMap().getApplicationDataMap();
-                new FilingToAssetMap().getPatentDataMap();
-                new AssetToCPCMap().getApplicationDataMap();
-                new AssetToCPCMap().getPatentDataMap();
-                if(preLoad) {
-                    Database.preLoad();
-                }
-            }
-        });
 
-        final int numMinutes = 5;
-        pool.awaitQuiescence(60L*numMinutes, TimeUnit.SECONDS);
+        if(!TEST) {
+            pool.execute(keyphrasePredictionPipelineManagerTask);
+            pool.execute(similarityEngine);
+            pool.execute(new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    new RelatedAssetsAttribute().getPatentDataMap();
+                    new RelatedAssetsAttribute().getApplicationDataMap();
+                    new AssetToFilingMap().getPatentDataMap();
+                    new AssetToFilingMap().getApplicationDataMap();
+                    new FilingToAssetMap().getApplicationDataMap();
+                    new FilingToAssetMap().getPatentDataMap();
+                    new AssetToCPCMap().getApplicationDataMap();
+                    new AssetToCPCMap().getPatentDataMap();
+                    if (preLoad) {
+                        Database.preLoad();
+                    }
+                }
+            });
+
+            final int numMinutes = 5;
+            pool.awaitQuiescence(60L * numMinutes, TimeUnit.SECONDS);
+        }
 
         server();
         System.out.println("Finished starting server.");
