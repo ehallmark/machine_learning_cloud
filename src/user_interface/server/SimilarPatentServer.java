@@ -1159,14 +1159,20 @@ public class SimilarPatentServer {
         });
 
         get("/", (req, res)->{
-            return templateWrapper(passwordHandler,false, req, res, form().withClass("form-group").withMethod("POST").withAction("/login").attr("style","margin-top: 100px;").with(
-                    p("Log in"),
-                    label("Username").with(
-                            input().withType("text").withClass("form-control").withName("username")
-                    ), br(), br(), label("Password").with(
-                            input().withType("password").withClass("form-control").withName("password")
-                    ), br(), br(), button("Login").withType("submit").withClass("btn btn-secondary")
-            ),false);
+            try {
+                return templateWrapper(passwordHandler, false, req, res, form().withClass("form-group").withMethod("POST").withAction("/login").attr("style", "margin-top: 100px;").with(
+                        p("Log in"),
+                        label("Username").with(
+                                input().withType("text").withClass("form-control").withName("username")
+                        ), br(), br(), label("Password").with(
+                                input().withType("password").withClass("form-control").withName("password")
+                        ), br(), br(), button("Login").withType("submit").withClass("btn btn-secondary")
+                ), false);
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println("During /");
+                return null;
+            }
         });
 
         get(HOME_URL, (req, res) -> {
@@ -2624,9 +2630,9 @@ public class SimilarPatentServer {
         } else {
             acclaimAttrs = Collections.emptyList();
         }
-        String role = req.session().attribute("role");
-        String userGroup = getUserGroupFor(req.session());
-        boolean showDynamicUserGroups = role.equals(INTERNAL_USER)||role.equals(SUPER_USER);
+        String role = authorized ? req.session().attribute("role") : null;
+        String userGroup = authorized ? getUserGroupFor(req.session()) : null;
+        boolean showDynamicUserGroups = authorized&&((role.equals(INTERNAL_USER)||role.equals(SUPER_USER)));
         String dynamicUserGroup = showDynamicUserGroups ? req.session().attribute("dynamicUserGroup") : null;
         return html().with(
                 head().with(
