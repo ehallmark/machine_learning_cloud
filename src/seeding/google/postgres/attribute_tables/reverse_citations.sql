@@ -16,14 +16,14 @@ create table big_query_reverse_citations (
 insert into big_query_reverse_citations (doc_number_full,is_filing,rcite_publication_number_full,rcite_application_number_full,rcite_family_id,rcite_type,rcite_category,rcite_filing_date) (
     select
         coalesce(temp.cited_publication_number_full,temp.cited_application_number_full),
-        temp.cited_publication_number_full is null
+        temp.cited_publication_number_full is null,
         array_agg(publication_number_full),
         array_agg(application_number_full),
-        array_agg(family_id)
+        array_agg(family_id),
         array_agg(temp.cited_type),
-        array_agg(temp.cited_category)
+        array_agg(temp.cited_category),
         array_agg(filing_date)
-    from patents_global as t, unnest(t.cited_publication_number_full,t.cited_application_number_full,t.cited_type,t.cited_category)) as temp
-    where cited_application_number_full is not null OR cited_publication_number_full is not null
-    group by (coalesce(temp.cited_publication_number_full,temp.application_number_full),temp.cited_publication_number_full is null)
+    from patents_global as t, unnest(t.cited_publication_number_full,t.cited_application_number_full,t.cited_type,t.cited_category) with ordinality as temp(cited_publication_number_full,cited_application_number_full,cited_type,cited_category,n)
+    where t.cited_application_number_full is not null OR t.cited_publication_number_full is not null
+    group by (coalesce(temp.cited_publication_number_full,temp.cited_application_number_full),temp.cited_publication_number_full is null)
 );
