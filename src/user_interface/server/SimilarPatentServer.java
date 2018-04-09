@@ -617,14 +617,16 @@ public class SimilarPatentServer {
             // nested attribute names
             buildJavaToHumanAttrMap();
 
-            SimilarityEngineController.setAllEngines(Arrays.asList(new DataSetSimilarityEngine(), new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(loadVectors), new CPCSimilarityEngine()));
+            SimilarityEngineController.setAllEngines(Arrays.asList(new DataSetSimilarityEngine(), new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(!TEST&&loadVectors), new CPCSimilarityEngine()));
 
             // similarity engine
             similarityEngine = new RecursiveTask<SimilarityEngineController>() {
                 @Override
                 protected SimilarityEngineController compute() {
                     // current word vectorizer
-                    new DefaultSimilarityModel(Collections.emptySet());
+                    if(!TEST) {
+                        new DefaultSimilarityModel(Collections.emptySet());
+                    }
                     return new SimilarityEngineController();
                 }
             };
