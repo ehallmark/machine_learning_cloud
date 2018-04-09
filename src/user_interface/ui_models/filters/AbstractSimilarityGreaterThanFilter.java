@@ -10,6 +10,7 @@ import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
+import user_interface.ui_models.attributes.script_attributes.FastSimilarityAttribute;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -54,6 +55,16 @@ public class AbstractSimilarityGreaterThanFilter extends AbstractFilter {
                         .gte(limit);
             }
         }
+    }
+
+    @Override
+    public QueryBuilder getScriptFilter() {
+        Script filterScript = getScript();
+        if(filterScript==null)  return QueryBuilders.boolQuery();
+        return QueryBuilders.boolQuery()
+                .must(QueryBuilders.scriptQuery(filterScript))
+                // make sure vector exists
+                .filter(QueryBuilders.existsQuery(FastSimilarityAttribute.VECTOR_NAME));
     }
 
     public Script getScript() {
