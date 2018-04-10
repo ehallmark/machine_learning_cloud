@@ -11,7 +11,7 @@ import java.util.function.Function;
 public class UpdateAIValuesFromPostgres {
     public static void main(String[] args) throws SQLException {
         Function<String,Integer> numberOfClaimsFunction = claimsText -> {
-            return Math.max(1,claimsText.split("(\\n\\s+\\n\\s+)").length-1);
+            return Math.max(1,claimsText.split("(\\n\\s+\\n\\s+)").length);
         };
         Function<String,Integer> numberOfClaimsFunction2 = claimsText -> {
             String[] claims = claimsText.split("(\\n\\s+\\n\\s+)");
@@ -32,7 +32,7 @@ public class UpdateAIValuesFromPostgres {
                     System.out.println("Could not parse: "+num);
                 }
             }
-            return null;
+            return numberOfClaimsFunction.apply(claimsText);
         };
 
         Connection conn = Database.getConn();
@@ -47,9 +47,12 @@ public class UpdateAIValuesFromPostgres {
                 for(int i = 0; i < Math.min(claims.length,claimLangs.length); i++) {
                     if(claimLangs[i].toLowerCase().equals("en")) {
                         String englishClaim = claims[i];
-                        System.out.println("Claim for "+number+": "+englishClaim);
-                        System.out.println("Number of claims: "+numberOfClaimsFunction.apply(englishClaim));
-                        System.out.println("Number of claims (2): "+numberOfClaimsFunction2.apply(englishClaim));
+                        int numClaims1 = numberOfClaimsFunction.apply(englishClaim);
+                        int numClaims2 = numberOfClaimsFunction2.apply(englishClaim);
+                        if(numClaims1!=numClaims2) {
+                            System.out.println("Mismatched claim length: "+numClaims1+" != "+numClaims2);
+                            System.out.println("Claim: "+englishClaim);
+                        }
                     }
                 }
             }
