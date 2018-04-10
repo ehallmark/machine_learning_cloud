@@ -100,7 +100,7 @@ public class UpdateAIValuesFromPostgres {
                         Boolean meansPresent = meansPresentFunction.apply(englishClaim);
                         //System.out.println("Results for "+number+": "+numClaims+", "+lengthOfSmallestIndependentClaim+", "+meansPresent);
                         if(lengthOfSmallestIndependentClaim==null||lengthOfSmallestIndependentClaim<5) {
-                            System.out.println("Likely error for "+number+" ("+lengthOfSmallestIndependentClaim+"): "+englishClaim);
+                            System.out.println("Likely error for "+number+" ("+lengthOfSmallestIndependentClaim+")");
                         }
                     }
                 }
