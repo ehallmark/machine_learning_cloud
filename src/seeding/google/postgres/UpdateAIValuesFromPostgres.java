@@ -10,7 +10,7 @@ import java.util.function.Function;
 
 public class UpdateAIValuesFromPostgres {
     private static String[] splitClaims(String claim) {
-        return claim.split("(\\n\\s+\\n\\s+\\n\\s+[0-9]*( )*\\.)");
+        return claim.split("(\\n\\s*\\n\\s*\\n\\s*[0-9]*\\s*\\.)");
     }
 
     public static void main(String[] args) throws SQLException {
@@ -77,7 +77,7 @@ public class UpdateAIValuesFromPostgres {
                 try {
                     return Integer.valueOf(num);
                 } catch(Exception e) {
-                    System.out.println("Could not parse: "+num);
+                    //System.out.println("Could not parse: "+num);
                 }
             }
             return numberOfClaimsFunctionNaive.apply(claimsText);
@@ -98,7 +98,7 @@ public class UpdateAIValuesFromPostgres {
                         Integer numClaims = numberOfClaimsFunction.apply(englishClaim);
                         Integer lengthOfSmallestIndependentClaim = lengthOfSmallestIndependentClaimFunction.apply(englishClaim);
                         Boolean meansPresent = meansPresentFunction.apply(englishClaim);
-                        //System.out.println("Results for "+number+": "+numClaims+", "+lengthOfSmallestIndependentClaim+", "+meansPresent);
+                        System.out.println("Results for "+number+": "+numClaims+", "+lengthOfSmallestIndependentClaim+", "+meansPresent);
                         if(lengthOfSmallestIndependentClaim==null||lengthOfSmallestIndependentClaim<5) {
                             System.out.println("Likely error for "+number+" ("+lengthOfSmallestIndependentClaim+")");
                         }
