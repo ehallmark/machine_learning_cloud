@@ -16,12 +16,17 @@ public class UpdateAIValuesFromPostgres {
     public static void main(String[] args) throws SQLException {
         Function<String,Integer> lengthOfSmallestIndependentClaimFunction = claimsText -> {
             String[] claims = splitClaims(claimsText);
+            Integer length = null;
             for(String claim : claims) {
+                if(claim.trim().isEmpty()) continue;
                 if(!claim.contains("(canceled)")) {
-                    if(claim.replaceFirst(" claim [0-9]","").length()==claim.length()) {
+                    if(claim.replaceFirst("( claim [0-9])","").length()==claim.length()) {
                         // independent
                         String[] words = claim.split("\\s+");
-                        return words.length;
+                        if(length==null||length>words.length) {
+                            length = words.length;
+                        }
+                        System.out.println("Independent claim: "+claim);
                     }
                 }
             }
