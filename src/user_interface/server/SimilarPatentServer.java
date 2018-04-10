@@ -83,7 +83,7 @@ import static spark.Spark.*;
  * Created by ehallmark on 7/27/16.
  */
 public class SimilarPatentServer {
-    private static final boolean TEST = true;
+    private static final boolean TEST = false;
     private static final boolean debug = false;
     private static final Map<String,Lock> fileSynchronizationMap = Collections.synchronizedMap(new HashMap<>());
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
@@ -2158,8 +2158,8 @@ public class SimilarPatentServer {
                 try {
                     if (req.session(false).attribute(EXCEL_SESSION) != null)
                         req.session(false).removeAttribute(EXCEL_SESSION);
-                   // System.out.println("Getting parameters...");
-                   // System.out.println("Getting models...");
+                    //System.out.println("Getting parameters...");
+                    System.out.println("Getting models...");
                     long timeStart = System.currentTimeMillis();
                     // Sorted by
                     // Get Models to use
@@ -2386,6 +2386,22 @@ public class SimilarPatentServer {
             e.printStackTrace();
             System.out.println("Timeout exception!");
             return new Gson().toJson(new SimpleAjaxMessage("Timeout occurred after "+(maxTimeMillis/(60*1000))+" minutes."));
+        } finally {
+            try {
+                if(!handleReportTask.isDone()){
+                    // clean up other tasks
+                    otherTasks.forEach(task->{
+                        try {
+                            task.cancel(true);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    handleReportTask.cancel(true);
+                }
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
