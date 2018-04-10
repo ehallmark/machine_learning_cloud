@@ -83,7 +83,7 @@ import static spark.Spark.*;
  * Created by ehallmark on 7/27/16.
  */
 public class SimilarPatentServer {
-    private static final boolean TEST = false;
+    private static final boolean TEST = true;
     private static final boolean debug = false;
     private static final Map<String,Lock> fileSynchronizationMap = Collections.synchronizedMap(new HashMap<>());
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
@@ -2158,8 +2158,8 @@ public class SimilarPatentServer {
                 try {
                     if (req.session(false).attribute(EXCEL_SESSION) != null)
                         req.session(false).removeAttribute(EXCEL_SESSION);
-                    System.out.println("Getting parameters...");
-                    System.out.println("Getting models...");
+                   // System.out.println("Getting parameters...");
+                   // System.out.println("Getting models...");
                     long timeStart = System.currentTimeMillis();
                     // Sorted by
                     // Get Models to use
@@ -2171,8 +2171,8 @@ public class SimilarPatentServer {
                     List<String> nestedAttributes = nestedAttributeParentMap.entrySet().stream().flatMap(e -> e.getValue().stream()).collect(Collectors.toList());
                     List<String> itemAttributes = Stream.of(attributes.stream().filter(attr -> !getNestedAttrMap().containsKey(attr)), nestedAttributes.stream()).flatMap(stream -> stream).collect(Collectors.toList());
 
-                    System.out.println("FOUND ATTRIBUTES: " + String.join("; ", itemAttributes));
-                    System.out.println("FOUND NESTED ATTRIBUTES: " + String.join("; ", nestedAttributes));
+                    //System.out.println("FOUND ATTRIBUTES: " + String.join("; ", itemAttributes));
+                    //System.out.println("FOUND NESTED ATTRIBUTES: " + String.join("; ", nestedAttributes));
                     List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
 
                     List<AbstractChartAttribute> abstractCharts = chartModels.stream().map(chart -> chartModelMap.get(chart).dup()).collect(Collectors.toList());
@@ -2383,25 +2383,9 @@ public class SimilarPatentServer {
             String html = handleReportTask.get(maxTimeMillis, TimeUnit.MILLISECONDS);
             return html;
         } catch(Exception e) {
+            e.printStackTrace();
             System.out.println("Timeout exception!");
             return new Gson().toJson(new SimpleAjaxMessage("Timeout occurred after "+(maxTimeMillis/(60*1000))+" minutes."));
-        } finally {
-            try {
-                if(!handleReportTask.isDone()){
-                    // clean up other tasks
-                    otherTasks.forEach(task->{
-                        try {
-                            task.cancel(true);
-                            task.quietlyComplete();
-                        } catch(Exception e) {
-                        }
-                    });
-                    handleReportTask.cancel(true);
-                    handleReportTask.quietlyComplete();
-                }
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 
