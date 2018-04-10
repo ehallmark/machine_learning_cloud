@@ -10,7 +10,8 @@ import java.sql.SQLException;
 public class UpdateAIValuesFromPostgres {
     public static void main(String[] args) throws SQLException {
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("select publication_number, claims, claims_lang from patents_global limit 10000");
+        PreparedStatement ps = conn.prepareStatement("select publication_number, claims, claims_lang from patents_global where claims!=null and claims_lang!=null limit 10000");
+        ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
         while(rs.next()) {
             String number = rs.getString(1);
