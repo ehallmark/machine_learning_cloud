@@ -9,12 +9,30 @@ import java.sql.SQLException;
 import java.util.function.Function;
 
 public class UpdateAIValuesFromPostgres {
+    private static String[] splitClaims(String claim) {
+        return claim.split("(\\n\\s+\\n\\s+)");
+    }
+
     public static void main(String[] args) throws SQLException {
-        Function<String,Integer> numberOfClaimsFunction = claimsText -> {
-            return Math.max(1,claimsText.split("(\\n\\s+\\n\\s+)").length);
+        Function<String,Integer> lengthOfSmallestIndependentClaimFunction = claimsText -> {
+            String[] claims = splitClaims(claimsText);
+            for(String claim : claims) {
+                if(!claim.contains("(canceled)")) {
+                    if(claim.replaceFirst(" claim [0-9]","").length()==claim.length()) {
+                        // independent
+                        String[] words = claim.split("\\s+");
+                        return words.length;
+                    }
+                }
+            }
+            return null;
         };
-        Function<String,Integer> numberOfClaimsFunction2 = claimsText -> {
-            String[] claims = claimsText.split("(\\n\\s+\\n\\s+)");
+
+        Function<String,Integer> numberOfClaimsFunctionNaive = claimsText -> {
+            return Math.max(1,splitClaims(claimsText).length);
+        };
+        Function<String,Integer> numberOfClaimsFunction = claimsText -> {
+            String[] claims = splitClaims(claimsText);
             String lastClaim = claims[claims.length-1].trim();
             if(lastClaim.isEmpty()&&claims.length>1) {
                 lastClaim = claims[claims.length-2].trim();
@@ -32,7 +50,7 @@ public class UpdateAIValuesFromPostgres {
                     System.out.println("Could not parse: "+num);
                 }
             }
-            return numberOfClaimsFunction.apply(claimsText);
+            return numberOfClaimsFunctionNaive.apply(claimsText);
         };
 
         Connection conn = Database.getConn();
@@ -47,12 +65,9 @@ public class UpdateAIValuesFromPostgres {
                 for(int i = 0; i < Math.min(claims.length,claimLangs.length); i++) {
                     if(claimLangs[i].toLowerCase().equals("en")) {
                         String englishClaim = claims[i];
-                        int numClaims1 = numberOfClaimsFunction.apply(englishClaim);
-                        int numClaims2 = numberOfClaimsFunction2.apply(englishClaim);
-                        if(numClaims1!=numClaims2) {
-                            System.out.println("Mismatched claim length: "+numClaims1+" != "+numClaims2);
-                            System.out.println("Claim: "+englishClaim);
-                        }
+                        Integer numClaims = numberOfClaimsFunction.apply(englishClaim);
+                        Integer lengthOfSmallestIndependentClaim = lengthOfSmallestIndependentClaimFunction.apply(englishClaim);
+                        System.out.println("Results for "+number+": "+numClaims+", "+lengthOfSmallestIndependentClaim);
                     }
                 }
             }
