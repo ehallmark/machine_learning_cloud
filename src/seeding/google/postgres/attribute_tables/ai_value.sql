@@ -19,15 +19,40 @@ create table big_query_ai_value_claims (
 
 create table big_query_ai_value_assignments (
     family_id varchar(32) primary key,
-    num_assignments integer,
-    num_security_interests integer,
-    num_assignors_interest integer
+    num_assignments integer not null
+);
+
+insert into big_query_ai_value_assignments (family_id,num_assignments) (
+    select family_id,count(distinct reel_frame) from
+        big_query_assignments left join big_query_assignment_documentid using (reel_frame)
+    left outer join patents_global on
+        (
+            (
+                (patents_global.publication_number=doc_number and not is_filing)
+                OR
+                (patents_global.application_number=doc_number and is_filing)
+            ) AND patents_global.country_code='US'
+        )
+    group by family_id
 );
 
 create table big_query_ai_value_citations (
     family_id varchar(32) primary key,
-    num_rcites integer,
-    num_countries_cited integer
+    num_rcites integer not null
+);
+
+insert into big_query_ai_value_citations (
+    select family_id,count(distinct rcited_family_id) from (select
+        * from big_query_reverse_citations as t,unnest(t.rcite_family_id) with ordinality as t2(rcited_family_id)
+    ) temp left outer join patents_global on
+    (
+
+        (patents_global.publication_number_full=doc_number_full and not is_filing)
+        OR
+        (patents_global.application_number_full=doc_number_full and is_filing)
+
+    )
+    group by family_id
 );
 
 -- helper function to compute sigmoid
@@ -54,9 +79,9 @@ create table big_query_ai_value (
 insert into big_query_ai_value (family_id,values) (
     select family_id,(Array[means_present,num_claims,num_assignments,family_size,length_smallest_ind_claim,num_rcites])::double precision[] as values
     from big_query_ai_value_assignments
-    left join big_query_ai_value_citations using (family_id)
-    left join big_query_ai_value_claims using (family_id)
-    left join big_query_ai_value_family_size using(family_id)
+    left outer join big_query_ai_value_citations using (family_id)
+    left outer join big_query_ai_value_claims using (family_id)
+    left outer join big_query_ai_value_family_size using(family_id)
 );
 
 -- query to get values (need to set weights and intercept)
