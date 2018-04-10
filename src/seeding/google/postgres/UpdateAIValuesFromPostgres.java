@@ -18,14 +18,15 @@ public class UpdateAIValuesFromPostgres {
             String[] claims = splitClaims(claimsText);
             Integer length = null;
             for(String claim : claims) {
-                if(claim.trim().isEmpty()) continue;
-                if(!claim.contains("(canceled)")) {
+                claim = claim.trim();
+                if(claim.isEmpty()) continue;
+                if(!claim.contains("(canceled)")&&!claim.endsWith(":")) {
                     if(claim.replaceFirst("( claim [0-9])","").length()==claim.length()) {
                         // independent
                         String[] words = claim.split("\\s+");
                         if(length==null||length>words.length) {
                             length = words.length;
-                            System.out.println("Independent claim ("+length+"): "+claim);
+                            //System.out.println("Independent claim ("+length+"): "+claim);
                         }
                     }
                 }
