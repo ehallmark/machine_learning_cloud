@@ -47,7 +47,6 @@ public class ScrapeCompanyTickers {
         // no pull stock info
         final long to = ScrapeYahooStockPrices.dateToLong(LocalDate.now().plusDays(1));
         final long from = ScrapeYahooStockPrices.dateToLong(LocalDate.now().minusMonths(1));
-        AtomicInteger cnt = new AtomicInteger(0);
         tickerToNameMap.entrySet().parallelStream().forEach(e->{
             String ticker = e.getKey();
             String company = e.getValue();

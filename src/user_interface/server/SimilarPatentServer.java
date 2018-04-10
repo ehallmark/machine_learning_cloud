@@ -1507,7 +1507,7 @@ public class SimilarPatentServer {
                 res.header("Content-Disposition", "attachment; filename=download.csv");
                 StringJoiner csvFile = new StringJoiner("\n");
                 StringJoiner csvLine = new StringJoiner("\",\"","\"","\"");
-                for(String header : headers) {
+                for(String header : humanHeaders) {
                     csvLine.add(header);
                 }
                 csvFile.add(csvLine.toString());
