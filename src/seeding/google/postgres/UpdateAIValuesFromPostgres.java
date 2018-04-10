@@ -25,8 +25,8 @@ public class UpdateAIValuesFromPostgres {
                         String[] words = claim.split("\\s+");
                         if(length==null||length>words.length) {
                             length = words.length;
+                            System.out.println("Independent claim ("+length+"): "+claim);
                         }
-                        System.out.println("Independent claim: "+claim);
                     }
                 }
             }
