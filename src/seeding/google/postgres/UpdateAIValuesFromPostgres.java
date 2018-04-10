@@ -10,7 +10,7 @@ import java.util.function.Function;
 
 public class UpdateAIValuesFromPostgres {
     private static String[] splitClaims(String claim) {
-        return claim.split("(\\n\\s+\\n\\s+)");
+        return claim.split("(\\n\\s+\\n\\s+\\n\\s+)");
     }
 
     public static void main(String[] args) throws SQLException {
