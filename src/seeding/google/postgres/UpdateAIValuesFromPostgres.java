@@ -34,6 +34,30 @@ public class UpdateAIValuesFromPostgres {
             return length;
         };
 
+        Function<String,Boolean> meansPresentFunction = claimsText -> {
+            String[] claims = splitClaims(claimsText);
+            boolean meansPresent = true;
+            boolean found = false;
+            for(String claim : claims) {
+                claim = claim.trim();
+                if(claim.isEmpty()) continue;
+                if(!claim.contains("(canceled)")&&!claim.endsWith(":")) {
+                    found = true;
+                    if(claim.replaceFirst("( claim [0-9])","").length()==claim.length()) {
+                        // independent
+                        if(!claim.contains(" means ")) {
+                            meansPresent = false;
+                        }
+                    }
+                }
+            }
+            if(found) {
+                return meansPresent;
+            } else {
+                return false;
+            }
+        };
+
         Function<String,Integer> numberOfClaimsFunctionNaive = claimsText -> {
             return Math.max(1,splitClaims(claimsText).length);
         };
@@ -60,7 +84,7 @@ public class UpdateAIValuesFromPostgres {
         };
 
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("select publication_number, claims, claims_lang from patents_global where claims is not null and claims_lang is not null limit 10000");
+        PreparedStatement ps = conn.prepareStatement("select publication_number_full, claims, claims_lang from patents_global where claims is not null and claims_lang is not null limit 10000");
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
         while(rs.next()) {
@@ -73,7 +97,8 @@ public class UpdateAIValuesFromPostgres {
                         String englishClaim = claims[i];
                         Integer numClaims = numberOfClaimsFunction.apply(englishClaim);
                         Integer lengthOfSmallestIndependentClaim = lengthOfSmallestIndependentClaimFunction.apply(englishClaim);
-                        System.out.println("Results for "+number+": "+numClaims+", "+lengthOfSmallestIndependentClaim);
+                        Boolean meansPresent = meansPresentFunction.apply(englishClaim);
+                        System.out.println("Results for "+number+": "+numClaims+", "+lengthOfSmallestIndependentClaim+", "+meansPresent);
                     }
                 }
             }
