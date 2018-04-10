@@ -11,7 +11,28 @@ import java.util.function.Function;
 public class UpdateAIValuesFromPostgres {
     public static void main(String[] args) throws SQLException {
         Function<String,Integer> numberOfClaimsFunction = claimsText -> {
-            return claimsText.split("(\\n\\s+\\n\\s+)").length;
+            return Math.max(1,claimsText.split("(\\n\\s+\\n\\s+)").length-1);
+        };
+        Function<String,Integer> numberOfClaimsFunction2 = claimsText -> {
+            String[] claims = claimsText.split("(\\n\\s+\\n\\s+)");
+            String lastClaim = claims[claims.length-1].trim();
+            if(lastClaim.isEmpty()&&claims.length>1) {
+                lastClaim = claims[claims.length-2].trim();
+            }
+            int idx = lastClaim.indexOf(".");
+            if(idx>0) {
+                String num = lastClaim.substring(0,idx).trim();
+                int dashIndex = num.indexOf("-");
+                if(dashIndex>0&&num.length()>dashIndex+1) {
+                    num = num.substring(dashIndex+1,num.length()).trim();
+                }
+                try {
+                    return Integer.valueOf(num);
+                } catch(Exception e) {
+                    System.out.println("Could not parse: "+num);
+                }
+            }
+            return null;
         };
 
         Connection conn = Database.getConn();
@@ -28,6 +49,7 @@ public class UpdateAIValuesFromPostgres {
                         String englishClaim = claims[i];
                         System.out.println("Claim for "+number+": "+englishClaim);
                         System.out.println("Number of claims: "+numberOfClaimsFunction.apply(englishClaim));
+                        System.out.println("Number of claims (2): "+numberOfClaimsFunction2.apply(englishClaim));
                     }
                 }
             }
