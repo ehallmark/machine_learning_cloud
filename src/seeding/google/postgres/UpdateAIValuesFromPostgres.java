@@ -30,7 +30,7 @@ public class UpdateAIValuesFromPostgres {
                     }
                 }
             }
-            return null;
+            return length;
         };
 
         Function<String,Integer> numberOfClaimsFunctionNaive = claimsText -> {
