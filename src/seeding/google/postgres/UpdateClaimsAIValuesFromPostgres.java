@@ -83,17 +83,19 @@ public class UpdateClaimsAIValuesFromPostgres {
             return numberOfClaimsFunctionNaive.apply(claimsText);
         };
 
-        Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("select distinct on (family_id) family_id, claims, claims_lang from patents_global where claims is not null and claims_lang is not null order by family_id, country_code='US' desc nulls last, publication_date desc nulls last");
-        PreparedStatement updater = conn.prepareStatement("insert into big_query_ai_value_claims values (?,?::integer,?::integer,?::integer) on conflict do nothing");
+        Connection seedConn = Database.newSeedConn();
+        Connection updateConn = Database.getConn();
+        PreparedStatement ps = seedConn.prepareStatement("select distinct on (family_id) family_id, publication_number_full, claims, claims_lang from patents_global where claims is not null and claims_lang is not null order by family_id, country_code='US' desc nulls last, publication_date desc nulls last");
+        PreparedStatement updater = updateConn.prepareStatement("insert into big_query_ai_value_claims (family_id,publication_number_full,means_present,num_claims,length_smallest_ind_claim) values (?,?,?::integer,?::integer,?::integer) on conflict do nothing");
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
         long total = 0;
         long valid = 0;
         while(rs.next()) {
-            String number = rs.getString(1);
-            String[] claims = (String[])rs.getArray(2).getArray();
-            String[] claimLangs = (String[])rs.getArray(3).getArray();
+            String familyId = rs.getString(1);
+            String docNum = rs.getString(2);
+            String[] claims = (String[])rs.getArray(3).getArray();
+            String[] claimLangs = (String[])rs.getArray(4).getArray();
             if(claims!=null&&claimLangs!=null) {
                 for(int i = 0; i < Math.min(claims.length,claimLangs.length); i++) {
                     if(claimLangs[i].toLowerCase().equals("en")) {
@@ -107,10 +109,11 @@ public class UpdateClaimsAIValuesFromPostgres {
                         }
 
                         // update
-                        updater.setString(1, number);
-                        updater.setObject(2, meansPresent==null?null:meansPresent?1:0);
-                        updater.setObject(3, numClaims);
-                        updater.setObject(4, lengthOfSmallestIndependentClaim);
+                        updater.setString(1, familyId);
+                        updater.setString(2, docNum);
+                        updater.setObject(3, meansPresent==null?null:meansPresent?1:0);
+                        updater.setObject(4, numClaims);
+                        updater.setObject(5, lengthOfSmallestIndependentClaim);
                         updater.executeUpdate();
                         valid++;
                         break;
@@ -130,6 +133,7 @@ public class UpdateClaimsAIValuesFromPostgres {
         rs.close();
         ps.close();
         Database.commit();
-        conn.close();
+        seedConn.close();
+        updateConn.close();
     }
 }
