@@ -129,10 +129,11 @@ public class UpdateClaimsAIValuesFromPostgres {
 
         System.out.println("Valid: "+valid+" out of "+total);
 
+        Database.commit();
+
         updater.close();
         rs.close();
         ps.close();
-        Database.commit();
         seedConn.close();
         updateConn.close();
     }
