@@ -87,6 +87,8 @@ public class UpdateAIValuesFromPostgres {
         PreparedStatement ps = conn.prepareStatement("select publication_number_full, claims, claims_lang from patents_global where claims is not null and claims_lang is not null limit 10000");
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
+        long total = 0;
+        long valid = 0;
         while(rs.next()) {
             String number = rs.getString(1);
             String[] claims = (String[])rs.getArray(2).getArray();
@@ -100,12 +102,22 @@ public class UpdateAIValuesFromPostgres {
                         Boolean meansPresent = meansPresentFunction.apply(englishClaim);
                         //System.out.println("Results for "+number+": "+numClaims+", "+lengthOfSmallestIndependentClaim+", "+meansPresent);
                         if(lengthOfSmallestIndependentClaim==null||lengthOfSmallestIndependentClaim<5) {
-                            System.out.println("Likely error for "+number+" ("+lengthOfSmallestIndependentClaim+"): "+englishClaim);
+                            String[] parts = splitClaims(englishClaim);
+                            System.out.println("Likely error for "+number+": "+lengthOfSmallestIndependentClaim);
+                            for (int j = 0; j < parts.length; j++) {
+                                System.out.println("Claim "+(i+1)+": "+parts[i].trim().replace("\n"," "));
+                            }
+                        } else {
+                            valid++;
                         }
+                        break;
                     }
                 }
             }
+            total++;
         }
+
+        System.out.println("Valid: "+valid+" out of "+total);
 
         rs.close();
         ps.close();
