@@ -102,21 +102,17 @@ public class UpdateClaimsAIValuesFromPostgres {
                         Integer lengthOfSmallestIndependentClaim = lengthOfSmallestIndependentClaimFunction.apply(englishClaim);
                         Boolean meansPresent = meansPresentFunction.apply(englishClaim);
                         //System.out.println("Results for "+number+": "+numClaims+", "+lengthOfSmallestIndependentClaim+", "+meansPresent);
-                        if(lengthOfSmallestIndependentClaim==null||lengthOfSmallestIndependentClaim<5) {
-                            String[] parts = splitClaims(englishClaim);
-                            System.out.println("Likely error for "+number+": "+lengthOfSmallestIndependentClaim);
-                            for (int j = 0; j < parts.length; j++) {
-                                System.out.println("Claim "+(i+1)+": "+parts[i].trim().replace("\n"," "));
-                            }
-                        } else {
-                            // update
-                            updater.setString(1, number);
-                            updater.setObject(2, meansPresent==null?null:meansPresent?1:0);
-                            updater.setObject(3, numClaims);
-                            updater.setObject(4, lengthOfSmallestIndependentClaim);
-                            updater.executeUpdate();
-                            valid++;
+                        if(lengthOfSmallestIndependentClaim==null||lengthOfSmallestIndependentClaim<=2) {
+                            lengthOfSmallestIndependentClaim=null;
                         }
+
+                        // update
+                        updater.setString(1, number);
+                        updater.setObject(2, meansPresent==null?null:meansPresent?1:0);
+                        updater.setObject(3, numClaims);
+                        updater.setObject(4, lengthOfSmallestIndependentClaim);
+                        updater.executeUpdate();
+                        valid++;
                         break;
                     }
                 }
@@ -124,6 +120,7 @@ public class UpdateClaimsAIValuesFromPostgres {
             total++;
             if(total%10000==9999) {
                 System.out.println("Ingested: "+total+" (Valid: "+valid+")");
+                Database.commit();
             }
         }
 
@@ -132,6 +129,7 @@ public class UpdateClaimsAIValuesFromPostgres {
         updater.close();
         rs.close();
         ps.close();
+        Database.commit();
         conn.close();
     }
 }
