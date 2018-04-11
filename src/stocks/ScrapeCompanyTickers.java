@@ -4,10 +4,7 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import stocks.util.Stock;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -49,13 +46,12 @@ public class ScrapeCompanyTickers {
         LocalDate today = LocalDate.now();
         final long to = ScrapeYahooStockPrices.dateToLong(today.plusDays(1));
         final long from = ScrapeYahooStockPrices.dateToLong(LocalDate.now().minusMonths(3));
-        tickerToNameMap.entrySet().forEach(e->{
+        tickerToNameMap.entrySet().parallelStream().forEach(e->{
             String ticker = e.getKey();
             String company = e.getValue();
             //System.out.println(""+cnt.getAndIncrement()+" / "+tickers.size());
             try {
                 List<Pair<LocalDate, Double>> data = stockDataFor(ticker, from, to);
-                System.out.println(ticker+": "+data.size());
                 if (data != null && data.size()>14 && data.get(data.size()-1).getFirst().isAfter(today.minusDays(2))) {
                     double lastPrice = data.get(data.size()-1).getSecond();
                     // don't want penny stocks
@@ -63,11 +59,19 @@ public class ScrapeCompanyTickers {
                         double[] prices = data.stream().limit(data.size()-1).mapToDouble(p->p.getSecond()).toArray();
                         Stock stock = new Stock(ticker,today,prices);
                         stock.nextTimeStep(data.get(data.size()-1).getSecond());
-                        System.out.println(stock.toString());
+                        double score = stock.getVarianceNormalized()
+                                *(stock.getAverageReturn1()<stock.getAverageReturn10()?1.0:0.0)
+                                *(Math.expm1(Math.abs(stock.getHistoricalVelocities()[stock.getHistoricalVelocities().length-1])))
+                                *Math.max(0,stock.getAverageAcceleration()+stock.getHistoricalAccelerations()[stock.getHistoricalAccelerations().length-1]);
+                        if(score>0) {
+                            System.out.println("Score for "+company+": "+score);
+                            System.out.println("Stock: "+stock.toString());
+                        }
+                        //System.out.println(stock.toString());
                     }
                 }
             } catch(Exception e2) {
-                e2.printStackTrace();
+                if(!(e2 instanceof FileNotFoundException)) e2.printStackTrace();
             }
         });
     }

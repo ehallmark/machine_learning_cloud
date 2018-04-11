@@ -1,26 +1,47 @@
 package stocks.util;
 
+import lombok.Getter;
+
 import java.time.LocalDate;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 public class Stock {
     private LocalDate date;
+    @Getter
     private double[] historicalPrices;
+    @Getter
     private double[] historicalVelocities;
+    @Getter
     private double[] historicalReturns;
+    @Getter
     private double[] historicalAccelerations;
+    @Getter
     private double movingAverage5;
+    @Getter
     private double movingAverage10;
+    @Getter
     private double averagePrice;
+    @Getter
     private double averageVelocity;
+    @Getter
     private double averageAcceleration;
+    @Getter
     private double price;
+    @Getter
     private boolean concaveUp;
+    @Getter
     private double averageReturn1;
+    @Getter
     private double averageReturn5;
+    @Getter
     private double averageReturn10;
+    @Getter
     private final String symbol;
+    @Getter
+    private double variance;
+    @Getter
+    private double varianceNormalized;
     public Stock(String symbol, LocalDate date, double[] historicalPrices) {
         assert historicalPrices.length>=14; // at least two weeks of data
         this.date=date;
@@ -54,6 +75,8 @@ public class Stock {
         historicalReturns[historicalReturns.length-1] = (historicalPrices[historicalPrices.length-1]-historicalPrices[historicalPrices.length-2])/historicalPrices[historicalPrices.length-2];
         historicalAccelerations[historicalAccelerations.length-1] = historicalVelocities[historicalVelocities.length-1]-historicalVelocities[historicalVelocities.length-2];
         averagePrice = DoubleStream.of(historicalPrices).sum()/historicalPrices.length;
+        variance = IntStream.range(0,historicalPrices.length).mapToDouble(i->Math.pow(historicalPrices[i]-averagePrice,2d)).sum()/(historicalPrices.length-1);
+        varianceNormalized = variance/averagePrice;
         averageVelocity = DoubleStream.of(historicalVelocities).sum()/historicalVelocities.length;
         averageAcceleration = DoubleStream.of(historicalAccelerations).sum()/historicalAccelerations.length;
         movingAverage5 = IntStream.range(historicalPrices.length-5,historicalPrices.length).mapToDouble(i->historicalPrices[i]).sum()/5;
@@ -71,6 +94,8 @@ public class Stock {
         return "Stock: "+symbol
                 +"\n\tPrice: "+price
                 +"\n\tAverage Price: "+averagePrice
+                +"\n\tVariance: "+variance
+                +"\n\tVariance (normalized): "+varianceNormalized
                 +"\n\tAverage Velocity: "+averageVelocity
                 +"\n\tAverage Accel: "+averageAcceleration
                 +"\n\tConcave up: "+concaveUp
