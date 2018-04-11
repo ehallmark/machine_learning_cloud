@@ -13,7 +13,6 @@ create table big_query_ai_value_claims (
     family_id varchar(32) primary key,
     means_present integer,
     num_claims integer,
-    num_ind_claims integer,
     length_smallest_ind_claim integer
 );
 

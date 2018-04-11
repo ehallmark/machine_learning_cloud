@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.Function;
 
-public class UpdateAIValuesFromPostgres {
+public class UpdateClaimsAIValuesFromPostgres {
     private static String[] splitClaims(String claim) {
         return claim.split("(\\s*\\n\\s*[0-9]*\\s*\\.)");
     }
@@ -84,7 +84,8 @@ public class UpdateAIValuesFromPostgres {
         };
 
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("select publication_number_full, claims, claims_lang from patents_global where claims is not null and claims_lang is not null limit 10000");
+        PreparedStatement ps = conn.prepareStatement("select distinct on (family_id) family_id, claims, claims_lang from patents_global where claims is not null and claims_lang is not null order by family_id, country_code='US' desc nulls last, publication_date desc nulls last");
+        PreparedStatement updater = conn.prepareStatement("insert into big_query_ai_value_claims values (?,?::integer,?::integer,?::integer) on conflict do nothing");
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
         long total = 0;
@@ -108,6 +109,12 @@ public class UpdateAIValuesFromPostgres {
                                 System.out.println("Claim "+(i+1)+": "+parts[i].trim().replace("\n"," "));
                             }
                         } else {
+                            // update
+                            updater.setString(1, number);
+                            updater.setObject(2, meansPresent==null?null:meansPresent?1:0);
+                            updater.setObject(3, numClaims);
+                            updater.setObject(4, lengthOfSmallestIndependentClaim);
+                            updater.executeUpdate();
                             valid++;
                         }
                         break;
@@ -115,10 +122,14 @@ public class UpdateAIValuesFromPostgres {
                 }
             }
             total++;
+            if(total%10000==9999) {
+                System.out.println("Ingested: "+total+" (Valid: "+valid+")");
+            }
         }
 
         System.out.println("Valid: "+valid+" out of "+total);
 
+        updater.close();
         rs.close();
         ps.close();
         conn.close();
