@@ -74,19 +74,53 @@ create or replace function predict(double precision[], double precision[], doubl
 
 create table big_query_ai_value (
     family_id varchar(32) primary key, -- eg. US9923222B1
-    values double precision[] not null
+    value double precision not null
 );
+
+create table big_query_ai_value_weights (
+    date date primary key,
+    weights double precision[] not null,
+    intercept double precision not null
+);
+
 
 -- need to deal with missing values
 insert into big_query_ai_value (family_id,values) (
-    select family_id,(Array[means_present,num_claims,num_assignments,family_size,length_smallest_ind_claim,num_rcites])::double precision[] as values
+    with avg_means_present as (
+        select sum(means_present)::double precision/count(means_present) from big_query_ai_value_claims where means_present is not null
+    ),
+    avg_length_smallest_ind_claim as (
+        select sum(length_smallest_ind_claim)::double precision/count(length_smallest_ind_claim) from big_query_ai_value_claims where length_smallest_ind_claim is not null
+    ),
+    avg_num_claims as (
+        select sum(means_present)::double precision/count(num_claims) from big_query_ai_value_claims where num_claims is not null
+    ),
+    avg_num_assignments as (
+        select sum(num_assignments)::double precision/count(num_assignments) from big_query_ai_value_assignments where num_assignments is not null
+    ),
+    avg_num_rcites as (
+        select sum(num_rcites)::double precision/count(num_rcites) from big_query_ai_value_citations where num_rcites is not null
+    ),
+    avg_family_size as (
+        select sum(family_size)::double precision/count(family_size) from big_query_ai_value_family_size where family_size is not null
+    ),
+    weights as (
+        array((select weights from big_query_ai_value_weights order by date desc nulls last limit 1))[1]
+    ), intercept as (
+        array((select intercept from big_query_ai_value_weights order by date desc nulls last limit 1))[1]
+    )
+    select family_id,predict((
+        Array[
+            coalesce(means_present,avg_means_present),
+            coalesce(num_claims,avg_num_claims),
+            coalesce(num_assignments,avg_num_assignments),
+            coalesce(family_size,avg_family_size),
+            coalesce(length_smallest_ind_claim,avg_length_smallest_ind_claim),
+            coalesce(num_rcites,avg_num_rcites)
+         ]
+    )::double precision[],weights,intercept) as value
     from big_query_ai_value_assignments
     left outer join big_query_ai_value_citations using (family_id)
     left outer join big_query_ai_value_claims using (family_id)
     left outer join big_query_ai_value_family_size using(family_id)
 );
-
--- query to get values (need to set weights and intercept)
-select family_id, predict(values,weights,intercept) as ai_value from big_query_ai_value;
-
-

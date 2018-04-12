@@ -47,6 +47,7 @@ create table patents_global_es (
     ai_value double precision,
     length_of_smallest_ind_claim integer,
     means_present integer,
+    family_size integer,
     -- sep
     sso text[],
     standard text[],
@@ -126,6 +127,7 @@ insert into patents_global_es (
         ai_value,
         length_of_smallest_ind_claim,
         means_present,
+        family_size,
         -- sep
         sso,
         standard,
@@ -197,8 +199,14 @@ insert into patents_global_es (
         p.cited_category,
         p.cited_filing_date,
 
+        ai_value.value,
         wipo.wipo_technology,
         tech.technology,
+
+        value_claims.length_of_smallest_ind_claim,
+        value_claims.means_present,
+        value_family_size.family_size,
+
 
         la.assignee,
         la.date,
@@ -221,7 +229,9 @@ insert into patents_global_es (
     left outer join big_query_technologies as tech on (p.family_id=tech.family_id)
     left outer join big_query_wipo_family_id as wipo_fid on (wipo_fid.family_id=p.family_id)
         left outer join big_query_wipo as wipo on (wipo_fid.publication_number=wipo.publication_number)
-
+    left outer join big_query_ai_value_claims as value_claims on (value_claims.family_id=p.family_id)
+    left outer join big_query_ai_value_family_size as value_family_size on (value_family_size.family_id=p.family_id)
+    left outer join big_query_ai_value as ai_value on (ai_value.family_id=p.family_id)
 
 
 );
