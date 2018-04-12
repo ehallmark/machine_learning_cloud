@@ -28,3 +28,16 @@ insert into big_query_patent_to_latest_assignee (doc_number,doc_kind,is_filing,c
         order by doc_number,doc_kind,execution_date,recorded_date desc NULLS LAST
 );
 
+create table big_query_patent_to_latest_assignee_family_id (
+    doc_number varchar(32) not null,
+    is_filing boolean not null,
+    family_id varchar(32) not null,
+    primary key(doc_number,is_filing)
+);
+
+insert into big_query_patent_to_latest_assignee_family_id (doc_number,is_filing,family_id) (
+    select
+);
+
+create index big_query_patent_to_latest_assignee_fam_idx on big_query_patent_to_latest_assignee_family_id (doc_number,is_filing,family_id);
+

@@ -28,6 +28,22 @@ create table patents_global_es (
     inventor_harmonized_cc varchar(8)[],
     assignee_harmonized text[],
     assignee_harmonized_cc varchar(8)[],
+    -- priority claims
+    pc_publication_number_full varchar(32)[],
+    pc_application_number_full varchar(32)[],
+    pc_filing_date date[],
+    -- cpc
+    code varchar(32)[],
+    tree varchar(32)[],
+    inventive boolean[],
+    -- citations
+    cited_publication_number_full varchar(32)[],
+    cited_application_number_full varchar(32)[],
+    cited_npl_text text[],
+    cited_type varchar(32)[],
+    cited_category varchar(32)[],
+    cited_filing_date date[],
+    -- value
     ai_value double precision,
     length_of_smallest_ind_claim integer,
     means_present integer,
@@ -54,21 +70,6 @@ create table patents_global_es (
     recorded_date date[],
     first_assignee text[], -- first assignee of each reel frame
     first_assignor text[], -- first assignor of each reel frame
-    -- priority claims
-    pc_publication_number_full varchar(32)[],
-    pc_application_number_full varchar(32)[],
-    pc_filing_date date[],
-    -- cpc
-    code varchar(32)[],
-    tree varchar(32)[],
-    inventive boolean[],
-    -- citations
-    cited_publication_number_full varchar(32)[],
-    cited_application_number_full varchar(32)[],
-    cited_npl_text text[],
-    cited_type varchar(32)[],
-    cited_category varchar(32)[],
-    cited_filing_date date[],
     -- reverse citations
     rcite_publication_number_full varchar(32)[],
     rcite_application_number_full varchar(32)[],
@@ -107,32 +108,6 @@ insert into patents_global_es (
         inventor_harmonized_cc,
         assignee_harmonized,
         assignee_harmonized_cc,
-        ai_value,
-        length_of_smallest_ind_claim,
-        means_present,
-        -- sep
-        sso text[],
-        standard text[],
-        -- wipo
-        wipo_technology text,
-        -- gtt tech
-        technology text[],
-        -- maintenance events
-        maintenance_event text[],
-        lapsed boolean,
-        reinstated,
-        latest_assignee,
-        latest_assignee_date,
-        security_interest,
-        -- embedding
-        encoding,
-        -- assignments
-        reel_frame,
-        conveyance_text,
-        execution_date,
-        recorded_date,
-        first_assignee, -- first assignee of each reel frame
-        first_assignor, -- first assignor of each reel frame
         -- priority claims
         pc_publication_number_full,
         pc_application_number_full,
@@ -148,9 +123,35 @@ insert into patents_global_es (
         cited_type,
         cited_category,
         cited_filing_date,
+        ai_value,
+        length_of_smallest_ind_claim,
+        means_present,
+        -- sep
+        sso,
+        standard,
+        -- wipo
+        wipo_technology,
+        -- gtt tech
+        technology,
+        -- maintenance events
+        maintenance_event,
+        lapsed boolean,
+        reinstated,
+        latest_assignee,
+        latest_assignee_date,
+        security_interest,
+        -- embedding
+        encoding,
+        -- assignments
+        reel_frame,
+        conveyance_text,
+        execution_date,
+        recorded_date,
+        first_assignee, -- first assignee of each reel frame
+        first_assignor, -- first assignor of each reel frame
         -- reverse citations
         rcite_publication_number_full,
-        rcite_application_number_full],
+        rcite_application_number_full,
         rcite_family_id,
         rcite_filing_date,
         -- pair (incorporate 'abandoned' field into 'lapsed')
@@ -158,4 +159,69 @@ insert into patents_global_es (
 )
 (
     select   -- monster query
+        p.publication_number_full,
+        p.publication_number,
+        p.country_code||p.publication_number,
+        p.application_number_full,
+        p.application_number,
+        p.country_code||p.application_number,
+        p.application_number_formatted,
+        p.country_code||p.application_number_formatted,
+        p.filing_date,
+        p.publication_date,
+        p.priority_date,
+        p.country_code,
+        p.kind_code,
+        p.application_kind,
+        p.family_id,
+        coalesce(p.original_entity_type,pair.original_entity_type),
+        p.invention_title[array_position(p.invention_title_lang,'en')],
+        p.abstract[array_position(p.abstract_lang,'en')],
+        p.claims[array_position(p.claims_lang,'en')],
+        p.description[array_position(p.description_lang,'en')],
+        p.inventor,
+        p.assignee,
+        p.inventor_harmonized,
+        p.inventor_harmonized_cc,
+        p.assignee_harmonized,
+        p.assignee_harmonized_cc,
+        p.pc_publication_number_full,
+        p.pc_application_number_full,
+        p.pc_filing_date,
+        p.code,
+        p.inventive,
+        p.cited_publication_number_full,
+        p.cited_application_number_full,
+        p.cited_npl_text,
+        p.cited_type,
+        p.cited_category,
+        p.cited_filing_date,
+
+        wipo.wipo_technology,
+        tech.technology,
+
+        la.assignee,
+        la.date,
+        la.security_interest,
+
+        coalesce(m.lapsed,pair.abandoned),
+
+        pair.term_adjustments
+
+    from patents_global as p
+    left outer join big_query_pair_family_id as pair_fid on (p.family_id=pair_fid.family_id)
+        left outer join big_query_pair as pair on (pair_fid.application_number_formatted=pair.application_number_formatted)
+    left outer join big_query_maintenance_family_id as m_fid on (m_fid.family_id=p.family_id)
+        left outer join big_query_maintenance as m on (m_fid.publication_number=m.publication_number)
+        left outer join (select publication_number,array_agg(code) as maintenance_event from big_query_maintenance_codes group by publication_number) as mcodes on (m_fid.publication_number=mcodes.publication_number)
+    left outer join big_query_reverse_citations_family_id as rc_fid on (rc_fid.family_id=p.family_id)
+        left outer join big_query_reverse_citations as rc on ((rc_fid.doc_number_full,rc_fid.is_filing)=(rc.doc_number_full,rc.is_filing))
+    left outer join big_query_patent_to_latest_assignee_family_id as la_fid on (la_fid.family_id=p.family_id)
+        left outer join big_query_patent_to_latest_assignee as la on ((la.doc_number,la.is_filing)=(la_fid.doc_number,la_fid.is_filing))
+    left outer join big_query_technologies as tech on (p.family_id=tech.family_id)
+    left outer join big_query_wipo_family_id as wipo_fid on (wipo_fid.family_id=p.family_id)
+        left outer join big_query_wipo as wipo on (wipo_fid.publication_number=wipo.publication_number)
+
+
+
 );
