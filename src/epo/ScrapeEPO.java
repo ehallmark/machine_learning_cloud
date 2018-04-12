@@ -175,10 +175,16 @@ public class ScrapeEPO {
 
     private static List<String> getAssetsWithoutFamilyIds(Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement("select publication_number_with_country from patents_global where family_id='-1' and publication_number_with_country is not null");
+        ps.setFetchSize(100);
         ResultSet rs = ps.executeQuery();
         List<String> assets = new LinkedList<>();
+        int i = 0;
         while(rs.next()) {
             assets.add(rs.getString(1));
+            if(i%10000==9999) {
+                System.out.println("Found "+i+" assets");
+            }
+            i++;
         }
         rs.close();
         ps.close();
