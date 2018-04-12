@@ -16,7 +16,10 @@ create table big_query_pair_family_id (
 );
 
 insert into big_query_pair_family_id (application_number_formatted,family_id) (
-
+    select distinct on (p.application_number_formatted) p.application_number_formatted,family_id from big_query_pair as pair
+    inner join patents_global as p on (p.application_number_formatted=pair.application_number_formatted AND p.country_code='US')
+    where p.country_code='US' and p.application_number_formatted is not null and family_id!='-1'
+    order by p.application_number_formatted,p.publication_date desc nulls last
 );
 
 create index big_query_pair_family_id_idx on big_query_pair_family_id(application_number_formatted,family_id);

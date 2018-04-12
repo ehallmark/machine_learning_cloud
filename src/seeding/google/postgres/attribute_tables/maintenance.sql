@@ -16,7 +16,7 @@ create table big_query_maintenance_family_id (
 insert into big_query_maintenance_family_id (publication_number,family_id) (
     select distinct on (p.publication_number) p.publication_number,p.family_id from big_query_maintenance as m
     inner join patents_global as p on (p.publication_number=m.publication_number AND p.country_code='US')
-    where p.country_code='US'
+    where p.country_code='US' and family_id != '-1'
     order by p.publication_number,publication_date desc nulls last
 );
 

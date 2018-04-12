@@ -35,5 +35,6 @@ create table big_query_reverse_citations_family_id (
 insert into big_query_reverse_citations_family_id (doc_number_full,is_filing,family_id) (
     select doc_number_full,is_filing,family_id from big_query_reverse_citations as c
     inner join patents_global as p on ((p.publication_number_full=c.doc_number_full AND not c.is_filing) OR (p.application_number_full=c.doc_number_full AND c.is_filing))
+    where family_id != '-1'
 );
 create index big_query_reverse_citations_family_id_idx on big_query_reverse_citations_family_id (doc_number_full,is_filing,family_id);

@@ -23,7 +23,7 @@ create table big_query_assignment_documentid_family_id (
 insert into big_query_assignment_documentid_family_id (doc_number,is_filing,family_id,reel_frames) (
     select doc_number,is_filing,mode() within group(order by family_id),array_agg(distinct reel_frame) from big_query_assignment_documentid as a
     inner join patents_global as p on ((p.country_code='US') AND ((p.publication_number=a.doc_number AND not a.is_filing) OR (p.application_number_formatted = a.doc_number AND a.is_filing)))
-    where p.country_code = 'US'
+    where p.country_code = 'US' and family_id!='-1'
     group by (doc_number,is_filing)
 );
 
