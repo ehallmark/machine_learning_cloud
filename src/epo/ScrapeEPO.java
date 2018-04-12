@@ -80,7 +80,7 @@ public class ScrapeEPO {
     private AtomicInteger cnt = new AtomicInteger(0);
     private String getFamilyMembersForAssetHelper(String asset, String auth_token) throws Exception {
         if(auth_token!=null) {
-            URL url = new URL("http://ops.epo.org/3.2/rest-services/family/publication/epodoc/"+asset);
+            URL url = new URL("http://ops.epo.org/3.2/rest-services/family/publication/docdb/"+asset);
             System.out.println(url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -174,7 +174,7 @@ public class ScrapeEPO {
     }
 
     private static List<String> getAssetsWithoutFamilyIds(Connection conn) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("select publication_number_with_country from patents_global where family_id='-1' and publication_number_with_country is not null");
+        PreparedStatement ps = conn.prepareStatement("select country_code||publication_number from patents_global where family_id='-1' and publication_number is not null and country_code is not null");
         ps.setFetchSize(100);
         ResultSet rs = ps.executeQuery();
         List<String> assets = new LinkedList<>();
