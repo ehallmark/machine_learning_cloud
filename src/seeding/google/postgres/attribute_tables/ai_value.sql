@@ -33,7 +33,7 @@ insert into big_query_ai_value_assignments (family_id,num_assignments) (
                 (patents_global.application_number=doc_number and is_filing)
             ) AND patents_global.country_code='US'
         )
-    where family_id!='-1' -- update -> and not family_id in (select family_id from big_query_ai_value_assignments)
+    where family_id!='-1' and patents_global.country_code='US' -- update -> and not family_id in (select family_id from big_query_ai_value_assignments)
     group by family_id
 );
 
