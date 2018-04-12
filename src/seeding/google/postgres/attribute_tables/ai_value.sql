@@ -44,7 +44,7 @@ create table big_query_ai_value_citations (
 
 insert into big_query_ai_value_citations (
     select family_id,count(distinct rcited_family_id) from (select
-        family_id,t2.rcited_family_id from big_query_reverse_citations as t,unnest(t.rcite_family_id) with ordinality as t2(rcited_family_id,n)
+        doc_number_full,is_filing,t2.rcited_family_id from big_query_reverse_citations as t,unnest(t.rcite_family_id) with ordinality as t2(rcited_family_id,n)
     ) temp left outer join patents_global on
     (
 
