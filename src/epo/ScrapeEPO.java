@@ -174,7 +174,7 @@ public class ScrapeEPO {
     }
 
     private static List<String> getAssetsWithoutFamilyIds(Connection conn) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("select country_code||publication_number from patents_global where family_id='-1' and publication_number is not null and country_code is not null");
+        PreparedStatement ps = conn.prepareStatement("select country_code||publication_number from patents_global where family_id='-1' and publication_number is not null and country_code is not null and not kind_code like 'S%' and not kind_code like 'H%' and not kind_code like 'P%'");
         ps.setFetchSize(100);
         ResultSet rs = ps.executeQuery();
         List<String> assets = new LinkedList<>();
@@ -208,9 +208,6 @@ public class ScrapeEPO {
         fullDocumentScraper.scrapeFamilyMembersForAssets(seenSoFar, assets, 10, writer, timeoutMillisBetweenRequests);
         writer.close();
 
-        // write seen so far
-        seenSoFar.addAll(assets);
-        Database.trySaveObject(seenSoFar,assetsSeenFile);
         conn.close();
     }
 }
