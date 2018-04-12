@@ -13,7 +13,7 @@ insert into big_query_patent_english_claims (family_id,publication_number_full,a
         abstract[array_position(abstract_lang,'en')],
         claims[array_position(claims_lang,'en')]
     from patents_global
-    where claims[array_position(claims_lang,'en')] is not null
+    where claims[array_position(claims_lang,'en')] is not null and family_id != '-1'
     order by family_id,publication_date desc nulls last,filing_date desc nulls last
 );
 
@@ -28,6 +28,6 @@ insert into big_query_patent_english_abstract (family_id,publication_number_full
         family_id,publication_number_full,
         abstract[array_position(abstract_lang,'en')]
     from patents_global
-    where abstract[array_position(abstract_lang,'en')] is not null
+    where abstract[array_position(abstract_lang,'en')] is not null and family_id != '-1'
     order by family_id,publication_date desc nulls last,filing_date desc nulls last
 );

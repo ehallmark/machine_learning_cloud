@@ -6,7 +6,7 @@ create table big_query_ai_value_family_size (
 );
 
 insert into big_query_ai_value_family_size (family_id,family_size) (
-    select family_id,count(*) from patents_global group by family_id
+    select family_id,count(*) from patents_global where family_id!='-1' group by family_id
 );
 
 create table big_query_ai_value_claims (
@@ -33,6 +33,7 @@ insert into big_query_ai_value_assignments (family_id,num_assignments) (
                 (patents_global.application_number=doc_number and is_filing)
             ) AND patents_global.country_code='US'
         )
+    where family_id!='-1'
     group by family_id
 );
 
@@ -52,6 +53,7 @@ insert into big_query_ai_value_citations (
         (patents_global.application_number_full=doc_number_full and is_filing)
 
     )
+    where family_id !='-1'
     group by family_id
 );
 

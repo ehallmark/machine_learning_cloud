@@ -20,7 +20,7 @@ insert into big_query_reverse_citations (doc_number_full,is_filing,rcite_publica
         (array_agg(family_id))[1:10000], -- limit rcites
         (array_agg(filing_date))[1:10000] -- limit rcites
     from patents_global as t, unnest(t.cited_publication_number_full,t.cited_application_number_full) with ordinality as temp(cited_publication_number_full,cited_application_number_full,n)
-    where (temp.cited_application_number_full is not null OR temp.cited_publication_number_full is not null)
+    where family_id!='-1' and (temp.cited_application_number_full is not null OR temp.cited_publication_number_full is not null)
     group by (coalesce(temp.cited_publication_number_full,temp.cited_application_number_full),temp.cited_publication_number_full is null)
 );
 
