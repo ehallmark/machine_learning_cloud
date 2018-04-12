@@ -64,6 +64,8 @@ public class IngestScrapedXMLIntoPostgres {
                 filesIngested.add(file.getName());
             }catch(Exception e) {
                 e.printStackTrace();
+                System.out.println("Error on file: "+file.getName());
+                System.exit(1);
             }
         }
 

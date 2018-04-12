@@ -130,7 +130,6 @@ public class ScrapeEPO {
                         writer.flush();
                     }
                     saveCurrentResults(assetsSeenSoFar);
-                    timeoutMillis = Math.max(timeoutMillis/2,minTimeout);
                 } catch(FileNotFoundException fne) {
                     System.out.println("Unable to find: "+asset);
                 } catch (Exception e) {
@@ -152,6 +151,9 @@ public class ScrapeEPO {
             if(tries.get()>=maxRetries) {
                 System.out.println("Max retries reached...");
                 break;
+            }
+            if(tries.get()<=1) {
+                timeoutMillis = Math.max(Math.round(0.8*timeoutMillis),minTimeout);
             }
             try {
                 System.out.println("Finished: "+(1+i)+" / "+assets.size());
@@ -193,7 +195,7 @@ public class ScrapeEPO {
     public static void main(String[] args) throws Exception{
         Set<String> seenSoFar = getOrCreate(assetsSeenFile);
 
-        long timeoutMillisBetweenRequests = 1000;
+        long timeoutMillisBetweenRequests = 2000;
         Connection conn = Database.getConn();
 
         List<String> assets = getAssetsWithoutFamilyIds(conn).stream()
