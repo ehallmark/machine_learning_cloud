@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -196,7 +197,7 @@ public class ScrapeEPO {
         //test
         ScrapeEPO fullDocumentScraper = new ScrapeEPO();
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dataDir, "epo"+"_"+ LocalDate.now().toString())));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dataDir, "epo"+"_"+ LocalDateTime.now().toString())));
         fullDocumentScraper.scrapeFamilyMembersForAssets(seenSoFar, assets, 10, writer, timeoutMillisBetweenRequests);
         writer.close();
 
