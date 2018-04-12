@@ -43,7 +43,7 @@ public class IngestScrapedXMLIntoPostgres {
         File dataFolder = ScrapeEPO.dataDir;
 
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("update patents_global set family_id = ? where family_id='-1' and publication_number=? and country_code='US' limit 1");
+        PreparedStatement ps = conn.prepareStatement("update patents_global set family_id = ? where family_id='-1' and publication_number=? and country_code='US'");
         for(File file : dataFolder.listFiles()) {
             if(filesIngested.contains(file.getName())) continue;
 
