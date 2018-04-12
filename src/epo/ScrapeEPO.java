@@ -154,11 +154,12 @@ public class ScrapeEPO {
                 System.out.println("Max retries reached...");
                 break;
             }
-        }
-        try {
-            TimeUnit.MILLISECONDS.sleep(timeoutMillis);
-        }catch(Exception e) {
-            e.printStackTrace();
+            try {
+                System.out.println("Finished: "+(1+i)+" / "+assets.size());
+                TimeUnit.MILLISECONDS.sleep(timeoutMillis);
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
