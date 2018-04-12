@@ -5,13 +5,14 @@ create table big_query_wipo (
     wipo_technology text not null
 );
 
-create table big_query_wipo_family_id (
-    publication_number varchar(32) primary key,
-    family_id varchar(32) not null
+create table big_query_wipo_by_family (
+    family_id varchar(32) primary key,
+    wipo_technology text not null
 );
 
-insert into big_query_wipo_family_id (publication_number,family_id) (
-    select
+insert into big_query_wipo_by_family (family_id,wipo_technology) (
+    select family_id, mode() within group (order by wipo_technology) from big_query_wipo as w
+    inner join patents_global as p on (w.publication_number=p.publication_number and p.country_code='US')
+    where family_id != '-1' and country_code='US'
+    group by family_id
 );
-
-create index big_query_wipo_family_id_idx on big_query_wipo_family_id (publication_number,family_id);
