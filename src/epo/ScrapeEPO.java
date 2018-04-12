@@ -111,6 +111,8 @@ public class ScrapeEPO {
 
     public void scrapeFamilyMembersForAssets(Set<String> assetsSeenSoFar, List<String> assets, int maxRetries, BufferedWriter writer, long timeoutMillis) {
         AtomicReference<String> authToken;
+        final long minTimeout = timeoutMillis;
+        final long maxTimeout = timeoutMillis*10;
         try {
             authToken = new AtomicReference<>(generateNewAuthToken());
         }catch(Exception e) {
@@ -133,9 +135,11 @@ public class ScrapeEPO {
                         writer.flush();
                     }
                     saveCurrentResults(assetsSeenSoFar);
+                    timeoutMillis = Math.max(timeoutMillis/2,minTimeout);
                 } catch(FileNotFoundException fne) {
                     System.out.println("Unable to find: "+asset);
                 } catch (Exception e) {
+                    timeoutMillis = Math.min(timeoutMillis*2,maxTimeout);
                     e.printStackTrace();
                     retry.set(true);
                     try {
@@ -194,7 +198,7 @@ public class ScrapeEPO {
     public static void main(String[] args) throws Exception{
         Set<String> seenSoFar = getOrCreate(assetsSeenFile);
 
-        long timeoutMillisBetweenRequests = 500;
+        long timeoutMillisBetweenRequests = 1000;
         Connection conn = Database.getConn();
 
         List<String> assets = getAssetsWithoutFamilyIds(conn).stream()
