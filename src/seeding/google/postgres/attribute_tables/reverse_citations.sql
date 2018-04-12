@@ -25,16 +25,20 @@ insert into big_query_reverse_citations (doc_number_full,is_filing,rcite_publica
 );
 
 
-create table big_query_reverse_citations_family_id (
-    doc_number_full varchar(32) not null,
-    is_filing boolean not null,
-    family_id varchar(32) not null,
-    primary key (doc_number_full,is_filing)
+create table big_query_reverse_citations_by_pub (
+    publication_number_full varchar(32) primary key,
+    rcite_publication_number_full varchar(32)[] not null,
+    rcite_application_number_full varchar(32)[] not null,
+    rcite_family_id varchar(32)[] not null,
+    rcite_filing_date date[] not null
 );
 
-insert into big_query_reverse_citations_family_id (doc_number_full,is_filing,family_id) (
-    select doc_number_full,is_filing,family_id from big_query_reverse_citations as c
-    inner join patents_global as p on ((p.publication_number_full=c.doc_number_full AND not c.is_filing) OR (p.application_number_full=c.doc_number_full AND c.is_filing))
-    where family_id != '-1'
+
+insert into big_query_reverse_citations_by_pub (publication_number_full,rcite_publication_number_full,rcite_application_number_full,rcite_family_id,rcite_filing_date) (
+    select publication_number_full,c.rcite_publication_number_full,c.rcite_application_number_full,c.rcite_family_id,c.rcite_filing_date
+    from big_query_reverse_citations as c
+    inner join patents_global as p on ((p.publication_number_full=c.doc_number_full and not c.is_filing) OR (p.application_number_full=c.doc_number_full and c.is_filing))
+    where family_id!='-1'
 );
-create index big_query_reverse_citations_family_id_idx on big_query_reverse_citations_family_id (doc_number_full,is_filing,family_id);
+
+
