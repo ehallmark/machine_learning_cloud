@@ -205,7 +205,7 @@ public class ScrapeEPO {
         //test
         ScrapeEPO fullDocumentScraper = new ScrapeEPO();
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dataDir, "seeding/google/postgres/epo" +"_"+ LocalDateTime.now().toString())));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dataDir, "epo" +"_"+ LocalDateTime.now().toString())));
         fullDocumentScraper.scrapeFamilyMembersForAssets(seenSoFar, assets, 10, writer, timeoutMillisBetweenRequests);
         writer.close();
 
