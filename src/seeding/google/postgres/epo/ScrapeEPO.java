@@ -1,4 +1,4 @@
-package epo;
+package seeding.google.postgres.epo;
 
 import com.google.gson.Gson;
 import seeding.Database;
@@ -11,18 +11,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by Evan on 11/16/2017.
@@ -208,7 +203,7 @@ public class ScrapeEPO {
         //test
         ScrapeEPO fullDocumentScraper = new ScrapeEPO();
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dataDir, "epo"+"_"+ LocalDateTime.now().toString())));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dataDir, "seeding/google/postgres/epo" +"_"+ LocalDateTime.now().toString())));
         fullDocumentScraper.scrapeFamilyMembersForAssets(seenSoFar, assets, 10, writer, timeoutMillisBetweenRequests);
         writer.close();
 
