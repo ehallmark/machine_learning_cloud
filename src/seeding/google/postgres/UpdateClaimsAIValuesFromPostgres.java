@@ -85,7 +85,7 @@ public class UpdateClaimsAIValuesFromPostgres {
 
         Connection seedConn = Database.newSeedConn();
         Connection updateConn = Database.getConn();
-        PreparedStatement ps = seedConn.prepareStatement("select distinct on (family_id) family_id, publication_number_full, claims, claims_lang from patents_global where claims is not null and claims_lang is not null order by family_id, country_code='US' desc nulls last, publication_date desc nulls last");
+        PreparedStatement ps = seedConn.prepareStatement("select family_id, publication_number_full, claims from big_query_patent_english_claims");
         PreparedStatement updater = updateConn.prepareStatement("insert into big_query_ai_value_claims (family_id,publication_number_full,means_present,num_claims,length_smallest_ind_claim) values (?,?,?::integer,?::integer,?::integer) on conflict do nothing");
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
@@ -94,32 +94,26 @@ public class UpdateClaimsAIValuesFromPostgres {
         while(rs.next()) {
             String familyId = rs.getString(1);
             String docNum = rs.getString(2);
-            String[] claims = (String[])rs.getArray(3).getArray();
-            String[] claimLangs = (String[])rs.getArray(4).getArray();
-            if(claims!=null&&claimLangs!=null) {
-                for(int i = 0; i < Math.min(claims.length,claimLangs.length); i++) {
-                    if(claimLangs[i].toLowerCase().equals("en")) {
-                        String englishClaim = claims[i];
-                        Integer numClaims = numberOfClaimsFunction.apply(englishClaim);
-                        Integer lengthOfSmallestIndependentClaim = lengthOfSmallestIndependentClaimFunction.apply(englishClaim);
-                        Boolean meansPresent = meansPresentFunction.apply(englishClaim);
-                        //System.out.println("Results for "+number+": "+numClaims+", "+lengthOfSmallestIndependentClaim+", "+meansPresent);
-                        if(lengthOfSmallestIndependentClaim==null||lengthOfSmallestIndependentClaim<=2) {
-                            lengthOfSmallestIndependentClaim=null;
-                        }
+            String englishClaim = rs.getString(3);
 
-                        // update
-                        updater.setString(1, familyId);
-                        updater.setString(2, docNum);
-                        updater.setObject(3, meansPresent==null?null:meansPresent?1:0);
-                        updater.setObject(4, numClaims);
-                        updater.setObject(5, lengthOfSmallestIndependentClaim);
-                        updater.executeUpdate();
-                        valid++;
-                        break;
-                    }
-                }
+            Integer numClaims = numberOfClaimsFunction.apply(englishClaim);
+            Integer lengthOfSmallestIndependentClaim = lengthOfSmallestIndependentClaimFunction.apply(englishClaim);
+            Boolean meansPresent = meansPresentFunction.apply(englishClaim);
+            //System.out.println("Results for "+number+": "+numClaims+", "+lengthOfSmallestIndependentClaim+", "+meansPresent);
+            if(lengthOfSmallestIndependentClaim==null||lengthOfSmallestIndependentClaim<=2) {
+                lengthOfSmallestIndependentClaim=null;
+            } else {
+                valid++;
             }
+
+            // update
+            updater.setString(1, familyId);
+            updater.setString(2, docNum);
+            updater.setObject(3, meansPresent==null?null:meansPresent?1:0);
+            updater.setObject(4, numClaims);
+            updater.setObject(5, lengthOfSmallestIndependentClaim);
+            updater.executeUpdate();
+
             total++;
             if(total%10000==9999) {
                 System.out.println("Ingested: "+total+" (Valid: "+valid+")");
