@@ -25,7 +25,7 @@ public class AIValueModel extends RegressionValueModel {
             new MeansPresentAttribute(),
             new CountAttribute(Constants.CLAIMS+Constants.COUNT_SUFFIX),
             new NumAssignmentsAttribute(),
-            new CountAttribute(Constants.PATENT_FAMILY+Constants.COUNT_SUFFIX),
+            new CountAttribute(Constants.NUM_RELATED_ASSETS),
             new LengthOfSmallestIndependentClaimAttribute(),
             new CountAttribute(Constants.NUM_BACKWARD_CITATIONS)
     );
