@@ -11,11 +11,12 @@ insert into big_query_ai_value_family_size (family_id,family_size) (
 
 create table big_query_ai_value_claims (
     family_id varchar(32) primary key,
-    publication_number_full varchar(32) not null,
     means_present integer,
     num_claims integer,
     length_smallest_ind_claim integer
-);
+); -- insert script is located in patent_text.sql
+
+
 
 create table big_query_ai_value_assignments (
     family_id varchar(32) primary key,
