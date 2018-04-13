@@ -104,6 +104,7 @@ create table big_query_ai_value_weights (
     intercept double precision not null
 );
 
+-- latest model
 insert into big_query_ai_value_weights (date,weights,intercept) values (
     '2018-04-13'::date,
     (Array[-0.5319562, 0.0122155, 0.0136566, 0.0062181, -0.0056129, 0.0057363])::double precision[],
