@@ -27,7 +27,7 @@ public class AIValueModel extends RegressionValueModel {
             new NumAssignmentsAttribute(),
             new CountAttribute(Constants.PATENT_FAMILY+Constants.COUNT_SUFFIX),
             new LengthOfSmallestIndependentClaimAttribute(),
-            new PageRankEvaluator()
+            new CountAttribute(Constants.NUM_BACKWARD_CITATIONS)
     );
 
     public AIValueModel() {

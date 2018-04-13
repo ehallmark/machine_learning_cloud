@@ -78,6 +78,32 @@ create table big_query_ai_value (
     value double precision not null
 );
 
+create table big_query_ai_value_all (
+    family_id varchar(32) primary key,
+    means_present integer,
+    num_claims integer,
+    length_smallest_ind_claim integer,
+    num_rcites integer,
+    num_assignments integer,
+    family_size integer
+);
+
+insert into big_query_ai_value_all (family_id,means_present,num_claims,length_smallest_ind_claim,num_rcites,num_assignments,family_size) (
+    select
+    family_id,
+    means_present,
+    num_claims,
+    length_smallest_ind_claim,
+    num_rcites,
+    num_assignments,
+    family_size
+    from big_query_ai_value_family_size
+    left outer join big_query_ai_value_citations using (family_id)
+    left outer join big_query_ai_value_claims using (family_id)
+    left outer join big_query_ai_value_assignments using(family_id)
+);
+
+
 create table big_query_ai_value_weights (
     date date primary key,
     weights double precision[] not null,
@@ -86,24 +112,16 @@ create table big_query_ai_value_weights (
 
 
 -- need to deal with missing values
-insert into big_query_ai_value (family_id,values) (
-    with avg_means_present as (
-        select sum(means_present)::double precision/count(means_present) from big_query_ai_value_claims where means_present is not null
-    ),
-    avg_length_smallest_ind_claim as (
-        select sum(length_smallest_ind_claim)::double precision/count(length_smallest_ind_claim) from big_query_ai_value_claims where length_smallest_ind_claim is not null
-    ),
-    avg_num_claims as (
-        select sum(means_present)::double precision/count(num_claims) from big_query_ai_value_claims where num_claims is not null
-    ),
-    avg_num_assignments as (
-        select sum(num_assignments)::double precision/count(num_assignments) from big_query_ai_value_assignments where num_assignments is not null
-    ),
-    avg_num_rcites as (
-        select sum(num_rcites)::double precision/count(num_rcites) from big_query_ai_value_citations where num_rcites is not null
-    ),
-    avg_family_size as (
-        select sum(family_size)::double precision/count(family_size) from big_query_ai_value_family_size where family_size is not null
+insert into big_query_ai_value_all (family_id,values) (
+    with average as (
+        select
+            sum(means_present)::double precision/count(means_present) as avg_means_present,
+            sum(length_smallest_ind_claim)::double precision/count(length_smallest_ind_claim) as avg_length_smallest_ind_claim,
+            sum(num_claims)::double precision/count(num_claims) as avg_num_claims,
+            sum(num_assignments)::double precision/count(num_assignments) as avg_num_assignments,
+            sum(num_rcites)::double precision/count(num_rcites) as avg_num_rcites,
+            sum(family_size)::double precision/count(family_size) as avg_family_size
+        from big_query_ai_value_all
     ),
     weights as (
         array((select weights from big_query_ai_value_weights order by date desc nulls last limit 1))[1]
@@ -112,16 +130,13 @@ insert into big_query_ai_value (family_id,values) (
     )
     select family_id,predict((
         Array[
-            coalesce(means_present,avg_means_present),
-            coalesce(num_claims,avg_num_claims),
-            coalesce(num_assignments,avg_num_assignments),
-            coalesce(family_size,avg_family_size),
-            coalesce(length_smallest_ind_claim,avg_length_smallest_ind_claim),
-            coalesce(num_rcites,avg_num_rcites)
+            coalesce(means_present,average.avg_means_present),
+            coalesce(num_claims,average.avg_num_claims),
+            coalesce(num_assignments,average.avg_num_assignments),
+            coalesce(family_size,average.avg_family_size),
+            coalesce(length_smallest_ind_claim,average.avg_length_smallest_ind_claim),
+            coalesce(num_rcites,average.avg_num_rcites)
          ]
     )::double precision[],weights,intercept) as value
-    from big_query_ai_value_assignments
-    left outer join big_query_ai_value_citations using (family_id)
-    left outer join big_query_ai_value_claims using (family_id)
-    left outer join big_query_ai_value_family_size using(family_id)
+    from big_query_ai_value_all
 );
