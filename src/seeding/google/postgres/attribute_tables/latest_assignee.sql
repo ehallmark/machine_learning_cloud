@@ -28,6 +28,23 @@ insert into big_query_patent_to_latest_assignee (doc_number,doc_kind,is_filing,c
         order by doc_number,doc_kind='X0',execution_date desc nulls last,recorded_date desc NULLS LAST
 );
 
+-- definite
+create table big_query_patent_to_latest_assignee_by_pub (
+    publication_number_full varchar(32) primary key,
+    assignee text[] not null,
+    date date,
+    security_interest boolean
+);
+
+insert into big_query_patent_to_latest_assignee_by_pub (publication_number_full,assignee,date,security_interest) (
+    select distinct on (publication_number_full) publication_number_full,la.assignee,la.date,la.security_interest
+    from big_query_patent_to_latest_assignee as la
+    inner join patents_global as p on (p.country_code='US' and((p.publication_number=la.doc_number and not la.is_filing) OR (p.application_number=la.doc_number and la.is_filing)))
+    where p.country_code = 'US' and family_id!='-1'
+    order by publication_number_full,date desc nulls last
+);
+
+-- good guess
 create table big_query_patent_to_latest_assignee_by_family (
     family_id varchar(32) primary key,
     assignee text[] not null,

@@ -14,7 +14,6 @@ create table patents_global (
     kind_code varchar(8),
     application_kind varchar(8),
     family_id varchar(32) not null,
-    original_entity_type varchar(32),
     invention_title text[],
     invention_title_lang varchar(8)[],
     abstract text[],

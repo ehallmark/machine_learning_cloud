@@ -63,7 +63,8 @@ create table patents_global_es (
     latest_assignee_date date,
     security_interest boolean,
     -- embedding
-    encoding float[],
+    cpc_vae float[],
+    rnn_enc float[],
     -- assignments
     reel_frame text[],
     conveyance_text text[],
@@ -124,6 +125,7 @@ insert into patents_global_es (
         cited_type,
         cited_category,
         cited_filing_date,
+        -- value
         ai_value,
         length_of_smallest_ind_claim,
         means_present,
@@ -143,7 +145,8 @@ insert into patents_global_es (
         latest_assignee_date,
         security_interest,
         -- embedding
-        encoding,
+        cpc_vae,
+        rnn_enc,
         -- assignments
         reel_frame,
         conveyance_text,
@@ -176,7 +179,7 @@ insert into patents_global_es (
         p.kind_code,
         p.application_kind,
         p.family_id,
-        coalesce(p.original_entity_type,pair.original_entity_type),
+        coalesce(m.original_entity_type,pair.original_entity_type),
         p.invention_title[array_position(p.invention_title_lang,'en')],
         p.abstract[array_position(p.abstract_lang,'en')],
         p.claims[array_position(p.claims_lang,'en')],
@@ -200,38 +203,64 @@ insert into patents_global_es (
         p.cited_filing_date,
 
         ai_value.value,
-        wipo.wipo_technology,
-        tech.technology,
 
         value_claims.length_of_smallest_ind_claim,
         value_claims.means_present,
         value_family_size.family_size,
 
+        -- sep
+        sep.sso,
+        sep.standard,
+        wipo.wipo_technology,
+        tech.technology,
 
-        la.assignee,
-        la.date,
-        la.security_interest,
+        -- maintenance events
+        m_codes.codes,
+        coalesce(coalesce(m.lapsed,pair.abandoned),'f'),
+        coalesce(m.reinstated,'f'),
 
-        coalesce(m.lapsed,pair.abandoned),
+        latest_assignee.assignee,
+        latest_assignee.date,
+        latest_assignee.security_interest,
+        latest_assignee_join.portfolio_size,
 
+        latest_assignee_fam.assignee,
+        latest_assignee_fam.date,
+        latest_assignee_fam.security_interest,
+        latest_assignee_fam_join.portfolio_size,
+
+        -- embedding
+        enc1.cpc_vae,
+        enc2.rnn_enc,
+
+        -- assignments
+        reel_frame,
+        conveyance_text,
+        execution_date,
+        recorded_date,
+        first_assignee, -- first assignee of each reel frame
+        first_assignor, -- first assignor of each reel frame
+
+        rc.rcite_publication_number_full,
+        rc.rcite_application_number_full,
+        rc.rcite_family_id,
+        rc.rcite_filing_date,
         pair.term_adjustments
 
     from patents_global as p
-    left outer join big_query_pair_family_id as pair_fid on (p.family_id=pair_fid.family_id)
-        left outer join big_query_pair as pair on (pair_fid.application_number_formatted=pair.application_number_formatted)
-    left outer join big_query_maintenance_family_id as m_fid on (m_fid.family_id=p.family_id)
-        left outer join big_query_maintenance as m on (m_fid.publication_number=m.publication_number)
-        left outer join (select publication_number,array_agg(code) as maintenance_event from big_query_maintenance_codes group by publication_number) as mcodes on (m_fid.publication_number=mcodes.publication_number)
-    left outer join big_query_reverse_citations_family_id as rc_fid on (rc_fid.family_id=p.family_id)
-        left outer join big_query_reverse_citations as rc on ((rc_fid.doc_number_full,rc_fid.is_filing)=(rc.doc_number_full,rc.is_filing))
-    left outer join big_query_patent_to_latest_assignee_family_id as la_fid on (la_fid.family_id=p.family_id)
-        left outer join big_query_patent_to_latest_assignee as la on ((la.doc_number,la.is_filing)=(la_fid.doc_number,la_fid.is_filing))
+    left outer join big_query_pair_by_pub as pair on (p.publication_number_full=pair.publication_number_full)
+    left outer join big_query_maintenance_by_pub as m on (m.publication_number_full=p.publication_number_full)
+    left outer join big_query_maintenance_codes_by_pub as m_codes on (m_codes.publication_number_full=p.publication_number_full)
+    left outer join big_query_reverse_citations_by_pub as rc on (rc.publication_number_full=p.publication_number_full)
+    left outer join big_query_patent_to_latest_assignee_by_pub as latest_assignee on (latest_assignee.publication_number_full=p.publication_number_full)
+    left outer join big_query_patent_to_latest_assignee_by_family as latest_assignee_fam on (latest_assignee_fam.family_id=p.family_id)
     left outer join big_query_technologies as tech on (p.family_id=tech.family_id)
-    left outer join big_query_wipo_family_id as wipo_fid on (wipo_fid.family_id=p.family_id)
-        left outer join big_query_wipo as wipo on (wipo_fid.publication_number=wipo.publication_number)
+    left outer join big_query_sep_by_family as sep on (sep.family_id=p.family_id)
+    left outer join big_query_wipo_by_family as wipo on (wipo.family_id=p.family_id)
     left outer join big_query_ai_value_claims as value_claims on (value_claims.family_id=p.family_id)
     left outer join big_query_ai_value_family_size as value_family_size on (value_family_size.family_id=p.family_id)
     left outer join big_query_ai_value as ai_value on (ai_value.family_id=p.family_id)
-
+    left outer join big_query_embedding1 as enc1 on (enc1.family_id=p.family_id)
+    left outer join big_query_embedding2 as enc2 on (enc2.family_id=p.family_id)
 
 );

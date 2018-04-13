@@ -11,6 +11,8 @@ create table big_query_assignment_documentid (
 );
 
 create index big_query_assignment_documentid_doc_number_idx on big_query_assignment_documentid (doc_number);
+--create index big_query_merge_helper_idx on big_query_assignment_documentid (country_code,publication_number);
+--create index big_query_merge_helper_idx2 on big_query_assignment_documentid (country_code,application_number_formatted);
 
 create table big_query_assignment_documentid_family_id (
     doc_number varchar(32) not null,
