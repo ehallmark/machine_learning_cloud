@@ -222,6 +222,7 @@ insert into patents_global_es (
         p.pc_application_number_full,
         p.pc_filing_date,
         p.code,
+        cpc_tree.tree,
         p.inventive,
         p.cited_publication_number_full,
         p.cited_application_number_full,
@@ -300,5 +301,6 @@ insert into patents_global_es (
     left outer join big_query_ai_value as ai_value on (ai_value.family_id=p.family_id)
     left outer join big_query_embedding1 as enc1 on (enc1.family_id=p.family_id)
     left outer join big_query_embedding2 as enc2 on (enc2.family_id=p.family_id)
+    left outer join big_query_cpc_tree as cpc_tree on (cpc_tree.publication_number_full=p.publication_number_full)
 
 );

@@ -42,7 +42,7 @@ insert into big_query_patent_to_latest_assignee_by_pub (publication_number_full,
     from patents_global as p
     left outer join big_query_patent_to_latest_assignee as la
     on (p.country_code='US' and((p.publication_number=la.doc_number and not la.is_filing) OR (p.application_number=la.doc_number and la.is_filing)))
-    where family_id!='-1'
+    where family_id!='-1' and (coalesce(la.assignee,p.assignee))[1] is not null
     order by publication_number_full,date desc nulls last,publication_date desc nulls last
 );
 
@@ -64,8 +64,9 @@ insert into big_query_patent_to_latest_assignee_by_family (family_id,first_assig
     from patents_global as p
     left outer join big_query_patent_to_latest_assignee as la
     on (p.country_code='US' and((p.publication_number=la.doc_number and not la.is_filing) OR (p.application_number=la.doc_number and la.is_filing)))
-    where family_id!='-1'
+    where family_id!='-1' and (coalesce(la.assignee,p.assignee))[1] is not null
     order by family_id,date desc nulls last,publication_date desc nulls last
 );
 
 create index big_query_latest_by_family_first_assignee_idx on big_query_patent_to_latest_assignee_by_family (first_assignee);
+
