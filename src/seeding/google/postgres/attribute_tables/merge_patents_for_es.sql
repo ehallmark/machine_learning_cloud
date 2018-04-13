@@ -247,7 +247,7 @@ insert into patents_global_es (
         coalesce(coalesce(m.lapsed,pair.abandoned),'f'),
         coalesce(m.reinstated,'f'),
 
-        latest_assignee.assignee,
+        coalesce(latest_assignee.assignee,p.assignee),
         latest_assignee.date,
         latest_assignee.security_interest,
         latest_assignee.first_assignee,
@@ -256,7 +256,7 @@ insert into patents_global_es (
         latest_assignee_join.first_filing_date,
         latest_assignee_join.last_filing_date,
 
-        latest_assignee_fam.assignee,
+        coalesce(latest_assignee_fam.assignee,coalesce(latest_assignee.assignee,p.assignee)),
         latest_assignee_fam.date,
         latest_assignee_fam.security_interest,
         latest_assignee_fam.first_assignee,
@@ -291,7 +291,7 @@ insert into patents_global_es (
     left outer join big_query_patent_to_latest_assignee_by_pub as latest_assignee on (latest_assignee.publication_number_full=p.publication_number_full)
         left outer join big_query_assignee as latest_assignee_join on (latest_assignee_join.name=latest_assignee.first_assignee)
     left outer join big_query_patent_to_latest_assignee_by_family as latest_assignee_fam on (latest_assignee_fam.family_id=p.family_id)
-        left outer join big_query assignee as latest_assignee_fam_join on (latest_assignee_fam.first_name=latest_assignee_fam_join.name)
+        left outer join big_query assignee as latest_assignee_fam_join on (latest_assignee_fam.first_assignee=latest_assignee_fam_join.name)
     left outer join big_query_technologies as tech on (p.family_id=tech.family_id)
     left outer join big_query_sep_by_family as sep on (sep.family_id=p.family_id)
     left outer join big_query_wipo_by_family as wipo on (wipo.family_id=p.family_id)

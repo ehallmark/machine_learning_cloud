@@ -41,7 +41,7 @@ insert into big_query_assignment_documentid_by_pub (publication_number_full,reel
         select doc_number,array_agg(r.reel_frame) as reel_frame,array_agg(r.conveyance_text) as conveyance_text,array_agg(r.execution_date) as execution_date,array_agg(r.recorded_date) as recorded_date,array_agg(r.assignee) as assignee,array_agg(r.assignor) as assignor
         from big_query_assignment_documentid as d
         join big_query_assignments as r on (d.reel_frame=r.reel_frame)
-        where is_filing
+        where is_filing and array_length(assignor,1)>0 and array_length(assignee,1)>0
         group by doc_number
     ) as a
     inner join patents_global as p on ((p.country_code='US') AND ((p.application_number_formatted = a.doc_number)))

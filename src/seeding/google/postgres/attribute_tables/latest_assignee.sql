@@ -34,16 +34,18 @@ create table big_query_patent_to_latest_assignee_by_pub (
     first_assignee text not null,
     assignee text[] not null,
     date date,
-    security_interest boolean
+    security_interest boolean not null
 );
 
-insert into big_query_patent_to_latest_assignee_by_pub (publication_number_full,assignee,date,security_interest) (
-    select distinct on (publication_number_full) publication_number_full,la.assignee,la.date,la.security_interest
-    from big_query_patent_to_latest_assignee as la
-    inner join patents_global as p on (p.country_code='US' and((p.publication_number=la.doc_number and not la.is_filing) OR (p.application_number=la.doc_number and la.is_filing)))
-    where p.country_code = 'US' and family_id!='-1'
-    order by publication_number_full,date desc nulls last
+insert into big_query_patent_to_latest_assignee_by_pub (publication_number_full,first_assignee,assignee,date,security_interest) (
+    select distinct on (publication_number_full) publication_number_full,(coalesce(la.assignee,p.assignee))[1],coalesce(la.assignee,p.assignee),coalesce(la.date,case when la.assignee is null then coalesce(p.priority_date,p.filing_date) else null end),coalesce(la.security_interest,'f')
+    from patents_global as p
+    left outer join big_query_patent_to_latest_assignee as la
+    on (p.country_code='US' and((p.publication_number=la.doc_number and not la.is_filing) OR (p.application_number=la.doc_number and la.is_filing)))
+    where family_id!='-1'
+    order by publication_number_full,date desc nulls last,publication_date desc nulls last
 );
+
 
 create index big_query_latest_by_pub_first_assignee_idx on big_query_patent_to_latest_assignee_by_pub (first_assignee);
 
@@ -54,15 +56,16 @@ create table big_query_patent_to_latest_assignee_by_family (
     first_assignee text not null,
     assignee text[] not null,
     date date,
-    security_interest boolean
+    security_interest boolean not null
 );
 
-insert into big_query_patent_to_latest_assignee_by_family (family_id,assignee,date,security_interest) (
-    select distinct on (family_id) family_id,la.assignee,la.date,la.security_interest
-    from big_query_patent_to_latest_assignee as la
-    inner join patents_global as p on (p.country_code='US' and((p.publication_number=la.doc_number and not la.is_filing) OR (p.application_number=la.doc_number and la.is_filing)))
-    where p.country_code = 'US' and family_id!='-1'
-    order by family_id,date desc nulls last
+insert into big_query_patent_to_latest_assignee_by_family (family_id,first_assignee,assignee,date,security_interest) (
+    select distinct on (family_id) family_id,(coalesce(la.assignee,p.assignee))[1],coalesce(la.assignee,p.assignee),coalesce(la.date,case when la.assignee is null then coalesce(p.priority_date,p.filing_date) else null end),coalesce(la.security_interest,'f')
+    from patents_global as p
+    left outer join big_query_patent_to_latest_assignee as la
+    on (p.country_code='US' and((p.publication_number=la.doc_number and not la.is_filing) OR (p.application_number=la.doc_number and la.is_filing)))
+    where family_id!='-1'
+    order by family_id,date desc nulls last,publication_date desc nulls last
 );
 
 create index big_query_latest_by_family_first_assignee_idx on big_query_patent_to_latest_assignee_by_family (first_assignee);
