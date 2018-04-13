@@ -72,12 +72,6 @@ create or replace function predict(double precision[], double precision[], doubl
     immutable
     returns null on null input;
 
-
-create table big_query_ai_value (
-    family_id varchar(32) primary key, -- eg. US9923222B1
-    value double precision not null
-);
-
 create table big_query_ai_value_all (
     family_id varchar(32) primary key,
     means_present integer,
@@ -110,9 +104,19 @@ create table big_query_ai_value_weights (
     intercept double precision not null
 );
 
+insert into big_query_ai_value_weights (date,weights,intercept) values (
+    '2018-04-13'::date,
+    (Array[-0.5319562, 0.0122155, 0.0136566, 0.0062181, -0.0056129, 0.0057363])::double precision[],
+    -1.0491014::double precision
+);
+
+create table big_query_ai_value (
+    family_id varchar(32) primary key, -- eg. US9923222B1
+    value double precision not null
+);
 
 -- need to deal with missing values
-insert into big_query_ai_value_all (family_id,values) (
+insert into big_query_ai_value (family_id,value) (
     with average as (
         select
             sum(means_present)::double precision/count(means_present) as avg_means_present,
@@ -124,9 +128,9 @@ insert into big_query_ai_value_all (family_id,values) (
         from big_query_ai_value_all
     ),
     weights as (
-        array((select weights from big_query_ai_value_weights order by date desc nulls last limit 1))[1]
+        select weights from big_query_ai_value_weights order by date desc nulls last limit 1
     ), intercept as (
-        array((select intercept from big_query_ai_value_weights order by date desc nulls last limit 1))[1]
+        select intercept from big_query_ai_value_weights order by date desc nulls last limit 1
     )
     select family_id,predict((
         Array[
@@ -138,5 +142,5 @@ insert into big_query_ai_value_all (family_id,values) (
             coalesce(num_rcites,average.avg_num_rcites)
          ]
     )::double precision[],weights,intercept) as value
-    from big_query_ai_value_all
+    from big_query_ai_value_all,average,weights,intercept
 );
