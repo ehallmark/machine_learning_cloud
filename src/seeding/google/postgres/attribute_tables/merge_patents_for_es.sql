@@ -70,8 +70,8 @@ create table patents_global_es (
     conveyance_text text[],
     execution_date date[],
     recorded_date date[],
-    first_assignee text[], -- first assignee of each reel frame
-    first_assignor text[], -- first assignor of each reel frame
+    recorded_assignee text[][], -- first assignee of each reel frame
+    recorded_assignor text[][], -- first assignor of each reel frame
     -- reverse citations
     rcite_publication_number_full varchar(32)[],
     rcite_application_number_full varchar(32)[],
@@ -110,14 +110,17 @@ insert into patents_global_es (
         inventor_harmonized_cc,
         assignee_harmonized,
         assignee_harmonized_cc,
+
         -- priority claims
         pc_publication_number_full,
         pc_application_number_full,
         pc_filing_date,
+
         -- cpc
         code,
         tree,
         inventive,
+
         -- citations
         cited_publication_number_full,
         cited_application_number_full,
@@ -125,35 +128,60 @@ insert into patents_global_es (
         cited_type,
         cited_category,
         cited_filing_date,
+
         -- value
         ai_value,
         length_of_smallest_ind_claim,
         means_present,
         family_size,
+
         -- sep
         sso,
         standard,
+
         -- wipo
         wipo_technology,
+
         -- gtt tech
         technology,
+
         -- maintenance events
         maintenance_event,
         lapsed boolean,
         reinstated,
+
+        -- latest assignee pub
         latest_assignee,
         latest_assignee_date,
-        security_interest,
+        latest_security_interest,
+        latest_first_assignee,
+        latest_portfolio_size,
+        latest_entity_type,
+        latest_first_filing_date,
+        latest_last_filing_date,
+
+        -- latest assignee fam
+        latest_fam_assignee,
+        latest_fam_assignee_date,
+        latest_fam_security_interest,
+        latest_fam_first_assignee
+        latest_fam_portfolio_size,
+        latest_fam_entity_type,
+        latest_fam_first_filing_date,
+        latest_fam_last_filing_date,
+
         -- embedding
         cpc_vae,
         rnn_enc,
+
         -- assignments
         reel_frame,
         conveyance_text,
         execution_date,
         recorded_date,
-        first_assignee, -- first assignee of each reel frame
-        first_assignor, -- first assignor of each reel frame
+        recorded_assignee, -- first assignee of each reel frame
+        recorded_assignor, -- first assignor of each reel frame
+
         -- reverse citations
         rcite_publication_number_full,
         rcite_application_number_full,
@@ -222,24 +250,32 @@ insert into patents_global_es (
         latest_assignee.assignee,
         latest_assignee.date,
         latest_assignee.security_interest,
+        latest_assignee.first_assignee,
         latest_assignee_join.portfolio_size,
+        latest_assignee_join.entity_type,
+        latest_assignee_join.first_filing_date,
+        latest_assignee_join.last_filing_date,
 
         latest_assignee_fam.assignee,
         latest_assignee_fam.date,
         latest_assignee_fam.security_interest,
+        latest_assignee_fam.first_assignee,
         latest_assignee_fam_join.portfolio_size,
+        latest_assignee_fam_join.entity_type,
+        latest_assignee_fam_join.first_filing_date,
+        latest_assignee_fam_join.last_filing_date,
 
         -- embedding
         enc1.cpc_vae,
         enc2.rnn_enc,
 
         -- assignments
-        reel_frame,
-        conveyance_text,
-        execution_date,
-        recorded_date,
-        first_assignee, -- first assignee of each reel frame
-        first_assignor, -- first assignor of each reel frame
+        a.reel_frame,
+        a.conveyance_text,
+        a.execution_date,
+        a.recorded_date,
+        a.assignee, -- first assignee of each reel frame
+        a.assignor, -- first assignor of each reel frame
 
         rc.rcite_publication_number_full,
         rc.rcite_application_number_full,
@@ -253,7 +289,9 @@ insert into patents_global_es (
     left outer join big_query_maintenance_codes_by_pub as m_codes on (m_codes.publication_number_full=p.publication_number_full)
     left outer join big_query_reverse_citations_by_pub as rc on (rc.publication_number_full=p.publication_number_full)
     left outer join big_query_patent_to_latest_assignee_by_pub as latest_assignee on (latest_assignee.publication_number_full=p.publication_number_full)
+        left outer join big_query_assignee as latest_assignee_join on (latest_assignee_join.name=latest_assignee.first_assignee)
     left outer join big_query_patent_to_latest_assignee_by_family as latest_assignee_fam on (latest_assignee_fam.family_id=p.family_id)
+        left outer join big_query assignee as latest_assignee_fam_join on (latest_assignee_fam.first_name=latest_assignee_fam_join.name)
     left outer join big_query_technologies as tech on (p.family_id=tech.family_id)
     left outer join big_query_sep_by_family as sep on (sep.family_id=p.family_id)
     left outer join big_query_wipo_by_family as wipo on (wipo.family_id=p.family_id)

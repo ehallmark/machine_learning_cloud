@@ -31,6 +31,7 @@ insert into big_query_patent_to_latest_assignee (doc_number,doc_kind,is_filing,c
 -- definite
 create table big_query_patent_to_latest_assignee_by_pub (
     publication_number_full varchar(32) primary key,
+    first_assignee text not null,
     assignee text[] not null,
     date date,
     security_interest boolean
@@ -44,9 +45,13 @@ insert into big_query_patent_to_latest_assignee_by_pub (publication_number_full,
     order by publication_number_full,date desc nulls last
 );
 
+create index big_query_latest_by_pub_first_assignee_idx on big_query_patent_to_latest_assignee_by_pub (first_assignee);
+
+
 -- good guess
 create table big_query_patent_to_latest_assignee_by_family (
     family_id varchar(32) primary key,
+    first_assignee text not null,
     assignee text[] not null,
     date date,
     security_interest boolean
@@ -59,3 +64,5 @@ insert into big_query_patent_to_latest_assignee_by_family (family_id,assignee,da
     where p.country_code = 'US' and family_id!='-1'
     order by family_id,date desc nulls last
 );
+
+create index big_query_latest_by_family_first_assignee_idx on big_query_patent_to_latest_assignee_by_family (first_assignee);
