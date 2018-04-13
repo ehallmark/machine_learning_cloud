@@ -31,14 +31,14 @@ create table big_query_assignment_documentid_by_pub (
     conveyance_text text[] not null,
     execution_date date[] not null,
     recorded_date date[] not null,
-    assignee text[][] not null,
-    assignor text[][] not null -- first assignor of each reel frame only
+    assignee text[] not null,
+    assignor text[] not null -- first assignor of each reel frame only
 );
 
 insert into big_query_assignment_documentid_by_pub (publication_number_full,reel_frame,conveyance_text,execution_date,recorded_date,assignee,assignor) (
     select distinct on (publication_number_full) publication_number_full,a.reel_frame,a.conveyance_text,execution_date,a.recorded_date,a.assignee,a.assignor
     from (
-        select doc_number,array_agg(r.reel_frame) as reel_frame,array_agg(r.conveyance_text) as conveyance_text,array_agg(r.execution_date) as execution_date,array_agg(r.recorded_date) as recorded_date,(array_agg(r.assignee::text[]))::text[][] as assignee,(array_agg(r.assignor::text[]))::text[][] as assignor
+        select doc_number,array_agg(r.reel_frame) as reel_frame,array_agg(r.conveyance_text) as conveyance_text,array_agg(r.execution_date) as execution_date,array_agg(r.recorded_date) as recorded_date,array_agg(r.assignee[1]) as assignee,array_agg(r.assignor[1]) as assignor
         from big_query_assignment_documentid as d
         join big_query_assignments as r on (d.reel_frame=r.reel_frame)
         where is_filing and array_length(r.assignor,1)>0 and array_length(r.assignee,1)>0
