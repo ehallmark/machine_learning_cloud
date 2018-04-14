@@ -15,7 +15,7 @@ create table big_query_compdb_deals_by_pub (
     publication_number_full varchar(32) primary key,
     deal_id varchar(32)[],
     recorded_date date[],
-    inactive boolean[]
+    inactive boolean[],
     acquisition boolean[]
     --buyer text[], -- each index can have multiple buyers/sellers (delimited by '; ')
     --seller text[],
@@ -26,7 +26,7 @@ insert into big_query_compdb_deals_by_pub (publication_number_full,deal_id,recor
     from (
         select deals.deal_id,deals.recorded_date,deals.inactive,deals.acquisition,rf.reel_frame from big_query_compdb_deals as deals,unnest(deals.reel_frame) with ordinality as rf(reel_frame,n)
     ) as temp
-    join patents_global on (temp.reel_frame=any(p.reel_frame)
+    join big_query_assignment_documentid_by_pub as p on (temp.reel_frame=any(p.reel_frame))
     where p.reel_frame is not null
     group by publication_number_full
 );
