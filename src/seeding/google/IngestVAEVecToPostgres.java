@@ -19,13 +19,14 @@ public class IngestVAEVecToPostgres {
         Connection conn = Database.getConn();
 
         PreparedStatement ps = conn.prepareStatement("select tree from big_query_cpc_tree");
-
+        ps.setFetchSize(100);
         ResultSet rs = ps.executeQuery();
 
         DeepCPCVAEPipelineManager manager = DeepCPCVAEPipelineManager.getOrLoadManager();
         DeepCPCVariationalAutoEncoderNN encoder = (DeepCPCVariationalAutoEncoderNN)manager.getModel();
 
         Set<String> cpcCombos = new HashSet<>();
+        int cnt = 0;
         while(rs.next()) {
             String[] tree = (String[])rs.getArray(1).getArray();
             Arrays.sort(tree);
@@ -33,6 +34,10 @@ public class IngestVAEVecToPostgres {
             cpcs.removeIf(cpc->!manager.getCpcToIdxMap().containsKey(cpc));
             cpcCombos.addAll(Arrays.asList(tree));
             cpcCombos.add(String.join(DELIMITER,cpcs));
+            if(cnt%10000==9999) {
+                System.out.println("Found trees for: "+cnt);
+            }
+            cnt++;
         }
         rs.close();
         ps.close();
