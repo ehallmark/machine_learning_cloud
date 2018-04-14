@@ -22,28 +22,41 @@ public class IngestVAEVecToPostgres {
         DeepCPCVariationalAutoEncoderNN encoder = (DeepCPCVariationalAutoEncoderNN)manager.getModel();
         Map<String,Integer> cpcToIndexMap = manager.getCpcToIdxMap();
 
-        Connection conn = Database.getConn();
-
-        PreparedStatement ps = conn.prepareStatement("select tree from big_query_cpc_tree");
-        ps.setFetchSize(100);
-        ResultSet rs = ps.executeQuery();
         Set<String> cpcCombos = new HashSet<>();
         int cnt = 0;
+        Map<String,String> pubToCpcStrMap = new HashMap<>();
+        Connection seedConn = Database.newSeedConn();
+        PreparedStatement ps = seedConn.prepareStatement("select publication_number_full,tree from big_query_cpc_tree");
+        ps.setFetchSize(100);
+        ResultSet rs = ps.executeQuery();
+        Connection conn = Database.getConn();
+        PreparedStatement insertStr = conn.prepareStatement("insert into big_query_embedding1_help_by_pub (publication_number_full,cpc_str) values (?,?) on conflict (publication_number_full) do update set cpc_str=?");
         while(rs.next()) {
-            String[] tree = (String[])rs.getArray(1).getArray();
+            String publication = rs.getString(1);
+            String[] tree = (String[])rs.getArray(2).getArray();
             List<String> cpcs = Stream.of(tree)
                     .filter(cpc->cpcToIndexMap.containsKey(cpc))
                     .sorted()
                     .collect(Collectors.toList());
             cpcCombos.addAll(Arrays.asList(tree));
-            cpcCombos.add(String.join(DELIMITER,cpcs));
+            String cpcStr = String.join(DELIMITER,cpcs);
+            cpcCombos.add(cpcStr);
+            pubToCpcStrMap.put(publication,cpcStr);
+            insertStr.setString(1, publication);
+            insertStr.setString(2, cpcStr);
+            insertStr.setString(3,cpcStr);
+            insertStr.executeUpdate();
+            
             if(cnt%10000==9999) {
                 System.out.println("Found trees for: "+cnt);
+                Database.commit();
             }
             cnt++;
         }
         rs.close();
         ps.close();
+        seedConn.close();
+        Database.commit();
 
         System.out.println("Num distinct cpcs combos: "+cpcCombos.size());
 

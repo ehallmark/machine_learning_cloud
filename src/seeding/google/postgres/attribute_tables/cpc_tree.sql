@@ -11,4 +11,3 @@ insert into big_query_cpc_tree (publication_number_full,tree) (
     join big_query_cpc_definition as t on (c.code=t.code), unnest(t.tree) with ordinality as tr(tree,n)
     group by publication_number_full
 );
-
