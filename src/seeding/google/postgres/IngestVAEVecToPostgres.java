@@ -24,7 +24,6 @@ public class IngestVAEVecToPostgres {
 
         Set<String> cpcCombos = new HashSet<>();
         int cnt = 0;
-        Map<String,String> pubToCpcStrMap = new HashMap<>();
         Connection seedConn = Database.newSeedConn();
         PreparedStatement ps = seedConn.prepareStatement("select publication_number_full,tree from big_query_cpc_tree");
         ps.setFetchSize(100);
@@ -41,7 +40,6 @@ public class IngestVAEVecToPostgres {
             cpcCombos.addAll(Arrays.asList(tree));
             String cpcStr = String.join(DELIMITER,cpcs);
             cpcCombos.add(cpcStr);
-            pubToCpcStrMap.put(publication,cpcStr);
             insertStr.setString(1, publication);
             insertStr.setString(2, cpcStr);
             insertStr.setString(3,cpcStr);

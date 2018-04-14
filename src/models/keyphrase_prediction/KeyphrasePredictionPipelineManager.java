@@ -19,6 +19,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.ops.transforms.Transforms;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import tools.MinHeap;
@@ -26,6 +27,7 @@ import tools.MinHeap;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -72,7 +74,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         initStages(true,true,false,true);
     }
 
-    private void initStages(boolean vocab, boolean filters, boolean rerunVocab, boolean rerunFilters) {
+    public void initStages(boolean vocab, boolean filters, boolean rerunVocab, boolean rerunFilters) {
         // stage 1;
         Stage1 stage1 = new Stage1(modelParams);
         if(vocab)stage1.run(rerunVocab);
@@ -165,6 +167,16 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
     }
 
     public Map<String,Set<String>> predict(List<MultiStem> keywords, Map<String,INDArray> toPredictMap, int maxTags, double minScore) {
+        Map<String,Set<String>> predictions = Collections.synchronizedMap(new HashMap<>());
+        Consumer<Pair<String,Set<String>>> consumer = pair -> {
+            predictions.put(pair.getFirst(), pair.getSecond());
+        };
+        predict(keywords,toPredictMap,maxTags,minScore,consumer);
+        System.out.println("size="+predictions.size());
+        return predictions;
+    }
+
+    public void predict(List<MultiStem> keywords, Map<String,INDArray> toPredictMap, int maxTags, double minScore, Consumer<Pair<String,Set<String>>> consumer) {
         if(keywordToVectorLookupTable==null) {
             System.out.println("Loading keyword to vector table...");
             buildKeywordToLookupTableMap();
@@ -192,7 +204,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
         System.out.println("Starting predictions...");
 
-        Map<String,Set<String>> predictions = Collections.synchronizedMap(new HashMap<>());
         List<List<String>> entries = batchBy(allEntries,batchSize);
         AtomicInteger idx = new AtomicInteger(0);
         entries.forEach(batch->{
@@ -218,7 +229,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
                 }
                 String cpc = batch.get(r);
                 if(!tags.isEmpty()) {
-                    predictions.put(cpc, tags);
+                    consumer.accept(new Pair<>(cpc,tags));
                 } else {
                     incomplete.getAndIncrement();
                 }
@@ -231,9 +242,6 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
                 }
             }
         });
-
-        System.out.println("size="+predictions.size());
-        return predictions;
     }
 
     private static List<List<String>> batchBy(List<String> entries, int batch) {
@@ -245,7 +253,7 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
 
     @Override
     public Map<String,Set<String>> predict(List<String> assets, List<String> assignees, List<String> cpcs) {
-        final double minScore = 0.4;
+        final double minScore = 0.3;
         final int maxTags = 15;
 
         if(keywordToVectorLookupTable==null) {

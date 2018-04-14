@@ -5,3 +5,19 @@ create table big_query_technologies (
     technology text[] not null
 );
 
+-- helper table
+create table big_query_technologies_helper (
+    code varchar(32) primary key,
+    technology text not null
+);
+
+insert into big_query_technologies (code,technology) (
+    select family_id,array_agg(distinct t.technology)
+    from big_query_technologies_helper as t
+    join (
+        select family_id,c.code from patents_global as p,unnest(p.code) with ordinality as c(code,n)
+        where p.code is not null and family_id != '-1'
+    ) temp
+    on (temp.code[1]=t.code)
+    group by family_id
+);
