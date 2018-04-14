@@ -2,31 +2,33 @@
 
 create table big_query_compdb_deals (
     deal_id varchar(32) primary key,
+    recorded_date date,
     technology text[],
-    reel_frame varchar(50)[],
-    doc_number varchar(32)[],
     inactive boolean,
     acquisition boolean,
-    buyer text[],
-    seller text[]
+    reel_frame varchar(50)[] not null
+    --buyer text[],
+    --seller text[]
 );
 
-create table big_query_compdb (
-    deal_id varchar(50) not null,
-    doc_number varchar(32) not null,
-    primary key(deal_id,doc_number)
-);
-
-
-create table big_query_compdb_by_pub (
+create table big_query_compdb_deals_by_pub (
     publication_number_full varchar(32) primary key,
     deal_id varchar(32)[],
-    buyer text[],
-    seller text[],
+    recorded_date date[],
     inactive boolean[]
-    acquisition boolean[],
-    reel_frame varchar(50)[],
+    acquisition boolean[]
+    --buyer text[], -- each index can have multiple buyers/sellers (delimited by '; ')
+    --seller text[],
+);
 
+insert into big_query_compdb_deals_by_pub (publication_number_full,deal_id,recorded_date,inactive,acquisition) (
+    select publication_number_full,array_agg(temp.deal_id),array_agg(temp.recorded_date),array_agg(temp.inactive),array_agg(temp.acquisition)
+    from (
+        select deals.deal_id,deals.recorded_date,deals.inactive,deals.acquisition,rf.reel_frame from big_query_compdb_deals as deals,unnest(deals.reel_frame) with ordinality as rf(reel_frame,n)
+    ) as temp
+    join patents_global on (temp.reel_frame=any(p.reel_frame)
+    where p.reel_frame is not null
+    group by publication_number_full
 );
 
 

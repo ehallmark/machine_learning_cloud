@@ -677,7 +677,7 @@ public class Database {
 	}
 
 
-	private synchronized static Map<Integer,String> compdbTechnologyMap() throws SQLException {
+	public synchronized static Map<Integer,String> compdbTechnologyMap() throws SQLException {
 		PreparedStatement ps = compDBConn.prepareStatement("select distinct id,name from technologies");
 		ResultSet rs = ps.executeQuery();
 		Map<Integer,String> map = new HashMap<>();
