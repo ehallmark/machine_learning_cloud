@@ -1,4 +1,4 @@
-package seeding.google;
+package seeding.google.postgres;
 
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
@@ -9,6 +9,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class IngestVAEVecToPostgres {
     public static final String DELIMITER = ";";
@@ -16,22 +18,23 @@ public class IngestVAEVecToPostgres {
     public static void main(String[] args) throws Exception {
         final int batchSize = 1000;
 
+        DeepCPCVAEPipelineManager manager = DeepCPCVAEPipelineManager.getOrLoadManager();
+        DeepCPCVariationalAutoEncoderNN encoder = (DeepCPCVariationalAutoEncoderNN)manager.getModel();
+        Map<String,Integer> cpcToIndexMap = manager.getCpcToIdxMap();
+
         Connection conn = Database.getConn();
 
         PreparedStatement ps = conn.prepareStatement("select tree from big_query_cpc_tree");
         ps.setFetchSize(100);
         ResultSet rs = ps.executeQuery();
-
-        DeepCPCVAEPipelineManager manager = DeepCPCVAEPipelineManager.getOrLoadManager();
-        DeepCPCVariationalAutoEncoderNN encoder = (DeepCPCVariationalAutoEncoderNN)manager.getModel();
-
         Set<String> cpcCombos = new HashSet<>();
         int cnt = 0;
         while(rs.next()) {
             String[] tree = (String[])rs.getArray(1).getArray();
-            Arrays.sort(tree);
-            List<String> cpcs = new ArrayList<>(Arrays.asList(tree));
-            cpcs.removeIf(cpc->!manager.getCpcToIdxMap().containsKey(cpc));
+            List<String> cpcs = Stream.of(tree)
+                    .filter(cpc->cpcToIndexMap.containsKey(cpc))
+                    .sorted()
+                    .collect(Collectors.toList());
             cpcCombos.addAll(Arrays.asList(tree));
             cpcCombos.add(String.join(DELIMITER,cpcs));
             if(cnt%10000==9999) {
@@ -42,7 +45,7 @@ public class IngestVAEVecToPostgres {
         rs.close();
         ps.close();
 
-        System.out.println("Num distinct cpcs combos: "+cpcCombos);
+        System.out.println("Num distinct cpcs combos: "+cpcCombos.size());
 
         PreparedStatement insert = conn.prepareStatement("insert into big_query_embedding1_help (cpc_str,cpc_vae) values (?,?) on conflict (cpc_str) do update set cpc_vae=?");
         List<String> cpcComboList = new ArrayList<>(cpcCombos);
