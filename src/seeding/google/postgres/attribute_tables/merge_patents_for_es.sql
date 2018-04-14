@@ -1,10 +1,10 @@
 
 \connect patentdb
 
-create table patents_global_es (
+create table patents_global_merged (
     publication_number_full varchar(32) primary key, -- eg. US9923222B1
     publication_number varchar(32) not null, -- eg. 9923222
-    publication_number_full varchar(32) not null,
+    publication_number_with_country varchar(32) not null,
     application_number_full varchar(32),
     application_number varchar(32), -- eg. 20012322342
     application_number_with_country varchar(32),
@@ -59,9 +59,26 @@ create table patents_global_es (
     maintenance_event text[],
     lapsed boolean,
     reinstated boolean,
+
     latest_assignee text[],
     latest_assignee_date date,
-    security_interest boolean,
+    latest_security_interest boolean,
+    latest_first_assignee text,
+    latest_portfolio_size integer,
+    latest_entity_type varchar(32),
+    latest_first_filing_date date,
+    latest_last_filing_date date,
+
+    -- latest assignee fam
+    latest_fam_assignee text[],
+    latest_fam_assignee_date date,
+    latest_fam_security_interest boolean,
+    latest_fam_first_assignee text,
+    latest_fam_portfolio_size integer,
+    latest_fam_entity_type varchar(32),
+    latest_fam_first_filing_date date,
+    latest_fam_last_filing_date date,
+
     -- embedding
     cpc_vae float[],
     rnn_enc float[],
@@ -91,7 +108,7 @@ create table patents_global_es (
 );
 
 
-insert into patents_global_es (
+insert into patents_global_merged (
         publication_number_full, -- eg. US9923222B1
         publication_number, -- eg. 9923222
         publication_number_with_country,
@@ -155,7 +172,7 @@ insert into patents_global_es (
 
         -- maintenance events
         maintenance_event,
-        lapsed boolean,
+        lapsed,
         reinstated,
 
         -- latest assignee pub
@@ -172,7 +189,7 @@ insert into patents_global_es (
         latest_fam_assignee,
         latest_fam_assignee_date,
         latest_fam_security_interest,
-        latest_fam_first_assignee
+        latest_fam_first_assignee,
         latest_fam_portfolio_size,
         latest_fam_entity_type,
         latest_fam_first_filing_date,
@@ -227,7 +244,7 @@ insert into patents_global_es (
         p.kind_code,
         p.application_kind,
         p.family_id,
-        coalesce(m.original_entity_type,pair.original_entity_type),
+        coalesce(m.original_entity_status,pair.original_entity_type),
         p.invention_title[array_position(p.invention_title_lang,'en')],
         p.abstract[array_position(p.abstract_lang,'en')],
         p.claims[array_position(p.claims_lang,'en')],
@@ -253,7 +270,7 @@ insert into patents_global_es (
 
         ai_value.value,
 
-        value_claims.length_of_smallest_ind_claim,
+        value_claims.length_smallest_ind_claim,
         value_claims.means_present,
         value_family_size.family_size,
 
@@ -323,7 +340,7 @@ insert into patents_global_es (
     left outer join big_query_patent_to_latest_assignee_by_pub as latest_assignee on (latest_assignee.publication_number_full=p.publication_number_full)
         left outer join big_query_assignee as latest_assignee_join on (latest_assignee_join.name=latest_assignee.first_assignee)
     left outer join big_query_patent_to_latest_assignee_by_family as latest_assignee_fam on (latest_assignee_fam.family_id=p.family_id)
-        left outer join big_query assignee as latest_assignee_fam_join on (latest_assignee_fam.first_assignee=latest_assignee_fam_join.name)
+        left outer join big_query_assignee as latest_assignee_fam_join on (latest_assignee_fam.first_assignee=latest_assignee_fam_join.name)
     left outer join big_query_technologies as tech on (p.family_id=tech.family_id)
     left outer join big_query_sep_by_family as sep on (sep.family_id=p.family_id)
     left outer join big_query_wipo_by_family as wipo on (wipo.family_id=p.family_id)
@@ -335,4 +352,5 @@ insert into patents_global_es (
     left outer join big_query_cpc_tree as cpc_tree on (cpc_tree.publication_number_full=p.publication_number_full)
     left outer join big_query_gather_with_pub as gather on (gather.publication_number_full=p.publication_number_full)
     left outer join big_query_compdb_deals_by_pub as compdb on (compdb.publication_number_full=p.publication_number_full)
+    left outer join big_query_assignment_documentid_by_pub as a on (p.publication_number_full=a.publication_number_full)
 );

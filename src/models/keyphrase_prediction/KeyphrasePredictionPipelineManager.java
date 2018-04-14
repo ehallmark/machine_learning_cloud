@@ -254,7 +254,10 @@ public class KeyphrasePredictionPipelineManager extends DefaultPipelineManager<W
         }
 
         List<MultiStem> keywords = Collections.synchronizedList(new ArrayList<>(keywordToVectorLookupTable.keySet()));
-        return predict(keywords,wordCPC2VecPipelineManager.getOrLoadCPCVectors(),maxTags,minScore);
+
+        //CPCHierarchy hierarchy = CPCHierarchy.get();
+        Map<String,INDArray> cpcPredictions = wordCPC2VecPipelineManager.getOrLoadCPCVectors();
+        return predict(keywords,cpcPredictions,maxTags,minScore);
     }
 
 
