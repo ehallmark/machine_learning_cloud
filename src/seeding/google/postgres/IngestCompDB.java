@@ -47,6 +47,7 @@ public class IngestCompDB {
                 insert.setBoolean(9, inactive);
                 insert.setBoolean(10, acquisition);
                 insert.setArray(11,seedConn.createArrayOf("varchar",reelFramesStr));
+                insert.executeUpdate();
             }
 
         }
