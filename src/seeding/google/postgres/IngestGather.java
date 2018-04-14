@@ -35,12 +35,11 @@ public class IngestGather {
 
         for(String patent : patents) {
             ps.setString(1,patent);
-            ps.setString(5,patent);
             boolean solid = false;
             if(valueMap.containsKey(patent)) {
                 solid=true;
                 ps.setInt(2, valueMap.get(patent));
-                ps.setInt(2,valueMap.get(patent));
+                ps.setInt(5,valueMap.get(patent));
             } else {
                 ps.setObject(2,null);
                 ps.setObject(5,null);
