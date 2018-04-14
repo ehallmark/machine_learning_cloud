@@ -19,7 +19,7 @@ public class IngestCompDB {
         ResultSet rs = ps.executeQuery();
 
         Connection seedConn = Database.getConn();
-        PreparedStatement insert = seedConn.prepareStatement("insert into big_query_compdb_deals (deal_id,recorded_date,technology,inactive,acquisition,reel_frame) values (?,?,?,?,?,?) on conflict (deal_id) do update set (technology,recorded_date,inactive,acquisition,reel_frame)=(?,?,?,?,?)");
+        PreparedStatement insert = seedConn.prepareStatement("insert into big_query_compdb_deals (deal_id,recorded_date,technology,inactive,acquisition,reel_frame) values (?,?,?,?,?,?) on conflict (deal_id) do update set (recorded_date,technology,inactive,acquisition,reel_frame)=(?,?,?,?,?)");
 
         System.out.println("Finished collecting reelframe to assets map.");
         while(rs.next()) {
