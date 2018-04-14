@@ -13,7 +13,7 @@ import java.util.Set;
 public class IngestGather {
     public static void main(String[] args) throws Exception {
         boolean reloadGather = false;
-        boolean reloadDatabase = false;
+        boolean reloadDatabase = true;
         if(reloadGather) {
             RestoreGatherAndCompDB.main(null);
         }
