@@ -22,20 +22,22 @@ public class IngestVAEVecToPostgres {
 
         ResultSet rs = ps.executeQuery();
 
+        DeepCPCVAEPipelineManager manager = DeepCPCVAEPipelineManager.getOrLoadManager();
+        DeepCPCVariationalAutoEncoderNN encoder = (DeepCPCVariationalAutoEncoderNN)manager.getModel();
+
         Set<String> cpcCombos = new HashSet<>();
         while(rs.next()) {
             String[] tree = (String[])rs.getArray(1).getArray();
             Arrays.sort(tree);
+            List<String> cpcs = new ArrayList<>(Arrays.asList(tree));
+            cpcs.removeIf(cpc->!manager.getCpcToIdxMap().containsKey(cpc));
             cpcCombos.addAll(Arrays.asList(tree));
-            cpcCombos.add(String.join(DELIMITER,tree));
+            cpcCombos.add(String.join(DELIMITER,cpcs));
         }
         rs.close();
         ps.close();
 
         System.out.println("Num distinct cpcs combos: "+cpcCombos);
-
-        DeepCPCVAEPipelineManager manager = DeepCPCVAEPipelineManager.getOrLoadManager();
-        DeepCPCVariationalAutoEncoderNN encoder = (DeepCPCVariationalAutoEncoderNN)manager.getModel();
 
         PreparedStatement insert = conn.prepareStatement("insert into big_query_embedding1_help (cpc_str,cpc_vae) values (?,?) on conflict (cpc_str) do update set cpc_vae=?");
         List<String> cpcComboList = new ArrayList<>(cpcCombos);
