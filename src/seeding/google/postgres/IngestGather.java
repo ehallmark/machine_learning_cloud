@@ -13,12 +13,14 @@ import java.util.Set;
 public class IngestGather {
     public static void main(String[] args) throws Exception {
         boolean reloadGather = false;
+        boolean reloadDatabase = false;
         if(reloadGather) {
             RestoreGatherAndCompDB.main(null);
         }
-
-        Database.main(null);
-
+        if(reloadDatabase) {
+            Database.main(null); // required to update gather attributes
+        }
+        
         Set<String> patents = new HashSet<>();
 
         Map<String,Integer> valueMap = Database.getGatherIntValueMap();
