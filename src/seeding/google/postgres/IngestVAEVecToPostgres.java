@@ -46,7 +46,7 @@ public class IngestVAEVecToPostgres {
             insertStr.setString(2, cpcStr);
             insertStr.setString(3,cpcStr);
             insertStr.executeUpdate();
-            
+
             if(cnt%10000==9999) {
                 System.out.println("Found trees for: "+cnt);
                 Database.commit();
