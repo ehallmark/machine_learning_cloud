@@ -135,17 +135,14 @@ insert into patents_global_merged (
         inventor_harmonized_cc,
         assignee_harmonized,
         assignee_harmonized_cc,
-
         -- priority claims
         pc_publication_number_full,
         pc_application_number_full,
         pc_filing_date,
-
         -- cpc
         code,
         tree,
         inventive,
-
         -- citations
         cited_publication_number_full,
         cited_application_number_full,
@@ -153,28 +150,22 @@ insert into patents_global_merged (
         cited_type,
         cited_category,
         cited_filing_date,
-
         -- value
         ai_value,
         length_of_smallest_ind_claim,
         means_present,
         family_size,
-
         -- sep
         sso,
         standard,
-
         -- wipo
         wipo_technology,
-
         -- gtt tech
         technology,
-
         -- maintenance events
         maintenance_event,
         lapsed,
         reinstated,
-
         -- latest assignee pub
         latest_assignee,
         latest_assignee_date,
@@ -184,7 +175,6 @@ insert into patents_global_merged (
         latest_entity_type,
         latest_first_filing_date,
         latest_last_filing_date,
-
         -- latest assignee fam
         latest_fam_assignee,
         latest_fam_assignee_date,
@@ -194,11 +184,9 @@ insert into patents_global_merged (
         latest_fam_entity_type,
         latest_fam_first_filing_date,
         latest_fam_last_filing_date,
-
         -- embedding
         cpc_vae,
         rnn_enc,
-
         -- assignments
         reel_frame,
         conveyance_text,
@@ -206,7 +194,6 @@ insert into patents_global_merged (
         recorded_date,
         recorded_assignee, -- first assignee of each reel frame
         recorded_assignor, -- first assignor of each reel frame
-
         -- reverse citations
         rcite_publication_number_full,
         rcite_application_number_full,
@@ -214,14 +201,12 @@ insert into patents_global_merged (
         rcite_filing_date,
         -- pair (incorporate 'abandoned' field into 'lapsed')
         term_adjustments,
-
         -- compdb
         compdb_deal_id,
         compdb_recorded_date,
         compdb_technology,
         compdb_inactive,
         compdb_acquisition,
-
         -- gather
         gather_value,
         gather_stage,
@@ -255,37 +240,40 @@ insert into patents_global_merged (
         p.inventor_harmonized_cc,
         p.assignee_harmonized,
         p.assignee_harmonized_cc,
+        -- priority claims
         p.pc_publication_number_full,
         p.pc_application_number_full,
         p.pc_filing_date,
+        -- cpc
         p.code,
         cpc_tree.tree,
         p.inventive,
+        -- citations
         p.cited_publication_number_full,
         p.cited_application_number_full,
         p.cited_npl_text,
         p.cited_type,
         p.cited_category,
         p.cited_filing_date,
-
+        -- ai value
         ai_value.value,
-
+        -- other value attrs
         value_claims.length_smallest_ind_claim,
         value_claims.means_present,
         value_family_size.family_size,
-
         -- sep
         sep.sso,
         sep.standard,
+        -- wipo tech
         wipo.wipo_technology,
+        -- gtt tech
         tech.technology,
-
         -- maintenance events
         m_codes.codes,
         coalesce(coalesce(m.lapsed,pair.abandoned),'f'),
         coalesce(m.reinstated,'f'),
-
-        coalesce(latest_assignee.assignee,p.assignee),
+        -- latest assignee by pub
+        latest_assignee.assignee,
         latest_assignee.date,
         latest_assignee.security_interest,
         latest_assignee.first_assignee,
@@ -293,8 +281,8 @@ insert into patents_global_merged (
         latest_assignee_join.entity_type,
         latest_assignee_join.first_filing_date,
         latest_assignee_join.last_filing_date,
-
-        coalesce(latest_assignee_fam.assignee,coalesce(latest_assignee.assignee,p.assignee)),
+        -- latest assignee by fam
+        latest_assignee_fam.assignee,
         latest_assignee_fam.date,
         latest_assignee_fam.security_interest,
         latest_assignee_fam.first_assignee,
@@ -302,11 +290,9 @@ insert into patents_global_merged (
         latest_assignee_fam_join.entity_type,
         latest_assignee_fam_join.first_filing_date,
         latest_assignee_fam_join.last_filing_date,
-
         -- embedding
         enc1.cpc_vae,
         enc2.rnn_enc,
-
         -- assignments
         a.reel_frame,
         a.conveyance_text,
@@ -314,19 +300,20 @@ insert into patents_global_merged (
         a.recorded_date,
         a.assignee, -- first assignee of each reel frame
         a.assignor, -- first assignor of each reel frame
-
+        -- rcites
         rc.rcite_publication_number_full,
         rc.rcite_application_number_full,
         rc.rcite_family_id,
         rc.rcite_filing_date,
+        -- pair
         pair.term_adjustments,
-
+        -- compdb
         compdb.deal_id,
         compdb.recorded_date,
         compdb.technology,
         compdb.inactive,
         compdb.acquisition,
-
+        -- gather
         gather.value,
         gather.stage,
         gather.technology
