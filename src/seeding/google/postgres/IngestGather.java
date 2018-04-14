@@ -20,7 +20,7 @@ public class IngestGather {
         if(reloadDatabase) {
             Database.main(null); // required to update gather attributes
         }
-        
+
         Set<String> patents = new HashSet<>();
 
         Map<String,Integer> valueMap = Database.getGatherIntValueMap();

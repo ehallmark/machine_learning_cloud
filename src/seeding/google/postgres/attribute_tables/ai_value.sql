@@ -111,22 +111,17 @@ insert into big_query_ai_value_weights (date,weights,intercept) values (
     -1.0491014::double precision
 );
 
-create table big_query_gather_cpc_stats_by_family_id (
+create table big_query_gather_wipo_stats_by_family_id (
     family_id varchar(32) primary key,
     score double precision not null
 );
 
-insert into big_query_gather_cpc_stats_by_family_id (family_id,score) (
-    with frequencies as (
-        select family_id,sum(frequency)/count(frequency) as score
-
-        from big_query_gather_cpc_stats join
-        group by family_id
-    ), stats as (
-        select max(score) as max from frequencies
-    )
-    select family_id,frequencies.score*(1.0/stats.max) as score
-    from frequencies,stats
+insert into big_query_gather_wipo_stats_by_family_id (family_id,score) (
+    select family_id,(frequency)*(select max(frequency) as max from big_query_gather_wipo_stats) as score
+    from big_query_wipo_by_family as g
+    join big_query_gather_wipo_stats as t on (g.wipo_technology=t.technology)
+    where family_id != '-1'
+    --group by family_id
 );
 
 create table big_query_ai_value (
@@ -145,15 +140,13 @@ insert into big_query_ai_value (family_id,value) (
             sum(num_rcites)::double precision/count(num_rcites) as avg_num_rcites,
             sum(family_size)::double precision/count(family_size) as avg_family_size
         from big_query_ai_value_all
-    ), cpc_freq as (
-        select * from big_query_gather_cpc_stats
-    )
+    ),
     weights as (
         select weights from big_query_ai_value_weights order by date desc nulls last limit 1
     ), intercept as (
         select intercept from big_query_ai_value_weights order by date desc nulls last limit 1
     )
-    select family_id,(predict((
+    select ai.family_id,(predict((
         Array[
             coalesce(means_present,average.avg_means_present),
             coalesce(num_claims,average.avg_num_claims),
@@ -163,7 +156,8 @@ insert into big_query_ai_value (family_id,value) (
             coalesce(num_rcites,average.avg_num_rcites)
          ]
     )::double precision[],weights,intercept)*(0.75))+(0.25*coalesce(cpc_stats.score,0.0)) as value
-    from big_query_ai_value_all,average,weights,intercept
-    left outer join big_query_gather_cpc_stats_by_family_id as cpc_stats
-    on (cpc_stats.family_id=big_query_ai_value_all.family_id)
+    from big_query_ai_value_all as ai
+    left outer join big_query_gather_wipo_stats_by_family_id as cpc_stats
+       on (cpc_stats.family_id=ai.family_id),
+    average,weights,intercept
 );

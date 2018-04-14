@@ -78,8 +78,16 @@ create table patents_global_es (
     rcite_family_id varchar(32)[],
     rcite_filing_date date[],
     -- pair (incorporate 'abandoned' field into 'lapsed')
-    term_adjustments integer
+    term_adjustments integer,
+    compdb_deal_id varchar(32)[],
+    compdb_recorded_date date[],
+    compdb_technology text[],
+    compdb_inactive boolean[],
+    compdb_acquisition boolean[],
 
+    gather_value integer,
+    gather_stage varchar(32)[],
+    gather_technology text[]
 );
 
 
@@ -188,7 +196,19 @@ insert into patents_global_es (
         rcite_family_id,
         rcite_filing_date,
         -- pair (incorporate 'abandoned' field into 'lapsed')
-        term_adjustments
+        term_adjustments,
+
+        -- compdb
+        compdb_deal_id,
+        compdb_recorded_date,
+        compdb_technology,
+        compdb_inactive,
+        compdb_acquisition,
+
+        -- gather
+        gather_value,
+        gather_stage,
+        gather_technology
 )
 (
     select   -- monster query
@@ -282,7 +302,18 @@ insert into patents_global_es (
         rc.rcite_application_number_full,
         rc.rcite_family_id,
         rc.rcite_filing_date,
-        pair.term_adjustments
+        pair.term_adjustments,
+
+        compdb.deal_id,
+        compdb.recorded_date,
+        compdb.technology,
+        compdb.inactive,
+        compdb.acquisition,
+
+        gather.value,
+        gather.stage,
+        gather.technology
+
 
     from patents_global as p
     left outer join big_query_pair_by_pub as pair on (p.publication_number_full=pair.publication_number_full)
@@ -302,5 +333,6 @@ insert into patents_global_es (
     left outer join big_query_embedding1 as enc1 on (enc1.family_id=p.family_id)
     left outer join big_query_embedding2 as enc2 on (enc2.family_id=p.family_id)
     left outer join big_query_cpc_tree as cpc_tree on (cpc_tree.publication_number_full=p.publication_number_full)
-
+    left outer join big_query_gather_with_pub as gather on (gather.publication_number_full=p.publication_number_full)
+    left outer join big_query_compdb_deals_by_pub as compdb on (compdb.publication_number_full=p.publication_number_full)
 );
