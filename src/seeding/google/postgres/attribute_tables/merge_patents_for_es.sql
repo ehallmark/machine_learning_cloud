@@ -341,3 +341,6 @@ insert into patents_global_merged (
     left outer join big_query_compdb_deals_by_pub as compdb on (compdb.publication_number_full=p.publication_number_full)
     left outer join big_query_assignment_documentid_by_pub as a on (p.publication_number_full=a.publication_number_full)
 );
+
+vacuum;
+

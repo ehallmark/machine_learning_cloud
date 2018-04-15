@@ -55,8 +55,10 @@ public class ScrapeCompanyTickers {
         List<Pair<LocalDate,Double>> googleStock = stockDataFor("GOOG", from, to);
         final LocalDate latestTradingDate = googleStock.get(googleStock.size()-1).getFirst();
         final int numTrades = googleStock.size();
+        System.out.println("Latest trading date: "+latestTradingDate.toString());
+        System.out.println("Num trades: "+numTrades);
         Map<String,List<Pair<LocalDate,Double>>> dataMap = Collections.synchronizedMap(new HashMap<>());
-        tickerToNameMap.entrySet().parallelStream().forEach(e->{
+        tickerToNameMap.entrySet().parallelStream().limit(5000).forEach(e->{
             String ticker = e.getKey();
             String company = e.getValue();
             //System.out.println(""+cnt.getAndIncrement()+" / "+tickers.size());
@@ -64,6 +66,9 @@ public class ScrapeCompanyTickers {
                 List<Pair<LocalDate, Double>> data = stockDataFor(ticker, from, to);
                 if (data != null && data.size()==numTrades && data.get(data.size()-1).getSecond()>3d && data.get(data.size()-1).getFirst().equals(latestTradingDate)) {
                     dataMap.put(ticker, data);
+                    if(dataMap.size()%100==99) {
+                        System.out.println("Found: "+dataMap.size());
+                    }
                 }
             } catch(Exception e2) {
                 if(!(e2 instanceof FileNotFoundException)) e2.printStackTrace();

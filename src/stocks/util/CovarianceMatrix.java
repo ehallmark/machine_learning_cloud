@@ -33,11 +33,12 @@ public class CovarianceMatrix {
         }
         INDArray one = Nd4j.ones(n,1);
         INDArray a = A.sub(one.mmul(one.transpose()).mmul(A).divi(n));
-        covMatrix = a.mmul(a.transpose()).divi(n);
+        covMatrix = a.transpose().mmul(a).divi(n);
         INDArray std = A.std(true,0);
-        covMatrix.diviColumnVector(std).diviRowVector(std);
+        covMatrix.diviColumnVector(std.transpose());
+        covMatrix.diviRowVector(std);
 
 
-        System.out.println("Correl: "+covMatrix.toString());
+        //System.out.println("Correl: "+covMatrix.toString());
     }
 }
