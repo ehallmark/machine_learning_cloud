@@ -1,11 +1,16 @@
 package stocks;
 
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import stocks.util.CovarianceMatrix;
 import stocks.util.Stock;
 
 import java.io.*;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,7 +22,7 @@ import java.util.stream.Collectors;
 public class ScrapeCompanyTickers {
     private static final File csvFile = new File(Constants.DATA_FOLDER+"yahoo_companies_and_symbols.csv");
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         BufferedReader reader = new BufferedReader(new FileReader(csvFile));
         AtomicInteger idx = new AtomicInteger(0);
         Map<String,String> tickerToNameMap = reader.lines().parallel().map(line->{
@@ -46,34 +51,33 @@ public class ScrapeCompanyTickers {
         LocalDate today = LocalDate.now();
         final long to = ScrapeYahooStockPrices.dateToLong(today.plusDays(1));
         final long from = ScrapeYahooStockPrices.dateToLong(LocalDate.now().minusMonths(3));
+        // known stock
+        List<Pair<LocalDate,Double>> googleStock = stockDataFor("GOOG", from, to);
+        final LocalDate latestTradingDate = googleStock.get(googleStock.size()-1).getFirst();
+        final int numTrades = googleStock.size();
+        Map<String,List<Pair<LocalDate,Double>>> dataMap = Collections.synchronizedMap(new HashMap<>());
         tickerToNameMap.entrySet().parallelStream().forEach(e->{
             String ticker = e.getKey();
             String company = e.getValue();
             //System.out.println(""+cnt.getAndIncrement()+" / "+tickers.size());
             try {
                 List<Pair<LocalDate, Double>> data = stockDataFor(ticker, from, to);
-                if (data != null && data.size()>14 && data.get(data.size()-1).getFirst().isAfter(today.minusDays(2))) {
-                    double lastPrice = data.get(data.size()-1).getSecond();
-                    // don't want penny stocks
-                    if(lastPrice>2d) {
-                        double[] prices = data.stream().limit(data.size()-1).mapToDouble(p->p.getSecond()).toArray();
-                        Stock stock = new Stock(ticker,today,prices);
-                        stock.nextTimeStep(data.get(data.size()-1).getSecond());
-                        double score = stock.getVarianceNormalized()
-                                *(stock.getAverageReturn1()<stock.getAverageReturn10()?1.0:0.0)
-                                *(Math.expm1(Math.abs(stock.getHistoricalVelocities()[stock.getHistoricalVelocities().length-1])))
-                                *Math.max(0,stock.getAverageAcceleration()+stock.getHistoricalAccelerations()[stock.getHistoricalAccelerations().length-1]);
-                        if(score>0) {
-                            System.out.println("Score for "+company+": "+score);
-                            System.out.println("Stock: "+stock.toString());
-                        }
-                        //System.out.println(stock.toString());
-                    }
+                if (data != null && data.size()==numTrades && data.get(data.size()-1).getSecond()>3d && data.get(data.size()-1).getFirst().equals(latestTradingDate)) {
+                    dataMap.put(ticker, data);
                 }
             } catch(Exception e2) {
                 if(!(e2 instanceof FileNotFoundException)) e2.printStackTrace();
             }
         });
+
+        CovarianceMatrix matrix = new CovarianceMatrix(dataMap,numTrades);
+
+        INDArray cov = matrix.getCovMatrix();
+        INDArray negativelyCorrelated = Nd4j.argMax(cov.neg(),1);
+        int mostNegativelyCorrelated = Nd4j.argMax(cov.min(1).neg().reshape(cov.rows(),1),0).getInt(0);
+        int otherIdx = negativelyCorrelated.getInt(mostNegativelyCorrelated);
+
+        System.out.println("most negatively correlated stocks: "+matrix.getCategories().get(mostNegativelyCorrelated)+" and "+matrix.getCategories().get(otherIdx));
     }
 
     private static List<Pair<LocalDate,Double>> stockDataFor(String symbol, long from, long to) throws Exception {

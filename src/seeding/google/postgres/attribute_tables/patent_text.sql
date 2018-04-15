@@ -20,9 +20,9 @@ insert into big_query_patent_english_claims (family_id,publication_number_full,a
 -- then redo claim value metrics
 insert into big_query_ai_value_claims (family_id,means_present,num_claims,length_smallest_ind_claim) (
     select family_id,
-    case when bool_and(case when claim ~ 'claim [0-9]' then null else (claim like '% means %')::boolean end) then 1 else 0 end,
+    case when bool_and(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else (claim like '% means %')::boolean end) then 1 else 0 end,
     count(*) as num_claims,
-    min(case when claim ~ 'claim [0-9]' then null else array_length(array_remove(regexp_split_to_array(claim,'\\s+'),''),1) end)
+    min(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else array_length(array_remove(regexp_split_to_array(claim,'\\s+'),''),1) end)
     from big_query_patent_english_claims as p, unnest(regexp_split_to_array(claims,'(\\s*\\n\\s*[0-9]*\\s*\\.)')) with ordinality as c(claim,n)
     where claim is not null and trim(claim)!=''
     group by family_id

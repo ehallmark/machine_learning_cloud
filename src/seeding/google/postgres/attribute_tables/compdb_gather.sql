@@ -32,6 +32,30 @@ insert into big_query_compdb_deals_by_pub (publication_number_full,deal_id,recor
     group by publication_number_full
 );
 
+create table big_query_compdb_deals_by_pub2 (
+    publication_number_full varchar(32) primary key,
+    deal_id varchar(32)[],
+    recorded_date date[],
+    technology text[], -- each index can have multiple technologies (delimited by '; ')
+    inactive boolean[],
+    acquisition boolean[]
+    --buyer text[], -- each index can have multiple buyers/sellers (delimited by '; ')
+    --seller text[],
+);
+
+insert into big_query_compdb_deals_by_pub2 (publication_number_full,deal_id,recorded_date,technology,inactive,acquisition) (
+    select publication_number_full,array_agg(temp.deal_id),array_agg(temp.recorded_date),array_agg(array_to_string(temp.technology,'; ')),array_agg(temp.inactive),array_agg(temp.acquisition)
+    from (
+        select deals.deal_id,deals.recorded_date,deals.technology,deals.inactive,deals.acquisition,rf.reel_frame from big_query_compdb_deals as deals,unnest(deals.reel_frame) with ordinality as rf(reel_frame,n)
+    ) as temp
+    join (
+        select p.publication_number_full,r.reel_frame from big_query_assignment_documentid_by_pub as p, unnest(p.reel_frame) with ordinality as r(reel_frame,n)
+        where p.reel_frame is not null
+    ) temp2
+    on (temp.reel_frame=temp2.reel_frame)
+    group by publication_number_full
+);
+
 
 create table big_query_gather (
     publication_number varchar(32) primary key,
