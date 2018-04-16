@@ -5,6 +5,7 @@ import elasticsearch.MyClient;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
+import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import seeding.google.mongo.ingest.IngestPatents;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
@@ -48,7 +49,15 @@ public class CreatePatentIndex {
     private static Map<String,Object> createPropertiesMap(Collection<? extends AbstractAttribute> attributes) {
         Map<String,Object> properties = new HashMap<>();
         attributes.forEach(attribute->{
-            recursiveHelper(attribute, properties);
+            if(attribute instanceof SimilarityAttribute) {
+                // special vectors!
+                Map<String,Object> type = new HashMap<>();
+                type.put("doc_values", true);
+                type.put("type","binary");
+                properties.put(attribute.getName(),type);
+            } else {
+                recursiveHelper(attribute, properties);
+            }
         });
         return properties;
     }

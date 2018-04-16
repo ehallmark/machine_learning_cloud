@@ -8,6 +8,7 @@ import java.util.Arrays;
 public class Gather extends NestedAttribute {
     public Gather() {
         super(Arrays.asList(new GatherValue(), new GatherStage(), new GatherTechnology()),true);
+        this.isObject=true;
     }
 
         @Override

@@ -7,6 +7,12 @@ import java.util.Arrays;
 import java.util.Collection;
 
 public class Attributes {
+    // helper
+    public static final String PRIORITY_DATE_ESTIMATED = "priority_date_est";
+    public static final String EXPIRED = "expired";
+    public static final String EXPIRATION_DATE_ESTIMATED = "expiration_date_est";
+    public static final String REMAINING_LIFE = "remaining_life";
+    // main
     public static final String PUBLICATION_NUMBER_FULL = "publication_number_full";
     public static final String PUBLICATION_NUMBER = "publication_number";
     public static final String PUBLICATION_NUMBER_WITH_COUNTRY = "publication_number_with_country";
@@ -114,6 +120,10 @@ public class Attributes {
                 new FilingDate(),
                 new PublicationDate(),
                 new PriorityDate(),
+                new CalculatedPriorityDate(),
+                new CalculatedExpirationDate(),
+                new RemainingLife(),
+                new Expired(),
                 new CountryCode(),
                 new KindCode(),
                 new ApplicationKind(),
