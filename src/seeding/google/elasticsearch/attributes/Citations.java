@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class Citations extends NestedAttribute {
     public Citations() {
-        super(Arrays.asList(new InventorName()),true);
+        super(Arrays.asList(new CitedFilingDate()),true);
     }
 
         @Override

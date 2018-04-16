@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class Inventors extends NestedAttribute {
     public Inventors() {
-        super(Arrays.asList(new InventorName()),true);
+        super(Arrays.asList(new InventorName(), new InventorHarmonizedCC()),true);
     }
 
         @Override

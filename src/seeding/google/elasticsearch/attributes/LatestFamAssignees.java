@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class LatestFamAssignees extends NestedAttribute {
     public LatestFamAssignees() {
-        super(Arrays.asList(new InventorName()),true);
+        super(Arrays.asList(new LatestFamAssignee(), new LatestFamAssigneeDate(), new LatestFamSecurityInterest(), new LatestFamFirstAssignee(), new LatestFamPortfolioSize(), new LatestFamEntityType(), new LatestFamFirstFilingDate(), new LatestFamLastFilingDate()),true);
     }
 
         @Override

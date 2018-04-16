@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class CompDB extends NestedAttribute {
     public CompDB() {
-        super(Arrays.asList(new InventorName()),true);
+        super(Arrays.asList(new CompDBDealID(), new CompDBRecordedDate(), new CompDBTechnology(), new CompDBInactive(), new CompDBAcquisition()),true);
     }
 
         @Override

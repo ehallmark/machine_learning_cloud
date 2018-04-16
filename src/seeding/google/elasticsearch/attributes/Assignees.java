@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class Assignees extends NestedAttribute {
     public Assignees() {
-        super(Arrays.asList(new AssigneeName()),true);
+        super(Arrays.asList(new AssigneeName(), new AssigneeHarmonizedCC()),true);
     }
 
         @Override

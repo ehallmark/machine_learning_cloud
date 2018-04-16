@@ -64,8 +64,8 @@ public class Attributes {
     public static final String LATEST_FIRST_ASSIGNEE = "latest_first_assignee";
     public static final String LATEST_PORTFOLIO_SIZE = "latest_portfolio_size";
     public static final String LATEST_ENTITY_TYPE = "latest_entity_type";
-    public static final String LATEST_LAST_FILING_DATE = "latest_first_filing_date";
-    public static final String LATEST_FIRST_FILING_DATE = "latest_last_filing_date";
+    public static final String LATEST_FIRST_FILING_DATE = "latest_first_filing_date";
+    public static final String LATEST_LAST_FILING_DATE = "latest_last_filing_date";
     public static final String LATEST_FAM_ASSIGNEES = "latest_fam_assignees";
     public static final String LATEST_FAM_ASSIGNEE = "latest_fam_assignee";
     public static final String LATEST_FAM_ASSIGNEE_DATE = "latest_fam_assignee_date";

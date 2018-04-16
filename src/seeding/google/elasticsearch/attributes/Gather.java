@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class Gather extends NestedAttribute {
     public Gather() {
-        super(Arrays.asList(new InventorName()),true);
+        super(Arrays.asList(new GatherValue(), new GatherStage(), new GatherTechnology()),true);
     }
 
         @Override

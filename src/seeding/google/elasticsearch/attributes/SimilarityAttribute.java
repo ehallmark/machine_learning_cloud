@@ -3,8 +3,6 @@ package seeding.google.elasticsearch.attributes;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 
 public abstract class SimilarityAttribute extends AbstractAttribute {
