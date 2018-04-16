@@ -1,5 +1,6 @@
 package seeding.google.tech_tag;
 
+import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
@@ -12,6 +13,7 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 public class PredictTechTags {
@@ -22,6 +24,7 @@ public class PredictTechTags {
         return text.toLowerCase().replaceAll("[^a-z ]"," ").split("\\s+");
     };
     public static void main(String[] args) throws Exception {
+        Nd4j.setDataType(DataBuffer.Type.FLOAT);
         INDArray matrix = (INDArray) Database.tryLoadObject(matrixFile);
         List<String> allTitlesList = (List<String>) Database.tryLoadObject(titleListFile);
         List<String> allWordsList = (List<String>) Database.tryLoadObject(wordListFile);
@@ -36,8 +39,9 @@ public class PredictTechTags {
         }
         Connection seedConn = Database.newSeedConn();
         PreparedStatement ps = seedConn.prepareStatement("select family_id,publication_number_full,abstract from big_query_patent_english_abstract");
-
+        ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
+        AtomicLong cnt = new AtomicLong(0);
         while(rs.next()) {
             String familyId = rs.getString(1);
             String publicationNumber = rs.getString(2);
@@ -58,6 +62,9 @@ public class PredictTechTags {
                 int bestIdx = Nd4j.argMax(scores,0).getInt(0);
                 String tag = allTitlesList.get(bestIdx);
                 System.out.println("Best tag for "+publicationNumber+": "+tag);
+            }
+            if(cnt.getAndIncrement()%100==99) {
+                System.out.println("Finished: "+cnt.get());
             }
         }
     }
