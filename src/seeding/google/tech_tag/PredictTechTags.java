@@ -52,6 +52,8 @@ public class PredictTechTags {
                     "LITER OF LIGHT",
                     "WATER SUPPLY",
                     "VOLKSWAGEN GROUP",
+                    "HIPPO WATER ROLLER",
+                    "DEEP COLUMN STATIONS", // too small
                     "BMW"
             )
     );
