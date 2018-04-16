@@ -3,6 +3,7 @@ package seeding.google.tech_tag;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Database;
 
@@ -10,9 +11,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
@@ -42,30 +41,66 @@ public class PredictTechTags {
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
         AtomicLong cnt = new AtomicLong(0);
-        while(rs.next()) {
-            String familyId = rs.getString(1);
-            String publicationNumber = rs.getString(2);
-            String text = rs.getString(3);
-            String[] content = textToWordFunction.apply(text);
-            int found = 0;
-            float[] data = new float[matrix.columns()];
-            for(String word : content) {
-                Integer idx = wordToIndexMap.get(word);
-                if(idx!=null) {
-                    found++;
-                    data[idx]++;
+        Connection conn = Database.getConn();
+        final int batch = 100;
+        while(true) {
+            int i = 0;
+            INDArray vectors = Nd4j.create(matrix.columns(),batch);
+            List<String> familyIds = new ArrayList<>(batch);
+            for(; i < batch&&rs.next(); i++) {
+                String familyId = rs.getString(1);
+                familyIds.add(familyId);
+                String publicationNumber = rs.getString(2);
+                String text = rs.getString(3);
+                String[] content = textToWordFunction.apply(text);
+                int found = 0;
+                float[] data = new float[matrix.columns()];
+                for (String word : content) {
+                    Integer idx = wordToIndexMap.get(word);
+                    if (idx != null) {
+                        found++;
+                        data[idx]++;
+                    }
+                }
+                if (found > 3) {
+                    vectors.putColumn(i, Nd4j.create(data));
+                    //System.out.println("Best tag for " + publicationNumber + ": " + tag);
+                } else {
+                    i--;
+                    continue;
+                }
+                if (cnt.getAndIncrement() % 100 == 99) {
+                    System.out.println("Finished: " + cnt.get());
                 }
             }
-            if(found>3) {
-                INDArray vec = Transforms.unitVec(Nd4j.create(data)).reshape(matrix.columns(),1);
-                INDArray scores = matrix.mmul(vec);
-                int bestIdx = Nd4j.argMax(scores,0).getInt(0);
-                String tag = allTitlesList.get(bestIdx);
-                System.out.println("Best tag for "+publicationNumber+": "+tag);
+            if(i==0) {
+                break;
             }
-            if(cnt.getAndIncrement()%100==99) {
-                System.out.println("Finished: "+cnt.get());
+            if(i<batch) {
+                vectors = vectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
+            }
+            vectors.diviRowVector(vectors.norm2(0));
+            INDArray scores = matrix.mmul(vectors);
+            int[] bestIndices = Nd4j.argMax(scores, 0).data().asInt();
+            String insert = "insert into big_query_technologies (family_id,technology) values ? on conflict(family_id) do update set technology=excluded.technology";
+            StringJoiner valueJoiner = new StringJoiner(",");
+            StringJoiner innerJoiner = new StringJoiner("\",\"","(\"","\")");
+            for(int j = 0; j < i; j++) {
+                int bestIdx = bestIndices[j];
+                String familyId = familyIds.get(j);
+                String tag = allTitlesList.get(bestIdx);
+                innerJoiner.add(familyId).add(tag);
+                valueJoiner.add(innerJoiner.toString());
+            }
+            PreparedStatement insertPs = conn.prepareStatement(insert.replace("?",valueJoiner.toString()));
+            insertPs.executeUpdate();
+            if(cnt.get()%10000==9999) {
+                Database.commit();
             }
         }
+
+        Database.commit();
+        seedConn.commit();
+        Database.close();
     }
 }
