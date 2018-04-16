@@ -4,7 +4,6 @@ import elasticsearch.IngestMongoIntoElasticSearch;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.bson.Document;
 import seeding.Database;
-import seeding.google.attributes.Constants;
 import seeding.google.mongo.ingest.IngestJsonHelper;
 import seeding.google.mongo.ingest.IngestSEP;
 import seeding.google.postgres.query_helper.QueryStream;
@@ -31,7 +30,7 @@ public class IngestSEPFromJson extends IngestPatentsFromJson {
 
         String[] fields = new String[]{
                 "record_id",
-                Constants.FAMILY_ID,
+                SeedingConstants.FAMILY_ID,
                 "disclosure_event",
                 "sso",
                 "patent_owner_harmonized",

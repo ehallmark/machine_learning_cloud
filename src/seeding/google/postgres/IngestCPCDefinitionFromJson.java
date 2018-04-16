@@ -3,7 +3,6 @@ package seeding.google.postgres;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.bson.Document;
 import seeding.Database;
-import seeding.google.attributes.Constants;
 import seeding.google.mongo.ingest.IngestJsonHelper;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;

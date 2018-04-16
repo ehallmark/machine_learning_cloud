@@ -4,7 +4,6 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Database;
 import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
 import seeding.data_downloader.MaintenanceFeeDataDownloader;
-import seeding.google.attributes.Constants;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
 
@@ -25,15 +24,15 @@ public class IngestMaintenanceFeeData {
         Connection conn = Database.getConn();
 
         final String[] maintenaceFields = new String[]{
-                Constants.PUBLICATION_NUMBER,
-                Constants.ENTITY_STATUS,
-                Constants.LAPSED,
-                Constants.REINSTATED
+                SeedingConstants.PUBLICATION_NUMBER,
+                SeedingConstants.ENTITY_STATUS,
+                SeedingConstants.LAPSED,
+                SeedingConstants.REINSTATED
         };
 
         final String[] maintenanceCodeFields = new String[]{
-                Constants.PUBLICATION_NUMBER,
-                Constants.EVENT_CODE
+                SeedingConstants.PUBLICATION_NUMBER,
+                SeedingConstants.EVENT_CODE
         };
 
         // update latest assignees

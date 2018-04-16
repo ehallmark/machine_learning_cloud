@@ -8,7 +8,6 @@ import elasticsearch.DataIngester;
 import elasticsearch.IngestMongoIntoElasticSearch;
 import elasticsearch.MongoDBClient;
 import org.bson.Document;
-import seeding.google.attributes.Constants;
 import seeding.google.mongo.ingest.IngestJsonHelper;
 import seeding.google.mongo.ingest.IngestPatents;
 

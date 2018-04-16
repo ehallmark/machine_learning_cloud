@@ -10,7 +10,6 @@ import seeding.data_downloader.AssignmentDataDownloader;
 import seeding.data_downloader.FileStreamDataDownloader;
 import seeding.data_downloader.PAIRDataDownloader;
 import seeding.data_downloader.SingleFileDownloader;
-import seeding.google.attributes.Constants;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
 import seeding.google.postgres.xml.AssignmentHandler;
@@ -35,18 +34,18 @@ public class IngestPairData {
         final Connection conn = Database.getConn();
 
         final String[] fields = new String[]{
-                Constants.APPLICATION_NUMBER_FORMATTED,
-                Constants.PUBLICATION_NUMBER,
-                Constants.ENTITY_STATUS,
-                Constants.APPLICATION_STATUS,
-                Constants.STATUS_DATE,
-                Constants.LAPSED,
-                Constants.TERM_ADJUSTMENTS
+                SeedingConstants.APPLICATION_NUMBER_FORMATTED,
+                SeedingConstants.PUBLICATION_NUMBER,
+                SeedingConstants.ENTITY_STATUS,
+                SeedingConstants.APPLICATION_STATUS,
+                SeedingConstants.STATUS_DATE,
+                SeedingConstants.LAPSED,
+                SeedingConstants.TERM_ADJUSTMENTS
         };
 
         Set<String> arrayFields = new HashSet<>();
         Set<String> booleanFields = new HashSet<>();
-        booleanFields.add(Constants.LAPSED);
+        booleanFields.add(SeedingConstants.LAPSED);
 
         final String valueStr = Util.getValueStrFor(fields,arrayFields,booleanFields);
         final String conflictStr = Util.getValueStrFor(IntStream.range(1,fields.length).mapToObj(i->fields[i]).toArray(s->new String[s]),arrayFields,booleanFields);

@@ -3,7 +3,6 @@ package seeding.google.postgres;
 import models.classification_models.WIPOHelper;
 import seeding.Database;
 import seeding.data_downloader.WIPOTechnologyDownloader;
-import seeding.google.attributes.Constants;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
 import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
@@ -38,8 +37,8 @@ public class IngestWIPOTechnologies {
         final String sql = "insert into big_query_wipo (publication_number,wipo_technology) values "+valueStr+" on conflict do nothing";
 
         final String[] wipoFields = new String[]{
-                Constants.PUBLICATION_NUMBER,
-                Constants.WIPO_TECHNOLOGY
+                SeedingConstants.PUBLICATION_NUMBER,
+                SeedingConstants.WIPO_TECHNOLOGY
         };
 
         DefaultApplier applier = new DefaultApplier(false, conn, wipoFields);
