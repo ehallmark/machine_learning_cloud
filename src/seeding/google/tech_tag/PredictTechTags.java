@@ -41,7 +41,7 @@ public class PredictTechTags {
         ResultSet rs = ps.executeQuery();
         AtomicLong cnt = new AtomicLong(0);
         Connection conn = Database.getConn();
-        final int batch = 5000;
+        final int batch = 1000;
         while(true) {
             int i = 0;
             INDArray vectors = Nd4j.create(matrix.columns(),batch);
