@@ -53,7 +53,9 @@ public class PredictTechTags {
                     "VOLKSWAGEN GROUP",
                     "HIPPO WATER ROLLER",
                     "DEEP COLUMN STATIONS", // too small
-                    "BMW"
+                    "BMW",
+                    "AMATEUR RADIO RECEIVERS",
+                    "LIMELIGHT"
             )
     );
 
