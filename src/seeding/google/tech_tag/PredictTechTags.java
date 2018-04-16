@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
@@ -21,14 +22,50 @@ public class PredictTechTags {
     private static final Function<String,String[]> textToWordFunction = text -> {
         return text.toLowerCase().replaceAll("[^a-z ]"," ").split("\\s+");
     };
+
+    private static final Set<String> invalidTechnologies = new HashSet<>(
+            Arrays.asList(
+                    "DATA PUBLISHING",
+                    "SURFACE SCIENCE",
+                    "FRESH WATER",
+                    "POWER ELECTRONICS",
+                    "MITSUBISHI RISE",
+                    "SONDOR",
+                    "LOCKHEED MARTIN",
+                    "INTERNATIONAL VOLUNTEER ORGANIZATIONS",
+                    "CHILD WELFARE",
+                    "HETEROJUNCTION BIPOLAR TRANSISTOR",
+                    "DEVICE FILE",
+                    "BUTEYKO METHOD"
+            )
+    );
+
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
-        INDArray matrix = (INDArray) Database.tryLoadObject(matrixFile);
+        INDArray matrixOld = (INDArray) Database.tryLoadObject(matrixFile);
         List<String> allTitlesList = (List<String>) Database.tryLoadObject(titleListFile);
         List<String> allWordsList = (List<String>) Database.tryLoadObject(wordListFile);
-
+        int validSize = allTitlesList.size();
+        for(String title : allTitlesList) {
+            if(invalidTechnologies.contains(title)) {
+                validSize--;
+            }
+        }
+        INDArray matrix = Nd4j.create(validSize,matrixOld.columns());
+        AtomicInteger idx = new AtomicInteger(0);
+        for(int i = 0; i < allTitlesList.size(); i++) {
+            String title = allTitlesList.get(i);
+            if(!invalidTechnologies.contains(title)) {
+                matrix.putRow(idx.getAndIncrement(),matrixOld.getRow(i));
+            }
+        }
+        allTitlesList.removeAll(invalidTechnologies);
+        System.out.println("Valid technologies: "+allTitlesList.size()+" out of "+matrixOld.rows());
         Map<String,Integer> wordToIndexMap = new HashMap<>();
         Map<String,Integer> titleToIndexMap = new HashMap<>();
+        invalidTechnologies.forEach(invalid->{
+
+        });
         for(int i = 0; i < allWordsList.size(); i++) {
             wordToIndexMap.put(allWordsList.get(i),i);
         }
@@ -55,10 +92,10 @@ public class PredictTechTags {
                 int found = 0;
                 float[] data = new float[matrix.columns()];
                 for (String word : content) {
-                    Integer idx = wordToIndexMap.get(word);
-                    if (idx != null) {
+                    Integer index = wordToIndexMap.get(word);
+                    if (index != null) {
                         found++;
-                        data[idx]++;
+                        data[index]++;
                     }
                 }
                 if (found > 3) {
