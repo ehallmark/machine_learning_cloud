@@ -5,6 +5,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import seeding.Database;
+import seeding.google.postgres.Util;
 
 import java.io.File;
 import java.sql.Connection;
@@ -19,9 +20,7 @@ public class PredictTechTags {
     public static final File matrixFile = new File("tech_tag_statistics_matrix.jobj");
     public static final File titleListFile = new File("tech_tag_statistics_title_list.jobj");
     public static final File wordListFile = new File("tech_tag_statistics_word_list.jobj");
-    private static final Function<String,String[]> textToWordFunction = text -> {
-        return text.toLowerCase().replaceAll("[^a-z ]"," ").split("\\s+");
-    };
+
 
     private static final Set<String> invalidTechnologies = new HashSet<>(
             Arrays.asList(
@@ -126,7 +125,7 @@ public class PredictTechTags {
                     i--;
                 } else {
                     String text = rs.getString(3);
-                    String[] content = textToWordFunction.apply(text);
+                    String[] content = Util.textToWordFunction.apply(text);
                     int found = 0;
                     float[] data = new float[matrix.columns()];
                     for (String word : content) {

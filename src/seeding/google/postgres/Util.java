@@ -1,10 +1,15 @@
 package seeding.google.postgres;
 
 import java.util.Collection;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Util {
+    public static final Function<String,String[]> textToWordFunction = text -> {
+        return text.toLowerCase().replaceAll("[^a-z ]"," ").split("\\s+");
+    };
+
     public static String getValueStrFor(String[] fields, Collection<String> arrayFields, Collection<String> booleanFields) {
         int numFields = fields.length;
         return "("+String.join(",", IntStream.range(0,numFields).mapToObj(i->{

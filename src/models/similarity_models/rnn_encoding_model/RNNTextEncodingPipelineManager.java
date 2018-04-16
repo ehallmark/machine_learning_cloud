@@ -11,10 +11,11 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
+import seeding.Database;
 
 import java.io.File;
-import java.util.*;
-import java.util.stream.Stream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 
 /**
  * Created by ehallmark on 11/7/17.
@@ -23,8 +24,8 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
     public static final int BATCH_SIZE = 1024;
     public static final int MAX_SEQUENCE_LENGTH = 128;
     public static final int MINI_BATCH_SIZE = 32;
+    public static final int VECTOR_SIZE = 128;
     public static final String MODEL_NAME256 = "rnn_text_encoding_model256";
-    public static final int VECTOR_SIZE = 32;
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"rnn_text_encoding_model256_prediction/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER_ALL = new File("rnn_text_encoding_model256_input_data/");
 
@@ -57,36 +58,41 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
         // do nothing
     }
 
-    private MultiDataSetIterator getIterator(File[] files, int limit) {
-        return new RNNEncodingIterator(word2Vec,new ZippedFileSequenceIterator(files,limit),BATCH_SIZE,MAX_SEQUENCE_LENGTH);
+    private MultiDataSetIterator getIterator(PreparedStatement ps, int limit) {
+        return new RNNEncodingIterator(word2Vec,new PostgresSequenceIterator(ps,1,limit),BATCH_SIZE,MAX_SEQUENCE_LENGTH);
     }
 
     @Override
     protected void setDatasetManager() {
         if (datasetManager == null) {
-            int trainSize = 100000000;
+            Connection conn = Database.getConn();
+
+            int trainSize = 10000000;
             int testSize = 50000;
 
-            File dir = new File("/home/ehallmark/repos/poi/word2vec_text/");
-            File[] allFiles = Stream.of(dir.listFiles()).sorted(Comparator.comparing(f->f.getName())).toArray(size->new File[size]);
-            Random rand = new Random(2);
-            File testFile = allFiles[allFiles.length-rand.nextInt(200)];
-            File devFile = allFiles[allFiles.length-200-rand.nextInt(200)];
+            int testSuffix = 8;
+            int devSuffix = 9;
 
-            File[] trainFiles = Stream.of(allFiles).filter(f->!f.getName().equals(testFile.getName())&&!f.getName().equals(devFile.getName()))
-                    .toArray(size->new File[size]);
+            try {
+                PreparedStatement trainPs = conn.prepareStatement("select abstract from big_query_patent_english_abstract where right(family_id)!=" + testSuffix + " and right(family_id)!=" + devSuffix + " limit "+testSize);
+                PreparedStatement testPs = conn.prepareStatement("select abstract from big_query_patent_english_abstract where right(family_id)=" + testSuffix+ " limit "+testSize);
+                PreparedStatement devPs = conn.prepareStatement("select abstract from big_query_patent_english_abstract where right(family_id)=" + devSuffix +" limit "+testSize);
 
-            MultiDataSetIterator trainIter = getIterator(trainFiles,trainSize);
-            MultiDataSetIterator testIter = getIterator(new File[]{testFile},testSize);
-            MultiDataSetIterator devIter = getIterator(new File[]{devFile},testSize);
+                MultiDataSetIterator trainIter = getIterator(trainPs, trainSize);
+                MultiDataSetIterator testIter = getIterator(testPs, testSize);
+                MultiDataSetIterator devIter = getIterator(devPs, testSize);
 
-            datasetManager = new PreSaveDataSetManager<>(
-                    dataFolder,
-                    trainIter,
-                    testIter,
-                    devIter,
-                    true
-            );
+                datasetManager = new PreSaveDataSetManager<>(
+                        dataFolder,
+                        trainIter,
+                        testIter,
+                        devIter,
+                        true
+                );
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
     }
 
@@ -114,16 +120,22 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
         int nEpochs = 5;
         String modelName = MODEL_NAME256;
 
-        int encodingSize = 128;
-        String word2VecPath = "giant_wordvectors256";
+        int encodingSize = VECTOR_SIZE;
+        String word2VecPath = new File("data/word2vec_model.nn256").getAbsolutePath();
         Word2Vec word2Vec = WordVectorSerializer.readWord2VecModel(word2VecPath);
 
         setCudaEnvironment();
         setLoggingLevel(Level.INFO);
 
 
-        RNNTextEncodingPipelineManager pipelineManager = new RNNTextEncodingPipelineManager(modelName,word2Vec,encodingSize);
-        pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
+        try {
+            RNNTextEncodingPipelineManager pipelineManager = new RNNTextEncodingPipelineManager(modelName, word2Vec, encodingSize);
+            pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
+        } catch(Exception e) {
+            e.printStackTrace();
+        } finally {
+            Database.close();
+        }
     }
 
 }
