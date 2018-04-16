@@ -75,7 +75,7 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
             int devSuffix = 9;
 
             try {
-                PreparedStatement trainPs = conn.prepareStatement("select abstract from big_query_patent_english_abstract where right(family_id,1)!='" + testSuffix + "' and right(family_id,1)!='" + devSuffix + "' limit "+testSize);
+                PreparedStatement trainPs = conn.prepareStatement("select abstract from big_query_patent_english_abstract where right(family_id,1)!='" + testSuffix + "' and right(family_id,1)!='" + devSuffix + "' limit "+trainSize);
                 PreparedStatement testPs = conn.prepareStatement("select abstract from big_query_patent_english_abstract where right(family_id,1)='" + testSuffix+ "' limit "+testSize);
                 PreparedStatement devPs = conn.prepareStatement("select abstract from big_query_patent_english_abstract where right(family_id,1)='" + devSuffix +"' limit "+testSize);
 
