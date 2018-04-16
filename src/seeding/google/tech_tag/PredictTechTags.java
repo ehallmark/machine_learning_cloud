@@ -56,6 +56,15 @@ public class PredictTechTags {
             )
     );
 
+    private static final Map<String,String> techTransformationMap = new HashMap<>();
+    static {
+        // FOR EXAMPE ...
+        // techTransformationMap.put("HYDROGEN VEHICLE","VEHICLE");
+    }
+    private static final Function<String,String> technologyTransformer = tech -> {
+        return techTransformationMap.getOrDefault(tech, tech);
+    };
+
     public static void main(String[] args) throws Exception {
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         INDArray matrixOld = (INDArray) Database.tryLoadObject(matrixFile);
@@ -157,6 +166,7 @@ public class PredictTechTags {
                 int bestIdx = bestIndices[j];
                 String familyId = familyIds.get(j);
                 String tag = allTitlesList.get(bestIdx);
+                tag = technologyTransformer.apply(tag);
                 innerJoiner.add(familyId).add(tag);
                 valueJoiner.add(innerJoiner.toString());
             }
