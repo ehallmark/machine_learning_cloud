@@ -36,7 +36,20 @@ public class PredictTechTags {
                     "CHILD WELFARE",
                     "HETEROJUNCTION BIPOLAR TRANSISTOR",
                     "DEVICE FILE",
-                    "BUTEYKO METHOD"
+                    "BUTEYKO METHOD",
+                    "SPIRIT DATACINE",
+                    "DRINKING WATER",
+                    "INDUSTRIAL PROCESSES",
+                    "DISNEY SECOND SCREEN",
+                    "COLOR",
+                    "HYDROGEN",
+                    "FULL BODY SCANNER",
+                    "DRIVER STEERING RECOMMENDATION",
+                    "BIG DATA",
+                    "ALCOHOL",
+                    "DYNABEADS",
+                    "CHINESE COOKING TECHNIQUES",
+                    "LITER OF LIGHT"
             )
     );
 
@@ -59,18 +72,13 @@ public class PredictTechTags {
                 matrix.putRow(idx.getAndIncrement(),matrixOld.getRow(i));
             }
         }
+        matrixOld.cleanup();
+
         allTitlesList.removeAll(invalidTechnologies);
         System.out.println("Valid technologies: "+allTitlesList.size()+" out of "+matrixOld.rows());
         Map<String,Integer> wordToIndexMap = new HashMap<>();
-        Map<String,Integer> titleToIndexMap = new HashMap<>();
-        invalidTechnologies.forEach(invalid->{
-
-        });
         for(int i = 0; i < allWordsList.size(); i++) {
             wordToIndexMap.put(allWordsList.get(i),i);
-        }
-        for(int i = 0; i < allTitlesList.size(); i++) {
-            titleToIndexMap.put(allTitlesList.get(i),i);
         }
         Connection seedConn = Database.newSeedConn();
         PreparedStatement ps = seedConn.prepareStatement("select family_id,publication_number_full,abstract from big_query_patent_english_abstract");
@@ -79,34 +87,52 @@ public class PredictTechTags {
         AtomicLong cnt = new AtomicLong(0);
         Connection conn = Database.getConn();
         final int batch = 1000;
+        AtomicLong totalCnt = new AtomicLong(0);
+        PreparedStatement insertDesign = conn.prepareStatement("insert into big_query_technologies (family_id,technology) values (?,'DESIGN') on conflict (family_id) do update set technology='DESIGN'");
+        PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies (family_id,technology) values (?,'BOTANY') on conflict (family_id) do update set technology='BOTANY'");
         while(true) {
             int i = 0;
             INDArray vectors = Nd4j.create(matrix.columns(),batch);
             List<String> familyIds = new ArrayList<>(batch);
             for(; i < batch&&rs.next(); i++) {
+                totalCnt.getAndIncrement();
                 String familyId = rs.getString(1);
                 familyIds.add(familyId);
-                String publicationNumber = rs.getString(2);
-                String text = rs.getString(3);
-                String[] content = textToWordFunction.apply(text);
-                int found = 0;
-                float[] data = new float[matrix.columns()];
-                for (String word : content) {
-                    Integer index = wordToIndexMap.get(word);
-                    if (index != null) {
-                        found++;
-                        data[index]++;
-                    }
-                }
-                if (found > 3) {
-                    vectors.putColumn(i, Nd4j.create(data));
-                    //System.out.println("Best tag for " + publicationNumber + ": " + tag);
-                } else {
+                String publicationNumberFull = rs.getString(2);
+                String publicationNumber = publicationNumberFull.substring(2);
+                if(publicationNumber.startsWith("PP")) {
+                    // plant
+                    insertDesign.setString(1, familyId);
+                    insertDesign.executeUpdate();
                     i--;
-                    continue;
+                } else if (publicationNumber.startsWith("D")) {
+                    // design
+                    insertPlant.setString(1, familyId);
+                    insertPlant.executeUpdate();
+                    i--;
+                } else {
+                    String text = rs.getString(3);
+                    String[] content = textToWordFunction.apply(text);
+                    int found = 0;
+                    float[] data = new float[matrix.columns()];
+                    for (String word : content) {
+                        Integer index = wordToIndexMap.get(word);
+                        if (index != null) {
+                            found++;
+                            data[index]++;
+                        }
+                    }
+                    if (found > 10) {
+                        vectors.putColumn(i, Nd4j.create(data));
+                        //System.out.println("Best tag for " + publicationNumber + ": " + tag);
+                    } else {
+                        i--;
+                        continue;
+                    }
+
                 }
                 if (cnt.getAndIncrement() % 10000 == 9999) {
-                    System.out.println("Finished: " + cnt.get());
+                    System.out.println("Finished: " + cnt.get() + " valid of " + totalCnt.get());
                     Database.commit();
                 }
             }
