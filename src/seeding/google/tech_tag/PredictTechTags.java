@@ -86,8 +86,8 @@ public class PredictTechTags {
             int[] bestIndices = Nd4j.argMax(scores, 0).data().asInt();
             String insert = "insert into big_query_technologies (family_id,technology) values ? on conflict(family_id) do update set technology=excluded.technology";
             StringJoiner valueJoiner = new StringJoiner(",");
-            StringJoiner innerJoiner = new StringJoiner("','","('","')");
             for(int j = 0; j < i; j++) {
+                StringJoiner innerJoiner = new StringJoiner("','","('","')");
                 int bestIdx = bestIndices[j];
                 String familyId = familyIds.get(j);
                 String tag = allTitlesList.get(bestIdx);
