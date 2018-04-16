@@ -49,7 +49,10 @@ public class PredictTechTags {
                     "ALCOHOL",
                     "DYNABEADS",
                     "CHINESE COOKING TECHNIQUES",
-                    "LITER OF LIGHT"
+                    "LITER OF LIGHT",
+                    "WATER SUPPLY",
+                    "VOLKSWAGEN GROUP",
+                    "BMW"
             )
     );
 
@@ -86,7 +89,7 @@ public class PredictTechTags {
         ResultSet rs = ps.executeQuery();
         AtomicLong cnt = new AtomicLong(0);
         Connection conn = Database.getConn();
-        final int batch = 1000;
+        final int batch = 500;
         AtomicLong totalCnt = new AtomicLong(0);
         PreparedStatement insertDesign = conn.prepareStatement("insert into big_query_technologies (family_id,technology) values (?,'DESIGN') on conflict (family_id) do update set technology='DESIGN'");
         PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies (family_id,technology) values (?,'BOTANY') on conflict (family_id) do update set technology='BOTANY'");
