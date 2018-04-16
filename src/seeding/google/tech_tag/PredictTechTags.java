@@ -4,7 +4,6 @@ import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
-import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Database;
 
 import java.io.File;
@@ -42,7 +41,7 @@ public class PredictTechTags {
         ResultSet rs = ps.executeQuery();
         AtomicLong cnt = new AtomicLong(0);
         Connection conn = Database.getConn();
-        final int batch = 100;
+        final int batch = 5000;
         while(true) {
             int i = 0;
             INDArray vectors = Nd4j.create(matrix.columns(),batch);
@@ -69,8 +68,9 @@ public class PredictTechTags {
                     i--;
                     continue;
                 }
-                if (cnt.getAndIncrement() % 100 == 99) {
+                if (cnt.getAndIncrement() % 10000 == 9999) {
                     System.out.println("Finished: " + cnt.get());
+                    Database.commit();
                 }
             }
             if(i==0) {
@@ -96,9 +96,6 @@ public class PredictTechTags {
             }
             PreparedStatement insertPs = conn.prepareStatement(insert.replace("?",valueJoiner.toString()));
             insertPs.executeUpdate();
-            if(cnt.get()%10000==9999) {
-                Database.commit();
-            }
             if(breakAfter) {
                 break;
             }
