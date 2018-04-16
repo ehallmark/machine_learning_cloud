@@ -2,9 +2,8 @@ package seeding.google.elasticsearch;
 
 import elasticsearch.DataSearcher;
 import org.elasticsearch.search.sort.SortOrder;
-import seeding.google.attributes.AssigneeHarmonized;
-import seeding.google.attributes.Constants;
-import seeding.google.attributes.Name;
+import seeding.google.elasticsearch.attributes.AssigneeName;
+import seeding.google.elasticsearch.attributes.Assignees;
 import seeding.google.mongo.ingest.IngestPatents;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
@@ -26,7 +25,7 @@ public class SearchForAssignees {
         String index = IngestPatents.INDEX_NAME;
         String type = IngestPatents.TYPE_NAME;
 
-        Collection<AbstractAttribute> attributes = Constants.buildAttributes();
+        Collection<AbstractAttribute> attributes = Attributes.buildAttributes();
 
         Map<String,NestedAttribute> nestedAttributeMap = attributes.stream()
                 .filter(attr->attr instanceof NestedAttribute)
@@ -52,11 +51,11 @@ public class SearchForAssignees {
         final BufferedWriter writer = new BufferedWriter(new FileWriter(new File("disney_assignee_foreign.csv")));
         writer.write("Asset Number, Country, Family ID, Priority Date (est.), Assignee(s), Search Term\n");
         for(String assignee : assignees) {
-            NestedAttribute assigneeAttr = new AssigneeHarmonized();
+            NestedAttribute assigneeAttr = new Assignees();
             Map<String,Map<Integer,Set<String>>> countryToFamilyIdsToYearMap = Collections.synchronizedMap(new HashMap<>());
             companyToCountryToFamilyIdsToYearMap.put(assignee,countryToFamilyIdsToYearMap);
 
-            AbstractAttribute assigneeText = assigneeAttr.getAttributes().stream().filter(attr->attr instanceof Name).findFirst().orElse(null);
+            AbstractAttribute assigneeText = assigneeAttr.getAttributes().stream().filter(attr->attr instanceof AssigneeName).findFirst().orElse(null);
 
             AdvancedKeywordFilter assigneeFilter = new AdvancedKeywordFilter(assigneeText, AbstractFilter.FilterType.AdvancedKeyword);
             assigneeFilter.setQueryStr(assignee);
@@ -65,9 +64,9 @@ public class SearchForAssignees {
             filter.setFilterSubset(Arrays.asList(assigneeFilter));
 
             ItemTransformer transformer = item -> {
-                String familyId = (String) item.getDataMap().get(Constants.FAMILY_ID);
-                String year = (String) item.getDataMap().getOrDefault(Constants.PRIORITY_DATE, item.getDataMap().get(Constants.FILING_DATE));
-                String country = (String) item.getDataMap().get(Constants.COUNTRY_CODE);
+                String familyId = (String) item.getDataMap().get(Attributes.FAMILY_ID);
+                String year = (String) item.getDataMap().getOrDefault(Attributes.PRIORITY_DATE, item.getDataMap().get(Attributes.FILING_DATE));
+                String country = (String) item.getDataMap().get(Attributes.COUNTRY_CODE);
                 if(year==null||familyId==null||country==null) return null;
                 LocalDate date = LocalDate.parse(year,DateTimeFormatter.BASIC_ISO_DATE);
                 year = String.valueOf(date.getYear());
@@ -77,10 +76,10 @@ public class SearchForAssignees {
                     familyIdToYearMap.putIfAbsent(Integer.valueOf(year),Collections.synchronizedSet(new HashSet<>()));
                     familyIdToYearMap.get(Integer.valueOf(year)).add(familyId);
                 }
-                String assigneesMatched = String.join("; ",((String)item.getDataMap().getOrDefault(Constants.ASSIGNEE_HARMONIZED+"."+Constants.NAME,"")).split(DataSearcher.ARRAY_SEPARATOR));
+                String assigneesMatched = String.join("; ",((String)item.getDataMap().getOrDefault(Attributes.ASSIGNEES+"."+Attributes.ASSIGNEE_HARMONIZED,"")).split(DataSearcher.ARRAY_SEPARATOR));
                 System.out.println("Assignees matched: "+assigneesMatched);
                 StringJoiner sj = new StringJoiner("\",\"", "\"", "\"\n")
-                        .add((String)item.getDataMap().get(Constants.FULL_PUBLICATION_NUMBER))
+                        .add((String)item.getDataMap().get(Attributes.PUBLICATION_NUMBER_FULL))
                         .add(country)
                         .add(familyId)
                         .add(date.format(DateTimeFormatter.ISO_DATE))

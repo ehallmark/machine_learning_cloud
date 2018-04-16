@@ -5,7 +5,6 @@ import elasticsearch.MyClient;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import seeding.google.attributes.Constants;
 import seeding.google.mongo.ingest.IngestPatents;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
@@ -24,9 +23,10 @@ public class CreatePatentIndex {
         CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(IngestPatents.INDEX_NAME)
                 .setSettings(Settings.builder()
                         .put("index.number_of_replicas",0)
+                        .put("index.number_of_shards",3)
                 );
 
-        Collection<AbstractAttribute> allAttributes = Constants.buildAttributes();
+        Collection<AbstractAttribute> allAttributes = Attributes.buildAttributes();
 
         Map<String,Object> properties = createPropertiesMap(allAttributes);
 

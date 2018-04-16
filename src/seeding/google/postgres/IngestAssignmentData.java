@@ -7,7 +7,6 @@ import seeding.ai_db_updater.iterators.WebIterator;
 import seeding.ai_db_updater.iterators.ZipFileIterator;
 import seeding.data_downloader.AssignmentDataDownloader;
 import seeding.data_downloader.FileStreamDataDownloader;
-import seeding.google.attributes.Constants;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
 import seeding.google.postgres.xml.AssignmentHandler;
@@ -32,27 +31,27 @@ public class IngestAssignmentData {
         final Connection conn = Database.getConn();
 
         final String[] assignmentFields = new String[]{
-                Constants.REEL_FRAME,
-                Constants.CONVEYANCE_TEXT,
-                Constants.RECORDED_DATE,
-                Constants.EXECUTION_DATE,
-                Constants.ASSIGNEE+"."+Constants.NAME,
-                Constants.ASSIGNOR+"."+Constants.NAME,
+                SeedingConstants.REEL_FRAME,
+                SeedingConstants.CONVEYANCE_TEXT,
+                SeedingConstants.RECORDED_DATE,
+                SeedingConstants.EXECUTION_DATE,
+                SeedingConstants.ASSIGNEE+"."+SeedingConstants.NAME,
+                SeedingConstants.ASSIGNOR+"."+SeedingConstants.NAME,
 
         };
 
         final String[] documentIdFields = new String[]{
-                Constants.REEL_FRAME,
-                Constants.DOC_NUMBER,
-                Constants.KIND_CODE,
-                Constants.IS_FILING,
-                Constants.COUNTRY_CODE,
-                Constants.DATE
+                SeedingConstants.REEL_FRAME,
+                SeedingConstants.DOC_NUMBER,
+                SeedingConstants.KIND_CODE,
+                SeedingConstants.IS_FILING,
+                SeedingConstants.COUNTRY_CODE,
+                SeedingConstants.DATE
         };
 
         Set<String> arrayFields = new HashSet<>();
-        arrayFields.add(Constants.ASSIGNEE);
-        arrayFields.add(Constants.ASSIGNOR);
+        arrayFields.add(SeedingConstants.ASSIGNEE);
+        arrayFields.add(SeedingConstants.ASSIGNOR);
         Set<String> booleanFields = new HashSet<>();
 
         final String valueStrAssignments = Util.getValueStrFor(assignmentFields,arrayFields,booleanFields);

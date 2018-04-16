@@ -5,7 +5,6 @@ import elasticsearch.IngestMongoIntoElasticSearch;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.bson.Document;
 import seeding.Database;
-import seeding.google.attributes.Constants;
 import seeding.google.mongo.ingest.IngestJsonHelper;
 import seeding.google.mongo.ingest.IngestPatents;
 import seeding.google.postgres.query_helper.QueryStream;
@@ -27,14 +26,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static seeding.google.attributes.Constants.*;
-import static seeding.google.attributes.Constants.PUBLICATION_NUMBER_GOOGLE;
 
 public class IngestPatentsFromJson {
 
     private static final LocalDate twentyFiveYearsAgo = LocalDate.of(2018,4,7).minusYears(25);
     protected static final Function<Map<String,Object>,Boolean> filterDocumentFunction = doc -> {
-        String filingDate = (String)doc.get(FILING_DATE);
+        String filingDate = (String)doc.get(SeedingConstants.FILING_DATE);
         if(filingDate==null||filingDate.length()!=10) return false;
         return LocalDate.parse(filingDate, DateTimeFormatter.ISO_DATE).isAfter(twentyFiveYearsAgo);
     };
@@ -42,16 +39,16 @@ public class IngestPatentsFromJson {
     protected static final List<Function<Document,Void>> attributeFunctions = Arrays.asList(
             map -> {
                 // handle publication numbers
-                String publicationNumber = (String)map.get(PUBLICATION_NUMBER_GOOGLE);
+                String publicationNumber = (String)map.get(SeedingConstants.PUBLICATION_NUMBER_GOOGLE);
                 if(publicationNumber!=null) {
                     String[] parts = publicationNumber.split("-");
                     if(parts.length==3) {
                         String fullNumber = String.join("",parts);
                         String countryAndNumber = parts[0]+parts[1];
                         String number = parts[1];
-                        map.put(FULL_PUBLICATION_NUMBER,fullNumber);
-                        map.put(PUBLICATION_NUMBER_WITH_COUNTRY,countryAndNumber);
-                        map.put(PUBLICATION_NUMBER,number);
+                        map.put(SeedingConstants.FULL_PUBLICATION_NUMBER,fullNumber);
+                        map.put(SeedingConstants.PUBLICATION_NUMBER_WITH_COUNTRY,countryAndNumber);
+                        map.put(SeedingConstants.PUBLICATION_NUMBER,number);
                     } else {
 
                         System.out.println("Error with publication number: "+publicationNumber);
@@ -60,23 +57,23 @@ public class IngestPatentsFromJson {
                 return null;
             }, map -> {
                 // handle filing numbers
-                String applicationNumber = (String)map.get(APPLICATION_NUMBER_GOOGLE);
+                String applicationNumber = (String)map.get(SeedingConstants.APPLICATION_NUMBER_GOOGLE);
                 if(applicationNumber!=null) {
                     String[] parts = applicationNumber.split("-");
                     if(parts.length==3) {
                         String fullNumber = String.join("", parts);
                         String countryAndNumber = parts[0] + parts[1];
                         String number = parts[1];
-                        String formatted = (String)map.get(APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY);
+                        String formatted = (String)map.get(SeedingConstants.APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY);
                         if(formatted!=null) {
                             if(formatted.startsWith(parts[0])&&formatted.length()>parts[0].length()) {
                                 formatted = formatted.substring(parts[0].length(),formatted.length());
                             }
-                            map.put(APPLICATION_NUMBER_FORMATTED,formatted);
+                            map.put(SeedingConstants.APPLICATION_NUMBER_FORMATTED,formatted);
                         }
-                        map.put(FULL_APPLICATION_NUMBER, fullNumber);
-                        map.put(APPLICATION_NUMBER_WITH_COUNTRY, countryAndNumber);
-                        map.put(APPLICATION_NUMBER, number);
+                        map.put(SeedingConstants.FULL_APPLICATION_NUMBER, fullNumber);
+                        map.put(SeedingConstants.APPLICATION_NUMBER_WITH_COUNTRY, countryAndNumber);
+                        map.put(SeedingConstants.APPLICATION_NUMBER, number);
                     } else {
                         System.out.println("Error with publication number: "+applicationNumber);
                     }
@@ -91,60 +88,60 @@ public class IngestPatentsFromJson {
         final File dataDir = new File("/home/ehallmark/google-big-query/google-big-query/patents/");
 
         String[] fields = new String[]{
-                Constants.FULL_PUBLICATION_NUMBER,
-                Constants.PUBLICATION_NUMBER,
-                Constants.FULL_APPLICATION_NUMBER,
-                Constants.APPLICATION_NUMBER,
-                Constants.APPLICATION_NUMBER_FORMATTED,
-                Constants.FILING_DATE,
-                Constants.PUBLICATION_DATE,
-                Constants.PRIORITY_DATE,
-                Constants.COUNTRY_CODE,
-                Constants.KIND_CODE,
-                Constants.APPLICATION_KIND,
-                Constants.FAMILY_ID,
-                Constants.ENTITY_STATUS,
-                Constants.TITLE_LOCALIZED+"."+Constants.TEXT,
-                Constants.TITLE_LOCALIZED+"."+Constants.LANGUAGE,
-                Constants.ABSTRACT_LOCALIZED+"."+Constants.TEXT,
-                Constants.ABSTRACT_LOCALIZED+"."+Constants.LANGUAGE,
-                Constants.CLAIMS_LOCALIZED+"."+Constants.TEXT,
-                Constants.CLAIMS_LOCALIZED+"."+Constants.LANGUAGE,
-                Constants.DESCRIPTION_LOCALIZED+"."+Constants.TEXT,
-                Constants.DESCRIPTION_LOCALIZED+"."+Constants.LANGUAGE,
-                Constants.INVENTOR,
-                Constants.ASSIGNEE,
-                Constants.INVENTOR_HARMONIZED+"."+Constants.NAME,
-                Constants.INVENTOR_HARMONIZED+"."+Constants.COUNTRY_CODE,
-                Constants.ASSIGNEE_HARMONIZED+"."+Constants.NAME,
-                Constants.ASSIGNEE_HARMONIZED+"."+Constants.COUNTRY_CODE,
-                Constants.PRIORITY_CLAIM+"."+Constants.FULL_PUBLICATION_NUMBER,
-                Constants.PRIORITY_CLAIM+"."+Constants.FULL_APPLICATION_NUMBER,
-                Constants.PRIORITY_CLAIM+"."+Constants.FILING_DATE,
-                Constants.CPC+"."+ Constants.CODE,
-                Constants.CPC+"."+ Constants.INVENTIVE,
-                Constants.CITATION+"."+Constants.FULL_PUBLICATION_NUMBER,
-                Constants.CITATION+"."+Constants.FULL_APPLICATION_NUMBER,
-                Constants.CITATION+"."+Constants.NPL_TEXT,
-                Constants.CITATION+"."+Constants.TYPE,
-                Constants.CITATION+"."+Constants.CATEGORY,
-                Constants.CITATION+"."+Constants.FILING_DATE
+                SeedingConstants.FULL_PUBLICATION_NUMBER,
+                SeedingConstants.PUBLICATION_NUMBER,
+                SeedingConstants.FULL_APPLICATION_NUMBER,
+                SeedingConstants.APPLICATION_NUMBER,
+                SeedingConstants.APPLICATION_NUMBER_FORMATTED,
+                SeedingConstants.FILING_DATE,
+                SeedingConstants.PUBLICATION_DATE,
+                SeedingConstants.PRIORITY_DATE,
+                SeedingConstants.COUNTRY_CODE,
+                SeedingConstants.KIND_CODE,
+                SeedingConstants.APPLICATION_KIND,
+                SeedingConstants.FAMILY_ID,
+                SeedingConstants.ENTITY_STATUS,
+                SeedingConstants.TITLE_LOCALIZED+"."+SeedingConstants.TEXT,
+                SeedingConstants.TITLE_LOCALIZED+"."+SeedingConstants.LANGUAGE,
+                SeedingConstants.ABSTRACT_LOCALIZED+"."+SeedingConstants.TEXT,
+                SeedingConstants.ABSTRACT_LOCALIZED+"."+SeedingConstants.LANGUAGE,
+                SeedingConstants.CLAIMS_LOCALIZED+"."+SeedingConstants.TEXT,
+                SeedingConstants.CLAIMS_LOCALIZED+"."+SeedingConstants.LANGUAGE,
+                SeedingConstants.DESCRIPTION_LOCALIZED+"."+SeedingConstants.TEXT,
+                SeedingConstants.DESCRIPTION_LOCALIZED+"."+SeedingConstants.LANGUAGE,
+                SeedingConstants.INVENTOR,
+                SeedingConstants.ASSIGNEE,
+                SeedingConstants.INVENTOR_HARMONIZED+"."+SeedingConstants.NAME,
+                SeedingConstants.INVENTOR_HARMONIZED+"."+SeedingConstants.COUNTRY_CODE,
+                SeedingConstants.ASSIGNEE_HARMONIZED+"."+SeedingConstants.NAME,
+                SeedingConstants.ASSIGNEE_HARMONIZED+"."+SeedingConstants.COUNTRY_CODE,
+                SeedingConstants.PRIORITY_CLAIM+"."+SeedingConstants.FULL_PUBLICATION_NUMBER,
+                SeedingConstants.PRIORITY_CLAIM+"."+SeedingConstants.FULL_APPLICATION_NUMBER,
+                SeedingConstants.PRIORITY_CLAIM+"."+SeedingConstants.FILING_DATE,
+                SeedingConstants.CPC+"."+ SeedingConstants.CODE,
+                SeedingConstants.CPC+"."+ SeedingConstants.INVENTIVE,
+                SeedingConstants.CITATION+"."+SeedingConstants.FULL_PUBLICATION_NUMBER,
+                SeedingConstants.CITATION+"."+SeedingConstants.FULL_APPLICATION_NUMBER,
+                SeedingConstants.CITATION+"."+SeedingConstants.NPL_TEXT,
+                SeedingConstants.CITATION+"."+SeedingConstants.TYPE,
+                SeedingConstants.CITATION+"."+SeedingConstants.CATEGORY,
+                SeedingConstants.CITATION+"."+SeedingConstants.FILING_DATE
         };
 
         Set<String> arrayFields = new HashSet<>();
-        arrayFields.add(Constants.TITLE_LOCALIZED);
-        arrayFields.add(Constants.DESCRIPTION_LOCALIZED);
-        arrayFields.add(Constants.CLAIMS_LOCALIZED);
-        arrayFields.add(Constants.INVENTOR);
-        arrayFields.add(Constants.ASSIGNEE);
-        arrayFields.add(Constants.ASSIGNEE_HARMONIZED);
-        arrayFields.add(Constants.INVENTOR_HARMONIZED);
-        arrayFields.add(Constants.PRIORITY_CLAIM);
-        arrayFields.add(Constants.CPC);
-        arrayFields.add(Constants.CITATION);
+        arrayFields.add(SeedingConstants.TITLE_LOCALIZED);
+        arrayFields.add(SeedingConstants.DESCRIPTION_LOCALIZED);
+        arrayFields.add(SeedingConstants.CLAIMS_LOCALIZED);
+        arrayFields.add(SeedingConstants.INVENTOR);
+        arrayFields.add(SeedingConstants.ASSIGNEE);
+        arrayFields.add(SeedingConstants.ASSIGNEE_HARMONIZED);
+        arrayFields.add(SeedingConstants.INVENTOR_HARMONIZED);
+        arrayFields.add(SeedingConstants.PRIORITY_CLAIM);
+        arrayFields.add(SeedingConstants.CPC);
+        arrayFields.add(SeedingConstants.CITATION);
 
         Set<String> booleanFields = new HashSet<>();
-        booleanFields.add(Constants.CPC+"."+Constants.INVENTIVE);
+        booleanFields.add(SeedingConstants.CPC+"."+SeedingConstants.INVENTIVE);
         Connection conn = Database.getConn();
 
         int numFields = fields.length;
