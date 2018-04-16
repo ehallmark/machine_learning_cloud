@@ -100,12 +100,12 @@ public class PredictTechTags {
                 familyIds.add(familyId);
                 String publicationNumberFull = rs.getString(2);
                 String publicationNumber = publicationNumberFull.substring(2);
-                if(publicationNumber.startsWith("PP")) {
+                if(publicationNumber.startsWith("D")) {
                     // plant
                     insertDesign.setString(1, familyId);
                     insertDesign.executeUpdate();
                     i--;
-                } else if (publicationNumber.startsWith("D")) {
+                } else if (publicationNumber.startsWith("PP")) {
                     // design
                     insertPlant.setString(1, familyId);
                     insertPlant.executeUpdate();
