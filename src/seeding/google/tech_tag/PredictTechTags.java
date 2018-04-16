@@ -76,7 +76,9 @@ public class PredictTechTags {
             if(i==0) {
                 break;
             }
+            boolean breakAfter = false;
             if(i<batch) {
+                breakAfter = true;
                 vectors = vectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
             }
             vectors.diviRowVector(vectors.norm2(0));
@@ -96,6 +98,9 @@ public class PredictTechTags {
             insertPs.executeUpdate();
             if(cnt.get()%10000==9999) {
                 Database.commit();
+            }
+            if(breakAfter) {
+                break;
             }
         }
 
