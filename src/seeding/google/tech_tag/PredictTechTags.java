@@ -26,8 +26,8 @@ public class PredictTechTags {
     private static final Set<String> invalidTechnologies = new HashSet<>(
             Arrays.asList(
                     //"DATA PUBLISHING",
-                    //"SURFACE SCIENCE",
-                    //"FRESH WATER",
+                    "SURFACE SCIENCE",
+                    "FRESH WATER",
                     //"POWER ELECTRONICS",
                     "MITSUBISHI RISE",
                     "SONDOR",
@@ -50,7 +50,7 @@ public class PredictTechTags {
                     "DYNABEADS",
                     "CHINESE COOKING TECHNIQUES",
                     "LITER OF LIGHT",
-                    //"WATER SUPPLY",
+                    "WATER SUPPLY",
                     "VOLKSWAGEN GROUP",
                     "HIPPO WATER ROLLER",
                     "DEEP COLUMN STATIONS", // too small
