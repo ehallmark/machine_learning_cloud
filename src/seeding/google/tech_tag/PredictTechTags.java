@@ -17,39 +17,39 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 public class PredictTechTags {
-    public static final File matrixFile = new File("tech_tag_statistics_matrix.jobj");
-    public static final File titleListFile = new File("tech_tag_statistics_title_list.jobj");
-    public static final File wordListFile = new File("tech_tag_statistics_word_list.jobj");
-
+    public static final File matrixFile = new File("/home/ehallmark/repos/poi/tech_tag_statistics_matrix.jobj");
+    public static final File titleListFile = new File("/home/ehallmark/repos/poi/tech_tag_statistics_title_list.jobj");
+    public static final File wordListFile = new File("/home/ehallmark/repos/poi/tech_tag_statistics_word_list.jobj");
+    public static final File parentChildMapFile = new File("/home/ehallmark/repos/poi/tech_tag_statistics_parent_child_map.jobj");
 
     private static final Set<String> invalidTechnologies = new HashSet<>(
             Arrays.asList(
-                    "DATA PUBLISHING",
-                    "SURFACE SCIENCE",
-                    "FRESH WATER",
-                    "POWER ELECTRONICS",
+                    //"DATA PUBLISHING",
+                    //"SURFACE SCIENCE",
+                    //"FRESH WATER",
+                    //"POWER ELECTRONICS",
                     "MITSUBISHI RISE",
                     "SONDOR",
                     "LOCKHEED MARTIN",
                     "INTERNATIONAL VOLUNTEER ORGANIZATIONS",
                     "CHILD WELFARE",
                     "HETEROJUNCTION BIPOLAR TRANSISTOR",
-                    "DEVICE FILE",
+                    //"DEVICE FILE",
                     "BUTEYKO METHOD",
                     "SPIRIT DATACINE",
                     "DRINKING WATER",
-                    "INDUSTRIAL PROCESSES",
+                    //"INDUSTRIAL PROCESSES",
                     "DISNEY SECOND SCREEN",
-                    "COLOR",
-                    "HYDROGEN",
-                    "FULL BODY SCANNER",
-                    "DRIVER STEERING RECOMMENDATION",
-                    "BIG DATA",
-                    "ALCOHOL",
+                    //"COLOR",
+                    //"HYDROGEN",
+                    //"FULL BODY SCANNER",
+                    //"DRIVER STEERING RECOMMENDATION",
+                    //"BIG DATA",
+                    //"ALCOHOL",
                     "DYNABEADS",
                     "CHINESE COOKING TECHNIQUES",
                     "LITER OF LIGHT",
-                    "WATER SUPPLY",
+                    //"WATER SUPPLY",
                     "VOLKSWAGEN GROUP",
                     "HIPPO WATER ROLLER",
                     "DEEP COLUMN STATIONS", // too small
@@ -69,16 +69,21 @@ public class PredictTechTags {
     };
 
     public static void main(String[] args) throws Exception {
+        final int batch = 500;
+
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         INDArray matrixOld = (INDArray) Database.tryLoadObject(matrixFile);
         List<String> allTitlesList = (List<String>) Database.tryLoadObject(titleListFile);
         List<String> allWordsList = (List<String>) Database.tryLoadObject(wordListFile);
+        Map<String,Set<String>> parentChildMap = (Map<String,Set<String>>) Database.tryLoadObject(parentChildMapFile);
+
         int validSize = allTitlesList.size();
         for(String title : allTitlesList) {
             if(invalidTechnologies.contains(title)) {
                 validSize--;
             }
         }
+
         INDArray matrix = Nd4j.create(validSize,matrixOld.columns());
         AtomicInteger idx = new AtomicInteger(0);
         for(int i = 0; i < allTitlesList.size(); i++) {
@@ -90,21 +95,38 @@ public class PredictTechTags {
         matrixOld.cleanup();
 
         allTitlesList.removeAll(invalidTechnologies);
+        for(String invalid : invalidTechnologies) {
+            parentChildMap.remove(invalid);
+        }
+        parentChildMap.values().forEach(valueSet->{
+            valueSet.removeAll(invalidTechnologies);
+        });
+
+        List<String> allParentsList = new ArrayList<>(parentChildMap.keySet());
         System.out.println("Valid technologies: "+allTitlesList.size()+" out of "+matrixOld.rows());
         Map<String,Integer> wordToIndexMap = new HashMap<>();
         for(int i = 0; i < allWordsList.size(); i++) {
             wordToIndexMap.put(allWordsList.get(i),i);
         }
+
+        Map<String,Integer> titleToIndexMap = new HashMap<>();
+        for(int i = 0; i < allTitlesList.size(); i++) {
+            titleToIndexMap.put(allTitlesList.get(i),i);
+        }
+
+        INDArray parentMatrixView = createMatrixView(matrix,allParentsList,titleToIndexMap,false);
+
+
         Connection seedConn = Database.newSeedConn();
         PreparedStatement ps = seedConn.prepareStatement("select family_id,publication_number_full,abstract from big_query_patent_english_abstract");
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
         AtomicLong cnt = new AtomicLong(0);
         Connection conn = Database.getConn();
-        final int batch = 500;
+
         AtomicLong totalCnt = new AtomicLong(0);
-        PreparedStatement insertDesign = conn.prepareStatement("insert into big_query_technologies (family_id,technology) values (?,'DESIGN') on conflict (family_id) do update set technology='DESIGN'");
-        PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies (family_id,technology) values (?,'BOTANY') on conflict (family_id) do update set technology='BOTANY'");
+        PreparedStatement insertDesign = conn.prepareStatement("insert into big_query_technologies (family_id,technology,secondary) values (?,'DESIGN','DESIGN') on conflict (family_id) do update set (technology,secondary)=('DESIGN','DESIGN')");
+        PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies (family_id,technology,secondary) values (?,'BOTANY','PLANTS') on conflict (family_id) do update set (technology,secondary)=('BOTANY','BOTANY')");
         while(true) {
             int i = 0;
             INDArray vectors = Nd4j.create(matrix.columns(),batch);
@@ -160,17 +182,24 @@ public class PredictTechTags {
                 vectors = vectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
             }
             vectors.diviRowVector(vectors.norm2(0));
-            INDArray scores = matrix.mmul(vectors);
+            INDArray scores = parentMatrixView.mmul(vectors);
             int[] bestIndices = Nd4j.argMax(scores, 0).data().asInt();
-            String insert = "insert into big_query_technologies (family_id,technology) values ? on conflict(family_id) do update set technology=excluded.technology";
+            String insert = "insert into big_query_technologies (family_id,technology,secondary) values ? on conflict(family_id) do update set (technology,secondary)=(excluded.technology,excluded.secondary)";
             StringJoiner valueJoiner = new StringJoiner(",");
             for(int j = 0; j < i; j++) {
                 StringJoiner innerJoiner = new StringJoiner("','","('","')");
                 int bestIdx = bestIndices[j];
                 String familyId = familyIds.get(j);
-                String tag = allTitlesList.get(bestIdx);
+                String tag = allParentsList.get(bestIdx);
+                Set<String> children = parentChildMap.get(tag);
+                List<String> childrensList = new ArrayList<>(children);
+                INDArray childView = createMatrixView(matrix,childrensList,titleToIndexMap,false);
+                INDArray childScores = childView.mmul(vectors.getColumn(j));
+                int[] bestChildIndices = Nd4j.argMax(childScores, 0).data().asInt();
+                String secondaryTag = childrensList.get(bestChildIndices[0]);
                 tag = technologyTransformer.apply(tag);
-                innerJoiner.add(familyId).add(tag);
+                secondaryTag = technologyTransformer.apply(secondaryTag);
+                innerJoiner.add(familyId).add(tag).add(secondaryTag);
                 valueJoiner.add(innerJoiner.toString());
             }
             PreparedStatement insertPs = conn.prepareStatement(insert.replace("?",valueJoiner.toString()));
@@ -183,5 +212,10 @@ public class PredictTechTags {
         Database.commit();
         seedConn.commit();
         Database.close();
+    }
+
+    private static INDArray createMatrixView(INDArray full, List<String> elements, Map<String,Integer> indexMap, boolean columnwise) {
+        int[] indices = elements.stream().mapToInt(e->indexMap.get(e)).toArray();
+        return columnwise?full.getColumns(indices):full.getRows(indices);
     }
 }
