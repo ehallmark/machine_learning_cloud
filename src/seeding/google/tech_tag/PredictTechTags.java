@@ -1,5 +1,6 @@
 package seeding.google.tech_tag;
 
+import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -70,8 +71,9 @@ public class PredictTechTags {
 
     public static void main(String[] args) throws Exception {
         final int batch = 500;
-
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
+        DefaultPipelineManager.setCudaEnvironment();
+
         INDArray matrixOld = (INDArray) Database.tryLoadObject(matrixFile);
         List<String> allTitlesList = (List<String>) Database.tryLoadObject(titleListFile);
         List<String> allWordsList = (List<String>) Database.tryLoadObject(wordListFile);
@@ -98,8 +100,9 @@ public class PredictTechTags {
         for(String invalid : invalidTechnologies) {
             parentChildMap.remove(invalid);
         }
-        parentChildMap.values().forEach(valueSet->{
-            valueSet.removeAll(invalidTechnologies);
+        parentChildMap.entrySet().forEach(e->{
+            e.getValue().removeAll(invalidTechnologies);
+            e.getValue().remove(e.getKey());
         });
 
         List<String> allParentsList = new ArrayList<>(parentChildMap.keySet());
