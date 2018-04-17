@@ -134,6 +134,9 @@ public class PredictTechTags {
             int i = 0;
             INDArray vectors = Nd4j.create(matrix.columns(),batch);
             List<String> familyIds = new ArrayList<>(batch);
+            String firstPub = null;
+            String firstTech = null;
+            String firstSecondary = null;
             for(; i < batch&&rs.next(); i++) {
                 totalCnt.getAndIncrement();
                 String familyId = rs.getString(1);
@@ -163,6 +166,7 @@ public class PredictTechTags {
                         }
                     }
                     if (found > 10) {
+                        if(firstPub==null) firstPub=publicationNumberFull;
                         vectors.putColumn(i, Nd4j.create(data));
                         //System.out.println("Best tag for " + publicationNumber + ": " + tag);
                     } else {
@@ -171,10 +175,7 @@ public class PredictTechTags {
                     }
 
                 }
-                if (cnt.getAndIncrement() % 10000 == 9999) {
-                    System.out.println("Finished: " + cnt.get() + " valid of " + totalCnt.get());
-                    Database.commit();
-                }
+
             }
             if(i==0) {
                 break;
@@ -204,6 +205,13 @@ public class PredictTechTags {
                 secondaryTag = technologyTransformer.apply(secondaryTag);
                 innerJoiner.add(familyId).add(tag).add(secondaryTag);
                 valueJoiner.add(innerJoiner.toString());
+                if(firstTech==null) firstTech=tag;
+                if(firstSecondary==null) firstSecondary=secondaryTag;
+                if (cnt.getAndIncrement() % 10000 == 9999) {
+                    System.out.println("Finished: " + cnt.get() + " valid of " + totalCnt.get());
+                    System.out.println("Sample "+firstPub+": " + firstTech+"; "+firstSecondary);
+                    Database.commit();
+                }
             }
             PreparedStatement insertPs = conn.prepareStatement(insert.replace("?",valueJoiner.toString()));
             insertPs.executeUpdate();
