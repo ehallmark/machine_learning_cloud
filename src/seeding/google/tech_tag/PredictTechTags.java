@@ -56,6 +56,7 @@ public class PredictTechTags {
                     "DEEP COLUMN STATIONS", // too small
                     "BMW",
                     "AMATEUR RADIO RECEIVERS",
+                    "WATER MANAGEMENT",
                     "LIMELIGHT"
             )
     );
@@ -105,7 +106,16 @@ public class PredictTechTags {
             e.getValue().remove(e.getKey());
         });
 
+        Map<String,Set<String>> childParentMap = new HashMap<>();
+        parentChildMap.forEach((parent,children)->{
+            children.forEach(child->{
+                childParentMap.putIfAbsent(child,new HashSet<>());
+                childParentMap.get(child).add(parent);
+            });
+        });
+
         List<String> allParentsList = new ArrayList<>(parentChildMap.keySet());
+        List<String> allChildrenList = new ArrayList<>(childParentMap.keySet());
         System.out.println("Valid technologies: "+allTitlesList.size()+" out of "+matrixOld.rows());
         Map<String,Integer> wordToIndexMap = new HashMap<>();
         for(int i = 0; i < allWordsList.size(); i++) {
@@ -121,7 +131,7 @@ public class PredictTechTags {
 
 
         Connection seedConn = Database.newSeedConn();
-        PreparedStatement ps = seedConn.prepareStatement("select family_id,publication_number_full,abstract from big_query_patent_english_abstract");
+        PreparedStatement ps = seedConn.prepareStatement("select family_id,publication_number_full,description from big_query_patent_english_description");
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
         AtomicLong cnt = new AtomicLong(0);
