@@ -47,6 +47,7 @@ public class PredictTechTags {
                     //"DRIVER STEERING RECOMMENDATION",
                     "BIG DATA",
                     //"ALCOHOL",
+                    "ART MEDIA",
                     "FILM",
                     "DYNABEADS",
                     "CHINESE COOKING TECHNIQUES",
@@ -117,7 +118,15 @@ public class PredictTechTags {
 
         List<String> allParentsList = new ArrayList<>(parentChildMap.keySet());
         List<String> allChildrenList = new ArrayList<>(childParentMap.keySet());
-        allParentsList.removeAll(allChildrenList);
+        List<String> childrenToRemove = new ArrayList<>();
+        allChildrenList.forEach(child->{
+            if(childParentMap.getOrDefault(child,Collections.emptySet()).size()>=parentChildMap.getOrDefault(child, Collections.emptySet()).size()) {
+                allParentsList.remove(child);
+            } else {
+                childrenToRemove.add(child);
+            }
+        });
+        allChildrenList.removeAll(childrenToRemove);
 
         System.out.println("Num parents: "+allParentsList.size());
         System.out.println("Num children: "+allChildrenList.size());
