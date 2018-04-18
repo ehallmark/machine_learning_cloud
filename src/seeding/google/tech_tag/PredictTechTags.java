@@ -44,6 +44,7 @@ public class PredictTechTags {
                     "SPIRIT DATACINE",
                     "DRINKING WATER",
                     "DENDRITIC SPINE",
+                    "INTERSPIRO DCSC",
                     "AZEOTROPE",
                     "WINDSCREEN WIPER",
                     "MATERIALS SCIENCE",
