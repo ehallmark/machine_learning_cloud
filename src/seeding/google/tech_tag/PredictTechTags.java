@@ -29,6 +29,7 @@ public class PredictTechTags {
                     "SURFACE SCIENCE",
                     "FRESH WATER",
                     //"POWER ELECTRONICS",
+                    "SEAT BELT",
                     "MITSUBISHI RISE",
                     "SONDOR",
                     "LOCKHEED MARTIN",
