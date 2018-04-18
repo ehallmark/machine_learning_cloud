@@ -27,6 +27,8 @@ public class PredictTechTags {
             Arrays.asList(
                     //"DATA PUBLISHING",
                     "SURFACE SCIENCE",
+                    "SURFACE STRESS",
+                    "POWER MOSFET",
                     "FRESH WATER",
                     //"POWER ELECTRONICS",
                     "SEAT BELT",
@@ -67,13 +69,9 @@ public class PredictTechTags {
             )
     );
 
-    private static final Map<String,String> techTransformationMap = new HashMap<>();
-    static {
-        // FOR EXAMPE ...
-        // techTransformationMap.put("HYDROGEN VEHICLE","VEHICLE");
-    }
+
     private static final Function<String,String> technologyTransformer = tech -> {
-        return techTransformationMap.getOrDefault(tech, tech);
+        return tech;
     };
 
     public static void main(String[] args) throws Exception {
