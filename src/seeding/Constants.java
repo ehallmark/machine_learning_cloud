@@ -193,6 +193,7 @@ public class Constants {
 	public static final String USB_DRIVE_FOLDER = "/usb/";
 	public static final String PATENT_ZIP_FOLDER = USB_DRIVE_FOLDER+Constants.DATA_FOLDER + "patents/";
 	public static final String APP_ZIP_FOLDER = USB_DRIVE_FOLDER+Constants.DATA_FOLDER + "applications/";
+	public static final String PTAB_ZIP_FOLDER = USB_DRIVE_FOLDER+Constants.DATA_FOLDER + "ptab/";
 	public static final String ASSIGNMENT_ZIP_FOLDER = USB_DRIVE_FOLDER+Constants.DATA_FOLDER + "assignments/";
 
 	private static UrlCreator defaultPatentUrlCreator(String baseUrl) {

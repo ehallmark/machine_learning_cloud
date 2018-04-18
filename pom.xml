@@ -49,7 +49,22 @@
         </plugins>
     </build>
 
+    <repositories>
+        <repository>
+            <id>snowtide-releases</id>
+            <url>http://maven.snowtide.com/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+    </repositories>
+
     <dependencies>
+        <dependency>
+            <groupId>com.snowtide</groupId>
+            <artifactId>pdfxstream</artifactId>
+            <version>3.5.0</version>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>

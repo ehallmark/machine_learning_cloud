@@ -145,8 +145,8 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
         System.out.println("Error on file: "+file.getName());
         try {
             failedDates.add(dateFromFileName(file.getName()));
-        } catch(DateTimeException e) {
-
+        } catch(Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -157,7 +157,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
         try {
             failedDates.remove(dateFromFileName(file.getName()));
         } catch(Exception e) {
-
+            e.printStackTrace();
         }
         finishedFiles.add(file.getName());
     }

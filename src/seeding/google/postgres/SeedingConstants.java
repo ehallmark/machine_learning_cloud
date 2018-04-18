@@ -1,6 +1,7 @@
 package seeding.google.postgres;
 
 public class SeedingConstants {
+    public static final String PTAB = "ptab";
     public static final String COUNTRY_CODE = "country_code";
     public static final String KIND_CODE = "kind_code";
     public static final String APPLICATION_KIND = "application_kind";
