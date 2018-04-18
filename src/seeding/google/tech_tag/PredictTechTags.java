@@ -116,6 +116,10 @@ public class PredictTechTags {
 
         List<String> allParentsList = new ArrayList<>(parentChildMap.keySet());
         List<String> allChildrenList = new ArrayList<>(childParentMap.keySet());
+        allParentsList.removeAll(allChildrenList);
+
+        System.out.println("Num parents: "+allParentsList.size());
+        System.out.println("Num children: "+allChildrenList.size());
         System.out.println("Valid technologies: "+allTitlesList.size()+" out of "+matrixOld.rows());
         Map<String,Integer> wordToIndexMap = new HashMap<>();
         for(int i = 0; i < allWordsList.size(); i++) {
@@ -128,7 +132,7 @@ public class PredictTechTags {
         }
 
         INDArray parentMatrixView = createMatrixView(matrix,allParentsList,titleToIndexMap,false);
-
+        INDArray childMatrixView = createMatrixView(matrix,allChildrenList,titleToIndexMap,false);
 
         Connection seedConn = Database.newSeedConn();
         PreparedStatement ps = seedConn.prepareStatement("select family_id,publication_number_full,description from big_query_patent_english_description");
@@ -196,27 +200,23 @@ public class PredictTechTags {
                 vectors = vectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
             }
             vectors.diviRowVector(vectors.norm2(0));
-            INDArray scores = parentMatrixView.mmul(vectors);
-            int[] bestIndices = Nd4j.argMax(scores, 0).data().asInt();
+            INDArray primaryScores = parentMatrixView.mmul(vectors);
+            int[] bestPrimaryIndices = Nd4j.argMax(primaryScores, 0).data().asInt();
+            INDArray secondaryScores = childMatrixView.mmul(vectors);
+            int[] bestSecondaryIndices = Nd4j.argMax(secondaryScores, 0).data().asInt();
             String insert = "insert into big_query_technologies (family_id,technology,secondary) values ? on conflict(family_id) do update set (technology,secondary)=(excluded.technology,excluded.secondary)";
             StringJoiner valueJoiner = new StringJoiner(",");
             for(int j = 0; j < i; j++) {
                 StringJoiner innerJoiner = new StringJoiner("','","('","')");
-                int bestIdx = bestIndices[j];
                 String familyId = familyIds.get(j);
-                String tag = allParentsList.get(bestIdx);
-                Set<String> children = parentChildMap.get(tag);
-                List<String> childrensList = new ArrayList<>(children);
-                INDArray childView = createMatrixView(matrix,childrensList,titleToIndexMap,false);
-                INDArray childScores = childView.mmul(vectors.getColumn(j));
-                int[] bestChildIndices = Nd4j.argMax(childScores, 0).data().asInt();
-                String secondaryTag = childrensList.get(bestChildIndices[0]);
+                String tag = allParentsList.get(bestPrimaryIndices[j]);
+                String secondary = allChildrenList.get(bestSecondaryIndices[j]);
                 tag = technologyTransformer.apply(tag);
-                secondaryTag = technologyTransformer.apply(secondaryTag);
-                innerJoiner.add(familyId).add(tag).add(secondaryTag);
+                secondary = technologyTransformer.apply(secondary);
+                innerJoiner.add(familyId).add(tag).add(secondary);
                 valueJoiner.add(innerJoiner.toString());
                 if(firstTech==null) firstTech=tag;
-                if(firstSecondary==null) firstSecondary=secondaryTag;
+                if(firstSecondary==null) firstSecondary=secondary;
                 if (cnt.getAndIncrement() % 10000 == 9999) {
                     System.out.println("Finished: " + cnt.get() + " valid of " + totalCnt.get());
                     System.out.println("Sample "+firstPub+": " + firstTech+"; "+firstSecondary);
