@@ -356,7 +356,7 @@ public class Parser {
         if(val==null) val = queryStr;
 
         if(query instanceof TermQuery) {
-            if(val.contains(" ")) {
+            if(val.replaceAll("[^A-Za-z0-9]","").length()!=val.length()) {
                 val = "\"" + val + "\"";
             }
         }
