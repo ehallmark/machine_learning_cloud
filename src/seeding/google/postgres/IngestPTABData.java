@@ -55,7 +55,7 @@ public class IngestPTABData {
         FileStreamDataDownloader downloader = new PTABDataDownloader();
 
         Function<File,File> destinationToFileFunction = destFolder -> {
-            for(File child : destFolder.listFiles()) {
+            for(File child : destFolder.listFiles()[0].listFiles()) {
                 if(child.getName().startsWith("Meta_")) {
                     return child;
                 }
@@ -79,7 +79,7 @@ public class IngestPTABData {
                     pdf = PDFExtractor.extractPDF(new File(new File(file, "PDF_image"), fileId));
                 } catch (Exception e) {
                     e.printStackTrace();
-                    System.out.println("Error while extrating pdf...");
+                    System.out.println("Error while extracting pdf...");
                 }
             }
             data.add(pdf);
