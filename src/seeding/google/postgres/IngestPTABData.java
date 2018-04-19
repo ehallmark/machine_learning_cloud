@@ -77,7 +77,7 @@ public class IngestPTABData {
             if(file!=null&&fileId!=null) {
                 file = file.getParentFile();
                 try {
-                    pdf = PDFExtractor.extractPDF(new File(new File(file, "PDF_image"), fileId));
+                    pdf = PDFExtractor.extractPDF(new File(new File(file, "PDF_image"), fileId+".pdf"));
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Error while extracting pdf...");
