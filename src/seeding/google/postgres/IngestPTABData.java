@@ -75,6 +75,7 @@ public class IngestPTABData {
             String fileId = (String)map.get("image_id");
             String pdf = null;
             if(file!=null&&fileId!=null) {
+                file = file.getParentFile();
                 try {
                     pdf = PDFExtractor.extractPDF(new File(new File(file, "PDF_image"), fileId));
                 } catch (Exception e) {
