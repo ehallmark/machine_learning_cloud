@@ -49,7 +49,7 @@ public class IngestPTABData {
                 "doc_text"
         };
 
-        final String sql = "insert into big_query_ptab (appeal_no,interference_no,patent_no,pre_grant_publication_no,application_no,mailed_date,inventor_last_name,inventor_first_name,case_name,last_modified,doc_type,status,image_id,doc_text) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict (appeal_no,interference_no) do update set (patent_no,pre_grant_publication_no,application_no,mailed_date,inventor_last_name,inventor_first_name,case_name,last_modified,doc_type,status,image_id,doc_text) = (excluded.patent_no,excluded.pre_grant_publication_no,excluded.application_no,excluded.mailed_date,excluded.inventor_last_name,excluded.inventor_first_name,excluded.case_name,excluded.last_modified,excluded.doc_type,excluded.status,excluded.image_id,excluded.doc_text)";
+        final String sql = "insert into big_query_ptab (appeal_no,interference_no,patent_no,pre_grant_publication_no,application_no,mailed_date,inventor_last_name,inventor_first_name,case_name,last_modified,doc_type,status,image_id,doc_text) values (?,?,?,?,?,?::date,?,?,?,?::date,?,?,?,?) on conflict (appeal_no,interference_no) do update set (patent_no,pre_grant_publication_no,application_no,mailed_date,inventor_last_name,inventor_first_name,case_name,last_modified,doc_type,status,image_id,doc_text) = (excluded.patent_no,excluded.pre_grant_publication_no,excluded.application_no,excluded.mailed_date,excluded.inventor_last_name,excluded.inventor_first_name,excluded.case_name,excluded.last_modified,excluded.doc_type,excluded.status,excluded.image_id,excluded.doc_text)";
         DefaultApplier applier = new DefaultApplier(false, conn, fields);
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
 
@@ -72,8 +72,8 @@ public class IngestPTABData {
 
         // main consumer
         Consumer<Map<String,Object>> ingest = map -> {
-            if(map.containsKey("mailed_date")) map.put("mailed_date", Date.valueOf(LocalDate.parse(map.get("mailed_date").toString().split(" ")[0])));
-            if(map.containsKey("last_modified")) map.put("last_modified", Date.valueOf(LocalDate.parse(map.get("last_modified").toString().split(" ")[0])));
+            if(map.containsKey("mailed_date")) map.put("mailed_date", map.get("mailed_date").toString().split(" ")[0].replace("/","-"));
+            if(map.containsKey("last_modified")) map.put("last_modified", map.get("last_modified").toString().split(" ")[0].replace("/","-"));
             List<Object> data = Stream.of(fields).map(field->map.get(field)).collect(Collectors.toCollection(ArrayList::new));
             File file = iterator.getCurrentlyIngestingFile();
             String fileId = (String)map.get("image_id");
