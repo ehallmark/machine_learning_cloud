@@ -70,7 +70,7 @@ public class PTABHandler extends NestedHandler {
         documentFlag.addChild(Flag.simpleFlag("PATENT_NO", "patent_no", documentFlag));
         documentFlag.addChild(Flag.simpleFlag("PRE_GRANT_PUBLICATION_NO", "pre_grant_publication_no", documentFlag));
         documentFlag.addChild(Flag.simpleFlag("BD_PATENT_APPLICATION_NO", "application_no", documentFlag));
-        documentFlag.addChild(Flag.simpleFlag("MAILED_DATE", "mailed_date", documentFlag));
+        documentFlag.addChild(Flag.simpleFlag("DECISION_MAILED_DT", "mailed_date", documentFlag));
         documentFlag.addChild(Flag.simpleFlag("INVENTOR_FAMILY_NM", "inventor_last_name", documentFlag));
         documentFlag.addChild(Flag.simpleFlag("INVENTOR_GIVEN_NM", "inventor_first_name", documentFlag));
         documentFlag.addChild(Flag.simpleFlag("INVENTOR_STRING_TX", "case_name", documentFlag));

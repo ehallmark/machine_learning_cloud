@@ -72,10 +72,24 @@ public class IngestPTABData {
 
         // main consumer
         Consumer<Map<String,Object>> ingest = map -> {
-            if(map.containsKey("mailed_date")) map.put("mailed_date", map.get("mailed_date").toString().split(" ")[0].replace("/","-"));
-            if(map.containsKey("last_modified")) map.put("last_modified", map.get("last_modified").toString().split(" ")[0].replace("/","-"));
-            System.out.println("Mailed date: "+map.get("mailed_date"));
-            System.out.println("last_modified date: "+map.get("last_modified"));
+            if(map.containsKey("mailed_date")) {
+                map.put("mailed_date", map.get("mailed_date").toString().split(" ")[0].replace("/","-"));
+                try {
+                    LocalDate.parse(map.get("mailed_date").toString());
+                } catch(Exception e) {
+                    map.remove("mailed_date");
+                }
+            }
+            if(map.containsKey("last_modified")) {
+                map.put("last_modified", map.get("last_modified").toString().split(" ")[0].replace("/","-"));
+                try {
+                    LocalDate.parse(map.get("last_modified").toString());
+                } catch(Exception e) {
+                    map.remove("last_modified");
+                }
+            }
+            //System.out.println("Mailed date: "+map.get("mailed_date"));
+            //System.out.println("last_modified date: "+map.get("last_modified"));
             List<Object> data = Stream.of(fields).map(field->map.get(field)).collect(Collectors.toCollection(ArrayList::new));
             File file = iterator.getCurrentlyIngestingFile();
             String fileId = (String)map.get("image_id");
