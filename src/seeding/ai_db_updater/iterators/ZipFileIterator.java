@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import org.apache.commons.io.FileUtils;
 import seeding.ai_db_updater.handlers.CustomHandler;
 import seeding.ai_db_updater.tools.ZipHelper;
 import seeding.data_downloader.FileStreamDataDownloader;
@@ -65,6 +66,7 @@ public class ZipFileIterator implements WebIterator {
         (parallel ? fileStream.parallelStream() : fileStream.stream()).forEach(zipFile->{
             final String destinationFilename = destinationPrefix + zipFile.getName();
             AtomicBoolean failed = new AtomicBoolean(false);
+            File xmlFile = null;
             try {
                 System.out.print("Starting to unzip: "+zipFile.getName()+"...");
                 // Unzip file
@@ -85,7 +87,7 @@ public class ZipFileIterator implements WebIterator {
                     bos.close();
                 }
 
-                File xmlFile = destinationToFileFunction.apply(new File(destinationFilename));
+                xmlFile = destinationToFileFunction.apply(new File(destinationFilename));
                 if (xmlFile.exists()) {
                     if(!parallel)currentlyIngestingFile=xmlFile;
                     System.out.println("Parsing "+xmlFile.getName()+" now...");
@@ -171,8 +173,20 @@ public class ZipFileIterator implements WebIterator {
                     }
                 }
 
-                File xmlFile = new File(destinationFilename);
-                if (xmlFile.exists()) xmlFile.delete();
+                if(xmlFile!=null) {
+                    if (xmlFile.exists()) {
+                        if(xmlFile.isDirectory()) {
+                            try {
+                                FileUtils.deleteDirectory(xmlFile);
+                            } catch(Exception e) {
+                                e.printStackTrace();
+                                System.out.println("Error deleting directory: "+xmlFile.getAbsolutePath());
+                            }
+                        } else {
+                            xmlFile.delete();
+                        }
+                    }
+                }
             }
 
         });
