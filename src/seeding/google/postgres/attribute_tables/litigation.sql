@@ -38,8 +38,7 @@ create table big_query_ptab (
       last_modified date,
       doc_type varchar(100),
       status varchar(50),
-      image_id varchar(100)
+      image_id varchar(100),
       doc_text text,
-      constraint appeal_interference_nos_uniq_idx
       unique (appeal_no,interference_no)
 );
