@@ -26,6 +26,7 @@ create table big_query_litigation (
 )
 
 create table big_query_ptab (
+      image_id varchar(100) primary key,
       appeal_no varchar(100),
       interference_no varchar(100),
       patent_no varchar(32),
@@ -38,7 +39,5 @@ create table big_query_ptab (
       last_modified date,
       doc_type varchar(100),
       status varchar(50),
-      image_id varchar(100),
-      doc_text text,
-      unique (appeal_no,interference_no)
+      doc_text text
 );
