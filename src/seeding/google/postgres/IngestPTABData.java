@@ -12,6 +12,8 @@ import seeding.google.postgres.xml.PTABHandler;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +72,8 @@ public class IngestPTABData {
 
         // main consumer
         Consumer<Map<String,Object>> ingest = map -> {
+            if(map.containsKey("mailed_date")) map.put("mailed_date", Date.valueOf(LocalDate.parse(map.get("mailed_date").toString().split(" ")[0])));
+            if(map.containsKey("last_modified")) map.put("last_modified", Date.valueOf(LocalDate.parse(map.get("last_modified").toString().split(" ")[0])));
             List<Object> data = Stream.of(fields).map(field->map.get(field)).collect(Collectors.toCollection(ArrayList::new));
             File file = iterator.getCurrentlyIngestingFile();
             String fileId = (String)map.get("image_id");

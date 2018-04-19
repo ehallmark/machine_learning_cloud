@@ -1,20 +1,35 @@
 package pdf;
 
-import com.snowtide.PDF;
-import com.snowtide.pdf.Document;
-import com.snowtide.pdf.OutputTarget;
+import org.apache.pdfbox.cos.COSDocument;
+import org.apache.pdfbox.io.RandomAccessFile;
+import org.apache.pdfbox.pdfparser.PDFParser;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 public class PDFExtractor {
 
     public static String extractPDF(File pdfFile) throws IOException {
-        String pdfFilePath = pdfFile.getAbsolutePath();
-        Document pdf = PDF.open(pdfFilePath);
-        StringBuilder text = new StringBuilder(1024);
-        pdf.pipe(new OutputTarget(text));
-        pdf.close();
-        return text.toString();
+        PDFTextStripper pdfStripper = null;
+        PDDocument pdDoc = null;
+        COSDocument cosDoc = null;
+        try {
+            // PDFBox 2.0.8 require org.apache.pdfbox.io.RandomAccessRead
+            RandomAccessFile randomAccessFile = new RandomAccessFile(pdfFile, "r");
+            PDFParser parser = new PDFParser(randomAccessFile);
+            parser.parse();
+            cosDoc = parser.getDocument();
+            pdfStripper = new PDFTextStripper();
+            pdDoc = new PDDocument(cosDoc);
+            pdfStripper.setStartPage(1);
+            pdfStripper.setEndPage(5);
+            return pdfStripper.getText(pdDoc);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
