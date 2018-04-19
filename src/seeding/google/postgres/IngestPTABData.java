@@ -90,11 +90,14 @@ public class IngestPTABData {
             }
             //System.out.println("Mailed date: "+map.get("mailed_date"));
             //System.out.println("last_modified date: "+map.get("last_modified"));
+            if(map.containsKey("image_id")) map.put("image_id",map.get("image_id").toString().replace(" ",""));
             List<Object> data = Stream.of(fields).map(field->map.get(field)).collect(Collectors.toCollection(ArrayList::new));
             File file = iterator.getCurrentlyIngestingFile();
             String fileId = (String)map.get("image_id");
             String pdf = null;
             if(file!=null&&fileId!=null) {
+                fileId = fileId.replace(" ","");
+
                 file = file.getParentFile();
                 try {
                     pdf = PDFExtractor.extractPDF(new File(new File(file, "PDF_image"), fileId+".pdf"));
