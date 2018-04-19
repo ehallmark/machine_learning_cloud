@@ -75,7 +75,7 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
         Activation activation = Activation.TANH;
         Nd4j.getRandom().setSeed(rngSeed);
 
-        int hiddenLayerSize = 256;
+        int hiddenLayerSize = 128;
 
         Map<Integer,Double> iterationLearningRate = new HashMap<>();
         iterationLearningRate.put(0,learningRate);
@@ -110,7 +110,7 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
     public void train(int nEpochs) {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         MultiDataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
-        final int printIterations = 100;
+        final int printIterations = 1000;
 
         if(net==null) {
             final double learningRate = 0.01;
@@ -140,7 +140,7 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
             }
             System.gc();
             validationIterator.reset();
-            return 1D+(total/validationDatasets.size());
+            return (total/validationDatasets.size());
         };
 
         Function<Object,Double> trainErrorFunction = (v) -> {

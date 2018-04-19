@@ -45,7 +45,7 @@ public class IngestPTABIterator implements DateIterator {
                     // valid
                     System.out.println("Found link: "+link.text());
                     filenames.add(link.text());
-                    urls.add(new URL("https://patents.reedtech.com/"+link.attr("href")));
+                    urls.add(new URL("http://patentscur.reedtech.com/"+link.attr("href")));
                 }
             }
         } catch(Exception e) {
