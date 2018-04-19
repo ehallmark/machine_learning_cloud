@@ -21,7 +21,7 @@ import java.sql.PreparedStatement;
  * Created by ehallmark on 11/7/17.
  */
 public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<MultiDataSetIterator,INDArray> {
-    public static final int BATCH_SIZE = 1024;
+    public static final int BATCH_SIZE = 2048;
     public static final int MAX_SEQUENCE_LENGTH = 64;
     public static final int MINI_BATCH_SIZE = 32;
     public static final int VECTOR_SIZE = 128;
@@ -47,7 +47,7 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
-                model.loadMostRecentModel();
+                ((RNNTextEncodingModel)model).loadModelWithoutDates();
             } catch(Exception e) {
                 System.out.println("Error loading previous model: "+e.getMessage());
             }

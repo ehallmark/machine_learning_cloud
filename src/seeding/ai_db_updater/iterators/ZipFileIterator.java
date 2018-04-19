@@ -1,5 +1,6 @@
 package seeding.ai_db_updater.iterators;
 
+import lombok.Getter;
 import lombok.NonNull;
 import seeding.ai_db_updater.handlers.CustomHandler;
 import seeding.ai_db_updater.tools.ZipHelper;
@@ -28,14 +29,22 @@ public class ZipFileIterator implements WebIterator {
     private boolean perDocument;
     private final Function<File,Boolean> orFunction;
     private boolean testing;
-    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean parallel, boolean perDocument, @NonNull Function<File,Boolean> orFunction, boolean testing) {
+    @Getter
+    private File currentlyIngestingFile;
+    private Function<File,File> destinationToFileFunction;
+    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean parallel, boolean perDocument, @NonNull Function<File,Boolean> orFunction, boolean testing, Function<File,File> destinationToFileFunction) {
         this.cnt=new AtomicInteger(0);
         this.dataDownloader=dataDownloader;
         this.destinationPrefix=destinationPrefix;
         this.parallel=parallel;
+        this.destinationToFileFunction=destinationToFileFunction;
         this.perDocument=perDocument;
         this.testing=testing;
         this.orFunction=orFunction;
+    }
+
+    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean parallel, boolean perDocument, @NonNull Function<File,Boolean> orFunction, boolean testing) {
+        this(dataDownloader,destinationPrefix,parallel,perDocument,orFunction,testing,file->file);
     }
 
     public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean testing) {
@@ -65,8 +74,9 @@ public class ZipFileIterator implements WebIterator {
                     bos.close();
                 }
 
-                File xmlFile = new File(destinationFilename);
+                File xmlFile = destinationToFileFunction.apply(new File(destinationFilename));
                 if (xmlFile.exists()) {
+                    if(!parallel)currentlyIngestingFile=xmlFile;
                     System.out.println("Parsing "+xmlFile.getName()+" now...");
                     SAXParserFactory factory = SAXParserFactory.newInstance();
                     factory.setNamespaceAware(true);

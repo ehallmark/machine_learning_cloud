@@ -29,8 +29,6 @@ public class RNNEncodingIterator implements MultiDataSetIterator{
 
     @Override
     public MultiDataSet next(int n) {
-        Sequence<VocabWord> sequence = iterator.nextSequence();
-        if(sequence==null) return null;
         INDArray allFeatures = Nd4j.zeros(n,word2Vec.getLayerSize(),maxSequenceLength*2);
         INDArray allLabels = Nd4j.zeros(n,word2Vec.getLayerSize(),maxSequenceLength*2);
         INDArray featureMasks = Nd4j.zeros(n,maxSequenceLength*2);
@@ -38,6 +36,8 @@ public class RNNEncodingIterator implements MultiDataSetIterator{
 
         int i = 0;
         while(i < n && iterator.hasMoreSequences()) {
+            Sequence<VocabWord> sequence = iterator.nextSequence();
+            if(sequence==null||sequence.isEmpty()) continue;
             List<String> validWords = sequence.getElements().stream()
                     .filter(w -> word2Vec.hasWord(w.getLabel()))
                     .map(w -> w.getLabel())

@@ -65,6 +65,7 @@ public class PostgresSequenceIterator implements SequenceIterator<VocabWord> {
             String[] words = Util.textToWordFunction.apply(rs.getString(textIdx));
             Sequence<VocabWord> sequence = new Sequence<>();
             for(String word : words) {
+                if(word==null||word.isEmpty()) continue;
                 VocabWord vocabWord = new VocabWord(1f,word);
                 vocabWord.setElementFrequency(1);
                 vocabWord.setSequencesCount(1);

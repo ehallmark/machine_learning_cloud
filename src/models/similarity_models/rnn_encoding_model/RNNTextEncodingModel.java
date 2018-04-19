@@ -14,6 +14,7 @@ import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -60,6 +61,11 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
     }
 
     @Override
+    protected File getModelFile(LocalDateTime dateTime) {
+        return new File(getModelBaseDirectory(), modelName);
+    }
+
+    @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
         return null; // MAJOR TODO
     }
@@ -96,6 +102,7 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
                 .addLayer("v", new GravesLSTM.Builder().nIn(hiddenLayerSize).nOut(vectorSize).build(), "l1")
                 .addLayer("l3", new GravesLSTM.Builder().nIn(vectorSize).nOut(hiddenLayerSize).build(), "v")
                 .addLayer("y", new RnnOutputLayer.Builder().lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY).nIn(hiddenLayerSize).nOut(inputSize).build(),"l3")
+                .setOutputs("y")
                 .pretrain(false).backprop(true).build();
     }
 
@@ -106,7 +113,7 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
         final int printIterations = 100;
 
         if(net==null) {
-            final double learningRate = 0.001;
+            final double learningRate = 0.01;
             net = new ComputationGraph(getConf(learningRate,inputSize,vectorSize));
             net.init();
         } else {
@@ -117,19 +124,23 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
 
         }
 
-        System.out.println("Building validation matrix...");
+        List<MultiDataSet> validationDatasets = new ArrayList<>();
+        int count = 0;
         MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
+        while(validationIterator.hasNext()&&count<5) {
+            validationDatasets.add(validationIterator.next());
+            count++;
+        }
+        System.out.println("Building validation matrix...");
         Function<Object,Double> testErrorFunction = (v) -> {
             double total = 0d;
-            int count = 0;
-            while(validationIterator.hasNext()&&count<10) {
-                double score = net.score(validationIterator.next(),false);
-                count++;
+            for(MultiDataSet ds : validationDatasets) {
+                double score = net.score(ds,false);
                 total+=score;
             }
             System.gc();
             validationIterator.reset();
-            return 1D+(total/count);
+            return 1D+(total/validationDatasets.size());
         };
 
         Function<Object,Double> trainErrorFunction = (v) -> {

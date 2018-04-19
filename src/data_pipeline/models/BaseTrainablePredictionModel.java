@@ -86,6 +86,10 @@ public abstract class BaseTrainablePredictionModel<T,N> implements TrainablePred
         }).findFirst().orElse(null);
     }
 
+    public File loadModelWithoutDates() {
+        return new File(getModelBaseDirectory(),modelName);
+    }
+
     public File getBestModelFile() {
         mergeModelScoreMaps();
         File baseDir = getModelBaseDirectory();
