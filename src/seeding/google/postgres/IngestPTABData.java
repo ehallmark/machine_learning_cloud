@@ -83,7 +83,7 @@ public class IngestPTABData {
                     System.out.println("Error while extracting pdf...");
                 }
             }
-            data.add(pdf);
+            data.set(data.size()-1,pdf);
 
             // get pdf text
             try {
