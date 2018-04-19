@@ -24,6 +24,8 @@ import java.util.stream.Stream;
  * Created by Evan on 1/22/2017.
  */
 public class IngestPTABData {
+    // TODO CHANGE TO FALSE
+    private static final boolean testing = true;
 
     private static void ingestData()throws Exception {
         final Connection conn = Database.getConn();
@@ -63,7 +65,7 @@ public class IngestPTABData {
         };
 
 
-        ZipFileIterator iterator = new ZipFileIterator(downloader, "ptab_temp", false, false, file->false, false, destinationToFileFunction);
+        ZipFileIterator iterator = new ZipFileIterator(downloader, "ptab_temp", false, false, file->false, testing, destinationToFileFunction);
 
 
         // main consumer
