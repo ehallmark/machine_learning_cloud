@@ -2,9 +2,12 @@ package seeding.ai_db_updater.iterators;
 
 import lombok.Getter;
 import lombok.NonNull;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import seeding.ai_db_updater.handlers.CustomHandler;
 import seeding.ai_db_updater.tools.ZipHelper;
 import seeding.data_downloader.FileStreamDataDownloader;
+import seeding.data_downloader.PTABDataDownloader;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -65,7 +68,15 @@ public class ZipFileIterator implements WebIterator {
             try {
                 System.out.print("Starting to unzip: "+zipFile.getName()+"...");
                 // Unzip file
-                {
+
+                if(dataDownloader instanceof PTABDataDownloader) {
+                    try {
+                        ZipFile zip = new ZipFile(zipFile);
+                        zip.extractAll(destinationFilename);
+                    } catch (ZipException e) {
+                        e.printStackTrace();
+                    }
+                } else {
                     BufferedInputStream bis = new BufferedInputStream(new FileInputStream(zipFile));
                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(destinationFilename)));
                     ZipHelper.unzip(bis, bos);
