@@ -12,7 +12,6 @@ import seeding.google.postgres.xml.PTABHandler;
 
 import java.io.File;
 import java.sql.Connection;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +25,7 @@ import java.util.stream.Stream;
  * Created by Evan on 1/22/2017.
  */
 public class IngestPTABData {
-    // TODO CHANGE TO FALSE
-    private static final boolean testing = true;
+    private static final boolean testing = false;
 
     private static void ingestData()throws Exception {
         final Connection conn = Database.getConn();
