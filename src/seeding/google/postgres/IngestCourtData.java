@@ -2,26 +2,18 @@ package seeding.google.postgres;
 
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
-import org.jsoup.Jsoup;
-import pdf.PDFExtractor;
 import project_box.PGDumpLatest;
 import seeding.Database;
-import seeding.ai_db_updater.handlers.NestedHandler;
-import seeding.ai_db_updater.iterators.ZipFileIterator;
-import seeding.data_downloader.PTABDataDownloader;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
-import seeding.google.postgres.xml.PTABHandler;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.sql.Connection;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,7 +22,7 @@ import java.util.stream.Stream;
  */
 public class IngestCourtData {
     private static final boolean testing = true;
-    private static final File tarDataFolder = new File("/usb/data/all_courts_data/");
+    private static final File tarDataFolder = new File("/home/ehallmark/data/all_courts_data/");
     private static void ingestData()throws Exception {
         final Connection conn = Database.getConn();
 
@@ -138,7 +130,7 @@ public class IngestCourtData {
         };
 
 
-        File dataFile = new File("/usb/temp_ingest_courts_data/");
+        File dataFile = new File("/home/ehallmark/data/temp_ingest_courts_data/");
         for(File tarGzFile : tarDataFolder.listFiles()) {
             if(dataFile.exists()) {
                 if(dataFile.isFile()) {
