@@ -54,7 +54,8 @@ create table patents_global_merged (
     -- wipo
     wipo_technology text,
     -- gtt tech
-    technology text[],
+    technology text,
+    technology2 text,
     -- maintenance events
     maintenance_event text[],
     lapsed boolean,
@@ -171,6 +172,7 @@ insert into patents_global_merged (
         wipo_technology,
         -- gtt tech
         technology,
+        technology2,
         -- maintenance events
         maintenance_event,
         lapsed,
@@ -221,13 +223,13 @@ insert into patents_global_merged (
         gather_stage,
         gather_technology,
         ptab_appeal_no,
-        ptab_interference_nol,
+        ptab_interference_no,
         ptab_mailed_date,
         ptab_inventor_last_name,
         ptab_inventor_first_name,
         ptab_case_name,
         ptab_case_type,
-        ptab_status,
+        ptab_case_status,
         ptab_case_text
 )
 (
@@ -286,6 +288,7 @@ insert into patents_global_merged (
         wipo.wipo_technology,
         -- gtt tech
         tech.technology,
+        tech.secondary,
         -- maintenance events
         m_codes.codes,
         coalesce(coalesce(m.lapsed,pair.abandoned),'f'),
