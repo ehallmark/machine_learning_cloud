@@ -96,7 +96,7 @@ public class IngestCourtData {
                         if (parenIdx > 0 && parenIdx < idx + 15) {
                             int first_space = text.indexOf(" ",idx);
                             String patentNumber = text.substring(first_space, parenIdx).replace(",", "").replace(";", "").replace(".", "").trim();
-
+                            patentNumber.toUpperCase().replace(" ","");
                             if (patentNumber.length() > 5 && patentNumber.length() <= 9) {
                                // System.out.println("Patent number: " + patentNumber);
                                // System.out.println("Plaintiff: " + plaintiff);

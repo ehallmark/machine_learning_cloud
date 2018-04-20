@@ -75,7 +75,7 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
         Activation activation = Activation.TANH;
         Nd4j.getRandom().setSeed(rngSeed);
 
-        int hiddenLayerSize = 128;
+        int hiddenLayerSize = 256;
 
         Map<Integer,Double> iterationLearningRate = new HashMap<>();
         iterationLearningRate.put(0,learningRate);
