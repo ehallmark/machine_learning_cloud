@@ -64,6 +64,7 @@ public class IngestCourtData {
 
             String text = ((String) map.get("html_lawbox")).toLowerCase();
             String case_name = (String) map.get("absolute_url");
+            if(case_name==null) return;
             if(case_name.length()>0) {
                 case_name = case_name.substring(0,case_name.length()-1);
                 case_name = case_name.substring(case_name.lastIndexOf("/") + 1);
