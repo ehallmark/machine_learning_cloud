@@ -69,12 +69,13 @@ public class IngestCourtData {
                 case_name = case_name.substring(0,case_name.length()-1);
                 case_name = case_name.substring(case_name.lastIndexOf("/") + 1);
             }
-            String[] case_parts = case_name.split("-v-");
+            String[] case_parts = case_name.split("-v-",2);
             if(case_parts.length==2) {
                 case_name = case_name.replace("-"," ").toUpperCase();
                 String plaintiff = case_parts[0].toUpperCase().replace("-"," ").trim();
                 String defendant = case_parts[1].toUpperCase().replace("-"," ").trim();
-                if (Stream.of(possibleMatches).anyMatch(match -> text.contains(match))) {
+                boolean patentInfringementFlag = text.contains("patent infringement");
+                if (patentInfringementFlag||Stream.of(possibleMatches).anyMatch(match -> text.contains(match))) {
                     //System.out.println("FOUND PATENT CASE: " + case_name);
                     int idx = Stream.of(possibleMatches).mapToInt(match -> {
                         int i = text.indexOf(match);
@@ -105,25 +106,27 @@ public class IngestCourtData {
                             idx = -1;
                         }
                     }
-                    if(patents.size()>0) {
-                        validCount.getAndIncrement();
-                        if(validCount.get()%10==9)System.out.println(validCount.get());
-                        data.add(map.get("absolute_url"));
-                        data.add(case_name);
-                        data.add(plaintiff);
-                        data.add(defendant);
-                        data.add(map.get("court_id"));
-                        data.add(map.get("html_lawbox"));
-                        data.add(patents.toArray(new String[patents.size()]));
-                        try {
-                            queryStream.ingest(data);
-                        } catch(Exception e) {
-                            e.printStackTrace();
-                            System.out.println("During ingesting data");
-                            System.exit(1);
-                        }
+                    validCount.getAndIncrement();
+                    if (validCount.get() % 10 == 9) System.out.println(validCount.get());
+                    data.add(map.get("absolute_url"));
+                    data.add(case_name);
+                    data.add(plaintiff);
+                    data.add(defendant);
+                    data.add(map.get("court_id"));
+                    data.add(map.get("html_lawbox"));
+                    data.add(patentInfringementFlag);
+                    if(patents.isEmpty()) data.add(null);
+                    else data.add(patents.toArray(new String[patents.size()]));
+                    try {
+                        queryStream.ingest(data);
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                        System.out.println("During ingesting data");
+                        System.exit(1);
                     }
                 }
+            } else {
+                System.out.println("Could not create plaintiff/defendent pair from: "+case_name);
             }
 
         };

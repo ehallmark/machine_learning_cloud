@@ -20,7 +20,8 @@ create table big_query_litigation (
     defendant text,
     court_id varchar(100),
     case_text text not null,
-    patents varchar(32)[] not null
+    patents varchar(32)[],
+    infringement_flag boolean not null
 );
 
 create table big_query_ptab (
