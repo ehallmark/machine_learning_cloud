@@ -57,7 +57,6 @@ public class IngestPTABData {
                 return Arrays.asList(new File(destFolder,"EFOIA").listFiles((file)->file.getName().startsWith("PTAB"))[0]
                         .listFiles(file->file.getName().endsWith(".xml")));
             } else {
-                System.out.println("Not a backfile... "+destFolder.getAbsolutePath());
                 for (File child : destFolder.listFiles()[0].listFiles()) {
                     if (child.getName().startsWith("Meta_")) {
                         return Collections.singletonList(child);
@@ -96,7 +95,20 @@ public class IngestPTABData {
             String fileId = (String)map.get("image_id");
             String pdf = null;
             String type = (String)map.get("doc_type");
-            String year = fileId.split("-")[3];
+            String year;
+            if(map.containsKey("mailed_date")) {
+                year = map.get("mailed_date").toString().substring(0,4);
+            } else {
+                try {
+                    year = fileId.split("-")[3];
+                    if(year.length()!=4) {
+                        year = null;
+                    }
+                } catch(Exception e) {
+                    //e.printStackTrace();
+                    year=null;
+                }
+            }
             if(file!=null&&type!=null) {
                 fileId = fileId.replace(" ","");
                 file = file.getParentFile();
