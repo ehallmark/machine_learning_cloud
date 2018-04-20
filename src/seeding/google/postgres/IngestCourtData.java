@@ -130,7 +130,12 @@ public class IngestCourtData {
 
 
         File dataFile = new File("/home/ehallmark/data/temp_ingest_courts_data/");
-        for(File tarGzFile : tarDataFolder.listFiles()) {
+        for(File tarGzFile : tarDataFolder.listFiles((file->{
+            return (file.getName().startsWith("ca")&&!file.getName().startsWith("cal"))
+                    || file.getName().startsWith("scotus")
+                    || file.getName().startsWith("cc")
+                    || (!(file.getName().startsWith("ind.")||file.getName().startsWith("md.")||file.getName().startsWith("nd.")||file.getName().startsWith("sd."))&&file.getName().contains("d."));
+        }))) {
             if(dataFile.exists()) {
                 if(dataFile.isFile()) {
                     dataFile.delete();
