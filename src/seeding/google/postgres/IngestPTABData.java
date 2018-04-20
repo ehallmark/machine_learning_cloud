@@ -52,9 +52,9 @@ public class IngestPTABData {
         PTABDataDownloader downloader = new PTABDataDownloader();
 
         Function<File,List<File>> destinationToFileFunction = destFolder -> {
-            if(destFolder.getName().equals(downloader.getBackFile().getName())) {
+            if(destFolder.getName().endsWith(downloader.getBackFile().getName())) {
                 System.out.println("Found backfile... "+destFolder.getAbsolutePath());
-                return Arrays.asList(new File(downloader.getBackFile(),"EFOIA").listFiles((file)->file.getName().startsWith("PTAB"))[0]
+                return Arrays.asList(new File(destFolder,"EFOIA").listFiles((file)->file.getName().startsWith("PTAB"))[0]
                         .listFiles(file->file.getName().endsWith(".xml")));
             } else {
                 System.out.println("Not a backfile... "+destFolder.getAbsolutePath());
@@ -101,15 +101,15 @@ public class IngestPTABData {
                 fileId = fileId.replace(" ","");
                 file = file.getParentFile();
                 File potentialBackfile = file==null?null:file.getParentFile();
-                boolean isBackfile = potentialBackfile!=null && potentialBackfile.getName().equals(downloader.getBackFile().getName());
+                boolean isBackfile = potentialBackfile!=null && potentialBackfile.getName().startsWith("EFOIA");
                 File pdfFile;
                 if(isBackfile) {
                     System.out.println("Found backfile!");
                     pdfFile = new File(new File(new File(file,type), year), fileId+".pdf");
                 } else {
                     System.out.println("Not a backfile.");
-                    System.out.println("Backfile: "+downloader.getBackFile().getAbsolutePath());
-                    System.out.println("Attempt to find backfile: "+potentialBackfile.getAbsolutePath());
+                    //System.out.println("Backfile: "+downloader.getBackFile().getAbsolutePath());
+                    //System.out.println("Attempt to find backfile: "+potentialBackfile.getAbsolutePath());
                     pdfFile = new File(new File(file, "PDF_image"), fileId+".pdf");
                 }
                 try {
