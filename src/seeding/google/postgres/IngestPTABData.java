@@ -143,7 +143,7 @@ public class IngestPTABData {
                         pdf = PDFExtractor.extractPDF(pdfFile);
                     } else {
                         pdf = null;
-                        System.out.println("Cannot find pdf file: "+pdfFile.getAbsolutePath());
+                        System.out.println("Cannot find pdf for file");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
