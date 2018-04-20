@@ -88,8 +88,9 @@ public class IngestPTABData {
                     map.remove("last_modified");
                 }
             }
-            if(!map.containsKey("image_id")) return; // no pdf
+            if(!map.containsKey("image_id")||!map.containsKey("doc_type")) return; // no pdf
             map.put("image_id",map.get("image_id").toString().replace(" ",""));
+            map.put("doc_type",map.get("doc_type").toString().replace(" ",""));
             List<Object> data = Stream.of(fields).map(field->map.get(field)).collect(Collectors.toCollection(ArrayList::new));
             File file = iterator.getCurrentlyIngestingFile();
             String fileId = (String)map.get("image_id");
@@ -117,7 +118,14 @@ public class IngestPTABData {
                 File pdfFile;
                 if(isBackfile) {
                     System.out.println("Found backfile!");
-                    pdfFile = new File(new File(new File(file,type), year), fileId+".pdf");
+                    try {
+                        if(year==null) pdfFile = null;
+                        else pdfFile = new File(new File(new File(file, type), year), fileId + ".pdf");
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                        System.out.println("error creating file for pdf in year: "+year);
+                        pdfFile = null;
+                    }
                 } else {
                     System.out.println("Not a backfile.");
                     //System.out.println("Backfile: "+downloader.getBackFile().getAbsolutePath());
@@ -125,7 +133,12 @@ public class IngestPTABData {
                     pdfFile = new File(new File(file, "PDF_image"), fileId+".pdf");
                 }
                 try {
-                    pdf = PDFExtractor.extractPDF(pdfFile);
+                    if(pdfFile!=null&&pdfFile.exists()) {
+                        pdf = PDFExtractor.extractPDF(pdfFile);
+                    } else {
+                        pdf = null;
+                        System.out.println("Cannot find pdf file: "+pdfFile.getAbsolutePath());
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Error while extracting pdf...");
