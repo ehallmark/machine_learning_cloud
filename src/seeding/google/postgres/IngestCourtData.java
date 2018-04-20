@@ -4,7 +4,6 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.bson.Document;
-import project_box.PGDumpLatest;
 import seeding.Database;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
@@ -14,7 +13,6 @@ import java.sql.Connection;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -139,7 +137,7 @@ public class IngestCourtData {
                     || file.getName().startsWith("cc")
                     || (!(file.getName().startsWith("ind.")||file.getName().startsWith("md.")||file.getName().startsWith("nd.")||file.getName().startsWith("sd."))&&file.getName().contains("d."));
         }))) {
-            System.out.print("Starting to decompress: "+tarGzFile.getAbsolutePath()+"...");
+            System.out.println("Starting to decompress: "+tarGzFile.getAbsolutePath()+"...");
             Consumer<String> fileHandler = fileStr -> {
                 Map<String,Object> doc = Document.parse(fileStr);
                 doc.put("court_id",tarGzFile.getName().split("\\.")[0]);
@@ -151,27 +149,6 @@ public class IngestCourtData {
 
         queryStream.close();
         conn.close();
-    }
-
-    private static String bufferedReaderFileToString(File file) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            return String.join("", reader.lines().collect(Collectors.toList()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-
-    public static void decompressFolderToSeparateLocation(File tarDotGzFile, File destination) {
-        if(!destination.exists()) destination.mkdirs();
-        if(destination.isFile()) throw new IllegalStateException("Destination folder must be a folder and not a file...");
-        try {
-            PGDumpLatest.startProcess("tar -xzvf "+tarDotGzFile.getAbsolutePath()+" -C "+destination.getAbsolutePath());
-        } catch(Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Unable to decompress folder: "+tarDotGzFile.getAbsolutePath());
-        }
     }
 
     public static void main(String[] args) throws Exception {
