@@ -86,7 +86,7 @@ public abstract class BaseTrainablePredictionModel<T,N> implements TrainablePred
         }).findFirst().orElse(null);
     }
 
-    public File loadModelWithoutDates() {
+    public File getModelFileWithoutDates() {
         return new File(getModelBaseDirectory(),modelName);
     }
 
@@ -159,6 +159,14 @@ public abstract class BaseTrainablePredictionModel<T,N> implements TrainablePred
         restoreFromFile(modelFile);
     }
 
+    public synchronized void loadModelWithoutDates() throws Exception {
+        File modelFile = getModelFileWithoutDates();
+        if(modelFile==null) {
+            System.out.println("No model without dates found... reverting to new model.");
+        } else {
+            restoreFromFile(modelFile);
+        }
+    }
     protected abstract void restoreFromFile(File modelFile) throws IOException;
 
     private static Map<String,Map<LocalDateTime,Double>> loadModelScoreMap() {

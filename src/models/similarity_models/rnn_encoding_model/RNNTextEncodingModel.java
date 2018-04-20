@@ -110,14 +110,16 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
     public void train(int nEpochs) {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         MultiDataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
-        final int printIterations = 500;
+        final int printIterations = 50;
 
         if(net==null) {
+            System.out.println("Building new network...");
             final double learningRate = 0.01;
             net = new ComputationGraph(getConf(learningRate,inputSize,vectorSize));
             net.init();
         } else {
-            final double learningRate =  0.00001;
+            System.out.println("Updating previous network...");
+            final double learningRate =  0.001;
             INDArray params = net.params();
             net = new ComputationGraph(getConf(learningRate,inputSize,vectorSize));
             net.init(params,false);
