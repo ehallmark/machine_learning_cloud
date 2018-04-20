@@ -61,7 +61,9 @@ public class IngestCourtData {
             List<Object> data = new ArrayList<>();
             //System.out.println("Map: "+String.join("; ",map.entrySet()
             //.stream().map(e->e.getKey()+": "+e.getValue()).collect(Collectors.toList())));
-
+            if(map.containsKey("html_lawbox")) {
+                return;
+            }
             String text = ((String) map.get("html_lawbox")).toLowerCase();
             String case_name = (String) map.get("absolute_url");
             if(case_name==null) return;
