@@ -4,7 +4,6 @@ import pdf.PDFExtractor;
 import seeding.Database;
 import seeding.ai_db_updater.handlers.NestedHandler;
 import seeding.ai_db_updater.iterators.ZipFileIterator;
-import seeding.data_downloader.FileStreamDataDownloader;
 import seeding.data_downloader.PTABDataDownloader;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
@@ -13,9 +12,7 @@ import seeding.google.postgres.xml.PTABHandler;
 import java.io.File;
 import java.sql.Connection;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -52,12 +49,17 @@ public class IngestPTABData {
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
 
         // download most recent files and ingest
-        FileStreamDataDownloader downloader = new PTABDataDownloader();
+        PTABDataDownloader downloader = new PTABDataDownloader();
 
-        Function<File,File> destinationToFileFunction = destFolder -> {
-            for(File child : destFolder.listFiles()[0].listFiles()) {
-                if(child.getName().startsWith("Meta_")) {
-                    return child;
+        Function<File,List<File>> destinationToFileFunction = destFolder -> {
+            if(destFolder.getName().equals(downloader.getBackFile().getName())) {
+                return Arrays.asList(new File(downloader.getBackFile(),"EFOIA").listFiles((file)->file.getName().startsWith("PTAB"))[0]
+                        .listFiles(file->file.getName().endsWith(".xml")));
+            } else {
+                for (File child : destFolder.listFiles()[0].listFiles()) {
+                    if (child.getName().startsWith("Meta_")) {
+                        return Collections.singletonList(child);
+                    }
                 }
             }
             System.out.println("Unable to find child within: "+destFolder.getAbsolutePath());
@@ -66,7 +68,6 @@ public class IngestPTABData {
 
 
         ZipFileIterator iterator = new ZipFileIterator(downloader, "ptab_temp", false, false, file->false, testing, destinationToFileFunction);
-
 
         // main consumer
         Consumer<Map<String,Object>> ingest = map -> {
@@ -86,19 +87,29 @@ public class IngestPTABData {
                     map.remove("last_modified");
                 }
             }
-            //System.out.println("Mailed date: "+map.get("mailed_date"));
-            //System.out.println("last_modified date: "+map.get("last_modified"));
-            if(map.containsKey("image_id")) map.put("image_id",map.get("image_id").toString().replace(" ",""));
+            if(!map.containsKey("image_id")) return; // no pdf
+            map.put("image_id",map.get("image_id").toString().replace(" ",""));
             List<Object> data = Stream.of(fields).map(field->map.get(field)).collect(Collectors.toCollection(ArrayList::new));
             File file = iterator.getCurrentlyIngestingFile();
             String fileId = (String)map.get("image_id");
             String pdf = null;
-            if(file!=null&&fileId!=null) {
+            String type = (String)map.get("doc_type");
+            String year = fileId.split("-")[3];
+            if(file!=null&&fileId!=null&&type!=null) {
                 fileId = fileId.replace(" ","");
 
                 file = file.getParentFile();
+                boolean isBackfile = file.getParentFile().getName().equals(downloader.getBackFile().getName());
+                File pdfFile;
+                if(isBackfile) {
+                    System.out.println("Found backfile!");
+                    pdfFile = new File(new File(new File(file,type), year), fileId+".pdf");
+                } else {
+                    System.out.println("Not a backfile.");
+                    pdfFile = new File(new File(file, "PDF_image"), fileId+".pdf");
+                }
                 try {
-                    pdf = PDFExtractor.extractPDF(new File(new File(file, "PDF_image"), fileId+".pdf"));
+                    pdf = PDFExtractor.extractPDF(pdfFile);
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Error while extracting pdf...");

@@ -2,11 +2,10 @@ package seeding.ai_db_updater.iterators;
 
 import lombok.Getter;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import seeding.Constants;
-import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,12 +13,13 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.RecursiveAction;
+import java.util.stream.Stream;
+
+;
 
 
 /**
@@ -30,6 +30,12 @@ public class IngestPTABIterator implements DateIterator {
     private String zipFilePrefix = Constants.PTAB_ZIP_FOLDER;
 
     public IngestPTABIterator() {
+    }
+
+    public File getBackfile() {
+        return Stream.of(new File(zipFilePrefix).listFiles())
+                .sorted((e1,e2)->Integer.compare(e2.getName().length(),e1.getName().length()))
+                .limit(1).findFirst().orElse(null);
     }
 
     @Override

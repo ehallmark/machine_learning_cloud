@@ -14,6 +14,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,8 +36,8 @@ public class ZipFileIterator implements WebIterator {
     private boolean testing;
     @Getter
     private File currentlyIngestingFile;
-    private Function<File,File> destinationToFileFunction;
-    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean parallel, boolean perDocument, @NonNull Function<File,Boolean> orFunction, boolean testing, Function<File,File> destinationToFileFunction) {
+    private Function<File,List<File>> destinationToFileFunction;
+    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean parallel, boolean perDocument, @NonNull Function<File,Boolean> orFunction, boolean testing, Function<File,List<File>> destinationToFileFunction) {
         this.cnt=new AtomicInteger(0);
         this.dataDownloader=dataDownloader;
         this.destinationPrefix=destinationPrefix;
@@ -48,7 +49,7 @@ public class ZipFileIterator implements WebIterator {
     }
 
     public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean parallel, boolean perDocument, @NonNull Function<File,Boolean> orFunction, boolean testing) {
-        this(dataDownloader,destinationPrefix,parallel,perDocument,orFunction,testing,file->file);
+        this(dataDownloader,destinationPrefix,parallel,perDocument,orFunction,testing,file->file==null? null : Collections.singletonList(file));
     }
 
     public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean testing) {
@@ -66,7 +67,7 @@ public class ZipFileIterator implements WebIterator {
         (parallel ? fileStream.parallelStream() : fileStream.stream()).forEach(zipFile->{
             final String destinationFilename = destinationPrefix + zipFile.getName();
             AtomicBoolean failed = new AtomicBoolean(false);
-            File xmlFile = null;
+            List<File> xmlFiles = null;
             try {
                 System.out.print("Starting to unzip: "+zipFile.getName()+"...");
                 // Unzip file
@@ -87,79 +88,83 @@ public class ZipFileIterator implements WebIterator {
                     bos.close();
                 }
 
-                xmlFile = destinationToFileFunction.apply(new File(destinationFilename));
-                if (xmlFile.exists()) {
-                    if(!parallel)currentlyIngestingFile=xmlFile;
-                    System.out.println("Parsing "+xmlFile.getName()+" now...");
-                    SAXParserFactory factory = SAXParserFactory.newInstance();
-                    factory.setNamespaceAware(true);
-                    factory.setValidating(false);
-                    // security vulnerable
-                    factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-                    factory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-                    SAXParser saxParser = factory.newSAXParser();
+                xmlFiles = destinationToFileFunction.apply(new File(destinationFilename));
+                if(xmlFiles!=null) {
+                    for(File xmlFile : xmlFiles) {
+                        if (xmlFile.exists()) {
+                            if (!parallel) currentlyIngestingFile = xmlFile;
+                            System.out.println("Parsing " + xmlFile.getName() + " now...");
+                            SAXParserFactory factory = SAXParserFactory.newInstance();
+                            factory.setNamespaceAware(true);
+                            factory.setValidating(false);
+                            // security vulnerable
+                            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+                            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+                            SAXParser saxParser = factory.newSAXParser();
 
-                    FileReader fr = new FileReader(xmlFile);
-                    BufferedReader br = new BufferedReader(fr);
+                            FileReader fr = new FileReader(xmlFile);
+                            BufferedReader br = new BufferedReader(fr);
 
-                    if(perDocument) {
-                        String line;
-                        boolean firstLine = true;
-                        List<String> lines = new ArrayList<>();
-                        while ((line = br.readLine()) != null) {
-                            if (line.contains("<?xml") && !firstLine) {
-                                // stop
-                                byte[] data = String.join("", lines).getBytes();
-                                for (CustomHandler _handler : handlers) {
-                                    CustomHandler handler = _handler.newInstance();
-                                    try {
-                                        saxParser.parse(new ByteArrayInputStream(data), handler);
+                            if (perDocument) {
+                                String line;
+                                boolean firstLine = true;
+                                List<String> lines = new ArrayList<>();
+                                while ((line = br.readLine()) != null) {
+                                    if (line.contains("<?xml") && !firstLine) {
+                                        // stop
+                                        byte[] data = String.join("", lines).getBytes();
+                                        for (CustomHandler _handler : handlers) {
+                                            CustomHandler handler = _handler.newInstance();
+                                            try {
+                                                saxParser.parse(new ByteArrayInputStream(data), handler);
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                failed.set(true);
+                                            }
+                                        }
+                                        lines.clear();
+                                    }
+                                    if (firstLine) firstLine = false;
+                                    lines.add(line);
+                                }
+                                br.close();
+                                fr.close();
+
+                                // get the last one
+                                if (!lines.isEmpty()) {
+                                    byte[] data = String.join("", lines).getBytes();
+                                    for (CustomHandler _handler : handlers) {
+                                        CustomHandler handler = _handler.newInstance();
+                                        try {
+                                            saxParser.parse(new ByteArrayInputStream(data), handler);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            failed.set(true);
+                                        }
+                                    }
+                                    lines.clear();
+                                }
+                            } else {
+                                for (CustomHandler handler : handlers) {
+                                    try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(xmlFile))) {
+                                        saxParser.parse(bis, handler.newInstance());
                                     } catch (Exception e) {
-                                        e.printStackTrace();
                                         failed.set(true);
+                                        e.printStackTrace();
                                     }
                                 }
-                                lines.clear();
                             }
-                            if (firstLine) firstLine = false;
-                            lines.add(line);
-                        }
-                        br.close();
-                        fr.close();
 
-                        // get the last one
-                        if (!lines.isEmpty()) {
-                            byte[] data = String.join("", lines).getBytes();
-                            for (CustomHandler _handler : handlers) {
-                                CustomHandler handler = _handler.newInstance();
-                                try {
-                                    saxParser.parse(new ByteArrayInputStream(data), handler);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    failed.set(true);
+                            if (!failed.get()) {
+                                System.out.println(" Parsed successfully!");
+                                if (!testing) {
+                                    dataDownloader.finishedIngestingFile(zipFile);
                                 }
                             }
-                            lines.clear();
-                        }
-                    } else {
-                        for (CustomHandler handler : handlers) {
-                            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(xmlFile))) {
-                                saxParser.parse(bis, handler.newInstance());
-                            } catch (Exception e) {
-                                failed.set(true);
-                                e.printStackTrace();
-                            }
+                        } else {
+                            failed.set(true);
                         }
                     }
-
-                    if(!failed.get()) {
-                        System.out.println(" Parsed successfully!");
-                        if(!testing) {
-                            dataDownloader.finishedIngestingFile(zipFile);
-                        }
-                    }
-                } else {
-                    failed.set(true);
                 }
 
             } catch (Exception e) {
@@ -173,17 +178,19 @@ public class ZipFileIterator implements WebIterator {
                     }
                 }
 
-                if(xmlFile!=null) {
-                    if (xmlFile.exists()) {
-                        if(xmlFile.isDirectory()) {
-                            try {
-                                FileUtils.deleteDirectory(xmlFile);
-                            } catch(Exception e) {
-                                e.printStackTrace();
-                                System.out.println("Error deleting directory: "+xmlFile.getAbsolutePath());
+                if(xmlFiles!=null) {
+                    for(File xmlFile : xmlFiles) {
+                        if (xmlFile.exists()) {
+                            if (xmlFile.isDirectory()) {
+                                try {
+                                    FileUtils.deleteDirectory(xmlFile);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    System.out.println("Error deleting directory: " + xmlFile.getAbsolutePath());
+                                }
+                            } else {
+                                xmlFile.delete();
                             }
-                        } else {
-                            xmlFile.delete();
                         }
                     }
                 }
