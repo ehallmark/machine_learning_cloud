@@ -61,17 +61,19 @@ public class IngestCourtData {
             List<Object> data = new ArrayList<>();
             //System.out.println("Map: "+String.join("; ",map.entrySet()
             //.stream().map(e->e.getKey()+": "+e.getValue()).collect(Collectors.toList())));
-            if(map.containsKey("html_lawbox")) {
-                return;
-            }
-            String text = ((String) map.get("html_lawbox")).toLowerCase();
+
             String case_name = (String) map.get("absolute_url");
             if(case_name==null) return;
             if(case_name.length()>0) {
                 case_name = case_name.substring(0,case_name.length()-1);
                 case_name = case_name.substring(case_name.lastIndexOf("/") + 1);
             }
+            if(map.containsKey("html_lawbox")) {
+                System.out.println("No text. Valid keys: "+String.join("; ",map.keySet()));
+                return;
+            }
             String[] case_parts = case_name.split("-v-",2);
+            String text = ((String) map.get("html_lawbox")).toLowerCase();
             boolean patentInfringementFlag = text.contains("patent infringement");
             if(case_parts.length==2) {
                 case_name = case_name.replace("-"," ").toUpperCase();
