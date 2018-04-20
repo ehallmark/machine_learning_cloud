@@ -109,8 +109,8 @@ public class OptimizationScoreListener<T extends Model> implements IterationList
             if(averageError>previousAverageError) {
                 // check stopping conditions
                 if (averageError > smallestAverage * 1.2) {
-                    System.out.println("Stopping condition met!!!");
-                    throw new StoppingConditionMetException();
+                    //System.out.println("Stopping condition met!!!");
+                    //throw new StoppingConditionMetException();
                 }
             }
         }

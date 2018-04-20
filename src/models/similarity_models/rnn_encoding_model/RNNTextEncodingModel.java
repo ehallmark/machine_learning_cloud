@@ -110,7 +110,7 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
     public void train(int nEpochs) {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         MultiDataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
-        final int printIterations = 50;
+        final int printIterations = 200;
 
         if(net==null) {
             System.out.println("Building new network...");
