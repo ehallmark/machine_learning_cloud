@@ -1,15 +1,15 @@
 package seeding.google.postgres;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.bson.Document;
 import project_box.PGDumpLatest;
 import seeding.Database;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 import java.sql.Connection;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -133,31 +133,19 @@ public class IngestCourtData {
         };
 
 
-        File dataFile = new File("/home/ehallmark/data/temp_ingest_courts_data/");
         for(File tarGzFile : tarDataFolder.listFiles((file->{
             return (file.getName().startsWith("ca")&&!file.getName().startsWith("cal"))
                     || file.getName().startsWith("scotus")
                     || file.getName().startsWith("cc")
                     || (!(file.getName().startsWith("ind.")||file.getName().startsWith("md.")||file.getName().startsWith("nd.")||file.getName().startsWith("sd."))&&file.getName().contains("d."));
         }))) {
-            if(dataFile.exists()) {
-                if(dataFile.isFile()) {
-                    dataFile.delete();
-                } else {
-                    FileUtils.deleteDirectory(dataFile);
-                }
-            }
             System.out.print("Starting to decompress: "+tarGzFile.getAbsolutePath()+"...");
-            decompressFolderToSeparateLocation(tarGzFile,dataFile);
-            System.out.println(" Done.");
-            // ingest dataFile
-            for(File file : dataFile.listFiles()) {
-                Map<String,Object> doc = Document.parse(bufferedReaderFileToString(file));
+            Consumer<String> fileHandler = fileStr -> {
+                Map<String,Object> doc = Document.parse(fileStr);
                 doc.put("court_id",tarGzFile.getName().split("\\.")[0]);
                 ingest.accept(doc);
-
-            }
-            System.out.println("Completed: "+dataFile.listFiles().length);
+            };
+            extractTarGz(tarGzFile,fileHandler);//decompressFolderToSeparateLocation(tarGzFile,dataFile);
         }
 
 
@@ -188,5 +176,25 @@ public class IngestCourtData {
 
     public static void main(String[] args) throws Exception {
         ingestData();
+    }
+
+    private static final int BUFFER_SIZE = 4096;
+    private static void extractTarGz(File tarGz, Consumer<String> handler) throws IOException {
+        try (TarArchiveInputStream inStream = new TarArchiveInputStream(
+                new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(tarGz))))) {
+            TarArchiveEntry tarFile;
+            while ((tarFile = (TarArchiveEntry) inStream.getNextEntry()) != null) {
+                if (!tarFile.isDirectory()) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    int count;
+                    byte data[] = new byte[BUFFER_SIZE];
+                    while ((count = inStream.read(data, 0, BUFFER_SIZE)) != -1) {
+                        baos.write(data,0,count);
+                    }
+                    handler.accept(baos.toString());
+                    baos.close();
+                }
+            }
+        }
     }
 }
