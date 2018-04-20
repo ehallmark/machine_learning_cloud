@@ -69,8 +69,13 @@ public class IngestCourtData {
                 case_name = case_name.substring(case_name.lastIndexOf("/") + 1);
             }
             if(map.get("html_lawbox")==null) {
-                System.out.println("No text. Valid keys: "+String.join("; ",map.keySet()));
-                return;
+                String plainText = (String)map.get("plain_text");
+                if(plainText!=null) {
+                    map.put("html_lawbox",plainText);
+                } else {
+                    System.out.println("No text. Valid keys: " + String.join("; ", map.keySet()));
+                    return;
+                }
             }
             String[] case_parts = case_name.split("-v-",2);
             String text = ((String) map.get("html_lawbox")).toLowerCase();
