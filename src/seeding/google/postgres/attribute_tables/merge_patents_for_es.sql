@@ -104,7 +104,16 @@ create table patents_global_merged (
 
     gather_value integer,
     gather_stage varchar(32)[],
-    gather_technology text[]
+    gather_technology text[],
+    ptab_appeal_no varchar(100)[],
+    ptab_interference_no varchar(100)[],
+    ptab_mailed_date date[],
+    ptab_inventor_last_name text[],
+    ptab_inventor_first_name text[],
+    ptab_case_name text[],
+    ptab_case_type varchar(100)[],
+    ptab_case_status varchar(50)[],
+    ptab_case_text text[]
 );
 
 
@@ -210,7 +219,16 @@ insert into patents_global_merged (
         -- gather
         gather_value,
         gather_stage,
-        gather_technology
+        gather_technology,
+        ptab_appeal_no,
+        ptab_interference_nol,
+        ptab_mailed_date,
+        ptab_inventor_last_name,
+        ptab_inventor_first_name,
+        ptab_case_name,
+        ptab_case_type,
+        ptab_status,
+        ptab_case_text
 )
 (
     select   -- monster query
@@ -316,7 +334,16 @@ insert into patents_global_merged (
         -- gather
         gather.value,
         gather.stage,
-        gather.technology
+        gather.technology,
+        ptab.appeal_no,
+        ptab.interference_no,
+        ptab.mailed_date,
+        ptab.inventor_last_name,
+        ptab.inventor_first_name,
+        ptab.case_name,
+        ptab.doc_type,
+        ptab.status,
+        ptab.doc_text
 
 
     from patents_global as p
@@ -340,6 +367,8 @@ insert into patents_global_merged (
     left outer join big_query_gather_with_pub as gather on (gather.publication_number_full=p.publication_number_full)
     left outer join big_query_compdb_deals_by_pub as compdb on (compdb.publication_number_full=p.publication_number_full)
     left outer join big_query_assignment_documentid_by_pub as a on (p.publication_number_full=a.publication_number_full)
+    left outer join big_query_ptab_by_pub as ptab on (p.publication_number_full=ptab.publication_number_full)
+
 );
 
 vacuum;
