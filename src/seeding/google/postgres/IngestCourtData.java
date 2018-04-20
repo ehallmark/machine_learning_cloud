@@ -32,10 +32,11 @@ public class IngestCourtData {
                 "defendant",
                 "court_id",
                 "case_text",
-                "patents"
+                "patents",
+                "infringement_flag"
         };
 
-        final String sql = "insert into big_query_litigation (absolute_url,case_name,plaintiff,defendant,court_id,case_text,patents) values (?,?,?,?,?,?,?) on conflict (absolute_url) do update set (case_name,plaintiff,defendant,court_id,case_text,patents) = (excluded.case_name,excluded.plaintiff,excluded.defendant,excluded.court_id,excluded.case_text,excluded.patents)";
+        final String sql = "insert into big_query_litigation (absolute_url,case_name,plaintiff,defendant,court_id,case_text,patents,infringement_flag) values (?,?,?,?,?,?,?,?::boolean) on conflict (absolute_url) do update set (case_name,plaintiff,defendant,court_id,case_text,patents,infringement_flag) = (excluded.case_name,excluded.plaintiff,excluded.defendant,excluded.court_id,excluded.case_text,excluded.patents,excluded.infringement_flag)";
         DefaultApplier applier = new DefaultApplier(false, conn, fields);
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
 
@@ -70,11 +71,11 @@ public class IngestCourtData {
                 case_name = case_name.substring(case_name.lastIndexOf("/") + 1);
             }
             String[] case_parts = case_name.split("-v-",2);
+            boolean patentInfringementFlag = text.contains("patent infringement");
             if(case_parts.length==2) {
                 case_name = case_name.replace("-"," ").toUpperCase();
                 String plaintiff = case_parts[0].toUpperCase().replace("-"," ").trim();
                 String defendant = case_parts[1].toUpperCase().replace("-"," ").trim();
-                boolean patentInfringementFlag = text.contains("patent infringement");
                 if (patentInfringementFlag||Stream.of(possibleMatches).anyMatch(match -> text.contains(match))) {
                     //System.out.println("FOUND PATENT CASE: " + case_name);
                     int idx = Stream.of(possibleMatches).mapToInt(match -> {
@@ -125,7 +126,7 @@ public class IngestCourtData {
                         System.exit(1);
                     }
                 }
-            } else {
+            } else if(patentInfringementFlag) {
                 System.out.println("Could not create plaintiff/defendent pair from: "+case_name);
             }
 
