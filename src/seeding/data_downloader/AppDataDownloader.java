@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
  * Created by Evan on 8/13/2017.
  */
 public class AppDataDownloader extends FileStreamDataDownloader {
+    private static final long serialVersionUID = 1L;
     public AppDataDownloader() {
         super(PortfolioList.Type.applications.toString(), AppUSPTOIterator.class, Constants.DEFAULT_START_DATE);
     }

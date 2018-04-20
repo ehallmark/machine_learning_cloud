@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
  * Created by Evan on 8/13/2017.
  */
 public class AssignmentDataDownloader extends FileStreamDataDownloader {
+    private static final long serialVersionUID = 1L;
     @Override
     public LocalDate dateFromFileName(String name) {
         if(name.length()==6) name = "20"+name;

@@ -11,6 +11,8 @@ import java.time.format.DateTimeFormatter;
  * Created by Evan on 8/13/2017.
  */
 public class PatentDataDownloader extends FileStreamDataDownloader {
+    private static final long serialVersionUID = 1L;
+
     public PatentDataDownloader() {
         super(PortfolioList.Type.patents.toString(), PatentUSPTOIterator.class, Constants.DEFAULT_START_DATE);
     }

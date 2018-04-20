@@ -53,9 +53,11 @@ public class IngestPTABData {
 
         Function<File,List<File>> destinationToFileFunction = destFolder -> {
             if(destFolder.getName().equals(downloader.getBackFile().getName())) {
+                System.out.println("Found backfile... "+destFolder.getAbsolutePath());
                 return Arrays.asList(new File(downloader.getBackFile(),"EFOIA").listFiles((file)->file.getName().startsWith("PTAB"))[0]
                         .listFiles(file->file.getName().endsWith(".xml")));
             } else {
+                System.out.println("Not a backfile... "+destFolder.getAbsolutePath());
                 for (File child : destFolder.listFiles()[0].listFiles()) {
                     if (child.getName().startsWith("Meta_")) {
                         return Collections.singletonList(child);
@@ -97,10 +99,9 @@ public class IngestPTABData {
             String year = fileId.split("-")[3];
             if(file!=null&&type!=null) {
                 fileId = fileId.replace(" ","");
-
                 file = file.getParentFile();
-                File potentialBackfile = file.getParentFile().getParentFile();
-                boolean isBackfile = potentialBackfile.getName().equals(downloader.getBackFile().getName());
+                File potentialBackfile = file==null?null:file.getParentFile();
+                boolean isBackfile = potentialBackfile!=null && potentialBackfile.getName().equals(downloader.getBackFile().getName());
                 File pdfFile;
                 if(isBackfile) {
                     System.out.println("Found backfile!");
