@@ -2,6 +2,7 @@ package seeding.google.postgres;
 
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
+import org.jsoup.Jsoup;
 import pdf.PDFExtractor;
 import project_box.PGDumpLatest;
 import seeding.Database;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -31,47 +33,93 @@ public class IngestCourtData {
         final Connection conn = Database.getConn();
 
         final String[] fields = new String[]{
-                "appeal_no",
-                "interference_no",
-                "patent_no",
-                "pre_grant_publication_no",
-                "application_no",
-                "mailed_date",
-                "inventor_last_name",
-                "inventor_first_name",
+                "absolute_url",
                 "case_name",
-                "last_modified",
-                "doc_type",
-                "status",
-                "image_id",
-                "doc_text"
+                "plaintiff",
+                "defendant",
+                "court_id",
+                "case_text",
+                "patents"
         };
 
-        final String sql = "insert into big_query_ptab (appeal_no,interference_no,patent_no,pre_grant_publication_no,application_no,mailed_date,inventor_last_name,inventor_first_name,case_name,last_modified,doc_type,status,image_id,doc_text) values (?,?,?,?,?,?::date,?,?,?,?::date,?,?,?,?) on conflict (image_id) do update set (appeal_no,interference_no,patent_no,pre_grant_publication_no,application_no,mailed_date,inventor_last_name,inventor_first_name,case_name,last_modified,doc_type,status,doc_text) = (excluded.appeal_no,excluded.interference_no,excluded.patent_no,excluded.pre_grant_publication_no,excluded.application_no,excluded.mailed_date,excluded.inventor_last_name,excluded.inventor_first_name,excluded.case_name,excluded.last_modified,excluded.doc_type,excluded.status,excluded.doc_text)";
+        final String sql = "insert into big_query_litigation (absolute_url,case_name,plaintiff,defendant,court_id,case_text,patents) values (?,?,?,?,?,?,?) on conflict (absolute_url) do update set (case_name,plaintiff,defendant,court_id,case_text,patents) = (excluded.case_name,excluded.plaintiff,excluded.defendant,excluded.court_id,excluded.case_text,excluded.patents)";
         DefaultApplier applier = new DefaultApplier(false, conn, fields);
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
 
+        final String[] possibleMatches = new String[]{
+                "us patent no",
+                "us patent number",
+                "us patent num",
+                "u.s. patent no",
+                "u.s. patent no.",
+                "us patent no.",
+                "u.s. patent number",
+                "u.s. patent num."
+        };
+
+        AtomicLong totalCount = new AtomicLong(0);
+        AtomicLong validCount = new AtomicLong(0);
 
         // main consumer
         Consumer<Map<String,Object>> ingest = map -> {
+            totalCount.getAndIncrement();
             List<Object> data = new ArrayList<>();
-            System.out.println("Map: "+String.join("; ",map.entrySet()
-            .stream().map(e->e.getKey()+": "+e.getValue()).collect(Collectors.toList())));
+            //System.out.println("Map: "+String.join("; ",map.entrySet()
+            //.stream().map(e->e.getKey()+": "+e.getValue()).collect(Collectors.toList())));
 
-            if(data.size()==0) return;
-            // get pdf text
-            try {
-                queryStream.ingest(data);
-            } catch(Exception e) {
-                e.printStackTrace();
-                System.out.println("During ingesting data");
-                System.exit(1);
+            String text = ((String) map.get("html_lawbox")).toLowerCase();
+            String case_name = (String) map.get("absolute_url");
+            if(case_name.length()>0) {
+                case_name = case_name.substring(0,case_name.length()-1);
+                case_name = case_name.substring(case_name.lastIndexOf("/") + 1);
             }
+            String[] case_parts = case_name.split("-v-");
+            if(case_parts.length==2) {
+                case_name = case_name.replace("-"," ");
+                String plaintiff = case_parts[0].toUpperCase().replace("-"," ").trim();
+                String defendant = case_parts[1].toUpperCase().replace("-"," ").trim();
+                if (Stream.of(possibleMatches).anyMatch(match -> text.contains(match))) {
+                    //System.out.println("FOUND PATENT CASE: " + case_name);
+                    int idx = Stream.of(possibleMatches).mapToInt(match -> text.indexOf(match)).max().orElse(-1);
+                    Set<String> patents = new HashSet<>();
+                    while (idx >= 0) {
+                        int parenIdx = text.indexOf("(", idx + 15);
+                        if (parenIdx > 0 && parenIdx < idx + 15 + 15) {
+                            String patentNumber = text.substring(idx + 15, parenIdx).replace(",", "").replace(";", "").replace(".", "").trim();
+                            if (patentNumber.length() > 5 && patentNumber.length() <= 9) {
+                               // System.out.println("Patent number: " + patentNumber);
+                               // System.out.println("Plaintiff: " + plaintiff);
+                               // System.out.println("Defendant: " + defendant);
+                                patents.add(patentNumber);
+                            }
+                        }
+                        idx = Stream.of(possibleMatches).mapToInt(match -> text.indexOf(match, parenIdx)).max().orElse(-1);
+                    }
+                    if(patents.size()>0) {
+                        validCount.getAndIncrement();
+                        data.add(map.get("absolute_url"));
+                        data.add(case_name);
+                        data.add(plaintiff);
+                        data.add(defendant);
+                        data.add(map.get("court_id"));
+                        data.add(map.get("html_lawbox"));
+                        data.add(patents.toArray(new String[patents.size()]));
+                        try {
+                            queryStream.ingest(data);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                            System.out.println("During ingesting data");
+                            System.exit(1);
+                        }
+                    }
+                }
+            }
+
         };
 
 
-        File dataFile = new File("temp_ingest_courts_data/");
-        for(File tarGzFile : tarDataFolder.listFiles()) {
+        File dataFile = new File("/usb/temp_ingest_courts_data/");
+        for(File tarGzFile : new File[]{new File("/usb/data/all_courts_data/vaed.tar.gz")}) {//tarDataFolder.listFiles()) {
             if(dataFile.exists()) {
                 if(dataFile.isFile()) {
                     dataFile.delete();
@@ -79,15 +127,15 @@ public class IngestCourtData {
                     FileUtils.deleteDirectory(dataFile);
                 }
             }
-            System.out.println("Starting to decompress: "+tarGzFile.getAbsolutePath());
+            System.out.print("Starting to decompress: "+tarGzFile.getAbsolutePath()+"...");
             decompressFolderToSeparateLocation(tarGzFile,dataFile);
-
+            System.out.println(" Done.");
             // ingest dataFile
             for(File file : dataFile.listFiles()) {
-                System.out.print("-");
-                ingest.accept(Document.parse(FileUtils.readFileToString(file)));
+                Map<String,Object> doc = Document.parse(FileUtils.readFileToString(file));
+                doc.put("court_id",tarGzFile.getName().split("\\.")[0]);
+                ingest.accept(doc);
             }
-            System.out.println();
         }
 
 

@@ -14,16 +14,14 @@ create index patexia_litigation_plaintiff on patexia_litigation (plaintiff);
 create index patexia_litigation_defendant on patexia_litigation (defendant);
 
 create table big_query_litigation (
-    case_id varchar(100) primary key,
-    case_number varchar(100) not null,
+    absolute_url text primary key,
     case_name text not null,
     plaintiff text,
     defendant text,
-    filing_date date,
-    case_type varchar(100),
+    court_id varchar(100),
     case_text text not null,
-    patents varchar(32)[]
-)
+    patents varchar(32)[] not null
+);
 
 create table big_query_ptab (
       image_id varchar(100) primary key,
@@ -71,4 +69,3 @@ insert into big_query_ptab_by_pub (publication_number_full,appeal_no,interferenc
     where p.country_code = 'US' and p.application_number_formatted is not null and family_id!='-1'
     order by publication_number_full,publication_date desc nulls last
 );
-
