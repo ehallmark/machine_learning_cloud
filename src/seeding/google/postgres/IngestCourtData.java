@@ -115,9 +115,9 @@ public class IngestCourtData {
                     data.add(defendant);
                     data.add(map.get("court_id"));
                     data.add(map.get("html_lawbox"));
-                    data.add(patentInfringementFlag);
                     if(patents.isEmpty()) data.add(null);
                     else data.add(patents.toArray(new String[patents.size()]));
+                    data.add(patentInfringementFlag);
                     try {
                         queryStream.ingest(data);
                     } catch(Exception e) {
