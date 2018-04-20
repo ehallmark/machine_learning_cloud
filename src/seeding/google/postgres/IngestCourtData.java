@@ -13,7 +13,9 @@ import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
 import seeding.google.postgres.xml.PTABHandler;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.sql.Connection;
 import java.time.LocalDate;
 import java.util.*;
@@ -63,6 +65,9 @@ public class IngestCourtData {
         // main consumer
         Consumer<Map<String,Object>> ingest = map -> {
             totalCount.getAndIncrement();
+            if(totalCount.get()%1000==999) {
+                System.out.println("Finished objects: "+totalCount.get());
+            }
             List<Object> data = new ArrayList<>();
             //System.out.println("Map: "+String.join("; ",map.entrySet()
             //.stream().map(e->e.getKey()+": "+e.getValue()).collect(Collectors.toList())));
@@ -75,28 +80,43 @@ public class IngestCourtData {
             }
             String[] case_parts = case_name.split("-v-");
             if(case_parts.length==2) {
-                case_name = case_name.replace("-"," ");
+                case_name = case_name.replace("-"," ").toUpperCase();
                 String plaintiff = case_parts[0].toUpperCase().replace("-"," ").trim();
                 String defendant = case_parts[1].toUpperCase().replace("-"," ").trim();
                 if (Stream.of(possibleMatches).anyMatch(match -> text.contains(match))) {
                     //System.out.println("FOUND PATENT CASE: " + case_name);
-                    int idx = Stream.of(possibleMatches).mapToInt(match -> text.indexOf(match)).max().orElse(-1);
+                    int idx = Stream.of(possibleMatches).mapToInt(match -> {
+                        int i = text.indexOf(match);
+                        if (i>=0) return i+match.length();
+                        else return i;
+                    }).max().orElse(-1);
                     Set<String> patents = new HashSet<>();
                     while (idx >= 0) {
-                        int parenIdx = text.indexOf("(", idx + 15);
-                        if (parenIdx > 0 && parenIdx < idx + 15 + 15) {
-                            String patentNumber = text.substring(idx + 15, parenIdx).replace(",", "").replace(";", "").replace(".", "").trim();
+                        int parenIdx = text.indexOf(" ", idx + 7);
+                        if (parenIdx > 0 && parenIdx < idx + 15) {
+                            int first_space = text.indexOf(" ",idx);
+                            String patentNumber = text.substring(first_space, parenIdx).replace(",", "").replace(";", "").replace(".", "").trim();
+
                             if (patentNumber.length() > 5 && patentNumber.length() <= 9) {
                                // System.out.println("Patent number: " + patentNumber);
                                // System.out.println("Plaintiff: " + plaintiff);
                                // System.out.println("Defendant: " + defendant);
                                 patents.add(patentNumber);
+                                idx = Stream.of(possibleMatches).mapToInt(match -> {
+                                    int i = text.indexOf(match, parenIdx);
+                                    if(i>=0) return i+match.length();
+                                    else return i;
+                                }).max().orElse(-1);
+                            } else {
+                                idx = -1;
                             }
+                        } else {
+                            idx = -1;
                         }
-                        idx = Stream.of(possibleMatches).mapToInt(match -> text.indexOf(match, parenIdx)).max().orElse(-1);
                     }
                     if(patents.size()>0) {
                         validCount.getAndIncrement();
+                        if(validCount.get()%10==9)System.out.println(validCount.get());
                         data.add(map.get("absolute_url"));
                         data.add(case_name);
                         data.add(plaintiff);
@@ -132,15 +152,26 @@ public class IngestCourtData {
             System.out.println(" Done.");
             // ingest dataFile
             for(File file : dataFile.listFiles()) {
-                Map<String,Object> doc = Document.parse(FileUtils.readFileToString(file));
+                Map<String,Object> doc = Document.parse(bufferedReaderFileToString(file));
                 doc.put("court_id",tarGzFile.getName().split("\\.")[0]);
                 ingest.accept(doc);
+
             }
+            System.out.println("Completed: "+dataFile.listFiles().length);
         }
 
 
         queryStream.close();
         conn.close();
+    }
+
+    private static String bufferedReaderFileToString(File file) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            return String.join("", reader.lines().collect(Collectors.toList()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
