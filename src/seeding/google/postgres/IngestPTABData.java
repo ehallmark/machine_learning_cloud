@@ -123,7 +123,7 @@ public class IngestPTABData {
                 boolean isBackfile = potentialBackfile!=null && potentialBackfile.getName().startsWith("EFOIA");
                 File pdfFile;
                 if(isBackfile) {
-                    System.out.println("Found backfile!");
+                    //System.out.println("Found backfile!");
                     try {
                         if(year==null) pdfFile = null;
                         else pdfFile = new File(new File(new File(file, type), year), fileId + ".pdf");
@@ -133,7 +133,7 @@ public class IngestPTABData {
                         pdfFile = null;
                     }
                 } else {
-                    System.out.println("Not a backfile.");
+                    //System.out.println("Not a backfile.");
                     //System.out.println("Backfile: "+downloader.getBackFile().getAbsolutePath());
                     //System.out.println("Attempt to find backfile: "+potentialBackfile.getAbsolutePath());
                     pdfFile = new File(new File(file, "PDF_image"), fileId+".pdf");
