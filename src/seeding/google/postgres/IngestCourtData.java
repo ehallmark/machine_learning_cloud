@@ -139,7 +139,7 @@ public class IngestCourtData {
 
 
         File dataFile = new File("/usb/temp_ingest_courts_data/");
-        for(File tarGzFile : new File[]{new File("/usb/data/all_courts_data/vaed.tar.gz")}) {//tarDataFolder.listFiles()) {
+        for(File tarGzFile : tarDataFolder.listFiles()) {
             if(dataFile.exists()) {
                 if(dataFile.isFile()) {
                     dataFile.delete();
