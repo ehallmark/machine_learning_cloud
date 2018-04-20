@@ -177,21 +177,17 @@ public class ZipFileIterator implements WebIterator {
                         dataDownloader.errorOnFile(zipFile);
                     }
                 }
-
-                if(xmlFiles!=null) {
-                    for(File xmlFile : xmlFiles) {
-                        if (xmlFile.exists()) {
-                            if (xmlFile.isDirectory()) {
-                                try {
-                                    FileUtils.deleteDirectory(xmlFile);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    System.out.println("Error deleting directory: " + xmlFile.getAbsolutePath());
-                                }
-                            } else {
-                                xmlFile.delete();
-                            }
+                File destinationFile = new File(destinationFilename);
+                if (destinationFile.exists()) {
+                    if (destinationFile.isDirectory()) {
+                        try {
+                            FileUtils.deleteDirectory(destinationFile);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            System.out.println("Error deleting directory: " + destinationFile.getAbsolutePath());
                         }
+                    } else {
+                        destinationFile.delete();
                     }
                 }
             }
