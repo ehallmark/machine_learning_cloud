@@ -195,6 +195,8 @@ public class IngestCourtData {
                     baos.close();
                 }
             }
+        } catch(Exception e) {
+            e.printStackTrace();
         }
     }
 }
