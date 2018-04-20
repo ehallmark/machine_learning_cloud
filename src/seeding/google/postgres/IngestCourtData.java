@@ -126,7 +126,7 @@ public class IngestCourtData {
                     }
                 }
             } else if(patentInfringementFlag) {
-                System.out.println("Could not create plaintiff/defendent pair from: "+case_name);
+                //System.out.println("Could not create plaintiff/defendent pair from: "+case_name);
             }
 
         };
