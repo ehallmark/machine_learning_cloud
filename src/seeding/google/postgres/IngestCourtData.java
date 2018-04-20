@@ -39,14 +39,10 @@ public class IngestCourtData {
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
 
         final String[] possibleMatches = new String[]{
-                "us patent no",
-                "us patent number",
-                "us patent num",
-                "u.s. patent no",
-                "u.s. patent no.",
-                "us patent no.",
-                "u.s. patent number",
-                "u.s. patent num."
+                "patent nos",
+                "patent no",
+                "patent num",
+                "patent number",
         };
 
         AtomicLong totalCount = new AtomicLong(0);
@@ -79,7 +75,7 @@ public class IngestCourtData {
             }
             String[] case_parts = case_name.split("-v-",2);
             String text = ((String) map.get("html_lawbox")).toLowerCase();
-            boolean patentInfringementFlag = text.contains("patent infringement");
+            boolean patentInfringementFlag = text.contains("patent infringement")||text.contains("literal infringement")||text.contains("doctrine of infringement");
             String defendant = null;
             String plaintiff = null;
             if(case_parts.length==2) {
