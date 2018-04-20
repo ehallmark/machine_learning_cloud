@@ -95,17 +95,20 @@ public class IngestPTABData {
             String pdf = null;
             String type = (String)map.get("doc_type");
             String year = fileId.split("-")[3];
-            if(file!=null&&fileId!=null&&type!=null) {
+            if(file!=null&&type!=null) {
                 fileId = fileId.replace(" ","");
 
                 file = file.getParentFile();
-                boolean isBackfile = file.getParentFile().getName().equals(downloader.getBackFile().getName());
+                File potentialBackfile = file.getParentFile().getParentFile();
+                boolean isBackfile = potentialBackfile.getName().equals(downloader.getBackFile().getName());
                 File pdfFile;
                 if(isBackfile) {
                     System.out.println("Found backfile!");
                     pdfFile = new File(new File(new File(file,type), year), fileId+".pdf");
                 } else {
                     System.out.println("Not a backfile.");
+                    System.out.println("Backfile: "+downloader.getBackFile().getAbsolutePath());
+                    System.out.println("Attempt to find backfile: "+potentialBackfile.getAbsolutePath());
                     pdfFile = new File(new File(file, "PDF_image"), fileId+".pdf");
                 }
                 try {

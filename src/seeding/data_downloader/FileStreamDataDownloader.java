@@ -8,7 +8,6 @@ import seeding.ai_db_updater.iterators.DateIterator;
 
 import java.io.File;
 import java.io.Serializable;
-import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -130,8 +129,14 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
                 ret = (FileStreamDataDownloader) Database.tryLoadObject(file);
             } catch(Exception e) {
                 try {
-                    ret = (FileStreamDataDownloader) Database.tryLoadObject(new File(file.getAbsolutePath()+"-backup"));
-                } catch(Exception e2) {
+                    ret = (FileStreamDataDownloader) Database.tryLoadObjectOld(file);
+                    try {
+                        ret = (FileStreamDataDownloader) Database.tryLoadObject(new File(file.getAbsolutePath() + "-backup"));
+                    } catch (Exception e2) {
+                        ret = null;
+                    }
+                } catch(Exception e3) {
+                    e3.printStackTrace();
                     ret = null;
                 }
             }

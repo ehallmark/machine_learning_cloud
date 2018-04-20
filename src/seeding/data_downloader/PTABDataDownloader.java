@@ -10,6 +10,7 @@ import java.time.LocalDate;
  * Created by Evan on 8/13/2017.
  */
 public class PTABDataDownloader extends FileStreamDataDownloader {
+    private static final long serialVersionUID = 1L;
     @Override
     public LocalDate dateFromFileName(String name) {
         return LocalDate.MIN;
