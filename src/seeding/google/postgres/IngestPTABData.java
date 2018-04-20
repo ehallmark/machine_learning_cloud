@@ -91,6 +91,12 @@ public class IngestPTABData {
             if(!map.containsKey("image_id")||!map.containsKey("doc_type")) return; // no pdf
             map.put("image_id",map.get("image_id").toString().replace(" ",""));
             map.put("doc_type",map.get("doc_type").toString().replace(" ",""));
+            if(map.containsKey("appeal_no")) map.put("appeal_no",map.get("appeal_no").toString().replace(" ",""));
+            if(map.containsKey("interference_no")) map.put("interference_no",map.get("interference_no").toString().replace(" ",""));
+            if(map.containsKey("patent_no")) map.put("patent_no",map.get("patent_no").toString().replace(" ",""));
+            if(map.containsKey("pre_grant_publication_no")) map.put("pre_grant_publication_no",map.get("pre_grant_publication_no").toString().replace(" ",""));
+            if(map.containsKey("application_no")) map.put("application_no",map.get("application_no").toString().replace(" ",""));
+            if(map.containsKey("status")) map.put("status",map.get("status").toString().replace(" ",""));
             List<Object> data = Stream.of(fields).map(field->map.get(field)).collect(Collectors.toCollection(ArrayList::new));
             File file = iterator.getCurrentlyIngestingFile();
             String fileId = (String)map.get("image_id");
