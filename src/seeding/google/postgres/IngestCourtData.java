@@ -68,69 +68,69 @@ public class IngestCourtData {
                 case_name = case_name.substring(0,case_name.length()-1);
                 case_name = case_name.substring(case_name.lastIndexOf("/") + 1);
             }
-            if(!map.containsKey("html_lawbox")) {
+            if(map.get("html_lawbox")==null) {
                 System.out.println("No text. Valid keys: "+String.join("; ",map.keySet()));
                 return;
             }
             String[] case_parts = case_name.split("-v-",2);
             String text = ((String) map.get("html_lawbox")).toLowerCase();
             boolean patentInfringementFlag = text.contains("patent infringement");
+            String defendant = null;
+            String plaintiff = null;
             if(case_parts.length==2) {
-                case_name = case_name.replace("-"," ").toUpperCase();
-                String plaintiff = case_parts[0].toUpperCase().replace("-"," ").trim();
-                String defendant = case_parts[1].toUpperCase().replace("-"," ").trim();
-                if (patentInfringementFlag||Stream.of(possibleMatches).anyMatch(match -> text.contains(match))) {
-                    //System.out.println("FOUND PATENT CASE: " + case_name);
-                    int idx = Stream.of(possibleMatches).mapToInt(match -> {
-                        int i = text.indexOf(match);
-                        if (i>=0) return i+match.length();
-                        else return i;
-                    }).max().orElse(-1);
-                    Set<String> patents = new HashSet<>();
-                    while (idx >= 0) {
-                        int parenIdx = text.indexOf(" ", idx + 7);
-                        if (parenIdx > 0 && parenIdx < idx + 15) {
-                            int first_space = text.indexOf(" ",idx);
-                            String patentNumber = text.substring(first_space, parenIdx).replace(",", "").replace(";", "").replace(".", "").trim();
-                            patentNumber = patentNumber.toUpperCase().replace(" ","");
-                            if (patentNumber.length() > 5 && patentNumber.length() <= 9) {
-                               // System.out.println("Patent number: " + patentNumber);
-                               // System.out.println("Plaintiff: " + plaintiff);
-                               // System.out.println("Defendant: " + defendant);
-                                patents.add(patentNumber);
-                                idx = Stream.of(possibleMatches).mapToInt(match -> {
-                                    int i = text.indexOf(match, parenIdx);
-                                    if(i>=0) return i+match.length();
-                                    else return i;
-                                }).max().orElse(-1);
-                            } else {
-                                idx = -1;
-                            }
+                plaintiff = case_parts[0].toUpperCase().replace("-", " ").trim();
+                defendant = case_parts[1].toUpperCase().replace("-", " ").trim();
+            }
+            case_name = case_name.replace("-", " ").toUpperCase();
+            if (patentInfringementFlag||Stream.of(possibleMatches).anyMatch(match -> text.contains(match))) {
+                //System.out.println("FOUND PATENT CASE: " + case_name);
+                int idx = Stream.of(possibleMatches).mapToInt(match -> {
+                    int i = text.indexOf(match);
+                    if (i>=0) return i+match.length();
+                    else return i;
+                }).max().orElse(-1);
+                Set<String> patents = new HashSet<>();
+                while (idx >= 0) {
+                    int parenIdx = text.indexOf(" ", idx + 7);
+                    if (parenIdx > 0 && parenIdx < idx + 15) {
+                        int first_space = text.indexOf(" ",idx);
+                        String patentNumber = text.substring(first_space, parenIdx).replace(",", "").replace(";", "").replace(".", "").trim();
+                        patentNumber = patentNumber.toUpperCase().replace(" ","");
+                        if (patentNumber.length() > 5 && patentNumber.length() <= 9) {
+                           // System.out.println("Patent number: " + patentNumber);
+                           // System.out.println("Plaintiff: " + plaintiff);
+                           // System.out.println("Defendant: " + defendant);
+                            patents.add(patentNumber);
+                            idx = Stream.of(possibleMatches).mapToInt(match -> {
+                                int i = text.indexOf(match, parenIdx);
+                                if(i>=0) return i+match.length();
+                                else return i;
+                            }).max().orElse(-1);
                         } else {
                             idx = -1;
                         }
-                    }
-                    validCount.getAndIncrement();
-                    if (validCount.get() % 10 == 9) System.out.println(validCount.get());
-                    data.add(map.get("absolute_url"));
-                    data.add(case_name);
-                    data.add(plaintiff);
-                    data.add(defendant);
-                    data.add(map.get("court_id"));
-                    data.add(map.get("html_lawbox"));
-                    if(patents.isEmpty()) data.add(null);
-                    else data.add(patents.toArray(new String[patents.size()]));
-                    data.add(patentInfringementFlag);
-                    try {
-                        queryStream.ingest(data);
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                        System.out.println("During ingesting data");
-                        System.exit(1);
+                    } else {
+                        idx = -1;
                     }
                 }
-            } else if(patentInfringementFlag) {
-                //System.out.println("Could not create plaintiff/defendent pair from: "+case_name);
+                validCount.getAndIncrement();
+                if (validCount.get() % 10 == 9) System.out.println(validCount.get());
+                data.add(map.get("absolute_url"));
+                data.add(case_name);
+                data.add(plaintiff);
+                data.add(defendant);
+                data.add(map.get("court_id"));
+                data.add(map.get("html_lawbox"));
+                if(patents.isEmpty()) data.add(null);
+                else data.add(patents.toArray(new String[patents.size()]));
+                data.add(patentInfringementFlag);
+                try {
+                    queryStream.ingest(data);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    System.out.println("During ingesting data");
+                    System.exit(1);
+                }
             }
 
         };
