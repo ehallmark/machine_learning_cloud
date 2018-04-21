@@ -115,7 +115,7 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
             net.init();
         } else {
             System.out.println("Updating previous network...");
-            final double learningRate =  0.005;
+            final double learningRate =  0.01;
             INDArray params = net.params();
             net = new ComputationGraph(getConf(learningRate,inputSize,vectorSize));
             net.init(params,false);

@@ -129,6 +129,63 @@ public class Database {
 		return collection;
 	}
 
+	public static Map<String,INDArray> loadVectorsFor(List<String> assets) {
+		Map<String,INDArray> data = new HashMap<>();
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			ps = conn.prepareStatement("select publication_number_full,cpc_vae from big_query_family_id as p join big_query_embedding as e on (p.family_id=e.family_id) where publication_number_full in ('" + String.join("','", assets) + "')");
+			ps.setFetchSize(10);
+			rs = ps.executeQuery();
+			while(rs.next()) {
+				data.put(rs.getString(1),Nd4j.create(Stream.of((Float[])rs.getArray(2).getArray()).mapToDouble(d->d).toArray()));
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs!=null) {
+					rs.close();
+				}
+				if(ps!=null) {
+					ps.close();
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return data;
+	}
+
+	public static Map<String,List<String>> loadTechnologiesFor(List<String> assets) {
+		Map<String,List<String>> data = new HashMap<>();
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			ps = conn.prepareStatement("select publication_number_full,Array[technology,secondary] as technologies from big_query_family_id as p join big_query_technologies as t on (p.family_id=t.family_id) where publication_number_full in ('" + String.join("','", assets) + "')");
+			ps.setFetchSize(10);
+			rs = ps.executeQuery();
+			while(rs.next()) {
+				data.put(rs.getString(1),Arrays.asList((String[])rs.getArray(2).getArray()));
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs!=null) {
+					rs.close();
+				}
+				if(ps!=null) {
+					ps.close();
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return data;
+	}
+
+
 	public static List<String> loadAllFilingsWithVectors() throws SQLException {
 
 		PreparedStatement ps = conn.prepareStatement("select filing from sim_vectors");

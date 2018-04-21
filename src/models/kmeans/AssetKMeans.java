@@ -15,6 +15,7 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,15 +35,24 @@ public class AssetKMeans {
     private UnitCosineKMeans kMeans;
     private Map<String,INDArray> assetEncodingMap;
     @Setter
-    private Map<String,List<String>> techPredictions;
+    private Function<String,List<String>> techPredictionFunction;
     private Integer k;
-    public AssetKMeans(Map<String,INDArray> assetToEncodingMap, Integer k) {
+    public AssetKMeans(Function<String,List<String>> techPredictionFunction, Map<String,INDArray> assetToEncodingMap, Integer k) {
         this.kMeans = new UnitCosineKMeans();
         this.k=k;
-        this.techPredictions = PredictKeyphraseForFilings.loadOrGetTechnologyMap();
+        this.techPredictionFunction = techPredictionFunction;
         this.assetEncodingMap = assetToEncodingMap;
         //System.out.println("Num tech predictions: "+techPredictions.size());
     }
+
+    public AssetKMeans(Map<String,INDArray> assetToEncodingMap, Integer k) {
+        this(asset->PredictKeyphraseForFilings.loadOrGetTechnologyMap().getOrDefault(asset,Collections.emptyList()),assetToEncodingMap,k);
+    }
+
+    public AssetKMeans(Function<String,List<String>> techPredictionFunction, List<String> assets, Map<String,INDArray> cpcVectors, Integer k) {
+        this(techPredictionFunction,computeEncodingsForAssets(assets,cpcVectors), k);
+    }
+
 
     public AssetKMeans(List<String> assets, Map<String,INDArray> cpcVectors, Integer k) {
         this(computeEncodingsForAssets(assets,cpcVectors), k);
@@ -84,7 +94,7 @@ public class AssetKMeans {
                 return Stream.of(r,assetToFilingMap.getPatentDataMap().getOrDefault(r,assetToFilingMap.getApplicationDataMap().get(r))).filter(f->f!=null);
             }).collect(Collectors.toList());
 
-            List<String> keywords = related.stream().flatMap(asset->techPredictions.getOrDefault(asset,Collections.emptyList()).stream()).collect(Collectors.toList());
+            List<String> keywords = related.stream().flatMap(asset->techPredictionFunction.apply(asset).stream()).collect(Collectors.toList());
 
             Map<String,Long> freqMap = keywords.stream().collect(Collectors.groupingBy(keyword->keyword,Collectors.counting()))
                     .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(keywordSamples).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
