@@ -85,7 +85,7 @@ public class IngestCourtData {
                 defendant = case_parts[1].toUpperCase().replace("-", " ").trim();
             }
             case_name = case_name.replace("-", " ").toUpperCase();
-            if (patentInfringementFlag) {
+            if (patentInfringementFlag||Stream.of(possibleMatches).anyMatch(match->text.contains(match))) {
                 //System.out.println("FOUND PATENT CASE: " + case_name);
                 int idx = Stream.of(possibleMatches).mapToInt(match -> {
                     int i = text.indexOf(match);
