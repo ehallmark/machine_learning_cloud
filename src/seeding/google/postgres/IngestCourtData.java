@@ -76,8 +76,8 @@ public class IngestCourtData {
             String[] case_parts = case_name.split("-v-",2);
             String text = ((String) map.get("html_lawbox")).toLowerCase();
             int infringedIdx = text.indexOf("infringed");
-            String nearInfringed = text.substring(Math.max(0,infringedIdx-200),Math.min(text.length(),infringedIdx+200));
-            boolean patentInfringementFlag = (infringedIdx>0&&(nearInfringed.contains("patent")||nearInfringed.contains("trademark")||nearInfringed.contains("copyright")))||text.contains("copyright infringement")||text.contains("trademark infringement")||text.contains("direct infringement")||text.contains("doctrine of equivalents")||text.contains("induced infringement")||text.contains("doctrine of complete coverage")||text.contains("doctrine of compromise")||text.contains("doctrine of estoppel")||text.contains("doctrine of superfluity")||text.contains("literal infringement")||text.contains("willful infringement")|| text.contains("patent infringement");
+            String nearInfringed = text.substring(Math.max(0,infringedIdx-500),Math.min(text.length(),infringedIdx+500));
+            boolean patentInfringementFlag = (infringedIdx>0&&(nearInfringed.contains("patent")||nearInfringed.contains("trademark")||nearInfringed.contains("intellectual property")||nearInfringed.contains("copyright")))||text.contains("copyright infringement")||text.contains("trademark infringement")||text.contains("direct infringement")||text.contains("doctrine of equivalents")||text.contains("induced infringement")||text.contains("doctrine of complete coverage")||text.contains("doctrine of compromise")||text.contains("doctrine of estoppel")||text.contains("doctrine of superfluity")||text.contains("literal infringement")||text.contains("willful infringement")|| text.contains("patent infringement")||text.contains("patent violation")||text.contains("intellectual property");
             String defendant = null;
             String plaintiff = null;
             if(case_parts.length==2) {
