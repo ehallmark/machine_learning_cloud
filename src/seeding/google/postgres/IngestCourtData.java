@@ -75,7 +75,7 @@ public class IngestCourtData {
             }
             String[] case_parts = case_name.split("-v-",2);
             String text = ((String) map.get("html_lawbox")).toLowerCase();
-            boolean patentInfringementFlag = text.contains("infringement");
+            boolean patentInfringementFlag = text.contains("direct infringement")||text.contains("doctrine of equivalents")||text.contains("induced infringement")||text.contains("doctrine of complete coverage")||text.contains("doctrine of compromise")||text.contains("doctrine of estoppel")||text.contains("doctrine of superfluity")||text.contains("literal infringement")||text.contains("willful infringement")|| text.contains("patent infringement");
             String defendant = null;
             String plaintiff = null;
             if(case_parts.length==2) {
