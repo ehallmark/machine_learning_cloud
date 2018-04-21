@@ -15,6 +15,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class IngestESFromPostgres {
 
@@ -30,7 +31,11 @@ public class IngestESFromPostgres {
         final String idField = Attributes.PUBLICATION_NUMBER_FULL;
 
         ResultSet rs = ps.executeQuery();
+        AtomicLong cnt = new AtomicLong(0);
         while(rs.next()) {
+            if(cnt.getAndIncrement()%10000==9999) {
+                System.out.println("Ingested: "+cnt.get());
+            }
             ingest(rs,rs.getString(idField),attributes,bulkProcessor);
         }
 
@@ -68,6 +73,9 @@ public class IngestESFromPostgres {
             return array;
         } else if(obj instanceof Date) {
             return fromSqlDate((Date) obj);
+        } else if(obj instanceof Integer && attr.getType().equals("boolean")) {
+            // means present
+            return obj.equals(1);
         }
         return obj;
     }

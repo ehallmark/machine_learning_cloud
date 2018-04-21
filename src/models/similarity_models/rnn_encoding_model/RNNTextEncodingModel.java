@@ -75,8 +75,6 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
         Activation activation = Activation.TANH;
         Nd4j.getRandom().setSeed(rngSeed);
 
-        int hiddenLayerSize = 128;
-
         Map<Integer,Double> iterationLearningRate = new HashMap<>();
         iterationLearningRate.put(0,learningRate);
         //iterationLearningRate.put(1000,learningRate/2);
@@ -98,12 +96,8 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
                 //.regularization(true).l2(1e-4)
                 .graphBuilder()
                 .addInputs("x")
-                .addLayer("l1", new GravesLSTM.Builder().nIn(inputSize).nOut(hiddenLayerSize).build(),"x")
-                .addLayer("l2", new GravesLSTM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(),"l1")
-                .addLayer("v", new GravesLSTM.Builder().nIn(hiddenLayerSize).nOut(vectorSize).build(), "l2")
-                .addLayer("l3", new GravesLSTM.Builder().nIn(vectorSize).nOut(hiddenLayerSize).build(), "v")
-                .addLayer("l4", new GravesLSTM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(), "l3")
-                .addLayer("y", new RnnOutputLayer.Builder().lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY).nIn(hiddenLayerSize).nOut(inputSize).build(),"l4")
+                .addLayer("l1", new GravesLSTM.Builder().nIn(inputSize).nOut(vectorSize).build(),"x")
+                .addLayer("y", new RnnOutputLayer.Builder().lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY).nIn(vectorSize).nOut(inputSize).build(),"l1")
                 .setOutputs("y")
                 .pretrain(false).backprop(true).build();
     }
@@ -112,7 +106,7 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
     public void train(int nEpochs) {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         MultiDataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
-        final int printIterations = 50;
+        final int printIterations = 100;
 
         if(net==null) {
             System.out.println("Building new network...");
