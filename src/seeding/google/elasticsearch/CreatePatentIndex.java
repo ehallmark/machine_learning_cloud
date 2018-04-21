@@ -17,6 +17,13 @@ import java.util.Map;
 
 /**
  * Created by Evan on 7/25/2017.
+ *
+ curl -XPUT 'localhost:9200/big_query/_settings?pretty' -H 'Content-Type: application/json' -d'
+ {
+ "index" : {
+ "refresh_interval" : "600"
+ }
+ }
  */
 public class CreatePatentIndex {
     public static void main(String[] args) {

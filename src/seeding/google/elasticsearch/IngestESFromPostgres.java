@@ -40,7 +40,7 @@ public class IngestESFromPostgres {
     }
 
     private static String fromSqlDate(Date date) {
-        return LocalDate.from(date.toInstant()).format(DateTimeFormatter.ISO_DATE);
+        return date.toLocalDate().format(DateTimeFormatter.ISO_DATE);
     }
 
     private static Object getValueFromResultSet(ResultSet rs, AbstractAttribute attr) throws SQLException {
