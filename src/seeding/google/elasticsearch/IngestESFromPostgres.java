@@ -58,13 +58,14 @@ public class IngestESFromPostgres {
         }
         if(obj==null) return null;
         if(obj instanceof Array) {
-            Object[] array = (Object[]) ((Array) obj).getArray();
-            for(int i = 0; i < array.length; i++) {
-                if(array[i] instanceof Date) {
-                    array[i] = fromSqlDate((Date) array[i]);
+            Object[] _array = (Object[]) ((Array) obj).getArray();
+            Object[] array = new Object[_array.length];
+            if(_array instanceof Date[]) {
+                for(int i = 0; i < array.length; i++) {
+                    array[i] = fromSqlDate((Date) _array[i]);
                 }
             }
-            return ((Array) obj).getArray();
+            return array;
         } else if(obj instanceof Date) {
             return fromSqlDate((Date) obj);
         }
