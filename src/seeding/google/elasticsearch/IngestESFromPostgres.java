@@ -42,6 +42,7 @@ public class IngestESFromPostgres {
     }
 
     private static String fromSqlDate(Date date) {
+        if(date==null)return null;
         return date.toLocalDate().format(DateTimeFormatter.ISO_DATE);
     }
 
