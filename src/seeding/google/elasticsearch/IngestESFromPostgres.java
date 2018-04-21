@@ -7,6 +7,8 @@ import seeding.Database;
 import seeding.google.mongo.ingest.IngestPatents;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
+import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
+import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 
 import java.sql.*;
 import java.sql.Date;
@@ -44,7 +46,15 @@ public class IngestESFromPostgres {
     }
 
     private static Object getValueFromResultSet(ResultSet rs, AbstractAttribute attr) throws SQLException {
-        Object obj = rs.getObject(attr.getName());
+        Object obj = null;
+        try {
+            obj = rs.getObject(attr.getName());
+        } catch(Exception e) {
+            if(attr instanceof SimilarityAttribute || !(attr instanceof AbstractScriptAttribute)) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
         if(obj==null) return null;
         if(obj instanceof Array) {
             Object[] array = (Object[]) ((Array) obj).getArray();
