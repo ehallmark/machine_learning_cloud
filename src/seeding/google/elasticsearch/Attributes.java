@@ -106,7 +106,16 @@ public class Attributes {
     public static final String GATHER_VALUE = "gather_value";
     public static final String GATHER_STAGE = "gather_stage";
     public static final String GATHER_TECHNOLOGY = "gather_technology";
-
+    public static final String PTAB = "ptab";
+    public static final String PTAB_APPEAL_NO = "ptab_appeal_no";
+    public static final String PTAB_INTERFERENCE_NO = "ptab_interference_no";
+    public static final String PTAB_MAILED_DATE = "ptab_mailed_date";
+    public static final String PTAB_INVENTOR_LAST_NAME = "ptab_inventor_last_name";
+    public static final String PTAB_INVENTOR_FIRST_NAME = "ptab_inventor_first_name";
+    public static final String PTAB_CASE_NAME = "ptab_case_name";
+    public static final String PTAB_CASE_TYPE = "ptab_case_type";
+    public static final String PTAB_CASE_STATUS = "ptab_case_status";
+    public static final String PTAB_CASE_TEXT = "ptab_case_text";
     public static Collection<AbstractAttribute> buildAttributes() {
         return Arrays.asList(
                 new PublicationNumberFull(),
@@ -158,7 +167,8 @@ public class Attributes {
                 new RCitations(),
                 new TermAdjustments(),
                 new CompDB(),
-                new Gather()
+                new Gather(),
+                new PTAB()
         );
     }
 }

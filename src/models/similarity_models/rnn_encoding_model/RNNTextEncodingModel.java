@@ -75,7 +75,7 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
         Activation activation = Activation.TANH;
         Nd4j.getRandom().setSeed(rngSeed);
 
-        int hiddenLayerSize = 256;
+        int hiddenLayerSize = 128;
 
         Map<Integer,Double> iterationLearningRate = new HashMap<>();
         iterationLearningRate.put(0,learningRate);
@@ -89,7 +89,7 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
                 .learningRateSchedule(iterationLearningRate)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 //.updater(Updater.RMSPROP)
-                .updater(Updater.ADAM)
+                .updater(Updater.RMSPROP)
                 .miniBatch(true)
                 .activation(activation)
                 .weightInit(WeightInit.XAVIER)
@@ -99,9 +99,11 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
                 .graphBuilder()
                 .addInputs("x")
                 .addLayer("l1", new GravesLSTM.Builder().nIn(inputSize).nOut(hiddenLayerSize).build(),"x")
-                .addLayer("v", new GravesLSTM.Builder().nIn(hiddenLayerSize).nOut(vectorSize).build(), "l1")
+                .addLayer("l2", new GravesLSTM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(),"l1")
+                .addLayer("v", new GravesLSTM.Builder().nIn(hiddenLayerSize).nOut(vectorSize).build(), "l2")
                 .addLayer("l3", new GravesLSTM.Builder().nIn(vectorSize).nOut(hiddenLayerSize).build(), "v")
-                .addLayer("y", new RnnOutputLayer.Builder().lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY).nIn(hiddenLayerSize).nOut(inputSize).build(),"l3")
+                .addLayer("l4", new GravesLSTM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).build(), "l3")
+                .addLayer("y", new RnnOutputLayer.Builder().lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY).nIn(hiddenLayerSize).nOut(inputSize).build(),"l4")
                 .setOutputs("y")
                 .pretrain(false).backprop(true).build();
     }
@@ -110,16 +112,16 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
     public void train(int nEpochs) {
         AtomicBoolean stoppingCondition = new AtomicBoolean(false);
         MultiDataSetIterator trainIter = pipelineManager.getDatasetManager().getTrainingIterator();
-        final int printIterations = 200;
+        final int printIterations = 50;
 
         if(net==null) {
             System.out.println("Building new network...");
-            final double learningRate = 0.01;
+            final double learningRate = 0.05;
             net = new ComputationGraph(getConf(learningRate,inputSize,vectorSize));
             net.init();
         } else {
             System.out.println("Updating previous network...");
-            final double learningRate =  0.001;
+            final double learningRate =  0.005;
             INDArray params = net.params();
             net = new ComputationGraph(getConf(learningRate,inputSize,vectorSize));
             net.init(params,false);
