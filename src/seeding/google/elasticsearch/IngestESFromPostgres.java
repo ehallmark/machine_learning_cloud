@@ -4,12 +4,12 @@ import elasticsearch.MyClient;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.index.IndexRequest;
 import seeding.Database;
+import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import seeding.google.mongo.ingest.IngestPatents;
 import user_interface.server.BigQueryServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
-import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 
 import java.sql.*;
 import java.sql.Date;
