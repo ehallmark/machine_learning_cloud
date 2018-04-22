@@ -1,12 +1,12 @@
-package models.similarity_models.rnn_to_cpc_vae_model;
+package models.similarity_models.rnn_word2vec_to_cpc_vae_model;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.optimize.nn_optimization.NNOptimizer;
 import lombok.Getter;
 import models.similarity_models.combined_similarity_model.AbstractEncodingModel;
-import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
+import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.*;
 import org.deeplearning4j.nn.conf.graph.rnn.LastTimeStepVertex;
@@ -31,33 +31,31 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-public class RNN2CPCVaeModel extends AbstractEncodingModel<ComputationGraph,RNN2CPCVaePipelineManager> {
+/**
+ * Created by Evan on 12/24/2017.
+ */
+public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph,RnnWord2Vec2VaePipelineManager> {
     public static final String VAE_NETWORK = "vaeNet";
-    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"rnn_2_cpc_vae_model_data"); //new File("deep_cpc_2_vec_encoding_data");
+    public static final File BASE_DIR = new File(Constants.DATA_FOLDER+"rnn_word2vec_2_vae_model_data"); //new File("deep_cpc_2_vec_encoding_data");
 
     private List<ComputationGraph> networks;
     @Getter
     private ComputationGraph vaeNetwork;
 
-    private int vectorSize;
-    public RNN2CPCVaeModel(RNN2CPCVaePipelineManager pipelineManager, String modelName, int vectorSize) {
+    private int word2VecSize;
+    public RnnWord2Vec2VaeModel(RnnWord2Vec2VaePipelineManager pipelineManager, String modelName, int word2VecSize) {
         super(pipelineManager,ComputationGraph.class,modelName);
-        this.vectorSize=vectorSize;
-    }
-
-    public int getVectorSize() {
-        return vectorSize;
+        this.word2VecSize=word2VecSize;
     }
 
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
-        throw new UnsupportedOperationException("Predictions not support with this model.");
+       throw new UnsupportedOperationException("Predictions not support with this model.");
     }
-
 
     public synchronized INDArray encodeText(List<String> words, int samples) {
         int maxSample = pipelineManager.getMaxSample();
-        INDArray inputs = Nd4j.create(samples,vectorSize,maxSample);
+        INDArray inputs = Nd4j.create(samples,word2VecSize,maxSample);
         for(int i = 0; i < samples; i ++) { // TODO speed this up (i.e remove loop)
             INDArray wordVecs = sampleWordVectors(words,maxSample,pipelineManager.getWord2Vec());
             if(wordVecs==null) return null;
@@ -78,7 +76,7 @@ public class RNN2CPCVaeModel extends AbstractEncodingModel<ComputationGraph,RNN2
 
     @Override
     public int printIterations() {
-        return 50;
+        return 100;
     }
 
 
@@ -92,8 +90,8 @@ public class RNN2CPCVaeModel extends AbstractEncodingModel<ComputationGraph,RNN2
         networks = new ArrayList<>();
 
         // build networks
-        double learningRate = 0.001;
-        ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate);
+        double learningRate = 0.05;
+        ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate,word2VecSize);
 
         vaeNetwork = new ComputationGraph(conf.build());
         vaeNetwork.init();
@@ -114,10 +112,10 @@ public class RNN2CPCVaeModel extends AbstractEncodingModel<ComputationGraph,RNN2
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.0001;
+        double newLearningRate = 0.001;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
-        vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate).build());
+        vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate,word2VecSize).build());
         vaeNetwork.init(params,false);
 
         // add to maps
@@ -157,10 +155,10 @@ public class RNN2CPCVaeModel extends AbstractEncodingModel<ComputationGraph,RNN2
         };
     }
 
-    private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate) {
-        int input1 = 256;
+    private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate, int input1) {
+        final String wordVectorModelName = WordCPC2VecPipelineManager.DEEP_MODEL_NAME;
         int hiddenLayerSizeRnn = 256;
-        int hiddenLayerSizeFF = 128;
+        int hiddenLayerSizeFF = 1024;
         int input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
 
 
@@ -172,28 +170,27 @@ public class RNN2CPCVaeModel extends AbstractEncodingModel<ComputationGraph,RNN2
         Activation outputActivation = Activation.IDENTITY;
         Map<Integer,Double> learningRateSchedule = new HashMap<>();
         learningRateSchedule.put(0,learningRate);
-        //learningRateSchedule.put(50000,learningRate/2);
-        //learningRateSchedule.put(100000,learningRate/5);
-        //learningRateSchedule.put(200000,learningRate/10);
-        //learningRateSchedule.put(400000,learningRate/25);
+       // learningRateSchedule.put(50000,learningRate/2);
+       // learningRateSchedule.put(100000,learningRate/5);
+       // learningRateSchedule.put(200000,learningRate/10);
+       // learningRateSchedule.put(400000,learningRate/25);
         return new NeuralNetConfiguration.Builder(NNOptimizer.defaultNetworkConfig())
                 .updater(updater)
                 .learningRate(learningRate)
                 .learningRateDecayPolicy(LearningRatePolicy.Schedule)
                 .learningRateSchedule(learningRateSchedule)
-                .regularization(true).l2(0.0001)
+               // .regularization(true).l2(0.0001)
                 //.convolutionMode(ConvolutionMode.Same) //This is important so we can 'stack' the results later
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .activation(activation)
                 .graphBuilder()
                 .addInputs("x1")
-                .addLayer("rnn0", new GravesLSTM.Builder().dropOut(0.2).nIn(input1).nOut(hiddenLayerSizeRnn).build(), "x1")
-                .addLayer("rnn1", new GravesLSTM.Builder().dropOut(0.2).nIn(hiddenLayerSizeRnn+input1).nOut(hiddenLayerSizeRnn).build(), "rnn0")
-                .addLayer("rnn2", new GravesLSTM.Builder().dropOut(0.2).nIn(hiddenLayerSizeRnn+hiddenLayerSizeRnn).nOut(hiddenLayerSizeRnn).build(), "rnn1")
-                .addVertex("r0", new LastTimeStepVertex("x1"),"rnn2")
-                .addLayer("ff0", new DenseLayer.Builder().dropOut(0.2).nIn(hiddenLayerSizeRnn).nOut(hiddenLayerSizeFF).build(), "r2")
-                .addLayer("ff1", new DenseLayer.Builder().dropOut(0.2).nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "ff0")
-                .addLayer("ff2", new DenseLayer.Builder().dropOut(0.2).nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "ff1")
+                .addLayer("rnn0", new GravesLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRnn).build(), "x1")
+                .addLayer("rnn1", new GravesLSTM.Builder().nIn(hiddenLayerSizeRnn).nOut(hiddenLayerSizeRnn).build(), "rnn0")
+                .addVertex("r0", new LastTimeStepVertex("x1"),"rnn1")
+                .addLayer("ff0", new DenseLayer.Builder().nIn(hiddenLayerSizeRnn).nOut(hiddenLayerSizeFF).build(), "r0")
+                .addLayer("ff1", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "ff0")
+                .addLayer("ff2", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "ff1")
                 .addLayer("y1", new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeFF).lossFunction(lossFunction).nOut(input2).build(), "ff2")
                 .setOutputs("y1")
                 .backprop(true)

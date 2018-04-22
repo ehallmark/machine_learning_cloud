@@ -33,9 +33,11 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
     private String modelName;
     private int encodingSize;
     private Word2Vec word2Vec;
-    private RNNTextEncodingPipelineManager(String modelName, Word2Vec word2Vec, int encodingSize) {
+    private int word2VecSize;
+    private RNNTextEncodingPipelineManager(String modelName, Word2Vec word2Vec, int word2VecSize, int encodingSize) {
         super(INPUT_DATA_FOLDER_ALL, PREDICTION_FILE);
         this.word2Vec=word2Vec;
+        this.word2VecSize=word2VecSize;
         this.modelName=modelName;
         this.modelName=modelName;
         this.encodingSize=encodingSize;
@@ -43,7 +45,7 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
 
     @Override
     protected void initModel(boolean forceRecreateModels) {
-        model = new RNNTextEncodingModel(this,modelName,word2Vec.getLayerSize(),encodingSize);
+        model = new RNNTextEncodingModel(this,modelName,word2VecSize,encodingSize);
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
@@ -130,7 +132,7 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
 
 
         try {
-            RNNTextEncodingPipelineManager pipelineManager = new RNNTextEncodingPipelineManager(modelName, word2Vec, encodingSize);
+            RNNTextEncodingPipelineManager pipelineManager = new RNNTextEncodingPipelineManager(modelName, word2Vec, word2Vec.getLayerSize(), encodingSize);
             pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
         } catch(Exception e) {
             e.printStackTrace();

@@ -1,12 +1,14 @@
-package models.similarity_models.rnn_to_cpc_vae_model;
+package models.similarity_models.rnn_word2vec_to_cpc_vae_model;
 
 import ch.qos.logback.classic.Level;
 import data_pipeline.vectorize.PreSaveDataSetManager;
-import models.similarity_models.combined_similarity_model.AbstractEncodingModel;
 import models.similarity_models.combined_similarity_model.AbstractEncodingPipelineManager;
 import models.similarity_models.combined_similarity_model.Word2VecToCPCIterator;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
+import models.similarity_models.rnn_encoding_model.PostgresSequenceIterator;
+import models.similarity_models.rnn_encoding_model.RNNEncodingIterator;
+import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
 import models.text_streaming.FileTextDataSetIterator;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
@@ -19,38 +21,42 @@ import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
-import java.util.Random;
+import seeding.Database;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.util.Random;
 
-public class RNN2CPCVaePipelineManager extends AbstractEncodingPipelineManager {
-    public static final String MODEL_NAME = "rnn_2_cpc_vae_model";
+/**
+ * Created by ehallmark on 11/7/17.
+ */
+public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineManager  {
+
+    public static final String MODEL_NAME = "rnn_word2vec_2_vae_model";
     //public static final String MODEL_NAME = "cpc2vec_new_2_vae_vec_encoding_model";
-
-    public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"rnn_2_cpc_vae_model_prediction/predictions_map.jobj");
-    private static final File INPUT_DATA_FOLDER_ALL = new File("rnn_2_cpc_vae_model_input_data/");
-    private static final int VECTOR_SIZE = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
+    public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"rnn_word2vec_2_vae_model_predictions/predictions_map.jobj");
+    private static final File INPUT_DATA_FOLDER_ALL = new File("rnn_word2vec_2_vae_model_input_data/");
     protected static final int BATCH_SIZE = 1024;
     protected static final int MINI_BATCH_SIZE = 256;
-    private static final int MAX_NETWORK_RECURSION = -1;
-    public static final int MAX_SAMPLE = 128;
+    private static final int MAX_SEQUENCE_LENGTH = 64;
     protected static final Random rand = new Random(235);
-    private static RNN2CPCVaePipelineManager MANAGER;
-    public RNN2CPCVaePipelineManager(String modelName, Word2Vec word2Vec, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager) {
-        super(new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,deepCPCVAEPipelineManager);
+    private static RnnWord2Vec2VaePipelineManager MANAGER;
+    public RnnWord2Vec2VaePipelineManager(String modelName, Word2Vec word2Vec, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager) {
+        super(new File(currentDataFolderName(MAX_SEQUENCE_LENGTH)),PREDICTION_FILE,modelName+MAX_SEQUENCE_LENGTH,word2Vec,BATCH_SIZE,MINI_BATCH_SIZE,deepCPCVAEPipelineManager);
     }
 
-    public static String currentDataFolderName(int recursion,int sample) {
-        return (INPUT_DATA_FOLDER_ALL).getAbsolutePath()+sample+(recursion>0?("_r"+recursion):"");
+    public static String currentDataFolderName(int sample) {
+        return (INPUT_DATA_FOLDER_ALL).getAbsolutePath()+sample;
     }
 
     public int getMaxSample() {
-        return MAX_SAMPLE;
+        return MAX_SEQUENCE_LENGTH;
     }
 
     public void initModel(boolean forceRecreateModels) {
         if(model==null) {
-            model = new RNN2CPCVaeModel(this,modelName,VECTOR_SIZE);
+            model = new RnnWord2Vec2VaeModel(this,modelName,256);
         }
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
@@ -96,13 +102,12 @@ public class RNN2CPCVaePipelineManager extends AbstractEncodingPipelineManager {
         return FileTextDataSetIterator.devFile3;
     }
 
-    public static synchronized RNN2CPCVaePipelineManager getOrLoadManager(boolean loadWord2Vec) {
+    public static synchronized RnnWord2Vec2VaePipelineManager getOrLoadManager(boolean loadWord2Vec) {
         if(MANAGER==null) {
             Nd4j.setDataType(DataBuffer.Type.FLOAT);
 
             String modelName = MODEL_NAME;
             String wordCpc2VecModel = new File("data/reddit_wiki_word2vec.nn").getAbsolutePath();
-
 
             Word2Vec word2Vec = null;
             if(loadWord2Vec) word2Vec = WordVectorSerializer.readWord2VecModel(wordCpc2VecModel);
@@ -111,47 +116,47 @@ public class RNN2CPCVaePipelineManager extends AbstractEncodingPipelineManager {
             if(loadWord2Vec) deepCPCVAEPipelineManager.runPipeline(false,false,false,false,-1,false);
 
             setLoggingLevel(Level.INFO);
-            MANAGER = new RNN2CPCVaePipelineManager(modelName, word2Vec, deepCPCVAEPipelineManager);
+            MANAGER = new RnnWord2Vec2VaePipelineManager(modelName, word2Vec, deepCPCVAEPipelineManager);
         }
         return MANAGER;
     }
 
-    @Override
-    protected void setDatasetManager() {
-        File baseDir = FileTextDataSetIterator.BASE_DIR;
-        File trainFile = new File(baseDir, FileTextDataSetIterator.trainFile.getName());
-        File testFile = new File(baseDir, FileTextDataSetIterator.testFile.getName());
-        File devFile = new File(baseDir, getDevFile().getName());
-
-        boolean fullText = baseDir.getName().equals(FileTextDataSetIterator.BASE_DIR.getName());
-        System.out.println("Using full text: "+fullText);
-
-        WordCPCIterator trainIter = new WordCPCIterator(new FileTextDataSetIterator(trainFile),1,getMaxSample()*5, fullText);
-        WordCPCIterator testIter = new WordCPCIterator(new FileTextDataSetIterator(testFile),1,getMaxSample()*5, fullText);
-        WordCPCIterator devIter = new WordCPCIterator(new FileTextDataSetIterator(devFile),1,getMaxSample()*5, fullText);
-
-        trainIter.setRunVocab(false);
-        testIter.setRunVocab(false);
-        devIter.setRunVocab(false);
-
-        MultiDataSetIterator train =  getRawIterator(trainIter,getBatchSize());
-        MultiDataSetIterator test =  getRawIterator(testIter,1024);
-        MultiDataSetIterator val =  getRawIterator(devIter,1024);
-
-        PreSaveDataSetManager<MultiDataSetIterator> manager = new PreSaveDataSetManager<>(
-                dataFolder,
-                train,
-                test,
-                val,
-                true
-        );
-        manager.setMultiDataSetPreProcessor(getSeedTimeMultiDataSetPreProcessor());
-
-        datasetManager = manager;
+    private MultiDataSetIterator getIterator(PreparedStatement ps, int limit) {
+        return new RnnToVaeIterator(word2Vec,new PostgresVectorizedSequenceIterator(ps,1,2,limit),BATCH_SIZE,MAX_SEQUENCE_LENGTH);
     }
 
-    protected MultiDataSetIterator getRawIterator(SequenceIterator<VocabWord> iterator, int batch) {
-        return new Word2VecToCPCIterator(iterator,word2Vec,deepCPCVAEPipelineManager.loadPredictions(), batch, MAX_SAMPLE);
+    @Override
+    protected void setDatasetManager() {
+        if (datasetManager == null) {
+            Connection conn = Database.getConn();
+
+            int trainSize = 10000000;
+            int testSize = 50000;
+
+            int testSuffix = 8;
+            int devSuffix = 9;
+
+            try {
+                PreparedStatement trainPs = conn.prepareStatement("select abstract,cpc_vae from big_query_patent_english_abstract as a join big_query_embedding1 a e on (a.family_id=e.family_id) where right(a.family_id,1)!='" + testSuffix + "' and right(a.family_id,1)!='" + devSuffix + "' limit "+trainSize);
+                PreparedStatement testPs = conn.prepareStatement("select abstract,cpc_vae from big_query_patent_english_abstract as a join big_query_embedding1 a e on (a.family_id=e.family_id) where right(a.family_id,1)='" + testSuffix+ "' limit "+testSize);
+                PreparedStatement devPs = conn.prepareStatement("select abstract,cpc_vae from big_query_patent_english_abstract as a join big_query_embedding1 a e on (a.family_id=e.family_id) where right(a.family_id,1)='" + devSuffix +"' limit "+testSize);
+
+                MultiDataSetIterator trainIter = getIterator(trainPs, trainSize);
+                MultiDataSetIterator testIter = getIterator(testPs, testSize);
+                MultiDataSetIterator devIter = getIterator(devPs, testSize);
+
+                datasetManager = new PreSaveDataSetManager<>(
+                        dataFolder,
+                        trainIter,
+                        testIter,
+                        devIter,
+                        true
+                );
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
     }
 
     public static void main(String[] args) {
@@ -167,9 +172,10 @@ public class RNN2CPCVaePipelineManager extends AbstractEncodingPipelineManager {
         boolean rebuildPrerequisites = false;
         int nEpochs = 5;
 
-        rebuildDatasets = runModels && !new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)).exists();
+        rebuildDatasets = runModels && !new File(currentDataFolderName(MAX_SEQUENCE_LENGTH)).exists();
 
-        RNN2CPCVaePipelineManager pipelineManager = getOrLoadManager(rebuildDatasets||runPredictions);
+        RnnWord2Vec2VaePipelineManager pipelineManager = getOrLoadManager(rebuildDatasets||runPredictions);
         pipelineManager.runPipeline(rebuildPrerequisites,rebuildDatasets,runModels,forceRecreateModels,nEpochs,runPredictions);
     }
+
 }

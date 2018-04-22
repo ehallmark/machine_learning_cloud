@@ -23,11 +23,10 @@ public abstract class AbstractEncodingPipelineManager extends DefaultPipelineMan
     protected String modelName;
     @Getter
     protected Word2Vec word2Vec;
-    protected int vectorSize;
     protected int batchSize;
     protected int miniBatchSize;
     protected CPCVAEPipelineManager deepCPCVAEPipelineManager;
-    public AbstractEncodingPipelineManager(File dataFolder, File predictionFile, String modelName, Word2Vec word2Vec, int vectorSize, int batchSize, int miniBatchSize, CPCVAEPipelineManager deepCPCVAEPipelineManager) {
+    public AbstractEncodingPipelineManager(File dataFolder, File predictionFile, String modelName, Word2Vec word2Vec, int batchSize, int miniBatchSize, CPCVAEPipelineManager deepCPCVAEPipelineManager) {
         super(dataFolder, predictionFile);
         this.word2Vec=word2Vec;
         this.deepCPCVAEPipelineManager=deepCPCVAEPipelineManager;
@@ -35,7 +34,6 @@ public abstract class AbstractEncodingPipelineManager extends DefaultPipelineMan
         this.miniBatchSize=miniBatchSize;
         this.modelName=modelName;
         this.batchSize=batchSize;
-        this.vectorSize=vectorSize;
     }
 
     @Override

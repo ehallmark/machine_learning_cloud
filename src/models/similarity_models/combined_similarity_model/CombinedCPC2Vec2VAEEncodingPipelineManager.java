@@ -40,7 +40,7 @@ public class CombinedCPC2Vec2VAEEncodingPipelineManager extends AbstractEncoding
     protected static final Random rand = new Random(235);
     private static CombinedCPC2Vec2VAEEncodingPipelineManager MANAGER;
     public CombinedCPC2Vec2VAEEncodingPipelineManager(String modelName, Word2Vec word2Vec, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager) {
-        super(new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,VECTOR_SIZE,BATCH_SIZE,MINI_BATCH_SIZE,deepCPCVAEPipelineManager);
+        super(new File(currentDataFolderName(MAX_NETWORK_RECURSION,MAX_SAMPLE)),PREDICTION_FILE,modelName+MAX_SAMPLE,word2Vec,BATCH_SIZE,MINI_BATCH_SIZE,deepCPCVAEPipelineManager);
     }
 
     public static String currentDataFolderName(int recursion,int sample) {
