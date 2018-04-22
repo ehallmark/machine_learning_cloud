@@ -27,6 +27,10 @@ public class RNNEncodingIterator implements MultiDataSetIterator{
         this.batchSize=batchSize;
     }
 
+    public static INDArray featuresFor(Word2Vec word2Vec, List<String> validWords) {
+        return word2Vec.getWordVectors(validWords);
+    }
+
     @Override
     public MultiDataSet next(int n) {
         INDArray allFeatures = Nd4j.zeros(n,word2Vec.getLayerSize(),maxSequenceLength*2);
@@ -44,7 +48,7 @@ public class RNNEncodingIterator implements MultiDataSetIterator{
                     .limit(maxSequenceLength)
                     .collect(Collectors.toList());
 
-            INDArray wordVectors = word2Vec.getWordVectors(validWords).transpose();
+            INDArray wordVectors = featuresFor(word2Vec,validWords).transpose();
             allFeatures.get(NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.interval(0,validWords.size())).assign(wordVectors);
             featureMasks.get(NDArrayIndex.point(i),NDArrayIndex.interval(0,validWords.size())).assign(1f);
             allLabels.get(NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.interval(validWords.size(),validWords.size()*2)).assign(wordVectors);

@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import data_pipeline.vectorize.DataSetManager;
 import data_pipeline.vectorize.PreSaveDataSetManager;
+import lombok.Getter;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
@@ -32,6 +33,7 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
 
     private String modelName;
     private int encodingSize;
+    @Getter
     private Word2Vec word2Vec;
     private int word2VecSize;
     private RNNTextEncodingPipelineManager(String modelName, Word2Vec word2Vec, int word2VecSize, int encodingSize) {

@@ -137,7 +137,7 @@ public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph
             int valCount = 0;
             double score = 0d;
             int count = 0;
-            while(validationIterator.hasNext()&&valCount<30000) {
+            while(validationIterator.hasNext()&&valCount<20000) {
                 MultiDataSet dataSet = validationIterator.next();
                 valCount+=dataSet.getFeatures()[0].shape()[0];
                 try {
