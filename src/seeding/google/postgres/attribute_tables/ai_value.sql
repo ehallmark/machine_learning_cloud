@@ -28,13 +28,9 @@ insert into big_query_ai_value_assignments (family_id,num_assignments) (
         big_query_assignments left join big_query_assignment_documentid using (reel_frame)
     left outer join patents_global on
         (
-            (
-                (patents_global.publication_number=doc_number and not is_filing)
-                OR
-                (patents_global.application_number=doc_number and is_filing)
-            ) AND patents_global.country_code='US'
+           patents_global.application_number_formatted=doc_number
         )
-    where family_id!='-1' and patents_global.country_code='US' -- update -> and not family_id in (select family_id from big_query_ai_value_assignments)
+    where is_filing and patents_global.country_code='US' and family_id!='-1' and patents_global.country_code='US' -- update -> and not family_id in (select family_id from big_query_ai_value_assignments)
     group by family_id
 );
 
