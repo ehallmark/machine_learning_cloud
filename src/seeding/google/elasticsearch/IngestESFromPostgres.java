@@ -5,6 +5,7 @@ import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.index.IndexRequest;
 import seeding.Database;
 import seeding.google.mongo.ingest.IngestPatents;
+import user_interface.server.BigQueryServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
@@ -64,13 +65,18 @@ public class IngestESFromPostgres {
         if(obj==null) return null;
         if(obj instanceof Array) {
             Object[] _array = (Object[]) ((Array) obj).getArray();
-            Object[] array = new Object[_array.length];
             if(_array instanceof Date[]) {
+                Object[] array = new Object[_array.length];
                 for(int i = 0; i < array.length; i++) {
                     array[i] = fromSqlDate((Date) _array[i]);
                 }
+                return array;
             }
-            return array;
+            if(attr instanceof SimilarityAttribute) {
+                // get vectors
+                return BigQueryServer.vectorToFastElasticSearchObject((Float[])_array);
+            }
+            return _array;
         } else if(obj instanceof Date) {
             return fromSqlDate((Date) obj);
         } else if(obj instanceof Integer && attr.getType().equals("boolean")) {

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
+import seeding.google.elasticsearch.Attributes;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.*;
@@ -29,6 +30,7 @@ import static user_interface.server.SimilarPatentServer.*;
  * Created by ehallmark on 2/28/17.
  */
 public class SimilarityEngineController {
+    private final boolean isBigQuery;
     private Collection<AbstractFilter> preFilters;
     @Getter
     protected PortfolioList portfolioList;
@@ -36,11 +38,12 @@ public class SimilarityEngineController {
     private Set<String> chartPrerequisites;
     @Getter @Setter
     private static List<AbstractSimilarityEngine> allEngines;
-    public SimilarityEngineController() {
+    public SimilarityEngineController(boolean bigQuery) {
+        this.isBigQuery=bigQuery;
     }
 
     public SimilarityEngineController dup() {
-        return new SimilarityEngineController();
+        return new SimilarityEngineController(isBigQuery);
     }
 
     private void setPrefilters(Request req) {
@@ -119,6 +122,7 @@ public class SimilarityEngineController {
         attributesFromUser.forEach(attr -> {
             attributesRequired.addAll(extractArray(req, attr + "[]"));
         });
+        if(isBigQuery) attributesRequired.add(Attributes.FAMILY_ID); // IMPORTANT
 
         // add chart prerequisites
         if (chartPrerequisites != null) {
@@ -159,7 +163,11 @@ public class SimilarityEngineController {
         for(AbstractFilter preFilter : preFilters) {
             if(preFilter instanceof AssetDedupFilter) {
                 System.out.println("Asset dedupe!");
-                scope = assetDedupe(scope);
+                if(isBigQuery) {
+                    scope = assetDedupeByFamily(scope);
+                } else {
+                    scope = assetDedupe(scope);
+                }
                 break;
             }
         }
@@ -217,5 +225,21 @@ public class SimilarityEngineController {
             namesSeenSoFar.addAll(related);
          return toRet;
         }).filter(item->item!=null).collect(Collectors.toList());
+    }
+
+    private static List<Item> assetDedupeByFamily(List<Item> items) {
+        List<Item> ret = new ArrayList<>(items.size());
+        items.stream().filter(item->{
+            if(item.getData(Attributes.FAMILY_ID).equals("-1")) {
+                ret.add(item);
+                return false;
+            } else {
+                return true;
+            }
+        }).collect(Collectors.groupingBy(e->(String)e.getData(Attributes.FAMILY_ID),Collectors.toList()))
+                .entrySet().forEach(e->{
+                    ret.add(e.getValue().get(0));
+                });
+        return ret;
     }
 }

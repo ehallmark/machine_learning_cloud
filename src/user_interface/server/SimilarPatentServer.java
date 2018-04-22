@@ -626,7 +626,7 @@ public class SimilarPatentServer {
                     if(!TEST) {
                         new DefaultSimilarityModel(Collections.emptySet());
                     }
-                    return new SimilarityEngineController();
+                    return new SimilarityEngineController(false);
                 }
             };
 

@@ -404,6 +404,8 @@ public class BigQueryServer {
 
     public static void initialize() {
         loadAttributes();
+        loadFilterModels();
+        loadChartModels();
     }
 
     private static void getAttributesHelper(AbstractAttribute attr, List<AbstractAttribute> all) {
@@ -538,7 +540,7 @@ public class BigQueryServer {
                     if(!TEST) {
                         new DefaultSimilarityModel(Collections.emptySet());
                     }
-                    return new SimilarityEngineController();
+                    return new SimilarityEngineController(true);
                 }
             };
 
@@ -553,102 +555,12 @@ public class BigQueryServer {
         }
     }
 
-
-    public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, Map<String,Vectorizer> vectorizers, Set<String> onlyAssets) {
-        List<String> applications = new AssetToFilingMap().getApplicationDataMap().keySet().stream().filter(asset->onlyAssets==null||onlyAssets.contains(asset)).collect(Collectors.toList());
-        System.out.println("Num applications found: "+applications.size());
-        handleItemsList(applications, attributes, PortfolioList.Type.applications,vectorizers);
-        DataIngester.finishCurrentMongoBatch();
-        List<String> patents = new AssetToFilingMap().getPatentDataMap().keySet().stream().filter(asset->onlyAssets==null||onlyAssets.contains(asset)).collect(Collectors.toList());
-        System.out.println("Num patents found: "+patents.size());
-        handleItemsList(patents, attributes, PortfolioList.Type.patents,vectorizers);
-    }
-
-    public static Map<String,Float> vectorToElasticSearchObject(INDArray vector) {
-        float[] data = vector.data().asFloat();
-        Map<String, Float> obj = new HashMap<>();
-        for (int i = 0; i < data.length; i++) {
-            obj.put(String.valueOf(i), data[i]);
+    public static String vectorToFastElasticSearchObject(Float[] vector) {
+        float[] _vector = new float[vector.length];
+        for(int i = 0; i < vector.length; i++) {
+            _vector[i]=vector[i];
         }
-        return obj;
-    }
-
-    public static String vectorToFastElasticSearchObject(INDArray vector) {
-        double[] data = vector.data().asDouble();
-        return TestNewFastVectors.vectorToHex(data);
-    }
-
-    public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, PortfolioList.Type type, Map<String,Vectorizer> vectorizers) {
-        Map<String,String> assetToFiling = type.equals(PortfolioList.Type.patents) ? new AssetToFilingMap().getPatentDataMap() : new AssetToFilingMap().getApplicationDataMap();
-        AtomicInteger cnt = new AtomicInteger(0);
-        inputs.forEach(label->{
-            String filing = assetToFiling.get(label);
-            // vec
-            if(filing!=null) {
-                Item item = new Item(label);
-                Set<String> attributesToRemove = new HashSet<>();
-                attributes.forEach(model -> {
-                    Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1,type.equals(PortfolioList.Type.applications));
-                    AbstractAttribute parent = model.getParent();
-                    boolean isAttrOfObject = parent!=null && parent.isObject();
-                    if(isAttrOfObject&&!item.getDataMap().containsKey(parent.getName())) {
-                        item.addData(parent.getName(), new HashMap<String,Object>());
-                    }
-                    if(obj!=null) {
-                        if(obj instanceof LocalDate) {
-                            obj = ((LocalDate)obj).format(DateTimeFormatter.ISO_DATE);
-                        }
-                        if(isAttrOfObject) {
-                            // group results to override other values
-                            ((Map<String,Object>)item.getDataMap().get(parent.getName())).put(model.getName(),obj);
-
-                        } else {
-                            item.addData(model.getMongoDBName(), obj);
-                        }
-                    } else if(!isAttrOfObject) {
-                        attributesToRemove.add(model.getMongoDBName());
-                    }
-                });
-                // handle assignee data
-                if(item.getDataMap().containsKey(Constants.LATEST_ASSIGNEE)) {
-                    Map<String,Object> assigneeMap = ((Map<String,Object>)item.getDataMap().get(Constants.LATEST_ASSIGNEE));
-                    Object assignee = assigneeMap.get(Constants.ASSIGNEE);
-                    if(assignee!=null) {
-                        Map<String, Object> preComputed = MergeRawAssignees.get().get(assignee.toString());
-                        if(preComputed!=null) {
-                            preComputed.forEach((k, v) -> {
-                                assigneeMap.put(k, v);
-                            });
-                        }
-                    }
-                } else {
-                    attributesToRemove.add(Constants.LATEST_ASSIGNEE);
-                }
-                attributesToRemove.add(SimilarityAttribute.VECTOR_NAME); // TODO remove this line after next pass through mongo
-                vectorizers.forEach((name,vectorizer)->{
-                    INDArray vec = vectorizer.vectorFor(filing);
-                    if(vec==null) {
-                        vec = vectorizer.vectorFor(label); // default to regular asset name
-                    }
-                    if(vec!=null) {
-                        item.addData(name, vectorToFastElasticSearchObject(vec));
-
-                    } else {
-                        attributesToRemove.add(name);
-                    }
-                });
-
-                if(item.getDataMap().size()>0 || attributesToRemove.size()>0) {
-                    DataIngester.ingestItem(item, attributesToRemove);
-                    if (debug) System.out.println("Item: " + item.getName());
-                }
-            }
-
-            if(cnt.getAndIncrement()%100000==99999) {
-                System.out.println("Seen "+cnt.get());
-            }
-            if(cnt.get()%1000000==999999) System.gc();
-        });
+        return TestNewFastVectors.vectorToHex(_vector);
     }
 
     private static boolean canCreateUser(String creatorRole, String childRole) {
