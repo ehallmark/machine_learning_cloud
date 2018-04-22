@@ -74,7 +74,7 @@ public class IngestESFromPostgres {
             }
             if(attr instanceof SimilarityAttribute) {
                 // get vectors
-                return BigQueryServer.vectorToFastElasticSearchObject((Float[])_array);
+                return BigQueryServer.vectorToFastElasticSearchObject((Number[])_array);
             }
             return _array;
         } else if(obj instanceof Date) {

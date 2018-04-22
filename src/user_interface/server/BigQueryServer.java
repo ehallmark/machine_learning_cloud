@@ -555,10 +555,10 @@ public class BigQueryServer {
         }
     }
 
-    public static String vectorToFastElasticSearchObject(Float[] vector) {
+    public static String vectorToFastElasticSearchObject(Number[] vector) {
         float[] _vector = new float[vector.length];
         for(int i = 0; i < vector.length; i++) {
-            _vector[i]=vector[i];
+            _vector[i]=vector[i].floatValue();
         }
         return TestNewFastVectors.vectorToHex(_vector);
     }
