@@ -22,8 +22,6 @@ import java.util.stream.Stream;
 public class IngestRNNEncForAssetsToPostgres {
 
     public static void main(String[] args) throws Exception {
-        final int batchSize = 1000;
-
         RNNTextEncodingPipelineManager pipelineManager = RNNTextEncodingPipelineManager.getOrLoadManager(true);
         pipelineManager.runPipeline(false,false,false,false,-1,false);
         RNNTextEncodingModel model = (RNNTextEncodingModel) pipelineManager.getModel();
@@ -66,6 +64,7 @@ public class IngestRNNEncForAssetsToPostgres {
             }
             cnt++;
         }
+        Database.commit();
         rs.close();
         ps.close();
         seedConn.close();
