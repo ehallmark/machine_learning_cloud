@@ -24,10 +24,21 @@ create table big_query_cpc_embedding1 (
 );
 
 create table big_query_assignee_embedding1 (
-    name varchar(32) primary key, -- eg. US9923222B1
+    name text primary key, -- eg. US9923222B1
     cpc_vae float[] not null
 );
 
+-- warning patents_global_merged must already exist!
+create table big_query_assignee_embedding1_help (
+    name text primary key,
+    code varchar(32)[] not null
+);
+-- warning patents_global_merged must already exist!
+insert into big_query_assignee_embedding1_help (name,code) (
+    select latest_first_assignee,array_agg(c.code)
+    from patents_global_merged as p,unnest(p.code) with ordinality as c(code,n)
+    group by latest_first_assignee
+);
 
 -- creates assignee vectors by averaging from patent vectors
 insert into big_query_assignee_embedding1 (name,cpc_vae) (
