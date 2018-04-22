@@ -80,6 +80,9 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
                 PreparedStatement trainPs = conn.prepareStatement("select abstract from big_query_patent_english_abstract where right(family_id,1)!='" + testSuffix + "' and right(family_id,1)!='" + devSuffix + "' limit "+trainSize);
                 PreparedStatement testPs = conn.prepareStatement("select abstract from big_query_patent_english_abstract where right(family_id,1)='" + testSuffix+ "' limit "+testSize);
                 PreparedStatement devPs = conn.prepareStatement("select abstract from big_query_patent_english_abstract where right(family_id,1)='" + devSuffix +"' limit "+testSize);
+                trainPs.setFetchSize(10);
+                testPs.setFetchSize(10);
+                devPs.setFetchSize(10);
 
                 MultiDataSetIterator trainIter = getIterator(trainPs, trainSize);
                 MultiDataSetIterator testIter = getIterator(testPs, testSize);
@@ -112,6 +115,20 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
 
     }
 
+    public static RNNTextEncodingPipelineManager getOrLoadManager(boolean loadWord2Vec) {
+        String modelName = MODEL_NAME256;
+
+        int encodingSize = VECTOR_SIZE;
+        String word2VecPath = new File("data/word2vec_model.nn256").getAbsolutePath();
+        Word2Vec word2Vec = loadWord2Vec ? WordVectorSerializer.readWord2VecModel(word2VecPath) : null;
+
+        setCudaEnvironment();
+        setLoggingLevel(Level.INFO);
+
+        RNNTextEncodingPipelineManager pipelineManager = new RNNTextEncodingPipelineManager(modelName, word2Vec, 256, encodingSize);
+        return pipelineManager;
+    }
+
 
     public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
@@ -121,18 +138,12 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
         boolean forceRecreateModels = false;
         boolean runPredictions = false;
         int nEpochs = 5;
-        String modelName = MODEL_NAME256;
-
-        int encodingSize = VECTOR_SIZE;
-        String word2VecPath = new File("data/word2vec_model.nn256").getAbsolutePath();
-        Word2Vec word2Vec = WordVectorSerializer.readWord2VecModel(word2VecPath);
 
         setCudaEnvironment();
         setLoggingLevel(Level.INFO);
 
-
+        RNNTextEncodingPipelineManager pipelineManager = getOrLoadManager(true);
         try {
-            RNNTextEncodingPipelineManager pipelineManager = new RNNTextEncodingPipelineManager(modelName, word2Vec, word2Vec.getLayerSize(), encodingSize);
             pipelineManager.runPipeline(rebuildPrerequisites, rebuildDatasets, runModels, forceRecreateModels, nEpochs, runPredictions);
         } catch(Exception e) {
             e.printStackTrace();

@@ -21,7 +21,9 @@ public class RnnToVaeIterator implements MultiDataSetIterator{
     private MultiDataSetPreProcessor preProcessor;
     private int batchSize;
     private int maxSequenceLength;
-    public RnnToVaeIterator(Word2Vec word2Vec, PostgresVectorizedSequenceIterator iterator, int batchSize, int maxSequenceLength) {
+    private final int encodingSize;
+    public RnnToVaeIterator(Word2Vec word2Vec, PostgresVectorizedSequenceIterator iterator, int batchSize, int maxSequenceLength, int encodingSize) {
+        this.encodingSize=encodingSize;
         this.word2Vec=word2Vec;
         this.maxSequenceLength=maxSequenceLength;
         this.iterator=iterator;
@@ -31,7 +33,7 @@ public class RnnToVaeIterator implements MultiDataSetIterator{
     @Override
     public MultiDataSet next(int n) {
         INDArray allFeatures = Nd4j.zeros(n,word2Vec.getLayerSize(),maxSequenceLength);
-        INDArray allLabels = Nd4j.zeros(n,word2Vec.getLayerSize());
+        INDArray allLabels = Nd4j.zeros(n,encodingSize);
         INDArray featureMasks = Nd4j.zeros(n,maxSequenceLength);
 
         int i = 0;

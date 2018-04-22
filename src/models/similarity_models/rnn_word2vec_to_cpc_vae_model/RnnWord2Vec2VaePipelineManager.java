@@ -38,12 +38,13 @@ public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineMana
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"rnn_word2vec_2_vae_model_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER_ALL = new File("rnn_word2vec_2_vae_model_input_data/");
     protected static final int BATCH_SIZE = 1024;
+    protected static final int VECTOR_SIZE = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
     protected static final int MINI_BATCH_SIZE = 256;
     private static final int MAX_SEQUENCE_LENGTH = 64;
     protected static final Random rand = new Random(235);
     private static RnnWord2Vec2VaePipelineManager MANAGER;
-    public RnnWord2Vec2VaePipelineManager(String modelName, Word2Vec word2Vec, DeepCPCVAEPipelineManager deepCPCVAEPipelineManager) {
-        super(new File(currentDataFolderName(MAX_SEQUENCE_LENGTH)),PREDICTION_FILE,modelName+MAX_SEQUENCE_LENGTH,word2Vec,BATCH_SIZE,MINI_BATCH_SIZE,deepCPCVAEPipelineManager);
+    public RnnWord2Vec2VaePipelineManager(String modelName, Word2Vec word2Vec) {
+        super(new File(currentDataFolderName(MAX_SEQUENCE_LENGTH)),PREDICTION_FILE,modelName+MAX_SEQUENCE_LENGTH,word2Vec,BATCH_SIZE,MINI_BATCH_SIZE,null);
     }
 
     public static String currentDataFolderName(int sample) {
@@ -112,17 +113,14 @@ public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineMana
             Word2Vec word2Vec = null;
             if(loadWord2Vec) word2Vec = WordVectorSerializer.readWord2VecModel(wordCpc2VecModel);
 
-            DeepCPCVAEPipelineManager deepCPCVAEPipelineManager = new DeepCPCVAEPipelineManager(DeepCPCVAEPipelineManager.MODEL_NAME);
-            if(loadWord2Vec) deepCPCVAEPipelineManager.runPipeline(false,false,false,false,-1,false);
-
             setLoggingLevel(Level.INFO);
-            MANAGER = new RnnWord2Vec2VaePipelineManager(modelName, word2Vec, deepCPCVAEPipelineManager);
+            MANAGER = new RnnWord2Vec2VaePipelineManager(modelName, word2Vec);
         }
         return MANAGER;
     }
 
     private MultiDataSetIterator getIterator(PreparedStatement ps, int limit) {
-        return new RnnToVaeIterator(word2Vec,new PostgresVectorizedSequenceIterator(ps,1,2,limit),BATCH_SIZE,MAX_SEQUENCE_LENGTH);
+        return new RnnToVaeIterator(word2Vec,new PostgresVectorizedSequenceIterator(ps,1,2,limit),BATCH_SIZE,MAX_SEQUENCE_LENGTH,VECTOR_SIZE);
     }
 
     @Override
@@ -137,9 +135,12 @@ public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineMana
             int devSuffix = 9;
 
             try {
-                PreparedStatement trainPs = conn.prepareStatement("select abstract,cpc_vae from big_query_patent_english_abstract as a join big_query_embedding1 a e on (a.family_id=e.family_id) where right(a.family_id,1)!='" + testSuffix + "' and right(a.family_id,1)!='" + devSuffix + "' limit "+trainSize);
-                PreparedStatement testPs = conn.prepareStatement("select abstract,cpc_vae from big_query_patent_english_abstract as a join big_query_embedding1 a e on (a.family_id=e.family_id) where right(a.family_id,1)='" + testSuffix+ "' limit "+testSize);
-                PreparedStatement devPs = conn.prepareStatement("select abstract,cpc_vae from big_query_patent_english_abstract as a join big_query_embedding1 a e on (a.family_id=e.family_id) where right(a.family_id,1)='" + devSuffix +"' limit "+testSize);
+                PreparedStatement trainPs = conn.prepareStatement("select abstract,cpc_vae from big_query_patent_english_abstract as a join big_query_embedding1 as e on (a.family_id=e.family_id) where right(a.family_id,1)!='" + testSuffix + "' and right(a.family_id,1)!='" + devSuffix + "' limit "+trainSize);
+                PreparedStatement testPs = conn.prepareStatement("select abstract,cpc_vae from big_query_patent_english_abstract as a join big_query_embedding1 as e on (a.family_id=e.family_id) where right(a.family_id,1)='" + testSuffix+ "' limit "+testSize);
+                PreparedStatement devPs = conn.prepareStatement("select abstract,cpc_vae from big_query_patent_english_abstract as a join big_query_embedding1 as e on (a.family_id=e.family_id) where right(a.family_id,1)='" + devSuffix +"' limit "+testSize);
+                trainPs.setFetchSize(10);
+                testPs.setFetchSize(10);
+                devPs.setFetchSize(10);
 
                 MultiDataSetIterator trainIter = getIterator(trainPs, trainSize);
                 MultiDataSetIterator testIter = getIterator(testPs, testSize);
