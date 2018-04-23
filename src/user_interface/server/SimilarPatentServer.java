@@ -413,18 +413,18 @@ public class SimilarPatentServer {
                     if(TEST) return null;
                     KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.SMALL_MODEL_NAME, -1, -1, -1));
                     keyphrasePredictionPipelineManager.runPipeline(false, false, false, false, -1, false);
-                    keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors();
-                    keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadWordVectors();
-                    keyphrasePredictionPipelineManager.loadPredictions();
-                    keyphrasePredictionPipelineManager.getCPCMap();
+                    //keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors();
+                    //keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadWordVectors();
+                    //keyphrasePredictionPipelineManager.loadPredictions();
+                    //keyphrasePredictionPipelineManager.getCPCMap();
+                    //keyphrasePredictionPipelineManager.buildKeywordToLookupTableMap();
                     try {
-                        AssetKMeans kMeans = new AssetKMeans(Collections.emptyList(), keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors(), 2);
-                        kMeans.clusterAssets();
+                        //AssetKMeans kMeans = new AssetKMeans(Collections.emptyList(), keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors(), 2);
+                        //kMeans.clusterAssets();
                     } catch (Exception e) {
                         System.out.println("Error while initializing asset K Means");
                         e.printStackTrace();
                     }
-                    keyphrasePredictionPipelineManager.buildKeywordToLookupTableMap();
                     return keyphrasePredictionPipelineManager;
                 }
             };
@@ -3130,16 +3130,16 @@ public class SimilarPatentServer {
             pool.execute(new RecursiveAction() {
                 @Override
                 protected void compute() {
-                    new RelatedAssetsAttribute().getPatentDataMap();
-                    new RelatedAssetsAttribute().getApplicationDataMap();
-                    new AssetToFilingMap().getPatentDataMap();
-                    new AssetToFilingMap().getApplicationDataMap();
-                    new FilingToAssetMap().getApplicationDataMap();
-                    new FilingToAssetMap().getPatentDataMap();
-                    new AssetToCPCMap().getApplicationDataMap();
-                    new AssetToCPCMap().getPatentDataMap();
+                //    new RelatedAssetsAttribute().getPatentDataMap();
+                //    new RelatedAssetsAttribute().getApplicationDataMap();
+                //    new AssetToFilingMap().getPatentDataMap();
+                //    new AssetToFilingMap().getApplicationDataMap();
+                //    new FilingToAssetMap().getApplicationDataMap();
+                //    new FilingToAssetMap().getPatentDataMap();
+                //    new AssetToCPCMap().getApplicationDataMap();
+                //    new AssetToCPCMap().getPatentDataMap();
                     if (preLoad) {
-                        Database.preLoad();
+                       // Database.preLoad();
                     }
                 }
             });

@@ -537,9 +537,6 @@ public class BigQueryServer {
                 @Override
                 protected SimilarityEngineController compute() {
                     // current word vectorizer
-                    if(!TEST) {
-                        new DefaultSimilarityModel(Collections.emptySet());
-                    }
                     return new SimilarityEngineController(true);
                 }
             };
@@ -1662,7 +1659,7 @@ public class BigQueryServer {
                 if (assets == null) {
                     message.add("assets are null");
                 } else {
-                    Map<String,INDArray> vectorMap = Database.loadVectorsFor(assets);
+                    Map<String,INDArray> vectorMap = Database.loadCPCVaeVectorsFor(assets);
                     Map<String,List<String>> technologyMap = Database.loadTechnologiesFor(assets);
                     Function<String,List<String>> techPredictionFunction = asset -> technologyMap.getOrDefault(asset,Collections.emptyList());
                     AssetKMeans kMeans = new AssetKMeans(techPredictionFunction, assets, vectorMap, k);

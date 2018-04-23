@@ -10,11 +10,13 @@ import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.*;
 import org.deeplearning4j.nn.conf.graph.rnn.LastTimeStepVertex;
+import org.deeplearning4j.nn.conf.layers.BatchNormalization;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.GravesLSTM;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.api.IterationListener;
+import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
@@ -26,6 +28,8 @@ import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 
 import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -48,35 +52,21 @@ public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph
         this.word2VecSize=word2VecSize;
     }
 
+
+    @Override
+    protected File getModelFile(LocalDateTime dateTime) {
+        return new File(getModelBaseDirectory(), modelName);
+    }
+
     @Override
     public Map<String, INDArray> predict(List<String> assets, List<String> assignees, List<String> classCodes) {
        throw new UnsupportedOperationException("Predictions not support with this model.");
     }
 
-    public synchronized INDArray encodeText(List<String> words, int samples) {
-        int maxSample = pipelineManager.getMaxSample();
-        INDArray inputs = Nd4j.create(samples,word2VecSize,maxSample);
-        for(int i = 0; i < samples; i ++) { // TODO speed this up (i.e remove loop)
-            INDArray wordVecs = sampleWordVectors(words,maxSample,pipelineManager.getWord2Vec());
-            if(wordVecs==null) return null;
-            inputs.get(NDArrayIndex.point(i),NDArrayIndex.all(),NDArrayIndex.all()).assign(wordVecs.transpose());
-        }
-
-        //System.out.println("Sampled word vectors shape: "+Arrays.toString(inputs.shape()));
-        return encodeText(inputs);
-    }
-
-    public synchronized INDArray encodeText(INDArray inputs) {
-        if(vaeNetwork==null) {
-            updateNetworksBeforeTraining(getNet().getNameToNetworkMap());
-        }
-        return Transforms.unitVec(vaeNetwork.output(false,inputs)[0].mean(0));
-    }
-
 
     @Override
     public int printIterations() {
-        return 100;
+        return 400;
     }
 
 
@@ -90,7 +80,7 @@ public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph
         networks = new ArrayList<>();
 
         // build networks
-        double learningRate = 0.05;
+        double learningRate = 0.01;
         ComputationGraphConfiguration.GraphBuilder conf = createNetworkConf(learningRate,word2VecSize);
 
         vaeNetwork = new ComputationGraph(conf.build());
@@ -112,7 +102,7 @@ public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.01;
+        double newLearningRate = 0.005;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate,word2VecSize).build());
@@ -130,16 +120,19 @@ public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph
 
     @Override
     protected Function<Object, Double> getTestFunction() {
+        List<MultiDataSet> dataSets = new ArrayList<>();
+        MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
+        int valCount = 0;
+        while(validationIterator.hasNext()&&valCount<20000) {
+            MultiDataSet dataSet = validationIterator.next();
+            valCount += dataSet.getFeatures()[0].shape()[0];
+            dataSets.add(dataSet);
+        }
         return (v) -> {
             System.gc();
-            MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
-
-            int valCount = 0;
             double score = 0d;
             int count = 0;
-            while(validationIterator.hasNext()&&valCount<20000) {
-                MultiDataSet dataSet = validationIterator.next();
-                valCount+=dataSet.getFeatures()[0].shape()[0];
+            for(MultiDataSet dataSet : dataSets) {
                 try {
                     score += test(vaeNetwork, dataSet);
                 } catch(Exception e) {
@@ -149,24 +142,21 @@ public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph
                 count++;
             }
             System.gc();
-            validationIterator.reset();
-
             return score/count;
         };
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate, int input1) {
         int hiddenLayerSizeRnn = 256;
-        int hiddenLayerSizeFF = 1024;
         int input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
 
 
-        Updater updater = Updater.RMSPROP;
+        Updater updater = Updater.ADAM;
 
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
         Activation activation = Activation.TANH;
-        Activation outputActivation = Activation.IDENTITY;
+        Activation outputActivation = Activation.TANH;
         Map<Integer,Double> learningRateSchedule = new HashMap<>();
         learningRateSchedule.put(0,learningRate);
        // learningRateSchedule.put(50000,learningRate/2);
@@ -187,10 +177,9 @@ public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph
                 .addLayer("rnn0", new GravesLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRnn).build(), "x1")
                 .addLayer("rnn1", new GravesLSTM.Builder().nIn(hiddenLayerSizeRnn).nOut(hiddenLayerSizeRnn).build(), "rnn0")
                 .addVertex("r0", new LastTimeStepVertex("x1"),"rnn1")
-                .addLayer("ff0", new DenseLayer.Builder().nIn(hiddenLayerSizeRnn).nOut(hiddenLayerSizeFF).build(), "r0")
-                .addLayer("ff1", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "ff0")
-                .addLayer("ff2", new DenseLayer.Builder().nIn(hiddenLayerSizeFF).nOut(hiddenLayerSizeFF).build(), "ff1")
-                .addLayer("y1", new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeFF).lossFunction(lossFunction).nOut(input2).build(), "ff2")
+                .addLayer("d0", new DenseLayer.Builder().nIn(hiddenLayerSizeRnn).nOut(1024).build(), "r0")
+                .addLayer("d1", new DenseLayer.Builder().nIn(1024).nOut(1024).build(), "d0")
+                .addLayer("y1", new OutputLayer.Builder().activation(outputActivation).nIn(1024).lossFunction(lossFunction).nOut(input2).build(), "d1")
                 .setOutputs("y1")
                 .backprop(true)
                 .backpropType(BackpropType.Standard)

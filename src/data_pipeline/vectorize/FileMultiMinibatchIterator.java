@@ -157,25 +157,31 @@ public class FileMultiMinibatchIterator implements MultiDataSetIterator{
                                         labels[j]=labels[j].get(indices);
                                     }
                                     if(e.getFeaturesMaskArrays()!=null) {
-                                        INDArray[] featuresMasks = e.getFeaturesMaskArrays().clone();
-                                        for (int j = 0; j < featuresMasks.length; j++) {
-                                            int nDims = featuresMasks[j].shape().length;
-                                            INDArrayIndex[] indices = new INDArrayIndex[nDims];
-                                            indices[0] = NDArrayIndex.interval(start, end);
-                                            for (int k = 1; k < indices.length; k++) {
-                                                indices[k] = NDArrayIndex.all();
+                                        INDArray[] featuresMasks = e.getFeaturesMaskArrays();
+                                        if(featuresMasks!=null) {
+                                            featuresMasks = featuresMasks.clone();
+                                            for (int j = 0; j < featuresMasks.length; j++) {
+                                                int nDims = featuresMasks[j].shape().length;
+                                                INDArrayIndex[] indices = new INDArrayIndex[nDims];
+                                                indices[0] = NDArrayIndex.interval(start, end);
+                                                for (int k = 1; k < indices.length; k++) {
+                                                    indices[k] = NDArrayIndex.all();
+                                                }
+                                                featuresMasks[j] = featuresMasks[j].get(indices);
                                             }
-                                            featuresMasks[j] = featuresMasks[j].get(indices);
                                         }
-                                        INDArray[] labelsMasks = e.getLabelsMaskArrays().clone();
-                                        for (int j = 0; j < labelsMasks.length; j++) {
-                                            int nDims = labelsMasks[j].shape().length;
-                                            INDArrayIndex[] indices = new INDArrayIndex[nDims];
-                                            indices[0] = NDArrayIndex.interval(start, end);
-                                            for (int k = 1; k < indices.length; k++) {
-                                                indices[k] = NDArrayIndex.all();
+                                        INDArray[] labelsMasks = e.getLabelsMaskArrays();
+                                        if(labelsMasks!=null) {
+                                            labelsMasks = labelsMasks.clone();
+                                            for (int j = 0; j < labelsMasks.length; j++) {
+                                                int nDims = labelsMasks[j].shape().length;
+                                                INDArrayIndex[] indices = new INDArrayIndex[nDims];
+                                                indices[0] = NDArrayIndex.interval(start, end);
+                                                for (int k = 1; k < indices.length; k++) {
+                                                    indices[k] = NDArrayIndex.all();
+                                                }
+                                                labelsMasks[j] = labelsMasks[j].get(indices);
                                             }
-                                            labelsMasks[j] = labelsMasks[j].get(indices);
                                         }
                                         return new org.nd4j.linalg.dataset.MultiDataSet(
                                                 features,

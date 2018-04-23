@@ -5,7 +5,9 @@ import lombok.Getter;
 import models.similarity_models.DefaultSimilarityModel;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
+import seeding.Database;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -13,10 +15,7 @@ import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.filters.AbstractFilter;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 
@@ -28,9 +27,35 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
     @Getter
     protected INDArray avg;
     protected static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
-
-    public AbstractSimilarityEngine() {
+    protected Function<Collection<String>,INDArray> inputsToAvgVectorFunction;
+    public AbstractSimilarityEngine(Function<Collection<String>,INDArray> inputsToAvgVectorFunction) {
         super(Collections.emptyList());
+        this.inputsToAvgVectorFunction=inputsToAvgVectorFunction;
+    }
+
+    private static Function<Collection<String>,INDArray> oldFunction = inputs -> {
+         DefaultSimilarityModel finder = new DefaultSimilarityModel(inputs);
+         if (finder.getItemList().length > 0) {
+             return finder.computeAvg();
+         } else return null;
+    };
+
+    private static Function<Collection<String>,INDArray> newFunction(String tableName, String fieldName) {
+        return inputs -> {
+            Map<String,INDArray> vecMap = Database.loadVectorsFor(tableName,fieldName,new ArrayList<>(inputs));
+            if (vecMap.size() > 0) {
+                return Nd4j.vstack(vecMap.values()).mean(0);
+            } else return null;
+        };
+    }
+
+    @Deprecated
+    public AbstractSimilarityEngine() {
+        this(oldFunction);
+    }
+
+    public AbstractSimilarityEngine(String tableName, String fieldName) {
+        this(newFunction(tableName,fieldName));
     }
 
     protected abstract Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes);
@@ -39,11 +64,7 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
         List<String> resultTypes = SimilarPatentServer.extractArray(req,  Constants.DOC_TYPE_INCLUDE_FILTER_STR);
         inputs = getInputsToSearchFor(req,resultTypes);
         if(inputs!=null&&inputs.size()>0) {
-
-            DefaultSimilarityModel finder = new DefaultSimilarityModel(inputs);
-            if (finder.getItemList().length > 0) {
-                avg = finder.computeAvg();
-            }
+            avg = inputsToAvgVectorFunction.apply(inputs);
         }
     }
 

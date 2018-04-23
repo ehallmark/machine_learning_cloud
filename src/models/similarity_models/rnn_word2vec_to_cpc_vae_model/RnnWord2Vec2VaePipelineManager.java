@@ -16,6 +16,7 @@ import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
@@ -39,7 +40,7 @@ public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineMana
     private static final File INPUT_DATA_FOLDER_ALL = new File("rnn_word2vec_2_vae_model_input_data/");
     protected static final int BATCH_SIZE = 1024;
     protected static final int VECTOR_SIZE = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
-    protected static final int MINI_BATCH_SIZE = 32;
+    protected static final int MINI_BATCH_SIZE = 64;
     private static final int MAX_SEQUENCE_LENGTH = 32;
     protected static final Random rand = new Random(235);
     private static RnnWord2Vec2VaePipelineManager MANAGER;
@@ -51,9 +52,6 @@ public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineMana
         return (INPUT_DATA_FOLDER_ALL).getAbsolutePath()+sample;
     }
 
-    public int getMaxSample() {
-        return MAX_SEQUENCE_LENGTH;
-    }
 
     public void initModel(boolean forceRecreateModels) {
         if(model==null) {
@@ -62,7 +60,7 @@ public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineMana
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");
             try {
-                model.loadMostRecentModel();
+                ((RnnWord2Vec2VaeModel)model).loadModelWithoutDates();
             } catch(Exception e) {
                 System.out.println("Error loading previous model: "+e.getMessage());
             }
@@ -83,6 +81,7 @@ public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineMana
                 //dataSet.setLabelsMaskArray(new INDArray[]{labelMask});
                 //dataSet.setLabels(0,newLabels);
                 //System.out.println("Label shape: "+ Arrays.toString(newLabels.shape()));
+                //dataSet.setLabelsMaskArray(new INDArray[]{});
             }
         };
     }

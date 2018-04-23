@@ -129,12 +129,16 @@ public class Database {
 		return collection;
 	}
 
-	public static Map<String,INDArray> loadVectorsFor(List<String> assets) {
+	public static Map<String,INDArray> loadCPCVaeVectorsFor(List<String> assets) {
+		return loadVectorsFor("big_query_embedding1","cpc_vae",assets);
+	}
+
+	public static Map<String,INDArray> loadVectorsFor(String tableName, String fieldName, List<String> assets) {
 		Map<String,INDArray> data = new HashMap<>();
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
-			ps = conn.prepareStatement("select publication_number_full,cpc_vae from big_query_family_id as p join big_query_embedding as e on (p.family_id=e.family_id) where publication_number_full in ('" + String.join("','", assets) + "')");
+			ps = conn.prepareStatement("select publication_number_full,"+fieldName+" from big_query_family_id as p join "+tableName+" as e on (p.family_id=e.family_id) where publication_number_full in ('" + String.join("','", assets) + "')");
 			ps.setFetchSize(10);
 			rs = ps.executeQuery();
 			while(rs.next()) {
