@@ -33,13 +33,17 @@ create table big_query_assignee_embedding1_help (
     name text primary key,
     code varchar(32)[] not null
 );
+
+create index patents_global_first_assignee on patents_global_merged (latest_first_assignee);
 -- warning patents_global_merged must already exist!
 insert into big_query_assignee_embedding1_help (name,code) (
-    select latest_first_assignee,array_agg(c.code)
-    from patents_global_merged as p,unnest(p.code) with ordinality as c(code,n)
+    select latest_first_assignee,array_agg(code[floor(random()*(array_length(code,1))+1]))
+    from patents_global_merged as p
+    where latest_first_assignee is not null
     group by latest_first_assignee
+    having count(*) > 2 -- maybe tune this
 );
-
+drop index patents_global_first_assignee;
 
 create table big_query_embedding2 (
     family_id varchar(32) primary key, -- eg. US9923222B1
