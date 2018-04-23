@@ -40,7 +40,7 @@ public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineMana
     protected static final int BATCH_SIZE = 1024;
     protected static final int VECTOR_SIZE = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
     protected static final int MINI_BATCH_SIZE = 256;
-    private static final int MAX_SEQUENCE_LENGTH = 64;
+    private static final int MAX_SEQUENCE_LENGTH = 32;
     protected static final Random rand = new Random(235);
     private static RnnWord2Vec2VaePipelineManager MANAGER;
     public RnnWord2Vec2VaePipelineManager(String modelName, Word2Vec word2Vec) {
@@ -108,10 +108,10 @@ public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineMana
             Nd4j.setDataType(DataBuffer.Type.FLOAT);
 
             String modelName = MODEL_NAME;
-            String wordCpc2VecModel = new File("data/reddit_wiki_word2vec.nn").getAbsolutePath();
+            String word2VecPath = new File("data/word2vec_model.nn256").getAbsolutePath();
 
             Word2Vec word2Vec = null;
-            if(loadWord2Vec) word2Vec = WordVectorSerializer.readWord2VecModel(wordCpc2VecModel);
+            if(loadWord2Vec) word2Vec = WordVectorSerializer.readWord2VecModel(word2VecPath);
 
             setLoggingLevel(Level.INFO);
             MANAGER = new RnnWord2Vec2VaePipelineManager(modelName, word2Vec);

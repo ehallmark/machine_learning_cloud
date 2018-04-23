@@ -156,7 +156,6 @@ public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph
     }
 
     private ComputationGraphConfiguration.GraphBuilder createNetworkConf(double learningRate, int input1) {
-        final String wordVectorModelName = WordCPC2VecPipelineManager.DEEP_MODEL_NAME;
         int hiddenLayerSizeRnn = 256;
         int hiddenLayerSizeFF = 1024;
         int input2 = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;

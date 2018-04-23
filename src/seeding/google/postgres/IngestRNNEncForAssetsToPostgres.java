@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 public class IngestRNNEncForAssetsToPostgres {
 
     public static void main(String[] args) throws Exception {
+        final int maxNumWords = 128;
         RNNTextEncodingPipelineManager pipelineManager = RNNTextEncodingPipelineManager.getOrLoadManager(true);
         pipelineManager.runPipeline(false,false,false,false,-1,false);
         RNNTextEncodingModel model = (RNNTextEncodingModel) pipelineManager.getModel();
@@ -41,6 +42,7 @@ public class IngestRNNEncForAssetsToPostgres {
             if(words!=null) {
                 List<String> validWords = Stream.of(words)
                         .filter(w -> word2Vec.hasWord(w))
+                        .limit(maxNumWords)
                         .collect(Collectors.toList());
                 if(validWords.size()>5) {
                     INDArray vec = RNNEncodingIterator.featuresFor(word2Vec, validWords).transpose();
