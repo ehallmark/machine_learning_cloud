@@ -112,7 +112,7 @@ public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph
     @Override
     protected Map<String, ComputationGraph> updateNetworksBeforeTraining(Map<String, ComputationGraph> networkMap) {
         // recreate net
-        double newLearningRate = 0.001;
+        double newLearningRate = 0.01;
         vaeNetwork = net.getNameToNetworkMap().get(VAE_NETWORK);
         INDArray params = vaeNetwork.params();
         vaeNetwork = new ComputationGraph(createNetworkConf(newLearningRate,word2VecSize).build());
