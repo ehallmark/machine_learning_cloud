@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 public class IngestRNNEncForAssetsToPostgres {
 
     public static void main(String[] args) throws Exception {
-        final int batchSize = 500;
+        final int batchSize = 2000;
         final int maxNumWords = 128;
         RNNTextEncodingPipelineManager pipelineManager = RNNTextEncodingPipelineManager.getOrLoadManager(true);
         pipelineManager.runPipeline(false,false,false,false,-1,false);
@@ -79,6 +79,7 @@ public class IngestRNNEncForAssetsToPostgres {
             }
             INDArray encoding = layer.activate(features, Layer.TrainingMode.TEST);
             encoding = encoding.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(encoding.shape()[2]-1));
+            encoding.diviColumnVector(encoding.norm2(1));
             for(int j = 0; j < i; j++) {
                 String familyId = familyIds.get(j);
                 INDArray vec = encoding.getRow(j);
