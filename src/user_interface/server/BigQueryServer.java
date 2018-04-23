@@ -530,7 +530,7 @@ public class BigQueryServer {
             // nested attribute names
             buildJavaToHumanAttrMap();
 
-            SimilarityEngineController.setAllEngines(Arrays.asList(new DataSetSimilarityEngine(), new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(!TEST), new CPCSimilarityEngine()));
+            SimilarityEngineController.setAllEngines(Arrays.asList(new DataSetSimilarityEngine(), new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(false), new CPCSimilarityEngine()));
 
             // similarity engine
             similarityEngine = new RecursiveTask<SimilarityEngineController>() {

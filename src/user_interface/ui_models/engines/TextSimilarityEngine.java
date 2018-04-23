@@ -65,6 +65,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     public INDArray encodeText(String[] text) {
+        if(encodingModel==null)loadSimilarityNetworks();
         return encodingModel.encodeText(Arrays.asList(text),maxNumSamples);
     }
 
