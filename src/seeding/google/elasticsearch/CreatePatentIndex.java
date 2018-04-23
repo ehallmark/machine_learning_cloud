@@ -5,6 +5,7 @@ import elasticsearch.MyClient;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
+import seeding.google.elasticsearch.attributes.NonStoredTextAttribute;
 import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import seeding.google.mongo.ingest.IngestPatents;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -13,7 +14,9 @@ import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 7/25/2017.
@@ -36,18 +39,26 @@ public class CreatePatentIndex {
 
         Collection<AbstractAttribute> allAttributes = Attributes.buildAttributes();
 
+        Map<String,Object> excludeFromSource = new HashMap<>();
+        List<String> exclude = allAttributes.stream().filter(attr->attr instanceof NonStoredTextAttribute)
+                .map(attr->attr.getFullName()).collect(Collectors.toList());
+        if(exclude.size()>0) {
+            excludeFromSource.put("excludes",excludeFromSource);
+        }
+
         Map<String,Object> properties = createPropertiesMap(allAttributes);
 
-        builder = createMapping(builder, properties, IngestPatents.TYPE_NAME, null);
+        builder = createMapping(builder, excludeFromSource, properties, IngestPatents.TYPE_NAME, null);
 
         // get response
         builder.get();
     }
 
-    private static CreateIndexRequestBuilder createMapping(CreateIndexRequestBuilder builder, Map<String,Object> properties, String typeName, String parentType) {
+    private static CreateIndexRequestBuilder createMapping(CreateIndexRequestBuilder builder, Map<String,Object> excludesMap, Map<String,Object> properties, String typeName, String parentType) {
         Map<String,Object> mapping = new HashMap<>();
         mapping.put("properties",properties);
         if(parentType!=null) mapping.put("_parent", typeMap(parentType,null,null));
+        if(excludesMap!=null&&excludesMap.size()>0)mapping.put("_source", excludesMap);
         builder.addMapping(typeName, mapping);
         System.out.println(typeName+" => Query: " + new Gson().toJson(mapping));
         return builder;

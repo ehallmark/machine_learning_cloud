@@ -6,7 +6,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 
-public class Description extends TextAttribute {
+public class Description extends NonStoredTextAttribute {
     @Override
     public String getName() {
         return Attributes.DESCRIPTION;
