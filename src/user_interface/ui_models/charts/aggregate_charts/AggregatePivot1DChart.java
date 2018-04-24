@@ -3,6 +3,7 @@ package user_interface.ui_models.charts.aggregate_charts;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
+import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -21,29 +22,42 @@ import java.util.stream.Collectors;
 
 public class AggregatePivot1DChart extends AggregationChart<TableResponse> {
     private static final String AGG_SUFFIX = "_p1d";
-    protected Type collectorType;
-    protected String collectByAttrName;
-    public AggregatePivot1DChart(Collection<AbstractAttribute> attributes, String name) {
-        super(true,AGG_SUFFIX, attributes, Collections.emptyList(), name, false);
+    protected Map<String,String> attrToCollectByAttrMap;
+    protected Map<String,Type> attrToCollectTypeMap;
+    protected Collection<AbstractAttribute> collectByAttributes;
+    public AggregatePivot1DChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectByAttrs) {
+        super(true,AGG_SUFFIX, attributes, groupByAttrs, Constants.GROUPED_FUNCTION_TABLE_CHART, false);
+        this.collectByAttributes=collectByAttrs;
+        this.attrToCollectByAttrMap=Collections.synchronizedMap(new HashMap<>());
+        this.attrToCollectTypeMap=Collections.synchronizedMap(new HashMap<>());
     }
 
     @Override
     public AggregatePivot1DChart dup() {
-        return new AggregatePivot1DChart(attributes,name);
+        return new AggregatePivot1DChart(attributes,groupByAttributes,collectByAttributes);
     }
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
+        attrToCollectByAttrMap.clear();
+        attrToCollectTypeMap.clear();
         super.extractRelevantInformationFromParams(params);
-        collectByAttrName = SimilarPatentServer.extractString(params,getCollectByAttrFieldName(), null);
-        collectorType = Type.valueOf(SimilarPatentServer.extractString(params, getCollectTypeFieldName(), null));
-        if(attrNames!=null&attrNames.size()>0&&collectByAttrName==null) throw new RuntimeException("Must select 'Collect By' attribute in "+SimilarPatentServer.humanAttributeFor(getName()));
+        if(this.attrNames!=null) {
+            this.attrNames.forEach(attr -> {
+                String collectByName = SimilarPatentServer.extractString(params, getCollectByAttrFieldName(attr), null);
+                if(collectByName!=null) attrToCollectByAttrMap.put(attr,collectByName);
+                String collectByType = SimilarPatentServer.extractString(params, getCollectTypeFieldName(attr), null);
+                if(collectByType!=null) attrToCollectTypeMap.put(attr,Type.valueOf(collectByType));
+            });
+        }
     }
 
     @Override
     public List<? extends TableResponse> create(AbstractAttribute attribute, Aggregations aggregations) {
         String attrName = attribute.getFullName();
         String innerBucketName = attrName + aggSuffix;
+        Type collectorType = attrToCollectTypeMap.get(attrName);
+        String collectByAttrName = attrToCollectByAttrMap.get(attrName);
 
         List<String> dataSets; // custom category names
         if (attribute instanceof DatasetAttribute) {
@@ -100,6 +114,7 @@ public class AggregatePivot1DChart extends AggregationChart<TableResponse> {
     @Override
     public List<AbstractAggregation> getAggregations(AbstractAttribute attribute) {
         String attrName = attribute.getFullName();
+        Type collectorType = attrToCollectTypeMap.get(attrName);
         String bucketSuffix = "bucket"+aggSuffix;
         BucketAggregation aggregation = AggregatePieChart.buildDistributionAggregation(attribute,bucketSuffix);
         return Collections.singletonList(

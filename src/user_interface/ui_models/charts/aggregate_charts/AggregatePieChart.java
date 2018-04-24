@@ -10,6 +10,7 @@ import org.elasticsearch.indices.TermsLookup;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.nd4j.linalg.primitives.Pair;
+import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -29,13 +30,13 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     private static final String AGG_SUFFIX = "_pie";
     private static final String MAX_SLICES = "maxSlices";
     protected Map<String,Integer> attrToLimitMap;
-    public AggregatePieChart(Collection<AbstractAttribute> attributes, String name) {
-        super(false,AGG_SUFFIX, attributes, Collections.emptyList(), name, false);
+    public AggregatePieChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
+        super(false,AGG_SUFFIX, attributes, groupByAttrs, Constants.PIE_CHART, false);
     }
 
     @Override
     public AggregatePieChart dup() {
-        return new AggregatePieChart(attributes,name);
+        return new AggregatePieChart(attributes,groupByAttributes);
     }
 
     @Override

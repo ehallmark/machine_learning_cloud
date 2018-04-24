@@ -140,7 +140,12 @@ public class SimilarityEngineController {
         }
 
         if (comparator.equals(Constants.SCORE)) {
-            attributesRequired.add(Constants.SIMILARITY_FAST);
+            if (isBigQuery) {
+                attributesRequired.add(Attributes.RNN_ENC);
+                attributesRequired.add(Attributes.CPC_VAE);
+            } else {
+                attributesRequired.add(Constants.SIMILARITY_FAST);
+            }
         }
 
         System.out.println("Required attributes: "+String.join("; ",attributesRequired));

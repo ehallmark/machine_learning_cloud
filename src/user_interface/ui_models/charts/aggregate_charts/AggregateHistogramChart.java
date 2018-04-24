@@ -6,6 +6,7 @@ import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
+import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
@@ -19,13 +20,13 @@ import java.util.*;
 
 public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     private static final String AGG_SUFFIX = "_hist";
-    public AggregateHistogramChart(Collection<AbstractAttribute> attributes, String name) {
-        super(false,AGG_SUFFIX, attributes, Collections.emptyList(), name, false);
+    public AggregateHistogramChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
+        super(false,AGG_SUFFIX, attributes, groupByAttrs, Constants.HISTOGRAM, false);
     }
 
     @Override
     public AggregateHistogramChart dup() {
-        return new AggregateHistogramChart(attributes,name);
+        return new AggregateHistogramChart(attributes,groupByAttributes);
     }
 
     @Override

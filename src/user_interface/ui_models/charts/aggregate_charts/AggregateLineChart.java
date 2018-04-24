@@ -6,6 +6,7 @@ import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
+import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -22,15 +23,15 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
     private static final String AGG_SUFFIX = "_line";
     protected Map<String,LocalDate> attrToMinMap;
     protected Map<String,LocalDate> attrToMaxMap;
-    public AggregateLineChart(Collection<AbstractAttribute> attributes, String name) {
-        super(false,AGG_SUFFIX, attributes, Collections.emptyList(), name, false);
+    public AggregateLineChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
+        super(false,AGG_SUFFIX, attributes, groupByAttrs, Constants.LINE_CHART, false);
         this.attrToMaxMap = Collections.synchronizedMap(new HashMap<>());
         this.attrToMinMap = Collections.synchronizedMap(new HashMap<>());
     }
 
     @Override
     public AggregateLineChart dup() {
-        return new AggregateLineChart(attributes,name);
+        return new AggregateLineChart(attributes,groupByAttributes);
     }
 
     @Override

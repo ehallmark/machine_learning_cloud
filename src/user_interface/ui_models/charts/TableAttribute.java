@@ -159,8 +159,8 @@ public abstract class TableAttribute extends AbstractChartAttribute {
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         super.extractRelevantInformationFromParams(params);
-        collectByAttrName = SimilarPatentServer.extractString(params,getCollectByAttrFieldName(), null);
-        collectorType = CollectorType.valueOf(SimilarPatentServer.extractString(params,getCollectTypeFieldName(), defaultCollectType.toString()));
+        collectByAttrName = SimilarPatentServer.extractString(params,getCollectByAttrFieldName(null), null);
+        collectorType = CollectorType.valueOf(SimilarPatentServer.extractString(params,getCollectTypeFieldName(null), defaultCollectType.toString()));
     }
 
     @Override
@@ -182,8 +182,8 @@ public abstract class TableAttribute extends AbstractChartAttribute {
                 getId(),
                 getGroupByChartFieldName("")+MAX_GROUP_FIELD,
                 getGroupByChartFieldName("")+INCLUDE_BLANK_FIELD,
-                getCollectByAttrFieldName(),
-                getCollectTypeFieldName()
+                getCollectByAttrFieldName(null),
+                getCollectTypeFieldName(null)
         );
     }
 

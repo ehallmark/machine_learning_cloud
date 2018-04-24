@@ -11,6 +11,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
+import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
@@ -33,6 +34,10 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     };
     @Getter
     protected String collectByAttrName;
+    @Getter
+    protected Map<String,String> attrToCollectByAttrMap;
+    @Getter
+    protected Map<String,Type> attrToCollectTypeMap;
     protected Collection<String> searchTypes;
     @Getter
     protected List<String> attrNames;
@@ -58,6 +63,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         this.attrNameToMaxGroupSizeMap = Collections.synchronizedMap(new HashMap<>());
         this.attrToPlotOnSameChartMap= Collections.synchronizedMap(new HashMap<>());
         this.attrNameToIncludeBlanksMap = Collections.synchronizedMap(new HashMap<>());
+        this.attrToCollectByAttrMap = Collections.synchronizedMap(new HashMap<>());
+        this.attrToCollectTypeMap = Collections.synchronizedMap(new HashMap<>());
         this.groupByPerAttribute = groupByPerAttribute;
     }
 
@@ -232,12 +239,12 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         }
     }
 
-    protected String getCollectByAttrFieldName() {
-        return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_BY_ATTR_FIELD).replace(".","");
+    protected String getCollectByAttrFieldName(String attrName) {
+        return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_BY_ATTR_FIELD+(attrName==null?"":attrName)).replace(".","");
     }
 
-    protected String getCollectTypeFieldName() {
-        return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_TYPE_FIELD).replace(".","");
+    protected String getCollectTypeFieldName(String attrName) {
+        return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_TYPE_FIELD+(attrName==null?"":attrName)).replace(".","");
     }
 
     @Override
