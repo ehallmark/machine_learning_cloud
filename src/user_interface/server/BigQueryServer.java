@@ -23,6 +23,7 @@ import models.similarity_models.Vectorizer;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.buffer.DataBuffer;
@@ -2001,8 +2002,19 @@ public class BigQueryServer {
                     List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
 
                     List<AggregationChart<?>> abstractCharts = chartModels.stream().map(chart -> chartModelMap.get(chart).dup()).collect(Collectors.toList());
-
                     abstractCharts.forEach(chart->chart.extractRelevantInformationFromParams(req));
+                    List<AggregationBuilder> aggregationBuilders = abstractCharts.stream().flatMap(chart->{
+                        List<AggregationBuilder> builders = new ArrayList<>();
+                        for (int i = 0; i < chart.getAttrNames().size(); i++) {
+                            String attrName = chart.getAttrNames().get(i);
+                            AbstractAttribute attribute = chart.getAttributes().stream().filter(c -> c.getFullName().equals(attrName)).limit(1).findFirst().orElse(null);
+                            if (attribute == null) {
+                                throw new RuntimeException("Warning: unable to find attribute: " + attribute.getFullName());
+                            }
+                            builders.addAll(chart.getAggregations(attribute).stream().map(a->a.getAggregation()).collect(Collectors.toList()));
+                        }
+                        return builders.stream();
+                    }).collect(Collectors.toList());
 
                     Set<String> chartPreReqs = abstractCharts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toCollection(HashSet::new));
                     chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrNameToGroupByAttrNameMap().values().stream().flatMap(list->list.stream())).collect(Collectors.toList()));
@@ -2012,6 +2024,7 @@ public class BigQueryServer {
 
                     SimilarityEngineController engine = similarityEngine.join().dup();
                     engine.setChartPrerequisites(chartPreReqs);
+                    engine.setAggregationBuilders(aggregationBuilders);
                     engine.extractRelevantInformationFromParams(req);
                     final PortfolioList portfolioList = engine.getPortfolioList();
                     final Aggregations aggregations = engine.getAggregations();
@@ -2963,17 +2976,7 @@ public class BigQueryServer {
     }
 
     public static void main(String[] args) throws Exception {
-
-
         loadStuff();
-
-        // perform quick search
-        try {
-            DataSearcher.searchPatentsGlobal(attributesMap.values(),Collections.emptyList(),Constants.AI_VALUE, SortOrder.DESC,100,getNestedAttrMap(),item->item,true,false,true);
-        } catch(Exception e) {
-            System.out.println("Error during presearch: "+e.getMessage());
-        }
-
         HelpPage.helpPage(false);
     }
 }

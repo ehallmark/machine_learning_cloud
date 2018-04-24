@@ -4,6 +4,7 @@ import elasticsearch.DataSearcher;
 import elasticsearch.ElasticSearchResponse;
 import lombok.Getter;
 import lombok.Setter;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
@@ -44,6 +45,8 @@ public class SimilarityEngineController {
     private Set<String> chartPrerequisites;
     @Getter @Setter
     private static List<AbstractSimilarityEngine> allEngines;
+    @Setter
+    private List<AggregationBuilder> aggregationBuilders;
     public SimilarityEngineController(boolean bigQuery) {
         this.isBigQuery=bigQuery;
     }
@@ -166,7 +169,7 @@ public class SimilarityEngineController {
 
         List<Item> scope;
         if(isBigQuery) {
-            ElasticSearchResponse response = DataSearcher.searchPatentsGlobal(topLevelAttributes,preFilters,comparator,sortOrder,limit, Attributes.getNestedAttrMap(), item->item,true, useHighlighter, filterNestedObjects);
+            ElasticSearchResponse response = DataSearcher.searchPatentsGlobal(topLevelAttributes,preFilters,comparator,sortOrder,limit, Attributes.getNestedAttrMap(), item->item,true, useHighlighter, filterNestedObjects, aggregationBuilders);
             System.out.println("Total hits: "+response.getTotalCount());
             scope = response.getItems();
             aggregations = response.getAggregations();

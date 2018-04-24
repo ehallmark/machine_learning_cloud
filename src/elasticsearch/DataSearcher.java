@@ -20,6 +20,7 @@ import org.elasticsearch.script.Script;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
@@ -109,8 +110,8 @@ public class DataSearcher {
         return _comparator == null ? Constants.NO_SORT : _comparator;
     }
 
-    public static ElasticSearchResponse searchPatentsGlobal(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
-        SearchResponse response = searchFor(IngestPatents.INDEX_NAME,IngestPatents.TYPE_NAME,attributes,filters,_comparator,sortOrder,maxLimit,nestedAttrNameMap,transformer,merge,highlight,filterNestedObjects);
+    public static ElasticSearchResponse searchPatentsGlobal(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects, List<AggregationBuilder> aggregationBuilders) {
+        SearchResponse response = searchFor(IngestPatents.INDEX_NAME,IngestPatents.TYPE_NAME,attributes,filters,_comparator,sortOrder,maxLimit,nestedAttrNameMap,transformer,merge,highlight,filterNestedObjects,aggregationBuilders);
         Aggregations aggs = response.getAggregations();
         long totalCount = response.getHits().totalHits;
         String comparator = getOrDefaultComparator(_comparator);
@@ -119,9 +120,11 @@ public class DataSearcher {
         List<Item> items = iterateOverSearchResults(response, hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore, filterNestedObjects)), maxLimit, merge, scroll);
         return new ElasticSearchResponse(items,aggs,totalCount);
     }
-
-
     private static SearchResponse searchFor(String index, String type, Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
+        return searchFor(index,type,attributes,filters,_comparator,sortOrder,maxLimit,nestedAttrNameMap,transformer,merge,highlight,filterNestedObjects,null);
+    }
+
+    private static SearchResponse searchFor(String index, String type, Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects, List<AggregationBuilder> aggregationBuilders) {
         try {
             String[] attrNames = Stream.of(attributes.stream().map(attr->{
                 String name = attr.getFullName();
@@ -176,15 +179,18 @@ public class DataSearcher {
                     .setFetchSource(attrNames,new String[]{})
                     .setFrom(0));
 
-            boolean scroll;
+            if(aggregationBuilders!=null) {
+                aggregationBuilders.forEach(aggregationBuilder -> {
+                    request.set(request.get().addAggregation(aggregationBuilder));
+                });
+            }
+
             if(maxLimit > PAGE_LIMIT) {
-                scroll = true;
                 request.set(request.get()
                         .setSize(Math.min(PAGE_LIMIT,maxLimit))
                         .setScroll(new TimeValue(120000))
                 );
             } else {
-                scroll = false;
                 request.set(request.get()
                         .setSize(maxLimit)
                 );
