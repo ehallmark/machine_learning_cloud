@@ -2509,7 +2509,7 @@ public class BigQueryServer {
                                         button("Cluster").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("k-for-clustering-submit"),
                                         button("Cancel").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("k-for-clustering-cancel")
                                 )
-                        ),
+                        ),div().withId("url-prefix").attr("style","display: none;").attr("prefix", PROTECTED_URL_PREFIX),
                         div().withClass("container-fluid text-center").attr("style","height: 100%; z-index: 1;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
                                         nav().withClass("sidebar col-3").attr("style","z-index: 2; overflow-y: auto; height: 100%; position: fixed; padding-top: 75px;").with(
