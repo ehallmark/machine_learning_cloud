@@ -43,7 +43,7 @@ public class CreatePatentIndex {
         List<String> exclude = allAttributes.stream().filter(attr->attr instanceof NonStoredTextAttribute)
                 .map(attr->attr.getFullName()).collect(Collectors.toList());
         if(exclude.size()>0) {
-            excludeFromSource.put("excludes",excludeFromSource);
+            excludeFromSource.put("excludes",exclude);
         }
 
         Map<String,Object> properties = createPropertiesMap(allAttributes);
