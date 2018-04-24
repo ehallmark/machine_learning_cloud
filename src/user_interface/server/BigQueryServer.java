@@ -609,7 +609,7 @@ public class BigQueryServer {
     }
 
     public static void server() {
-        port(8080);
+        port(8081);
 
         // HOST ASSETS
         staticFiles.externalLocation(new File("public").getAbsolutePath());
