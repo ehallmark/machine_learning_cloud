@@ -63,6 +63,7 @@ public class Attributes {
     public static final String STANDARD = "standard";
     public static final String WIPO_TECHNOLOGY = "wipo_technology";
     public static final String TECHNOLOGY = "technology";
+    public static final String TECHNOLOGY2 = "technology2";
     public static final String MAINTENANCE_EVENT = "maintenance_event";
     public static final String LAPSED = "lapsed";
     public static final String REINSTATED = "reinstated";
@@ -159,6 +160,7 @@ public class Attributes {
                 new Standard(),
                 new WipoTechnology(),
                 new GttTechnology(),
+                new GttTechnology2(),
                 new MaintenanceEvent(),
                 new Lapsed(),
                 new Reinstated(),
