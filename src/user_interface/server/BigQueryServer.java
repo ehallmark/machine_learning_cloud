@@ -2012,7 +2012,7 @@ public class BigQueryServer {
                             int attrStartIdx = chart.getName().replace("[]","").length()+1;
                             AbstractAttribute attribute = chart.getAttributes().stream().filter(c -> c.getFullName().substring(attrStartIdx).equals(attrName)).limit(1).findFirst().orElse(null);
                             if (attribute == null) {
-                                System.out.println("Possible chart attrs step1: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName()).collect(Collectors.toList())));
+                                System.out.println("Possible chart attrs step1: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName().substring(attrStartIdx)).collect(Collectors.toList())));
                                 throw new RuntimeException("Warning: unable to find attribute for chart "+chart.getName()+": " + attrName);
                             }
                             builders.addAll(chart.getAggregations(attribute).stream().map(a->a.getAggregation()).collect(Collectors.toList()));
@@ -2147,7 +2147,7 @@ public class BigQueryServer {
                                 int attrStartIdx = chart.getName().replace("[]","").length()+1;
                                 AbstractAttribute attribute = chart.getAttributes().stream().filter(c -> c.getFullName().substring(attrStartIdx).equals(attrName)).limit(1).findFirst().orElse(null);
                                 if (attribute == null) {
-                                    System.out.println("Possible chart attrs step2: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName()).collect(Collectors.toList())));
+                                    System.out.println("Possible chart attrs step2: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName().substring(attrStartIdx)).collect(Collectors.toList())));
                                     throw new RuntimeException("Warning: unable to find attribute for chart "+chart.getName()+": " + attrName);
                                 }
                                 String id;
