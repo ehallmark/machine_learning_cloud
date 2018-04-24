@@ -136,7 +136,7 @@ public class BigQueryServer {
     public static RecursiveTask<SimilarityEngineController> similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
-    private static Map<String,AggregationChart> chartModelMap = new HashMap<>();
+    private static Map<String,AggregationChart<?>> chartModelMap = new HashMap<>();
     private static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
     private static final Function<String,Boolean> DEFAULT_ROLE_TO_ATTR_FUNCTION = (str) -> false;
     //private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
