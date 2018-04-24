@@ -37,7 +37,7 @@ create table big_query_assignee_embedding1_help (
 create index patents_global_first_assignee on patents_global_merged (latest_first_assignee);
 -- warning patents_global_merged must already exist!
 insert into big_query_assignee_embedding1_help (name,code) (
-    select latest_first_assignee,array_agg(code[floor(random()*(array_length(code,1))+1]))
+    select latest_first_assignee,array_agg(code[floor(random()*(array_length(code,1))+1)])
     from patents_global_merged as p
     where latest_first_assignee is not null and code is not null and array_length(code,1)>0
     group by latest_first_assignee
