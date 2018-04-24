@@ -25,6 +25,11 @@ public class AIValue extends DoubleAttribute implements RangeAttribute {
     }
 
     @Override
+    public Object missing() {
+        return null;
+    }
+
+    @Override
     public String valueSuffix() {
         return "%";
     }

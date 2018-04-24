@@ -2,6 +2,7 @@ package user_interface.ui_models.charts.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.options.*;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
+import lombok.Getter;
 
 import java.awt.*;
 import java.util.List;
@@ -15,10 +16,10 @@ public class LineChart extends AbstractChart {
         return "line";
     }
 
-    @Override
-    public boolean isStockChart() { return true; }
-
-    public LineChart(String title, String subTitle, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals) {
+    @Getter
+    private boolean stockChart;
+    public LineChart(boolean stockChart, String title, String subTitle, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals) {
+        this.stockChart=stockChart;
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = "{point.key}"+xAxisSuffix;
         options=new Options()

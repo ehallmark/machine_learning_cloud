@@ -2,6 +2,7 @@ package user_interface.ui_models.attributes.dataset_lookup;
 
 import elasticsearch.DatasetIndex;
 import j2html.tags.Tag;
+import lombok.Getter;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
@@ -19,8 +20,8 @@ import java.util.stream.Collectors;
  */
 public class DatasetAttribute extends TermsLookupAttribute implements AjaxMultiselect {
 
+    @Getter
     private List<Pair<String,Set<String>>> currentDatasets;
-
     @Override
     public List<String> termsFor(String asset) {
         return currentDatasets.stream().map(ds->{

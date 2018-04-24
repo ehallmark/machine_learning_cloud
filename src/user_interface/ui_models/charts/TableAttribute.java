@@ -160,8 +160,8 @@ public abstract class TableAttribute extends AbstractChartAttribute {
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         super.extractRelevantInformationFromParams(params);
-        collectByAttrName = SimilarPatentServer.extractString(params,getCollectByAttrFieldName(null), null);
-        collectorType = CollectorType.valueOf(SimilarPatentServer.extractString(params,getCollectTypeFieldName(null), defaultCollectType.toString()));
+        collectByAttrName = SimilarPatentServer.extractString(params,getCollectByAttrFieldName(), null);
+        collectorType = CollectorType.valueOf(SimilarPatentServer.extractString(params,getCollectTypeFieldName(), defaultCollectType.toString()));
     }
 
     @Override
@@ -183,20 +183,12 @@ public abstract class TableAttribute extends AbstractChartAttribute {
                 getId(),
                 getGroupByChartFieldName("")+MAX_GROUP_FIELD,
                 getGroupByChartFieldName("")+INCLUDE_BLANK_FIELD,
-                getCollectByAttrFieldName(null),
-                getCollectTypeFieldName(null)
+                getCollectByAttrFieldName(),
+                getCollectTypeFieldName()
         );
     }
 
     protected abstract Function<String,ContainerTag> getCombineByTagFunction(Map<String,List<String>> groupedGroupAttrs);
-
-    protected String getCollectByAttrFieldName(String attrName) {
-        return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_BY_ATTR_FIELD+(attrName==null?"":attrName)).replace(".","");
-    }
-
-    protected String getCollectTypeFieldName(String attrName) {
-        return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_TYPE_FIELD+(attrName==null?"":attrName)).replace(".","");
-    }
 
     public static Tag getTable(TableResponse response, String type, int tableIdx) {
         List<String> nonHumanAttrs = response.nonHumanAttrs;

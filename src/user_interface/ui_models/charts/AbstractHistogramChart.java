@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  * Created by Evan on 6/18/2017.
  */
 public class AbstractHistogramChart extends ChartAttribute {
-    Map<String,RangeAttribute> nameToRangeMap;
+    private Map<String,RangeAttribute> nameToRangeMap;
     public AbstractHistogramChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
         this(attributes, groupByAttrs, attributes.stream().collect(Collectors.toMap(attr->attr.getFullName(),attr->(RangeAttribute)attr)));
     }

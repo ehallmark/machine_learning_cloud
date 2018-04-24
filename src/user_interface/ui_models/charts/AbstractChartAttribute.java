@@ -230,6 +230,13 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         }
     }
 
+    protected String getCollectByAttrFieldName() {
+        return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_BY_ATTR_FIELD).replace(".","");
+    }
+
+    protected String getCollectTypeFieldName() {
+        return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_TYPE_FIELD).replace(".","");
+    }
 
     @Override
     public AbstractFilter.FieldType getFieldType() { throw new UnsupportedOperationException("fieldType not defined for charts.");}

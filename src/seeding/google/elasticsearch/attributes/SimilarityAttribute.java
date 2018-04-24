@@ -108,6 +108,11 @@ public abstract class SimilarityAttribute extends AbstractScriptAttribute implem
     }
 
     @Override
+    public Object missing() {
+        return null;
+    }
+
+    @Override
     public String valueSuffix() {
         return "%";
     }

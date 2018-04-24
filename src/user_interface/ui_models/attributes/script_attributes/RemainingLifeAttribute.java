@@ -8,7 +8,6 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -61,6 +60,11 @@ public class RemainingLifeAttribute extends AbstractScriptAttribute implements R
     @Override
     public int nBins() {
         return 4;
+    }
+
+    @Override
+    public Object missing() {
+        return 0;
     }
 
     @Override

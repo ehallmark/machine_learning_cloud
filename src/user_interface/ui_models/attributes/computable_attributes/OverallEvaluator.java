@@ -40,4 +40,9 @@ public class OverallEvaluator extends ValueModelCombination implements RangeAttr
     public String valueSuffix() {
         return "%";
     }
+
+    @Override
+    public Object missing() {
+        return null;
+    }
 }

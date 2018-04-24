@@ -9,4 +9,5 @@ public interface RangeAttribute {
     int nBins();
     String valueSuffix();
     String getFullName();
+    Object missing();
 }

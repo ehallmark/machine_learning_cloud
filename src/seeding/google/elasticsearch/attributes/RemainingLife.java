@@ -68,4 +68,9 @@ public class RemainingLife extends AbstractScriptAttribute implements RangeAttri
     public String valueSuffix() {
         return " Years";
     }
+
+    @Override
+    public Object missing() {
+        return 0;
+    }
 }

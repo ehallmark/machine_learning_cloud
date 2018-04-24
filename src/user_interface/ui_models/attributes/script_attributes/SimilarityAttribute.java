@@ -141,4 +141,9 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
     public String valueSuffix() {
         return "%";
     }
+
+    @Override
+    public Object missing() {
+        return null;
+    }
 }

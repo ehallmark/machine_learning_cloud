@@ -134,11 +134,11 @@ public class AbstractLineChart extends ChartAttribute {
                         return updateSeries((SimpleSeries)series,actualMin,actualMax);
                     }).collect(Collectors.toList());
                 }
-                return Stream.of(new LineChart(title,null, seriesList, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
+                return Stream.of(new LineChart(true,title,null, seriesList, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
 
             } else {
                 return groupPortfolioListForGivenAttribute(portfolioList, attribute).map(groupPair -> {
-                    return new LineChart(title, groupPair.getFirst(), collectTimelineData(groupPair.getSecond().getItemList(), attribute, singularize(humanSearchType) + " Count", min, max), xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0);
+                    return new LineChart(true,title, groupPair.getFirst(), collectTimelineData(groupPair.getSecond().getItemList(), attribute, singularize(humanSearchType) + " Count", min, max), xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0);
                 });
             }
         }).collect(Collectors.toList());

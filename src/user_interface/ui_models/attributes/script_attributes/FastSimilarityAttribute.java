@@ -126,4 +126,9 @@ public class FastSimilarityAttribute extends AbstractScriptAttribute implements 
     public String valueSuffix() {
         return "%";
     }
+
+    @Override
+    public Object missing() {
+        return null;
+    }
 }
