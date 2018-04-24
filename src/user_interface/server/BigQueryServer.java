@@ -82,7 +82,8 @@ public class BigQueryServer {
     private static final boolean debug = false;
     private static final Map<String,Lock> fileSynchronizationMap = Collections.synchronizedMap(new HashMap<>());
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
-    private static final String PROTECTED_URL_PREFIX = "/secure";
+    private static final String GLOBAL_PREFIX = "/_global";
+    private static final String PROTECTED_URL_PREFIX = GLOBAL_PREFIX+"/secure";
     public static final String EXCEL_SESSION = "excel_data";
     public static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
     public static final String DATASETS_TO_SEARCH_IN_FIELD = "datasetsToSearchFor";
@@ -103,6 +104,17 @@ public class BigQueryServer {
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = PROTECTED_URL_PREFIX+"/patent_recommendation_engine";
     public static final String HOME_URL = PROTECTED_URL_PREFIX+"/home";
+    public static final String LOGIN_URL = GLOBAL_PREFIX+"/login";
+    public static final String NEW_USER_URL = GLOBAL_PREFIX+"/new_user";
+    public static final String DELETE_USER_URL = GLOBAL_PREFIX+"/delete_user";
+    public static final String EDIT_USER_GROUP_URL = GLOBAL_PREFIX+"/edit_user_group";
+    public static final String EDIT_USER_URL = GLOBAL_PREFIX+"/edit_user";
+    public static final String NEW_USER_GROUP_URL = GLOBAL_PREFIX+"/new_user_group";
+    public static final String USER_GROUPS_URL = GLOBAL_PREFIX+"/user_groups";
+    public static final String UPDATE_USER_URL = GLOBAL_PREFIX+"/update_user";
+    public static final String UPDATE_USER_GROUP_URL = GLOBAL_PREFIX+"/update_user_group";
+    public static final String REMOVE_USER_URL = GLOBAL_PREFIX+"/remove_user";
+    public static final String CREATE_USER_URL = GLOBAL_PREFIX+"/create_user";
     public static final String UPDATE_DEFAULT_ATTRIBUTES_URL = PROTECTED_URL_PREFIX+"/update_defaults";
     public static final String SAVE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/save_template";
     public static final String GET_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/get_template";
@@ -616,7 +628,7 @@ public class BigQueryServer {
 
         final PasswordHandler passwordHandler = new PasswordHandler();
 
-        post("/login", (req,res)->{
+        post(LOGIN_URL, (req,res)->{
             Session session = req.session(true);
             String username = extractString(req, "username", "");
             String password = extractString(req, "password", "");
@@ -662,7 +674,7 @@ public class BigQueryServer {
             return null;
         });
 
-        post("/new_user", (req,res)->{
+        post(NEW_USER_URL, (req,res)->{
             authorize(req,res);
             String username = extractString(req, "username", null);
             String password = extractString(req, "password", null);
@@ -694,7 +706,7 @@ public class BigQueryServer {
             return null;
         });
 
-        post("/update_user", (req,res)->{
+        post(UPDATE_USER_URL, (req,res)->{
             authorize(req,res);
             String username = req.session(false).attribute("username");
             String oldPassword = extractString(req, "old_password", null);
@@ -712,18 +724,18 @@ public class BigQueryServer {
                 } catch (Exception e) {
                     System.out.println("Error while updating user...");
                     e.printStackTrace();
-                    redirect = "/edit_user";
+                    redirect = EDIT_USER_URL;
                     message = e.getMessage();
                 }
             } else {
-                redirect = "/edit_user";
+                redirect = EDIT_USER_URL;
             }
             res.redirect(redirect);
             req.session().attribute("message", message);
             return null;
         });
 
-        post("/update_user_group", (req,res)->{
+        post(UPDATE_USER_GROUP_URL, (req,res)->{
             authorize(req,res);
             String username = req.session(false).attribute("username");
             String role = req.session(false).attribute("role");
@@ -749,26 +761,26 @@ public class BigQueryServer {
                             req.session(false).removeAttribute("userGroup");
                             req.session(false).attribute("userGroup", newUserGroup);
                         }
-                        redirect = "/edit_user_group";
+                        redirect = EDIT_USER_GROUP_URL;
                         message = "Successfully updated user.";
                     } catch (Exception e) {
                         System.out.println("Error while updating user...");
                         e.printStackTrace();
-                        redirect = "/edit_user_group";
+                        redirect = EDIT_USER_GROUP_URL;
                         message = e.getMessage();
                     }
                 } else {
-                    redirect = "/edit_user_group";
+                    redirect = EDIT_USER_GROUP_URL;
                 }
             } else {
-                redirect = "/edit_user_group";
+                redirect = EDIT_USER_GROUP_URL;
             }
             res.redirect(redirect);
             req.session().attribute("message", message);
             return null;
         });
 
-        get("/edit_user_group", (req, res)->{
+        get(EDIT_USER_GROUP_URL, (req, res)->{
             authorize(req,res);
             String role = req.session().attribute("role");
             String message = req.session().attribute("message");
@@ -780,7 +792,7 @@ public class BigQueryServer {
             } else {
                 final boolean isSuperUser = role != null && role.equals(SUPER_USER);
                 String selectedOption = isSuperUser ? null : passwordHandler.getUserGroup(username);
-                form = form().withId("create-user-form").withAction("/update_user_group").withMethod("POST").attr("style", "margin-top: 100px;").with(
+                form = form().withId("create-user-form").withAction(UPDATE_USER_GROUP_URL).withMethod("POST").attr("style", "margin-top: 100px;").with(
                         (message == null ? span() : div().withClass("not-implemented").withText(
                                 message
                         )), br(),
@@ -818,7 +830,7 @@ public class BigQueryServer {
             return templateWrapper(passwordHandler,true, req, res, form, false);
         });
 
-        post("/new_user_group", (req,res)->{
+        post(NEW_USER_GROUP_URL, (req,res)->{
             authorize(req,res);
             String username = req.session(false).attribute("username");
             String role = req.session(false).attribute("role");
@@ -831,30 +843,30 @@ public class BigQueryServer {
             if(message == null) {
                 try {
                     passwordHandler.createUserGroup(userGroup);
-                    redirect = "/edit_user_group";
+                    redirect = EDIT_USER_GROUP_URL;
                     message = "Successfully created user group.";
                 } catch (Exception e) {
                     System.out.println("Error while creating user group...");
                     e.printStackTrace();
-                    redirect = "/user_groups";
+                    redirect = USER_GROUPS_URL;
                     message = e.getMessage();
                 }
             } else {
-                redirect = "/user_groups";
+                redirect = USER_GROUPS_URL;
             }
             res.redirect(redirect);
             req.session().attribute("message", message);
             return null;
         });
 
-        get("/user_groups", (req, res)->{
+        get(USER_GROUPS_URL, (req, res)->{
             authorize(req,res);
             String ownerRole = req.session().attribute("role");
             if(ownerRole == null || ownerRole.equals(ANALYST_USER)) return div();
             String message = req.session().attribute("message");
             req.session().removeAttribute("message");
             Tag form = div().with(
-                    form().withId("create-user-form").withAction("/new_user_group").withMethod("POST").attr("style","margin-top: 100px;").with(
+                    form().withId("create-user-form").withAction(NEW_USER_GROUP_URL).withMethod("POST").attr("style","margin-top: 100px;").with(
                             (message == null ? span() : div().withClass("not-implemented").withText(
                                     message
                             )),br(),
@@ -873,12 +885,12 @@ public class BigQueryServer {
             return templateWrapper(passwordHandler,true, req, res, form, false);
         });
 
-        get("/edit_user", (req, res)->{
+        get(EDIT_USER_URL, (req, res)->{
             authorize(req,res);
             String ownerRole = req.session().attribute("role");
             String message = req.session().attribute("message");
             req.session().removeAttribute("message");
-            Tag form = form().withId("create-user-form").withAction("/update_user").withMethod("POST").attr("style","margin-top: 100px;").with(
+            Tag form = form().withId("create-user-form").withAction(UPDATE_USER_URL).withMethod("POST").attr("style","margin-top: 100px;").with(
                     (message == null ? span() : div().withClass("not-implemented").withText(
                             message
                     )),br(),
@@ -891,12 +903,12 @@ public class BigQueryServer {
             return templateWrapper(passwordHandler,true, req, res, form, false);
         });
 
-        get("/create_user", (req, res)->{
+        get(CREATE_USER_URL, (req, res)->{
             authorize(req,res);
             String ownerRole = req.session().attribute("role");
             String message = req.session().attribute("message");
             req.session().removeAttribute("message");
-            Tag form = form().withId("create-user-form").withAction("/new_user").withMethod("POST").attr("style","margin-top: 100px;").with(
+            Tag form = form().withId("create-user-form").withAction(NEW_USER_URL).withMethod("POST").attr("style","margin-top: 100px;").with(
                     (message == null ? span() : div().withClass("not-implemented").withText(
                             message
                     )),br(),
@@ -915,7 +927,7 @@ public class BigQueryServer {
             return templateWrapper(passwordHandler,true, req, res, form, false);
         });
 
-        post("/remove_user", (req,res)->{
+        post(REMOVE_USER_URL, (req,res)->{
             authorize(req,res);
             String role = req.session(false).attribute("role");
             String userToDelete = extractString(req, "user_to_delete", null);
@@ -929,30 +941,30 @@ public class BigQueryServer {
             if(message == null) {
                 try {
                     passwordHandler.deleteUser(userToDelete);
-                    redirect = "/delete_user";
+                    redirect = DELETE_USER_URL;
                     message = "Successfully deleted user.";
                 } catch (Exception e) {
                     System.out.println("Error while updating user...");
                     e.printStackTrace();
-                    redirect = "/delete_user";
+                    redirect = DELETE_USER_URL;
                     message = e.getMessage();
                 }
             } else {
-                redirect = "/delete_user";
+                redirect = DELETE_USER_URL;
             }
             res.redirect(redirect);
             req.session().attribute("message", message);
             return null;
         });
 
-        get("/delete_user", (req, res)->{
+        get(DELETE_USER_URL, (req, res)->{
             authorize(req,res);
             String ownerRole = req.session().attribute("role");
             Tag form;
             String message = req.session().attribute("message");
             req.session().removeAttribute("message");
             if(ownerRole!=null&&ownerRole.equals(SUPER_USER)) {
-                form = form().withId("create-user-form").withAction("/remove_user").withMethod("POST").attr("style", "margin-top: 100px;").with(
+                form = form().withId("create-user-form").withAction(REMOVE_USER_URL).withMethod("POST").attr("style", "margin-top: 100px;").with(
                         (message == null ? span() : div().withClass("not-implemented").withText(
                                 message
                         )), br(),
@@ -972,9 +984,9 @@ public class BigQueryServer {
             return templateWrapper(passwordHandler,true, req, res, form,false);
         });
 
-        get("/", (req, res)->{
+        get(GLOBAL_PREFIX, (req, res)->{
             try {
-                return templateWrapper(passwordHandler, false, req, res, form().withClass("form-group").withMethod("POST").withAction("/login").attr("style", "margin-top: 100px;").with(
+                return templateWrapper(passwordHandler, false, req, res, form().withClass("form-group").withMethod("POST").withAction(LOGIN_URL).attr("style", "margin-top: 100px;").with(
                         p("Log in"),
                         label("Username").with(
                                 input().withType("text").withClass("form-control").withName("username")
@@ -1161,7 +1173,6 @@ public class BigQueryServer {
             return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
         });
 
-        // TODO get technology filtering for AJAX
         // setup select2 ajax remote data sources
         get(Constants.GTT_TECHNOLOGY_AJAX_URL, (req,res)->{
             Function<String,List<String>> resultsSearchFunction = search -> new ArrayList<>();
@@ -2521,10 +2532,10 @@ public class BigQueryServer {
                                                                 )
                                                         ) : span()),
                                                         div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
-                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withHref("/create_user") : a("Contact Us").withHref("http://www.gttgrp.com")),
-                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withHref("/edit_user_group") : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Change Password").withHref("/edit_user") : span()),
-                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withHref("/delete_user") : span()),
+                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withHref(CREATE_USER_URL) : a("Contact Us").withHref("http://www.gttgrp.com")),
+                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withHref(EDIT_USER_GROUP_URL) : span()),
+                                                        div().withClass("col-12").with(authorized ? a("Change Password").withHref(EDIT_USER_URL) : span()),
+                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withHref(DELETE_USER_URL) : span()),
                                                         div().withClass("col-12").with(authorized ? a("Update Defaults").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span()),
                                                         div().withClass("col-12").with(authorized ? a("Help").withHref("/help") : span())
 
