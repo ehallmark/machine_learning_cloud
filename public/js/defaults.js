@@ -81,7 +81,11 @@ $(document).ready(function() {
     };
 
     var successReportFromExcelOnly = function(data) {
-        var $downloadForm = $('<form method="post" action="/secure/excel_generation"></form>');
+        var urlPrefix = $('#url-prefix').attr('prefix');
+        if(!urlPrefix) {
+            urlPrefix = "/secure";
+        }
+        var $downloadForm = $('<form method="post" action="/'+urlPrefix+'/excel_generation"></form>');
         $downloadForm.appendTo('body').submit().remove();
     };
 
@@ -284,8 +288,12 @@ $(document).ready(function() {
     $('#update-default-attributes-form').submit(function(e) {
         e.preventDefault();
         var name = 'default';
+        var urlPrefix = $('#url-prefix').attr('prefix');
+        if(!urlPrefix) {
+            urlPrefix = "/secure";
+        }
         var postSaveCallback = function() {
-            window.location.href = '/secure/home'
+            window.location.href = urlPrefix+'/home'
         };
         var callback = function(data) {
             saveJSNodeFunction(null,null,name,true,data,'template',true,true,postSaveCallback,false);
@@ -704,9 +712,13 @@ var showTemplateFunction = function(data,tree,node){
             }
             shared = parents.length > 0 && parents[0].startsWith("Shared");
         }
+        var urlPrefix = $('#url-prefix').attr('prefix');
+        if(!urlPrefix) {
+            urlPrefix = "/secure";
+        }
         $.ajax({
             type: "POST",
-            url: '/secure/get_template',
+            url: urlPrefix+'/get_template',
             data: {
                 file: data.file,
                 shared: shared,
@@ -856,9 +868,13 @@ var renameJSNodeFunction = function(tree,node,newName,file,node_type){
          var currId = nodeData.parent;
          nodeData = tree.get_node(currId);
      }
+     var urlPrefix = $('#url-prefix').attr('prefix');
+     if(!urlPrefix) {
+         urlPrefix = "/secure";
+     }
      $.ajax({
          type: "POST",
-         url: '/secure/rename_'+node_type,
+         url: urlPrefix+'/rename_'+node_type,
          data: {
              name: newName,
              parentDirs: parents,
@@ -888,9 +904,13 @@ var removeJSNodeFunction = function(tree,node,file,node_type){
          nodeData = tree.get_node(currId);
      }
      var shared = parents.length > 0 && parents[0].startsWith("Shared");
+     var urlPrefix = $('#url-prefix').attr('prefix');
+     if(!urlPrefix) {
+         urlPrefix = "/secure";
+     }
      $.ajax({
          type: "POST",
-         url: '/secure/delete_'+node_type,
+         url: urlPrefix+'/delete_'+node_type,
          data: {
              path_to_remove: file,
              shared: shared
@@ -1071,9 +1091,13 @@ var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,cre
     if(preData!==null) {
         preData['defaultFile'] = skipSuccessFunction;
         preData['addToAssets'] = onlyUpdate;
+        var urlPrefix = $('#url-prefix').attr('prefix');
+        if(!urlPrefix) {
+            urlPrefix = "/secure";
+        }
         $.ajax({
             type: "POST",
-            url: '/secure/save_'+node_type,
+            url: urlPrefix+'/save_'+node_type,
             data: preData,
             error: function(jqxhr,status,error) {
                 if(jqxhr.status==404) {
@@ -1395,9 +1419,13 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                     nodeData = tree.get_node(currId);
                                 }
                                 var shared = parents.length > 0 && parents[0].startsWith("Shared");
+                                var urlPrefix = $('#url-prefix').attr('prefix');
+                                if(!urlPrefix) {
+                                    urlPrefix = "/secure";
+                                }
                                 $.ajax({
                                     type: "POST",
-                                    url: '/secure/cluster_dataset',
+                                    url: urlPrefix+'/cluster_dataset',
                                     data: {
                                         file: node.data.file,
                                         shared: shared,
