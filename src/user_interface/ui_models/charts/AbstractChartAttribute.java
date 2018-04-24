@@ -31,6 +31,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected static final Function2<ContainerTag,ContainerTag,ContainerTag> DEFAULT_COMBINE_BY_FUNCTION = (tag1,tag2) -> {
         return div().with(tag1,tag2);
     };
+    @Getter
+    protected String collectByAttrName;
     protected Collection<String> searchTypes;
     @Getter
     protected List<String> attrNames;

@@ -30,11 +30,11 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     private static final String MAX_SLICES = "maxSlices";
     protected Map<String,Integer> attrToLimitMap;
     public AggregatePieChart(Collection<AbstractAttribute> attributes, String name) {
-        super(AGG_SUFFIX, attributes, Collections.emptyList(), name, false);
+        super(false,AGG_SUFFIX, attributes, Collections.emptyList(), name, false);
     }
 
     @Override
-    public AbstractChartAttribute dup() {
+    public AggregatePieChart dup() {
         return new AggregatePieChart(attributes,name);
     }
 
@@ -50,8 +50,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     }
 
     @Override
-    public List<? extends PieChart> create(AbstractAttribute attribute, SearchResponse searchResponse) {
-        Aggregations aggregations = searchResponse.getAggregations();
+    public List<? extends PieChart> create(AbstractAttribute attribute, Aggregations aggregations) {
         String attrName = attribute.getFullName();
         Aggregation agg = aggregations.get(attrName + aggSuffix);
         List<Map<String,Object>> bucketData = (List<Map<String,Object>>) agg.getMetaData().get("buckets");

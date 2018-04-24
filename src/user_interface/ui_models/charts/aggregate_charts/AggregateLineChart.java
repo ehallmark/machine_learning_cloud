@@ -23,13 +23,13 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
     protected Map<String,LocalDate> attrToMinMap;
     protected Map<String,LocalDate> attrToMaxMap;
     public AggregateLineChart(Collection<AbstractAttribute> attributes, String name) {
-        super(AGG_SUFFIX, attributes, Collections.emptyList(), name, false);
+        super(false,AGG_SUFFIX, attributes, Collections.emptyList(), name, false);
         this.attrToMaxMap = Collections.synchronizedMap(new HashMap<>());
         this.attrToMinMap = Collections.synchronizedMap(new HashMap<>());
     }
 
     @Override
-    public AbstractChartAttribute dup() {
+    public AggregateLineChart dup() {
         return new AggregateLineChart(attributes,name);
     }
 
@@ -67,7 +67,7 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
     }
 
     @Override
-    public List<? extends LineChart> create(AbstractAttribute attribute, SearchResponse searchResponse) {
+    public List<? extends LineChart> create(AbstractAttribute attribute, Aggregations aggregations) {
         String humanAttr = SimilarPatentServer.fullHumanAttributeFor(attribute.getFullName());
         String humanSearchType = combineTypesToString(searchTypes);
         String title = humanAttr + " Timeline";
@@ -75,7 +75,6 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
         String yAxisSuffix = "";
 
         String seriesName = singularize(humanSearchType) + " Count";
-        Aggregations aggregations = searchResponse.getAggregations();
         String attrName = attribute.getFullName();
         Aggregation agg = aggregations.get(attrName + aggSuffix);
         List<Map<String,Object>> bucketData = (List<Map<String,Object>>) agg.getMetaData().get("buckets");

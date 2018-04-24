@@ -23,6 +23,7 @@ import models.similarity_models.Vectorizer;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
+import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -47,6 +48,7 @@ import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 import user_interface.ui_models.attributes.script_attributes.*;
 import user_interface.ui_models.charts.*;
+import user_interface.ui_models.charts.aggregate_charts.AggregationChart;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.tables.TableResponse;
 import user_interface.ui_models.engines.*;
@@ -134,7 +136,7 @@ public class BigQueryServer {
     public static RecursiveTask<SimilarityEngineController> similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
-    private static Map<String,AbstractChartAttribute> chartModelMap = new HashMap<>();
+    private static Map<String,AggregationChart> chartModelMap = new HashMap<>();
     private static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
     private static final Function<String,Boolean> DEFAULT_ROLE_TO_ATTR_FUNCTION = (str) -> false;
     //private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
@@ -449,13 +451,13 @@ public class BigQueryServer {
         List<AbstractAttribute> rangeAttrs = attributes.stream().filter(attr->attr instanceof RangeAttribute).collect(Collectors.toList());
         List<AbstractAttribute> numericAttrs = attributes.stream().filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Double)||attr.getFieldType().equals(AbstractFilter.FieldType.Integer)).collect(Collectors.toList());
 
-        chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs)));
-        chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart(groupAttributesToNewParents(rangeAttrs),duplicateAttributes(discreteAttrs)));
-        chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart(groupAttributesToNewParents(dateAttrs),duplicateAttributes(discreteAttrs)));
-        chartModelMap.put(Constants.GROUPED_TABLE_CHART, new GroupedCountTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAttrs)));
-        chartModelMap.put(Constants.GROUPED_FUNCTION_TABLE_CHART, new GroupedFunctionTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(numericAttrs)));
-        chartModelMap.put(Constants.PIVOT_COUNT_TABLE_CHART, new CountPivotTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAttrs)));
-        chartModelMap.put(Constants.PIVOT_FUNCTION_TABLE_CHART, new FunctionPivotTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(numericAttrs)));
+        //chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs)));
+        //chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart(groupAttributesToNewParents(rangeAttrs),duplicateAttributes(discreteAttrs)));
+        //chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart(groupAttributesToNewParents(dateAttrs),duplicateAttributes(discreteAttrs)));
+        //chartModelMap.put(Constants.GROUPED_TABLE_CHART, new GroupedCountTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAttrs)));
+        //chartModelMap.put(Constants.GROUPED_FUNCTION_TABLE_CHART, new GroupedFunctionTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(numericAttrs)));
+        //chartModelMap.put(Constants.PIVOT_COUNT_TABLE_CHART, new CountPivotTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAttrs)));
+        //chartModelMap.put(Constants.PIVOT_FUNCTION_TABLE_CHART, new FunctionPivotTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(numericAttrs)));
 
         allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
             @Override
@@ -1998,27 +2000,22 @@ public class BigQueryServer {
                     //System.out.println("FOUND NESTED ATTRIBUTES: " + String.join("; ", nestedAttributes));
                     List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
 
-                    List<AbstractChartAttribute> abstractCharts = chartModels.stream().map(chart -> chartModelMap.get(chart).dup()).collect(Collectors.toList());
-                    List<ChartAttribute> charts = abstractCharts.stream().filter(chart->chart instanceof ChartAttribute).map(attr->(ChartAttribute)(attr)).collect(Collectors.toList());
-                    List<TableAttribute> tables = abstractCharts.stream().filter(chart->chart instanceof TableAttribute).map(attr->(TableAttribute)(attr)).collect(Collectors.toList());
+                    List<AggregationChart<?>> abstractCharts = chartModels.stream().map(chart -> chartModelMap.get(chart).dup()).collect(Collectors.toList());
 
-                    charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
-                    tables.forEach(table->table.extractRelevantInformationFromParams(req));
+                    abstractCharts.forEach(chart->chart.extractRelevantInformationFromParams(req));
 
-                    Set<String> chartPreReqs = abstractCharts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toSet());
+                    Set<String> chartPreReqs = abstractCharts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toCollection(HashSet::new));
                     chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrNameToGroupByAttrNameMap().values().stream().flatMap(list->list.stream())).collect(Collectors.toList()));
-                    tables.forEach(table->{
-                        if(table.getCollectByAttrName()!=null) {
-                            chartPreReqs.add(table.getCollectByAttrName());
-                        }
-                    });
+                    chartPreReqs.addAll(abstractCharts.stream().filter(chart->chart.getCollectByAttrName()!=null).map(chart->chart.getCollectByAttrName()).collect(Collectors.toList()));
 
                     if(Thread.currentThread().isInterrupted()) return null;
 
                     SimilarityEngineController engine = similarityEngine.join().dup();
                     engine.setChartPrerequisites(chartPreReqs);
                     engine.extractRelevantInformationFromParams(req);
-                    PortfolioList portfolioList = engine.getPortfolioList();
+                    final PortfolioList portfolioList = engine.getPortfolioList();
+                    final Aggregations aggregations = engine.getAggregations();
+                    final long totalCount = engine.getTotalCount();
 
                     if(Thread.currentThread().isInterrupted()) return null;
 
@@ -2120,45 +2117,44 @@ public class BigQueryServer {
 
                         if(Thread.currentThread().isInterrupted()) return null;
 
+
                         List<String> sessionIds = new ArrayList<>();
                         // add chart futures
                         AtomicInteger totalChartCnt = new AtomicInteger(0);
-                        charts.forEach(chart -> {
-                            for (int i = 0; i < chart.getAttrNames().size(); i++) {
-                                final int idx = i;
-                                RecursiveTask<List<? extends AbstractChart>> chartTask = new RecursiveTask<List<? extends AbstractChart>>() {
-                                    @Override
-                                    protected List<? extends AbstractChart> compute() {
-                                        return chart.create(portfolioList, idx);
-                                    }
-                                };
-                                pool.execute(chartTask);
-                                String chartId = "chart-" + totalChartCnt.getAndIncrement();
-                                sessionIds.add(chartId);
-                                otherTasks.add(chartTask);
-                                req.session().attribute(chartId, chartTask);
-                            }
-                        });
-
-                        List<String> chartTypes = new ArrayList<>();
-                        charts.forEach(chart -> {
-                            for (int i = 0; i < chart.getAttrNames().size(); i++) {
-                                chartTypes.add(chart.getType());
-                            }
-                        });
-
-
-                        // add table futures
-                        List<TableResponse> tableResponses = tables.stream().flatMap(table->{
-                            return table.createTables(portfolioList).stream();
-                        }).collect(Collectors.toList());
-                        tableResponses.forEach(tableResponse->otherTasks.add(tableResponse.computeAttributesTask));
-
                         AtomicInteger totalTableCnt = new AtomicInteger(0);
-                        tableResponses.forEach(table -> {
-                            String id = "table-" + totalTableCnt.getAndIncrement();
-                            sessionIds.add(id);
-                            req.session(false).attribute(id, table);
+                        List<String> chartTypes = new ArrayList<>();
+                        List<TableResponse> tableResponses = new ArrayList<>();
+                        abstractCharts.forEach(chart -> {
+                            boolean isTable = chart.isTable();
+                            for (int i = 0; i < chart.getAttrNames().size(); i++) {
+                                String attrName = chart.getAttrNames().get(i);
+                                AbstractAttribute attribute = chart.getAttributes().stream().filter(c -> c.getFullName().equals(attrName)).limit(1).findFirst().orElse(null);
+                                if (attribute == null) {
+                                    throw new RuntimeException("Warning: unable to find attribute: " + attribute.getFullName());
+                                }
+                                String id;
+                                RecursiveTask task;
+                                if(isTable) {
+                                    TableResponse tableResponse = (TableResponse)chart.create(attribute,aggregations);
+                                    id = "table-" + totalTableCnt.getAndIncrement();
+                                    task = tableResponse.computeAttributesTask;
+                                    req.session(false).attribute(id, tableResponse);
+                                    tableResponses.add(tableResponse);
+                                } else {
+                                    task = new RecursiveTask<List<? extends AbstractChart>>() {
+                                        @Override
+                                        protected List<? extends AbstractChart> compute() {
+                                            return (List<AbstractChart>) chart.create(attribute, aggregations);
+                                        }
+                                    };
+                                    chartTypes.add(chart.getType());
+                                    pool.execute(task);
+                                    id = "chart-" + totalChartCnt.getAndIncrement();
+                                    req.session(false).attribute(id, task);
+                                }
+                                otherTasks.add(task);
+                                sessionIds.add(id);
+                            }
                         });
 
                         req.session().attribute("previousSessionIds", sessionIds);
@@ -2180,10 +2176,10 @@ public class BigQueryServer {
                         double timeSeconds = new Double(timeEnd - timeStart) / 1000;
                         Tag results = div().with(
                                 div().withClass("col-12").with(
-                                        p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
+                                        p("Showing "+tableData.size()+" results out of "+totalCount+" total results matched. Took " + timeSeconds + " seconds."), br(),
                                         dataTable
                                 ), div().withClass("col-12").with(
-                                        p("Matched " + tableData.size() + " results in " + timeSeconds + " seconds."), br(),
+                                        p("Charts computed from "+totalCount+" matched results. Took " + timeSeconds + " seconds."), br(),
                                         chartTag
                                 )
                         );
@@ -2973,7 +2969,7 @@ public class BigQueryServer {
 
         // perform quick search
         try {
-            DataSearcher.searchForAssets(attributesMap.values(),Collections.emptyList(),Constants.AI_VALUE, SortOrder.DESC,100,getNestedAttrMap(),false,true);
+            DataSearcher.searchPatentsGlobal(attributesMap.values(),Collections.emptyList(),Constants.AI_VALUE, SortOrder.DESC,100,getNestedAttrMap(),item->item,true,false,true);
         } catch(Exception e) {
             System.out.println("Error during presearch: "+e.getMessage());
         }

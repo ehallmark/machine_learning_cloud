@@ -34,8 +34,7 @@ public abstract class TableAttribute extends AbstractChartAttribute {
         Count, Max, Min, Sum, Average
     }
 
-    @Getter
-    protected String collectByAttrName;
+
     protected GroupedCountTableChart.CollectorType collectorType;
     protected final Collection<AbstractAttribute> collectByAttrs;
     private final CollectorType defaultCollectType;

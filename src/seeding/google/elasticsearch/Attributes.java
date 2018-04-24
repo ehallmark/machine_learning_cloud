@@ -2,9 +2,12 @@ package seeding.google.elasticsearch;
 
 import seeding.google.elasticsearch.attributes.*;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.NestedAttribute;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Attributes {
     // helper
@@ -170,5 +173,15 @@ public class Attributes {
                 new Gather(),
                 new PTAB()
         );
+    }
+
+    public static Map<String,NestedAttribute> getNestedAttrMap() {
+        Map<String,NestedAttribute> nestedAttrMap = new HashMap<>();
+        buildAttributes().forEach(attr->{
+            if(attr instanceof NestedAttribute) {
+                nestedAttrMap.put(attr.getName(),(NestedAttribute)attr);
+            }
+        });
+        return nestedAttrMap;
     }
 }

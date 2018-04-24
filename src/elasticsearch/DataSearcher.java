@@ -7,6 +7,7 @@ import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.ClearScrollResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.Response;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.common.text.Text;
@@ -19,6 +20,7 @@ import org.elasticsearch.script.Script;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.rescore.QueryRescoreMode;
@@ -28,6 +30,7 @@ import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
+import seeding.google.mongo.ingest.IngestPatents;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
@@ -95,6 +98,30 @@ public class DataSearcher {
     }
 
     public static List<Item> searchForAssets(String index, String type, Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
+        SearchResponse response = searchFor(index,type,attributes,filters,_comparator,sortOrder,maxLimit,nestedAttrNameMap,transformer,merge,highlight,filterNestedObjects);
+        String comparator = getOrDefaultComparator(_comparator);
+        boolean isOverallScore = comparator.equals(Constants.SCORE);
+        boolean scroll = maxLimit > PAGE_LIMIT;
+        return iterateOverSearchResults(response, hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore, filterNestedObjects)), maxLimit, merge, scroll);
+    }
+
+    private static String getOrDefaultComparator(String _comparator) {
+        return _comparator == null ? Constants.NO_SORT : _comparator;
+    }
+
+    public static ElasticSearchResponse searchPatentsGlobal(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
+        SearchResponse response = searchFor(IngestPatents.INDEX_NAME,IngestPatents.TYPE_NAME,attributes,filters,_comparator,sortOrder,maxLimit,nestedAttrNameMap,transformer,merge,highlight,filterNestedObjects);
+        Aggregations aggs = response.getAggregations();
+        long totalCount = response.getHits().totalHits;
+        String comparator = getOrDefaultComparator(_comparator);
+        boolean isOverallScore = comparator.equals(Constants.SCORE);
+        boolean scroll = maxLimit > PAGE_LIMIT;
+        List<Item> items = iterateOverSearchResults(response, hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore, filterNestedObjects)), maxLimit, merge, scroll);
+        return new ElasticSearchResponse(items,aggs,totalCount);
+    }
+
+
+    private static SearchResponse searchFor(String index, String type, Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
         try {
             String[] attrNames = Stream.of(attributes.stream().map(attr->{
                 String name = attr.getFullName();
@@ -106,7 +133,7 @@ public class DataSearcher {
             }),Stream.of(Constants.NAME)).distinct().flatMap(s->s).toArray(size->new String[size]);
 
             // Run elasticsearch
-            String comparator = _comparator == null ? Constants.NO_SORT : _comparator;
+            String comparator = getOrDefaultComparator(_comparator);
             boolean isOverallScore = comparator.equals(Constants.SCORE);
 
             SortBuilder sortBuilder;
@@ -245,7 +272,7 @@ public class DataSearcher {
                 queryBuilder.set(queryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.randomFunction(System.currentTimeMillis()))));
             }
 
-           if(highlight) {
+            if(highlight) {
                // possible highlighting
                request.set(request.get().highlighter(highlighter));
             }
@@ -258,8 +285,7 @@ public class DataSearcher {
 
             request.set(request.get().setQuery(queryBuilder.get()));
 
-            SearchResponse response = request.get().get();
-            return iterateOverSearchResults(response, hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore, filterNestedObjects)), maxLimit, merge, scroll);
+            return request.get().get();
 
         } catch(Exception e) {
             e.printStackTrace();

@@ -24,11 +24,11 @@ public class AggregatePivot1DChart extends AggregationChart<TableResponse> {
     protected Type collectorType;
     protected String collectByAttrName;
     public AggregatePivot1DChart(Collection<AbstractAttribute> attributes, String name) {
-        super(AGG_SUFFIX, attributes, Collections.emptyList(), name, false);
+        super(true,AGG_SUFFIX, attributes, Collections.emptyList(), name, false);
     }
 
     @Override
-    public AbstractChartAttribute dup() {
+    public AggregatePivot1DChart dup() {
         return new AggregatePivot1DChart(attributes,name);
     }
 
@@ -41,8 +41,7 @@ public class AggregatePivot1DChart extends AggregationChart<TableResponse> {
     }
 
     @Override
-    public List<? extends TableResponse> create(AbstractAttribute attribute, SearchResponse searchResponse) {
-        Aggregations aggregations = searchResponse.getAggregations();
+    public List<? extends TableResponse> create(AbstractAttribute attribute, Aggregations aggregations) {
         String attrName = attribute.getFullName();
         String innerBucketName = attrName + aggSuffix;
 

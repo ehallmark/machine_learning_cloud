@@ -1,8 +1,10 @@
 package user_interface.ui_models.engines;
 
 import elasticsearch.DataSearcher;
+import elasticsearch.ElasticSearchResponse;
 import lombok.Getter;
 import lombok.Setter;
+import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.google.elasticsearch.Attributes;
@@ -34,6 +36,10 @@ public class SimilarityEngineController {
     private Collection<AbstractFilter> preFilters;
     @Getter
     protected PortfolioList portfolioList;
+    @Getter
+    protected Aggregations aggregations;
+    @Getter
+    protected long totalCount;
     @Setter
     private Set<String> chartPrerequisites;
     @Getter @Setter
@@ -59,36 +65,37 @@ public class SimilarityEngineController {
         }).filter(i->i!=null).collect(Collectors.toList()));
         preFilters.forEach(filter -> filter.extractRelevantInformationFromParams(req));
 
-        // get labels to remove (if any)
-        Collection<String> labelsToRemove = new HashSet<>();
-        Collection<String> assigneesToRemove = new HashSet<>();
-        // remove any patents in the search for category
-        Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
-        Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
-        labelsToRemove.addAll(patents);
-        assigneesToRemove.addAll(assignees);
-
-        if(labelsToRemove.size()>0) {
-            List<String> toRemove = labelsToRemove.stream().collect(Collectors.toList());
-            preFilters.add(new AbstractExcludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, toRemove));
-            preFilters.add(new AbstractExcludeFilter(new FilingNameAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, toRemove));
-        }
-        if(assigneesToRemove.size()>0) {
-            // lazily create assignee name filter
-            AbstractAttribute assignee = new LatestAssigneeNestedAttribute();
-            AbstractNestedFilter assigneeFilter = (AbstractNestedFilter) assignee.createFilters().stream().findFirst().orElse(null);
-            if(assigneeFilter != null) {
-                AbstractExcludeFilter assigneeNameFilter = (AbstractExcludeFilter) assigneeFilter.getFilters().stream().filter(attr->attr.getPrerequisite().equals(Constants.ASSIGNEE)&&attr.getFilterType().equals(AbstractFilter.FilterType.Exclude)).findAny().orElse(null);
-                if(assigneeNameFilter!=null) {
-                    assigneeNameFilter.setLabels(assigneesToRemove.stream().collect(Collectors.toList()));
-                    assigneeFilter.setFilterSubset(Arrays.asList(assigneeNameFilter));
-                    preFilters.add(assigneeFilter);
-                } else {
-                    throw new RuntimeException("Unable to create assignee name filter");
+        // for big query, user must set what to exclude
+        if(!isBigQuery) {
+            // get labels to remove (if any)
+            Collection<String> labelsToRemove = new HashSet<>();
+            Collection<String> assigneesToRemove = new HashSet<>();
+            // remove any patents in the search for category
+            Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
+            Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
+            labelsToRemove.addAll(patents);
+            assigneesToRemove.addAll(assignees);
+            if (labelsToRemove.size() > 0) {
+                List<String> toRemove = labelsToRemove.stream().collect(Collectors.toList());
+                preFilters.add(new AbstractExcludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, toRemove));
+                preFilters.add(new AbstractExcludeFilter(new FilingNameAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, toRemove));
+            }
+            if (assigneesToRemove.size() > 0) {
+                // lazily create assignee name filter
+                AbstractAttribute assignee = new LatestAssigneeNestedAttribute();
+                AbstractNestedFilter assigneeFilter = (AbstractNestedFilter) assignee.createFilters().stream().findFirst().orElse(null);
+                if (assigneeFilter != null) {
+                    AbstractExcludeFilter assigneeNameFilter = (AbstractExcludeFilter) assigneeFilter.getFilters().stream().filter(attr -> attr.getPrerequisite().equals(Constants.ASSIGNEE) && attr.getFilterType().equals(AbstractFilter.FilterType.Exclude)).findAny().orElse(null);
+                    if (assigneeNameFilter != null) {
+                        assigneeNameFilter.setLabels(assigneesToRemove.stream().collect(Collectors.toList()));
+                        assigneeFilter.setFilterSubset(Arrays.asList(assigneeNameFilter));
+                        preFilters.add(assigneeFilter);
+                    } else {
+                        throw new RuntimeException("Unable to create assignee name filter");
+                    }
                 }
             }
         }
-
 
         preFilters = preFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());
     }
@@ -157,7 +164,16 @@ public class SimilarityEngineController {
         boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
         boolean filterNestedObjects = extractBool(req, FILTER_NESTED_OBJECTS_FIELD);
 
-        List<Item> scope = DataSearcher.searchForAssets(topLevelAttributes, preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap(), useHighlighter, filterNestedObjects);
+        List<Item> scope;
+        if(isBigQuery) {
+            ElasticSearchResponse response = DataSearcher.searchPatentsGlobal(topLevelAttributes,preFilters,comparator,sortOrder,limit, Attributes.getNestedAttrMap(), item->item,true, useHighlighter, filterNestedObjects);
+            System.out.println("Total hits: "+response.getTotalCount());
+            scope = response.getItems();
+            aggregations = response.getAggregations();
+            totalCount = response.getTotalCount();
+        } else {
+            scope = DataSearcher.searchForAssets(topLevelAttributes, preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap(), useHighlighter, filterNestedObjects);
+        }
 
         // asset dedupe
         for(AbstractFilter preFilter : preFilters) {
@@ -189,7 +205,7 @@ public class SimilarityEngineController {
             });
         }
 
-        System.out.println("Elasticsearch found: "+scope.size()+ " assets");
+        System.out.println("Elasticsearch retrieved: "+scope.size()+ " assets");
 
         portfolioList = new PortfolioList(scope);
     }

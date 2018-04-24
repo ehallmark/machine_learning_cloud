@@ -20,17 +20,16 @@ import java.util.*;
 public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     private static final String AGG_SUFFIX = "_hist";
     public AggregateHistogramChart(Collection<AbstractAttribute> attributes, String name) {
-        super(AGG_SUFFIX, attributes, Collections.emptyList(), name, false);
+        super(false,AGG_SUFFIX, attributes, Collections.emptyList(), name, false);
     }
 
     @Override
-    public AbstractChartAttribute dup() {
+    public AggregateHistogramChart dup() {
         return new AggregateHistogramChart(attributes,name);
     }
 
     @Override
-    public List<? extends ColumnChart> create(AbstractAttribute attribute, SearchResponse searchResponse) {
-        Aggregations aggregations = searchResponse.getAggregations();
+    public List<? extends ColumnChart> create(AbstractAttribute attribute, Aggregations aggregations) {
         String attrName = attribute.getFullName();
         Aggregation agg = aggregations.get(attrName + aggSuffix);
 
