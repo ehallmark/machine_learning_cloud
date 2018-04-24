@@ -2183,7 +2183,7 @@ public class SimilarPatentServer {
                     tables.forEach(table->table.extractRelevantInformationFromParams(req));
 
                     Set<String> chartPreReqs = abstractCharts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toSet());
-                    chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrNameToGroupByAttrNameMap().values().stream().flatMap(list->list.stream())).collect(Collectors.toList()));
+                    chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrNameToGroupByAttrNameMap().values().stream()).collect(Collectors.toList()));
                     tables.forEach(table->{
                         if(table.getCollectByAttrName()!=null) {
                             chartPreReqs.add(table.getCollectByAttrName());

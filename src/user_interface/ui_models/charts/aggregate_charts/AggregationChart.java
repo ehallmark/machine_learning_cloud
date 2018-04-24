@@ -1,7 +1,6 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
 import lombok.Getter;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.aggregations.Aggregations;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
@@ -29,4 +28,6 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
     public abstract List<AbstractAggregation> getAggregations(AbstractAttribute attribute);
 
     public abstract AggregationChart<T> dup();
+
+    public abstract String getType();
 }

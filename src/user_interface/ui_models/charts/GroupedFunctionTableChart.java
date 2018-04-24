@@ -27,10 +27,10 @@ public class GroupedFunctionTableChart extends AbstractGroupedChart {
             return div().withClass("row").with(
                     div().withClass("col-8").with(
                             label("Collect By"),br(),
-                            SimilarPatentServer.technologySelectWithCustomClass(getCollectByAttrFieldName(),getCollectByAttrFieldName(),"single-select2",groupedGroupAttrs,"")
+                            SimilarPatentServer.technologySelectWithCustomClass(getCollectByAttrFieldName(null),getCollectByAttrFieldName(null),"single-select2",groupedGroupAttrs,"")
                     ),div().withClass("col-4").with(
                             label("Collecting Function"),br(),
-                            select().withClass("single-select2").withName(getCollectTypeFieldName()).withId(getCollectTypeFieldName()).with(
+                            select().withClass("single-select2").withName(getCollectTypeFieldName(null)).withId(getCollectTypeFieldName(null)).with(
                                     option(GroupedFunctionTableChart.CollectorType.Sum.toString()).withValue(""),
                                     option(GroupedFunctionTableChart.CollectorType.Average.toString()).withValue(GroupedFunctionTableChart.CollectorType.Average.toString()),
                                     option(GroupedFunctionTableChart.CollectorType.Max.toString()).withValue(GroupedFunctionTableChart.CollectorType.Max.toString()),

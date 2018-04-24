@@ -32,8 +32,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected static final Function2<ContainerTag,ContainerTag,ContainerTag> DEFAULT_COMBINE_BY_FUNCTION = (tag1,tag2) -> {
         return div().with(tag1,tag2);
     };
-    @Getter
-    protected String collectByAttrName;
+    @Getter // OLD
+    protected String collectByAttrName; // OLD TODO REMOVE
     @Getter
     protected Map<String,String> attrToCollectByAttrMap;
     @Getter
@@ -43,7 +43,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected List<String> attrNames;
     protected Collection<AbstractAttribute> groupByAttributes;
     @Getter
-    protected Map<String,List<String>> attrNameToGroupByAttrNameMap;
+    protected Map<String,String> attrNameToGroupByAttrNameMap;
     @Getter
     protected Map<String,Integer> attrNameToMaxGroupSizeMap;
     @Getter
@@ -160,12 +160,12 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         List<AbstractAttribute> availableGroups = groupByAttributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
         Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
-        String clazz = "form-control multiselect";
+        String clazz = "single-select2";
         return div().withClass("row").with(
                 div().withClass("col-8").with(
                         label("Group By").attr("title","Creates a separate chart for each of the largest groups.").attr("style","width: 100%;").with(
                                 br(),
-                                SimilarPatentServer.technologySelectWithCustomClass(id+"[]",id,clazz, groupedGroupAttrs,null)
+                                SimilarPatentServer.technologySelectWithCustomClass(id,id,clazz, groupedGroupAttrs,"")
                         )
                 ),div().withClass("col-2").with(
                         label("Max Groups").attr("title", "The maximum number of groups to build charts for.").attr("style","width: 100%;").with(
@@ -180,11 +180,11 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     }
 
     protected Stream<Pair<String,PortfolioList>> groupPortfolioListForGivenAttribute(PortfolioList portfolioList, String attribute) {
-        List<String> groupedBy = attrNameToGroupByAttrNameMap.get(attribute);
+        String groupedBy = attrNameToGroupByAttrNameMap.get(attribute);
         Integer maxLimit = attrNameToMaxGroupSizeMap.get(attribute);
         Boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attribute,false);
         if(maxLimit==null) maxLimit = 1;
-        return portfolioList.groupedBy(groupedBy).filter(g->includeBlank||!g.getSecond().isBlankGroup()).sorted((p1,p2)->Integer.compare(p2.getSecond().getItemList().size(),p1.getSecond().getItemList().size())).limit(maxLimit);
+        return portfolioList.groupedBy(Collections.singletonList(groupedBy)).filter(g->includeBlank||!g.getSecond().isBlankGroup()).sorted((p1,p2)->Integer.compare(p2.getSecond().getItemList().size(),p1.getSecond().getItemList().size())).limit(maxLimit);
     }
 
     @Override
@@ -210,15 +210,16 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             }
             attrsToCheck.forEach(attrName->{
                 String groupId = getGroupByChartFieldName(attrName);
-                List<String> group = SimilarPatentServer.extractArray(params, groupId+"[]");
-                if(group.size()>0) {
+                String group = SimilarPatentServer.extractString(params, groupId, null);
+                if(group!=null) {
                     attrNameToGroupByAttrNameMap.put(attrName, group);
                 }
                 String groupSizeId = groupId + MAX_GROUP_FIELD;
-                String groupSize = SimilarPatentServer.extractString(params, groupSizeId,"10");
-                if(groupSize.length()>0) {
-                    attrNameToMaxGroupSizeMap.put(attrName, Integer.valueOf(groupSize));
+                Integer groupSize = SimilarPatentServer.extractInt(params, groupSizeId,10);
+                if(groupSize<1) {
+                    groupSize = 1;
                 }
+                attrNameToMaxGroupSizeMap.put(attrName, groupSize);
 
                 String groupIncludeBlanksId = groupId + INCLUDE_BLANK_FIELD;
                 boolean groupIncludeBlanks = SimilarPatentServer.extractBool(params, groupIncludeBlanksId);

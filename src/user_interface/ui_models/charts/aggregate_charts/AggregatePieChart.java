@@ -3,7 +3,9 @@ package user_interface.ui_models.charts.aggregate_charts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import org.elasticsearch.action.search.SearchResponse;
+import data_pipeline.helpers.Function2;
+import j2html.tags.ContainerTag;
+import j2html.tags.Tag;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.TermsLookup;
@@ -16,7 +18,6 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
-import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.FiltersAggregation;
@@ -24,7 +25,10 @@ import user_interface.ui_models.charts.aggregations.buckets.TermsAggregation;
 import user_interface.ui_models.charts.highcharts.PieChart;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static j2html.TagCreator.*;
 
 public class AggregatePieChart extends AggregationChart<PieChart> {
     private static final String AGG_SUFFIX = "_pie";
@@ -94,7 +98,44 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         );
     }
 
+
+    @Override
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+        Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Collections.singletonList(idFromName(attrName)+MAX_SLICES);
+        Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
+                div().withClass("col-10").with(
+                        tag1
+                ),div().withClass("col-2").with(
+                        tag2
+                )
+        );
+        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineFunction,true);
+    }
+
+    private ContainerTag getAdditionalTagPerAttr(String attrName) {
+        attrName = idFromName(attrName);
+        return div().withClass("row").with(
+                div().withClass("col-12").with(
+                        label("Max Slices").attr("title", "The maximum number of slices for this pie chart.").attr("style","width: 100%;").with(
+                                br(),
+                                input().withId(attrName+MAX_SLICES).attr("style","height: 28px;").withName(attrName+MAX_SLICES).withType("number").withClass("form-control").withValue("20")
+                        )
+                )
+        );
+    }
+
+
+    @Override
+    public String getType() {
+        return "pie";
+    }
+
     public static BucketAggregation buildDistributionAggregation(AbstractAttribute attribute, String aggSuffix) {
+        return buildDistributionAggregation(attribute,aggSuffix,MAXIMUM_AGGRAGATION_SIZE);
+    }
+
+    public static BucketAggregation buildDistributionAggregation(AbstractAttribute attribute, String aggSuffix, int maxSize) {
         String attrName = attribute.getFullName();
         if(attribute instanceof DatasetAttribute) {
             List<Pair<String,Set<String>>> dataSets = ((DatasetAttribute) attribute).getCurrentDatasets();
@@ -103,9 +144,9 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             }).toArray(size->new QueryBuilder[size]);
             return new FiltersAggregation(attrName + aggSuffix,false,null,queryBuilders);
         } else if (attribute instanceof AbstractScriptAttribute) {
-            return new TermsAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), "(empty)",MAXIMUM_AGGRAGATION_SIZE);
+            return new TermsAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), "(empty)",maxSize);
         } else {
-            return new TermsAggregation(attrName + aggSuffix, attrName, null, "(empty)",MAXIMUM_AGGRAGATION_SIZE);
+            return new TermsAggregation(attrName + aggSuffix, attrName, null, "(empty)",maxSize);
         }
     }
 

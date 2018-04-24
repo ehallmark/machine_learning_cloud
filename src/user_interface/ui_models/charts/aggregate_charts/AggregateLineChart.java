@@ -3,7 +3,8 @@ package user_interface.ui_models.charts.aggregate_charts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import org.elasticsearch.action.search.SearchResponse;
+import j2html.tags.ContainerTag;
+import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
 import seeding.Constants;
@@ -11,13 +12,15 @@ import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
-import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.DateHistogramAggregation;
 import user_interface.ui_models.charts.highcharts.LineChart;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Function;
+
+import static j2html.TagCreator.*;
 
 public class AggregateLineChart extends AggregationChart<LineChart> {
     private static final String AGG_SUFFIX = "_line";
@@ -92,6 +95,36 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
         }
         seriesList.add(series);
         return Collections.singletonList(new LineChart(false,title, "", seriesList, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
+    }
+
+    @Override
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+        Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(idFromName(attrName)+SimilarPatentServer.LINE_CHART_MIN,idFromName(attrName)+SimilarPatentServer.LINE_CHART_MAX);
+        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,(tag1,tag2)->div().with(tag1,tag2),true);
+    }
+
+
+    private ContainerTag getAdditionalTagPerAttr(String attrName) {
+        attrName = idFromName(attrName);
+        return div().withClass("row").with(
+                div().withClass("col-6").with(
+                        label("Min Date").attr("style","width: 100%;").with(
+                                br(),
+                                input().withId(attrName+SimilarPatentServer.LINE_CHART_MIN).attr("style","height: 28px;").withName(attrName+SimilarPatentServer.LINE_CHART_MIN).withType("text").withClass("datepicker form-control")
+                        )
+                ), div().withClass("col-6").with(
+                        label("Max Date").attr("style","width: 100%;").with(
+                                br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MAX).attr("style","height: 28px;").withName(attrName+SimilarPatentServer.LINE_CHART_MAX).withType("text").withClass("datepicker form-control")
+                        )
+                )
+        );
+    }
+
+
+    @Override
+    public String getType() {
+        return "line";
     }
 
     @Override

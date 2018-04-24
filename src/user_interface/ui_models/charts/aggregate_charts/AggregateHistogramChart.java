@@ -3,7 +3,6 @@ package user_interface.ui_models.charts.aggregate_charts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
 import seeding.Constants;
@@ -11,7 +10,6 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
-import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.HistogramAggregation;
 import user_interface.ui_models.charts.highcharts.ColumnChart;
@@ -64,6 +62,12 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         }
         seriesList.add(series);
         return Collections.singletonList(new ColumnChart(title, seriesList, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, name, 0, categories));
+    }
+
+
+    @Override
+    public String getType() {
+        return "histogram";
     }
 
     @Override

@@ -33,11 +33,11 @@ public abstract class AbstractPivotChart extends TableAttribute {
             List<String> humanAttrs =  attrList.stream().map(attribute->SimilarPatentServer.fullHumanAttributeFor(attribute)).collect(Collectors.toList());
             String humanSearchType = combineTypesToString(searchTypes);
             String title = (collectByAttrName==null?humanSearchType:SimilarPatentServer.fullHumanAttributeFor(collectByAttrName)) + " "+ collectorType.toString() + (humanAttrs.isEmpty() ? "" :  " by "+ (humanAttrs.isEmpty() ? "*BLANK*" : String.join(", ",humanAttrs)));
-            List<String> groupedBy = attrNameToGroupByAttrNameMap.get("");
+            String groupedBy = attrNameToGroupByAttrNameMap.get("");
             Integer maxLimit = attrNameToMaxGroupSizeMap.get("");
             Boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault("",false);
             if(maxLimit==null) maxLimit = 1;
-            return Stream.of(createHelper(portfolioList.getItemList(), attrList, groupedBy, title, null, maxLimit, includeBlank));
+            return Stream.of(createHelper(portfolioList.getItemList(), attrList, Collections.singletonList(groupedBy), title, null, maxLimit, includeBlank));
         }).collect(Collectors.toList());
     }
 
@@ -86,7 +86,6 @@ public abstract class AbstractPivotChart extends TableAttribute {
         response.numericAttrNames = new HashSet<>(Arrays.asList(collectorHeader,collectorType.toString()));
         response.numericAttrNames.addAll(response.nonHumanAttrs);
         System.out.println("Numeric Attrs: "+response.numericAttrNames.toString());
-
 
         response.nonHumanAttrs.add(collectorHeader);
         System.out.println("Row attrs: "+rowAttrs);
