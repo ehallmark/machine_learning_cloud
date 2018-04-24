@@ -2011,7 +2011,7 @@ public class BigQueryServer {
                             String attrName = chart.getAttrNames().get(i);
                             AbstractAttribute attribute = chart.getAttributes().stream().filter(c -> c.getFullName().equals(attrName)).limit(1).findFirst().orElse(null);
                             if (attribute == null) {
-                                throw new RuntimeException("Warning: unable to find attribute: " + attribute.getFullName());
+                                throw new RuntimeException("Warning: unable to find attribute: " + attrName);
                             }
                             builders.addAll(chart.getAggregations(attribute).stream().map(a->a.getAggregation()).collect(Collectors.toList()));
                         }
@@ -2144,7 +2144,7 @@ public class BigQueryServer {
                                 String attrName = chart.getAttrNames().get(i);
                                 AbstractAttribute attribute = chart.getAttributes().stream().filter(c -> c.getFullName().equals(attrName)).limit(1).findFirst().orElse(null);
                                 if (attribute == null) {
-                                    throw new RuntimeException("Warning: unable to find attribute: " + attribute.getFullName());
+                                    throw new RuntimeException("Warning: unable to find attribute: " + attrName);
                                 }
                                 String id;
                                 RecursiveTask task;
