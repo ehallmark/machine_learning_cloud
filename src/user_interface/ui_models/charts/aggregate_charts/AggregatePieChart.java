@@ -132,7 +132,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     }
 
     public static BucketAggregation buildDistributionAggregation(AbstractAttribute attribute, String aggSuffix) {
-        return buildDistributionAggregation(attribute,aggSuffix,MAXIMUM_AGGRAGATION_SIZE);
+        return buildDistributionAggregation(attribute,aggSuffix,MAXIMUM_AGGREGATION_SIZE);
     }
 
     public static BucketAggregation buildDistributionAggregation(AbstractAttribute attribute, String aggSuffix, int maxSize) {

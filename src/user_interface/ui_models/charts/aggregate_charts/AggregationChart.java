@@ -13,7 +13,7 @@ import java.util.List;
  * Created by Evan on 6/17/2017.
  */
 public abstract class AggregationChart<T> extends AbstractChartAttribute {
-    protected static final int MAXIMUM_AGGRAGATION_SIZE = 1000;
+    protected static final int MAXIMUM_AGGREGATION_SIZE = 1000;
     protected final String aggSuffix;
     @Getter
     protected final boolean isTable;

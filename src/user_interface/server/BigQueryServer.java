@@ -2009,7 +2009,7 @@ public class BigQueryServer {
                         List<AggregationBuilder> builders = new ArrayList<>();
                         for (int i = 0; i < chart.getAttrNames().size(); i++) {
                             String attrName = chart.getAttrNames().get(i);
-                            AbstractAttribute attribute = chart.getAttributes().stream().filter(c -> c.getFullName().equals(attrName)).limit(1).findFirst().orElse(null);
+                            AbstractAttribute attribute = chart.getAttributes().stream().filter(c -> c.getFullName().equals(chart.getName()+"."+attrName)).limit(1).findFirst().orElse(null);
                             if (attribute == null) {
                                 System.out.println("Possible chart attrs step1: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName()).collect(Collectors.toList())));
                                 throw new RuntimeException("Warning: unable to find attribute for chart "+chart.getName()+": " + attrName);
@@ -2143,7 +2143,7 @@ public class BigQueryServer {
                             boolean isTable = chart.isTable();
                             for (int i = 0; i < chart.getAttrNames().size(); i++) {
                                 String attrName = chart.getAttrNames().get(i);
-                                AbstractAttribute attribute = chart.getAttributes().stream().filter(c -> c.getFullName().equals(attrName)).limit(1).findFirst().orElse(null);
+                                AbstractAttribute attribute = chart.getAttributes().stream().filter(c -> c.getFullName().equals(chart.getName()+"."+attrName)).limit(1).findFirst().orElse(null);
                                 if (attribute == null) {
                                     System.out.println("Possible chart attrs step2: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName()).collect(Collectors.toList())));
                                     throw new RuntimeException("Warning: unable to find attribute for chart "+chart.getName()+": " + attrName);
