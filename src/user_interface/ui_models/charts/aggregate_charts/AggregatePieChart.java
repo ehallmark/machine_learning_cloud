@@ -176,13 +176,13 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         } else if (attribute instanceof RangeAttribute) {
             RangeAttribute rangeAttribute = (RangeAttribute)attribute;
             if(attribute instanceof AbstractScriptAttribute) {
-                aggregation = new HistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getScript(true,false), (rangeAttribute.max().doubleValue()-rangeAttribute.min().doubleValue())/rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing());
+                aggregation = new HistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), (rangeAttribute.max().doubleValue()-rangeAttribute.min().doubleValue())/rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing());
             } else {
                 aggregation = new HistogramAggregation(attrName + aggSuffix, attrName, null, (rangeAttribute.max().doubleValue()-rangeAttribute.min().doubleValue())/rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing());
             }
         } else {
             if (attribute instanceof AbstractScriptAttribute) {
-                aggregation = new TermsAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getScript(true, false), "(empty)", maxSize);
+                aggregation = new TermsAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), "(empty)", maxSize);
             } else {
                 String fieldName = attrName;
                 if (attribute.getType().equals("text") && attribute.getNestedFields() != null) {

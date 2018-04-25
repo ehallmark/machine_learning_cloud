@@ -50,7 +50,7 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute  {
 
     // override
     public Script getSortScript() {
-        return getScript(true, true);
+        return getScript(true, false);
     }
 
     public String getRemainingLifeQuery(boolean expression) {
