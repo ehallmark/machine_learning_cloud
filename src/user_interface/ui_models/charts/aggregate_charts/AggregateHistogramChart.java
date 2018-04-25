@@ -5,6 +5,7 @@ import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -30,8 +31,6 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     @Override
     public List<? extends ColumnChart> create(AbstractAttribute attribute, Aggregations aggregations) {
         String attrName = attribute.getFullName();
-        Aggregation agg = aggregations.get(attrName + aggSuffix);
-
         RangeAttribute rangeAttribute = (RangeAttribute)attribute;
         String humanAttr = SimilarPatentServer.humanAttributeFor(attribute.getFullName());
         String humanSearchType = combineTypesToString(searchTypes);
@@ -49,15 +48,19 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
             categories.add(String.valueOf(j) + "-" + String.valueOf(j+step));
         }
 
-        List<Map<String,Object>> bucketData = (List<Map<String,Object>>) agg.getMetaData().get("buckets");
         PointSeries series = new PointSeries();
         series.setName(title);
         List<Series<?>> seriesList = new ArrayList<>();
         series.setName(title);
         series.setShowInLegend(false);
-        for(int i = 0; i < bucketData.size(); i++) {
-            Map<String,Object> bucket = bucketData.get(i);
-            Point point = new Point(categories.get(i), (Number)bucket.get("doc_count"));
+
+        // sr is here your SearchResponse object
+        Histogram agg = aggregations.get(attrName + aggSuffix);
+        // For each entry
+        for (Histogram.Bucket entry : agg.getBuckets()) {
+            String keyAsString = entry.getKeyAsString(); // Key as String
+            long docCount = entry.getDocCount();         // Doc count
+            Point point = new Point(keyAsString,docCount);
             series.addPoint(point);
         }
         seriesList.add(series);

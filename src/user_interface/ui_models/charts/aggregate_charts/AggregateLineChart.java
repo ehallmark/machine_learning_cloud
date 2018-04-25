@@ -7,12 +7,14 @@ import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
+import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.DateHistogramAggregation;
 import user_interface.ui_models.charts.highcharts.LineChart;
 
@@ -80,19 +82,23 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
 
         String seriesName = singularize(humanSearchType) + " Count";
         String attrName = attribute.getFullName();
-        Aggregation agg = aggregations.get(attrName + aggSuffix);
-        List<Map<String,Object>> bucketData = (List<Map<String,Object>>) agg.getMetaData().get("buckets");
         PointSeries series = new PointSeries();
         series.setName(seriesName);
 
         List<Series<?>> seriesList = new ArrayList<>();
         series.setName(title);
         series.setShowInLegend(false);
-        for(int i = 0; i < bucketData.size(); i++) {
-            Map<String,Object> bucket = bucketData.get(i);
-            Point point = new Point(((String)bucket.get("key_as_string")), (Number)bucket.get("doc_count"));
+
+        // sr is here your SearchResponse object
+        Histogram agg = aggregations.get(attrName + aggSuffix);
+        // For each entry
+        for (Histogram.Bucket entry : agg.getBuckets()) {
+            String keyAsString = entry.getKeyAsString(); // Key as String
+            long docCount = entry.getDocCount();         // Doc count
+            Point point = new Point(keyAsString,docCount);
             series.addPoint(point);
         }
+
         seriesList.add(series);
         return Collections.singletonList(new LineChart(false,title, "", seriesList, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
     }

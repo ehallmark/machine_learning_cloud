@@ -30,4 +30,5 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
     public abstract AggregationChart<T> dup();
 
     public abstract String getType();
+
 }

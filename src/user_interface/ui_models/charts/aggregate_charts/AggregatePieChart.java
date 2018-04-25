@@ -11,6 +11,8 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.TermsLookup;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.filters.Filters;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
@@ -57,26 +59,40 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     @Override
     public List<? extends PieChart> create(AbstractAttribute attribute, Aggregations aggregations) {
         String attrName = attribute.getFullName();
-        Aggregation agg = aggregations.get(attrName + aggSuffix);
-        List<Map<String,Object>> bucketData = (List<Map<String,Object>>) agg.getMetaData().get("buckets");
+        Integer limit = attrToLimitMap.get(attrName);
         String title = SimilarPatentServer.humanAttributeFor(attrName) + " Distribution";
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
         series.setName(title);
-        List<String> dataSets;
-        if(attribute instanceof DatasetAttribute) {
-            dataSets = ((DatasetAttribute) attribute).getCurrentDatasets().stream()
+
+        List<Pair<String,Long>> bucketData = new ArrayList<>();
+        if(aggregations.get(attrName+aggSuffix) instanceof Filters) {
+            List<String> dataSets = ((DatasetAttribute) attribute).getCurrentDatasets().stream()
                     .map(e->e.getFirst()).collect(Collectors.toList());
+            Filters agg = aggregations.get(attrName + aggSuffix);
+            // For each entry
+            int i = 0;
+            for (Filters.Bucket entry : agg.getBuckets()) {
+                String key = dataSets.get(i);          // bucket key
+                long docCount = entry.getDocCount();            // Doc count
+                bucketData.add(new Pair<>(key,docCount));
+                i++;
+            }
         } else {
-            dataSets = null;
+            Terms agg = aggregations.get(attrName + aggSuffix);
+            for(Terms.Bucket entry : agg.getBuckets()) {
+                String key = entry.getKeyAsString();
+                long docCount = entry.getDocCount();
+                bucketData.add(new Pair<>(key,docCount));
+            }
         }
-        Integer limit = attrToLimitMap.get(attrName);
+
         double remaining = 0d;
         for(int i = 0; i < bucketData.size(); i++) {
-            Map<String,Object> bucket = bucketData.get(i);
-            Object label = dataSets==null?bucket.get("key"):dataSets.get(i);
+            Pair<String,Long> bucket = bucketData.get(i);
+            Object label = bucket.getFirst();
             if(label==null||label.toString().isEmpty()) label = "(empty)";
-            double prob = ((Number)bucket.get("doc_count")).doubleValue();
+            double prob = bucket.getSecond().doubleValue();
             if(limit!=null&&i>=limit) {
                 remaining+=prob;
             } else {
