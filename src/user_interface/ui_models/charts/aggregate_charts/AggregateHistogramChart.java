@@ -9,9 +9,7 @@ import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
-import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
-import user_interface.ui_models.charts.aggregations.buckets.HistogramAggregation;
 import user_interface.ui_models.charts.highcharts.ColumnChart;
 
 import java.util.ArrayList;
@@ -76,15 +74,8 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
 
     @Override
     public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
-        RangeAttribute rangeAttribute = (RangeAttribute)attribute;
-        if (attribute instanceof AbstractScriptAttribute) {
-            return Collections.singletonList(
-                    new HistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), (rangeAttribute.max().doubleValue()-rangeAttribute.min().doubleValue())/rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing())
-            );
-        } else {
-            return Collections.singletonList(
-                    new HistogramAggregation(attrName + aggSuffix, attrName, null, (rangeAttribute.max().doubleValue()-rangeAttribute.min().doubleValue())/rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing())
-            );
-        }
+        return Collections.singletonList(
+                AggregatePieChart.buildDistributionAggregation(this,attribute,attrName,aggSuffix)
+        );
     }
 }

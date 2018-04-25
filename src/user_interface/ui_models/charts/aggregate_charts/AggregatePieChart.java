@@ -20,15 +20,15 @@ import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
-import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
-import user_interface.ui_models.charts.aggregations.buckets.FiltersAggregation;
-import user_interface.ui_models.charts.aggregations.buckets.TermsAggregation;
+import user_interface.ui_models.charts.aggregations.buckets.*;
 import user_interface.ui_models.charts.highcharts.PieChart;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -114,7 +114,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     @Override
     public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
         return Collections.singletonList(
-                buildDistributionAggregation(attribute,attrName,aggSuffix)
+                buildDistributionAggregation(this,attribute,attrName,aggSuffix)
         );
     }
 
@@ -151,28 +151,45 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         return "pie";
     }
 
-    public static BucketAggregation buildDistributionAggregation(AbstractAttribute attribute, String attrName, String aggSuffix) {
-        return buildDistributionAggregation(attribute,attrName,aggSuffix,MAXIMUM_AGGREGATION_SIZE);
+    public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggSuffix) {
+        return buildDistributionAggregation(chart, attribute,attrName,aggSuffix,MAXIMUM_AGGREGATION_SIZE);
     }
 
-    public static BucketAggregation buildDistributionAggregation(AbstractAttribute attribute, String attrName, String aggSuffix, int maxSize) {
+    public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggSuffix, int maxSize) {
         System.out.println("Building distribution agg for: "+attribute.getFullName()+" with suffix "+aggSuffix);
         boolean isNested = attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute)&&!attribute.getParent().isObject();
         BucketAggregation aggregation;
-        if(attribute instanceof DatasetAttribute) {
-            List<Pair<String,Set<String>>> dataSets = ((DatasetAttribute) attribute).getCurrentDatasets();
-            QueryBuilder[] queryBuilders = dataSets.stream().map(dataset->{
-                return QueryBuilders.termsLookupQuery(attrName, new TermsLookup(((DatasetAttribute) attribute).getTermsIndex(),((DatasetAttribute) attribute).getTermsType(),dataset.getFirst(),((DatasetAttribute) attribute).getTermsPath()));
-            }).toArray(size->new QueryBuilder[size]);
-            aggregation= new FiltersAggregation(attrName + aggSuffix,false,null,queryBuilders);
-        } else if (attribute instanceof AbstractScriptAttribute) {
-            aggregation= new TermsAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), "(empty)",maxSize);
-        } else {
-            String fieldName = attrName;
-            if(attribute.getType().equals("text")&&attribute.getNestedFields()!=null) {
-                fieldName+=".raw";
+        if(chart instanceof AggregateLineChart) {
+            LocalDate xMin = ((AggregateLineChart) chart).getMin(attrName);
+            LocalDate xMax = ((AggregateLineChart) chart).getMax(attrName);
+            if (attribute instanceof AbstractScriptAttribute) {
+                aggregation = new DateHistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), xMin,xMax, null);
+            } else {
+                aggregation = new DateHistogramAggregation(attrName + aggSuffix, attrName, null, xMin,xMax,null);
             }
-            aggregation= new TermsAggregation(attrName + aggSuffix, fieldName, null, "(empty)",maxSize);
+        } else if(attribute instanceof DatasetAttribute) {
+            List<Pair<String, Set<String>>> dataSets = ((DatasetAttribute) attribute).getCurrentDatasets();
+            QueryBuilder[] queryBuilders = dataSets.stream().map(dataset -> {
+                return QueryBuilders.termsLookupQuery(attrName, new TermsLookup(((DatasetAttribute) attribute).getTermsIndex(), ((DatasetAttribute) attribute).getTermsType(), dataset.getFirst(), ((DatasetAttribute) attribute).getTermsPath()));
+            }).toArray(size -> new QueryBuilder[size]);
+            aggregation = new FiltersAggregation(attrName + aggSuffix, false, null, queryBuilders);
+        } else if (attribute instanceof RangeAttribute) {
+            RangeAttribute rangeAttribute = (RangeAttribute)attribute;
+            if(attribute instanceof AbstractScriptAttribute) {
+                aggregation = new HistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getScript(true,false), (rangeAttribute.max().doubleValue()-rangeAttribute.min().doubleValue())/rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing());
+            } else {
+                aggregation = new HistogramAggregation(attrName + aggSuffix, attrName, null, (rangeAttribute.max().doubleValue()-rangeAttribute.min().doubleValue())/rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing());
+            }
+        } else {
+            if (attribute instanceof AbstractScriptAttribute) {
+                aggregation = new TermsAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getScript(true, false), "(empty)", maxSize);
+            } else {
+                String fieldName = attrName;
+                if (attribute.getType().equals("text") && attribute.getNestedFields() != null) {
+                    fieldName += ".raw";
+                }
+                aggregation = new TermsAggregation(attrName + aggSuffix, fieldName, null, "(empty)", maxSize);
+            }
         }
         if(isNested) {
             return new BucketAggregation() {
