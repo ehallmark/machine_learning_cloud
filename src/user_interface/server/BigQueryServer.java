@@ -1970,6 +1970,13 @@ public class BigQueryServer {
         return new Gson().toJson(new SimpleAjaxMessage(message));
     };
 
+    private static AbstractAttribute findAttribute(Collection<AbstractAttribute> couldBeNested, String attrName, int attrStartIndex) {
+        return couldBeNested.stream()
+                .flatMap(a->a instanceof NestedAttribute ? ((NestedAttribute)a).getAttributes().stream() : Stream.of(a))
+                .filter(c -> c.getFullName().substring(attrStartIndex).equals(attrName))
+                .limit(1).findFirst().orElse(null);
+    }
+
     private static Object handleReport(Request req, Response res) {
         /*try {
             ProcessBuilder ps = new ProcessBuilder("/bin/bash", "-c", "curl http://"+PLATFORM_STARTER_IP_ADDRESS+":8080/ping");
@@ -2011,7 +2018,7 @@ public class BigQueryServer {
                         for (int i = 0; i < chart.getAttrNames().size(); i++) {
                             String attrName = chart.getAttrNames().get(i);
                             int attrStartIdx = chart.getName().replace("[]","").length()+1;
-                            AbstractAttribute attribute = chart.getAttributes().stream().filter(c -> c.getFullName().substring(attrStartIdx).equals(attrName)).limit(1).findFirst().orElse(null);
+                            AbstractAttribute attribute = findAttribute(chart.getAttributes(),attrName,attrStartIdx);
                             if (attribute == null) {
                                 System.out.println("Possible chart attrs step1: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName().substring(attrStartIdx)).collect(Collectors.toList())));
                                 throw new RuntimeException("Warning: unable to find attribute for chart "+chart.getName()+": " + attrName);
@@ -2146,7 +2153,7 @@ public class BigQueryServer {
                             for (int i = 0; i < chart.getAttrNames().size(); i++) {
                                 String attrName = chart.getAttrNames().get(i);
                                 int attrStartIdx = chart.getName().replace("[]","").length()+1;
-                                AbstractAttribute attribute = chart.getAttributes().stream().filter(c -> c.getFullName().substring(attrStartIdx).equals(attrName)).limit(1).findFirst().orElse(null);
+                                AbstractAttribute attribute = findAttribute(chart.getAttributes(),attrName,attrStartIdx);
                                 if (attribute == null) {
                                     System.out.println("Possible chart attrs step2: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName().substring(attrStartIdx)).collect(Collectors.toList())));
                                     throw new RuntimeException("Warning: unable to find attribute for chart "+chart.getName()+": " + attrName);
