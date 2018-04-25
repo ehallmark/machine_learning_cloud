@@ -92,10 +92,9 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
 
     @Override
     public List<? extends TableResponse> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
-        String aggName = getAggName(attrName);
-        String bucketName = getBucketName(attrName);
-        String groupedBucketName = getBucketGroupName(attrName);
-
+        final String groupAggName = getGroupAggName(attrName);
+        final String statsAggName = getStatsAggName(attrName);
+        final String aggName = getAggName(attrName);
         Type collectorType = attrToCollectTypeMap.get(attrName);
         String collectByAttrName = attrToCollectByAttrMap.get(attrName);
 
@@ -118,7 +117,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         List<Pair<String,Double>> bucketData;
 
         Function<Aggregations,Double> subAggregationHandler = collectorType.equals(Type.Count)? null : subAggs -> {
-            Aggregation sub = subAggs.get(bucketName);
+            Aggregation sub = subAggs.get(statsAggName);
             Double val;
             switch (collectorType) {
                 case Max: {
