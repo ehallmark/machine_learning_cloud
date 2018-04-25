@@ -38,6 +38,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     protected Map<String,Integer> attrToLimitMap;
     public AggregatePieChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
         super(false,AGG_SUFFIX, attributes, groupByAttrs, Constants.PIE_CHART, false);
+        this.attrToLimitMap=Collections.synchronizedMap(new HashMap<>());
     }
 
     @Override
