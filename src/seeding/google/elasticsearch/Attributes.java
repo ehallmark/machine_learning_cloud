@@ -61,6 +61,7 @@ public class Attributes {
     public static final String FAMILY_SIZE = "family_size";
     public static final String SSO = "sso";
     public static final String STANDARD = "standard";
+    public static final String STANDARDS = "standards";
     public static final String WIPO_TECHNOLOGY = "wipo_technology";
     public static final String TECHNOLOGY = "technology";
     public static final String TECHNOLOGY2 = "technology2";
@@ -156,8 +157,7 @@ public class Attributes {
                 new LengthOfSmallestIndClaim(),
                 new MeansPresent(),
                 new FamilySize(),
-                new SSO(),
-                new Standard(),
+                new Standards(),
                 new WipoTechnology(),
                 new GttTechnology(),
                 new GttTechnology2(),

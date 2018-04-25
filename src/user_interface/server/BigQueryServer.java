@@ -38,6 +38,7 @@ import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
+import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.TableAttribute;
 import user_interface.ui_models.charts.aggregate_charts.*;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
@@ -3000,6 +3001,7 @@ public class BigQueryServer {
     }
 
     public static void main(String[] args) throws Exception {
+        AbstractScriptAttribute.setBigQuery(true);
         loadStuff();
         HelpPage.helpPage(false);
     }
