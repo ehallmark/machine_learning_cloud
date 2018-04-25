@@ -10,6 +10,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.google.elasticsearch.Attributes;
 import spark.Request;
+import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.RelatedAssetsAttribute;
@@ -151,7 +152,10 @@ public class SimilarityEngineController {
         System.out.println("Required attributes: "+String.join("; ",attributesRequired));
 
         SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
-        Collection<AbstractAttribute> topLevelAttributes = SimilarPatentServer.getAllTopLevelAttributes()
+        Collection<AbstractAttribute> topLevelAttributes = (
+                        isBigQuery ? BigQueryServer.getAllTopLevelAttributes() :
+                                SimilarPatentServer.getAllTopLevelAttributes()
+                )
                 .stream()
                 .filter(attr->{
                     if(attr instanceof NestedAttribute) {
