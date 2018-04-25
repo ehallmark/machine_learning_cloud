@@ -2166,7 +2166,7 @@ public class BigQueryServer {
                                 String id;
                                 RecursiveTask task;
                                 if(isTable) {
-                                    TableResponse tableResponse = (TableResponse)chart.create(attribute,aggregations);
+                                    TableResponse tableResponse = (TableResponse)chart.create(attribute,attrName,aggregations);
                                     id = "table-" + totalTableCnt.getAndIncrement();
                                     task = tableResponse.computeAttributesTask;
                                     req.session(false).attribute(id, tableResponse);
@@ -2175,7 +2175,7 @@ public class BigQueryServer {
                                     task = new RecursiveTask<List<? extends AbstractChart>>() {
                                         @Override
                                         protected List<? extends AbstractChart> compute() {
-                                            return (List<AbstractChart>) chart.create(attribute, aggregations);
+                                            return (List<AbstractChart>) chart.create(attribute,attrName,aggregations);
                                         }
                                     };
                                     chartTypes.add(chart.getType());

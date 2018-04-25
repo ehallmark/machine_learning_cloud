@@ -9,8 +9,11 @@ import j2html.tags.Tag;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.TermsLookup;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.filters.Filters;
+import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
@@ -19,6 +22,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
+import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.FiltersAggregation;
@@ -57,8 +61,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     }
 
     @Override
-    public List<? extends PieChart> create(AbstractAttribute attribute, Aggregations aggregations) {
-        String attrName = attribute.getFullName();
+    public List<? extends PieChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
         Integer limit = attrToLimitMap.get(attrName);
         String title = SimilarPatentServer.humanAttributeFor(attrName) + " Distribution";
         List<Series<?>> data = new ArrayList<>();
@@ -66,10 +69,11 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         series.setName(title);
 
         List<Pair<String,Long>> bucketData = new ArrayList<>();
-        if(aggregations.get(attrName+aggSuffix) instanceof Filters) {
+        Aggregation _agg = handlePotentiallyNestedAgg(aggregations,attrName);
+        if(_agg instanceof Filters) {
             List<String> dataSets = ((DatasetAttribute) attribute).getCurrentDatasets().stream()
                     .map(e->e.getFirst()).collect(Collectors.toList());
-            Filters agg = aggregations.get(attrName + aggSuffix);
+            Filters agg = (Filters)_agg;
             // For each entry
             int i = 0;
             for (Filters.Bucket entry : agg.getBuckets()) {
@@ -79,7 +83,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
                 i++;
             }
         } else {
-            Terms agg = aggregations.get(attrName + aggSuffix);
+            Terms agg = (Terms)_agg;
             for(Terms.Bucket entry : agg.getBuckets()) {
                 System.out.println("Entry: "+entry.getKeyAsString()+": "+entry.getDocCount());
                 String key = entry.getKeyAsString();
@@ -154,16 +158,33 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
 
     public static BucketAggregation buildDistributionAggregation(AbstractAttribute attribute, String attrName, String aggSuffix, int maxSize) {
         System.out.println("Building distribution agg for: "+attribute.getFullName()+" with suffix "+aggSuffix);
+        boolean isNested = attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute)&&!attribute.getParent().isObject();
+        BucketAggregation aggregation;
         if(attribute instanceof DatasetAttribute) {
             List<Pair<String,Set<String>>> dataSets = ((DatasetAttribute) attribute).getCurrentDatasets();
             QueryBuilder[] queryBuilders = dataSets.stream().map(dataset->{
                 return QueryBuilders.termsLookupQuery(attrName, new TermsLookup(((DatasetAttribute) attribute).getTermsIndex(),((DatasetAttribute) attribute).getTermsType(),dataset.getFirst(),((DatasetAttribute) attribute).getTermsPath()));
             }).toArray(size->new QueryBuilder[size]);
-            return new FiltersAggregation(attrName + aggSuffix,false,null,queryBuilders);
+            aggregation= new FiltersAggregation(attrName + aggSuffix,false,null,queryBuilders);
         } else if (attribute instanceof AbstractScriptAttribute) {
-            return new TermsAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), "(empty)",maxSize);
+            aggregation= new TermsAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), "(empty)",maxSize);
         } else {
-            return new TermsAggregation(attrName + aggSuffix, attrName, null, "(empty)",maxSize);
+            String fieldName = attrName;
+            if(attribute.getType().equals("text")&&attribute.getNestedFields().size()>0) {
+                fieldName+=".raw";
+            }
+            aggregation= new TermsAggregation(attrName + aggSuffix, fieldName, null, "(empty)",maxSize);
+        }
+        if(isNested) {
+            return new BucketAggregation() {
+                @Override
+                public AggregationBuilder getAggregation() {
+                    return new NestedAggregationBuilder(attrName+NESTED_SUFFIX+aggSuffix,attribute.getParent().getName())
+                            .subAggregation(aggregation.getAggregation());
+                }
+            };
+        } else {
+            return aggregation;
         }
     }
 

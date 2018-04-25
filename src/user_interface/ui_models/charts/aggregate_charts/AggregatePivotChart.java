@@ -26,8 +26,6 @@ import static j2html.TagCreator.*;
 
 public class AggregatePivotChart extends AggregationChart<TableResponse> {
     private static final String AGG_SUFFIX = "_pivot";
-    private static final String BUCKET_SUFFIX = "_b_";
-    private static final String GROUP_SUFFIX = "_g_";
     protected Map<String,String> attrToCollectByAttrMap;
     protected Map<String,Type> attrToCollectTypeMap;
     protected Collection<AbstractAttribute> collectByAttributes;
@@ -127,8 +125,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     }
 
     @Override
-    public List<? extends TableResponse> create(AbstractAttribute attribute, Aggregations aggregations) {
-        String attrName = attribute.getFullName();
+    public List<? extends TableResponse> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
         String aggName = getAggName(attrName);
         String bucketName = getBucketName(attrName);
         String groupedBucketName = getBucketGroupName(attrName);
@@ -138,7 +135,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
 
         List<String> dataSets = getCategoriesForAttribute(attribute);
 
-       String humanAttr = SimilarPatentServer.fullHumanAttributeFor(attrName);
+        String humanAttr = SimilarPatentServer.fullHumanAttributeFor(attrName);
         String humanSearchType = combineTypesToString(searchTypes);
         String yTitle = (collectByAttrName==null?humanSearchType:SimilarPatentServer.fullHumanAttributeFor(collectByAttrName)) + " "+ collectorType.toString() + " by "+ humanAttr;
 
@@ -156,7 +153,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         List<Map<String,Object>> bucketData;
 
         if(isGrouped) { // handle two dimensional case (pivot)
-            Aggregation bucketAgg = aggregations.get(groupedBucketName);
+            Aggregation bucketAgg = handlePotentiallyNestedAgg(aggregations,groupedBucketName);
             bucketData = (List<Map<String, Object>>) bucketAgg.getMetaData().get("buckets");
 
             AbstractAttribute groupByAttribute = groupByAttributes.stream().filter(attr -> attr.getFullName().equals(groupedByAttrName)).limit(1).findFirst().orElse(null);

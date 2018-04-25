@@ -71,7 +71,7 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
     }
 
     @Override
-    public List<? extends LineChart> create(AbstractAttribute attribute, Aggregations aggregations) {
+    public List<? extends LineChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
         String humanAttr = SimilarPatentServer.fullHumanAttributeFor(attribute.getFullName());
         String humanSearchType = combineTypesToString(searchTypes);
         String title = humanAttr + " Timeline";
@@ -79,7 +79,6 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
         String yAxisSuffix = "";
 
         String seriesName = singularize(humanSearchType) + " Count";
-        String attrName = attribute.getFullName();
         PointSeries series = new PointSeries();
         series.setName(seriesName);
 
@@ -87,8 +86,7 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
         series.setName(title);
         series.setShowInLegend(false);
 
-        // sr is here your SearchResponse object
-        Histogram agg = aggregations.get(attrName + aggSuffix);
+        Histogram agg = (Histogram) handlePotentiallyNestedAgg(aggregations,attrName);
         // For each entry
         for (Histogram.Bucket entry : agg.getBuckets()) {
             String keyAsString = entry.getKeyAsString(); // Key as String

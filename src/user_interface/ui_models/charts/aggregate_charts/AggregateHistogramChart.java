@@ -31,8 +31,7 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     }
 
     @Override
-    public List<? extends ColumnChart> create(AbstractAttribute attribute, Aggregations aggregations) {
-        String attrName = attribute.getFullName();
+    public List<? extends ColumnChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
         RangeAttribute rangeAttribute = (RangeAttribute)attribute;
         String humanAttr = SimilarPatentServer.humanAttributeFor(attribute.getFullName());
         String humanSearchType = combineTypesToString(searchTypes);
@@ -57,7 +56,7 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         series.setShowInLegend(false);
 
         // sr is here your SearchResponse object
-        Histogram agg = aggregations.get(attrName + aggSuffix);
+        Histogram agg = (Histogram) handlePotentiallyNestedAgg(aggregations,attrName);
         // For each entry
         for (Histogram.Bucket entry : agg.getBuckets()) {
             String keyAsString = entry.getKeyAsString(); // Key as String
