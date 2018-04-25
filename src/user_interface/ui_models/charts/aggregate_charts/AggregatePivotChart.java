@@ -39,20 +39,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         this.attrToCollectTypeMap=Collections.synchronizedMap(new HashMap<>());
     }
 
-    private String getGroupSuffix() {
-        return GROUP_SUFFIX+getAggSuffix();
-    }
-    private String getBucketSuffix() {
-        return BUCKET_SUFFIX+getAggSuffix();
-    }
 
-    private String getBucketGroupSuffix() {
-        return BUCKET_SUFFIX+GROUP_SUFFIX+getAggSuffix();
-    }
-
-    private String getAggSuffix() {
-        return aggSuffix;
-    }
 
     @Override
     public AggregatePivotChart dup() {
@@ -254,28 +241,31 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         return "pivot";
     }
 
-    private String getBucketName(String attrName) {
-        return attrName + getBucketSuffix();
+    private String getGroupSuffix() {
+        return GROUP_SUFFIX+aggSuffix;
     }
 
-    private String getBucketGroupName(String attrName) {
-        return attrName + getBucketGroupSuffix();
+    private String getStatsSuffix() {
+        return BUCKET_SUFFIX + aggSuffix;
     }
 
-    private String getGroupName(String attrName) {
+    private String getGroupAggName(String attrName) {
         return attrName + getGroupSuffix();
     }
 
+    private String getStatsAggName(String attrName) {
+        return attrName + getStatsSuffix();
+    }
+
     private String getAggName(String attrName) {
-        return attrName + getAggSuffix();
+        return attrName + aggSuffix;
     }
 
     @Override
     public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
         Type collectorType = attrToCollectTypeMap.get(attrName);
-        String bucketSuffix = getBucketSuffix();
-        BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName, bucketSuffix);
-        CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getAggName(attrName), collectorType);
+        BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName, aggSuffix);
+        CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getStatsAggName(attrName), collectorType);
 
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
