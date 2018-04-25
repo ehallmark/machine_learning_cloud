@@ -273,11 +273,10 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     }
 
     @Override
-    public List<AbstractAggregation> getAggregations(AbstractAttribute attribute) {
-        String attrName = attribute.getFullName();
+    public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
         Type collectorType = attrToCollectTypeMap.get(attrName);
         String bucketSuffix = getBucketSuffix();
-        BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(attribute, bucketSuffix);
+        BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(attribute, attrName, bucketSuffix);
         CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getAggName(attrName), collectorType);
 
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
@@ -288,7 +287,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
             }
             Integer groupLimit = attrNameToMaxGroupSizeMap.get(attrName);
             String groupBySuffix = getGroupSuffix();
-            BucketAggregation groupAgg = AggregatePieChart.buildDistributionAggregation(groupByAttribute,groupBySuffix,groupLimit);
+            BucketAggregation groupAgg = AggregatePieChart.buildDistributionAggregation(groupByAttribute,groupByAttribute.getFullName(),groupBySuffix,groupLimit);
             AbstractAggregation twoDimensionalAgg = new AbstractAggregation() {
                 @Override
                 public AggregationBuilder getAggregation() {

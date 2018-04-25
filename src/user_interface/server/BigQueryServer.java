@@ -2023,7 +2023,7 @@ public class BigQueryServer {
                                 System.out.println("Possible chart attrs step1: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName().substring(attrStartIdx)).collect(Collectors.toList())));
                                 throw new RuntimeException("Warning: unable to find attribute for chart "+chart.getName()+": " + attrName);
                             }
-                            List<AggregationBuilder> aggregations = chart.getAggregations(attribute).stream().map(a->a.getAggregation()).collect(Collectors.toList());
+                            List<AggregationBuilder> aggregations = chart.getAggregations(attribute,attrName).stream().map(a->a.getAggregation()).collect(Collectors.toList());
                             aggregations.forEach(agg->{
                                 System.out.println("Agg: "+agg.toString());
                             });

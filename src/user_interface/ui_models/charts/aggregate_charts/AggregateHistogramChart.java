@@ -3,7 +3,6 @@ package user_interface.ui_models.charts.aggregate_charts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import seeding.Constants;
@@ -15,7 +14,10 @@ import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.HistogramAggregation;
 import user_interface.ui_models.charts.highcharts.ColumnChart;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     private static final String AGG_SUFFIX = "_hist";
@@ -74,8 +76,7 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     }
 
     @Override
-    public List<AbstractAggregation> getAggregations(AbstractAttribute attribute) {
-        String attrName = attribute.getFullName();
+    public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
         RangeAttribute rangeAttribute = (RangeAttribute)attribute;
         if (attribute instanceof AbstractScriptAttribute) {
             return Collections.singletonList(

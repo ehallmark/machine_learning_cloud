@@ -5,7 +5,6 @@ import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
-import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import seeding.Constants;
@@ -14,7 +13,6 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
-import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.DateHistogramAggregation;
 import user_interface.ui_models.charts.highcharts.LineChart;
 
@@ -134,10 +132,9 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
     }
 
     @Override
-    public List<AbstractAggregation> getAggregations(AbstractAttribute attribute) {
-        String attrName = attribute.getFullName();
-        LocalDate xMin = attrToMinMap.get(attribute);
-        LocalDate xMax = attrToMaxMap.get(attribute);
+    public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
+        LocalDate xMin = attrToMinMap.get(attrName);
+        LocalDate xMax = attrToMaxMap.get(attrName);
         if (attribute instanceof AbstractScriptAttribute) {
             return Collections.singletonList(
                     new DateHistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), xMin,xMax, null)

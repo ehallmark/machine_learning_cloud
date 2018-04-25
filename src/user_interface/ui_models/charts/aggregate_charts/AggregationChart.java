@@ -23,9 +23,13 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         this.isTable=isTable;
     }
 
+    protected String removeChartNameFromAttrName(String attrName) {
+        return attrName.substring(getName().replace("[]","").length()+1);
+    }
+
     public abstract List<? extends T> create(AbstractAttribute attribute, Aggregations aggregations);
 
-    public abstract List<AbstractAggregation> getAggregations(AbstractAttribute attribute);
+    public abstract List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName);
 
     public abstract AggregationChart<T> dup();
 

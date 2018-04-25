@@ -109,9 +109,9 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     }
 
     @Override
-    public List<AbstractAggregation> getAggregations(AbstractAttribute attribute) {
+    public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
         return Collections.singletonList(
-                buildDistributionAggregation(attribute,aggSuffix)
+                buildDistributionAggregation(attribute,attrName,aggSuffix)
         );
     }
 
@@ -148,12 +148,12 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         return "pie";
     }
 
-    public static BucketAggregation buildDistributionAggregation(AbstractAttribute attribute, String aggSuffix) {
-        return buildDistributionAggregation(attribute,aggSuffix,MAXIMUM_AGGREGATION_SIZE);
+    public static BucketAggregation buildDistributionAggregation(AbstractAttribute attribute, String attrName, String aggSuffix) {
+        return buildDistributionAggregation(attribute,attrName,aggSuffix,MAXIMUM_AGGREGATION_SIZE);
     }
 
-    public static BucketAggregation buildDistributionAggregation(AbstractAttribute attribute, String aggSuffix, int maxSize) {
-        String attrName = attribute.getFullName();
+    public static BucketAggregation buildDistributionAggregation(AbstractAttribute attribute, String attrName, String aggSuffix, int maxSize) {
+        System.out.println("Building distribution agg for: "+attribute.getFullName()+" with suffix "+aggSuffix);
         if(attribute instanceof DatasetAttribute) {
             List<Pair<String,Set<String>>> dataSets = ((DatasetAttribute) attribute).getCurrentDatasets();
             QueryBuilder[] queryBuilders = dataSets.stream().map(dataset->{
