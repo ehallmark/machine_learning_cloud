@@ -5,12 +5,15 @@ import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.metrics.avg.Avg;
+import org.elasticsearch.search.aggregations.metrics.max.Max;
+import org.elasticsearch.search.aggregations.metrics.min.Min;
+import org.elasticsearch.search.aggregations.metrics.sum.Sum;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.RangeAttribute;
-import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
@@ -65,12 +68,11 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                     ),div().withClass("col-4").with(
                             label("Collecting Function"),br(),
                             select().withClass("single-select2").withName(getCollectTypeFieldName(attrName)).withId(getCollectTypeFieldName(attrName)).with(
-                                    option("Count").withValue(""),
+                                    option(Type.Count.toString()).withValue(Type.Count.toString()),
                                     option(Type.Sum.toString()).withValue(Type.Sum.toString()),
                                     option(Type.Average.toString()).withValue(Type.Average.toString()),
                                     option(Type.Max.toString()).withValue(Type.Max.toString()),
-                                    option(Type.Min.toString()).withValue(Type.Min.toString()),
-                                    option("Stats").withValue(Type.All.toString())
+                                    option(Type.Min.toString()).withValue(Type.Min.toString())
                             )
                     )
             );
@@ -102,28 +104,6 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         return this.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,DEFAULT_COMBINE_BY_FUNCTION,groupByPerAttribute);
     }
 
-    private static List<String> getCategoriesForAttribute(AbstractAttribute attribute) {
-        List<String> dataSets; // custom category names
-        if (attribute instanceof DatasetAttribute) {
-            dataSets = ((DatasetAttribute) attribute).getCurrentDatasets().stream()
-                    .map(e -> e.getFirst()).collect(Collectors.toList());
-        } else if (attribute instanceof RangeAttribute) {
-            dataSets = new ArrayList<>();
-            RangeAttribute rangeAttribute = (RangeAttribute)attribute;
-            // build categories
-            double min = rangeAttribute.min().doubleValue();
-            double max = rangeAttribute.max().doubleValue();
-            int nBins = rangeAttribute.nBins();
-            int step = (int) Math.round((max-min)/nBins);
-            for(int j = 0; j < max; j += step) {
-                dataSets.add(String.valueOf(j) + "-" + String.valueOf(j+step));
-            }
-        } else {
-            dataSets = null;
-        }
-        return dataSets;
-    }
-
     @Override
     public List<? extends TableResponse> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
         String aggName = getAggName(attrName);
@@ -133,7 +113,6 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         Type collectorType = attrToCollectTypeMap.get(attrName);
         String collectByAttrName = attrToCollectByAttrMap.get(attrName);
 
-        List<String> dataSets = getCategoriesForAttribute(attribute);
 
         String humanAttr = SimilarPatentServer.fullHumanAttributeFor(attrName);
         String humanSearchType = combineTypesToString(searchTypes);
@@ -150,12 +129,38 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         TableResponse response = new TableResponse();
         List<String> nonHumanAttrs = new ArrayList<>(0);
         List<String> groupByDatasets;
-        List<Map<String,Object>> bucketData;
+        List<Pair<String,Double>> bucketData;
+
+        Function<Aggregations,Double> subAggregationHandler = collectorType.equals(Type.Count)? null : subAggs -> {
+            Aggregation sub = subAggs.get(bucketName);
+            Double val;
+            switch (collectorType) {
+                case Max: {
+                    val= ((Max)sub).getValue();
+                    break;
+                }
+                case Min: {
+                    val= ((Min)sub).getValue();
+                    break;
+                }
+                case Sum: {
+                    val= ((Sum)sub).getValue();
+                    break;
+                }
+                case Average: {
+                    val= ((Avg)sub).getValue();
+                    break;
+                }
+                default: {
+                    val = null;
+                    break;
+                }
+            }
+            return val;
+        };
 
         if(isGrouped) { // handle two dimensional case (pivot)
-            Aggregation bucketAgg = handlePotentiallyNestedAgg(aggregations,groupedBucketName);
-            bucketData = (List<Map<String, Object>>) bucketAgg.getMetaData().get("buckets");
-
+            bucketData = extractValuesFromAggregation(aggregations,attribute,attrName,null);
             AbstractAttribute groupByAttribute = groupByAttributes.stream().filter(attr -> attr.getFullName().equals(groupedByAttrName)).limit(1).findFirst().orElse(null);
             if (groupByAttribute == null) {
                 throw new RuntimeException("Unable to find collecting attribute: " + groupByAttribute.getFullName());
@@ -164,18 +169,16 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
             yTitle += " grouped by "+SimilarPatentServer.fullHumanAttributeFor(groupedByAttrName);
             for(int i = 0; i < bucketData.size(); i++) {
                 // get groups
-                Map<String,Object> bucket = bucketData.get(i);
-                String key = bucket.getOrDefault("key_as_string", bucket.get("key")).toString();
-                headers.add(key);
-                numericAttrNames.add(key);
-                nonHumanAttrs.add(key);
+                Pair<String,Double> bucket = bucketData.get(i);
+                headers.add(bucket.getFirst());
+                numericAttrNames.add(bucket.getFirst());
+                nonHumanAttrs.add(bucket.getFirst());
             }
         } else {
             String firstHeader = collectorType.toString();
             headers.add(firstHeader);
             numericAttrNames.add(firstHeader);
-            Aggregation bucketAgg = aggregations.get(bucketName);
-            bucketData = (List<Map<String, Object>>) bucketAgg.getMetaData().get("buckets");
+            bucketData = extractValuesFromAggregation(aggregations,attribute,attrName,subAggregationHandler);
             groupByDatasets = null;
         }
 
@@ -188,7 +191,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         System.out.println("Numeric Attrs: "+response.numericAttrNames.toString());
 
         if(isGrouped) {
-            response.computeAttributesTask = new RecursiveTask<List<Map<String, String>>>() {
+            /*response.computeAttributesTask = new RecursiveTask<List<Map<String, String>>>() {
                 @Override
                 protected List<Map<String, String>> compute() {
                     List<Map<String, String>> data = new ArrayList<>();
@@ -196,8 +199,8 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                     List<String> allGroups = new ArrayList<>();
                     Set<String> allEntries = new HashSet<>();
                     for (int i = 0; i < bucketData.size(); i++) {
-                        Map<String, Object> bucket = bucketData.get(i);
-                        Object group = groupByDatasets == null ? bucket.getOrDefault("key_as_string", bucket.get("key")) : groupByDatasets.get(i);
+                        Pair<String,Double> bucket = bucketData.get(i);
+                        Object group = groupByDatasets == null ? bucket.getFirst() : groupByDatasets.get(i);
                         if (group == null || group.toString().isEmpty()) group = "(empty)";
                         List<Map<String,Object>> nestedBucketData = (List<Map<String,Object>>) ((Map)bucket.get(bucketName)).get("buckets");
                         Map<String,Double> pairsByGroup = new HashMap<>();
@@ -223,20 +226,19 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                     });
                     return data;
                 }
-            };
+            };*/
         } else {
             response.computeAttributesTask = new RecursiveTask<List<Map<String, String>>>() {
                 @Override
                 protected List<Map<String, String>> compute() {
                     List<Map<String, String>> data = new ArrayList<>();
                     for (int i = 0; i < bucketData.size(); i++) {
-                        Map<String, Object> bucket = bucketData.get(i);
-                        Object label = dataSets == null ? bucket.getOrDefault("key_as_string", bucket.get("key")) : dataSets.get(i);
-                        if (label == null || label.toString().isEmpty()) label = "(empty)";
-                        Double val = (Double) ((Map<String, Object>) bucket.get(aggName)).get("value");
+                        Pair<String,Double> bucket = bucketData.get(i);
+                        String label = bucket.getFirst();
+                        if (label == null || label.isEmpty()) label = "(empty)";
                         Map<String, String> entry = new HashMap<>();
-                        entry.put(collectorType.toString(), val.toString());
-                        entry.put(attrName, label.toString());
+                        entry.put(collectorType.toString(), bucket.getSecond().toString());
+                        entry.put(attrName, label);
                         data.add(entry);
                     }
                     return data;

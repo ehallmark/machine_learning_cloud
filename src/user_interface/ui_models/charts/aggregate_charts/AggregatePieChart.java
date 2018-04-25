@@ -85,7 +85,6 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         } else {
             Terms agg = (Terms)_agg;
             for(Terms.Bucket entry : agg.getBuckets()) {
-                System.out.println("Entry: "+entry.getKeyAsString()+": "+entry.getDocCount());
                 String key = entry.getKeyAsString();
                 long docCount = entry.getDocCount();
                 bucketData.add(new Pair<>(key,docCount));

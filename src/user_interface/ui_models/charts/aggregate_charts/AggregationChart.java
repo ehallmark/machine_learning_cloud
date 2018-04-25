@@ -3,13 +3,22 @@ package user_interface.ui_models.charts.aggregate_charts;
 import lombok.Getter;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.filters.Filters;
+import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.nd4j.linalg.primitives.Pair;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.RangeAttribute;
+import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /*
  * Created by Evan on 6/17/2017.
@@ -49,6 +58,74 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             return handlePotentiallyNestedAgg(nested.getAggregations(),attrName);
         }
         return agg;
+    }
+
+    protected static List<String> getCategoriesForAttribute(AbstractAttribute attribute) {
+        List<String> dataSets; // custom category names
+        if (attribute instanceof DatasetAttribute) {
+            dataSets = ((DatasetAttribute) attribute).getCurrentDatasets().stream()
+                    .map(e -> e.getFirst()).collect(Collectors.toList());
+        } else if (attribute instanceof RangeAttribute) {
+            dataSets = new ArrayList<>();
+            RangeAttribute rangeAttribute = (RangeAttribute)attribute;
+            // build categories
+            double min = rangeAttribute.min().doubleValue();
+            double max = rangeAttribute.max().doubleValue();
+            int nBins = rangeAttribute.nBins();
+            int step = (int) Math.round((max-min)/nBins);
+            for(int j = 0; j < max; j += step) {
+                dataSets.add(String.valueOf(j) + "-" + String.valueOf(j+step));
+            }
+        } else {
+            dataSets = null;
+        }
+        return dataSets;
+    }
+
+    protected List<Pair<String,Double>> extractValuesFromAggregation(Aggregations aggregations, AbstractAttribute attribute, String attrName, Function<Aggregations,Double> subAggregationHandler) {
+        Aggregation _agg = handlePotentiallyNestedAgg(aggregations,attrName);
+        List<String> categories = getCategoriesForAttribute(attribute);
+        List<Pair<String,Double>> bucketData = new ArrayList<>();
+        if(_agg instanceof Filters) {
+            Filters agg = (Filters)_agg;
+            // For each entry
+            int i = 0;
+            for (Filters.Bucket entry : agg.getBuckets()) {
+                String key = categories.get(i);          // bucket key
+                long docCount = entry.getDocCount();            // Doc count
+                if(subAggregationHandler==null) {
+                    bucketData.add(new Pair<>(key, (double) docCount));
+                } else {
+                    bucketData.add(new Pair<>(key,subAggregationHandler.apply(entry.getAggregations())));
+                }
+                i++;
+            }
+        } else if (_agg instanceof Histogram) {
+            Histogram agg = (Histogram)_agg;
+            int i = 0;
+            for(Histogram.Bucket entry : agg.getBuckets()) {
+                String key = categories==null?entry.getKeyAsString():categories.get(i);          // bucket key
+                long docCount = entry.getDocCount();            // Doc count
+                if(subAggregationHandler==null) {
+                    bucketData.add(new Pair<>(key, (double) docCount));
+                } else {
+                    bucketData.add(new Pair<>(key,subAggregationHandler.apply(entry.getAggregations())));
+                }
+                i++;
+            }
+        } else {
+            Terms agg = (Terms)_agg;
+            for(Terms.Bucket entry : agg.getBuckets()) {
+                String key = entry.getKeyAsString();
+                long docCount = entry.getDocCount();
+                if(subAggregationHandler==null) {
+                    bucketData.add(new Pair<>(key, (double) docCount));
+                } else {
+                    bucketData.add(new Pair<>(key,subAggregationHandler.apply(entry.getAggregations())));
+                }
+            }
+        }
+        return bucketData;
     }
 
 }

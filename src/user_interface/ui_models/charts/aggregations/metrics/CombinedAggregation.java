@@ -17,10 +17,6 @@ public class CombinedAggregation implements AbstractAggregation {
             aggregation = base.getAggregation();
         } else {
             switch (mode) {
-                case All: {
-                    aggregation = AggregationBuilders.stats(name);
-                    break;
-                }
                 case Max: {
                     aggregation = AggregationBuilders.max(name);
                     break;

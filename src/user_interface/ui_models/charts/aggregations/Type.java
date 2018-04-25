@@ -5,5 +5,5 @@ public enum Type {
     Min,
     Average,
     Sum,
-    All
+    Count
 }
