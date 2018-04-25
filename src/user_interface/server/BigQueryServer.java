@@ -2023,7 +2023,11 @@ public class BigQueryServer {
                                 System.out.println("Possible chart attrs step1: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName().substring(attrStartIdx)).collect(Collectors.toList())));
                                 throw new RuntimeException("Warning: unable to find attribute for chart "+chart.getName()+": " + attrName);
                             }
-                            builders.addAll(chart.getAggregations(attribute).stream().map(a->a.getAggregation()).collect(Collectors.toList()));
+                            List<AggregationBuilder> aggregations = chart.getAggregations(attribute).stream().map(a->a.getAggregation()).collect(Collectors.toList());
+                            aggregations.forEach(agg->{
+                                System.out.println("Agg: "+agg.toString());
+                            });
+                            builders.addAll(aggregations);
                         }
                         return builders.stream();
                     }).collect(Collectors.toList());
@@ -2039,6 +2043,7 @@ public class BigQueryServer {
                     engine.extractRelevantInformationFromParams(req);
                     final PortfolioList portfolioList = engine.getPortfolioList();
                     final Aggregations aggregations = engine.getAggregations();
+                    System.out.println("Found aggregations: "+aggregations.asList().size());
                     final long totalCount = engine.getTotalCount();
 
                     if(Thread.currentThread().isInterrupted()) return null;

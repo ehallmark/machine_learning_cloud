@@ -9,7 +9,6 @@ import j2html.tags.Tag;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.TermsLookup;
-import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.filters.Filters;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -82,6 +81,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         } else {
             Terms agg = aggregations.get(attrName + aggSuffix);
             for(Terms.Bucket entry : agg.getBuckets()) {
+                System.out.println("Entry: "+entry.getKeyAsString()+": "+entry.getDocCount());
                 String key = entry.getKeyAsString();
                 long docCount = entry.getDocCount();
                 bucketData.add(new Pair<>(key,docCount));
