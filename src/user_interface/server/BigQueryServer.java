@@ -2824,7 +2824,7 @@ public class BigQueryServer {
     }
 
     public static List<String> allSortableAttributes() {
-        return Stream.of(Stream.of(Constants.SCORE, Constants.SIMILARITY_FAST, Constants.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
+        return Stream.of(Stream.of(Constants.SCORE, Attributes.CPC_VAE, Attributes.RNN_ENC, Attributes.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Attributes.LATEST_PORTFOLIO_SIZE, Attributes.LATEST_FAM_PORTFOLIO_SIZE, Attributes.REMAINING_LIFE),
                 getAllTopLevelAttributes().stream()
                         .flatMap(attr->{
                             if(attr instanceof NestedAttribute) {
