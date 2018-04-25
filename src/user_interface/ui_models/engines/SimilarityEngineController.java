@@ -59,8 +59,9 @@ public class SimilarityEngineController {
     private void setPrefilters(Request req) {
         List<String> preFilterModels = SimilarPatentServer.extractArray(req, SimilarPatentServer.PRE_FILTER_ARRAY_FIELD);
 
+        Map<String,AbstractFilter> filterModelMap = isBigQuery ? BigQueryServer.preFilterModelMap : SimilarPatentServer.preFilterModelMap;
         preFilters = new ArrayList<>(preFilterModels.stream().map(modelName -> {
-            AbstractFilter filter = SimilarPatentServer.preFilterModelMap.get(modelName);
+            AbstractFilter filter = filterModelMap.get(modelName);
             if(filter==null) {
                 System.out.println("Unable to find model: "+modelName);
                 return null;
