@@ -1513,6 +1513,7 @@ public class BigQueryServer {
             }
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
             return new Gson().toJson(new SimpleAjaxMessage("ERROR "+e.getClass().getName()+": " + e.getMessage()));
         }
     }
