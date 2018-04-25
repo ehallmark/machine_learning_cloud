@@ -7,7 +7,6 @@ import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.ClearScrollResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Response;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.common.text.Text;
@@ -38,8 +37,8 @@ import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.attributes.script_attributes.DefaultValueScriptAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.filters.AbstractSimilarityGreaterThanFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
+import user_interface.ui_models.filters.AbstractSimilarityGreaterThanFilter;
 import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
 
@@ -464,7 +463,7 @@ public class DataSearcher {
             if(!alreadyFound.contains(k)) {
                 if (val != null) {
                     // check for date field
-                    if (k.endsWith("Date") && val instanceof Number) {
+                    if ((k.endsWith("Date")||k.equals("date")||k.endsWith("_date")) && val instanceof Number) {
                         long longValue = ((Number) val).longValue();
                         val = Instant.ofEpochMilli(longValue).atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ISO_DATE);
                     }

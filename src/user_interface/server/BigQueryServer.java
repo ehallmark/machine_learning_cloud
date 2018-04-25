@@ -450,7 +450,7 @@ public class BigQueryServer {
         List<AbstractAttribute> attributes = new ArrayList<>();
         getAttributesHelper(allAttributes,attributes);
 
-        List<AbstractAttribute> discreteAttrs = attributes.stream().filter(attr->attr.getType().equals("keyword")||attr.getType().equals("text")||attr.getType().equals("integer")).collect(Collectors.toList());
+        List<AbstractAttribute> discreteAttrs = attributes.stream().filter(attr->attr.getType().equals("keyword")||(attr.getType().equals("text")&&attr.getNestedFields()!=null)||attr.getType().equals("integer")).collect(Collectors.toList());
         List<AbstractAttribute> dateAttrs = attributes.stream().filter(attr->attr.getType().equals("date")).collect(Collectors.toList());
         List<AbstractAttribute> rangeAttrs = attributes.stream().filter(attr->attr instanceof RangeAttribute).collect(Collectors.toList());
         List<AbstractAttribute> numericAttrs = attributes.stream().filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Double)||attr.getFieldType().equals(AbstractFilter.FieldType.Integer)).collect(Collectors.toList());
@@ -2023,6 +2023,9 @@ public class BigQueryServer {
                                 System.out.println("Possible chart attrs step1: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName().substring(attrStartIdx)).collect(Collectors.toList())));
                                 throw new RuntimeException("Warning: unable to find attribute for chart "+chart.getName()+": " + attrName);
                             }
+                            if(attribute instanceof NestedAttribute) {
+                                continue;
+                            }
                             List<AggregationBuilder> aggregations = chart.getAggregations(attribute,attrName).stream().map(a->a.getAggregation()).collect(Collectors.toList());
                             aggregations.forEach(agg->{
                                 System.out.println("Agg: "+agg.toString());
@@ -2162,6 +2165,9 @@ public class BigQueryServer {
                                 if (attribute == null) {
                                     System.out.println("Possible chart attrs step2: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName().substring(attrStartIdx)).collect(Collectors.toList())));
                                     throw new RuntimeException("Warning: unable to find attribute for chart "+chart.getName()+": " + attrName);
+                                }
+                                if(attribute instanceof NestedAttribute) {
+                                    continue;
                                 }
                                 String id;
                                 RecursiveTask task;

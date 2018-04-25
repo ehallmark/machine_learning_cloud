@@ -169,7 +169,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             aggregation= new TermsAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), "(empty)",maxSize);
         } else {
             String fieldName = attrName;
-            if(attribute.getType().equals("text")&&attribute.getNestedFields().size()>0) {
+            if(attribute.getType().equals("text")&&attribute.getNestedFields()!=null) {
                 fieldName+=".raw";
             }
             aggregation= new TermsAggregation(attrName + aggSuffix, fieldName, null, "(empty)",maxSize);
