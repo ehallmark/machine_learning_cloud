@@ -22,23 +22,28 @@ public class CombinedAggregation implements AbstractAggregation {
             final boolean isNested = collectByAttr!=null&&collectByAttr.getParent()!=null&&!(collectByAttr instanceof AbstractChartAttribute)&&!collectByAttr.getParent().isObject();
             switch (mode) {
                 case Max: {
-                    aggregation = AggregationBuilders.max(name);
+                    aggregation = AggregationBuilders.max(name)
+                            .field(collectByAttr.getFullName());
                     break;
                 }
                 case Min: {
-                    aggregation = AggregationBuilders.min(name);
+                    aggregation = AggregationBuilders.min(name)
+                            .field(collectByAttr.getFullName());
                     break;
                 }
                 case Sum: {
-                    aggregation = AggregationBuilders.sum(name);
+                    aggregation = AggregationBuilders.sum(name)
+                            .field(collectByAttr.getFullName());
                     break;
                 }
                 case Average: {
-                    aggregation = AggregationBuilders.avg(name);
+                    aggregation = AggregationBuilders.avg(name)
+                            .field(collectByAttr.getFullName());
                     break;
                 }
                 case Count: {
-                    aggregation = AggregationBuilders.cardinality(name);
+                    aggregation = AggregationBuilders.cardinality(name)
+                        .field(collectByAttr.getFullName());
                     break;
                 }
             }

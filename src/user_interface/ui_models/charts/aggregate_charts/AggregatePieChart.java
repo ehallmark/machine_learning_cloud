@@ -158,6 +158,13 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggSuffix, int maxSize) {
         System.out.println("Building distribution agg for: "+attribute.getFullName()+" with suffix "+aggSuffix);
         boolean isNested = attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute)&&!attribute.getParent().isObject();
+        final Object missingVal;
+        if(attribute.getType().equals("text")||attribute.getType().equals("keyword")) {
+            missingVal = "(empty)";
+        } else {
+            missingVal = null;
+        }
+
         BucketAggregation aggregation;
         if(chart instanceof AggregateLineChart) {
             LocalDate xMin = ((AggregateLineChart) chart).getMin(attrName);
@@ -182,13 +189,13 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             }
         } else {
             if (attribute instanceof AbstractScriptAttribute) {
-                aggregation = new TermsAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), "(empty)", maxSize);
+                aggregation = new TermsAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), missingVal, maxSize);
             } else {
                 String fieldName = attrName;
                 if (attribute.getType().equals("text") && attribute.getNestedFields() != null) {
                     fieldName += ".raw";
                 }
-                aggregation = new TermsAggregation(attrName + aggSuffix, fieldName, null, "(empty)", maxSize);
+                aggregation = new TermsAggregation(attrName + aggSuffix, fieldName, null, missingVal, maxSize);
             }
         }
         if(isNested) {
