@@ -6,6 +6,7 @@ import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
+import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.min.Min;
 import org.elasticsearch.search.aggregations.metrics.sum.Sum;
@@ -116,7 +117,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         List<String> groupByDatasets;
         List<Pair<String,Double>> bucketData;
 
-        Function<Aggregations,Double> subAggregationHandler = collectorType.equals(Type.Count)? null : subAggs -> {
+        Function<Aggregations,Double> subAggregationHandler = collectByAttrName == null ? null : subAggs -> {
             Aggregation sub = subAggs.get(statsAggName);
             Double val;
             switch (collectorType) {
@@ -134,6 +135,10 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                 }
                 case Average: {
                     val= ((Avg)sub).getValue();
+                    break;
+                }
+                case Count: {
+                    val=(double) ((Cardinality)sub).getValue();
                     break;
                 }
                 default: {

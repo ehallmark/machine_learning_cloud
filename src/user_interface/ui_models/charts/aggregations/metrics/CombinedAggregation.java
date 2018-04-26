@@ -38,7 +38,7 @@ public class CombinedAggregation implements AbstractAggregation {
                     break;
                 }
                 case Count: {
-                    aggregation = base.getAggregation();
+                    aggregation = AggregationBuilders.cardinality(name);
                     break;
                 }
             }
@@ -46,11 +46,9 @@ public class CombinedAggregation implements AbstractAggregation {
                 aggregation = AggregationBuilders.nested(name+ AggregationChart.NESTED_SUFFIX, collectByAttr.getParent().getName())
                         .subAggregation(aggregation);
             }
-            if(!mode.equals(Type.Count)) {
-                aggregation = base.getAggregation().subAggregation(
-                        aggregation
-                );
-            }
+            aggregation = base.getAggregation().subAggregation(
+                    aggregation
+            );
         }
     }
 
