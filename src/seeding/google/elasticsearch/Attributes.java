@@ -99,6 +99,8 @@ public class Attributes {
     public static final String RCITE_PUBLICATION_NUMBER_FULL = "rcite_publication_number_full";
     public static final String RCITE_APPLICATION_NUMBER_FULL = "rcite_application_number_full";
     public static final String RCITE_FAMILY_ID = "rcite_family_id";
+    public static final String RCITE_TYPE = "rcite_type";
+    public static final String RCITE_CATEGORY = "rcite_category";
     public static final String RCITE_FILING_DATE = "rcite_filing_date";
     public static final String TERM_ADJUSTMENTS = "term_adjustments";
     public static final String COMPDB = "compdb";

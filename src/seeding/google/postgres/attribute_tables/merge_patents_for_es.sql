@@ -95,6 +95,8 @@ create table patents_global_merged (
     rcite_application_number_full varchar(32)[],
     rcite_family_id varchar(32)[],
     rcite_filing_date date[],
+    rcite_type varchar(32)[],
+    rcite_category varchar(32)[],
     -- pair (incorporate 'abandoned' field into 'lapsed')
     term_adjustments integer,
     compdb_deal_id varchar(32)[],
@@ -210,6 +212,8 @@ insert into patents_global_merged (
         rcite_application_number_full,
         rcite_family_id,
         rcite_filing_date,
+        rcite_type,
+        rcite_category,
         -- pair (incorporate 'abandoned' field into 'lapsed')
         term_adjustments,
         -- compdb
@@ -326,6 +330,8 @@ insert into patents_global_merged (
         rc.rcite_application_number_full,
         rc.rcite_family_id,
         rc.rcite_filing_date,
+        rc.rcite_type,
+        rc.rcite_category,
         -- pair
         pair.term_adjustments,
         -- compdb

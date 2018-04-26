@@ -7,19 +7,23 @@ create table big_query_reverse_citations (
     rcite_application_number_full varchar(32)[] not null,
     rcite_family_id varchar(32)[] not null,
     rcite_filing_date date[] not null,
+    rcite_type varchar(32)[] not null,
+    rcite_category varchar(32)[] not null,
     primary key (doc_number_full,is_filing)
 );
 
 
-insert into big_query_reverse_citations (doc_number_full,is_filing,rcite_publication_number_full,rcite_application_number_full,rcite_family_id,rcite_filing_date) (
+insert into big_query_reverse_citations (doc_number_full,is_filing,rcite_publication_number_full,rcite_application_number_full,rcite_family_id,rcite_filing_date,rcite_type,rcite_category) (
     select
         coalesce(temp.cited_publication_number_full,temp.cited_application_number_full),
         temp.cited_publication_number_full is null,
         (array_agg(publication_number_full))[1:10000], -- limit rcites
         (array_agg(application_number_full))[1:10000], -- limit rcites
         (array_agg(family_id))[1:10000], -- limit rcites
-        (array_agg(filing_date))[1:10000] -- limit rcites
-    from patents_global as t, unnest(t.cited_publication_number_full,t.cited_application_number_full) with ordinality as temp(cited_publication_number_full,cited_application_number_full,n)
+        (array_agg(filing_date))[1:10000], -- limit rcites
+        (array_agg(temp.cited_type))[1:10000],
+        (array_agg(temp.cited_category))[1:10000]
+    from patents_global as t, unnest(t.cited_publication_number_full,t.cited_application_number_full,t.cited_type,t.cited_category) with ordinality as temp(cited_publication_number_full,cited_application_number_full,cited_type,cited_category,n)
     where (temp.cited_application_number_full is not null OR temp.cited_publication_number_full is not null)
     group by (coalesce(temp.cited_publication_number_full,temp.cited_application_number_full),temp.cited_publication_number_full is null)
 );
@@ -30,7 +34,9 @@ create table big_query_reverse_citations_by_pub (
     rcite_publication_number_full varchar(32)[] not null,
     rcite_application_number_full varchar(32)[] not null,
     rcite_family_id varchar(32)[] not null,
-    rcite_filing_date date[] not null
+    rcite_filing_date date[] not null,
+    rcite_type varchar(32)[] not null,
+    rcite_category varchar(32)[] not null
 );
 
 
@@ -38,7 +44,6 @@ insert into big_query_reverse_citations_by_pub (publication_number_full,rcite_pu
     select publication_number_full,c.rcite_publication_number_full,c.rcite_application_number_full,c.rcite_family_id,c.rcite_filing_date
     from big_query_reverse_citations as c
     inner join patents_global as p on ((p.publication_number_full=c.doc_number_full and not c.is_filing) OR (p.application_number_full=c.doc_number_full and c.is_filing))
-    where family_id!='-1'
 );
 
 
