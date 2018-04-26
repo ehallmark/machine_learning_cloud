@@ -24,10 +24,10 @@ import java.util.stream.Collectors;
  * Created by Evan on 6/17/2017.
  */
 public abstract class AggregationChart<T> extends AbstractChartAttribute {
-    protected static final int MAXIMUM_AGGREGATION_SIZE = 1000;
-    protected static final String NESTED_SUFFIX = "_n_";
-    protected static final String BUCKET_SUFFIX = "_b_";
-    protected static final String GROUP_SUFFIX = "_g_";
+    public static final int MAXIMUM_AGGREGATION_SIZE = 1000;
+    public static final String NESTED_SUFFIX = "_n_";
+    public static final String BUCKET_SUFFIX = "_b_";
+    public static final String GROUP_SUFFIX = "_g_";
     protected final String aggSuffix;
     @Getter
     protected final boolean isTable;
@@ -126,6 +126,10 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             }
         }
         return bucketData;
+    }
+
+    public static AbstractAttribute findAttribute(Collection<AbstractAttribute> nonNestedAttributes, String attrName) {
+        return nonNestedAttributes.stream().filter(attr->attr.getFullName().equals(attrName)).limit(1).findFirst().orElse(null);
     }
 
 }

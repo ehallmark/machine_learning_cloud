@@ -53,6 +53,7 @@ public class PredictTechTags {
                     "FILM PRODUCTION",
                     "MOVIE PROJECTOR",
                     "NANOPHOTONIC RESONATOR",
+                    "EMERGING TECHNOLOGIES",
                     //"COLOR",
                     //"HYDROGEN",
                     //"FULL BODY SCANNER",
@@ -71,6 +72,7 @@ public class PredictTechTags {
                     "BMW",
                     "AMATEUR RADIO RECEIVERS",
                     "WATER MANAGEMENT",
+                    "INTERNET TERMINOLOGY",
                     "LIMELIGHT"
             )
     );
