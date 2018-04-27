@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregate_charts.AggregationChart;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
@@ -22,36 +23,67 @@ public class CombinedAggregation implements AbstractAggregation {
             }
             aggregation = base.getAggregation();
         } else {
+            boolean isScript = collectByAttr instanceof AbstractScriptAttribute;
             final boolean isNested = collectByAttr!=null&&collectByAttr.getParent()!=null&&!(collectByAttr instanceof AbstractChartAttribute)&&!collectByAttr.getParent().isObject();
             switch (mode) {
                 case Max: {
-                    aggregation = AggregationBuilders.max(name)
-                            .field(collectByAttr.getFullName());
+                    if(isScript) {
+                        aggregation = AggregationBuilders.max(name)
+                                .script(((AbstractScriptAttribute)collectByAttr).getSortScript());
+                    } else {
+                        aggregation = AggregationBuilders.max(name)
+                                .field(collectByAttr.getFullName());
+                    }
                     break;
                 }
                 case Min: {
-                    aggregation = AggregationBuilders.min(name)
-                            .field(collectByAttr.getFullName());
+                    if(isScript) {
+                        aggregation = AggregationBuilders.min(name)
+                                .script(((AbstractScriptAttribute)collectByAttr).getSortScript());
+                    } else {
+                        aggregation = AggregationBuilders.min(name)
+                                .field(collectByAttr.getFullName());
+                    }
                     break;
                 }
                 case Sum: {
-                    aggregation = AggregationBuilders.sum(name)
-                            .field(collectByAttr.getFullName());
+                    if(isScript) {
+                        aggregation = AggregationBuilders.sum(name)
+                                .script(((AbstractScriptAttribute)collectByAttr).getSortScript());
+                    } else {
+                        aggregation = AggregationBuilders.sum(name)
+                                .field(collectByAttr.getFullName());
+                    }
                     break;
                 }
                 case Average: {
-                    aggregation = AggregationBuilders.avg(name)
-                            .field(collectByAttr.getFullName());
+                    if(isScript) {
+                        aggregation = AggregationBuilders.avg(name)
+                                .script(((AbstractScriptAttribute)collectByAttr).getSortScript());
+                    } else {
+                        aggregation = AggregationBuilders.avg(name)
+                                .field(collectByAttr.getFullName());
+                    }
                     break;
                 }
                 case Count: {
-                    aggregation = AggregationBuilders.count(name)
-                        .field(collectByAttr.getFullName());
+                    if(isScript) {
+                        aggregation = AggregationBuilders.count(name)
+                                .script(((AbstractScriptAttribute)collectByAttr).getSortScript());
+                    } else {
+                        aggregation = AggregationBuilders.count(name)
+                                .field(collectByAttr.getFullName());
+                    }
                     break;
                 }
                 case Cardinality: {
-                    aggregation = AggregationBuilders.cardinality(name)
-                            .field(collectByAttr.getFullName());
+                    if(isScript) {
+                        aggregation = AggregationBuilders.cardinality(name)
+                                .script(((AbstractScriptAttribute)collectByAttr).getSortScript());
+                    } else {
+                        aggregation = AggregationBuilders.cardinality(name)
+                                .field(collectByAttr.getFullName());
+                    }
                 }
             }
             if(isNested) {
