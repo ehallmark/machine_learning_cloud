@@ -9,6 +9,7 @@ import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.min.Min;
+import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
@@ -137,8 +138,12 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                     val= ((Avg)sub).getValue();
                     break;
                 }
-                case Count: {
+                case Cardinality: {
                     val=(double) ((Cardinality)sub).getValue();
+                    break;
+                }
+                case Count: {
+                    val=(double) ((ValueCount)sub).getValue();
                     break;
                 }
                 default: {

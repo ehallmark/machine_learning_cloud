@@ -5,5 +5,6 @@ public enum Type {
     Min,
     Average,
     Sum,
-    Count
+    Count,
+    Cardinality
 }

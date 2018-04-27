@@ -15,8 +15,11 @@ public class CombinedAggregation implements AbstractAggregation {
     protected AggregationBuilder aggregation;
 
     public CombinedAggregation(BucketAggregation base, String name, AbstractAttribute collectByAttr, Type mode) {
-        if(mode==null) {
+        if(collectByAttr==null) {
             // default to count
+            if(mode!=null&&!mode.equals(Type.Count)) {
+                throw new RuntimeException("Please choose a collect by attribute or collect by count.");
+            }
             aggregation = base.getAggregation();
         } else {
             final boolean isNested = collectByAttr!=null&&collectByAttr.getParent()!=null&&!(collectByAttr instanceof AbstractChartAttribute)&&!collectByAttr.getParent().isObject();
@@ -42,9 +45,13 @@ public class CombinedAggregation implements AbstractAggregation {
                     break;
                 }
                 case Count: {
-                    aggregation = AggregationBuilders.cardinality(name)
+                    aggregation = AggregationBuilders.count(name)
                         .field(collectByAttr.getFullName());
                     break;
+                }
+                case Cardinality: {
+                    aggregation = AggregationBuilders.cardinality(name)
+                            .field(collectByAttr.getFullName());
                 }
             }
             if(isNested) {
