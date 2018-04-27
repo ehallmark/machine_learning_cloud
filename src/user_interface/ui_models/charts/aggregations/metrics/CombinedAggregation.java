@@ -24,7 +24,7 @@ public class CombinedAggregation implements AbstractAggregation {
             aggregation = base.getAggregation();
         } else {
             boolean isScript = collectByAttr instanceof AbstractScriptAttribute;
-            final boolean isNested = collectByAttr!=null&&collectByAttr.getParent()!=null&&!(collectByAttr instanceof AbstractChartAttribute)&&!collectByAttr.getParent().isObject();
+            final boolean isNested = collectByAttr.getParent()!=null&&!(collectByAttr.getParent() instanceof AbstractChartAttribute)&&!collectByAttr.getParent().isObject();
             switch (mode) {
                 case Max: {
                     if(isScript) {

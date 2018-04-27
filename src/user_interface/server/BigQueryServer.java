@@ -2173,11 +2173,15 @@ public class BigQueryServer {
                                 String id;
                                 RecursiveTask task;
                                 if(isTable) {
-                                    TableResponse tableResponse = (TableResponse)chart.create(attribute,attrName,aggregations);
-                                    id = "table-" + totalTableCnt.getAndIncrement();
-                                    task = tableResponse.computeAttributesTask;
-                                    req.session(false).attribute(id, tableResponse);
-                                    tableResponses.add(tableResponse);
+                                    Collection<TableResponse> tableResponse = (Collection<TableResponse>)chart.create(attribute,attrName,aggregations);
+                                    for(TableResponse tr : tableResponse) {
+                                        id = "table-" + totalTableCnt.getAndIncrement();
+                                        task = tr.computeAttributesTask;
+                                        req.session(false).attribute(id, tr);
+                                        tableResponses.add(tr);
+                                        otherTasks.add(task);
+                                        sessionIds.add(id);
+                                    }
                                 } else {
                                     task = new RecursiveTask<List<? extends AbstractChart>>() {
                                         @Override
@@ -2189,9 +2193,9 @@ public class BigQueryServer {
                                     pool.execute(task);
                                     id = "chart-" + totalChartCnt.getAndIncrement();
                                     req.session(false).attribute(id, task);
+                                    otherTasks.add(task);
+                                    sessionIds.add(id);
                                 }
-                                otherTasks.add(task);
-                                sessionIds.add(id);
                             }
                         });
 
