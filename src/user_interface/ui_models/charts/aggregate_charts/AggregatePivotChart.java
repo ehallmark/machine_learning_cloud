@@ -90,7 +90,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
         Function<String,ContainerTag> additionalTagFunction = getCombineByTagFunction(groupedGroupAttrs);
-        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getCollectByAttrFieldName(attrName),getCollectTypeFieldName(attrName));
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getCollectByAttrFieldName(attrName.substring(attrName.indexOf(".")+1)),getCollectTypeFieldName(attrName.substring(attrName.indexOf(".")+1)));
         return this.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,DEFAULT_COMBINE_BY_FUNCTION,groupByPerAttribute);
     }
 
