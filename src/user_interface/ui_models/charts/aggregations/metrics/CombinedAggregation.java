@@ -84,6 +84,15 @@ public class CombinedAggregation implements AbstractAggregation {
                         aggregation = AggregationBuilders.cardinality(name)
                                 .field(collectByAttr.getFullName());
                     }
+                } default: {
+                    if(isScript) {
+                        aggregation = AggregationBuilders.extendedStats(name)
+                                .script(((AbstractScriptAttribute)collectByAttr).getSortScript());
+                    } else {
+                        aggregation = AggregationBuilders.extendedStats(name)
+                                .field(collectByAttr.getFullName());
+                    }
+                    break;
                 }
             }
             if(isNested) {

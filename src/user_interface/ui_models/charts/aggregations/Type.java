@@ -6,5 +6,7 @@ public enum Type {
     Average,
     Sum,
     Count,
-    Cardinality
+    Cardinality,
+    Variance,
+    StdDeviation
 }

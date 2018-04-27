@@ -9,8 +9,9 @@ import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.min.Min;
-import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
+import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
 import org.elasticsearch.search.aggregations.metrics.sum.Sum;
+import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
@@ -21,7 +22,6 @@ import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
 import user_interface.ui_models.charts.aggregations.metrics.CombinedAggregation;
 import user_interface.ui_models.charts.tables.TableResponse;
-import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
@@ -74,7 +74,9 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                                     option(Type.Sum.toString()).withValue(Type.Sum.toString()),
                                     option(Type.Average.toString()).withValue(Type.Average.toString()),
                                     option(Type.Max.toString()).withValue(Type.Max.toString()),
-                                    option(Type.Min.toString()).withValue(Type.Min.toString())
+                                    option(Type.Min.toString()).withValue(Type.Min.toString()),
+                                    option(Type.Variance.toString()).withValue(Type.Variance.toString()),
+                                    option("Standard Deviation").withValue(Type.StdDeviation.toString())
                             )
                     )
             );
@@ -162,6 +164,14 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                 }
                 case Count: {
                     val=(double) ((ValueCount)sub).getValue();
+                    break;
+                }
+                case Variance: {
+                    val= ((ExtendedStats)sub).getVariance();
+                    break;
+                }
+                case StdDeviation: {
+                    val= ((ExtendedStats)sub).getStdDeviation();
                     break;
                 }
                 default: {
