@@ -40,8 +40,8 @@ create table big_query_reverse_citations_by_pub (
 );
 
 
-insert into big_query_reverse_citations_by_pub (publication_number_full,rcite_publication_number_full,rcite_application_number_full,rcite_family_id,rcite_filing_date) (
-    select publication_number_full,c.rcite_publication_number_full,c.rcite_application_number_full,c.rcite_family_id,c.rcite_filing_date
+insert into big_query_reverse_citations_by_pub (publication_number_full,rcite_publication_number_full,rcite_application_number_full,rcite_family_id,rcite_filing_date,rcite_type,rcite_category) (
+    select publication_number_full,c.rcite_publication_number_full,c.rcite_application_number_full,c.rcite_family_id,c.rcite_filing_date,c.rcite_type,c.rcite_category
     from big_query_reverse_citations as c
     inner join patents_global as p on ((p.publication_number_full=c.doc_number_full and not c.is_filing) OR (p.application_number_full=c.doc_number_full and c.is_filing))
 );
