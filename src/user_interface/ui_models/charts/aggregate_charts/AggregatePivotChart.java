@@ -274,7 +274,8 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
         Type collectorType = attrToCollectTypeMap.get(attrName);
         String collectByAttrName = attrToCollectByAttrMap.get(attrName);
-
+        if(collectorType==null) throw new RuntimeException("Please select collector type.");
+        if(collectByAttrName==null) throw new RuntimeException("Please select collect by attribute name.");
         BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName, aggSuffix);
         AbstractAttribute collectByAttribute = findAttribute(collectByAttributes,collectByAttrName);
         if(collectByAttribute==null) {
