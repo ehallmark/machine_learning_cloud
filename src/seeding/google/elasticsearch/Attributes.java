@@ -175,7 +175,8 @@ public class Attributes {
                 new TermAdjustments(),
                 new CompDB(),
                 new Gather(),
-                new PTAB()
+                new PTAB(),
+                new Score()
         );
     }
 

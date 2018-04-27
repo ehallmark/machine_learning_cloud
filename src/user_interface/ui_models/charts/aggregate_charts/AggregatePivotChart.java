@@ -21,6 +21,7 @@ import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
 import user_interface.ui_models.charts.aggregations.metrics.CombinedAggregation;
 import user_interface.ui_models.charts.tables.TableResponse;
+import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
@@ -50,14 +51,25 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
 
     protected Function<String, ContainerTag> getCombineByTagFunction(Map<String, List<String>> groupedGroupAttrs) {
         return attrName -> {
-            return div().withClass("row").with(
+            return div().withClass("row collect-container").with(
                     div().withClass("col-8").with(
                             label("Collect By"),br(),
-                            SimilarPatentServer.technologySelectWithCustomClass(getCollectByAttrFieldName(attrName),getCollectByAttrFieldName(attrName),"single-select2",groupedGroupAttrs,"")
+                            select().attr("style","width:100%;").withName(getCollectByAttrFieldName(attrName)).withId(getCollectByAttrFieldName(attrName)).withClass("collect-by-select")
+                                    .with(option("").withValue(""))
+                                    .with(
+                                            groupedGroupAttrs.entrySet().stream().map(e-> {
+                                                String optGroup = e.getKey();
+                                                return optgroup().attr("label",SimilarPatentServer.humanAttributeFor(optGroup)).attr("name",optGroup).with(
+                                                        e.getValue().stream().map(technology->{
+                                                            return div().with(option(SimilarPatentServer.humanAttributeFor(technology)).withValue(technology));
+                                                        }).collect(Collectors.toList())
+                                                );
+                                            }).collect(Collectors.toList())
+                                    )
                     ),div().withClass("col-4").with(
                             label("Collecting Function"),br(),
-                            select().withClass("single-select2").withName(getCollectTypeFieldName(attrName)).withId(getCollectTypeFieldName(attrName)).with(
-                                    option(Type.Count.toString()).withValue(Type.Count.toString()).attr("selected","selected"),
+                            select().withClass("single-select2 collect-type").withName(getCollectTypeFieldName(attrName)).withId(getCollectTypeFieldName(attrName)).with(
+                                    option(Type.Count.toString()).withValue(Type.Count.toString()),
                                     option(Type.Cardinality.toString()).withValue(Type.Cardinality.toString()),
                                     option(Type.Sum.toString()).withValue(Type.Sum.toString()),
                                     option(Type.Average.toString()).withValue(Type.Average.toString()),

@@ -25,6 +25,7 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import seeding.google.elasticsearch.Attributes;
+import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
@@ -344,7 +345,6 @@ public class BigQueryServer {
             List<AbstractAttribute> allAttrs = new ArrayList<>();
             getAttributesHelper(allAttributes,allAttrs);
             numericAttributes = allAttrs.stream().filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Integer)||attr.getFieldType().equals(AbstractFilter.FieldType.Double)).map(attr->attr.getFullName()).collect(Collectors.toCollection(HashSet::new));
-            numericAttributes.add(Constants.SCORE);
         }
         return numericAttributes;
     }
@@ -451,18 +451,15 @@ public class BigQueryServer {
         List<AbstractAttribute> attributes = new ArrayList<>();
         getAttributesHelper(allAttributes,attributes);
 
-        List<AbstractAttribute> discreteAttrs = attributes.stream().filter(attr->attr.getType().equals("keyword")||(attr.getType().equals("text")&&attr.getNestedFields()!=null)||attr.getType().equals("integer")).collect(Collectors.toList());
+        List<AbstractAttribute> discreteAttrs = attributes.stream().filter(attr->attr.getType().equals("keyword")||attr.getType().equals("date")||(attr.getType().equals("text")&&attr.getNestedFields()!=null)||attr.getType().equals("integer")).collect(Collectors.toList());
         List<AbstractAttribute> dateAttrs = attributes.stream().filter(attr->attr.getType().equals("date")).collect(Collectors.toList());
         List<AbstractAttribute> rangeAttrs = attributes.stream().filter(attr->attr instanceof RangeAttribute).collect(Collectors.toList());
-        List<AbstractAttribute> numericAttrs = attributes.stream().filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Double)||attr.getFieldType().equals(AbstractFilter.FieldType.Integer)).collect(Collectors.toList());
+        List<AbstractAttribute> numericAttrs = attributes.stream().filter(attr->!(attr instanceof SimilarityAttribute)).filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Double)||attr.getFieldType().equals(AbstractFilter.FieldType.Integer)).collect(Collectors.toList());
 
         chartModelMap.put(Constants.PIE_CHART, new AggregatePieChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs)));
         chartModelMap.put(Constants.HISTOGRAM, new AggregateHistogramChart(groupAttributesToNewParents(rangeAttrs),duplicateAttributes(discreteAttrs)));
         chartModelMap.put(Constants.LINE_CHART, new AggregateLineChart(groupAttributesToNewParents(dateAttrs),duplicateAttributes(discreteAttrs)));
-        //chartModelMap.put(Constants.GROUPED_TABLE_CHART, new GroupedCountTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAttrs)));
         chartModelMap.put(Constants.GROUPED_FUNCTION_TABLE_CHART, new AggregatePivotChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(numericAttrs)));
-        //chartModelMap.put(Constants.PIVOT_COUNT_TABLE_CHART, new CountPivotTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAttrs)));
-        //chartModelMap.put(Constants.PIVOT_FUNCTION_TABLE_CHART, new FunctionPivotTableChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(numericAttrs)));
 
         allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
             @Override
@@ -2569,6 +2566,8 @@ public class BigQueryServer {
 
                                                 ), hr(),
                                                 (!authorized) ? div() : div().with(
+                                                        div().attr("style","display: none;").withId("numeric-attributes-list")
+                                                        .attr("value", new Gson().toJson(getNumericAttributes().stream().collect(Collectors.toList()))),
                                                         ul().withClass("nav nav-tabs nav-fill").attr("role","tablist").with(
                                                                 li().withClass("nav-item").with(
                                                                         a("Templates").withClass("nav-link active").attr("data-toggle", "tab")
