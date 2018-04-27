@@ -74,7 +74,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         super.extractRelevantInformationFromParams(params);
         if(this.attrNames!=null) {
             this.attrNames.forEach(attr -> {
-                System.out.println("Looking for field: "+getCollectByAttrFieldName(attr));
+                System.out.println("Looking for field: "+attr+" -> "+getCollectByAttrFieldName(attr));
                 String collectByName = SimilarPatentServer.extractString(params, getCollectByAttrFieldName(attr), null);
                 if(collectByName!=null) attrToCollectByAttrMap.put(attr,collectByName);
                 String collectByType = SimilarPatentServer.extractString(params, getCollectTypeFieldName(attr), Type.Count.toString());
@@ -90,7 +90,11 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
         Function<String,ContainerTag> additionalTagFunction = getCombineByTagFunction(groupedGroupAttrs);
-        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getCollectByAttrFieldName(attrName.substring(attrName.indexOf(".")+1)),getCollectTypeFieldName(attrName.substring(attrName.indexOf(".")+1)));
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> {
+            List<String> ids = Arrays.asList(getCollectByAttrFieldName(attrName),getCollectTypeFieldName(attrName));
+            System.out.println("Input ids for collect by "+getName()+": "+String.join("; ", ids));
+            return ids;
+        };
         return this.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,DEFAULT_COMBINE_BY_FUNCTION,groupByPerAttribute);
     }
 
