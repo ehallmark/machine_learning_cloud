@@ -58,6 +58,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                             label("Collecting Function"),br(),
                             select().withClass("single-select2").withName(getCollectTypeFieldName(attrName)).withId(getCollectTypeFieldName(attrName)).with(
                                     option(Type.Count.toString()).withValue(Type.Count.toString()).attr("selected","selected"),
+                                    option(Type.Cardinality.toString()).withValue(Type.Cardinality.toString()),
                                     option(Type.Sum.toString()).withValue(Type.Sum.toString()),
                                     option(Type.Average.toString()).withValue(Type.Average.toString()),
                                     option(Type.Max.toString()).withValue(Type.Max.toString()),
@@ -73,6 +74,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         super.extractRelevantInformationFromParams(params);
         if(this.attrNames!=null) {
             this.attrNames.forEach(attr -> {
+                System.out.println("Looking for field: "+getCollectByAttrFieldName(attr));
                 String collectByName = SimilarPatentServer.extractString(params, getCollectByAttrFieldName(attr), null);
                 if(collectByName!=null) attrToCollectByAttrMap.put(attr,collectByName);
                 String collectByType = SimilarPatentServer.extractString(params, getCollectTypeFieldName(attr), Type.Count.toString());
