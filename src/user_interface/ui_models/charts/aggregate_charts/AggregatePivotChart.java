@@ -93,7 +93,6 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         Function<String,ContainerTag> additionalTagFunction = getCombineByTagFunction(groupedGroupAttrs);
         Function<String,List<String>> additionalInputIdsFunction = attrName -> {
             List<String> ids = Arrays.asList(getCollectByAttrFieldName(attrName),getCollectTypeFieldName(attrName));
-            System.out.println("Input ids for collect by "+attrName+": "+String.join("; ", ids));
             return ids;
         };
         return this.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,DEFAULT_COMBINE_BY_FUNCTION,groupByPerAttribute);

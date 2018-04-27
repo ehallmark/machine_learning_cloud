@@ -241,7 +241,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     }
 
     protected String getCollectByAttrFieldName(String attrName) {
-        return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_BY_ATTR_FIELD+(attrName==null?"":attrName)).replace(".","");
+        return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_BY_ATTR_FIELD+(attrName==null?"":attrName)).replace(".","").replace("[]","");
     }
 
     protected String getCollectTypeFieldName(String attrName) {
