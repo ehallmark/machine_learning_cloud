@@ -10,12 +10,9 @@ import elasticsearch.DatasetIndex;
 import elasticsearch.TestNewFastVectors;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
-import lombok.Getter;
 import lombok.NonNull;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
 import models.kmeans.AssetKMeans;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.nd4j.linalg.api.buffer.DataBuffer;
@@ -36,7 +33,6 @@ import user_interface.server.tools.SimpleAjaxMessage;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
-import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
@@ -51,7 +47,6 @@ import user_interface.ui_models.filters.AbstractNestedFilter;
 import user_interface.ui_models.filters.AcclaimExpertSearchFilter;
 import user_interface.ui_models.filters.AssetDedupFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
-import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.templates.FormTemplate;
 
 import javax.imageio.ImageIO;
@@ -65,7 +60,6 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
@@ -75,6 +69,7 @@ import java.util.stream.Stream;
 import static j2html.TagCreator.*;
 import static j2html.TagCreator.head;
 import static spark.Spark.*;
+import static user_interface.server.SimilarPatentServer.*;
 
 /**
  * Created by ehallmark on 7/27/16.
@@ -83,26 +78,8 @@ public class BigQueryServer {
     private static final boolean TEST = false;
     private static final boolean debug = false;
     private static final Map<String,Lock> fileSynchronizationMap = Collections.synchronizedMap(new HashMap<>());
-    static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static final String GLOBAL_PREFIX = "/_global";
     private static final String PROTECTED_URL_PREFIX = GLOBAL_PREFIX+"/secure";
-    public static final String EXCEL_SESSION = "excel_data";
-    public static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
-    public static final String DATASETS_TO_SEARCH_IN_FIELD = "datasetsToSearchFor";
-    public static final String CPCS_TO_SEARCH_FOR_FIELD = "cpcsToSearchFor";
-    public static final String LINE_CHART_MAX = "lineChartMax";
-    public static final String TEXT_TO_SEARCH_FOR = "textToSearchFor";
-    public static final String LINE_CHART_MIN = "lineChartMin";
-    public static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
-    public static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
-    public static final String PRE_FILTER_ARRAY_FIELD = "attributes[]Nested_filter[]";
-    public static final String LIMIT_FIELD = "limit";
-    public static final String COMPARATOR_FIELD = "comparator";
-    public static final String NOT_IMPLEMENTED_STRING = "This functionality is not yet implemented.";
-    public static final String SORT_DIRECTION_FIELD = "sortDirection";
-    public static final String CHARTS_GROUPED_BY_FIELD = "chartsGroupedBy";
-    public static final String COLLECT_BY_ATTR_FIELD = "collectByAttr";
-    public static final String COLLECT_TYPE_FIELD = "collectType";
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = PROTECTED_URL_PREFIX+"/patent_recommendation_engine";
     public static final String HOME_URL = PROTECTED_URL_PREFIX+"/home";
@@ -131,24 +108,13 @@ public class BigQueryServer {
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
     public static final String SHOW_DATATABLE_URL = PROTECTED_URL_PREFIX+"/dataTable.json";
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
-    public static final String RANDOM_TOKEN = "<><><>";
     public static final String SUPER_USER = "form_creator";
-    public static final String USE_HIGHLIGHTER_FIELD = "useHighlighter";
-    public static final String FILTER_NESTED_OBJECTS_FIELD = "filterNestedObjects";
     public static final String ANALYST_USER = "analyst";
     public static final String INTERNAL_USER = "internal";
     public static final List<String> USER_ROLES = Arrays.asList(ANALYST_USER,INTERNAL_USER);
-    private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
-    public static RecursiveTask<SimilarityEngineController> similarityEngine;
-    public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
-    public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     private static Map<String,AggregationChart<?>> chartModelMap = new HashMap<>();
     private static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
     private static final Function<String,Boolean> DEFAULT_ROLE_TO_ATTR_FUNCTION = (str) -> false;
-    //private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
-    private static NestedAttribute allAttributes;
-    private static AbstractNestedFilter allFilters;
-    private static NestedAttribute allCharts;
     private static final ForkJoinPool pool = new ForkJoinPool(Math.max(10,Runtime.getRuntime().availableProcessors()/2));
 
     static {
@@ -157,11 +123,6 @@ public class BigQueryServer {
         roleToAttributeFunctionMap.put(SUPER_USER, str -> true);
     }
 
-    @Getter
-    static Collection<AbstractAttribute> allTopLevelAttributes;
-
-    protected static Map<String,String> humanAttrToJavaAttrMap;
-    protected static Map<String,String> javaAttrToHumanAttrMap;
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
         { // Attributes
@@ -310,142 +271,12 @@ public class BigQueryServer {
         }
     }
 
-    private static void buildJavaToHumanAttrMap() {
-        // inverted version to get human readables back
-        javaAttrToHumanAttrMap = new HashMap<>();
-        humanAttrToJavaAttrMap.forEach((k, v) -> javaAttrToHumanAttrMap.put(v, k));
-    }
-
-    private static Map<String,NestedAttribute> nestedAttrMap;
-    public static Map<String,NestedAttribute> getNestedAttrMap() {
-        if(nestedAttrMap==null) {
-            nestedAttrMap = new HashMap<>();
-            getAllTopLevelAttributes().forEach(attr->{
-                if(attr instanceof NestedAttribute) {
-                    nestedAttrMap.put(attr.getName(),(NestedAttribute)attr);
-                }
-            });
-        }
-        return nestedAttrMap;
-    }
-
-    private static Collection<String> allAttrNames;
-    public static Collection<String> getAllAttributeNames() {
-        if(allAttrNames ==null) {
-            allAttrNames = getAllTopLevelAttributes().stream().flatMap(attr->{
-                return attributeNameHelper(attr,"").stream();
-            }).collect(Collectors.toSet());
-        }
-        return allAttrNames;
-    }
-
-    private static Set<String> numericAttributes;
-    private static synchronized Set<String> getNumericAttributes() {
-        if(numericAttributes==null) {
-            List<AbstractAttribute> allAttrs = new ArrayList<>();
-            getAttributesHelper(allAttributes,allAttrs);
-            numericAttributes = allAttrs.stream().filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Integer)||attr.getFieldType().equals(AbstractFilter.FieldType.Double)).map(attr->attr.getFullName()).collect(Collectors.toCollection(HashSet::new));
-        }
-        return numericAttributes;
-    }
-
-
-    private static Collection<String> allStreamingAttrNames;
-    public static Collection<String> getAllStreamingAttributeNames() {
-        if(allStreamingAttrNames ==null) {
-            allStreamingAttrNames = getAllTopLevelAttributes().stream().filter(attr ->!(attr instanceof ComputableAttribute)).flatMap(attr->{
-                return attributeNameHelper(attr,"").stream();
-            }).collect(Collectors.toSet());
-            System.out.println("Streamable Attributes: "+Arrays.toString(allStreamingAttrNames.toArray()));
-        }
-        return allStreamingAttrNames;
-    }
-
-    public static Collection<String> attributeNameHelper(AbstractAttribute attr, String previous) {
-        Collection<String> stream;
-        if(attr instanceof NestedAttribute) {
-            stream = ((NestedAttribute) attr).getAttributes().stream().flatMap(nestedAttr->(attributeNameHelper(nestedAttr,attr.getName()).stream())).collect(Collectors.toList());
-        } else {
-            stream = Arrays.asList(previous==null||previous.isEmpty() ? attr.getName() : previous+"."+attr.getName());
-        }
-        return stream;
-    }
-
-    public static Collection<ComputableAttribute<?>> getAllComputableAttributes() {
-        return getAllTopLevelAttributes().stream().flatMap(attr->getAllComputableAttributesHelper(attr)).collect(Collectors.toList());
-    }
-
-    private static Stream<ComputableAttribute<?>> getAllComputableAttributesHelper(AbstractAttribute attribute) {
-        if(attribute instanceof NestedAttribute) {
-            return ((NestedAttribute)attribute).getAttributes().stream().flatMap(attr->getAllComputableAttributesHelper(attr));
-        } else {
-            return Arrays.asList(attribute).stream().filter(attr -> attr instanceof ComputableAttribute).map(attr -> (ComputableAttribute<?>) attr);
-        }
-    }
-
-    public static String fullHumanAttributeFor(String attr) {
-        if(attr.contains(".")) {
-            return humanAttributeFor(attr) + " ("+fullHumanAttributeFor(attr.substring(0,attr.lastIndexOf(".")))+")";
-        } else return humanAttributeFor(attr);
-    }
-
-    public static String humanAttributeFor(String attr) {
-        String human = attr;
-        if(javaAttrToHumanAttrMap.containsKey(human))  {
-            human = javaAttrToHumanAttrMap.get(attr);
-        } else {
-            int commaIdx = attr.indexOf(".");
-            if(commaIdx>=0&&commaIdx<attr.length()-1) {
-                human = humanAttributeFor(attr.substring(attr.indexOf(".")+1));
-            } else {
-                if(attr.endsWith(Constants.COUNT_SUFFIX)) {
-                    human = "Number of "+humanAttributeFor(attr.substring(0,attr.length()-Constants.COUNT_SUFFIX.length()));
-                }
-            }
-        }
-        if(human.endsWith(RANDOM_TOKEN)) {
-            human = human.replace(RANDOM_TOKEN,"");
-        }
-        return human;
-    }
-
     public static void initialize() {
         loadAttributes();
         loadFilterModels();
         loadChartModels();
     }
 
-    private static void getAttributesHelper(AbstractAttribute attr, List<AbstractAttribute> all) {
-        if(attr instanceof NestedAttribute) {
-            ((NestedAttribute) attr).getAttributes().forEach(child->getAttributesHelper(child,all));
-        } else {
-            all.add(attr);
-        }
-    }
-
-    private static List<AbstractAttribute> groupAttributesToNewParents(List<AbstractAttribute> attributes) {
-        List<AbstractAttribute> nonNested = attributes.stream().filter(attr->attr.getParent()==null).map(attr->attr.clone()).collect(Collectors.toList());
-        List<AbstractAttribute> nested = attributes.stream().filter(attr->attr.getParent()!=null).collect(Collectors.toList());
-        Map<String,Set<AbstractAttribute>> nestedMap = nested.stream().collect(Collectors.groupingBy(attr->attr.getRootName(),Collectors.toSet()));
-        nestedMap.entrySet().forEach(e->{
-            nonNested.add(new NestedAttribute(e.getValue().stream().map(attr->attr.clone()).collect(Collectors.toList())) {
-                @Override
-                public String getName() {
-                    return e.getKey();
-                }
-            });
-        });
-        Collections.sort(nonNested, Comparator.comparing(attr->attr.getFullName()));
-        return nonNested;
-    }
-
-    public static List<AbstractAttribute> duplicateAttributes(List<AbstractAttribute> attributes) {
-        return attributes.stream().map(attr-> {
-                AbstractAttribute clone = attr.clone();
-                clone.setParent(attr.getParent());
-                return clone;
-            }).collect(Collectors.toList());
-    }
 
     public static void loadChartModels() {
         List<AbstractAttribute> attributes = new ArrayList<>();
@@ -1313,7 +1144,7 @@ public class BigQueryServer {
             System.out.println("Number of excel headers: "+headers.size());
             List<String> humanHeaders = headers.stream().map(header->{
                 if(nonHumanAttrs==null || !nonHumanAttrs.contains(header)) {
-                    return BigQueryServer.fullHumanAttributeFor(header);
+                    return fullHumanAttributeFor(header);
                 } else {
                     return header;
                 }
@@ -2085,10 +1916,11 @@ public class BigQueryServer {
 
                     System.out.println("Rendering table...");
                     boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
-                    List<Map<String, String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, false));
+                    String itemSeparator = extractString(req, LIST_ITEM_SEPARATOR_FIELD, "; ");
+                    List<Map<String, String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, false, itemSeparator));
                     List<Map<String, String>> tableDataHighlighted;
                     if (useHighlighter) {
-                        tableDataHighlighted = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, true));
+                        tableDataHighlighted = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, true, itemSeparator));
                     } else {
                         tableDataHighlighted = tableData;
                     }
@@ -2261,38 +2093,6 @@ public class BigQueryServer {
                 e.printStackTrace();
             }
         }
-    }
-
-
-    static Tag tableFromPatentList(List<String> attributes) {
-        return span().withClass("collapse show").withId("data-table").with(
-                form().withMethod("post").withTarget("_blank").withAction(DOWNLOAD_URL).with(
-                        button("Download to Excel").withType("submit").withClass("btn btn-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
-                ),
-                dataTableFromHeadersAndData(attributes)
-        );
-    }
-
-    static Tag dataTableFromHeadersAndData(List<String> attributes) {
-        return table().withClass("table table-striped").withId("main-data-table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
-                thead().with(
-                        tr().with(
-                                attributes.stream().map(attr -> th(fullHumanAttributeFor(attr)).attr("data-dynatable-column", attr)).collect(Collectors.toList())
-                        )
-                ), tbody()
-        );
-    }
-
-    static List<Map<String,String>> getTableRowData(List<Item> items, List<String> attributes, boolean useHighlighter) {
-        return items.stream().map(item -> item.getDataAsMap(attributes,useHighlighter)).collect(Collectors.toList());
-    }
-
-    public static Tag addAttributesToRow(ContainerTag tag, List<String> data, List<String> headers) {
-        AtomicReference<ContainerTag> ref = new AtomicReference<>(tag);
-        for(int i = 0; i < data.size(); i++) {
-            ref.set(ref.get().attr("data-"+headers.get(i),data.get(i).toString()));
-        }
-        return ref.get();
     }
 
     public static List<String> preProcess(String toSplit, String delim, String toReplace) {
@@ -2723,6 +2523,10 @@ public class BigQueryServer {
                                                         ), div().withClass("col-12 attributeElement").with(
                                                                 label("Filter Nested Attributes").attr("style","width: 100%;").with(
                                                                         input().withId("main-options-"+FILTER_NESTED_OBJECTS_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(FILTER_NESTED_OBJECTS_FIELD)
+                                                                )
+                                                        ), div().withClass("col-12 attributeElement").with(
+                                                                label("List Item Separator").attr("style","width: 100%;").with(
+                                                                        input().withId("main-options-"+LIST_ITEM_SEPARATOR_FIELD).withClass("form-control").withType("text").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withPlaceholder("Defaults to '; '").withName(LIST_ITEM_SEPARATOR_FIELD)
                                                                 )
                                                         )
                                                 )

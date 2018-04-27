@@ -126,10 +126,11 @@ public class SimilarPatentServer {
     public static final String SUPER_USER = "form_creator";
     public static final String USE_HIGHLIGHTER_FIELD = "useHighlighter";
     public static final String FILTER_NESTED_OBJECTS_FIELD = "filterNestedObjects";
+    public static final String LIST_ITEM_SEPARATOR_FIELD = "listItemSeparatorField";
     public static final String ANALYST_USER = "analyst";
     public static final String INTERNAL_USER = "internal";
-    public static final List<String> USER_ROLES = Arrays.asList(ANALYST_USER,INTERNAL_USER);
-    private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
+    private static final List<String> USER_ROLES = Arrays.asList(ANALYST_USER,INTERNAL_USER);
+    public static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     public static RecursiveTask<SimilarityEngineController> similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
@@ -137,9 +138,9 @@ public class SimilarPatentServer {
     private static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
     private static final Function<String,Boolean> DEFAULT_ROLE_TO_ATTR_FUNCTION = (str) -> false;
     //private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
-    private static NestedAttribute allAttributes;
-    private static AbstractNestedFilter allFilters;
-    private static NestedAttribute allCharts;
+    static NestedAttribute allAttributes;
+    static AbstractNestedFilter allFilters;
+    static NestedAttribute allCharts;
     private static RecursiveTask<KeyphrasePredictionPipelineManager> keyphrasePredictionPipelineManagerTask;
     private static final ForkJoinPool pool = new ForkJoinPool(Math.max(10,Runtime.getRuntime().availableProcessors()/2));
 
@@ -302,13 +303,13 @@ public class SimilarPatentServer {
         }
     }
 
-    private static void buildJavaToHumanAttrMap() {
+    static void buildJavaToHumanAttrMap() {
         // inverted version to get human readables back
         javaAttrToHumanAttrMap = new HashMap<>();
         humanAttrToJavaAttrMap.forEach((k, v) -> javaAttrToHumanAttrMap.put(v, k));
     }
 
-    private static Map<String,NestedAttribute> nestedAttrMap;
+    static Map<String,NestedAttribute> nestedAttrMap;
     public static Map<String,NestedAttribute> getNestedAttrMap() {
         if(nestedAttrMap==null) {
             nestedAttrMap = new HashMap<>();
@@ -332,7 +333,7 @@ public class SimilarPatentServer {
     }
 
     private static Set<String> numericAttributes;
-    private static synchronized Set<String> getNumericAttributes() {
+    static synchronized Set<String> getNumericAttributes() {
         if(numericAttributes==null) {
             List<AbstractAttribute> allAttrs = new ArrayList<>();
             getAttributesHelper(allAttributes,allAttrs);
@@ -431,7 +432,7 @@ public class SimilarPatentServer {
         }
     }
 
-    private static void getAttributesHelper(AbstractAttribute attr, List<AbstractAttribute> all) {
+    static void getAttributesHelper(AbstractAttribute attr, List<AbstractAttribute> all) {
         if(attr instanceof NestedAttribute) {
             ((NestedAttribute) attr).getAttributes().forEach(child->getAttributesHelper(child,all));
         } else {
@@ -439,7 +440,7 @@ public class SimilarPatentServer {
         }
     }
 
-    private static List<AbstractAttribute> groupAttributesToNewParents(List<AbstractAttribute> attributes) {
+    static List<AbstractAttribute> groupAttributesToNewParents(List<AbstractAttribute> attributes) {
         List<AbstractAttribute> nonNested = attributes.stream().filter(attr->attr.getParent()==null).map(attr->attr.clone()).collect(Collectors.toList());
         List<AbstractAttribute> nested = attributes.stream().filter(attr->attr.getParent()!=null).collect(Collectors.toList());
         Map<String,Set<AbstractAttribute>> nestedMap = nested.stream().collect(Collectors.groupingBy(attr->attr.getRootName(),Collectors.toSet()));
@@ -2235,10 +2236,11 @@ public class SimilarPatentServer {
 
                     System.out.println("Rendering table...");
                     boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
-                    List<Map<String, String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, false));
+                    String itemSeparator = extractString(req, LIST_ITEM_SEPARATOR_FIELD, "; ");
+                    List<Map<String, String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, false, itemSeparator));
                     List<Map<String, String>> tableDataHighlighted;
                     if (useHighlighter) {
-                        tableDataHighlighted = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, true));
+                        tableDataHighlighted = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, true, itemSeparator));
                     } else {
                         tableDataHighlighted = tableData;
                     }
@@ -2425,8 +2427,8 @@ public class SimilarPatentServer {
         );
     }
 
-    static List<Map<String,String>> getTableRowData(List<Item> items, List<String> attributes, boolean useHighlighter) {
-        return items.stream().map(item -> item.getDataAsMap(attributes,useHighlighter)).collect(Collectors.toList());
+    static List<Map<String,String>> getTableRowData(List<Item> items, List<String> attributes, boolean useHighlighter, String itemSeparator) {
+        return items.stream().map(item -> item.getDataAsMap(attributes,useHighlighter,itemSeparator)).collect(Collectors.toList());
     }
 
     public static Tag addAttributesToRow(ContainerTag tag, List<String> data, List<String> headers) {
@@ -2863,6 +2865,10 @@ public class SimilarPatentServer {
                                                         ), div().withClass("col-12 attributeElement").with(
                                                                 label("Filter Nested Attributes").attr("style","width: 100%;").with(
                                                                         input().withId("main-options-"+FILTER_NESTED_OBJECTS_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(FILTER_NESTED_OBJECTS_FIELD)
+                                                                )
+                                                        ), div().withClass("col-12 attributeElement").with(
+                                                                label("List Item Separator").attr("style","width: 100%;").with(
+                                                                        input().withId("main-options-"+LIST_ITEM_SEPARATOR_FIELD).withClass("form-control").withType("text").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withPlaceholder("Defaults to '; '").withName(LIST_ITEM_SEPARATOR_FIELD)
                                                                 )
                                                         )
                                                 )

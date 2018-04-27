@@ -10,7 +10,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.google.elasticsearch.Attributes;
 import spark.Request;
-import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.RelatedAssetsAttribute;
@@ -59,7 +58,7 @@ public class SimilarityEngineController {
     private void setPrefilters(Request req) {
         List<String> preFilterModels = SimilarPatentServer.extractArray(req, SimilarPatentServer.PRE_FILTER_ARRAY_FIELD);
 
-        Map<String,AbstractFilter> filterModelMap = isBigQuery ? BigQueryServer.preFilterModelMap : SimilarPatentServer.preFilterModelMap;
+        Map<String,AbstractFilter> filterModelMap = SimilarPatentServer.preFilterModelMap;
         preFilters = new ArrayList<>(preFilterModels.stream().map(modelName -> {
             AbstractFilter filter = filterModelMap.get(modelName);
             if(filter==null) {
@@ -153,10 +152,7 @@ public class SimilarityEngineController {
         System.out.println("Required attributes: "+String.join("; ",attributesRequired));
 
         SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
-        Collection<AbstractAttribute> topLevelAttributes = (
-                        isBigQuery ? BigQueryServer.getAllTopLevelAttributes() :
-                                SimilarPatentServer.getAllTopLevelAttributes()
-                )
+        Collection<AbstractAttribute> topLevelAttributes = SimilarPatentServer.getAllTopLevelAttributes()
                 .stream()
                 .filter(attr->{
                     if(attr instanceof NestedAttribute) {

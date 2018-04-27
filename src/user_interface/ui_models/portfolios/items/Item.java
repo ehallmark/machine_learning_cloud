@@ -37,11 +37,11 @@ public class Item  {
         return name;
     }
 
-    public Map<String,String> getDataAsMap(List<String> attributes,boolean useHighlighter) {
+    public Map<String,String> getDataAsMap(List<String> attributes,boolean useHighlighter, String itemSeparator) {
         return attributes.stream().map(attr->{
             Object cell = useHighlighter ? dataMap.getOrDefault(attr+Constants.HIGHLIGHTED, dataMap.get(attr)) : dataMap.get(attr);
             String value = cell==null? "": ((cell instanceof Double || cell instanceof Float) ? (((Number)cell).doubleValue()==(double) ((Number)cell).intValue() ? String.valueOf(((Number)cell).intValue()) : String.format("%.1f",cell)) : cell.toString());
-            value = value.replace(DataSearcher.ARRAY_SEPARATOR,"; ");
+            value = value.replace(DataSearcher.ARRAY_SEPARATOR,itemSeparator);
             return new Pair<>(attr,value);
         }).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
     }
