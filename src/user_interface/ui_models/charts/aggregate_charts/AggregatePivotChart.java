@@ -2,6 +2,7 @@ package user_interface.ui_models.charts.aggregate_charts;
 
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
+import lombok.Setter;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
@@ -14,6 +15,7 @@ import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -22,6 +24,7 @@ import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
 import user_interface.ui_models.charts.aggregations.metrics.CombinedAggregation;
 import user_interface.ui_models.charts.tables.TableResponse;
+import user_interface.ui_models.engines.SimilarityEngineController;
 
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
@@ -35,6 +38,8 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     protected Map<String,String> attrToCollectByAttrMap;
     protected Map<String,Type> attrToCollectTypeMap;
     protected Collection<AbstractAttribute> collectByAttributes;
+    @Setter
+    private Map<String,SimilarityAttribute> similarityModels;
     public AggregatePivotChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectByAttrs) {
         super(true,AGG_SUFFIX, attributes, groupByAttrs, Constants.GROUPED_FUNCTION_TABLE_CHART, false);
         this.collectByAttributes=collectByAttrs;
@@ -308,6 +313,10 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         AbstractAttribute collectByAttribute = findAttribute(collectByAttributes,collectByAttrName);
         if(collectByAttribute==null) {
             System.out.println("Collect by attribute could not be found: "+collectByAttrName);
+        }
+        if(collectByAttribute instanceof SimilarityAttribute) {
+            // need to get the original model for the vectors
+            collectByAttribute=similarityModels.get(collectByAttribute.getName());
         }
         CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getStatsAggName(attrName), collectByAttribute, collectorType);
 

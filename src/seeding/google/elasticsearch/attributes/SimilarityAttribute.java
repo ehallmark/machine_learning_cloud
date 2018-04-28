@@ -1,5 +1,7 @@
 package seeding.google.elasticsearch.attributes;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -23,6 +25,7 @@ import static user_interface.server.SimilarPatentServer.PRE_FILTER_ARRAY_FIELD;
 import static user_interface.server.SimilarPatentServer.extractArray;
 
 public abstract class SimilarityAttribute extends AbstractScriptAttribute implements DependentAttribute<AbstractScriptAttribute>, RangeAttribute {
+    @Getter @Setter
     protected List<INDArray> simVectors;
     public SimilarityAttribute() {
         super(Collections.singleton(AbstractFilter.FilterType.GreaterThan));

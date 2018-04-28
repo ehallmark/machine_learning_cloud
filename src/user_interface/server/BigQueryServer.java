@@ -285,7 +285,7 @@ public class BigQueryServer {
         List<AbstractAttribute> discreteAttrs = attributes.stream().filter(attr->attr.getType().equals("keyword")||attr.getType().equals("date")||(attr.getType().equals("text")&&attr.getNestedFields()!=null)).collect(Collectors.toList());
         List<AbstractAttribute> dateAttrs = attributes.stream().filter(attr->attr.getType().equals("date")).collect(Collectors.toList());
         List<AbstractAttribute> rangeAttrs = attributes.stream().filter(attr->attr instanceof RangeAttribute).collect(Collectors.toList());
-        List<AbstractAttribute> numericAttrs = attributes.stream().filter(attr->!(attr instanceof SimilarityAttribute)).filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Double)||attr.getFieldType().equals(AbstractFilter.FieldType.Integer)).collect(Collectors.toList());
+        List<AbstractAttribute> numericAttrs = attributes.stream().filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Double)||attr.getFieldType().equals(AbstractFilter.FieldType.Integer)).collect(Collectors.toList());
 
         chartModelMap.put(Constants.PIE_CHART, new AggregatePieChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs)));
         chartModelMap.put(Constants.HISTOGRAM, new AggregateHistogramChart(groupAttributesToNewParents(rangeAttrs),duplicateAttributes(discreteAttrs)));
@@ -1843,7 +1843,23 @@ public class BigQueryServer {
                     //System.out.println("FOUND NESTED ATTRIBUTES: " + String.join("; ", nestedAttributes));
                     List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
 
+                    SimilarityEngineController engine = similarityEngine.join().dup();
+
                     List<AggregationChart<?>> abstractCharts = chartModels.stream().map(chart -> chartModelMap.get(chart).dup()).collect(Collectors.toList());
+                    Set<String> chartPreReqs = abstractCharts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toCollection(HashSet::new));
+                    chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrNameToGroupByAttrNameMap().values().stream()).collect(Collectors.toList()));
+                    chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrToCollectByAttrMap().values().stream()).collect(Collectors.toList()));
+                    engine.setChartPrerequisites(chartPreReqs);
+
+                    engine.buildAttributes(req);
+
+                    Map<String,SimilarityAttribute> similarityAttributeMap = engine.getSimilarityAttributeMap();
+
+
+                    AggregatePivotChart pivotChart = abstractCharts.stream().filter(c->c instanceof AggregatePivotChart).map(c->(AggregatePivotChart)c).limit(1).findFirst().orElse(null);
+                    if(pivotChart!=null) {
+                        pivotChart.setSimilarityModels(similarityAttributeMap);
+                    }
                     abstractCharts.forEach(chart->chart.extractRelevantInformationFromParams(req));
                     List<AggregationBuilder> aggregationBuilders = abstractCharts.stream().flatMap(chart->{
                         List<AggregationBuilder> builders = new ArrayList<>();
@@ -1867,13 +1883,8 @@ public class BigQueryServer {
                         return builders.stream();
                     }).collect(Collectors.toList());
 
-                    Set<String> chartPreReqs = abstractCharts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toCollection(HashSet::new));
-                    chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrNameToGroupByAttrNameMap().values().stream()).collect(Collectors.toList()));
-                    chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrToCollectByAttrMap().values().stream()).collect(Collectors.toList()));
                     if(Thread.currentThread().isInterrupted()) return null;
 
-                    SimilarityEngineController engine = similarityEngine.join().dup();
-                    engine.setChartPrerequisites(chartPreReqs);
                     engine.setAggregationBuilders(aggregationBuilders);
                     engine.extractRelevantInformationFromParams(req);
                     final PortfolioList portfolioList = engine.getPortfolioList();
