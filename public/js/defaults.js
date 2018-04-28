@@ -314,6 +314,7 @@ $(document).ready(function() {
     });
 
 
+
     var nestedFilterSelectFunction = function(e,preventHighlight) {
          var $options = $(e.currentTarget.selectedOptions);
          var $select = $(this);
@@ -505,6 +506,54 @@ $(document).ready(function() {
         minimumResultsForSearch: 10,
         width: "100%",
         templateSelection: select2SelectedFunction
+    });
+
+    // handle collect by for pivot tables
+    var numericAttributes = $('#numeric-attributes-list');
+    if(numericAttributes&&numericAttributes.attr('value')) {
+        numericAttributes = JSON.parseJSON(numericAttributes.attr('value'));
+    }
+    $('.collect-by-select').select2({
+        minimumResultsForSearch: 10,
+        width: "100%",
+        templateSelection: select2SelectedFunction
+    }).on('change', function(e) {
+        var val = $(this).val();
+        if(val) {
+            var $type = $(this).closest('.collect-container').find('select.collect-type');
+            var prevType = $type.val();
+            // update type select from selected value
+            var usePrevType = false;
+            if(!numericAttributes.includes(val)) {
+                if(prevType && ['Count','Cardinality'].includes(prevType)) {
+                    usePrevType=true;
+                }
+
+                $type.empty();
+                $type.append('<option value="Count">Count</option>');
+                $type.append('<option value="Cardinality">Cardinality</option>');
+            } else {
+                if(prevType && ['Sum','Average','Max','Min'].includes(prevType)) {
+                    usePrevType=true;
+                }
+
+                $type.empty();
+                $type.append('<option value="Sum">Sum</option>');
+                $type.append('<option value="Average">Average</option>');
+                $type.append('<option value="Max">Max</option>');
+                $type.append('<option value="Min">Min</option>');
+                $type.append('<option value="Count">Count</option>');
+                $type.append('<option value="Cardinality">Cardinality</option>');
+            }
+            $type.select2({
+                minimumResultsForSearch: 10,
+                width: "100%",
+                templateSelection: select2SelectedFunction
+            });
+            if(usePrevType) {
+                $type.val(prevType).trigger('select2.change');
+            }
+        }
     });
 
     setCollapsibleHeaders(".collapsible-header");
