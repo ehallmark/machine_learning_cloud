@@ -533,7 +533,7 @@ $(document).ready(function() {
                 $type.append('<option value="Count">Count</option>');
                 $type.append('<option value="Cardinality">Cardinality</option>');
             } else {
-                if(prevType && ['Sum','Average','Max','Min'].includes(prevType)) {
+                if(prevType && ['Sum','Average','Max','Min','StdDeviation','Variance'].includes(prevType)) {
                     usePrevType=true;
                 }
 
@@ -542,6 +542,8 @@ $(document).ready(function() {
                 $type.append('<option value="Average">Average</option>');
                 $type.append('<option value="Max">Max</option>');
                 $type.append('<option value="Min">Min</option>');
+                $type.append('<option value="StdDeviation">Standard Deviation</option>');
+                $type.append('<option value="Variance">Variance</option>');
                 $type.append('<option value="Count">Count</option>');
                 $type.append('<option value="Cardinality">Cardinality</option>');
             }
