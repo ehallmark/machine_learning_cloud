@@ -290,7 +290,10 @@ public class BigQueryServer {
         chartModelMap.put(Constants.PIE_CHART, new AggregatePieChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs)));
         chartModelMap.put(Constants.HISTOGRAM, new AggregateHistogramChart(groupAttributesToNewParents(rangeAttrs),duplicateAttributes(discreteAttrs)));
         chartModelMap.put(Constants.LINE_CHART, new AggregateLineChart(groupAttributesToNewParents(dateAttrs),duplicateAttributes(discreteAttrs)));
-        chartModelMap.put(Constants.GROUPED_FUNCTION_TABLE_CHART, new AggregatePivotChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(numericAttrs)));
+        List<AbstractAttribute> discreteAndNumeric = new ArrayList<>();
+        discreteAndNumeric.addAll(duplicateAttributes(numericAttrs));
+        discreteAndNumeric.addAll(duplicateAttributes(discreteAttrs));
+        chartModelMap.put(Constants.GROUPED_FUNCTION_TABLE_CHART, new AggregatePivotChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),discreteAndNumeric));
 
         allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
             @Override

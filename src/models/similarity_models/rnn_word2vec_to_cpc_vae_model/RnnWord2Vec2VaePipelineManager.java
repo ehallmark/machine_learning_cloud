@@ -34,7 +34,7 @@ import java.util.Random;
  */
 public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineManager  {
 
-    public static final String MODEL_NAME = "rnn_word2vec_2_vae_model";
+    public static final String MODEL_NAME = "rnn_word2vec_large_2_vae_model";
     //public static final String MODEL_NAME = "cpc2vec_new_2_vae_vec_encoding_model";
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"rnn_word2vec_2_vae_model_predictions/predictions_map.jobj");
     private static final File INPUT_DATA_FOLDER_ALL = new File("rnn_word2vec_2_vae_model_input_data/");
@@ -107,7 +107,7 @@ public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineMana
             Nd4j.setDataType(DataBuffer.Type.FLOAT);
 
             String modelName = MODEL_NAME;
-            String word2VecPath = new File("data/word2vec_model.nn256").getAbsolutePath();
+            String word2VecPath = new File("data/word2vec_model_large.nn256").getAbsolutePath();
 
             Word2Vec word2Vec = null;
             if(loadWord2Vec) word2Vec = WordVectorSerializer.readWord2VecModel(word2VecPath);
