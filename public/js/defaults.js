@@ -511,7 +511,7 @@ $(document).ready(function() {
     // handle collect by for pivot tables
     var numericAttributes = $('#numeric-attributes-list');
     if(numericAttributes&&numericAttributes.attr('value')) {
-        numericAttributes = JSON.parseJSON(numericAttributes.attr('value'));
+        numericAttributes = JSON.parse(numericAttributes.attr('value'));
     }
     $('.collect-by-select').select2({
         minimumResultsForSearch: 10,
