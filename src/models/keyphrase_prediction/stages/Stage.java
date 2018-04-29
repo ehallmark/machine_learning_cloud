@@ -11,20 +11,29 @@ import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.scorers.KeywordScorer;
+import models.similarity_models.rnn_encoding_model.PostgresSequenceIterator;
 import models.text_streaming.FileTextDataSetIterator;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.gephi.graph.api.Node;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
+import seeding.google.postgres.Util;
 import tools.Stemmer;
 import visualization.Visualizer;
 
 import java.awt.*;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
@@ -40,9 +49,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 9/12/17.
  */
 public abstract class Stage<V> {
-    @Getter
-    private static File transformedDataFolder = new File("filing_text_and_date_data_with_counts/");
-
+    protected static final File vocabCountFile = new File(Constants.DATA_FOLDER+"stages_vocab_count_map_file.csv");
     public static final Collection<String> validPOS = Arrays.asList("JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS", "VBG", "VBN");
     public static final Collection<String> adjectivesPOS = Arrays.asList("JJ", "JJR", "JJS");
     static double scoreThreshold = 200f;
@@ -50,7 +57,6 @@ public abstract class Stage<V> {
     public static final String APPEARED = "APPEARED";
     public static final String APPEARED_WITH_COUNTS = "APPEARED_WITH_COUNTS";
     public static final String ASSET_ID = "ID";
-    public static final String DATE = "DATE";
     public static final String TEXT = "TEXT";
 
     private static final boolean debug = false;
@@ -278,34 +284,57 @@ public abstract class Stage<V> {
     }
 
 
-    protected static void collectVocabAndTransformData(Function<Map<String, Object>, Void> attributesFunction, Function<Map<String, Object>, Consumer<Annotation>> annotator) {
+    protected static void collectVocabAndTransformData(File outputFile, Function<Map<String, Object>, Void> attributesFunction, Function<Map<String, Object>, Consumer<Annotation>> annotator) throws Exception {
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
+        BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
         Function<LabelledDocument, String> documentTransformer = doc -> {
-            if(doc.getLabels().size()<2) return null;
+            if(doc.getLabels().size()<1) return null;
             String asset = doc.getLabels().get(0);
-            String date = doc.getLabels().get(1);
             String text = doc.getContent();
-            if(date==null) return null;
             Annotation annotation = new Annotation(text);
             Map<String, Object> data = new HashMap<>();
             data.put(TEXT, text);
             data.put(ASSET_ID, asset);
-            data.put(DATE, date);
             pipeline.annotate(annotation, annotator.apply(data));
             attributesFunction.apply(data);
             //System.out.println("Date: "+date);
             Map<MultiStem, AtomicInteger> docCounts = (Map<MultiStem, AtomicInteger>) data.get(APPEARED_WITH_COUNTS);
             if (docCounts == null) return null;
-            String ret = asset + "," + date + "," + String.join(",", docCounts.entrySet().stream().map(e -> e.getKey().toString() + ":" + e.getValue().get()).collect(Collectors.toList()));
+            String ret = asset  + "," + String.join(",", docCounts.entrySet().stream().map(e -> e.getKey().toString() + ":" + e.getValue().get()).collect(Collectors.toList()));
             if (ret == null || ret.isEmpty()) return null;
             return ret;
         };
 
-        FileTextDataSetIterator.transformData(transformedDataFolder, documentTransformer, true,10000000);
+        int trainLimit = 5000000;
+        Connection conn = Database.newSeedConn();
+        PreparedStatement trainPs = conn.prepareStatement("select family_id,abstract from big_query_patent_english_abstract limit "+trainLimit);
+        trainPs.setFetchSize(32);
+        ResultSet rs = trainPs.executeQuery();
+        long count = 0;
+        while(rs.next()) {
+            String label = rs.getString(1);
+            String[] text = Util.textToWordFunction.apply(rs.getString(2));
+            LabelledDocument doc = new LabelledDocument();
+            doc.setLabels(Collections.singletonList(label));
+            doc.setContent(String.join(" ",text));
+            String toWrite = documentTransformer.apply(doc);
+            writer.write(toWrite+"\n");
+            if(count%10000==9999) {
+                writer.flush();
+                System.out.println("Finished: "+count);
+            }
+            count++;
+        }
+        writer.flush();
+        writer.close();
+        rs.close();
+        trainPs.close();
+        conn.close();
     }
+
 
     public static void runSamplingIterator(Function<Map<MultiStem, Integer>, Void> attributesFunction, int sampling) {
         Function<String, Void> lineTransformer = line -> {
@@ -325,11 +354,10 @@ public abstract class Stage<V> {
 
     public static void runSamplingIteratorWithLabels(Function<Pair<String, Map<MultiStem, Integer>>, Void> attributesFunction, int sampling) {
         Function<String, Void> lineTransformer = line -> {
-            String[] cells = line.split(",", 3);
+            String[] cells = line.split(",", 2);
             String asset = cells[0];
-            if (cells.length < 3) return null;
-            String date = cells[1];
-            String text = cells[2];
+            if (cells.length < 2) return null;
+            String text = cells[1];
             Map<MultiStem, Integer> data = Stream.of(text.split(",")).map(str -> {
                 String[] pair = str.split(":");
                 if (pair.length == 1) return null;
@@ -343,12 +371,11 @@ public abstract class Stage<V> {
 
     private static void samplingIteratorHelper(Function<String, Void> lineTransformer, int sampling) {
         int taskLimit = Math.max(Runtime.getRuntime().availableProcessors(), 1);
-        File file = new File(Stage1.getTransformedDataFolder(), FileTextDataSetIterator.trainFile.getName());
         LineIterator iterator;
         try {
-            iterator = FileUtils.lineIterator(file);
+            iterator = FileUtils.lineIterator(vocabCountFile);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to find file: " + file.getAbsolutePath());
+            throw new RuntimeException("Unable to find file: " + vocabCountFile.getAbsolutePath());
         }
         AtomicInteger cnt = new AtomicInteger(0);
         List<RecursiveAction> tasks = new ArrayList<>();

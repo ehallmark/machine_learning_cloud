@@ -66,7 +66,7 @@ public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph
 
     @Override
     public int printIterations() {
-        return 400;
+        return 50;
     }
 
 
@@ -156,7 +156,7 @@ public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph
         LossFunctions.LossFunction lossFunction = LossFunctions.LossFunction.COSINE_PROXIMITY;
 
         Activation activation = Activation.TANH;
-        Activation outputActivation = Activation.TANH;
+        Activation outputActivation = Activation.IDENTITY;
         Map<Integer,Double> learningRateSchedule = new HashMap<>();
         learningRateSchedule.put(0,learningRate);
        // learningRateSchedule.put(50000,learningRate/2);
@@ -177,9 +177,10 @@ public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph
                 .addLayer("rnn0", new GravesLSTM.Builder().nIn(input1).nOut(hiddenLayerSizeRnn).build(), "x1")
                 .addLayer("rnn1", new GravesLSTM.Builder().nIn(hiddenLayerSizeRnn).nOut(hiddenLayerSizeRnn).build(), "rnn0")
                 .addVertex("r0", new LastTimeStepVertex("x1"),"rnn1")
-                .addLayer("d0", new DenseLayer.Builder().nIn(hiddenLayerSizeRnn).nOut(1024).build(), "r0")
-                .addLayer("d1", new DenseLayer.Builder().nIn(1024).nOut(1024).build(), "d0")
-                .addLayer("y1", new OutputLayer.Builder().activation(outputActivation).nIn(1024).lossFunction(lossFunction).nOut(input2).build(), "d1")
+                .addLayer("n0", new BatchNormalization.Builder().nIn(hiddenLayerSizeRnn).nOut(hiddenLayerSizeRnn).build(),"r0")
+                .addLayer("d0", new DenseLayer.Builder().nIn(hiddenLayerSizeRnn).nOut(hiddenLayerSizeRnn).build(), "n0")
+                .addLayer("d1", new DenseLayer.Builder().nIn(hiddenLayerSizeRnn).nOut(hiddenLayerSizeRnn).build(), "d0")
+                .addLayer("y1", new OutputLayer.Builder().activation(outputActivation).nIn(hiddenLayerSizeRnn).lossFunction(lossFunction).nOut(input2).build(), "d1")
                 .setOutputs("y1")
                 .backprop(true)
                 .backpropType(BackpropType.Standard)
@@ -206,9 +207,9 @@ public class RnnWord2Vec2VaeModel extends AbstractEncodingModel<ComputationGraph
                         try {
                             vaeNetwork.fit(ds);
                             if(cnt.getAndIncrement()%gradientIterations==gradientIterations-1) {
-                                double grad = Transforms.abs(vaeNetwork.gradient().gradient(), false).meanNumber().doubleValue();
-                                gradient.set((gradient.get()*beta)+(1d-beta)*grad);
-                                System.out.println("Gradient: " + grad+", Avg Gradient: " + gradient.get());
+                                //double grad = Transforms.abs(vaeNetwork.gradient().gradient(), false).meanNumber().doubleValue();
+                                //gradient.set((gradient.get()*beta)+(1d-beta)*grad);
+                                //System.out.println("Gradient: " + grad+", Avg Gradient: " + gradient.get());
                             }
                         } catch(Exception e) {
                             e.printStackTrace();

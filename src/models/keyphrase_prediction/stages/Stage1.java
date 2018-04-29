@@ -5,6 +5,7 @@ import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
 import seeding.Database;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,7 +30,7 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
 
     @Override
     public Map<MultiStem,AtomicLong> run(boolean alwaysRerun) {
-        if(alwaysRerun || !getFile().exists() || !getTransformedDataFolder().exists()) {
+        if(alwaysRerun || !getFile().exists() || !vocabCountFile.exists()) {
             data = buildVocabularyCounts();
             data = truncateBetweenLengths();
             Database.trySaveObject(data, getFile());
@@ -53,10 +54,14 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
 
     private Map<MultiStem,AtomicLong> buildVocabularyCounts() {
         return this.buildVocabularyCounts(function->{
-            collectVocabAndTransformData(function,getDefaultAnnotator((stem,label,map)->{
-                checkStem(stem,label,map,phraseCountMap);
-                return null;
-            }));
+            try {
+                collectVocabAndTransformData(vocabCountFile,function, getDefaultAnnotator((stem, label, map) -> {
+                    checkStem(stem, label, map, phraseCountMap);
+                    return null;
+                }));
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
             return null;
         },attr->null);
     }

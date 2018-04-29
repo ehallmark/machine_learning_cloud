@@ -8,6 +8,7 @@ import data_pipeline.vectorize.DataSetManager;
 import lombok.Getter;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.DefaultModel3;
+import models.keyphrase_prediction.models.DefaultModel4;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
 import models.similarity_models.paragraph_vectors.FloatFrequencyPair;
@@ -39,8 +40,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 12/21/17.
  */
 public class KeyphrasePredictionModel {
-    public static final Model modelParams = new DefaultModel3();
-    private static final File PREDICTION_DATA_FILE = new File(Constants.DATA_FOLDER+"keyphrase_prediction_model_predictions/predictions_map.jobj");
+    public static final Model modelParams = new DefaultModel4();
     private static Map<MultiStem,INDArray> keywordToVectorLookupTable;
     private static final File keywordToVectorLookupTableFile = new File(Constants.DATA_FOLDER+"keyword_to_vector_predictions_lookup_table.jobj");
     @Getter
@@ -68,22 +68,9 @@ public class KeyphrasePredictionModel {
         ValidWordStage validWordStage = new ValidWordStage(stage2.get(), modelParams);
         if(filters)validWordStage.run(rerunFilters);
 
-        // cpc density
-        System.out.println("Pre-grouping data for cpc density...");
-        CPCHierarchy hierarchy = new CPCHierarchy();
-        CPCDensityStage cpcDensityStage = new CPCDensityStage(validWordStage.get(), modelParams, hierarchy);
-        if(filters)cpcDensityStage.run(rerunFilters);
-        //if(alwaysRerun) stage4.createVisualization();
-
-        //// stage 3
-        //System.out.println("Pre-grouping data for stage 3...");
-        //Stage3 stage3 = new Stage3(cpcDensityStage.get(), modelParams);
-        //if(filters) stage3.run(rerunFilters);
-        //if(alwaysRerun) stage3.createVisualization();
-
         // word order stage
         System.out.println("Pre-grouping data for word order...");
-        WordOrderStage wordOrder = new WordOrderStage(cpcDensityStage.get(), stage1.get(), modelParams);
+        WordOrderStage wordOrder = new WordOrderStage(validWordStage.get(), stage1.get(), modelParams);
         if(filters)wordOrder.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
 
@@ -93,7 +80,6 @@ public class KeyphrasePredictionModel {
         knnStage.run(rerunFilters);
         //if(alwaysRerun) stage3.createVisualization();
         multiStemSet = knnStage.get();
-       // multiStemSet = wordOrder.get();
 
         labelToKeywordMap = Collections.synchronizedMap(new HashMap<>());
         multiStemSet.parallelStream().forEach(stem->labelToKeywordMap.put(stem.getBestPhrase(),stem));
@@ -101,10 +87,6 @@ public class KeyphrasePredictionModel {
         System.out.println("Final num multistems: "+multiStemSet.size());
     }
 
-
-    private MultiStem findByLabel(String keyword) {
-        return labelToKeywordMap.get(keyword.toLowerCase());
-    }
 
     private MultiStem findOrCreateByLabel(String keyword) {
         MultiStem multiStem = labelToKeywordMap.get(keyword.toLowerCase());
@@ -117,7 +99,7 @@ public class KeyphrasePredictionModel {
             multiStem = new MultiStem(keyword.toLowerCase().split(" "),-1);
             multiStem.setBestPhrase(keyword.toLowerCase());
             INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(multiStem.getStems()));
-            if(wordVectors.rows()>=Math.max(1,multiStem.getStems().length-1)) {
+            if(wordVectors.rows()==multiStem.getStems().length) {
                 INDArray vec = Transforms.unitVec(wordVectors.mean(0));
                 keywordToVectorLookupTable.put(multiStem, vec);
             } else {
@@ -271,8 +253,14 @@ public class KeyphrasePredictionModel {
     public static void main(String[] args) {
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
 
-        Word2Vec word2Vec = getOrLoadManager();
+        final boolean vocab = true;
+        final boolean stages = true;
+        final boolean rerunVocab = false;
+        final boolean rerunFilters = false;
+        final Word2Vec word2Vec = getOrLoadManager();
 
+        final KeyphrasePredictionModel predictionModel = new KeyphrasePredictionModel(word2Vec);
 
+        predictionModel.initStages(vocab,stages,rerunVocab,rerunFilters);
     }
 }

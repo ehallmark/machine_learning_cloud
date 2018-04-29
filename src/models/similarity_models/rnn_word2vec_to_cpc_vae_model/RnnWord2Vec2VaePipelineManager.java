@@ -40,7 +40,7 @@ public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineMana
     private static final File INPUT_DATA_FOLDER_ALL = new File("rnn_word2vec_2_vae_model_input_data/");
     protected static final int BATCH_SIZE = 1024;
     protected static final int VECTOR_SIZE = DeepCPCVariationalAutoEncoderNN.VECTOR_SIZE;
-    protected static final int MINI_BATCH_SIZE = 64;
+    protected static final int MINI_BATCH_SIZE = 32;
     private static final int MAX_SEQUENCE_LENGTH = 32;
     protected static final Random rand = new Random(235);
     private static RnnWord2Vec2VaePipelineManager MANAGER;

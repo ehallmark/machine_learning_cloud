@@ -3,6 +3,7 @@ package user_interface.ui_models.charts.aggregate_charts;
 import lombok.Getter;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.filters.Filters;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
@@ -14,9 +15,7 @@ import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -82,28 +81,16 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         return dataSets;
     }
 
+
     protected List<Pair<String,Double>> extractValuesFromAggregation(Aggregations aggregations, AbstractAttribute attribute, String attrName, Function<Aggregations,Double> subAggregationHandler) {
         Aggregation _agg = handlePotentiallyNestedAgg(aggregations,attrName);
         List<String> categories = getCategoriesForAttribute(attribute);
         List<Pair<String,Double>> bucketData = new ArrayList<>();
-        if(_agg instanceof Filters) {
-            Filters agg = (Filters)_agg;
+        if(_agg instanceof MultiBucketsAggregation) {
+            MultiBucketsAggregation agg = (MultiBucketsAggregation)_agg;
             // For each entry
             int i = 0;
-            for (Filters.Bucket entry : agg.getBuckets()) {
-                String key = categories.get(i);          // bucket key
-                long docCount = entry.getDocCount();            // Doc count
-                if(subAggregationHandler==null) {
-                    bucketData.add(new Pair<>(key, (double) docCount));
-                } else {
-                    bucketData.add(new Pair<>(key,subAggregationHandler.apply(entry.getAggregations())));
-                }
-                i++;
-            }
-        } else if (_agg instanceof Histogram) {
-            Histogram agg = (Histogram)_agg;
-            int i = 0;
-            for(Histogram.Bucket entry : agg.getBuckets()) {
+            for (MultiBucketsAggregation.Bucket entry : agg.getBuckets()) {
                 String key = categories==null?entry.getKeyAsString():categories.get(i);          // bucket key
                 long docCount = entry.getDocCount();            // Doc count
                 if(subAggregationHandler==null) {
@@ -114,16 +101,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 i++;
             }
         } else {
-            Terms agg = (Terms)_agg;
-            for(Terms.Bucket entry : agg.getBuckets()) {
-                String key = entry.getKeyAsString();
-                long docCount = entry.getDocCount();
-                if(subAggregationHandler==null) {
-                    bucketData.add(new Pair<>(key, (double) docCount));
-                } else {
-                    bucketData.add(new Pair<>(key,subAggregationHandler.apply(entry.getAggregations())));
-                }
-            }
+            throw new RuntimeException("Unable to cast "+_agg.getClass().getName()+" to MultiBucketsAggregation.class");
         }
         return bucketData;
     }

@@ -61,7 +61,7 @@ public abstract class DefaultPipelineManager<D,T> implements PipelineManager<D,T
     public static void setCudaEnvironment() {
         // setup cuda env
         try {
-            /*Nd4j.getMemoryManager().setAutoGcWindow(500);
+            /*Nd4j.getMemoryManager().setAutoGcWindow(300);
             CudaEnvironment.getInstance().getConfiguration().setMaximumGridSize(512).setMaximumBlockSize(512)
                     .setMaximumDeviceCacheableLength(2L * 1024 * 1024 * 1024L)
                     .setMaximumDeviceCache(10L * 1024 * 1024 * 1024L)

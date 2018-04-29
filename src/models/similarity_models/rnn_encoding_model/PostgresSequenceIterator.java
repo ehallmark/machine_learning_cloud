@@ -16,9 +16,11 @@ public class PostgresSequenceIterator implements SequenceIterator<VocabWord> {
     private int iter;
     private final PreparedStatement ps;
     private final int textIdx;
-    public PostgresSequenceIterator(PreparedStatement ps, int textIdx, long... limits) {
+    private final int labelIdx;
+    public PostgresSequenceIterator(PreparedStatement ps, int textIdx, int labelIdx, long... limits) {
         this.ps=ps;
         this.limits=limits;
+        this.labelIdx=labelIdx;
         this.iter=0;
         this.textIdx=textIdx;
     }
@@ -64,6 +66,14 @@ public class PostgresSequenceIterator implements SequenceIterator<VocabWord> {
         try {
             String[] words = Util.textToWordFunction.apply(rs.getString(textIdx));
             Sequence<VocabWord> sequence = new Sequence<>();
+            if(labelIdx>0) {
+                String label = rs.getString(labelIdx);
+                VocabWord vLabel = new VocabWord(1f,label);
+                vLabel.setSpecial(true);
+                vLabel.setElementFrequency(1);
+                vLabel.setSequencesCount(1);
+                sequence.addSequenceLabel(vLabel);
+            }
             for(String word : words) {
                 if(word==null||word.isEmpty()) continue;
                 VocabWord vocabWord = new VocabWord(1f,word);

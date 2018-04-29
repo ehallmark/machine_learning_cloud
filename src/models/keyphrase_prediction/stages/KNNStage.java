@@ -43,6 +43,7 @@ public class KNNStage extends Stage<Set<MultiStem>>  {
 
                 Map<MultiStem, MultiStem> nearestNeighborMap = knnModel.allItemsToNearestNeighbor();
                 data = Collections.synchronizedSet(data.parallelStream().filter(d -> {
+                    if(!nearestNeighborMap.containsKey(d)) return false;
                     long score = docCounter.get(d).get();
                     long otherScore = docCounter.get(nearestNeighborMap.get(d)).get();
                     return score >= otherScore;

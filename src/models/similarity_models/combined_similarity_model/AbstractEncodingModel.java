@@ -153,6 +153,7 @@ public abstract class AbstractEncodingModel<T extends Model,V extends DefaultPip
         System.gc();
         System.gc();
 
+
         train(dataSetIterator,nEpochs,stoppingCondition);
 
         if (!isSaved()) {

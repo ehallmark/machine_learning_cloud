@@ -5,6 +5,7 @@ import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Database;
 import seeding.google.postgres.Util;
 
@@ -138,6 +139,18 @@ public class PredictTechTags {
         });
         allChildrenList.removeAll(childrenToRemove);
 
+        List<Pair<Integer,Integer>> parentChildCombinations = new ArrayList<>();
+        for(int i = 0; i < allParentsList.size(); i++) {
+            String parent = allParentsList.get(i);
+            Set<String> children = parentChildMap.getOrDefault(parent,new HashSet<>());
+            for(String child : children) {
+                int j = allChildrenList.indexOf(child);
+                if(j>=0) {
+                    parentChildCombinations.add(new Pair<>(i,j));
+                }
+            }
+        }
+
         System.out.println("Num parents: "+allParentsList.size());
         System.out.println("Num children: "+allChildrenList.size());
         System.out.println("Valid technologies: "+allTitlesList.size()+" out of "+matrixOld.rows());
@@ -221,22 +234,27 @@ public class PredictTechTags {
             }
             vectors.diviRowVector(vectors.norm2(0));
             INDArray primaryScores = parentMatrixView.mmul(vectors);
-            int[] bestPrimaryIndices = Nd4j.argMax(primaryScores, 0).data().asInt();
             INDArray secondaryScores = childMatrixView.mmul(vectors);
-            int[] bestSecondaryIndices = Nd4j.argMax(secondaryScores, 0).data().asInt();
             String insert = "insert into big_query_technologies (family_id,technology,secondary) values ? on conflict(family_id) do update set (technology,secondary)=(excluded.technology,excluded.secondary)";
             StringJoiner valueJoiner = new StringJoiner(",");
             for(int j = 0; j < i; j++) {
                 StringJoiner innerJoiner = new StringJoiner("','","('","')");
                 String familyId = familyIds.get(j);
-                String tag = allParentsList.get(bestPrimaryIndices[j]);
-                String secondary = allChildrenList.get(bestSecondaryIndices[j]);
-                tag = technologyTransformer.apply(tag);
-                secondary = technologyTransformer.apply(secondary);
-                innerJoiner.add(familyId).add(tag).add(secondary);
-                valueJoiner.add(innerJoiner.toString());
-                if(firstTech==null) firstTech=tag;
-                if(firstSecondary==null) firstSecondary=secondary;
+                float[] primary = primaryScores.getRow(j).data().asFloat();
+                float[] secondary = secondaryScores.getRow(j).data().asFloat();
+                Pair<Integer,Integer> top = parentChildCombinations.parallelStream().map(p->{
+                    return new Pair<>(p,primary[p.getFirst()]+secondary[p.getSecond()]);
+                }).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(1).map(p->p.getFirst()).findFirst().orElse(null);
+                if(top!=null) {
+                    String tag = allParentsList.get(top.getFirst());
+                    String secondaryTag = allChildrenList.get(top.getSecond());
+                    tag = technologyTransformer.apply(tag);
+                    secondaryTag = technologyTransformer.apply(secondaryTag);
+                    innerJoiner.add(familyId).add(tag).add(secondaryTag);
+                    valueJoiner.add(innerJoiner.toString());
+                    if (firstTech == null) firstTech = tag;
+                    if (firstSecondary == null) firstSecondary = secondaryTag;
+                }
                 if (cnt.getAndIncrement() % 10000 == 9999) {
                     System.out.println("Finished: " + cnt.get() + " valid of " + totalCnt.get());
                     System.out.println("Sample "+firstPub+": " + firstTech+"; "+firstSecondary);

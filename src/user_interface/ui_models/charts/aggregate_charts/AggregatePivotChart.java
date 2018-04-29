@@ -6,6 +6,10 @@ import lombok.Setter;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
+import org.elasticsearch.search.aggregations.bucket.filters.Filters;
+import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
@@ -121,7 +125,6 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     public List<? extends TableResponse> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
         final String groupAggName = getGroupAggName(attrName);
         final String statsAggName = getStatsAggName(attrName);
-        final String aggName = getAggName(attrName);
         Type collectorType = attrToCollectTypeMap.get(attrName);
         String collectByAttrName = attrToCollectByAttrMap.get(attrName);
 
@@ -141,7 +144,6 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         TableResponse response = new TableResponse();
         List<String> nonHumanAttrs = new ArrayList<>(0);
         List<String> groupByDatasets;
-        List<Pair<String,Double>> bucketData;
 
         Function<Aggregations,Double> subAggregationHandler = collectByAttrName == null ? null : subAggs -> {
             Aggregation sub = subAggs.get(statsAggName);
@@ -188,54 +190,49 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         };
 
         if(isGrouped) { // handle two dimensional case (pivot)
-            bucketData = extractValuesFromAggregation(aggregations,attribute,attrName,null);
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
             if (groupByAttribute == null) {
                 throw new RuntimeException("Unable to find collecting attribute: " + groupByAttribute.getFullName());
             }
+            final List<String> dataSets = getCategoriesForAttribute(attribute);
+            Aggregation groupAgg = aggregations.get(groupAggName);
+            List<String> groupKeys = new ArrayList<>();
             groupByDatasets = getCategoriesForAttribute(groupByAttribute);
-            yTitle += " grouped by "+SimilarPatentServer.fullHumanAttributeFor(groupedByAttrName);
-            for(int i = 0; i < bucketData.size(); i++) {
-                // get groups
-                Pair<String,Double> bucket = bucketData.get(i);
-                headers.add(bucket.getFirst());
-                numericAttrNames.add(bucket.getFirst());
-                nonHumanAttrs.add(bucket.getFirst());
+            if(groupAgg instanceof MultiBucketsAggregation) {
+                MultiBucketsAggregation agg = (MultiBucketsAggregation)groupAgg;
+                int i = 0;
+                for(MultiBucketsAggregation.Bucket entry : agg.getBuckets()) {
+                    String key = groupByDatasets==null?entry.getKeyAsString():groupByDatasets.get(i);
+                    headers.add(key);
+                    groupKeys.add(key);
+                    numericAttrNames.add(key);
+                    nonHumanAttrs.add(key);
+                    i++;
+                }
+            } else {
+                throw new RuntimeException("Unable to cast group aggregation to MultiBucketsAggregation.class");
             }
-        } else {
-            String firstHeader = collectorType.toString();
-            headers.add(firstHeader);
-            numericAttrNames.add(firstHeader);
-            bucketData = extractValuesFromAggregation(aggregations,attribute,attrName,subAggregationHandler);
-            groupByDatasets = null;
-        }
+            yTitle += " grouped by "+SimilarPatentServer.fullHumanAttributeFor(groupedByAttrName);
 
-        response.type = getType();
-        response.title = yTitle;
-        response.headers = headers;
-        response.numericAttrNames = numericAttrNames;
-        response.nonHumanAttrs = nonHumanAttrs;
-
-        System.out.println("Numeric Attrs: "+response.numericAttrNames.toString());
-
-        if(isGrouped) {
-            /*response.computeAttributesTask = new RecursiveTask<List<Map<String, String>>>() {
+            response.computeAttributesTask = new RecursiveTask<List<Map<String, String>>>() {
                 @Override
                 protected List<Map<String, String>> compute() {
                     List<Map<String, String>> data = new ArrayList<>();
                     Map<String,Map<String,Double>> groupedData = new HashMap<>();
                     List<String> allGroups = new ArrayList<>();
                     Set<String> allEntries = new HashSet<>();
-                    for (int i = 0; i < bucketData.size(); i++) {
-                        Pair<String,Double> bucket = bucketData.get(i);
-                        Object group = groupByDatasets == null ? bucket.getFirst() : groupByDatasets.get(i);
+                    MultiBucketsAggregation bucketAgg = (MultiBucketsAggregation)groupAgg;
+                    for (int i = 0; i < bucketAgg.getBuckets().size(); i++) {
+                        MultiBucketsAggregation.Bucket bucket = bucketAgg.getBuckets().get(i);
+                        Object group = groupByDatasets == null ? bucket.getKeyAsString() : groupByDatasets.get(i);
                         if (group == null || group.toString().isEmpty()) group = "(empty)";
-                        List<Map<String,Object>> nestedBucketData = (List<Map<String,Object>>) ((Map)bucket.get(bucketName)).get("buckets");
+                        Aggregations nestedAggs = bucket.getAggregations();
+                        List<Pair<String,Double>> nestedBucketData = extractValuesFromAggregation(nestedAggs,attribute,attrName,subAggregationHandler);
                         Map<String,Double> pairsByGroup = new HashMap<>();
                         for(int j = 0; j < nestedBucketData.size(); j++) {
-                            Map<String, Object> nestedBucket = nestedBucketData.get(j);
-                            Double val = (Double) ((Map<String, Object>) nestedBucket.get(aggName)).get("value");
-                            Object label = dataSets == null ? nestedBucket.getOrDefault("key_as_string", bucket.get("key")) : dataSets.get(j);
+                            Pair<String,Double> nestedBucket = nestedBucketData.get(j);
+                            Double val = nestedBucket.getSecond();
+                            Object label = dataSets == null ? nestedBucket.getFirst() : dataSets.get(j);
                             pairsByGroup.put(label.toString(),val);
                             allEntries.add(label.toString());
                         }
@@ -254,11 +251,23 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                     });
                     return data;
                 }
-            };*/
+            };
+
+            response.type = getType();
+            response.title = yTitle;
+            response.headers = headers;
+            response.numericAttrNames = numericAttrNames;
+            response.nonHumanAttrs = nonHumanAttrs;
+
         } else {
+            String firstHeader = collectorType.toString();
+            headers.add(firstHeader);
+            numericAttrNames.add(firstHeader);
+
             response.computeAttributesTask = new RecursiveTask<List<Map<String, String>>>() {
                 @Override
                 protected List<Map<String, String>> compute() {
+                    List<Pair<String,Double>> bucketData = extractValuesFromAggregation(aggregations,attribute,attrName,subAggregationHandler);
                     List<Map<String, String>> data = new ArrayList<>();
                     for (int i = 0; i < bucketData.size(); i++) {
                         Pair<String,Double> bucket = bucketData.get(i);
@@ -272,7 +281,15 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                     return data;
                 }
             };
+
+            response.type = getType();
+            response.title = yTitle;
+            response.headers = headers;
+            response.numericAttrNames = numericAttrNames;
+            response.nonHumanAttrs = nonHumanAttrs;
+
         }
+
         response.computeAttributesTask.fork();
         return Collections.singletonList(response);
     }

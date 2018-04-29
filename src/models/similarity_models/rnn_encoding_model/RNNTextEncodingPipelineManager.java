@@ -24,7 +24,7 @@ import java.sql.PreparedStatement;
 public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<MultiDataSetIterator,INDArray> {
     public static final int BATCH_SIZE = 1048;
     public static final int MAX_SEQUENCE_LENGTH = 32;
-    public static final int MINI_BATCH_SIZE = 32;
+    public static final int MINI_BATCH_SIZE = 128;
     public static final int VECTOR_SIZE = 64;
     public static final String MODEL_NAME256 = "rnn_large_text_encoding_model256";
     public static final File PREDICTION_FILE = new File(Constants.DATA_FOLDER+"rnn_text_encoding_model256_prediction/predictions_map.jobj");
@@ -64,7 +64,7 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
     }
 
     private MultiDataSetIterator getIterator(PreparedStatement ps, int limit) {
-        return new RNNEncodingIterator(word2Vec,new PostgresSequenceIterator(ps,1,limit),BATCH_SIZE,MAX_SEQUENCE_LENGTH);
+        return new RNNEncodingIterator(word2Vec,new PostgresSequenceIterator(ps,1,-1,limit),BATCH_SIZE,MAX_SEQUENCE_LENGTH);
     }
 
     @Override

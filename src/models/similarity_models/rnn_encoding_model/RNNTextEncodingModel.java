@@ -93,11 +93,12 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
                 .weightInit(WeightInit.XAVIER)
                 //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
                 //.gradientNormalizationThreshold(1d)
-                //.regularization(true).l2(1e-4)
+               // .regularization(true).l2(1e-4)
                 .graphBuilder()
                 .addInputs("x")
                 .addLayer("l1", new GravesLSTM.Builder().nIn(inputSize).nOut(vectorSize).build(),"x")
-                .addLayer("y", new RnnOutputLayer.Builder().lossFunction(LossFunctions.LossFunction.COSINE_PROXIMITY).nIn(vectorSize).nOut(inputSize).build(),"l1")
+                .addLayer("l2", new GravesLSTM.Builder().nIn(vectorSize).nOut(inputSize).build(),"l1")
+                .addLayer("y", new RnnOutputLayer.Builder().lossFunction(LossFunctions.LossFunction.MSE).activation(Activation.IDENTITY).nIn(inputSize).nOut(inputSize).build(),"l2")
                 .setOutputs("y")
                 .pretrain(false).backprop(true).build();
     }
@@ -115,7 +116,7 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
             net.init();
         } else {
             System.out.println("Updating previous network...");
-            final double learningRate =  0.001;
+            final double learningRate =  0.001; //0.005;
             INDArray params = net.params();
             net = new ComputationGraph(getConf(learningRate,inputSize,vectorSize));
             net.init(params,false);
@@ -125,7 +126,7 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
         List<MultiDataSet> validationDatasets = new ArrayList<>();
         int count = 0;
         MultiDataSetIterator validationIterator = pipelineManager.getDatasetManager().getValidationIterator();
-        while(validationIterator.hasNext()&&count<5) {
+        while(validationIterator.hasNext()&&count<10) {
             validationDatasets.add(validationIterator.next());
             count++;
         }

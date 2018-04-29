@@ -33,11 +33,7 @@ public class Stage2 extends Stage<Set<MultiStem>> {
             // compute scores
             data = new ArrayList<>(documentsAppearedInCounter.entrySet()).parallelStream().map(e->{
                 MultiStem multiStem = e.getKey();
-                double score = e.getValue().doubleValue()*multiStem.getStems().length*Math.log(multiStem.toString().length());
-                if(multiStem.getStems().length > 1) {
-                    double denom = Stream.of(multiStem.getStems()).map(s -> documentsAppearedInCounter.getOrDefault(new MultiStem(new String[]{s}, -1),e.getValue())).mapToDouble(d -> d.doubleValue()).average().orElse(e.getValue().doubleValue());
-                    score = score * e.getValue().doubleValue() / Math.sqrt(denom);
-                }
+                double score = e.getValue().doubleValue()*Math.exp(multiStem.getStems().length)*Math.log(multiStem.toString().length());
                 multiStem.setScore((float)score);
                 return multiStem;
             }).sorted((s1,s2)->Float.compare(s2.getScore(),s1.getScore())).skip(toSkip).limit(toKeep).collect(Collectors.toSet());
