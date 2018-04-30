@@ -212,6 +212,7 @@ public class PredictTechTags {
 
         Connection seedConn = Database.newSeedConn();
         PreparedStatement ps = seedConn.prepareStatement("select family_id,publication_number_full,abstract,description,rnn_enc from big_query_patent_english_abstract as a left outer join big_query_patent_english_description as d on (a.family_id=d.family_id) left outer join big_query_embedding2 as e on (d.family_id=e.family_id)");
+        System.out.println("PS: "+ps.toString());
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
         AtomicLong cnt = new AtomicLong(0);
@@ -222,6 +223,8 @@ public class PredictTechTags {
         AtomicLong totalCnt = new AtomicLong(0);
         PreparedStatement insertDesign = conn.prepareStatement("insert into big_query_technologies (family_id,technology,technology2) values (?,'DESIGN','DESIGN') on conflict (family_id) do update set (technology,technology2,technology3)=('DESIGN','DESIGN', null)");
         PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies (family_id,technology,technology2) values (?,'BOTANY','PLANTS') on conflict (family_id) do update set (technology,technology2,technology3)=('BOTANY','PLANTS', null)");
+
+        System.out.println("Starting to iterate...");
         while(true) {
             int i = 0;
             INDArray abstractVectors = Nd4j.create(matrix.columns(),batch);
@@ -235,6 +238,9 @@ public class PredictTechTags {
             List<String> firstThird = null;
             for(; i < batch&&rs.next(); i++) {
                 totalCnt.getAndIncrement();
+                if(totalCnt.get()%10000==9999) {
+                    System.out.println("Seen total: "+totalCnt.get());
+                }
                 String familyId = rs.getString(1);
                 familyIds.add(familyId);
                 String publicationNumberFull = rs.getString(2);
