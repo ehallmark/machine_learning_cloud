@@ -83,15 +83,6 @@ public class KeyphrasePredictionModel {
         System.out.println("Final num multistems: "+multiStemSet.size());
 
         keywords = new ArrayList<>(multiStemSet);
-
-        System.out.println("Building keyword vector pairs...");
-        w2vMatrix = Nd4j.create(keywords.size(),keywordToVectorLookupTable.values().stream().findAny().get().getFirst().length());
-        rnnMatrix = Nd4j.create(keywords.size(),keywordToVectorLookupTable.values().stream().findAny().get().getSecond().length());
-        for(int i = 0; i < keywords.size(); i++) {
-            Pair<INDArray,INDArray> vecs = keywordToVectorLookupTable.get(keywords.get(i));
-            w2vMatrix.putRow(i,Transforms.unitVec(vecs.getFirst()));
-            rnnMatrix.putRow(i,Transforms.unitVec(vecs.getSecond()));
-        }
     }
 
 
@@ -196,6 +187,15 @@ public class KeyphrasePredictionModel {
 
             } else {
                 System.out.println("Using previous keyword to vector lookup table...");
+            }
+
+            System.out.println("Building keyword vector pairs...");
+            w2vMatrix = Nd4j.create(keywords.size(),keywordToVectorLookupTable.values().stream().findAny().get().getFirst().length());
+            rnnMatrix = Nd4j.create(keywords.size(),keywordToVectorLookupTable.values().stream().findAny().get().getSecond().length());
+            for(int i = 0; i < keywords.size(); i++) {
+                Pair<INDArray,INDArray> vecs = keywordToVectorLookupTable.get(keywords.get(i));
+                w2vMatrix.putRow(i,Transforms.unitVec(vecs.getFirst()));
+                rnnMatrix.putRow(i,Transforms.unitVec(vecs.getSecond()));
             }
 
         }
