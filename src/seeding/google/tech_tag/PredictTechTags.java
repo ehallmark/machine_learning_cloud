@@ -9,6 +9,7 @@ import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Database;
 import seeding.google.postgres.Util;
@@ -25,6 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PredictTechTags {
     public static final File matrixFile = new File("/home/ehallmark/repos/poi/tech_tag_statistics_matrix.jobj");
@@ -93,33 +95,55 @@ public class PredictTechTags {
     };
 
     public static void main(String[] args) throws Exception {
+        final Random random = new Random(235211);
         final int batch = 500;
         final int maxTags = 3;
         final double minScore = 1.0;
+        final int rnnLimit = 64;
+        final int rnnSamples = 8;
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         DefaultPipelineManager.setCudaEnvironment();
 
-        Word2Vec word2Vec = Word2VecManager.getOrLoadManager();
-        RNNTextEncodingPipelineManager pipelineManager = RNNTextEncodingPipelineManager.getOrLoadManager(true);
+        final Word2Vec word2Vec = Word2VecManager.getOrLoadManager();
+        final RNNTextEncodingPipelineManager pipelineManager = RNNTextEncodingPipelineManager.getOrLoadManager(true);
         pipelineManager.runPipeline(false,false,false,false,-1,false);
-        RNNTextEncodingModel model = (RNNTextEncodingModel)pipelineManager.getModel();
+        final RNNTextEncodingModel model = (RNNTextEncodingModel)pipelineManager.getModel();
 
         // create rnn vectors for wiki articles or add to invalidTechnologies if unable
         Map<String,String[]> titleToWordsMap = (Map<String,String[]>)Database.tryLoadObject(titleToTextMapFile);
         List<String> titlesForRnn = new ArrayList<>(titleToWordsMap.keySet());
         List<INDArray> rnnVectorsList = new ArrayList<>();
+        System.out.println("Starting build rnn vectors...");
+
         for(int i = 0; i < titlesForRnn.size(); i++) {
             String title = titlesForRnn.get(i);
-            String[] text = titleToWordsMap.get(title);
-            INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(text));
-            if(wordVectors.rows()>10) {
-                wordVectors = wordVectors.transpose();
-                wordVectors = wordVectors.reshape(1,word2Vec.getLayerSize(),wordVectors.columns());
-                INDArray encoding = model.getNet().getLayers()[0].activate(wordVectors, Layer.TrainingMode.TEST);
-                rnnVectorsList.add(encoding);
+            String[] text = Stream.of(titleToWordsMap.get(title))
+                    .filter(word->word2Vec.hasWord(word))
+                    .toArray(s->new String[s]);
+
+            if(text.length>10) {
+                if(text.length>rnnLimit) {
+                    INDArray features = Nd4j.create(rnnSamples,word2Vec.getLayerSize(),rnnLimit);
+                    for (int j = 0; j < rnnSamples; j++) {
+                        int r = random.nextInt(text.length-rnnLimit);
+                        String[] textSample = Arrays.copyOfRange(text,r,r+rnnLimit);
+                        INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(textSample));
+
+                        features.get(NDArrayIndex.point(j),NDArrayIndex.all(),NDArrayIndex.all()).assign(wordVectors.transpose());
+                    }
+                    INDArray encoding = Transforms.unitVec(model.getNet().getLayers()[0].activate(features, Layer.TrainingMode.TEST).mean(0));
+                    rnnVectorsList.add(encoding);
+                } else {
+                    INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(text));
+                    wordVectors = wordVectors.transpose();
+                    wordVectors = wordVectors.reshape(1, word2Vec.getLayerSize(), wordVectors.columns());
+                    INDArray encoding = Transforms.unitVec(model.getNet().getLayers()[0].activate(wordVectors, Layer.TrainingMode.TEST));
+                    rnnVectorsList.add(encoding);
+                }
             } else {
                 invalidTechnologies.add(title);
             }
+            System.out.println("Finished "+(1+i)+" out of "+titlesForRnn.size());
         }
         INDArray rnnMatrix = Nd4j.vstack(rnnVectorsList);
 
