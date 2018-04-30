@@ -128,9 +128,9 @@ public class KeyphrasePredictionModel {
         AtomicInteger idx = new AtomicInteger(0);
         entries.forEach(batch->{
             int i = idx.getAndIncrement();
-            INDArray w2vMat = matrix1.get(NDArrayIndex.interval(i*batchSize,i*batchSize+batch.size()),NDArrayIndex.all());
-            INDArray rnnMat = matrix2.get(NDArrayIndex.interval(i*batchSize,i*batchSize+batch.size()),NDArrayIndex.all());
-            INDArray simResults = w2vMatrix.mmul(w2vMat.transpose()).addi(rnnMatrix.mmul(rnnMat.transpose()));
+            INDArray w2vMat = matrix1.get(NDArrayIndex.all(),NDArrayIndex.interval(i*batchSize,i*batchSize+batch.size()));
+            INDArray rnnMat = matrix2.get(NDArrayIndex.all(),NDArrayIndex.interval(i*batchSize,i*batchSize+batch.size()));
+            INDArray simResults = w2vMatrix.mmul(w2vMat).addi(rnnMatrix.mmul(rnnMat));
             System.out.println("Matrix results shape: "+Arrays.toString(simResults.shape()));
             float[] data = Nd4j.toFlattened('f',simResults).data().asFloat();
             for(int r = 0; r < batch.size(); r++) {

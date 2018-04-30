@@ -366,7 +366,7 @@ public class PredictTechTags {
             Consumer<Pair<String,Set<String>>> keywordConsumer = pair -> {
                 keywordMap.put(pair.getKey(),pair.getSecond());
             };
-            keyphrasePredictionModel.predict(familyIds,wordVectors.transpose(),rnnVectors.transpose(),maxTags, minScore, keywordConsumer);
+            keyphrasePredictionModel.predict(familyIds,wordVectors,rnnVectors,maxTags, minScore, keywordConsumer);
 
             INDArray primaryScores = parentMatrixView.mmul(abstractVectors).addi(parentMatrixView.mmul(descriptionVectors));
             INDArray secondaryScores = childMatrixView.mmul(abstractVectors).addi(childMatrixView.mmul(descriptionVectors)).addi(rnnMatrix.mmul(rnnVectors));
