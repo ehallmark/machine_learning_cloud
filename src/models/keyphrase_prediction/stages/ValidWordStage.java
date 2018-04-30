@@ -22,23 +22,29 @@ public class ValidWordStage extends Stage<Set<MultiStem>>  {
         this.data = multiStems==null? Collections.emptySet() : new HashSet<>(multiStems);
     }
 
+    public static Set<String> loadDictionary() {
+        Set<String> dictionary = Collections.synchronizedSet(new HashSet<>());
+        try {
+            LineIterator iter = FileUtils.lineIterator(dictionaryFile);
+            while (iter.hasNext()) {
+                dictionary.add(iter.next().toLowerCase().trim());
+            }
+            LineIterator.closeQuietly(iter);
+            System.out.println("Finished reading dictionary. Size: " + dictionary.size());
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return dictionary;
+    }
+
     @Override
     public Set<MultiStem> run(boolean alwaysRerun) {
         if(alwaysRerun || !getFile().exists()) {
             // apply filter 2
             System.out.println("Num keywords before valid word stage: " + data.size());
             System.out.println("Reading dictionary...");
-            Set<String> dictionary = Collections.synchronizedSet(new HashSet<>());
-            try {
-                LineIterator iter = FileUtils.lineIterator(dictionaryFile);
-                while (iter.hasNext()) {
-                    dictionary.add(iter.next().toLowerCase().trim());
-                }
-                LineIterator.closeQuietly(iter);
-                System.out.println("Finished reading dictionary. Size: " + dictionary.size());
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
+
+            Set<String> dictionary = loadDictionary();
 
             data = data.parallelStream().filter(stem->{
                 String bestPhrase = stem.getBestPhrase();

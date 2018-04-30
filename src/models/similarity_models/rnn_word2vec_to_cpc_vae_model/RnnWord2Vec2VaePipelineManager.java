@@ -23,6 +23,7 @@ import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
+import seeding.google.word2vec.Word2VecManager;
 
 import java.io.File;
 import java.sql.Connection;
@@ -107,10 +108,9 @@ public class RnnWord2Vec2VaePipelineManager extends AbstractEncodingPipelineMana
             Nd4j.setDataType(DataBuffer.Type.FLOAT);
 
             String modelName = MODEL_NAME;
-            String word2VecPath = new File("data/word2vec_model_large.nn256").getAbsolutePath();
 
             Word2Vec word2Vec = null;
-            if(loadWord2Vec) word2Vec = WordVectorSerializer.readWord2VecModel(word2VecPath);
+            if(loadWord2Vec) word2Vec = Word2VecManager.getOrLoadManager();
 
             setLoggingLevel(Level.INFO);
             MANAGER = new RnnWord2Vec2VaePipelineManager(modelName, word2Vec);

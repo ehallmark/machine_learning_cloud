@@ -10,6 +10,7 @@ import java.util.stream.IntStream;
 
 public class Util {
     public static final Function<String,String[]> textToWordFunction = text -> {
+        if(text==null)return null;
         return text.toLowerCase().replaceAll("[^a-z ]"," ").split("\\s+");
     };
 

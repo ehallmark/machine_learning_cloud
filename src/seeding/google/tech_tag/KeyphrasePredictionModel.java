@@ -26,6 +26,7 @@ import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
+import seeding.google.word2vec.Word2VecManager;
 import tools.MinHeap;
 
 import java.io.File;
@@ -244,9 +245,13 @@ public class KeyphrasePredictionModel {
         return keywordToVectorLookupTable;
     }
 
-    public static Word2Vec getOrLoadManager() {
-        String word2VecPath = new File("data/word2vec_model_large.nn256").getAbsolutePath();
-        return WordVectorSerializer.readWord2VecModel(word2VecPath);
+    private static KeyphrasePredictionModel MODEL;
+    public static synchronized KeyphrasePredictionModel getOrLoadManager(boolean loadWord2Vec) {
+        if(MODEL==null) {
+            Word2Vec word2Vec = loadWord2Vec ? Word2VecManager.getOrLoadManager() : null;
+            MODEL = new KeyphrasePredictionModel(word2Vec);
+        }
+        return MODEL;
     }
 
 
@@ -257,10 +262,8 @@ public class KeyphrasePredictionModel {
         final boolean stages = true;
         final boolean rerunVocab = false;
         final boolean rerunFilters = false;
-        final Word2Vec word2Vec = getOrLoadManager();
 
-        final KeyphrasePredictionModel predictionModel = new KeyphrasePredictionModel(word2Vec);
-
+        final KeyphrasePredictionModel predictionModel = getOrLoadManager(true);
         predictionModel.initStages(vocab,stages,rerunVocab,rerunFilters);
     }
 }

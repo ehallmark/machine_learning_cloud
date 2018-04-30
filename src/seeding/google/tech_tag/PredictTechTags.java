@@ -1,6 +1,10 @@
 package seeding.google.tech_tag;
 
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
+import models.similarity_models.rnn_encoding_model.RNNTextEncodingModel;
+import models.similarity_models.rnn_encoding_model.RNNTextEncodingPipelineManager;
+import org.deeplearning4j.models.word2vec.Word2Vec;
+import org.deeplearning4j.nn.api.Layer;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -8,8 +12,10 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Database;
 import seeding.google.postgres.Util;
+import seeding.google.word2vec.Word2VecManager;
 
 import java.io.File;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,6 +29,7 @@ public class PredictTechTags {
     public static final File titleListFile = new File("/home/ehallmark/repos/poi/tech_tag_statistics_title_list.jobj");
     public static final File wordListFile = new File("/home/ehallmark/repos/poi/tech_tag_statistics_word_list.jobj");
     public static final File parentChildMapFile = new File("/home/ehallmark/repos/poi/tech_tag_statistics_parent_child_map.jobj");
+    public static final File titleToTextMapFile = new File("/home/ehallmark/repos/poi/tech_tag_title_to_text_map.jobj");
 
     private static final Set<String> invalidTechnologies = new HashSet<>(
             Arrays.asList(
@@ -87,6 +94,30 @@ public class PredictTechTags {
         final int batch = 500;
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         DefaultPipelineManager.setCudaEnvironment();
+
+        Word2Vec word2Vec = Word2VecManager.getOrLoadManager();
+        RNNTextEncodingPipelineManager pipelineManager = RNNTextEncodingPipelineManager.getOrLoadManager(true);
+        pipelineManager.runPipeline(false,false,false,false,-1,false);
+        RNNTextEncodingModel model = (RNNTextEncodingModel)pipelineManager.getModel();
+
+        // create rnn vectors for wiki articles or add to invalidTechnologies if unable
+        Map<String,String[]> titleToWordsMap = (Map<String,String[]>)Database.tryLoadObject(titleToTextMapFile);
+        List<String> titlesForRnn = new ArrayList<>(titleToWordsMap.keySet());
+        List<INDArray> rnnVectorsList = new ArrayList<>();
+        for(int i = 0; i < titlesForRnn.size(); i++) {
+            String title = titlesForRnn.get(i);
+            String[] text = titleToWordsMap.get(title);
+            INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(text));
+            if(wordVectors.rows()>10) {
+                wordVectors = wordVectors.transpose();
+                wordVectors = wordVectors.reshape(1,word2Vec.getLayerSize(),wordVectors.columns());
+                INDArray encoding = model.getNet().getLayers()[0].activate(wordVectors, Layer.TrainingMode.TEST);
+                rnnVectorsList.add(encoding);
+            } else {
+                invalidTechnologies.add(title);
+            }
+        }
+        INDArray rnnMatrix = Nd4j.vstack(rnnVectorsList);
 
         INDArray matrixOld = (INDArray) Database.tryLoadObject(matrixFile);
         List<String> allTitlesList = (List<String>) Database.tryLoadObject(titleListFile);
@@ -154,6 +185,12 @@ public class PredictTechTags {
         System.out.println("Num parents: "+allParentsList.size());
         System.out.println("Num children: "+allChildrenList.size());
         System.out.println("Valid technologies: "+allTitlesList.size()+" out of "+matrixOld.rows());
+        System.out.println("Valid rnn encodings: "+rnnMatrix.rows()+" out of "+matrixOld.rows());
+
+        if(rnnMatrix.rows()!=allTitlesList.size()) {
+            throw new RuntimeException("Expected rnn matrix size to equal all titles list size, but "+rnnMatrix.rows()+" != "+allTitlesList.size());
+        }
+        
         Map<String,Integer> wordToIndexMap = new HashMap<>();
         for(int i = 0; i < allWordsList.size(); i++) {
             wordToIndexMap.put(allWordsList.get(i),i);
@@ -167,8 +204,10 @@ public class PredictTechTags {
         INDArray parentMatrixView = createMatrixView(matrix,allParentsList,titleToIndexMap,false);
         INDArray childMatrixView = createMatrixView(matrix,allChildrenList,titleToIndexMap,false);
 
+        INDArray childRnnView = createMatrixView(rnnMatrix,allChildrenList,titleToIndexMap,false);
+
         Connection seedConn = Database.newSeedConn();
-        PreparedStatement ps = seedConn.prepareStatement("select family_id,publication_number_full,description from big_query_patent_english_description");
+        PreparedStatement ps = seedConn.prepareStatement("select family_id,publication_number_full,abstract,description,rnn_enc from big_query_patent_english_abstract as a left outer join big_query_patent_english_description as d on (a.family_id=d.family_id) left outer join big_query_embedding2 as e on (d.family_id=e.family_id)");
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
         AtomicLong cnt = new AtomicLong(0);
@@ -179,7 +218,9 @@ public class PredictTechTags {
         PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies (family_id,technology,secondary) values (?,'BOTANY','PLANTS') on conflict (family_id) do update set (technology,secondary)=('BOTANY','BOTANY')");
         while(true) {
             int i = 0;
-            INDArray vectors = Nd4j.create(matrix.columns(),batch);
+            INDArray abstractVectors = Nd4j.create(matrix.columns(),batch);
+            INDArray rnnVectors = Nd4j.create(pipelineManager.getEncodingSize(),batch);
+            INDArray descriptionVectors = Nd4j.create(matrix.columns(),batch);
             List<String> familyIds = new ArrayList<>(batch);
             String firstPub = null;
             String firstTech = null;
@@ -201,20 +242,42 @@ public class PredictTechTags {
                     insertPlant.executeUpdate();
                     i--;
                 } else {
-                    String text = rs.getString(3);
-                    String[] content = Util.textToWordFunction.apply(text);
+                    String[] abstractText = Util.textToWordFunction.apply(rs.getString(3));
+                    String[] descriptionText = Util.textToWordFunction.apply(rs.getString(4));
+                    Array sqlEncoding = rs.getArray(5);
+                    float[] rnnVec = new float[pipelineManager.getEncodingSize()];
+                    if(sqlEncoding!=null) {
+                        final Number[] encoding = (Number[]) sqlEncoding.getArray();
+                        for(int j = 0; j < encoding.length; j++) {
+                            rnnVec[j]=encoding[j].floatValue();
+                        }
+                    }
                     int found = 0;
-                    float[] data = new float[matrix.columns()];
-                    for (String word : content) {
-                        Integer index = wordToIndexMap.get(word);
-                        if (index != null) {
-                            found++;
-                            data[index]++;
+                    float[] abstractData = new float[matrix.columns()];
+                    float[] descriptionData = new float[matrix.columns()];
+                    if(abstractText!=null) {
+                        for (String word : abstractText) {
+                            Integer index = wordToIndexMap.get(word);
+                            if (index != null) {
+                                found++;
+                                abstractData[index]++;
+                            }
+                        }
+                    }
+                    if(descriptionText!=null) {
+                        for(String word : descriptionText) {
+                            Integer index = wordToIndexMap.get(word);
+                            if (index != null) {
+                                found++;
+                                descriptionData[index]++;
+                            }
                         }
                     }
                     if (found > 10) {
+                        abstractVectors.putColumn(i, Nd4j.create(abstractData));
+                        descriptionVectors.putColumn(i, Nd4j.create(descriptionData));
+                        rnnVectors.putColumn(i, Nd4j.create(rnnVec));
                         if(firstPub==null) firstPub=publicationNumberFull;
-                        vectors.putColumn(i, Nd4j.create(data));
                         //System.out.println("Best tag for " + publicationNumber + ": " + tag);
                     } else {
                         i--;
@@ -230,11 +293,16 @@ public class PredictTechTags {
             boolean breakAfter = false;
             if(i<batch) {
                 breakAfter = true;
-                vectors = vectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
+                abstractVectors = abstractVectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
+                descriptionVectors = descriptionVectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
+                rnnVectors = rnnVectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
             }
-            vectors.diviRowVector(vectors.norm2(0));
-            INDArray primaryScores = parentMatrixView.mmul(vectors);
-            INDArray secondaryScores = childMatrixView.mmul(vectors);
+            abstractVectors.diviRowVector(abstractVectors.norm2(0));
+            descriptionVectors.diviRowVector(descriptionVectors.norm2(0));
+            rnnVectors.diviRowVector(rnnVectors.norm2(0));
+
+            INDArray primaryScores = parentMatrixView.mmul(abstractVectors).addi(parentMatrixView.mmul(descriptionVectors));
+            INDArray secondaryScores = childMatrixView.mmul(abstractVectors).addi(childMatrixView.mmul(descriptionVectors)).addi(childRnnView.mmul(rnnVectors));
             String insert = "insert into big_query_technologies (family_id,technology,secondary) values ? on conflict(family_id) do update set (technology,secondary)=(excluded.technology,excluded.secondary)";
             StringJoiner valueJoiner = new StringJoiner(",");
             for(int j = 0; j < i; j++) {

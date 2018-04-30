@@ -13,6 +13,7 @@ import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
+import seeding.google.word2vec.Word2VecManager;
 
 import java.io.File;
 import java.sql.Connection;
@@ -32,6 +33,7 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
 
 
     private String modelName;
+    @Getter
     private int encodingSize;
     @Getter
     private Word2Vec word2Vec;
@@ -121,8 +123,7 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
         String modelName = MODEL_NAME256;
 
         int encodingSize = VECTOR_SIZE;
-        String word2VecPath = new File("data/word2vec_model_large.nn256").getAbsolutePath();
-        Word2Vec word2Vec = loadWord2Vec ? WordVectorSerializer.readWord2VecModel(word2VecPath) : null;
+        Word2Vec word2Vec = loadWord2Vec ? Word2VecManager.getOrLoadManager() : null;
 
         setCudaEnvironment();
         setLoggingLevel(Level.INFO);
