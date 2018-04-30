@@ -112,7 +112,9 @@ public class PredictTechTags {
         List<String> allTitlesList = (List<String>) Database.tryLoadObject(titleListFile);
         List<String> allWordsList = (List<String>) Database.tryLoadObject(wordListFile);
         Map<String,Set<String>> parentChildMap = (Map<String,Set<String>>) Database.tryLoadObject(parentChildMapFile);
-
+        if(matrixOld.rows()!=allTitlesList.size()) {
+            throw new RuntimeException("Invalid configuration. Matrix rows: "+matrixOld.rows()+", All Titles: "+allTitlesList.size());
+        }
         int validSize = allTitlesList.size();
         for(String title : allTitlesList) {
             if(invalidTechnologies.contains(title)) {
@@ -149,6 +151,12 @@ public class PredictTechTags {
 
         List<String> allParentsList = new ArrayList<>(parentChildMap.keySet());
         List<String> allChildrenList = new ArrayList<>(childParentMap.keySet());
+
+        System.out.println("Num parents before: "+allParentsList.size());
+        System.out.println("Num children before: "+allChildrenList.size());
+
+        allParentsList.removeIf(i->!allTitlesList.contains(i));
+        allChildrenList.removeIf(i->!allTitlesList.contains(i));
         List<String> childrenToRemove = new ArrayList<>();
         allChildrenList.forEach(child->{
             if(childParentMap.getOrDefault(child,Collections.emptySet()).size()>=parentChildMap.getOrDefault(child, Collections.emptySet()).size()) {
@@ -207,7 +215,7 @@ public class PredictTechTags {
             } else {
                 rnnMatrix.putRow(i, encoding);
             }
-            System.out.println("Finished "+(1+i)+" out of "+allChildrenList.size());
+            if(i%100==999) System.out.println("Finished "+(1+i)+" out of "+allChildrenList.size());
         }
 
         System.out.println("Num parents: "+allParentsList.size());
