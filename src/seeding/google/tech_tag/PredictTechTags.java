@@ -108,44 +108,6 @@ public class PredictTechTags {
         pipelineManager.runPipeline(false,false,false,false,-1,false);
         final RNNTextEncodingModel model = (RNNTextEncodingModel)pipelineManager.getModel();
 
-        // create rnn vectors for wiki articles or add to invalidTechnologies if unable
-        Map<String,String[]> titleToWordsMap = (Map<String,String[]>)Database.tryLoadObject(titleToTextMapFile);
-        List<String> titlesForRnn = new ArrayList<>(titleToWordsMap.keySet());
-        List<INDArray> rnnVectorsList = new ArrayList<>();
-        System.out.println("Starting build rnn vectors...");
-
-        for(int i = 0; i < titlesForRnn.size(); i++) {
-            String title = titlesForRnn.get(i);
-            String[] text = Stream.of(titleToWordsMap.get(title))
-                    .filter(word->word2Vec.hasWord(word))
-                    .toArray(s->new String[s]);
-
-            if(text.length>10) {
-                if(text.length>rnnLimit) {
-                    INDArray features = Nd4j.create(rnnSamples,word2Vec.getLayerSize(),rnnLimit);
-                    for (int j = 0; j < rnnSamples; j++) {
-                        int r = random.nextInt(text.length-rnnLimit);
-                        String[] textSample = Arrays.copyOfRange(text,r,r+rnnLimit);
-                        INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(textSample));
-
-                        features.get(NDArrayIndex.point(j),NDArrayIndex.all(),NDArrayIndex.all()).assign(wordVectors.transpose());
-                    }
-                    INDArray encoding = Transforms.unitVec(model.encode(features).mean(0));
-                    rnnVectorsList.add(encoding);
-                } else {
-                    INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(text));
-                    wordVectors = wordVectors.transpose();
-                    wordVectors = wordVectors.reshape(1, word2Vec.getLayerSize(), wordVectors.columns());
-                    INDArray encoding = model.encode(wordVectors);
-                    rnnVectorsList.add(encoding);
-                }
-            } else {
-                invalidTechnologies.add(title);
-            }
-            System.out.println("Finished "+(1+i)+" out of "+titlesForRnn.size());
-        }
-        INDArray rnnMatrix = Nd4j.vstack(rnnVectorsList);
-
         INDArray matrixOld = (INDArray) Database.tryLoadObject(matrixFile);
         List<String> allTitlesList = (List<String>) Database.tryLoadObject(titleListFile);
         List<String> allWordsList = (List<String>) Database.tryLoadObject(wordListFile);
@@ -209,13 +171,56 @@ public class PredictTechTags {
             }
         }
 
+        // create rnn vectors for wiki articles or add to invalidTechnologies if unable
+        Map<String,String[]> titleToWordsMap = (Map<String,String[]>)Database.tryLoadObject(titleToTextMapFile);
+        List<String> titlesForRnn = new ArrayList<>(titleToWordsMap.keySet());
+        titlesForRnn.removeAll(invalidTechnologies);
+        List<INDArray> rnnVectorsList = new ArrayList<>();
+        System.out.println("Starting build rnn vectors...");
+        titlesForRnn.sort(Comparator.naturalOrder());
+        INDArray rnnMatrix = Nd4j.create(allChildrenList.size(),pipelineManager.getEncodingSize());
+        for(int i = 0; i < allChildrenList.size(); i++) {
+            String title = allChildrenList.get(i);
+            INDArray encoding = null;
+            if(titleToWordsMap.containsKey(title)) {
+                String[] text = Stream.of(titleToWordsMap.get(title))
+                        .filter(word -> word2Vec.hasWord(word))
+                        .toArray(s -> new String[s]);
+
+                if (text.length > 10) {
+                    if (text.length > rnnLimit) {
+                        INDArray features = Nd4j.create(rnnSamples, word2Vec.getLayerSize(), rnnLimit);
+                        for (int j = 0; j < rnnSamples; j++) {
+                            int r = random.nextInt(text.length - rnnLimit);
+                            String[] textSample = Arrays.copyOfRange(text, r, r + rnnLimit);
+                            INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(textSample));
+
+                            features.get(NDArrayIndex.point(j), NDArrayIndex.all(), NDArrayIndex.all()).assign(wordVectors.transpose());
+                        }
+                        encoding = Transforms.unitVec(model.encode(features).mean(0));
+                    } else {
+                        INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(text));
+                        wordVectors = wordVectors.transpose();
+                        wordVectors = wordVectors.reshape(1, word2Vec.getLayerSize(), wordVectors.columns());
+                        encoding = model.encode(wordVectors);
+                    }
+                }
+            }
+            if(encoding==null) {
+                rnnMatrix.get(NDArrayIndex.point(i),NDArrayIndex.all()).assign(0);
+            } else {
+                rnnMatrix.putRow(i, encoding);
+            }
+            System.out.println("Finished "+(1+i)+" out of "+titlesForRnn.size());
+        }
+
         System.out.println("Num parents: "+allParentsList.size());
         System.out.println("Num children: "+allChildrenList.size());
         System.out.println("Valid technologies: "+allTitlesList.size()+" out of "+matrixOld.rows());
         System.out.println("Valid rnn encodings: "+rnnMatrix.rows()+" out of "+matrixOld.rows());
 
-        if(rnnMatrix.rows()!=allTitlesList.size()) {
-            throw new RuntimeException("Expected rnn matrix size to equal all titles list size, but "+rnnMatrix.rows()+" != "+allTitlesList.size());
+        if(rnnMatrix.rows()!=allChildrenList.size()) {
+            throw new RuntimeException("Expected rnn matrix size to equal all children list size, but "+rnnMatrix.rows()+" != "+allChildrenList.size());
         }
         
         Map<String,Integer> wordToIndexMap = new HashMap<>();
@@ -230,8 +235,6 @@ public class PredictTechTags {
 
         INDArray parentMatrixView = createMatrixView(matrix,allParentsList,titleToIndexMap,false);
         INDArray childMatrixView = createMatrixView(matrix,allChildrenList,titleToIndexMap,false);
-
-        INDArray childRnnView = createMatrixView(rnnMatrix,allChildrenList,titleToIndexMap,false);
 
         Connection seedConn = Database.newSeedConn();
         PreparedStatement ps = seedConn.prepareStatement("select family_id,publication_number_full,abstract,description,rnn_enc from big_query_patent_english_abstract as a left outer join big_query_patent_english_description as d on (a.family_id=d.family_id) left outer join big_query_embedding2 as e on (d.family_id=e.family_id)");
@@ -356,7 +359,7 @@ public class PredictTechTags {
             keyphrasePredictionModel.predict(familyIds,wordVectors.transpose(),rnnVectors.transpose(),maxTags, minScore, keywordConsumer);
 
             INDArray primaryScores = parentMatrixView.mmul(abstractVectors).addi(parentMatrixView.mmul(descriptionVectors));
-            INDArray secondaryScores = childMatrixView.mmul(abstractVectors).addi(childMatrixView.mmul(descriptionVectors)).addi(childRnnView.mmul(rnnVectors));
+            INDArray secondaryScores = childMatrixView.mmul(abstractVectors).addi(childMatrixView.mmul(descriptionVectors)).addi(rnnMatrix.mmul(rnnVectors));
             String insert = "insert into big_query_technologies (family_id,technology,technology2,technology3) values ? on conflict(family_id) do update set (technology,technology2,technology3)=(excluded.technology,excluded.technology2,excluded.technology3)";
             StringJoiner valueJoiner = new StringJoiner(",");
             for(int j = 0; j < i; j++) {
