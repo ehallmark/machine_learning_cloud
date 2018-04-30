@@ -228,6 +228,9 @@ public class KeyphrasePredictionModel {
     public static synchronized KeyphrasePredictionModel getOrLoadManager(boolean loadWord2Vec) {
         if(MODEL==null) {
             RNNTextEncodingPipelineManager pipelineManager = RNNTextEncodingPipelineManager.getOrLoadManager(loadWord2Vec);
+            if(pipelineManager.getModel()==null) {
+                pipelineManager.runPipeline(false,false,false, false,-1,false);
+            }
             Word2Vec word2Vec = pipelineManager.getWord2Vec();
             MODEL = new KeyphrasePredictionModel(word2Vec,(RNNTextEncodingModel) pipelineManager.getModel());
         }
