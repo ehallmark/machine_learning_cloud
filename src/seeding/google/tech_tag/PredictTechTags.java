@@ -95,10 +95,10 @@ public class PredictTechTags {
 
     public static void main(String[] args) throws Exception {
         final Random random = new Random(235211);
-        final int batch = 500;
+        final int batch = 1000;
         final int maxTags = 3;
-        final double minScore = 1.0;
-        final int rnnLimit = 64;
+        final double minScore = 0.8;
+        final int rnnLimit = 128;
         final int rnnSamples = 8;
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         DefaultPipelineManager.setCudaEnvironment();
@@ -215,7 +215,7 @@ public class PredictTechTags {
             } else {
                 rnnMatrix.putRow(i, encoding);
             }
-            if(i%100==999) System.out.println("Finished "+(1+i)+" out of "+allChildrenList.size());
+            if(i%100==99) System.out.println("Finished "+(1+i)+" out of "+allChildrenList.size());
         }
 
         System.out.println("Num parents: "+allParentsList.size());
@@ -247,7 +247,7 @@ public class PredictTechTags {
         INDArray childMatrixView = createMatrixView(matrix,allChildrenList,titleToIndexMap,false);
 
         Connection seedConn = Database.newSeedConn();
-        PreparedStatement ps = seedConn.prepareStatement("select family_id,publication_number_full,abstract,description,rnn_enc from big_query_patent_english_abstract as a left outer join big_query_patent_english_description as d on (a.family_id=d.family_id) left outer join big_query_embedding2 as e on (d.family_id=e.family_id)");
+        PreparedStatement ps = seedConn.prepareStatement("select a.family_id,a.publication_number_full,abstract,description,rnn_enc from big_query_patent_english_abstract as a left outer join big_query_patent_english_description as d on (a.family_id=d.family_id) left outer join big_query_embedding2 as e on (d.family_id=e.family_id)");
         System.out.println("PS: "+ps.toString());
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
