@@ -158,6 +158,7 @@ public class PredictTechTags {
             }
         });
         allChildrenList.removeAll(childrenToRemove);
+        allChildrenList.removeAll(invalidTechnologies);
 
         List<Pair<Integer,Integer>> parentChildCombinations = new ArrayList<>();
         for(int i = 0; i < allParentsList.size(); i++) {
@@ -173,11 +174,6 @@ public class PredictTechTags {
 
         // create rnn vectors for wiki articles or add to invalidTechnologies if unable
         Map<String,String[]> titleToWordsMap = (Map<String,String[]>)Database.tryLoadObject(titleToTextMapFile);
-        List<String> titlesForRnn = new ArrayList<>(titleToWordsMap.keySet());
-        titlesForRnn.removeAll(invalidTechnologies);
-        List<INDArray> rnnVectorsList = new ArrayList<>();
-        System.out.println("Starting build rnn vectors...");
-        titlesForRnn.sort(Comparator.naturalOrder());
         INDArray rnnMatrix = Nd4j.create(allChildrenList.size(),pipelineManager.getEncodingSize());
         for(int i = 0; i < allChildrenList.size(); i++) {
             String title = allChildrenList.get(i);
@@ -211,7 +207,7 @@ public class PredictTechTags {
             } else {
                 rnnMatrix.putRow(i, encoding);
             }
-            System.out.println("Finished "+(1+i)+" out of "+titlesForRnn.size());
+            System.out.println("Finished "+(1+i)+" out of "+allChildrenList.size());
         }
 
         System.out.println("Num parents: "+allParentsList.size());
@@ -231,6 +227,12 @@ public class PredictTechTags {
         Map<String,Integer> titleToIndexMap = new HashMap<>();
         for(int i = 0; i < allTitlesList.size(); i++) {
             titleToIndexMap.put(allTitlesList.get(i),i);
+        }
+
+        for(String child : allChildrenList) {
+            if(!allTitlesList.contains(child)) {
+                System.out.println("Child not found in titles: "+child);
+            }
         }
 
         INDArray parentMatrixView = createMatrixView(matrix,allParentsList,titleToIndexMap,false);
@@ -413,6 +415,6 @@ public class PredictTechTags {
 
     private static INDArray createMatrixView(INDArray full, List<String> elements, Map<String,Integer> indexMap, boolean columnwise) {
         int[] indices = elements.stream().mapToInt(e->indexMap.get(e)).toArray();
-        return columnwise?full.getColumns(indices):full.getRows(indices);
+        return columnwise?full.getColumns(indices).dup():full.getRows(indices).dup();
     }
 }
