@@ -1,23 +1,15 @@
 package seeding.google.tech_tag;
 
-import ch.qos.logback.classic.Level;
-import cpc_normalization.CPC;
-import cpc_normalization.CPCHierarchy;
-import data_pipeline.pipeline_manager.DefaultPipelineManager;
-import data_pipeline.vectorize.DataSetManager;
 import lombok.Getter;
 import models.keyphrase_prediction.MultiStem;
-import models.keyphrase_prediction.models.DefaultModel3;
 import models.keyphrase_prediction.models.DefaultModel4;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
 import models.similarity_models.paragraph_vectors.FloatFrequencyPair;
 import models.similarity_models.rnn_encoding_model.RNNTextEncodingPipelineManager;
-import models.similarity_models.word_cpc_2_vec_model.AbstractWordCPC2VecPipelineManager;
-import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
-import models.similarity_models.word_cpc_2_vec_model.WordCPCIterator;
-import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.word2vec.Word2Vec;
+import org.deeplearning4j.nn.api.Layer;
+import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -26,7 +18,6 @@ import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
-import seeding.google.word2vec.Word2VecManager;
 import tools.MinHeap;
 
 import java.io.File;
@@ -42,14 +33,19 @@ import java.util.stream.Stream;
  */
 public class KeyphrasePredictionModel {
     public static final Model modelParams = new DefaultModel4();
-    private static Map<MultiStem,INDArray> keywordToVectorLookupTable;
-    private static final File keywordToVectorLookupTableFile = new File(Constants.DATA_FOLDER+"keyword_to_vector_predictions_lookup_table.jobj");
+    private static Map<MultiStem,Pair<INDArray,INDArray>> keywordToVectorLookupTable;
+    private static final File keywordToVectorLookupTableFile = new File(Constants.DATA_FOLDER+"keyword_to_vector_pair_predictions_lookup_table.jobj");
     @Getter
     private Set<MultiStem> multiStemSet;
     private static Map<String,MultiStem> labelToKeywordMap;
     private Word2Vec word2Vec;
-    public KeyphrasePredictionModel(Word2Vec word2Vec) {
+    private ComputationGraph rnnEnc;
+    private List<MultiStem> keywords;
+    private INDArray w2vMatrix;
+    private INDArray rnnMatrix;
+    public KeyphrasePredictionModel(Word2Vec word2Vec, ComputationGraph rnnEnc) {
         this.word2Vec=word2Vec;
+        this.rnnEnc=rnnEnc;
     }
 
     public void initStages(boolean vocab, boolean filters, boolean rerunVocab, boolean rerunFilters) {
@@ -86,6 +82,17 @@ public class KeyphrasePredictionModel {
         multiStemSet.parallelStream().forEach(stem->labelToKeywordMap.put(stem.getBestPhrase(),stem));
 
         System.out.println("Final num multistems: "+multiStemSet.size());
+
+        keywords = new ArrayList<>(multiStemSet);
+
+        System.out.println("Building keyword vector pairs...");
+        w2vMatrix = Nd4j.create(keywords.size(),keywordToVectorLookupTable.values().stream().findAny().get().getFirst().length());
+        rnnMatrix = Nd4j.create(keywords.size(),keywordToVectorLookupTable.values().stream().findAny().get().getSecond().length());
+        for(int i = 0; i < keywords.size(); i++) {
+            Pair<INDArray,INDArray> vecs = keywordToVectorLookupTable.get(keywords.get(i));
+            w2vMatrix.putRow(i,Transforms.unitVec(vecs.getFirst()));
+            rnnMatrix.putRow(i,Transforms.unitVec(vecs.getSecond()));
+        }
     }
 
 
@@ -102,7 +109,8 @@ public class KeyphrasePredictionModel {
             INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(multiStem.getStems()));
             if(wordVectors.rows()==multiStem.getStems().length) {
                 INDArray vec = Transforms.unitVec(wordVectors.mean(0));
-                keywordToVectorLookupTable.put(multiStem, vec);
+                INDArray rnn = Transforms.unitVec(rnnEnc.getLayers()[0].activate(wordVectors.transpose().reshape(1,wordVectors.columns(),wordVectors.rows()), Layer.TrainingMode.TEST));
+                keywordToVectorLookupTable.put(multiStem, new Pair<>(vec,rnn));
             } else {
                 multiStem = null;
             }
@@ -110,57 +118,29 @@ public class KeyphrasePredictionModel {
         return multiStem;
     }
 
-
-    public Map<String,Set<String>> predict(Collection<String> keywords, Map<String,INDArray> toPredictMap, int maxTags, double minScore) {
-        List<MultiStem> keywordStems = keywords.stream().map(keyword->findOrCreateByLabel(keyword)).filter(mul->mul!=null).collect(Collectors.toList());
-        System.out.println("In key phrase manager, num keyword stems found: "+keywordStems.size()+ " out of "+keywords.size());
-        return predict(keywordStems, toPredictMap, maxTags, minScore);
-    }
-
-    public Map<String,Set<String>> predict(List<MultiStem> keywords, Map<String,INDArray> toPredictMap, int maxTags, double minScore) {
-        Map<String,Set<String>> predictions = Collections.synchronizedMap(new HashMap<>());
-        Consumer<Pair<String,Set<String>>> consumer = pair -> {
-            predictions.put(pair.getFirst(), pair.getSecond());
-        };
-        predict(keywords,toPredictMap,maxTags,minScore,consumer);
-        System.out.println("size="+predictions.size());
-        return predictions;
-    }
-
-    public void predict(List<MultiStem> keywords, Map<String,INDArray> toPredictMap, int maxTags, double minScore, Consumer<Pair<String,Set<String>>> consumer) {
+    public void predict(List<String> toPredict, INDArray matrix1, INDArray matrix2, int maxTags, double minScore, Consumer<Pair<String,Set<String>>> consumer) {
+        if(keywords==null) {
+            initStages(false,false,false,false);
+        }
         if(keywordToVectorLookupTable==null) {
             System.out.println("Loading keyword to vector table...");
             buildKeywordToLookupTableMap();
         }
 
-        System.out.println("Building keyword vector pairs...");
-        INDArray keywordMatrix = Nd4j.create(keywords.size(),keywordToVectorLookupTable.values().stream().findAny().get().length());
-        for(int i = 0; i < keywords.size(); i++) {
-            INDArray vec = keywordToVectorLookupTable.get(keywords.get(i));
-            keywordMatrix.putRow(i,Transforms.unitVec(vec));
-        }
-        INDArray cpcMatrix = Nd4j.create(toPredictMap.size(),toPredictMap.values().stream().findAny().get().length());
-        List<String> allEntries = new ArrayList<>(toPredictMap.keySet());
-        for(int i = 0; i < allEntries.size(); i++) {
-            INDArray vec = toPredictMap.get(allEntries.get(i));
-            cpcMatrix.putRow(i,Transforms.unitVec(vec));
-        }
-
         final int batchSize = 10000;
-
-        Map<String,INDArray> cpcVectors = toPredictMap;
 
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
 
         System.out.println("Starting predictions...");
 
-        List<List<String>> entries = batchBy(allEntries,batchSize);
+        List<List<String>> entries = batchBy(toPredict,batchSize);
         AtomicInteger idx = new AtomicInteger(0);
         entries.forEach(batch->{
             int i = idx.getAndIncrement();
-            INDArray cpcMat = cpcMatrix.get(NDArrayIndex.interval(i*batchSize,i*batchSize+batch.size()),NDArrayIndex.all());
-            INDArray simResults = keywordMatrix.mmul(cpcMat.transpose());
+            INDArray w2vMat = matrix1.get(NDArrayIndex.interval(i*batchSize,i*batchSize+batch.size()),NDArrayIndex.all());
+            INDArray rnnMat = matrix2.get(NDArrayIndex.interval(i*batchSize,i*batchSize+batch.size()),NDArrayIndex.all());
+            INDArray simResults = w2vMatrix.mmul(w2vMat.transpose()).addi(rnnMatrix.mmul(rnnMat.transpose()));
             System.out.println("Matrix results shape: "+Arrays.toString(simResults.shape()));
             float[] data = Nd4j.toFlattened('f',simResults).data().asFloat();
             for(int r = 0; r < batch.size(); r++) {
@@ -189,7 +169,7 @@ public class KeyphrasePredictionModel {
                 if(cnt.getAndIncrement()%100==99) {
                     System.gc();
                     System.out.println("Best keywords for "+cpc+": "+String.join("; ",tags));
-                    System.out.println("Finished "+cnt.get()+" out of "+cpcVectors.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
+                    System.out.println("Finished "+cnt.get()+" out of "+toPredict.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
                 }
             }
         });
@@ -202,16 +182,16 @@ public class KeyphrasePredictionModel {
         }).filter(l->l!=null&&l.size()>0).collect(Collectors.toList());
     }
 
-
-    public synchronized Map<MultiStem,INDArray> buildKeywordToLookupTableMap() {
+    // first entry is word2vec average, second entry is rnn_enc
+    public synchronized Map<MultiStem,Pair<INDArray,INDArray>> buildKeywordToLookupTableMap() {
         if(keywordToVectorLookupTable==null) {
             if(multiStemSet==null) initStages(false,false,false,false);
 
-            keywordToVectorLookupTable = (Map<MultiStem, INDArray>) Database.tryLoadObject(keywordToVectorLookupTableFile);
+            keywordToVectorLookupTable = (Map<MultiStem, Pair<INDArray,INDArray>>) Database.tryLoadObject(keywordToVectorLookupTableFile);
 
             if(keywordToVectorLookupTable==null||multiStemSet.size()!=keywordToVectorLookupTable.size()) {
                 // get vectors
-               keywordToVectorLookupTable = buildNewKeywordToLookupTableMapHelper(word2Vec,multiStemSet);
+               keywordToVectorLookupTable = buildNewKeywordToLookupTableMapHelper(rnnEnc,word2Vec,multiStemSet);
 
                 Database.trySaveObject(keywordToVectorLookupTable,keywordToVectorLookupTableFile);
 
@@ -224,19 +204,19 @@ public class KeyphrasePredictionModel {
         return keywordToVectorLookupTable;
     }
 
-    public static Map<MultiStem,INDArray> buildNewKeywordToLookupTableMapHelper(Word2Vec word2Vec, Set<MultiStem> multiStemSet) {
-        Map<MultiStem,INDArray> keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
+    public static Map<MultiStem,Pair<INDArray,INDArray>> buildNewKeywordToLookupTableMapHelper(ComputationGraph rnnEnc, Word2Vec word2Vec, Set<MultiStem> multiStemSet) {
+        Map<MultiStem,Pair<INDArray,INDArray>> keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
         System.out.println("Num vectors to create: "+multiStemSet.size());
         AtomicInteger cnt = new AtomicInteger(0);
         multiStemSet.stream().forEach(stem -> {
             String[] words = stem.getBestPhrase().toLowerCase().split(" ");
             List<String> valid = Stream.of(words).filter(word2Vec::hasWord).collect(Collectors.toList());
             if(valid.size()==words.length) {
-                INDArray encoding = Transforms.unitVec(word2Vec.getWordVectors(valid).mean(0));
-                if (encoding!=null) {
-                    //System.out.println("Shape: "+Arrays.toString(encoding.shape()));
-                    keywordToVectorLookupTable.put(stem,encoding);
-                }
+                INDArray vec = word2Vec.getWordVectors(valid);
+                INDArray encoding = Transforms.unitVec(vec.mean(0));
+                //System.out.println("Shape: "+Arrays.toString(encoding.shape()));
+                INDArray rnn = Transforms.unitVec(rnnEnc.getLayers()[0].activate(vec.transpose().reshape(1,vec.columns(),vec.rows()), Layer.TrainingMode.TEST));
+                keywordToVectorLookupTable.put(stem,new Pair<>(encoding,rnn));
             }
             if(cnt.getAndIncrement()%100==99) {
                 System.out.println(cnt.get());
@@ -248,8 +228,9 @@ public class KeyphrasePredictionModel {
     private static KeyphrasePredictionModel MODEL;
     public static synchronized KeyphrasePredictionModel getOrLoadManager(boolean loadWord2Vec) {
         if(MODEL==null) {
-            Word2Vec word2Vec = loadWord2Vec ? Word2VecManager.getOrLoadManager() : null;
-            MODEL = new KeyphrasePredictionModel(word2Vec);
+            RNNTextEncodingPipelineManager pipelineManager = RNNTextEncodingPipelineManager.getOrLoadManager(loadWord2Vec);
+            Word2Vec word2Vec = pipelineManager.getWord2Vec();
+            MODEL = new KeyphrasePredictionModel(word2Vec,(ComputationGraph)pipelineManager.getModel().getNet());
         }
         return MODEL;
     }

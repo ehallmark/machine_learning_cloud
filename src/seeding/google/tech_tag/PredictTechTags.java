@@ -22,7 +22,9 @@ import java.sql.ResultSet;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class PredictTechTags {
     public static final File matrixFile = new File("/home/ehallmark/repos/poi/tech_tag_statistics_matrix.jobj");
@@ -92,6 +94,8 @@ public class PredictTechTags {
 
     public static void main(String[] args) throws Exception {
         final int batch = 500;
+        final int maxTags = 3;
+        final double minScore = 1.0;
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         DefaultPipelineManager.setCudaEnvironment();
 
@@ -213,18 +217,22 @@ public class PredictTechTags {
         AtomicLong cnt = new AtomicLong(0);
         Connection conn = Database.getConn();
 
+        KeyphrasePredictionModel keyphrasePredictionModel = KeyphrasePredictionModel.getOrLoadManager(true);
+
         AtomicLong totalCnt = new AtomicLong(0);
-        PreparedStatement insertDesign = conn.prepareStatement("insert into big_query_technologies (family_id,technology,secondary) values (?,'DESIGN','DESIGN') on conflict (family_id) do update set (technology,secondary)=('DESIGN','DESIGN')");
-        PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies (family_id,technology,secondary) values (?,'BOTANY','PLANTS') on conflict (family_id) do update set (technology,secondary)=('BOTANY','BOTANY')");
+        PreparedStatement insertDesign = conn.prepareStatement("insert into big_query_technologies (family_id,technology,technology2) values (?,'DESIGN','DESIGN') on conflict (family_id) do update set (technology,technology2,technology3)=('DESIGN','DESIGN', null)");
+        PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies (family_id,technology,technology2) values (?,'BOTANY','PLANTS') on conflict (family_id) do update set (technology,technology2,technology3)=('BOTANY','PLANTS', null)");
         while(true) {
             int i = 0;
             INDArray abstractVectors = Nd4j.create(matrix.columns(),batch);
             INDArray rnnVectors = Nd4j.create(pipelineManager.getEncodingSize(),batch);
+            INDArray wordVectors = Nd4j.create(word2Vec.getLayerSize(),batch);
             INDArray descriptionVectors = Nd4j.create(matrix.columns(),batch);
             List<String> familyIds = new ArrayList<>(batch);
             String firstPub = null;
             String firstTech = null;
             String firstSecondary = null;
+            List<String> firstThird = null;
             for(; i < batch&&rs.next(); i++) {
                 totalCnt.getAndIncrement();
                 String familyId = rs.getString(1);
@@ -263,6 +271,14 @@ public class PredictTechTags {
                                 abstractData[index]++;
                             }
                         }
+                        INDArray _wv = word2Vec.getWordVectors(Arrays.asList(abstractText));
+                        if(_wv.rows()>5) {
+                            wordVectors.putColumn(i, _wv.mean(0));
+                        } else {
+                            wordVectors.get(NDArrayIndex.all(),NDArrayIndex.point(i)).assign(0);
+                        }
+                    } else {
+                        wordVectors.get(NDArrayIndex.all(),NDArrayIndex.point(i)).assign(0);
                     }
                     if(descriptionText!=null) {
                         for(String word : descriptionText) {
@@ -296,17 +312,26 @@ public class PredictTechTags {
                 abstractVectors = abstractVectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
                 descriptionVectors = descriptionVectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
                 rnnVectors = rnnVectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
+                wordVectors = wordVectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
             }
             abstractVectors.diviRowVector(abstractVectors.norm2(0));
             descriptionVectors.diviRowVector(descriptionVectors.norm2(0));
             rnnVectors.diviRowVector(rnnVectors.norm2(0));
+            wordVectors.diviRowVector(wordVectors.norm2(0));
+
+            // predict keywords
+            Map<String,Set<String>> keywordMap = new HashMap<>();
+            Consumer<Pair<String,Set<String>>> keywordConsumer = pair -> {
+                keywordMap.put(pair.getKey(),pair.getSecond());
+            };
+            keyphrasePredictionModel.predict(familyIds,wordVectors.transpose(),rnnVectors.transpose(),maxTags, minScore, keywordConsumer);
 
             INDArray primaryScores = parentMatrixView.mmul(abstractVectors).addi(parentMatrixView.mmul(descriptionVectors));
             INDArray secondaryScores = childMatrixView.mmul(abstractVectors).addi(childMatrixView.mmul(descriptionVectors)).addi(childRnnView.mmul(rnnVectors));
-            String insert = "insert into big_query_technologies (family_id,technology,secondary) values ? on conflict(family_id) do update set (technology,secondary)=(excluded.technology,excluded.secondary)";
+            String insert = "insert into big_query_technologies (family_id,technology,technology2,technology3) values ? on conflict(family_id) do update set (technology,technology2,technology3)=(excluded.technology,excluded.technology2,excluded.technology3)";
             StringJoiner valueJoiner = new StringJoiner(",");
             for(int j = 0; j < i; j++) {
-                StringJoiner innerJoiner = new StringJoiner("','","('","')");
+                StringJoiner innerJoiner = new StringJoiner(",","(",")");
                 String familyId = familyIds.get(j);
                 float[] primary = primaryScores.getRow(j).data().asFloat();
                 float[] secondary = secondaryScores.getRow(j).data().asFloat();
@@ -316,16 +341,29 @@ public class PredictTechTags {
                 if(top!=null) {
                     String tag = allParentsList.get(top.getFirst());
                     String secondaryTag = allChildrenList.get(top.getSecond());
+                    Set<String> tertiaryTag = keywordMap.get(familyId);
                     tag = technologyTransformer.apply(tag);
                     secondaryTag = technologyTransformer.apply(secondaryTag);
-                    innerJoiner.add(familyId).add(tag).add(secondaryTag);
+                    innerJoiner.add("'"+familyId+"'").add("'"+tag+"'").add("'"+secondaryTag+"'");
+                    if(tertiaryTag==null||tertiaryTag.isEmpty()) {
+                        innerJoiner.add("null");
+                    } else {
+                        tertiaryTag = tertiaryTag.stream().map(technologyTransformer::apply)
+                                .collect(Collectors.toSet());
+                        StringJoiner arrayJoiner = new StringJoiner("'{\"","\",\"","\"}'::text[]");
+                        for(String ter : tertiaryTag) {
+                            arrayJoiner.add(ter);
+                        }
+                        innerJoiner.add(arrayJoiner.toString());
+                    }
                     valueJoiner.add(innerJoiner.toString());
                     if (firstTech == null) firstTech = tag;
                     if (firstSecondary == null) firstSecondary = secondaryTag;
+                    if (firstThird == null) firstThird = tertiaryTag==null ? null : new ArrayList<>(tertiaryTag);
                 }
                 if (cnt.getAndIncrement() % 10000 == 9999) {
                     System.out.println("Finished: " + cnt.get() + " valid of " + totalCnt.get());
-                    System.out.println("Sample "+firstPub+": " + firstTech+"; "+firstSecondary);
+                    System.out.println("Sample "+firstPub+": " + firstTech+"; "+firstSecondary+"; "+firstThird);
                     Database.commit();
                 }
             }
