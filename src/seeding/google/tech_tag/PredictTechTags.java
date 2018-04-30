@@ -4,7 +4,6 @@ import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import models.similarity_models.rnn_encoding_model.RNNTextEncodingModel;
 import models.similarity_models.rnn_encoding_model.RNNTextEncodingPipelineManager;
 import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.deeplearning4j.nn.api.Layer;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -131,13 +130,13 @@ public class PredictTechTags {
 
                         features.get(NDArrayIndex.point(j),NDArrayIndex.all(),NDArrayIndex.all()).assign(wordVectors.transpose());
                     }
-                    INDArray encoding = Transforms.unitVec(model.getNet().getLayers()[0].activate(features, Layer.TrainingMode.TEST).mean(0));
+                    INDArray encoding = Transforms.unitVec(model.encode(features).mean(0));
                     rnnVectorsList.add(encoding);
                 } else {
                     INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(text));
                     wordVectors = wordVectors.transpose();
                     wordVectors = wordVectors.reshape(1, word2Vec.getLayerSize(), wordVectors.columns());
-                    INDArray encoding = Transforms.unitVec(model.getNet().getLayers()[0].activate(wordVectors, Layer.TrainingMode.TEST));
+                    INDArray encoding = model.encode(wordVectors);
                     rnnVectorsList.add(encoding);
                 }
             } else {

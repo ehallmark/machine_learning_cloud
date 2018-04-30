@@ -1,13 +1,10 @@
 package seeding.google.postgres;
 
-import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
-import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
 import models.similarity_models.rnn_encoding_model.RNNEncodingIterator;
 import models.similarity_models.rnn_encoding_model.RNNTextEncodingModel;
 import models.similarity_models.rnn_encoding_model.RNNTextEncodingPipelineManager;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.nn.api.Layer;
-import org.deeplearning4j.nn.layers.feedforward.dense.DenseLayer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
@@ -16,7 +13,8 @@ import seeding.Database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,9 +75,7 @@ public class IngestRNNEncForAssetsToPostgres {
             if(i<batchSize) {
                 features = features.get(NDArrayIndex.interval(0,i),NDArrayIndex.all(),NDArrayIndex.all());
             }
-            INDArray encoding = layer.activate(features, Layer.TrainingMode.TEST);
-            encoding = encoding.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(encoding.shape()[2]-1));
-            encoding.diviColumnVector(encoding.norm2(1));
+            INDArray encoding = model.encode(features);
             for(int j = 0; j < i; j++) {
                 String familyId = familyIds.get(j);
                 INDArray vec = encoding.getRow(j);

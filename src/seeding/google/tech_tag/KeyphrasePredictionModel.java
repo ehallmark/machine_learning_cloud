@@ -6,10 +6,9 @@ import models.keyphrase_prediction.models.DefaultModel4;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.stages.*;
 import models.similarity_models.paragraph_vectors.FloatFrequencyPair;
+import models.similarity_models.rnn_encoding_model.RNNTextEncodingModel;
 import models.similarity_models.rnn_encoding_model.RNNTextEncodingPipelineManager;
 import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.deeplearning4j.nn.api.Layer;
-import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -39,11 +38,11 @@ public class KeyphrasePredictionModel {
     private Set<MultiStem> multiStemSet;
     private static Map<String,MultiStem> labelToKeywordMap;
     private Word2Vec word2Vec;
-    private ComputationGraph rnnEnc;
+    private RNNTextEncodingModel rnnEnc;
     private List<MultiStem> keywords;
     private INDArray w2vMatrix;
     private INDArray rnnMatrix;
-    public KeyphrasePredictionModel(Word2Vec word2Vec, ComputationGraph rnnEnc) {
+    public KeyphrasePredictionModel(Word2Vec word2Vec, RNNTextEncodingModel rnnEnc) {
         this.word2Vec=word2Vec;
         this.rnnEnc=rnnEnc;
     }
@@ -109,7 +108,7 @@ public class KeyphrasePredictionModel {
             INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(multiStem.getStems()));
             if(wordVectors.rows()==multiStem.getStems().length) {
                 INDArray vec = Transforms.unitVec(wordVectors.mean(0));
-                INDArray rnn = Transforms.unitVec(rnnEnc.getLayers()[0].activate(wordVectors.transpose().reshape(1,wordVectors.columns(),wordVectors.rows()), Layer.TrainingMode.TEST));
+                INDArray rnn = rnnEnc.encode(wordVectors.transpose().reshape(1,wordVectors.columns(),wordVectors.rows()));
                 keywordToVectorLookupTable.put(multiStem, new Pair<>(vec,rnn));
             } else {
                 multiStem = null;
@@ -204,7 +203,7 @@ public class KeyphrasePredictionModel {
         return keywordToVectorLookupTable;
     }
 
-    public static Map<MultiStem,Pair<INDArray,INDArray>> buildNewKeywordToLookupTableMapHelper(ComputationGraph rnnEnc, Word2Vec word2Vec, Set<MultiStem> multiStemSet) {
+    public static Map<MultiStem,Pair<INDArray,INDArray>> buildNewKeywordToLookupTableMapHelper(RNNTextEncodingModel rnnEnc, Word2Vec word2Vec, Set<MultiStem> multiStemSet) {
         Map<MultiStem,Pair<INDArray,INDArray>> keywordToVectorLookupTable = Collections.synchronizedMap(new HashMap<>());
         System.out.println("Num vectors to create: "+multiStemSet.size());
         AtomicInteger cnt = new AtomicInteger(0);
@@ -215,7 +214,7 @@ public class KeyphrasePredictionModel {
                 INDArray vec = word2Vec.getWordVectors(valid);
                 INDArray encoding = Transforms.unitVec(vec.mean(0));
                 //System.out.println("Shape: "+Arrays.toString(encoding.shape()));
-                INDArray rnn = Transforms.unitVec(rnnEnc.getLayers()[0].activate(vec.transpose().reshape(1,vec.columns(),vec.rows()), Layer.TrainingMode.TEST));
+                INDArray rnn = rnnEnc.encode(vec.transpose().reshape(1,vec.columns(),vec.rows()));
                 keywordToVectorLookupTable.put(stem,new Pair<>(encoding,rnn));
             }
             if(cnt.getAndIncrement()%100==99) {
@@ -230,7 +229,7 @@ public class KeyphrasePredictionModel {
         if(MODEL==null) {
             RNNTextEncodingPipelineManager pipelineManager = RNNTextEncodingPipelineManager.getOrLoadManager(loadWord2Vec);
             Word2Vec word2Vec = pipelineManager.getWord2Vec();
-            MODEL = new KeyphrasePredictionModel(word2Vec,(ComputationGraph)pipelineManager.getModel().getNet());
+            MODEL = new KeyphrasePredictionModel(word2Vec,(RNNTextEncodingModel) pipelineManager.getModel());
         }
         return MODEL;
     }

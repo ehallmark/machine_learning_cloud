@@ -4,8 +4,12 @@ import data_pipeline.helpers.Function2;
 import data_pipeline.models.BaseTrainablePredictionModel;
 import data_pipeline.models.exceptions.StoppingConditionMetException;
 import data_pipeline.models.listeners.DefaultScoreListener;
+import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.conf.*;
+import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
+import org.deeplearning4j.nn.conf.LearningRatePolicy;
+import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.GravesLSTM;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.graph.ComputationGraph;
@@ -17,13 +21,17 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Constants;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
@@ -43,6 +51,12 @@ public class RNNTextEncodingModel extends BaseTrainablePredictionModel<INDArray,
         this.vectorSize=vectorSize;
     }
 
+    public INDArray encode(INDArray features) {
+        INDArray encoding = net.getLayers()[0].activate(features, Layer.TrainingMode.TEST);
+        encoding = encoding.get(NDArrayIndex.all(),NDArrayIndex.all(),NDArrayIndex.point(encoding.shape()[2]-1));
+        encoding.diviColumnVector(encoding.norm2(1));
+        return encoding;
+    }
 
 
     @Override
