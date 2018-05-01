@@ -119,7 +119,6 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
 
     @Override
     public List<? extends TableResponse> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
-        final String groupAggName = getGroupAggName(attrName);
         final String statsAggName = getStatsAggName(attrName);
         Type collectorType = attrToCollectTypeMap.get(attrName);
         String collectByAttrName = attrToCollectByAttrMap.get(attrName);
@@ -187,6 +186,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
 
         if(isGrouped) { // handle two dimensional case (pivot)
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
+            final String groupAggName = groupedByAttrName+getGroupSuffix();
             if (groupByAttribute == null) {
                 throw new RuntimeException("Unable to find collecting attribute: " + groupByAttribute.getFullName());
             }
