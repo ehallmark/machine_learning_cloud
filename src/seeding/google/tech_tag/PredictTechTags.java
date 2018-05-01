@@ -168,18 +168,6 @@ public class PredictTechTags {
         allChildrenList.removeAll(childrenToRemove);
         allChildrenList.removeAll(invalidTechnologies);
 
-        List<Pair<Integer,Integer>> parentChildCombinations = new ArrayList<>();
-        for(int i = 0; i < allParentsList.size(); i++) {
-            String parent = allParentsList.get(i);
-            Set<String> children = parentChildMap.getOrDefault(parent,new HashSet<>());
-            for(String child : children) {
-                int j = allChildrenList.indexOf(child);
-                if(j>=0) {
-                    parentChildCombinations.add(new Pair<>(i,j));
-                }
-            }
-        }
-
         // create rnn vectors for wiki articles or add to invalidTechnologies if unable
         Map<String,String[]> titleToWordsMap = (Map<String,String[]>)Database.tryLoadObject(titleToTextMapFile);
         INDArray rnnMatrix = Nd4j.create(allChildrenList.size(),pipelineManager.getEncodingSize());
@@ -222,6 +210,18 @@ public class PredictTechTags {
         System.out.println("Num children: "+allChildrenList.size());
         System.out.println("Valid technologies: "+allTitlesList.size()+" out of "+matrixOld.rows());
         System.out.println("Valid rnn encodings: "+rnnMatrix.rows()+" out of "+matrixOld.rows());
+
+        List<Pair<Integer,Integer>> parentChildCombinations = new ArrayList<>();
+        for(int i = 0; i < allParentsList.size(); i++) {
+            String parent = allParentsList.get(i);
+            Set<String> children = parentChildMap.getOrDefault(parent,new HashSet<>());
+            for(String child : children) {
+                int j = allChildrenList.indexOf(child);
+                if(j>=0) {
+                    parentChildCombinations.add(new Pair<>(i,j));
+                }
+            }
+        }
 
         if(rnnMatrix.rows()!=allChildrenList.size()) {
             throw new RuntimeException("Expected rnn matrix size to equal all children list size, but "+rnnMatrix.rows()+" != "+allChildrenList.size());
@@ -375,8 +375,10 @@ public class PredictTechTags {
             for(int j = 0; j < i; j++) {
                 StringJoiner innerJoiner = new StringJoiner(",","(",")");
                 String familyId = familyIds.get(j);
-                float[] primary = primaryScores.getRow(j).data().asFloat();
-                float[] secondary = secondaryScores.getRow(j).data().asFloat();
+                float[] primary = primaryScores.getColumn(j).data().asFloat();
+                float[] secondary = secondaryScores.getColumn(j).data().asFloat();
+                System.out.println("Primary: "+primary.length);
+                System.out.println("Secondary: "+secondary.length);
                 Pair<Integer,Integer> top = parentChildCombinations.parallelStream().map(p->{
                     return new Pair<>(p,primary[p.getFirst()]+secondary[p.getSecond()]);
                 }).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(1).map(p->p.getFirst()).findFirst().orElse(null);
