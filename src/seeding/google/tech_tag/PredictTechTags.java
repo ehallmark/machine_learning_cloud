@@ -384,10 +384,10 @@ public class PredictTechTags {
             BooleanIndexing.applyWhere(rNorm, Conditions.equals(0), new Value(1));
             BooleanIndexing.applyWhere(wNorm, Conditions.equals(0), new Value(1));
 
-            abstractVectors.diviRowVector(abstractVectors.norm2(0));
-            descriptionVectors.diviRowVector(descriptionVectors.norm2(0));
-            rnnVectors.diviRowVector(rnnVectors.norm2(0));
-            wordVectors.diviRowVector(wordVectors.norm2(0));
+            abstractVectors.diviRowVector(aNorm);
+            descriptionVectors.diviRowVector(dNorm);
+            rnnVectors.diviRowVector(rNorm);
+            wordVectors.diviRowVector(wNorm);
 
             // predict keywords
             Map<String,Set<String>> keywordMap = new HashMap<>();
@@ -417,6 +417,10 @@ public class PredictTechTags {
                     Set<String> tertiaryTag = keywordMap.get(familyId);
                     tag = technologyTransformer.apply(tag);
                     secondaryTag = technologyTransformer.apply(secondaryTag);
+                    if(tag.equals("MECHANICAL ENGINEERING")&&secondaryTag.equals("METAL HOSE")) {
+                        // FRACK
+                        System.out.println("FOUND MECHANICAL METAL HOSE: Scores = ("+primary[top.getFirst()]+", "+secondary[top.getSecond()]+")");
+                    }
                     innerJoiner.add("'"+familyId+"'").add("'"+pubNum+"'").add("'"+tag+"'").add("'"+secondaryTag+"'");
                     if(tertiaryTag==null||tertiaryTag.isEmpty()) {
                         innerJoiner.add("null");
