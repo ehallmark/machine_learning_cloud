@@ -97,7 +97,7 @@ public class PredictTechTags {
         final Random random = new Random(235211);
         final int batch = 1000;
         final int maxTags = 3;
-        final double minScore = 0.4;
+        final double minScore = 0.2;
         final int rnnLimit = 128;
         final int rnnSamples = 8;
         Nd4j.setDataType(DataBuffer.Type.FLOAT);

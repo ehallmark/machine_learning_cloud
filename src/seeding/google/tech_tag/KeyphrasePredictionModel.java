@@ -12,7 +12,6 @@ import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
@@ -24,7 +23,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -117,59 +115,43 @@ public class KeyphrasePredictionModel {
             buildKeywordToLookupTableMap();
         }
 
-        final int batchSize = 10000;
-
         AtomicInteger incomplete = new AtomicInteger(0);
         AtomicInteger cnt = new AtomicInteger(0);
 
         System.out.println("Starting predictions...");
 
-        List<List<String>> entries = batchBy(toPredict,batchSize);
-        AtomicInteger idx = new AtomicInteger(0);
-        entries.forEach(batch->{
-            int i = idx.getAndIncrement();
-            INDArray w2vMat = matrix1.get(NDArrayIndex.all(),NDArrayIndex.interval(i*batchSize,i*batchSize+batch.size()));
-            INDArray rnnMat = matrix2.get(NDArrayIndex.all(),NDArrayIndex.interval(i*batchSize,i*batchSize+batch.size()));
-            INDArray simResults = w2vMatrix.mmul(w2vMat).addi(rnnMatrix.mmul(rnnMat));
-            System.out.println("Matrix results shape: "+Arrays.toString(simResults.shape()));
-            float[] data = Nd4j.toFlattened('f',simResults).data().asFloat();
-            for(int r = 0; r < batch.size(); r++) {
-                MinHeap<FloatFrequencyPair<String>> heap = new MinHeap<>(maxTags);
-                for(int j = r*keywords.size(); j < r*keywords.size()+keywords.size(); j++) {
-                    int kIdx = j%keywords.size();
-                    float s = data[j];
-                    if(s>=minScore) {
-                        heap.add(new FloatFrequencyPair<>(keywords.get(kIdx).getBestPhrase(), s));
-                    }
-                }
-
-                Set<String> tags = Collections.synchronizedSet(new HashSet<>());
-                while(!heap.isEmpty()) {
-                    FloatFrequencyPair<String> p = heap.remove();
-                    tags.add(p.getFirst());
-                }
-                String cpc = batch.get(r);
-                if(!tags.isEmpty()) {
-                    consumer.accept(new Pair<>(cpc,tags));
-                } else {
-                    incomplete.getAndIncrement();
-                }
-
-
-                if(cnt.getAndIncrement()%100==99) {
-                    System.gc();
-                    System.out.println("Best keywords for "+cpc+": "+String.join("; ",tags));
-                    System.out.println("Finished "+cnt.get()+" out of "+toPredict.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
+        INDArray simResults = w2vMatrix.mmul(matrix1).addi(rnnMatrix.mmul(matrix2));
+        System.out.println("Matrix results shape: "+Arrays.toString(simResults.shape()));
+        float[] data = Nd4j.toFlattened('f',simResults).data().asFloat();
+        for(int r = 0; r < toPredict.size(); r++) {
+            MinHeap<FloatFrequencyPair<String>> heap = new MinHeap<>(maxTags);
+            for(int j = r*keywords.size(); j < r*keywords.size()+keywords.size(); j++) {
+                int kIdx = j%keywords.size();
+                float s = data[j];
+                if(s>=minScore) {
+                    heap.add(new FloatFrequencyPair<>(keywords.get(kIdx).getBestPhrase(), s));
                 }
             }
-        });
-    }
 
-    private static List<List<String>> batchBy(List<String> entries, int batch) {
-        return IntStream.range(0,1+(entries.size()/batch)).mapToObj(i->{
-            if(i*batch>=entries.size())return null;
-            return entries.subList(i*batch,Math.min(i*batch+batch,entries.size()));
-        }).filter(l->l!=null&&l.size()>0).collect(Collectors.toList());
+            Set<String> tags = Collections.synchronizedSet(new HashSet<>());
+            while(!heap.isEmpty()) {
+                FloatFrequencyPair<String> p = heap.remove();
+                tags.add(p.getFirst());
+            }
+            String cpc = toPredict.get(r);
+            if(!tags.isEmpty()) {
+                consumer.accept(new Pair<>(cpc,tags));
+            } else {
+                incomplete.getAndIncrement();
+            }
+
+
+            if(cnt.getAndIncrement()%100==99) {
+                System.gc();
+                System.out.println("Best keywords for "+cpc+": "+String.join("; ",tags));
+                System.out.println("Finished "+cnt.get()+" out of "+toPredict.size()+". Incomplete: "+incomplete.get()+"/"+cnt.get());
+            }
+        }
     }
 
     // first entry is word2vec average, second entry is rnn_enc
