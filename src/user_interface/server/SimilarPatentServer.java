@@ -445,10 +445,15 @@ public class SimilarPatentServer {
         List<AbstractAttribute> nested = attributes.stream().filter(attr->attr.getParent()!=null).collect(Collectors.toList());
         Map<String,Set<AbstractAttribute>> nestedMap = nested.stream().collect(Collectors.groupingBy(attr->attr.getRootName(),Collectors.toSet()));
         nestedMap.entrySet().forEach(e->{
+            NestedAttribute nestedAttr = nestedAttrMap.get(e.getKey());
             nonNested.add(new NestedAttribute(e.getValue().stream().map(attr->attr.clone()).collect(Collectors.toList())) {
                 @Override
                 public String getName() {
                     return e.getKey();
+                }
+                @Override
+                public boolean isObject() { // important
+                    return nestedAttr.isObject();
                 }
             });
         });

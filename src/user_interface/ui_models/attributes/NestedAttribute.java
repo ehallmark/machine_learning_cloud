@@ -42,6 +42,19 @@ public abstract class NestedAttribute extends AbstractAttribute {
         this(attributes,true);
     }
 
+    public NestedAttribute clone() {
+        return new NestedAttribute(attributes.stream().map(attr->attr.clone()).collect(Collectors.toList()),setParent) {
+            @Override
+            public boolean isObject() {
+                return isObject;
+            }
+            @Override
+            public String getName() {
+                return null;
+            }
+        };
+    }
+
     public String getAttributeId() {
         return null;
     }
