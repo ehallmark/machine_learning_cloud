@@ -394,7 +394,7 @@ public class PredictTechTags {
                     } else {
                         tertiaryTag = tertiaryTag.stream().map(technologyTransformer::apply)
                                 .collect(Collectors.toSet());
-                        StringJoiner arrayJoiner = new StringJoiner("ARRAY['","','","']");
+                        StringJoiner arrayJoiner = new StringJoiner("','","ARRAY['","']");
                         for(String ter : tertiaryTag) {
                             arrayJoiner.add(ter);
                         }
