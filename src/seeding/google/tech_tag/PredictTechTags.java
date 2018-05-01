@@ -377,8 +377,8 @@ public class PredictTechTags {
                 String familyId = familyIds.get(j);
                 float[] primary = primaryScores.getColumn(j).data().asFloat();
                 float[] secondary = secondaryScores.getColumn(j).data().asFloat();
-                System.out.println("Primary: "+primary.length);
-                System.out.println("Secondary: "+secondary.length);
+                //System.out.println("Primary: "+primary.length);
+                //System.out.println("Secondary: "+secondary.length);
                 Pair<Integer,Integer> top = parentChildCombinations.parallelStream().map(p->{
                     return new Pair<>(p,primary[p.getFirst()]+secondary[p.getSecond()]);
                 }).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(1).map(p->p.getFirst()).findFirst().orElse(null);
@@ -394,7 +394,7 @@ public class PredictTechTags {
                     } else {
                         tertiaryTag = tertiaryTag.stream().map(technologyTransformer::apply)
                                 .collect(Collectors.toSet());
-                        StringJoiner arrayJoiner = new StringJoiner("'{\"","\",\"","\"}'::text[]");
+                        StringJoiner arrayJoiner = new StringJoiner("ARRAY['","','","']");
                         for(String ter : tertiaryTag) {
                             arrayJoiner.add(ter);
                         }
@@ -411,7 +411,9 @@ public class PredictTechTags {
                     Database.commit();
                 }
             }
-            PreparedStatement insertPs = conn.prepareStatement(insert.replace("?",valueJoiner.toString()));
+            final String statement =  insert.replace("?",valueJoiner.toString());
+            System.out.println("Statement: "+statement);
+            PreparedStatement insertPs = conn.prepareStatement(statement);
             insertPs.executeUpdate();
             if(breakAfter) {
                 break;
