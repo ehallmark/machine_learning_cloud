@@ -120,7 +120,7 @@ public class KeyphrasePredictionModel {
 
         System.out.println("Starting predictions...");
 
-        INDArray simResults = w2vMatrix.mmul(matrix1);//.addi(rnnMatrix.mmul(matrix2));
+        INDArray simResults = w2vMatrix.mmul(matrix1).addi(rnnMatrix.mmul(matrix2));
         System.out.println("Matrix results shape: "+Arrays.toString(simResults.shape()));
         float[] data = Nd4j.toFlattened('f',simResults).data().asFloat();
         if(toPredict.size()*keywords.size()!=data.length) {
