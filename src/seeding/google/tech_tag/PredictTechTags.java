@@ -278,7 +278,6 @@ public class PredictTechTags {
                     System.out.println("Seen total: "+totalCnt.get());
                 }
                 String familyId = rs.getString(1);
-                familyIds.add(familyId);
                 String publicationNumberFull = rs.getString(2);
                 String publicationNumber = publicationNumberFull.substring(2);
                 if(publicationNumber.startsWith("D")) {
@@ -332,6 +331,7 @@ public class PredictTechTags {
                         }
                     }
                     if (found > 10) {
+                        familyIds.add(familyId);
                         abstractVectors.putColumn(i, Nd4j.create(abstractData));
                         descriptionVectors.putColumn(i, Nd4j.create(descriptionData));
                         rnnVectors.putColumn(i, Nd4j.create(rnnVec));
