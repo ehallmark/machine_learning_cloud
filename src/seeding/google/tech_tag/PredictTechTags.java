@@ -268,6 +268,7 @@ public class PredictTechTags {
             INDArray wordVectors = Nd4j.create(word2Vec.getLayerSize(),batch);
             INDArray descriptionVectors = Nd4j.create(matrix.columns(),batch);
             List<String> familyIds = new ArrayList<>(batch);
+            List<String> pubNums = new ArrayList<>(batch);
             String firstPub = null;
             String firstTech = null;
             String firstSecondary = null;
@@ -332,6 +333,7 @@ public class PredictTechTags {
                     }
                     if (found > 10) {
                         familyIds.add(familyId);
+                        pubNums.add(publicationNumberFull);
                         abstractVectors.putColumn(i, Nd4j.create(abstractData));
                         descriptionVectors.putColumn(i, Nd4j.create(descriptionData));
                         rnnVectors.putColumn(i, Nd4j.create(rnnVec));
@@ -370,11 +372,12 @@ public class PredictTechTags {
 
             INDArray primaryScores = parentMatrixView.mmul(abstractVectors).addi(parentMatrixView.mmul(descriptionVectors));
             INDArray secondaryScores = childMatrixView.mmul(abstractVectors).addi(childMatrixView.mmul(descriptionVectors)).addi(rnnMatrix.mmul(rnnVectors));
-            String insert = "insert into big_query_technologies (family_id,technology,technology2,technology3) values ? on conflict(family_id) do update set (technology,technology2,technology3)=(excluded.technology,excluded.technology2,excluded.technology3)";
+            String insert = "insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2,technology3) values ? on conflict(family_id) do update set (publication_number_full,technology,technology2,technology3)=(excluded.publication_number_full,excluded.technology,excluded.technology2,excluded.technology3)";
             StringJoiner valueJoiner = new StringJoiner(",");
             for(int j = 0; j < i; j++) {
                 StringJoiner innerJoiner = new StringJoiner(",","(",")");
                 String familyId = familyIds.get(j);
+                String pubNum = pubNums.get(j);
                 float[] primary = primaryScores.getColumn(j).data().asFloat();
                 float[] secondary = secondaryScores.getColumn(j).data().asFloat();
                 //System.out.println("Primary: "+primary.length);
@@ -388,7 +391,7 @@ public class PredictTechTags {
                     Set<String> tertiaryTag = keywordMap.get(familyId);
                     tag = technologyTransformer.apply(tag);
                     secondaryTag = technologyTransformer.apply(secondaryTag);
-                    innerJoiner.add("'"+familyId+"'").add("'"+tag+"'").add("'"+secondaryTag+"'");
+                    innerJoiner.add("'"+familyId+"'").add("'"+pubNum+"'").add("'"+tag+"'").add("'"+secondaryTag+"'");
                     if(tertiaryTag==null||tertiaryTag.isEmpty()) {
                         innerJoiner.add("null");
                     } else {
