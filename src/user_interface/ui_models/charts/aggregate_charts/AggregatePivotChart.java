@@ -7,9 +7,6 @@ import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
-import org.elasticsearch.search.aggregations.bucket.filters.Filters;
-import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
@@ -28,7 +25,6 @@ import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
 import user_interface.ui_models.charts.aggregations.metrics.CombinedAggregation;
 import user_interface.ui_models.charts.tables.TableResponse;
-import user_interface.ui_models.engines.SimilarityEngineController;
 
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
@@ -196,7 +192,11 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
             }
             final List<String> dataSets = getCategoriesForAttribute(attribute);
             Aggregation groupAgg = aggregations.get(groupAggName);
-            if(groupAgg==null) throw new NullPointerException("Group agg is null");
+            if(groupAgg==null) {
+                System.out.println("Group agg: "+groupAggName);
+                System.out.println("Available aggs: "+String.join(", ",aggregations.getAsMap().keySet()));
+                throw new NullPointerException("Group agg is null");
+            }
             groupByDatasets = getCategoriesForAttribute(groupByAttribute);
             if(groupAgg instanceof MultiBucketsAggregation) {
                 MultiBucketsAggregation agg = (MultiBucketsAggregation)groupAgg;
