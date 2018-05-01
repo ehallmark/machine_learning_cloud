@@ -200,6 +200,8 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         }
         if(isNested) {
             System.out.println("Is Parent Object: "+attribute.getParent().isObject());
+            System.out.println("Parent attr name: "+attribute.getParent().getFullName());
+            System.out.println("Parent attr class: "+attribute.getParent().getClass().getName());
             System.out.println("Nested attribute for aggregation: "+attribute.getFullName());
             return new BucketAggregation() {
                 @Override
