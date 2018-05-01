@@ -77,7 +77,7 @@ public class PortfolioList implements Comparable<PortfolioList> {
 
         if(items.isEmpty()) return Stream.empty();
 
-        System.out.println("Starting to group table...");
+        System.out.println("Starting to group table within portfolio list...");
 
         return items.stream()
                 .collect(Collectors.groupingBy(t->t.getSecond(),Collectors.mapping(pair->pair.getFirst(), Collectors.toList())))

@@ -184,7 +184,11 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         Integer maxLimit = attrNameToMaxGroupSizeMap.get(attribute);
         Boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attribute,false);
         if(maxLimit==null) maxLimit = 1;
-        return portfolioList.groupedBy(Collections.singletonList(groupedBy)).filter(g->includeBlank||!g.getSecond().isBlankGroup()).sorted((p1,p2)->Integer.compare(p2.getSecond().getItemList().size(),p1.getSecond().getItemList().size())).limit(maxLimit);
+        List<String> groupByList = new ArrayList<>();
+        if(groupedBy!=null) {
+            groupByList.add(groupedBy);
+        }
+        return portfolioList.groupedBy(groupByList).filter(g->includeBlank||!g.getSecond().isBlankGroup()).sorted((p1,p2)->Integer.compare(p2.getSecond().getItemList().size(),p1.getSecond().getItemList().size())).limit(maxLimit);
     }
 
     @Override
