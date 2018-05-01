@@ -1,12 +1,9 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
-import com.googlecode.wickedcharts.highcharts.options.series.Point;
-import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
@@ -24,7 +21,7 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
     protected Map<String,LocalDate> attrToMinMap;
     protected Map<String,LocalDate> attrToMaxMap;
     public AggregateLineChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
-        super(false,AGG_SUFFIX, attributes, groupByAttrs, Constants.LINE_CHART, false);
+        super(false,"Timeline",AGG_SUFFIX, attributes, groupByAttrs, Constants.LINE_CHART, false);
         this.attrToMaxMap = Collections.synchronizedMap(new HashMap<>());
         this.attrToMinMap = Collections.synchronizedMap(new HashMap<>());
     }
@@ -71,29 +68,21 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
     public List<? extends LineChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
         String humanAttr = SimilarPatentServer.fullHumanAttributeFor(attribute.getFullName());
         String humanSearchType = combineTypesToString(searchTypes);
-        String title = humanAttr + " Timeline";
+        String title = humanAttr + " "+chartTitle;
         String xAxisSuffix = "";
         String yAxisSuffix = "";
 
-        String seriesName = singularize(humanSearchType) + " Count";
-        PointSeries series = new PointSeries();
-        series.setName(seriesName);
-
-        List<Series<?>> seriesList = new ArrayList<>();
-        series.setName(title);
-        series.setShowInLegend(false);
-
-        Histogram agg = (Histogram) handlePotentiallyNestedAgg(aggregations,attrName);
-        // For each entry
-        for (Histogram.Bucket entry : agg.getBuckets()) {
-            String keyAsString = entry.getKeyAsString(); // Key as String
-            long docCount = entry.getDocCount();         // Doc count
-            Point point = new Point(keyAsString,docCount);
-            series.addPoint(point);
+        String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
+        String subtitle = "";
+        final boolean isGrouped = groupedByAttrName!=null;
+        if(isGrouped) {
+            subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
         }
-
-        seriesList.add(series);
-        return Collections.singletonList(new LineChart(false,title, "", seriesList, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
+        List<Series<?>> data = createDataForAggregationChart(aggregations,attribute,attrName,title,null);
+        data.forEach(series->{
+            series.setShowInLegend(false);
+        });
+        return Collections.singletonList(new LineChart(false,title, subtitle, data, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
     }
 
     @Override

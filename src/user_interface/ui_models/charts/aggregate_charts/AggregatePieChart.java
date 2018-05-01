@@ -1,7 +1,5 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
-import com.googlecode.wickedcharts.highcharts.options.series.Point;
-import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
@@ -9,12 +7,9 @@ import j2html.tags.Tag;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.TermsLookup;
-import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.bucket.filters.Filters;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
@@ -31,7 +26,6 @@ import user_interface.ui_models.filters.AbstractFilter;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
 
@@ -40,7 +34,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     private static final String MAX_SLICES = "maxSlices";
     protected Map<String,Integer> attrToLimitMap;
     public AggregatePieChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
-        super(false,AGG_SUFFIX, attributes, groupByAttrs, Constants.PIE_CHART, false);
+        super(false,"Distribution",AGG_SUFFIX, attributes, groupByAttrs, Constants.PIE_CHART, false);
         this.attrToLimitMap=Collections.synchronizedMap(new HashMap<>());
     }
 
@@ -62,55 +56,17 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
 
     @Override
     public List<? extends PieChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
+        String title = SimilarPatentServer.humanAttributeFor(attrName) + " "+chartTitle;
+        String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         Integer limit = attrToLimitMap.get(attrName);
-        String title = SimilarPatentServer.humanAttributeFor(attrName) + " Distribution";
-        List<Series<?>> data = new ArrayList<>();
-        PointSeries series = new PointSeries();
-        series.setName(title);
-
-        List<Pair<String,Long>> bucketData = new ArrayList<>();
-        Aggregation _agg = handlePotentiallyNestedAgg(aggregations,attrName);
-        if(_agg instanceof Filters) {
-            List<String> dataSets = ((DatasetAttribute) attribute).getCurrentDatasets().stream()
-                    .map(e->e.getFirst()).collect(Collectors.toList());
-            Filters agg = (Filters)_agg;
-            // For each entry
-            int i = 0;
-            for (Filters.Bucket entry : agg.getBuckets()) {
-                String key = dataSets.get(i);          // bucket key
-                long docCount = entry.getDocCount();            // Doc count
-                bucketData.add(new Pair<>(key,docCount));
-                i++;
-            }
-        } else {
-            Terms agg = (Terms)_agg;
-            for(Terms.Bucket entry : agg.getBuckets()) {
-                String key = entry.getKeyAsString();
-                long docCount = entry.getDocCount();
-                bucketData.add(new Pair<>(key,docCount));
-            }
+        String subtitle = "";
+        final boolean isGrouped = groupedByAttrName!=null;
+        if(isGrouped) {
+            subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
         }
-
-        double remaining = 0d;
-        for(int i = 0; i < bucketData.size(); i++) {
-            Pair<String,Long> bucket = bucketData.get(i);
-            Object label = bucket.getFirst();
-            if(label==null||label.toString().isEmpty()) label = "(empty)";
-            double prob = bucket.getSecond().doubleValue();
-            if(limit!=null&&i>=limit) {
-                remaining+=prob;
-            } else {
-                Point point = new Point(label.toString(), prob);
-                series.addPoint(point);
-            }
-        }
-        if(remaining>0) {
-            series.addPoint(new Point("(remaining)",remaining));
-        }
-        data.add(series);
-        return Collections.singletonList(new PieChart(title,  "", data, combineTypesToString(searchTypes)));
+        List<Series<?>> data = createDataForAggregationChart(aggregations,attribute,attrName,title,limit);
+        return Collections.singletonList(new PieChart(title,  subtitle, data, combineTypesToString(searchTypes)));
     }
-
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {

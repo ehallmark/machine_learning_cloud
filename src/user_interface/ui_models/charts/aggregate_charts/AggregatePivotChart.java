@@ -113,7 +113,6 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         Type collectorType = attrToCollectTypeMap.get(attrName);
         String collectByAttrName = attrToCollectByAttrMap.get(attrName);
 
-
         String humanAttr = SimilarPatentServer.fullHumanAttributeFor(attrName);
         String humanSearchType = combineTypesToString(searchTypes);
         String yTitle = (collectByAttrName==null?humanSearchType:SimilarPatentServer.fullHumanAttributeFor(collectByAttrName)) + " "+ collectorType + " by "+ humanAttr;
@@ -177,11 +176,12 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         if(isGrouped) { // handle two dimensional case (pivot)
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
             final String groupAggName = groupedByAttrName+getGroupSuffix();
+            final String nestedGroupAggName = groupedByAttrName+NESTED_SUFFIX+getGroupSuffix();
             if (groupByAttribute == null) {
                 throw new RuntimeException("Unable to find collecting attribute: " + groupByAttribute.getFullName());
             }
             final List<String> dataSets = getCategoriesForAttribute(attribute);
-            Aggregation groupAgg = aggregations.get(groupAggName);
+            Aggregation groupAgg = handlePotentiallyNestedAgg(aggregations,groupAggName,nestedGroupAggName);
             if(groupAgg==null) {
                 System.out.println("Group agg: "+groupAggName);
                 System.out.println("Available aggs: "+String.join(", ",aggregations.getAsMap().keySet()));

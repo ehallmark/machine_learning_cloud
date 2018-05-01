@@ -1,5 +1,8 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
+import com.googlecode.wickedcharts.highcharts.options.series.Point;
+import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
+import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import lombok.Getter;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
@@ -32,10 +35,12 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
     protected final String aggSuffix;
     @Getter
     protected final boolean isTable;
-    public AggregationChart(boolean isTable, String aggSuffix, Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, String name, boolean groupsPlottableOnSameChart) {
+    protected String chartTitle;
+    public AggregationChart(boolean isTable, String chartTitle, String aggSuffix, Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, String name, boolean groupsPlottableOnSameChart) {
         super(attributes,groupByAttrs,name,true, groupsPlottableOnSameChart);
         this.aggSuffix=aggSuffix;
         this.isTable=isTable;
+        this.chartTitle=chartTitle;
     }
 
     protected String removeChartNameFromAttrName(String attrName) {
@@ -46,8 +51,46 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         return GROUP_SUFFIX+aggSuffix;
     }
 
+    protected List<Series<?>> createDataForAggregationChart(Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit) {
+        List<Series<?>> data = new ArrayList<>();
+        String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
+        final boolean isGrouped = groupedByAttrName!=null;
+
+        if(isGrouped) {
+            AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
+            final String groupAggName = groupedByAttrName+getGroupSuffix();
+            if (groupByAttribute == null) {
+                throw new RuntimeException("Unable to find collecting attribute: " + groupByAttribute.getFullName());
+            }
+            Aggregation groupAgg = aggregations.get(groupAggName);
+            if(groupAgg==null) {
+                System.out.println("Group agg: "+groupAggName);
+                System.out.println("Available aggs: "+String.join(", ",aggregations.getAsMap().keySet()));
+                throw new NullPointerException("Group agg is null");
+            }
+            List<String> groupByDatasets = getCategoriesForAttribute(groupByAttribute);
+            if(groupAgg instanceof MultiBucketsAggregation) {
+                MultiBucketsAggregation agg = (MultiBucketsAggregation)groupAgg;
+                int i = 0;
+                for(MultiBucketsAggregation.Bucket entry : agg.getBuckets()) {
+                    String group = groupByDatasets==null?entry.getKeyAsString():groupByDatasets.get(i);
+                    Aggregations nestedAggs = entry.getAggregations();
+                    Series<?> series = getSeriesFromAgg(nestedAggs,attribute,attrName,group,limit);
+                    data.add(series);
+                    i++;
+                }
+            } else {
+                throw new RuntimeException("Unable to cast group aggregation "+groupAggName.getClass().getName()+" to MultiBucketsAggregation.class");
+            }
+        } else {
+            Series<?> series = getSeriesFromAgg(aggregations, attribute, attrName, title, limit);
+            data.add(series);
+        }
+        return data;
+    }
+
     protected AbstractAggregation createGroupedAttribute(String groupedByAttrName, int groupLimit, AggregationBuilder innerAgg) {
-        AbstractAttribute groupByAttribute = groupByAttributes.stream().filter(attr->attr.getFullName().equals(groupedByAttrName)).limit(1).findFirst().orElse(null);
+        AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
         if(groupByAttribute==null) {
             throw new RuntimeException("Unable to find collecting attribute: "+groupByAttribute.getFullName());
         }
@@ -61,21 +104,60 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         };
     }
 
+    protected Series<?> getSeriesFromAgg(Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit) {
+        PointSeries series = new PointSeries();
+        series.setName(title);
+        final List<String> dataSets = getCategoriesForAttribute(attribute);
+        List<Pair<String,Long>> bucketData = new ArrayList<>();
+        MultiBucketsAggregation agg = (MultiBucketsAggregation)handlePotentiallyNestedAgg(aggregations,attrName);
+        // For each entry
+        {
+            int i = 0;
+            for (MultiBucketsAggregation.Bucket entry : agg.getBuckets()) {
+                String key = dataSets == null ? entry.getKeyAsString() : dataSets.get(i);          // bucket key
+                long docCount = entry.getDocCount();            // Doc count
+                bucketData.add(new Pair<>(key, docCount));
+                i++;
+            }
+        }
+        double remaining = 0d;
+        for(int i = 0; i < bucketData.size(); i++) {
+            Pair<String,Long> bucket = bucketData.get(i);
+            Object label = bucket.getFirst();
+            if(label==null||label.toString().isEmpty()) label = "(empty)";
+            double prob = bucket.getSecond().doubleValue();
+            if(limit!=null&&i>=limit) {
+                remaining+=prob;
+            } else {
+                Point point = new Point(label.toString(), prob);
+                series.addPoint(point);
+            }
+        }
+        if(remaining>0) {
+            series.addPoint(new Point("(remaining)",remaining));
+        }
+        return series;
+    }
+
     public abstract List<? extends T> create(AbstractAttribute attribute, String attrName, Aggregations aggregations);
 
     public abstract AggregationChart<T> dup();
 
     public abstract String getType();
 
-    public Aggregation handlePotentiallyNestedAgg(Aggregations aggregations, String attrName) {
+    public Aggregation handlePotentiallyNestedAgg(Aggregations aggregations, String attrNameWithSuffix, String attrNameNestedWithSuffix) {
         if(aggregations==null) return null; // important to stop recursion
-        Aggregation agg = aggregations.get(attrName + aggSuffix);
-        if(agg==null) {
+        Aggregation agg = aggregations.get(attrNameWithSuffix);
+        if(agg==null&&attrNameNestedWithSuffix!=null) {
             // try nested
-            Nested nested = aggregations.get(attrName+NESTED_SUFFIX+aggSuffix);
-            return handlePotentiallyNestedAgg(nested.getAggregations(),attrName);
+            Nested nested = aggregations.get(attrNameNestedWithSuffix);
+            return handlePotentiallyNestedAgg(nested.getAggregations(),attrNameWithSuffix,null);
         }
         return agg;
+    }
+
+    public Aggregation handlePotentiallyNestedAgg(Aggregations aggregations, String attrName) {
+        return handlePotentiallyNestedAgg(aggregations,attrName+aggSuffix,attrName+NESTED_SUFFIX+aggSuffix);
     }
 
     protected static List<String> getCategoriesForAttribute(AbstractAttribute attribute) {
