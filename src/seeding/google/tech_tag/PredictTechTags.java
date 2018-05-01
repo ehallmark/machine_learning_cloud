@@ -397,7 +397,9 @@ public class PredictTechTags {
             keyphrasePredictionModel.predict(familyIds,wordVectors,rnnVectors,maxTags, minScore, keywordConsumer);
 
             INDArray primaryScores = parentMatrixView.mmul(abstractVectors).addi(parentMatrixView.mmul(descriptionVectors));
-            INDArray secondaryScores = childMatrixView.mmul(abstractVectors).addi(childMatrixView.mmul(descriptionVectors)).addi(wordMatrix.mmul(wordVectors));//.addi(rnnMatrix.mmul(rnnVectors));
+            //INDArray secondaryScores = childMatrixView.mmul(abstractVectors).addi(childMatrixView.mmul(descriptionVectors)).addi(wordMatrix.mmul(wordVectors)).addi(rnnMatrix.mmul(rnnVectors));
+            INDArray secondaryScores = rnnMatrix.mmul(rnnVectors);
+
             String insert = "insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2,technology3) values ? on conflict(family_id) do update set (publication_number_full,technology,technology2,technology3)=(excluded.publication_number_full,excluded.technology,excluded.technology2,excluded.technology3)";
             StringJoiner valueJoiner = new StringJoiner(",");
             for(int j = 0; j < i; j++) {
