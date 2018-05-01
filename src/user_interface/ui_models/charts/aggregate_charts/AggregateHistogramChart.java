@@ -9,7 +9,6 @@ import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
-import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.highcharts.ColumnChart;
 
 import java.util.ArrayList;
@@ -72,10 +71,4 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         return "histogram";
     }
 
-    @Override
-    public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
-        return Collections.singletonList(
-                AggregatePieChart.buildDistributionAggregation(this,attribute,attrName,aggSuffix)
-        );
-    }
 }

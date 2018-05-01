@@ -24,7 +24,6 @@ import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
-import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.*;
 import user_interface.ui_models.charts.highcharts.PieChart;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -110,13 +109,6 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         }
         data.add(series);
         return Collections.singletonList(new PieChart(title,  "", data, combineTypesToString(searchTypes)));
-    }
-
-    @Override
-    public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
-        return Collections.singletonList(
-                buildDistributionAggregation(this,attribute,attrName,aggSuffix)
-        );
     }
 
 

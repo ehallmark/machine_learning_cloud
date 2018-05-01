@@ -4,7 +4,6 @@ import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Setter;
 import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
@@ -290,24 +289,12 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         return "pivot";
     }
 
-    private String getGroupSuffix() {
-        return GROUP_SUFFIX+aggSuffix;
-    }
-
     private String getStatsSuffix() {
         return BUCKET_SUFFIX + aggSuffix;
     }
 
-    private String getGroupAggName(String attrName) {
-        return attrName + getGroupSuffix();
-    }
-
     private String getStatsAggName(String attrName) {
         return attrName + getStatsSuffix();
-    }
-
-    private String getAggName(String attrName) {
-        return attrName + aggSuffix;
     }
 
     @Override
@@ -327,22 +314,10 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
             collectByAttribute=similarityModels.get(collectByAttribute.getName());
         }
         CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getStatsAggName(attrName), collectByAttribute, collectorType);
-
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
-            AbstractAttribute groupByAttribute = groupByAttributes.stream().filter(attr->attr.getFullName().equals(groupedByAttrName)).limit(1).findFirst().orElse(null);
-            if(groupByAttribute==null) {
-                throw new RuntimeException("Unable to find collecting attribute: "+groupByAttribute.getFullName());
-            }
-            Integer groupLimit = attrNameToMaxGroupSizeMap.get(attrName);
-            String groupBySuffix = getGroupSuffix();
-            BucketAggregation groupAgg = AggregatePieChart.buildDistributionAggregation(this,groupByAttribute,groupByAttribute.getFullName(),groupBySuffix,groupLimit);
-            AbstractAggregation twoDimensionalAgg = new AbstractAggregation() {
-                @Override
-                public AggregationBuilder getAggregation() {
-                    return groupAgg.getAggregation().subAggregation(combinedAttrAgg.getAggregation());
-                }
-            };
+            int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, MAXIMUM_AGGREGATION_SIZE);
+            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(groupedByAttrName,groupLimit,combinedAttrAgg.getAggregation());
             return Collections.singletonList(
                     twoDimensionalAgg
             );
@@ -352,5 +327,6 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
             );
         }
     }
+
 
 }

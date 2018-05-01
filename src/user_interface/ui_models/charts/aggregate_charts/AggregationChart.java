@@ -2,6 +2,7 @@ package user_interface.ui_models.charts.aggregate_charts;
 
 import lombok.Getter;
 import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
@@ -11,9 +12,11 @@ import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
+import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -39,9 +42,26 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         return attrName.substring(getName().replace("[]","").length()+1);
     }
 
-    public abstract List<? extends T> create(AbstractAttribute attribute, String attrName, Aggregations aggregations);
+    protected String getGroupSuffix() {
+        return GROUP_SUFFIX+aggSuffix;
+    }
 
-    public abstract List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName);
+    protected AbstractAggregation createGroupedAttribute(String groupedByAttrName, int groupLimit, AggregationBuilder innerAgg) {
+        AbstractAttribute groupByAttribute = groupByAttributes.stream().filter(attr->attr.getFullName().equals(groupedByAttrName)).limit(1).findFirst().orElse(null);
+        if(groupByAttribute==null) {
+            throw new RuntimeException("Unable to find collecting attribute: "+groupByAttribute.getFullName());
+        }
+        String groupBySuffix = getGroupSuffix();
+        BucketAggregation groupAgg = AggregatePieChart.buildDistributionAggregation(this,groupByAttribute,groupByAttribute.getFullName(),groupBySuffix,groupLimit);
+        return new AbstractAggregation() {
+            @Override
+            public AggregationBuilder getAggregation() {
+                return groupAgg.getAggregation().subAggregation(innerAgg);
+            }
+        };
+    }
+
+    public abstract List<? extends T> create(AbstractAttribute attribute, String attrName, Aggregations aggregations);
 
     public abstract AggregationChart<T> dup();
 
@@ -109,4 +129,19 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         return nonNestedAttributes.stream().filter(attr->attr.getFullName().equals(attrName)).limit(1).findFirst().orElse(null);
     }
 
+    public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
+        AbstractAggregation aggregation = AggregatePieChart.buildDistributionAggregation(this,attribute,attrName,aggSuffix);
+        String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
+        if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
+            int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, MAXIMUM_AGGREGATION_SIZE);
+            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(groupedByAttrName,groupLimit,aggregation.getAggregation());
+            return Collections.singletonList(
+                    twoDimensionalAgg
+            );
+        } else {
+            return Collections.singletonList(
+                    aggregation
+            );
+        }
+    }
 }
