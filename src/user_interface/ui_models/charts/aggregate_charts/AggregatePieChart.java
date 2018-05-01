@@ -27,6 +27,7 @@ import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.*;
 import user_interface.ui_models.charts.highcharts.PieChart;
+import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -166,9 +167,13 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         }
 
         BucketAggregation aggregation;
-        if(chart instanceof AggregateLineChart) {
-            LocalDate xMin = ((AggregateLineChart) chart).getMin(attrName);
-            LocalDate xMax = ((AggregateLineChart) chart).getMax(attrName);
+        if(attribute.getFieldType().equals(AbstractFilter.FieldType.Date)) {
+            LocalDate xMin = null;
+            LocalDate xMax = null;
+            if(attribute instanceof AggregateLineChart) {
+                xMin = ((AggregateLineChart) chart).getMin(attrName);
+                xMax = ((AggregateLineChart) chart).getMax(attrName);
+            }
             if (attribute instanceof AbstractScriptAttribute) {
                 aggregation = new DateHistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), xMin,xMax, null);
             } else {
