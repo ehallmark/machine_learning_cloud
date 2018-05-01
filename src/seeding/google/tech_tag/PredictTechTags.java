@@ -97,7 +97,7 @@ public class PredictTechTags {
         final Random random = new Random(235211);
         final int batch = 1000;
         final int maxTags = 3;
-        final double minScore = 0.2;
+        final double minScore = 0.0;
         final int rnnLimit = 128;
         final int rnnSamples = 8;
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
@@ -257,8 +257,8 @@ public class PredictTechTags {
         KeyphrasePredictionModel keyphrasePredictionModel = KeyphrasePredictionModel.getOrLoadManager(true);
 
         AtomicLong totalCnt = new AtomicLong(0);
-        PreparedStatement insertDesign = conn.prepareStatement("insert into big_query_technologies (family_id,technology,technology2) values (?,'DESIGN','DESIGN') on conflict (family_id) do update set (technology,technology2,technology3)=('DESIGN','DESIGN', null)");
-        PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies (family_id,technology,technology2) values (?,'BOTANY','PLANTS') on conflict (family_id) do update set (technology,technology2,technology3)=('BOTANY','PLANTS', null)");
+        PreparedStatement insertDesign = conn.prepareStatement("insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values (?,?,'DESIGN','DESIGN') on conflict (family_id) do update set (technology,technology2,technology3)=('DESIGN','DESIGN', null)");
+        PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values (?,?,'BOTANY','PLANTS') on conflict (family_id) do update set (technology,technology2,technology3)=('BOTANY','PLANTS', null)");
 
         System.out.println("Starting to iterate...");
         while(true) {
@@ -284,11 +284,13 @@ public class PredictTechTags {
                 if(publicationNumber.startsWith("D")) {
                     // plant
                     insertDesign.setString(1, familyId);
+                    insertDesign.setString(2,publicationNumberFull);
                     insertDesign.executeUpdate();
                     i--;
                 } else if (publicationNumber.startsWith("PP")) {
                     // design
                     insertPlant.setString(1, familyId);
+                    insertPlant.setString(2,publicationNumberFull);
                     insertPlant.executeUpdate();
                     i--;
                 } else {
