@@ -73,16 +73,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                                     )
                     ),div().withClass("col-4").with(
                             label("Collecting Function"),br(),
-                            select().withClass("single-select2 collect-type").withName(getCollectTypeFieldName(attrName)).withId(getCollectTypeFieldName(attrName)).with(
-                                    option(Type.Count.toString()).withValue(Type.Count.toString()),
-                                    option(Type.Cardinality.toString()).withValue(Type.Cardinality.toString()),
-                                    option(Type.Sum.toString()).withValue(Type.Sum.toString()),
-                                    option(Type.Average.toString()).withValue(Type.Average.toString()),
-                                    option(Type.Max.toString()).withValue(Type.Max.toString()),
-                                    option(Type.Min.toString()).withValue(Type.Min.toString()),
-                                    option(Type.Variance.toString()).withValue(Type.Variance.toString()),
-                                    option("Standard Deviation").withValue(Type.StdDeviation.toString())
-                            )
+                            select().withClass("single-select2 collect-type").withName(getCollectTypeFieldName(attrName)).withId(getCollectTypeFieldName(attrName))
                     )
             );
         };
@@ -323,14 +314,14 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
         Type collectorType = attrToCollectTypeMap.get(attrName);
         String collectByAttrName = attrToCollectByAttrMap.get(attrName);
-        if(collectorType==null) throw new RuntimeException("Please select collector type.");
-        if(collectByAttrName==null) throw new RuntimeException("Please select collect by attribute name.");
+        if(collectorType==null && collectByAttrName!=null) throw new RuntimeException("Please select collector type.");
+        if(collectByAttrName==null && collectorType!=null) throw new RuntimeException("Please select collect by attribute name.");
         BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName, aggSuffix);
-        AbstractAttribute collectByAttribute = findAttribute(collectByAttributes,collectByAttrName);
+        AbstractAttribute collectByAttribute = collectByAttrName==null?null:findAttribute(collectByAttributes,collectByAttrName);
         if(collectByAttribute==null) {
             System.out.println("Collect by attribute could not be found: "+collectByAttrName);
         }
-        if(collectByAttribute instanceof SimilarityAttribute) {
+        if(collectByAttribute!=null && collectByAttribute instanceof SimilarityAttribute) {
             // need to get the original model for the vectors
             collectByAttribute=similarityModels.get(collectByAttribute.getName());
         }
