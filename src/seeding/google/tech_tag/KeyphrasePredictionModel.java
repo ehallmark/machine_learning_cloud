@@ -123,6 +123,9 @@ public class KeyphrasePredictionModel {
         INDArray simResults = w2vMatrix.mmul(matrix1).addi(rnnMatrix.mmul(matrix2));
         System.out.println("Matrix results shape: "+Arrays.toString(simResults.shape()));
         float[] data = Nd4j.toFlattened('f',simResults).data().asFloat();
+        if(toPredict.size()*keywords.size()!=data.length) {
+            throw new IllegalStateException("Data length: "+data.length+" != # of matrix entries: "+(toPredict.size()*keywords.size()));
+        }
         for(int r = 0; r < toPredict.size(); r++) {
             MinHeap<FloatFrequencyPair<String>> heap = new MinHeap<>(maxTags);
             for(int j = r*keywords.size(); j < r*keywords.size()+keywords.size(); j++) {
