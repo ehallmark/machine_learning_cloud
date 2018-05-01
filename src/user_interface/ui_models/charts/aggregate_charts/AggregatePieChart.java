@@ -168,6 +168,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
 
         BucketAggregation aggregation;
         if(attribute.getFieldType().equals(AbstractFilter.FieldType.Date)) {
+            System.out.println("Building datehistogram for: "+attrName);
             LocalDate xMin = null;
             LocalDate xMax = null;
             if(attribute instanceof AggregateLineChart) {
@@ -180,12 +181,14 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
                 aggregation = new DateHistogramAggregation(attrName + aggSuffix, attrName, null, xMin,xMax,null);
             }
         } else if(attribute instanceof DatasetAttribute) {
+            System.out.println("Building filters aggregations (datasets) for: "+attrName);
             List<Pair<String, Set<String>>> dataSets = ((DatasetAttribute) attribute).getCurrentDatasets();
             QueryBuilder[] queryBuilders = dataSets.stream().map(dataset -> {
                 return QueryBuilders.termsLookupQuery(attrName, new TermsLookup(((DatasetAttribute) attribute).getTermsIndex(), ((DatasetAttribute) attribute).getTermsType(), dataset.getFirst(), ((DatasetAttribute) attribute).getTermsPath()));
             }).toArray(size -> new QueryBuilder[size]);
             aggregation = new FiltersAggregation(attrName + aggSuffix, false, null, queryBuilders);
         } else if (attribute instanceof RangeAttribute) {
+            System.out.println("Building range for: "+attrName);
             RangeAttribute rangeAttribute = (RangeAttribute)attribute;
             if(attribute instanceof AbstractScriptAttribute) {
                 aggregation = new HistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), (rangeAttribute.max().doubleValue()-rangeAttribute.min().doubleValue())/rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing());
