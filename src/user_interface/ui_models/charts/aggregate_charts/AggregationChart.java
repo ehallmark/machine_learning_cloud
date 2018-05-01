@@ -4,10 +4,7 @@ import lombok.Getter;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
-import org.elasticsearch.search.aggregations.bucket.filters.Filters;
-import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.nd4j.linalg.primitives.Pair;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
@@ -15,7 +12,9 @@ import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -82,10 +81,10 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
     }
 
 
-    protected List<Pair<String,Double>> extractValuesFromAggregation(Aggregations aggregations, AbstractAttribute attribute, String attrName, Function<Aggregations,Double> subAggregationHandler) {
+    protected List<Pair<String,Number>> extractValuesFromAggregation(Aggregations aggregations, AbstractAttribute attribute, String attrName, Function<Aggregations,Number> subAggregationHandler) {
         Aggregation _agg = handlePotentiallyNestedAgg(aggregations,attrName);
         List<String> categories = getCategoriesForAttribute(attribute);
-        List<Pair<String,Double>> bucketData = new ArrayList<>();
+        List<Pair<String,Number>> bucketData = new ArrayList<>();
         if(_agg instanceof MultiBucketsAggregation) {
             MultiBucketsAggregation agg = (MultiBucketsAggregation)_agg;
             // For each entry
@@ -94,7 +93,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 String key = categories==null?entry.getKeyAsString():categories.get(i);          // bucket key
                 long docCount = entry.getDocCount();            // Doc count
                 if(subAggregationHandler==null) {
-                    bucketData.add(new Pair<>(key, (double) docCount));
+                    bucketData.add(new Pair<>(key, docCount));
                 } else {
                     bucketData.add(new Pair<>(key,subAggregationHandler.apply(entry.getAggregations())));
                 }

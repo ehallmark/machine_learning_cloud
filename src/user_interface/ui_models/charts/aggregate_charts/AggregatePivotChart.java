@@ -131,9 +131,9 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         List<String> nonHumanAttrs = new ArrayList<>(0);
         List<String> groupByDatasets;
 
-        Function<Aggregations,Double> subAggregationHandler = collectByAttrName == null ? null : subAggs -> {
+        Function<Aggregations,Number> subAggregationHandler = collectByAttrName == null ? null : subAggs -> {
             Aggregation sub = subAggs.get(statsAggName);
-            Double val;
+            Number val;
             switch (collectorType) {
                 case Max: {
                     val= ((Max)sub).getValue();
@@ -152,11 +152,11 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                     break;
                 }
                 case Cardinality: {
-                    val=(double) ((Cardinality)sub).getValue();
+                    val= ((Cardinality)sub).getValue();
                     break;
                 }
                 case Count: {
-                    val=(double) ((ValueCount)sub).getValue();
+                    val= ((ValueCount)sub).getValue();
                     break;
                 }
                 case Variance: {
@@ -208,7 +208,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                 @Override
                 protected List<Map<String, String>> compute() {
                     List<Map<String, String>> data = new ArrayList<>();
-                    Map<String,Map<String,Double>> groupedData = new HashMap<>();
+                    Map<String,Map<String,Number>> groupedData = new HashMap<>();
                     List<String> allGroups = new ArrayList<>();
                     Set<String> allEntries = new HashSet<>();
                     MultiBucketsAggregation bucketAgg = (MultiBucketsAggregation)groupAgg;
@@ -217,11 +217,11 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                         Object group = groupByDatasets == null ? bucket.getKeyAsString() : groupByDatasets.get(i);
                         if (group == null || group.toString().isEmpty()) group = "(empty)";
                         Aggregations nestedAggs = bucket.getAggregations();
-                        List<Pair<String,Double>> nestedBucketData = extractValuesFromAggregation(nestedAggs,attribute,attrName,subAggregationHandler);
-                        Map<String,Double> pairsByGroup = new HashMap<>();
+                        List<Pair<String,Number>> nestedBucketData = extractValuesFromAggregation(nestedAggs,attribute,attrName,subAggregationHandler);
+                        Map<String,Number> pairsByGroup = new HashMap<>();
                         for(int j = 0; j < nestedBucketData.size(); j++) {
-                            Pair<String,Double> nestedBucket = nestedBucketData.get(j);
-                            Double val = nestedBucket.getSecond();
+                            Pair<String,Number> nestedBucket = nestedBucketData.get(j);
+                            Number val = nestedBucket.getSecond();
                             Object label = dataSets == null ? nestedBucket.getFirst() : dataSets.get(j);
                             pairsByGroup.put(label.toString(),val);
                             allEntries.add(label.toString());
@@ -234,8 +234,8 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                         Map<String, String> point = new HashMap<>();
                         point.put(attrName,entry);
                         allGroups.forEach(group -> {
-                            Map<String, Double> groupData = groupedData.get(group);
-                            point.put(group, String.valueOf(groupData.getOrDefault(entry,0d)));
+                            Map<String, Number> groupData = groupedData.get(group);
+                            point.put(group, groupData.getOrDefault(entry,0).toString());
                         });
                         data.add(point);
                     });
@@ -257,10 +257,10 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
             response.computeAttributesTask = new RecursiveTask<List<Map<String, String>>>() {
                 @Override
                 protected List<Map<String, String>> compute() {
-                    List<Pair<String,Double>> bucketData = extractValuesFromAggregation(aggregations,attribute,attrName,subAggregationHandler);
+                    List<Pair<String,Number>> bucketData = extractValuesFromAggregation(aggregations,attribute,attrName,subAggregationHandler);
                     List<Map<String, String>> data = new ArrayList<>();
                     for (int i = 0; i < bucketData.size(); i++) {
-                        Pair<String,Double> bucket = bucketData.get(i);
+                        Pair<String,Number> bucket = bucketData.get(i);
                         String label = bucket.getFirst();
                         if (label == null || label.isEmpty()) label = "(empty)";
                         Map<String, String> entry = new HashMap<>();
