@@ -1867,11 +1867,7 @@ public class BigQueryServer {
                             String attrName = chart.getAttrNames().get(i);
                             int attrStartIdx = chart.getName().replace("[]","").length()+1;
                             AbstractAttribute attribute = findAttribute(chart.getAttributes(),attrName,attrStartIdx);
-                            if (attribute == null) {
-                                System.out.println("Possible chart attrs step1: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName().substring(attrStartIdx)).collect(Collectors.toList())));
-                                throw new RuntimeException("Warning: unable to find attribute for chart "+chart.getName()+": " + attrName);
-                            }
-                            if(attribute instanceof NestedAttribute) {
+                            if (attribute == null || attribute instanceof NestedAttribute) {
                                 continue;
                             }
                             List<AggregationBuilder> aggregations = chart.getAggregations(attribute,attrName).stream().map(a->a.getAggregation()).collect(Collectors.toList());
@@ -2006,11 +2002,7 @@ public class BigQueryServer {
                                 String attrName = chart.getAttrNames().get(i);
                                 int attrStartIdx = chart.getName().replace("[]","").length()+1;
                                 AbstractAttribute attribute = findAttribute(chart.getAttributes(),attrName,attrStartIdx);
-                                if (attribute == null) {
-                                    System.out.println("Possible chart attrs step2: "+String.join("; ",chart.getAttributes().stream().map(c->c.getFullName().substring(attrStartIdx)).collect(Collectors.toList())));
-                                    throw new RuntimeException("Warning: unable to find attribute for chart "+chart.getName()+": " + attrName);
-                                }
-                                if(attribute instanceof NestedAttribute) {
+                                if (attribute == null || attribute instanceof NestedAttribute) {
                                     continue;
                                 }
                                 String id;

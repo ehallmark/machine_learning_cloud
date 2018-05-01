@@ -199,6 +199,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             }
         }
         if(isNested) {
+            System.out.println("Nested attribute for aggregation: "+attribute.getFullName());
             return new BucketAggregation() {
                 @Override
                 public AggregationBuilder getAggregation() {
