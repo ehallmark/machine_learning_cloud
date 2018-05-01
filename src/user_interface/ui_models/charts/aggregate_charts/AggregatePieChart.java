@@ -157,7 +157,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
 
     public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggSuffix, int maxSize) {
         System.out.println("Building distribution agg for: "+attribute.getFullName()+" with suffix "+aggSuffix);
-        boolean isNested = attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute)&&!attribute.getParent().isObject();
+        boolean isNested = attribute.getParent()!=null&&(!(attribute.getParent() instanceof AbstractChartAttribute))&&(!attribute.getParent().isObject());
         final Object missingVal;
         if(attribute.getType().equals("text")||attribute.getType().equals("keyword")) {
             missingVal = "(empty)";
@@ -199,6 +199,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             }
         }
         if(isNested) {
+            System.out.println("Is Parent Object: "+attribute.getParent().isObject());
             System.out.println("Nested attribute for aggregation: "+attribute.getFullName());
             return new BucketAggregation() {
                 @Override
