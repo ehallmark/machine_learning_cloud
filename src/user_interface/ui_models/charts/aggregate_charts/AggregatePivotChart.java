@@ -40,7 +40,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     @Setter
     private Map<String,SimilarityAttribute> similarityModels;
     public AggregatePivotChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectByAttrs) {
-        super(true,AGG_SUFFIX, attributes, groupByAttrs, Constants.GROUPED_FUNCTION_TABLE_CHART, false);
+        super(true,"Pivot Table",AGG_SUFFIX, attributes, groupByAttrs, Constants.GROUPED_FUNCTION_TABLE_CHART, false);
         this.collectByAttributes=collectByAttrs;
         this.attrToCollectByAttrMap=Collections.synchronizedMap(new HashMap<>());
         this.attrToCollectTypeMap=Collections.synchronizedMap(new HashMap<>());
