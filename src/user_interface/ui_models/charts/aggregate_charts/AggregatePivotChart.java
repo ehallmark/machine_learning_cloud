@@ -196,7 +196,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
             }
             final List<String> dataSets = getCategoriesForAttribute(attribute);
             Aggregation groupAgg = aggregations.get(groupAggName);
-            List<String> groupKeys = new ArrayList<>();
+            if(groupAgg==null) throw new NullPointerException("Group agg is null");
             groupByDatasets = getCategoriesForAttribute(groupByAttribute);
             if(groupAgg instanceof MultiBucketsAggregation) {
                 MultiBucketsAggregation agg = (MultiBucketsAggregation)groupAgg;
@@ -204,13 +204,12 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                 for(MultiBucketsAggregation.Bucket entry : agg.getBuckets()) {
                     String key = groupByDatasets==null?entry.getKeyAsString():groupByDatasets.get(i);
                     headers.add(key);
-                    groupKeys.add(key);
                     numericAttrNames.add(key);
                     nonHumanAttrs.add(key);
                     i++;
                 }
             } else {
-                throw new RuntimeException("Unable to cast group aggregation to MultiBucketsAggregation.class");
+                throw new RuntimeException("Unable to cast group aggregation "+groupAggName.getClass().getName()+" to MultiBucketsAggregation.class");
             }
             yTitle += " grouped by "+SimilarPatentServer.fullHumanAttributeFor(groupedByAttrName);
 
