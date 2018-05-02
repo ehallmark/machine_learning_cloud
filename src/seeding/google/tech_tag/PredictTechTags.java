@@ -69,6 +69,7 @@ public class PredictTechTags {
                     "MOVIE PROJECTOR",
                     "NANOPHOTONIC RESONATOR",
                     "EMERGING TECHNOLOGIES",
+                    "EMERGING TECHNOLOGY",
                     //"COLOR",
                     //"HYDROGEN",
                     //"FULL BODY SCANNER",
