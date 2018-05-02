@@ -25,7 +25,6 @@ import java.sql.ResultSet;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -390,7 +389,7 @@ public class PredictTechTags {
             INDArray secondaryScores = childMatrixView.mmul(abstractVectors).addi(childMatrixView.mmul(descriptionVectors)).addi(wordMatrix.mmul(wordVectors)).addi(rnnMatrix.mmul(rnnVectors));
             //INDArray secondaryScores = rnnMatrix.mmul(rnnVectors).addi(wordMatrix.mmul(wordVectors));
 
-            String insert = "insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values ? on conflict(family_id) do update set (publication_number_full,technology,technology2,technology3)=(excluded.publication_number_full,excluded.technology,excluded.technology2)";
+            String insert = "insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values ? on conflict(family_id) do update set (publication_number_full,technology,technology2)=(excluded.publication_number_full,excluded.technology,excluded.technology2)";
             StringJoiner valueJoiner = new StringJoiner(",");
             for(int j = 0; j < i; j++) {
                 StringJoiner innerJoiner = new StringJoiner(",","(",")");
