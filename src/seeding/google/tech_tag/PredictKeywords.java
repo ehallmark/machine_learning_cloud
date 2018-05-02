@@ -1,5 +1,6 @@
 package seeding.google.tech_tag;
 
+import edu.stanford.nlp.ling.CoreAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -18,7 +19,7 @@ public class PredictKeywords {
     public static void main(String[] args) throws Exception {
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props).;
 
         Connection seedConn = Database.getConn();
         Connection ingestConn = Database.newSeedConn();
@@ -29,19 +30,27 @@ public class PredictKeywords {
         PreparedStatement ingestPs = ingestConn.prepareStatement("insert into big_query_keywords_all (family_id,keywords) values (?,?) on conflict (family_id) do update set keywords=excluded.keywords");
 
         AtomicLong cnt = new AtomicLong(0);
-        while(rs.next()) {
-            String famId = rs.getString(1);
-            String text = rs.getString(2);
-            Annotation annotation = new Annotation(text);
-            pipeline.annotate(annotation, d -> {
+        final int batchSize = 10000;
+        while(true) {
+            List<Annotation> annotations = new ArrayList<>(batchSize);
+            int i = 0;
+            for(; i < batchSize && rs.next(); i++) {
+                String famId = rs.getString(1);
+                String text = rs.getString(2);
+                Annotation annotation = new Annotation(text);
+                annotation.set(FamilyIdAnnotation.class,famId);
+                annotations.add(annotation);
+            }
+            pipeline.annotate(annotations,  Math.max(4, Runtime.getRuntime().availableProcessors()/2), d -> {
                 try {
                     List<String> keywords = extractKeywords(d);
+                    String famId = d.get(FamilyIdAnnotation.class);
                     if(keywords!=null&&keywords.size()>0) {
                         ingestPs.setString(1,famId);
                         ingestPs.setArray(2, ingestConn.createArrayOf("varchar", keywords.toArray()));
                         ingestPs.executeUpdate();
                     }
-                    if(cnt.getAndIncrement()%10000==9999) {
+                    if(cnt.getAndIncrement()%batchSize==batchSize-1) {
                         System.out.println("Completed: "+cnt.get());
                         ingestConn.commit();
                     }
@@ -49,6 +58,7 @@ public class PredictKeywords {
                     e.printStackTrace();
                 }
             });
+            if(i<batchSize) break;
         }
 
         ingestConn.commit();
@@ -144,6 +154,15 @@ public class PredictKeywords {
             }
         }
         return data;
+    }
+
+    public static class FamilyIdAnnotation implements CoreAnnotation<String> {
+        public FamilyIdAnnotation() {
+        }
+
+        public Class<String> getType() {
+            return String.class;
+        }
     }
 }
 
