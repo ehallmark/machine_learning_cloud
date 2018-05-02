@@ -226,29 +226,25 @@ public class BigQueryServer {
             humanAttrToJavaAttrMap.put("Document Kind", Constants.DOC_KIND);
             humanAttrToJavaAttrMap.put("Claim Length", Constants.CLAIM_LENGTH);
             humanAttrToJavaAttrMap.put("Length of Smallest Independent Claim", Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH);
-            humanAttrToJavaAttrMap.put("Claim Text", Constants.CLAIM);
-            humanAttrToJavaAttrMap.put("Abstract", Constants.ABSTRACT);
-            humanAttrToJavaAttrMap.put("Lapsed", Constants.LAPSED);
-            humanAttrToJavaAttrMap.put("Priority Date (estimated)", Constants.ESTIMATED_PRIORITY_DATE);
-            humanAttrToJavaAttrMap.put("Expiration Date (estimated)", Constants.ESTIMATED_EXPIRATION_DATE);
-            humanAttrToJavaAttrMap.put("Assignor Name", Constants.ASSIGNOR);
-            humanAttrToJavaAttrMap.put("Conveyance Text", Constants.CONVEYANCE_TEXT);
-            humanAttrToJavaAttrMap.put("Is Human", Constants.IS_HUMAN);
+            humanAttrToJavaAttrMap.put("Abstract Text", Attributes.ABSTRACT);
+            humanAttrToJavaAttrMap.put("Lapsed", Attributes.LAPSED);
+            humanAttrToJavaAttrMap.put("Priority Date (estimated)", Attributes.PRIORITY_DATE_ESTIMATED);
+            humanAttrToJavaAttrMap.put("Expiration Date (estimated)", Attributes.EXPIRATION_DATE_ESTIMATED);
+            humanAttrToJavaAttrMap.put("Assignor Name", Attributes.RECORDED_ASSIGNOR);
+            humanAttrToJavaAttrMap.put("Conveyance Text", Attributes.CONVEYANCE_TEXT);
             humanAttrToJavaAttrMap.put("Overall Score", Constants.SCORE);
 
             // custom filter name for excluding granted apps
             humanAttrToJavaAttrMap.put("Exclude Granted Applications Filter", Constants.GRANTED+ AbstractFilter.FilterType.BoolFalse+ Constants.FILTER_SUFFIX);
             humanAttrToJavaAttrMap.put("Related Docs", Constants.ALL_RELATED_ASSETS);
             // nested attrs
-            humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
-            humanAttrToJavaAttrMap.put("Original Assignee", Constants.ASSIGNEES);
-            humanAttrToJavaAttrMap.put("Applicants", Constants.APPLICANTS);
-            humanAttrToJavaAttrMap.put("Inventors", Constants.INVENTORS);
-            humanAttrToJavaAttrMap.put("Agents", Constants.AGENTS);
+            humanAttrToJavaAttrMap.put("Latest Assignee", Attributes.LATEST_ASSIGNEE);
+            humanAttrToJavaAttrMap.put("Original Assignee", Attributes.ASSIGNEES);
+            humanAttrToJavaAttrMap.put("Inventors", Attributes.INVENTORS);
             humanAttrToJavaAttrMap.put("Backward Citations", Constants.CITATIONS);
             humanAttrToJavaAttrMap.put("Claim Text", Attributes.CLAIMS);
             humanAttrToJavaAttrMap.put("Description Text", Attributes.DESCRIPTION);
-            humanAttrToJavaAttrMap.put("Prior Related Docs", Constants.PATENT_FAMILY);
+            humanAttrToJavaAttrMap.put("Priority Claims", Attributes.PRIORITY_CLAIMS);
             humanAttrToJavaAttrMap.put("Assignments", Attributes.ASSIGNMENTS);
 
             buildJavaToHumanAttrMap();
