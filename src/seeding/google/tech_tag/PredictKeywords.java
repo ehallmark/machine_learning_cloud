@@ -6,6 +6,7 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
+import seeding.Constants;
 import seeding.Database;
 
 import java.sql.Connection;
@@ -19,7 +20,7 @@ public class PredictKeywords {
     public static void main(String[] args) throws Exception {
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props).;
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
         Connection seedConn = Database.getConn();
         Connection ingestConn = Database.newSeedConn();
@@ -105,21 +106,23 @@ public class PredictKeywords {
                 if (!valid) continue;
 
                 // could be the stem
-                String lemma = token.get(CoreAnnotations.LemmaAnnotation.class).toLowerCase();
+                String lemma = word.toLowerCase();
                 try {
                     String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
                     if (lemma.length() >= 3) {
                         // this is the POS tag of the token
                         if (validPOS.contains(pos)) {
                             // don't want to end in adjectives (nor past tense verb)
-                            data.add(lemma);
+                            if(!Constants.STOP_WORD_SET.contains(lemma)) data.add(lemma);
                             if (!adjectivesPOS.contains(pos)) {
                                 if (maxPhraseLength > 1) {
                                     if (prevLemma != null && !prevLemma.equals(lemma)) {
                                         long numVerbs = Stream.of(pos, prevPos).filter(p -> p != null && p.startsWith("V")).count();
                                         if (numVerbs <= 1) {
                                             if(validPOS.contains(prevPos) && prevLemma.length()>=3) {
-                                                data.add(String.join(" ", prevLemma, lemma));
+                                                if(!Constants.STOP_WORD_SET.contains(prevLemma)&&!Constants.STOP_WORD_SET.contains(lemma)) {
+                                                    data.add(String.join(" ", prevLemma, lemma));
+                                                }
                                             }
                                             if (maxPhraseLength > 2) {
                                                 if (prevPrevLemma != null && !prevLemma.equals(prevPrevLemma)) {
@@ -127,7 +130,9 @@ public class PredictKeywords {
                                                     if (numVerbs <= 1) {
                                                         if(validPOS.contains(prevPrevPos) && prevPrevLemma.length()>=3) {
                                                             if (validPOS.contains(prevPos) || stopWords.contains(prevLemma)) {
-                                                                data.add(String.join(" ", prevPrevLemma, prevLemma, lemma));
+                                                                if (!Constants.STOP_WORD_SET.contains(prevPrevLemma) && !Constants.STOP_WORD_SET.contains(lemma)) {
+                                                                    data.add(String.join(" ", prevPrevLemma, prevLemma, lemma));
+                                                                }
                                                             }
                                                         }
                                                     }
