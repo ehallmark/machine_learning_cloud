@@ -89,6 +89,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
         String id = getId();
         Tag groupbyTag = additionalTagFunction!=null&&!perAttr ? additionalTagFunction.apply(null) : null;
         List<AbstractAttribute> applicableAttributes = attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
+        final boolean withinChart = (NestedAttribute.this instanceof AbstractChartAttribute || (getParent()!=null && getParent() instanceof AbstractChartAttribute));
         return div().with(
                 div().with(
                         groupbyTag==null?span():div().with(
@@ -96,7 +97,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                                 p(this instanceof AbstractPivotChart ? "Row Attributes" : "Column Attributes")
                         ),
                         SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),id,clazz, applicableAttributes.stream().map(attr->{
-                            if(attr instanceof TextAttribute) {
+                            if(withinChart && attr instanceof TextAttribute) {
                                 return "_<>_"+attr.getFullName(); // Hack to single text attribute
                             } else {
                                 return attr.getFullName();
@@ -127,7 +128,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                             }
                             String attrName = filter.getFullName();
                             String humanName = SimilarPatentServer.humanAttributeFor(attrName);
-                            if((NestedAttribute.this instanceof AbstractChartAttribute || (getParent()!=null && getParent() instanceof AbstractChartAttribute)) && filter instanceof TextAttribute) {
+                            if(withinChart && filter instanceof TextAttribute) {
                                 humanName += " ("+AbstractChartAttribute.SIGNIFICANT_TERMS_LABEL+")";
                             }
                             if(inputIds.isEmpty()) inputIds = null;
