@@ -144,7 +144,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             } else {
                 aggregation = new HistogramAggregation(attrName + aggSuffix, attrName, null, (rangeAttribute.max().doubleValue() - rangeAttribute.min().doubleValue()) / rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing());
             }
-        } else if (attribute instanceof TextAttribute) {
+        } else if (attribute instanceof SignificantTermsAttribute) {
             System.out.println("Using significant terms bucketing for attr: "+attrName);
             aggregation = new SignificantTermsAggregation(attrName + aggSuffix, attrName, null, missingVal, maxSize);
 

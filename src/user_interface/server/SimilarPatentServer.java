@@ -2763,13 +2763,7 @@ public class SimilarPatentServer {
     public static Tag technologySelectWithCustomClass(String name, String id, String clazz, Collection<String> orderedClassifications) {
         return select().attr("style","width:100%;").withName(name).withId(id).withClass(clazz).attr("multiple","multiple").with(
                 orderedClassifications.stream().map(technology->{
-                    String humanName;
-                    if(technology.startsWith("_<>_")) {
-                        technology = technology.substring(4);
-                        humanName = humanAttributeFor(technology) + " ("+AbstractChartAttribute.SIGNIFICANT_TERMS_LABEL+")";
-                    } else {
-                        humanName = humanAttributeFor(technology);
-                    }
+                    String humanName = humanAttributeFor(technology);
                     return div().with(option(humanName).withValue(technology));
                 }).collect(Collectors.toList())
         );

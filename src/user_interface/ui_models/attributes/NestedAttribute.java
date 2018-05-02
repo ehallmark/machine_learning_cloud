@@ -4,7 +4,6 @@ import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
-import seeding.google.elasticsearch.attributes.TextAttribute;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.AbstractPivotChart;
@@ -89,20 +88,13 @@ public abstract class NestedAttribute extends AbstractAttribute {
         String id = getId();
         Tag groupbyTag = additionalTagFunction!=null&&!perAttr ? additionalTagFunction.apply(null) : null;
         List<AbstractAttribute> applicableAttributes = attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
-        final boolean withinChart = (NestedAttribute.this instanceof AbstractChartAttribute || (getParent()!=null && getParent() instanceof AbstractChartAttribute));
         return div().with(
                 div().with(
                         groupbyTag==null?span():div().with(
                                 groupbyTag,br(),
                                 p(this instanceof AbstractPivotChart ? "Row Attributes" : "Column Attributes")
                         ),
-                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),id,clazz, applicableAttributes.stream().map(attr->{
-                            if(withinChart && attr instanceof TextAttribute) {
-                                return "_<>_"+attr.getFullName(); // Hack to single text attribute
-                            } else {
-                                return attr.getFullName();
-                            }
-                        }).collect(Collectors.toList()))
+                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),id,clazz, applicableAttributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(
                         applicableAttributes.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\].]","");
@@ -128,9 +120,6 @@ public abstract class NestedAttribute extends AbstractAttribute {
                             }
                             String attrName = filter.getFullName();
                             String humanName = SimilarPatentServer.humanAttributeFor(attrName);
-                            if(withinChart && filter instanceof TextAttribute) {
-                                humanName += " ("+AbstractChartAttribute.SIGNIFICANT_TERMS_LABEL+")";
-                            }
                             if(inputIds.isEmpty()) inputIds = null;
                             return div().attr("style", styleString).with(
                                     SimilarPatentServer.createAttributeElement(humanName, attrName,null,collapseId,childTag, id, filter.getAttributeId(), inputIds, filter.isNotYetImplemented(), filter.getDescription().render())
