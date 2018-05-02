@@ -68,9 +68,6 @@ public class PredictKeywords {
         stopWords.add("and");
         stopWords.add("or");
         stopWords.add("with");
-        stopWords.add("a");
-        stopWords.add("an");
-        stopWords.add("the");
         stopWords.add("for");
     }
     public static final Collection<String> validPOS = Arrays.asList("JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS", "VBG", "VBN");
