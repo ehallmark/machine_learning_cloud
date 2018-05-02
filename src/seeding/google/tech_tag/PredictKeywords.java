@@ -31,37 +31,29 @@ public class PredictKeywords {
         PreparedStatement ingestPs = ingestConn.prepareStatement("insert into big_query_keywords_all (family_id,keywords) values (?,?) on conflict (family_id) do update set keywords=excluded.keywords");
 
         AtomicLong cnt = new AtomicLong(0);
-        final int batchSize = 10000;
-        while(true) {
-            List<Annotation> annotations = new ArrayList<>(batchSize);
-            int i = 0;
-            for(; i < batchSize && rs.next(); i++) {
-                String famId = rs.getString(1);
-                String text = rs.getString(2);
-                Annotation annotation = new Annotation(text);
-                annotation.set(FamilyIdAnnotation.class,famId);
-                annotations.add(annotation);
-            }
+        while(rs.next()) {
+            String famId = rs.getString(1);
+            String text = rs.getString(2);
+            Annotation annotation = new Annotation(text);
+
             System.out.print("Annotating new batch...");
-            annotations.parallelStream().forEach(annotation->{
-                pipeline.annotate(annotation);
+            pipeline.annotate(annotation, d -> {
                 try {
-                    List<String> keywords = extractKeywords(annotation);
-                    String famId = annotation.get(FamilyIdAnnotation.class);
+                    List<String> keywords = extractKeywords(d);
                     if(keywords!=null&&keywords.size()>0) {
                         ingestPs.setString(1,famId);
                         ingestPs.setArray(2, ingestConn.createArrayOf("varchar", keywords.toArray()));
                         ingestPs.executeUpdate();
                     }
-                    cnt.getAndIncrement();
-                    
+                    if(cnt.getAndIncrement() % 10000==9999) {
+                        System.out.println("Completed: "+cnt.get());
+                        ingestConn.commit();
+                    }
+
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
             });
-            System.out.println("Completed: "+cnt.get());
-            ingestConn.commit();
-            if(i<batchSize) break;
         }
 
         ingestConn.commit();
