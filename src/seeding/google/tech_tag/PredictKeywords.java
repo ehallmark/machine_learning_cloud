@@ -42,23 +42,25 @@ public class PredictKeywords {
                 annotation.set(FamilyIdAnnotation.class,famId);
                 annotations.add(annotation);
             }
-            pipeline.annotate(annotations,  Math.max(4, Runtime.getRuntime().availableProcessors()/2), d -> {
+            System.out.print("Annotating new batch...");
+            annotations.parallelStream().forEach(annotation->{
+                pipeline.annotate(annotation);
                 try {
-                    List<String> keywords = extractKeywords(d);
-                    String famId = d.get(FamilyIdAnnotation.class);
+                    List<String> keywords = extractKeywords(annotation);
+                    String famId = annotation.get(FamilyIdAnnotation.class);
                     if(keywords!=null&&keywords.size()>0) {
                         ingestPs.setString(1,famId);
                         ingestPs.setArray(2, ingestConn.createArrayOf("varchar", keywords.toArray()));
                         ingestPs.executeUpdate();
                     }
-                    if(cnt.getAndIncrement()%batchSize==batchSize-1) {
-                        System.out.println("Completed: "+cnt.get());
-                        ingestConn.commit();
-                    }
+                    cnt.getAndIncrement();
+                    
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
             });
+            System.out.println("Completed: "+cnt.get());
+            ingestConn.commit();
             if(i<batchSize) break;
         }
 
