@@ -196,7 +196,6 @@ public class PredictTechTags {
                             int r = random.nextInt(text.length - rnnLimit);
                             String[] textSample = Arrays.copyOfRange(text, r, r + rnnLimit);
                             INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(textSample));
-
                             features.get(NDArrayIndex.point(j), NDArrayIndex.all(), NDArrayIndex.all()).assign(wordVectors.transpose());
                         }
                         encoding = Transforms.unitVec(model.encode(features).mean(0));
@@ -270,8 +269,8 @@ public class PredictTechTags {
         Connection conn = Database.getConn();
 
         AtomicLong totalCnt = new AtomicLong(0);
-        PreparedStatement insertDesign = conn.prepareStatement("insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values (?,?,'DESIGN','DESIGN') on conflict (family_id) do update set (technology,technology2,technology3)=('DESIGN','DESIGN', null)");
-        PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values (?,?,'BOTANY','PLANTS') on conflict (family_id) do update set (technology,technology2,technology3)=('BOTANY','PLANTS', null)");
+        PreparedStatement insertDesign = conn.prepareStatement("insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values (?,?,'DESIGN','DESIGN') on conflict (family_id) do update set (technology,technology2)=('DESIGN','DESIGN')");
+        PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values (?,?,'BOTANY','PLANTS') on conflict (family_id) do update set (technology,technology2)=('BOTANY','PLANTS')");
 
         System.out.println("Starting to iterate...");
         while(true) {
@@ -285,7 +284,6 @@ public class PredictTechTags {
             String firstPub = null;
             String firstTech = null;
             String firstSecondary = null;
-            List<String> firstThird = null;
             for(; i < batch&&rs.next(); i++) {
                 totalCnt.getAndIncrement();
                 if(totalCnt.get()%10000==9999) {
@@ -388,18 +386,11 @@ public class PredictTechTags {
             rnnVectors.diviRowVector(rNorm);
             wordVectors.diviRowVector(wNorm);
 
-            // predict keywords
-            Map<String,Set<String>> keywordMap = new HashMap<>();
-            Consumer<Pair<String,Set<String>>> keywordConsumer = pair -> {
-                keywordMap.put(pair.getKey(),pair.getSecond());
-            };
-            //keyphrasePredictionModel.predict(familyIds,wordVectors,rnnVectors,maxTags, minScore, keywordConsumer);
-
             INDArray primaryScores = parentMatrixView.mmul(abstractVectors).addi(parentMatrixView.mmul(descriptionVectors));
-            //INDArray secondaryScores = childMatrixView.mmul(abstractVectors).addi(childMatrixView.mmul(descriptionVectors)).addi(wordMatrix.mmul(wordVectors)).addi(rnnMatrix.mmul(rnnVectors));
-            INDArray secondaryScores = rnnMatrix.mmul(rnnVectors).addi(wordMatrix.mmul(wordVectors));
+            INDArray secondaryScores = childMatrixView.mmul(abstractVectors).addi(childMatrixView.mmul(descriptionVectors)).addi(wordMatrix.mmul(wordVectors)).addi(rnnMatrix.mmul(rnnVectors));
+            //INDArray secondaryScores = rnnMatrix.mmul(rnnVectors).addi(wordMatrix.mmul(wordVectors));
 
-            String insert = "insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2,technology3) values ? on conflict(family_id) do update set (publication_number_full,technology,technology2,technology3)=(excluded.publication_number_full,excluded.technology,excluded.technology2,excluded.technology3)";
+            String insert = "insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values ? on conflict(family_id) do update set (publication_number_full,technology,technology2,technology3)=(excluded.publication_number_full,excluded.technology,excluded.technology2)";
             StringJoiner valueJoiner = new StringJoiner(",");
             for(int j = 0; j < i; j++) {
                 StringJoiner innerJoiner = new StringJoiner(",","(",")");
@@ -415,33 +406,16 @@ public class PredictTechTags {
                 if(top!=null) {
                     String tag = allParentsList.get(top.getFirst());
                     String secondaryTag = allChildrenList.get(top.getSecond());
-                    Set<String> tertiaryTag = keywordMap.get(familyId);
                     tag = technologyTransformer.apply(tag);
                     secondaryTag = technologyTransformer.apply(secondaryTag);
-                    if(tag.equals("MECHANICAL ENGINEERING")&&secondaryTag.equals("METAL HOSE")) {
-                        // FRACK
-                        System.out.println("FOUND MECHANICAL METAL HOSE: Scores = ("+primary[top.getFirst()]+", "+secondary[top.getSecond()]+")");
-                    }
                     innerJoiner.add("'"+familyId+"'").add("'"+pubNum+"'").add("'"+tag+"'").add("'"+secondaryTag+"'");
-                    if(tertiaryTag==null||tertiaryTag.isEmpty()) {
-                        innerJoiner.add("null");
-                    } else {
-                        tertiaryTag = tertiaryTag.stream().map(technologyTransformer::apply)
-                                .collect(Collectors.toSet());
-                        StringJoiner arrayJoiner = new StringJoiner("','","ARRAY['","']");
-                        for(String ter : tertiaryTag) {
-                            arrayJoiner.add(ter);
-                        }
-                        innerJoiner.add(arrayJoiner.toString());
-                    }
                     valueJoiner.add(innerJoiner.toString());
                     if (firstTech == null) firstTech = tag;
                     if (firstSecondary == null) firstSecondary = secondaryTag;
-                    if (firstThird == null) firstThird = tertiaryTag==null ? null : new ArrayList<>(tertiaryTag);
                 }
                 if (cnt.getAndIncrement() % 10000 == 9999) {
                     System.out.println("Finished: " + cnt.get() + " valid of " + totalCnt.get());
-                    System.out.println("Sample "+firstPub+": " + firstTech+"; "+firstSecondary+"; "+firstThird);
+                    System.out.println("Sample "+firstPub+": " + firstTech+"; "+firstSecondary);
                     Database.commit();
                 }
             }
