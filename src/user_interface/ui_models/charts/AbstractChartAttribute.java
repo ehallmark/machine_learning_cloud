@@ -6,6 +6,7 @@ import j2html.tags.Tag;
 import lombok.Getter;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import seeding.google.elasticsearch.attributes.TextAttribute;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -29,6 +30,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     public static final String PLOT_GROUPS_ON_SAME_CHART_FIELD = "plotGroupsSameChart";
     public static final String MAX_GROUP_FIELD = "maxGroupSizeField";
     public static final String INCLUDE_BLANK_FIELD = "includeBlanks";
+    public static final String SIGNIFICANT_TERMS_LABEL = "Significant Terms";
     protected static final Function2<ContainerTag,ContainerTag,ContainerTag> DEFAULT_COMBINE_BY_FUNCTION = (tag1,tag2) -> {
         return div().with(tag1,tag2);
     };
@@ -158,7 +160,14 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected ContainerTag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
         String id = getGroupByChartFieldName(idFromName(attrName));
         List<AbstractAttribute> availableGroups = groupByAttributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
-        Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
+        Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(
+                Collectors.groupingBy(filter->{
+                    if(filter instanceof TextAttribute) {
+                        return SIGNIFICANT_TERMS_LABEL;
+                    } else {
+                        return filter.getRootName();
+                    }
+                })).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
         String clazz = "single-select2";
         return div().withClass("row").with(

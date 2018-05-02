@@ -12,6 +12,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import seeding.google.elasticsearch.attributes.TextAttribute;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -136,13 +137,17 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             }).toArray(size -> new QueryBuilder[size]);
             aggregation = new FiltersAggregation(attrName + aggSuffix, false, null, queryBuilders);
         } else if (attribute instanceof RangeAttribute) {
-            System.out.println("Building range for: "+attrName);
-            RangeAttribute rangeAttribute = (RangeAttribute)attribute;
-            if(attribute instanceof AbstractScriptAttribute) {
-                aggregation = new HistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), (rangeAttribute.max().doubleValue()-rangeAttribute.min().doubleValue())/rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing());
+            System.out.println("Building range for: " + attrName);
+            RangeAttribute rangeAttribute = (RangeAttribute) attribute;
+            if (attribute instanceof AbstractScriptAttribute) {
+                aggregation = new HistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), (rangeAttribute.max().doubleValue() - rangeAttribute.min().doubleValue()) / rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing());
             } else {
-                aggregation = new HistogramAggregation(attrName + aggSuffix, attrName, null, (rangeAttribute.max().doubleValue()-rangeAttribute.min().doubleValue())/rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing());
+                aggregation = new HistogramAggregation(attrName + aggSuffix, attrName, null, (rangeAttribute.max().doubleValue() - rangeAttribute.min().doubleValue()) / rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing());
             }
+        } else if (attribute instanceof TextAttribute) {
+            System.out.println("Using significant terms bucketing for attr: "+attrName);
+            aggregation = new SignificantTermsAggregation(attrName + aggSuffix, attrName, null, missingVal, maxSize);
+
         } else {
             if (attribute instanceof AbstractScriptAttribute) {
                 aggregation = new TermsAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), missingVal, maxSize);

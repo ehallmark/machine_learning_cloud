@@ -159,7 +159,7 @@ public class AbstractNestedFilter extends AbstractFilter {
 
                             if(inputIds.isEmpty()) inputIds = null;
                             return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getName(),filter.getOptionGroup(),collapseId,childTag,id, filter.getAttributeId(), inputIds, filter.isNotYetImplemented(), filter.getDescription().render())
+                                    SimilarPatentServer.createAttributeElement(SimilarPatentServer.humanAttributeFor(filter.getName()),filter.getName(),filter.getOptionGroup(),collapseId,childTag,id, filter.getAttributeId(), inputIds, filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())
                 )

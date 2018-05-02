@@ -159,8 +159,8 @@ public class BigQueryServer {
             humanAttrToJavaAttrMap.put("Assignee Acquisitions (CompDB)", Constants.COMPDB_ASSETS_PURCHASED);
             humanAttrToJavaAttrMap.put("Acquisition Deal", Constants.ACQUISITION_DEAL);
             humanAttrToJavaAttrMap.put("Inactive Deal", Constants.INACTIVE_DEAL);
-            humanAttrToJavaAttrMap.put("Portfolio Size", Attributes.LATEST_PORTFOLIO_SIZE);
-            humanAttrToJavaAttrMap.put("Portfolio Size (family)", Attributes.LATEST_FAM_PORTFOLIO_SIZE);
+            humanAttrToJavaAttrMap.put("Portfolio Size (pub. match)", Attributes.LATEST_PORTFOLIO_SIZE);
+            humanAttrToJavaAttrMap.put("Portfolio Size (family match)", Attributes.LATEST_FAM_PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Patents",PortfolioList.Type.patents.toString());
             humanAttrToJavaAttrMap.put("(Normalized) Assignee",Constants.NORMALIZED_LATEST_ASSIGNEE);
             humanAttrToJavaAttrMap.put("(Normalized) Portfolio Size", Constants.NORMALIZED_PORTFOLIO_SIZE);
@@ -252,9 +252,10 @@ public class BigQueryServer {
             humanAttrToJavaAttrMap.put("Inventors", Constants.INVENTORS);
             humanAttrToJavaAttrMap.put("Agents", Constants.AGENTS);
             humanAttrToJavaAttrMap.put("Backward Citations", Constants.CITATIONS);
-            humanAttrToJavaAttrMap.put("Claims", Constants.CLAIMS);
+            humanAttrToJavaAttrMap.put("Claim Text", Attributes.CLAIMS);
+            humanAttrToJavaAttrMap.put("Description Text", Attributes.DESCRIPTION);
             humanAttrToJavaAttrMap.put("Prior Related Docs", Constants.PATENT_FAMILY);
-            humanAttrToJavaAttrMap.put("Assignments", Constants.ASSIGNMENTS);
+            humanAttrToJavaAttrMap.put("Assignments", Attributes.ASSIGNMENTS);
 
             buildJavaToHumanAttrMap();
 
@@ -272,7 +273,7 @@ public class BigQueryServer {
         List<AbstractAttribute> attributes = new ArrayList<>();
         getAttributesHelper(allAttributes,attributes);
 
-        List<AbstractAttribute> discreteAttrs = attributes.stream().filter(attr->attr.getType().equals("keyword")||attr.getType().equals("date")||(attr.getType().equals("text")&&attr.getNestedFields()!=null)).collect(Collectors.toList());
+        List<AbstractAttribute> discreteAttrs = attributes.stream().filter(attr->attr.getType().equals("keyword")||attr.getType().equals("date")||attr.getType().equals("text")).collect(Collectors.toList());
         List<AbstractAttribute> dateAttrs = attributes.stream().filter(attr->attr.getType().equals("date")).collect(Collectors.toList());
         List<AbstractAttribute> rangeAttrs = attributes.stream().filter(attr->attr instanceof RangeAttribute).collect(Collectors.toList());
         List<AbstractAttribute> numericAttrs = attributes.stream().filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Double)||attr.getFieldType().equals(AbstractFilter.FieldType.Integer)).collect(Collectors.toList());

@@ -4,6 +4,7 @@ import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
+import seeding.google.elasticsearch.attributes.TextAttribute;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.AbstractPivotChart;
@@ -118,9 +119,14 @@ public abstract class NestedAttribute extends AbstractAttribute {
                                     }
                                 }
                             }
+                            String attrName = filter.getFullName();
+                            String humanName = SimilarPatentServer.humanAttributeFor(attrName);
+                            if((NestedAttribute.this instanceof AbstractChartAttribute || (getParent()!=null && getParent() instanceof AbstractChartAttribute)) && filter instanceof TextAttribute) {
+                                humanName += " ("+AbstractChartAttribute.SIGNIFICANT_TERMS_LABEL+")";
+                            }
                             if(inputIds.isEmpty()) inputIds = null;
                             return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,childTag, id, filter.getAttributeId(), inputIds, filter.isNotYetImplemented(), filter.getDescription().render())
+                                    SimilarPatentServer.createAttributeElement(humanName, attrName,null,collapseId,childTag, id, filter.getAttributeId(), inputIds, filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())
                 )
