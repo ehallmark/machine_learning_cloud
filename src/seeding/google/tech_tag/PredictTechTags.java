@@ -419,7 +419,7 @@ public class PredictTechTags {
                 }
             }
             final String statement =  insert.replace("?",valueJoiner.toString());
-            System.out.println("Statement: "+statement);
+            //System.out.println("Statement: "+statement);
             PreparedStatement insertPs = conn.prepareStatement(statement);
             insertPs.executeUpdate();
             if(breakAfter) {
