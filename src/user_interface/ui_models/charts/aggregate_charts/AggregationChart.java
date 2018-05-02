@@ -75,7 +75,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 for(MultiBucketsAggregation.Bucket entry : agg.getBuckets()) {
                     String group = groupByDatasets==null?entry.getKeyAsString():groupByDatasets.get(i);
                     Aggregations nestedAggs = entry.getAggregations();
-                    Series<?> series = getSeriesFromAgg(nestedAggs,attribute,attrName,group,limit);
+                    PointSeries series = getSeriesFromAgg(nestedAggs,attribute,attrName,group,limit);
                     data.add(series);
                     i++;
                 }
@@ -83,7 +83,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 throw new RuntimeException("Unable to cast group aggregation "+groupAggName.getClass().getName()+" to MultiBucketsAggregation.class");
             }
         } else {
-            Series<?> series = getSeriesFromAgg(aggregations, attribute, attrName, title, limit);
+            PointSeries series = getSeriesFromAgg(aggregations, attribute, attrName, title, limit);
             data.add(series);
         }
         return data;
@@ -104,7 +104,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         };
     }
 
-    protected Series<?> getSeriesFromAgg(Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit) {
+    protected PointSeries getSeriesFromAgg(Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit) {
         PointSeries series = new PointSeries();
         series.setName(title);
         final List<String> dataSets = getCategoriesForAttribute(attribute);

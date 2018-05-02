@@ -18,7 +18,7 @@ public class LineChart extends AbstractChart {
 
     @Getter
     private boolean stockChart;
-    public LineChart(boolean stockChart, String title, String subTitle, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals) {
+    public LineChart(boolean stockChart, String title, String subTitle, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, List<String> categories) {
         this.stockChart=stockChart;
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = "{point.key}"+xAxisSuffix;
@@ -36,7 +36,11 @@ public class LineChart extends AbstractChart {
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data);
         if(subTitle!=null) options.setSubtitle(new Title(subTitle));
-        options.setxAxis(new Axis().setType(AxisType.LINEAR).setTickInterval(1f).setTitle(new Title(xLabel)));
+        if(isStockChart()) {
+            options.setxAxis(new Axis().setType(AxisType.LINEAR).setTickInterval(1f).setTitle(new Title(xLabel)));
+        } else {
+            options.setxAxis(new Axis().setType(AxisType.CATEGORY).setCategories(categories).setTitle(new Title(xLabel)));
+        }
         options.setyAxis(new Axis().setType(AxisType.LINEAR).setMin(0).setTitle(new Title(ColumnChart.capitalize(yLabel)+" Count")));
         if(options.getSeries().size()==1) {
             for (Series<?> series : options.getSeries()) {

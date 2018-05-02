@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
+import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
@@ -13,6 +14,7 @@ import user_interface.ui_models.charts.highcharts.LineChart;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
 
@@ -82,7 +84,10 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
         data.forEach(series->{
             series.setShowInLegend(false);
         });
-        return Collections.singletonList(new LineChart(false,title, subtitle, data, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
+        List<String> categories = data.isEmpty() ? Collections.singletonList("0")
+                : data.get(0).getData().stream().map(p->((Point)p).getName()).collect(Collectors.toList());
+        System.out.println("Categories for timeline: "+String.join(", ",categories));
+        return Collections.singletonList(new LineChart(false,title, subtitle, data, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0,categories));
     }
 
     @Override
