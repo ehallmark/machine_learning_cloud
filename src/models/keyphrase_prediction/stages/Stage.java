@@ -11,13 +11,9 @@ import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.scorers.KeywordScorer;
-import models.similarity_models.rnn_encoding_model.PostgresSequenceIterator;
-import models.text_streaming.FileTextDataSetIterator;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
-import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.gephi.graph.api.Node;
 import org.nd4j.linalg.primitives.Pair;
@@ -205,6 +201,7 @@ public abstract class Stage<V> {
                     // this is the text of the token
                     String word = token.get(CoreAnnotations.TextAnnotation.class);
                     boolean valid = true;
+
                     for (int i = 0; i < word.length(); i++) {
                         if (!Character.isAlphabetic(word.charAt(i))) {
                             valid = false;

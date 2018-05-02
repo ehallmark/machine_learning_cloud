@@ -11,7 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
 
-public class IngestLitigation {
+public class PullLitigationDataFromPatexiaForDisneyProject {
 
     private static String anyMatch(String c, Collection<String> collection) {
         return collection.stream().filter(p->c.toLowerCase().startsWith(p.toLowerCase())).findFirst().orElse(null);

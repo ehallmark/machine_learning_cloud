@@ -12,7 +12,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
-import seeding.google.elasticsearch.attributes.TextAttribute;
+import seeding.google.elasticsearch.attributes.SignificantTermsAttribute;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
