@@ -95,7 +95,13 @@ public abstract class NestedAttribute extends AbstractAttribute {
                                 groupbyTag,br(),
                                 p(this instanceof AbstractPivotChart ? "Row Attributes" : "Column Attributes")
                         ),
-                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),id,clazz, applicableAttributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
+                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),id,clazz, applicableAttributes.stream().map(attr->{
+                            if(attr instanceof TextAttribute) {
+                                return "_<>_"+attr.getFullName(); // Hack to single text attribute
+                            } else {
+                                return attr.getFullName();
+                            }
+                        }).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(
                         applicableAttributes.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\].]","");
