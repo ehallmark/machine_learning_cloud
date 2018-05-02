@@ -269,8 +269,6 @@ public class PredictTechTags {
         AtomicLong cnt = new AtomicLong(0);
         Connection conn = Database.getConn();
 
-        KeyphrasePredictionModel keyphrasePredictionModel = KeyphrasePredictionModel.getOrLoadManager(true);
-
         AtomicLong totalCnt = new AtomicLong(0);
         PreparedStatement insertDesign = conn.prepareStatement("insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values (?,?,'DESIGN','DESIGN') on conflict (family_id) do update set (technology,technology2,technology3)=('DESIGN','DESIGN', null)");
         PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values (?,?,'BOTANY','PLANTS') on conflict (family_id) do update set (technology,technology2,technology3)=('BOTANY','PLANTS', null)");

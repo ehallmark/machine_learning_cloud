@@ -36,7 +36,6 @@ public class PredictKeywords {
             String text = rs.getString(2);
             Annotation annotation = new Annotation(text);
 
-            System.out.print("Annotating new batch...");
             pipeline.annotate(annotation, d -> {
                 try {
                     List<String> keywords = extractKeywords(d);
