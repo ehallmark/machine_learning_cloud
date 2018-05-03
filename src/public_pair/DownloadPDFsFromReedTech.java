@@ -44,20 +44,34 @@ public class DownloadPDFsFromReedTech {
 
         // go through data folder and ingest any files that are missing
         final AtomicLong cnt = new AtomicLong(0);
-        applicationNumbers.parallelStream().forEach(appNum->{
+        applicationNumbers.stream().forEach(appNum->{
             File file = fileFromApplicationNumber(appNum);
             if(cnt.getAndIncrement()%10000==9999) {
                 System.out.println("Finished files: "+cnt.get());
             }
             if(!file.exists()) {
                 final String urlStr = PAIR_URL + appNum + ".zip";
+                boolean complete = false;
                 try {
                     URL url = new URL(urlStr);
                     FileUtils.copyURLToFile(url, file);
+                    complete = true;
                 } catch(Exception e) {
                     e.printStackTrace();
                     System.out.println("Error on url: "+urlStr);
-                    System.exit(1);
+                } finally {
+                    if(!complete) {
+                        // delete
+                        System.out.println("Cleaning up partial: "+file.getAbsolutePath());
+                        try {
+                            boolean deleted = file.delete();
+                            if(!deleted) {
+                                System.out.println("Unable to delete on exit: "+file.getAbsolutePath());
+                            }
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
         });
