@@ -13,11 +13,6 @@ public class DownloadPDFsFromReedTech {
     public static final String STORAGE_PREFIX = "/usb/public_pair/";
     public static final String INDEX_FILE_URL = "http://patents.reedtech.com/downloads/PAIRIndex/Today/PAIRIndex.zip";
     public static final File PAIR_BULK_FOLDER = new File(STORAGE_PREFIX+"data/");
-    static {
-        if(!PAIR_BULK_FOLDER.exists()) {
-            PAIR_BULK_FOLDER.mkdirs();
-        }
-    }
     public static final String INDEX_OUTPUT_FILE = STORAGE_PREFIX+"PAIRIndex.txt";
     public static final String PAIR_URL = "http://patents.reedtech.com/downloads/pairdownload/";
     public static void main(String[] args) throws Exception {
