@@ -17,7 +17,7 @@ public class DownloadPDFsFromReedTech {
     public static final String INDEX_OUTPUT_FILE = STORAGE_PREFIX+"PAIRIndex.txt";
     public static final String PAIR_URL = "http://patents.reedtech.com/downloads/pairdownload/";
     public static void main(String[] args) throws Exception {
-        List<Pair<String,Integer>> applicationNumbers = new ArrayList<>();
+        List<Pair<String,Long>> applicationNumbers = new ArrayList<>();
         // pull latest index file from reedtech.com
         {
             URL url = new URL(INDEX_FILE_URL);
@@ -33,7 +33,7 @@ public class DownloadPDFsFromReedTech {
             AtomicLong cnt = new AtomicLong(0);
             reader.lines().forEach(line->{
                 String[] cell = line.split(",");
-                applicationNumbers.add(new Pair<>(cell[0],Integer.valueOf(cell[2])));
+                applicationNumbers.add(new Pair<>(cell[0],Long.valueOf(cell[2])));
                 if(cnt.getAndIncrement()%10000==9999) {
                     System.out.println("Read index: "+cnt.get());
                 }
@@ -48,7 +48,7 @@ public class DownloadPDFsFromReedTech {
         final AtomicLong cnt = new AtomicLong(0);
         applicationNumbers.parallelStream().forEach(p->{
             String appNum = p._1;
-            int bytes = p._2;
+            long bytes = p._2;
             File file = fileFromApplicationNumber(appNum);
             if(cnt.getAndIncrement()%1000==999) {
                 System.out.println("Finished files: "+cnt.get());
