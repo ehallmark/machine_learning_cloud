@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class DownloadPDFsFromReedTech {
-    public static final String STORAGE_PREFIX = "test_public_pair/";
+    public static final String STORAGE_PREFIX = "/usb/public_pair/";
     public static final String INDEX_FILE_URL = "http://patents.reedtech.com/downloads/PAIRIndex/Today/PAIRIndex.zip";
     public static final File PAIR_BULK_FOLDER = new File(STORAGE_PREFIX+"data/");
     static {
