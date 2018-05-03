@@ -19,7 +19,11 @@ import static spark.Spark.*;
  */
 public class HumanNamePredictionServer {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
+        startServer(6969);
+    }
+
+    public static void startServer(int port) {
         DefaultPipelineManager.setLoggingLevel(Level.INFO);
 
         boolean rebuildDatasets = false;
@@ -36,11 +40,11 @@ public class HumanNamePredictionServer {
 
         HumanNamePredictionModel model = (HumanNamePredictionModel)pipelineManager.getModel();
 
-        port(8080);
-        post("/predict_human", (req,res)->{
+        if(port>0) port(port);
+        post("/dsklguq2349078gf90jadsklgj/predict_human", (req,res)->{
             return handleResults(req,res,model);
         });
-        get("/predict_human", (req,res)->{
+        get("/dsklguq2349078gf90jadsklgj/predict_human", (req,res)->{
             return handleResults(req,res,model);
         });
     }

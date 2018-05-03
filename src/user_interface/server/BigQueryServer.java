@@ -6,6 +6,7 @@ import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import data_pipeline.helpers.Function2;
 import data_pipeline.helpers.Function3;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
+import detect_acquisitions.DetermineAcquisitionsServer;
 import elasticsearch.DatasetIndex;
 import elasticsearch.TestNewFastVectors;
 import j2html.tags.ContainerTag;
@@ -2783,6 +2784,8 @@ public class BigQueryServer {
         System.out.println("Finished starting server.");
 
         GatherClassificationServer.StartServer();
+        HumanNamePredictionServer.startServer(-1);
+        DetermineAcquisitionsServer.startServer(-1);
 
         long t2 = System.currentTimeMillis();
         System.out.println("Time to start server: "+ ((t2-t1)/(1000*60)) + " minutes");
