@@ -36,11 +36,11 @@ public class HumanNamePredictionServer {
 
         HumanNamePredictionModel model = (HumanNamePredictionModel)pipelineManager.getModel();
 
-        port(6969);
-        post("/predict", (req,res)->{
+        port(8080);
+        post("/predict_human", (req,res)->{
             return handleResults(req,res,model);
         });
-        get("/predict", (req,res)->{
+        get("/predict_human", (req,res)->{
             return handleResults(req,res,model);
         });
     }
