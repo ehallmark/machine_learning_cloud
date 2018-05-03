@@ -1,5 +1,6 @@
 package public_pair;
 
+import graphical_modeling.util.Pair;
 import org.apache.commons.io.FileUtils;
 import seeding.ai_db_updater.tools.ZipHelper;
 
@@ -16,7 +17,7 @@ public class DownloadPDFsFromReedTech {
     public static final String INDEX_OUTPUT_FILE = STORAGE_PREFIX+"PAIRIndex.txt";
     public static final String PAIR_URL = "http://patents.reedtech.com/downloads/pairdownload/";
     public static void main(String[] args) throws Exception {
-        List<String> applicationNumbers = new ArrayList<>();
+        List<Pair<String,Integer>> applicationNumbers = new ArrayList<>();
         // pull latest index file from reedtech.com
         {
             URL url = new URL(INDEX_FILE_URL);
@@ -31,7 +32,8 @@ public class DownloadPDFsFromReedTech {
 
             AtomicLong cnt = new AtomicLong(0);
             reader.lines().forEach(line->{
-                applicationNumbers.add(line.split(",")[0]);
+                String[] cell = line.split(",");
+                applicationNumbers.add(new Pair<>(cell[0],Integer.valueOf(cell[2])));
                 if(cnt.getAndIncrement()%10000==9999) {
                     System.out.println("Read index: "+cnt.get());
                 }
@@ -44,17 +46,22 @@ public class DownloadPDFsFromReedTech {
 
         // go through data folder and ingest any files that are missing
         final AtomicLong cnt = new AtomicLong(0);
-        applicationNumbers.stream().forEach(appNum->{
+        applicationNumbers.parallelStream().forEach(p->{
+            String appNum = p._1;
+            int bytes = p._2;
             File file = fileFromApplicationNumber(appNum);
-            if(cnt.getAndIncrement()%10000==9999) {
+            if(cnt.getAndIncrement()%1000==999) {
                 System.out.println("Finished files: "+cnt.get());
             }
-            if(!file.exists()) {
+            if(!file.exists()||file.length()<bytes) {
                 final String urlStr = PAIR_URL + appNum + ".zip";
                 boolean complete = false;
                 try {
                     URL url = new URL(urlStr);
                     FileUtils.copyURLToFile(url, file);
+                    if(file.length()!=bytes) {
+                        System.out.println("Warning incorrect file size: "+file.length()+" != "+bytes);
+                    }
                     complete = true;
                 } catch(Exception e) {
                     e.printStackTrace();
