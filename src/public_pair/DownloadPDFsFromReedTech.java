@@ -7,7 +7,9 @@ import seeding.ai_db_updater.tools.ZipHelper;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class DownloadPDFsFromReedTech {
@@ -46,6 +48,7 @@ public class DownloadPDFsFromReedTech {
 
         // go through data folder and ingest any files that are missing
         final AtomicLong cnt = new AtomicLong(0);
+        Collections.shuffle(applicationNumbers, new Random(System.currentTimeMillis()));
         applicationNumbers.parallelStream().forEach(p->{
             String appNum = p._1;
             long bytes = p._2;
