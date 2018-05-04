@@ -49,7 +49,7 @@ public class DownloadPDFsFromReedTech {
         // go through data folder and ingest any files that are missing
         final AtomicLong cnt = new AtomicLong(0);
         Collections.shuffle(applicationNumbers, new Random(System.currentTimeMillis()));
-        applicationNumbers.parallelStream().forEach(p->{
+        applicationNumbers.stream().forEach(p->{
             String appNum = p._1;
             long bytes = p._2;
             File file = fileFromApplicationNumber(appNum);
