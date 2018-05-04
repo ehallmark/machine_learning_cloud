@@ -307,17 +307,19 @@ public class PredictTechTags {
                     String[] abstractText = Util.textToWordFunction.apply(rs.getString(3));
                     String[] descriptionText = Util.textToWordFunction.apply(rs.getString(4));
                     Array sqlEncoding = rs.getArray(5);
+                    boolean valid = false;
                     float[] rnnVec = new float[pipelineManager.getEncodingSize()];
                     if(sqlEncoding!=null) {
                         final Number[] encoding = (Number[]) sqlEncoding.getArray();
                         for(int j = 0; j < encoding.length; j++) {
                             rnnVec[j]=encoding[j].floatValue();
                         }
+                        valid = true;
                     }
-                    int found = 0;
                     float[] abstractData = new float[matrix.columns()];
                     float[] descriptionData = new float[matrix.columns()];
                     if(abstractText!=null) {
+                        int found = 0;
                         for (String word : abstractText) {
                             Integer index = wordToIndexMap.get(word);
                             if (index != null) {
@@ -325,8 +327,9 @@ public class PredictTechTags {
                                 abstractData[index]++;
                             }
                         }
-                        INDArray _wv = word2Vec.getWordVectors(Arrays.asList(abstractText));
-                        if(_wv.rows()>5) {
+                        INDArray _wv = found==0 ? null : word2Vec.getWordVectors(Arrays.asList(abstractText));
+                        if(_wv!=null&&_wv.rows()>5) {
+                            valid = true;
                             wordVectors.putColumn(i, _wv.mean(0));
                         } else {
                             wordVectors.get(NDArrayIndex.all(),NDArrayIndex.point(i)).assign(0);
@@ -335,15 +338,17 @@ public class PredictTechTags {
                         wordVectors.get(NDArrayIndex.all(),NDArrayIndex.point(i)).assign(0);
                     }
                     if(descriptionText!=null) {
+                        int found = 0;
                         for(String word : descriptionText) {
                             Integer index = wordToIndexMap.get(word);
                             if (index != null) {
-                                found++;
                                 descriptionData[index]++;
+                                found++;
                             }
                         }
+                        valid = found > 5;
                     }
-                    if (found > 10) {
+                    if (valid) {
                         familyIds.add(familyId);
                         pubNums.add(publicationNumberFull);
                         abstractVectors.putColumn(i, Nd4j.create(abstractData));
