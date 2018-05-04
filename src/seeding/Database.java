@@ -123,6 +123,24 @@ public class Database {
 		return all;
 	}
 
+	public static List<String> loadKeysFromDatabaseTable(Connection conn, String tableName, String field) {
+		List<String> data = new LinkedList<>();
+		try {
+			PreparedStatement ps = conn.prepareStatement("select " + field + " from " + tableName);
+			ps.setFetchSize(1000);
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) {
+				data.add(rs.getString(1));
+			}
+			rs.close();
+			ps.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("Error loading key{"+field+"} from table{"+tableName+"}");
+		}
+		return data;
+	}
+
 	public static Collection<String> getAllFilings() {
 		Set<String> collection = Collections.synchronizedSet(new HashSet<>(new FilingToAssetMap().getPatentDataMap().keySet()));
 		collection.addAll(new FilingToAssetMap().getApplicationDataMap().keySet());

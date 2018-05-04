@@ -106,6 +106,7 @@ public class PredictTechTags {
         final int rnnSamples = 8;
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         DefaultPipelineManager.setCudaEnvironment();
+        final Set<String> previouslyFound = new HashSet<>(Database.loadKeysFromDatabaseTable(Database.getConn(),"big_query_technologies2", "family_id"));
 
         final Word2Vec word2Vec = Word2VecManager.getOrLoadManager();
         final RNNTextEncodingPipelineManager pipelineManager = RNNTextEncodingPipelineManager.getOrLoadManager(true);
@@ -289,6 +290,10 @@ public class PredictTechTags {
                     System.out.println("Seen total: "+totalCnt.get());
                 }
                 String familyId = rs.getString(1);
+                if(previouslyFound.contains(familyId)) {
+                    i--;
+                    continue;
+                }
                 String publicationNumberFull = rs.getString(2);
                 String publicationNumber = publicationNumberFull.substring(2);
                 if(publicationNumber.startsWith("D")) {
