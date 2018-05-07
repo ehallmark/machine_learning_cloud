@@ -56,7 +56,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
@@ -70,12 +69,11 @@ import java.util.stream.Stream;
 import static j2html.TagCreator.*;
 import static j2html.TagCreator.head;
 import static spark.Spark.*;
-import static user_interface.server.SimilarPatentServer.*;
 
 /**
  * Created by ehallmark on 7/27/16.
  */
-public class BigQueryServer {
+public class BigQueryServer extends SimilarPatentServer {
     private static final boolean TEST = false;
     private static final boolean debug = false;
     private static final Map<String,Lock> fileSynchronizationMap = Collections.synchronizedMap(new HashMap<>());
@@ -114,15 +112,6 @@ public class BigQueryServer {
     public static final String INTERNAL_USER = "internal";
     public static final List<String> USER_ROLES = Arrays.asList(ANALYST_USER,INTERNAL_USER);
     private static Map<String,AggregationChart<?>> chartModelMap = new HashMap<>();
-    private static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
-    private static final Function<String,Boolean> DEFAULT_ROLE_TO_ATTR_FUNCTION = (str) -> false;
-    private static final ForkJoinPool pool = new ForkJoinPool(Math.max(10,Runtime.getRuntime().availableProcessors()/2));
-
-    static {
-        roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.toLowerCase().startsWith("gather")&& !str.toLowerCase().startsWith("compdb"));
-        roleToAttributeFunctionMap.put(INTERNAL_USER, str -> true);
-        roleToAttributeFunctionMap.put(SUPER_USER, str -> true);
-    }
 
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
@@ -134,8 +123,8 @@ public class BigQueryServer {
             humanAttrToJavaAttrMap.put("Title + Abstract + Claims", "TAC");
             humanAttrToJavaAttrMap.put("Maintenance Fee Event Code", Attributes.MAINTENANCE_EVENT);
             humanAttrToJavaAttrMap.put("Asset Number", Attributes.PUBLICATION_NUMBER);
-            humanAttrToJavaAttrMap.put("Similarity", Constants.SIMILARITY);
-            humanAttrToJavaAttrMap.put("Similarity (Fast)", Constants.SIMILARITY_FAST);
+            humanAttrToJavaAttrMap.put("Word Similarity", Attributes.RNN_ENC);
+            humanAttrToJavaAttrMap.put("CPC Similarity", Attributes.CPC_VAE);
             humanAttrToJavaAttrMap.put("Technology Similarity", Constants.TECHNOLOGY_SIMILARITY);
             humanAttrToJavaAttrMap.put("Assignee Similarity", Constants.ASSIGNEE_SIMILARITY);
             humanAttrToJavaAttrMap.put("Text Similarity", Constants.TEXT_SIMILARITY);
@@ -145,7 +134,6 @@ public class BigQueryServer {
             humanAttrToJavaAttrMap.put("Assignee Name", Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Organization Name", Constants.ASSIGNEES+"."+Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Invention Title", Attributes.INVENTION_TITLE);
-            humanAttrToJavaAttrMap.put("AI Value", Constants.AI_VALUE);
             humanAttrToJavaAttrMap.put("Reinstated", Constants.REINSTATED);
             humanAttrToJavaAttrMap.put("Result Type", Constants.DOC_TYPE);
             humanAttrToJavaAttrMap.put("Dataset Name", Constants.DATASET_NAME);
@@ -168,7 +156,6 @@ public class BigQueryServer {
             humanAttrToJavaAttrMap.put("Cited Date", Constants.CITED_DATE);
             humanAttrToJavaAttrMap.put("Forward Citation", Constants.BACKWARD_CITATION);
             humanAttrToJavaAttrMap.put("Remove Duplicate Related Assets",AssetDedupFilter.NAME);
-            humanAttrToJavaAttrMap.put("Means Present", Constants.MEANS_PRESENT);
             humanAttrToJavaAttrMap.put("Gather", Attributes.GATHER);
             humanAttrToJavaAttrMap.put("Stage Complete", Attributes.GATHER_STAGE);
             humanAttrToJavaAttrMap.put("Gather Technology", Attributes.GATHER_TECHNOLOGY);
@@ -234,6 +221,20 @@ public class BigQueryServer {
             humanAttrToJavaAttrMap.put("Assignor Name", Attributes.RECORDED_ASSIGNOR);
             humanAttrToJavaAttrMap.put("Conveyance Text", Attributes.CONVEYANCE_TEXT);
             humanAttrToJavaAttrMap.put("Overall Score", Constants.SCORE);
+            humanAttrToJavaAttrMap.put("PTAB", Attributes.PTAB);
+            humanAttrToJavaAttrMap.put("Case Name", Attributes.PTAB_CASE_NAME);
+            humanAttrToJavaAttrMap.put("Case Type", Attributes.PTAB_CASE_TYPE);
+            humanAttrToJavaAttrMap.put("Case Status", Attributes.PTAB_CASE_STATUS);
+            humanAttrToJavaAttrMap.put("Appeal No.", Attributes.PTAB_APPEAL_NO);
+            humanAttrToJavaAttrMap.put("Mailed Date", Attributes.PTAB_MAILED_DATE);
+            humanAttrToJavaAttrMap.put("Case Text (PDF)", Attributes.PTAB_CASE_TEXT);
+            humanAttrToJavaAttrMap.put("Interference No.", Attributes.PTAB_INTERFERENCE_NO);
+            humanAttrToJavaAttrMap.put("Inventor First Name", Attributes.PTAB_INVENTOR_FIRST_NAME);
+            humanAttrToJavaAttrMap.put("Inventor Last Name", Attributes.PTAB_INVENTOR_LAST_NAME);
+            humanAttrToJavaAttrMap.put("Patent Family Size", Attributes.FAMILY_SIZE);
+            humanAttrToJavaAttrMap.put("Patent Family ID",Attributes.FAMILY_ID);
+            humanAttrToJavaAttrMap.put("Means Present", Attributes.MEANS_PRESENT);
+            humanAttrToJavaAttrMap.put("AI Value", Attributes.AI_VALUE);
 
             // custom filter name for excluding granted apps
             humanAttrToJavaAttrMap.put("Exclude Granted Applications Filter", Constants.GRANTED+ AbstractFilter.FilterType.BoolFalse+ Constants.FILTER_SUFFIX);
@@ -2399,35 +2400,6 @@ public class BigQueryServer {
         );
     }
 
-
-
-    public static Tag technologySelectWithCustomClass(String name, String id, String clazz, Collection<String> orderedClassifications) {
-        return select().attr("style","width:100%;").withName(name).withId(id).withClass(clazz).attr("multiple","multiple").with(
-                orderedClassifications.stream().map(technology->{
-                    return div().with(option(humanAttributeFor(technology)).withValue(technology));
-                }).collect(Collectors.toList())
-        );
-    }
-
-    public static Tag technologySelectWithCustomClass(String name, String id, String clazz, Map<String,List<String>> orderedClassifications, String defaultOption) {
-        ContainerTag select = select().attr("style","width:100%;").withName(name).withId(id).withClass(clazz);
-        if(defaultOption==null) select = select.attr("multiple","multiple");
-        else {
-            select = select.with(option(defaultOption).withValue(""));
-        }
-        return select
-                .with(
-                        orderedClassifications.entrySet().stream().map(e-> {
-                            String optGroup = e.getKey();
-                            return optgroup().attr("label",humanAttributeFor(optGroup)).attr("name",optGroup).with(
-                                    e.getValue().stream().map(technology->{
-                                        return div().with(option(humanAttributeFor(technology)).withValue(technology));
-                                    }).collect(Collectors.toList())
-                            );
-                        }).collect(Collectors.toList())
-                );
-    }
-
     private static Tag innerAttributesAndCharts(Function<String,Boolean> userRoleFunction, Tag buttons) {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
@@ -2611,8 +2583,8 @@ public class BigQueryServer {
     }
 
     private static Tag customFormRow(String type, AbstractAttribute attribute, Function<String,Boolean> userRoleFunction) {
-        String shortTitle = type.substring(0,1).toUpperCase()+type.substring(1);
-        String groupID = type+"-row";
+        String shortTitle = type.substring(0, 1).toUpperCase() + type.substring(1);
+        String groupID = type + "-row";
         return span().with(
                 toggleButton(groupID, shortTitle),
                 span().withId(groupID).withClass("collapse show").with(
@@ -2627,17 +2599,6 @@ public class BigQueryServer {
         );
     }
 
-    public static Tag createAttributeElement(String modelName, String optGroup, String collapseId, Tag optionTag, String selectId, String attributeId, Collection<String> inputIds, boolean notImplemented, String description) {
-        //if(optGroup!=null)System.out.println("Tag for "+modelName+": "+attributeId);
-        //if(optGroup!=null)System.out.println("Inputs ids for "+modelName+": "+inputIds);
-        return div().attr("data-model",modelName).attr("data-attribute",attributeId).attr("data-inputs",  inputIds == null ? null : new Gson().toJson(inputIds)).withClass("attributeElement draggable " + (notImplemented ? " not-implemented" : "")).with(
-                div().attr("style","width: 100%;").attr("title", notImplemented ? NOT_IMPLEMENTED_STRING : description).withClass("collapsible-header").attr("data-target","#"+collapseId).with(
-                        label(humanAttributeFor(modelName)).attr("opt-group",optGroup),
-                        span().withClass("remove-button").attr("data-model",modelName).attr("data-select","#"+selectId).withText("x")
-                ), span().withClass("collapse show").withId(collapseId).with(optionTag)
-        );
-    }
-
     public static List<String> allSortableAttributes() {
         return Stream.of(Stream.of(Constants.SCORE, Attributes.CPC_VAE, Attributes.RNN_ENC, Attributes.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Attributes.LATEST_PORTFOLIO_SIZE, Attributes.LATEST_FAM_PORTFOLIO_SIZE, Attributes.REMAINING_LIFE),
                 getAllTopLevelAttributes().stream()
@@ -2648,13 +2609,6 @@ public class BigQueryServer {
                         })
                         .filter(attr->attr.getName().endsWith(Constants.COUNT_SUFFIX)||attr.getFieldType().equals(AbstractFilter.FieldType.Date))
                         .map(AbstractAttribute::getFullName).sorted()).flatMap(stream->stream).collect(Collectors.toList());
-    }
-
-    public static Map<String,String> allSortableAttributesToRootName() {
-        return allSortableAttributes().stream().collect(Collectors.toMap(e->e,e->{
-            if(e.contains(".")) e = e.substring(0,e.indexOf("."));
-            return e;
-        }));
     }
 
     private static Tag mainOptionsRow() {

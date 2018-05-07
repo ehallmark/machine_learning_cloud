@@ -136,14 +136,14 @@ public class SimilarPatentServer {
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     private static Map<String,AbstractChartAttribute> chartModelMap = new HashMap<>();
-    private static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
-    private static final Function<String,Boolean> DEFAULT_ROLE_TO_ATTR_FUNCTION = (str) -> false;
+    static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
+    static final Function<String,Boolean> DEFAULT_ROLE_TO_ATTR_FUNCTION = (str) -> false;
     //private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
     static NestedAttribute allAttributes;
     static AbstractNestedFilter allFilters;
     static NestedAttribute allCharts;
     private static RecursiveTask<KeyphrasePredictionPipelineManager> keyphrasePredictionPipelineManagerTask;
-    private static final ForkJoinPool pool = new ForkJoinPool(Math.max(10,Runtime.getRuntime().availableProcessors()/2));
+    protected static final ForkJoinPool pool = new ForkJoinPool(Math.max(10,Runtime.getRuntime().availableProcessors()/2));
 
     static {
         roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.toLowerCase().startsWith("gather")&& !str.toLowerCase().startsWith("compdb"));
