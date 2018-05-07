@@ -2875,7 +2875,7 @@ public class SimilarPatentServer {
                                                                 )
                                                         ), div().withClass("col-12 attributeElement").with(
                                                                 label("List Item Separator").attr("style","width: 100%;").with(
-                                                                        input().withId("main-options-"+LIST_ITEM_SEPARATOR_FIELD).withClass("form-control").withType("text").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder("Defaults to '; '").withName(LIST_ITEM_SEPARATOR_FIELD)
+                                                                        input().withId("main-options-"+LIST_ITEM_SEPARATOR_FIELD).withClass("form-control").withType("text").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder("; ").withName(LIST_ITEM_SEPARATOR_FIELD)
                                                                 )
                                                         )
                                                 )
