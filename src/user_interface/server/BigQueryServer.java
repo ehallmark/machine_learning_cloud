@@ -2744,12 +2744,7 @@ public class BigQueryServer extends SimilarPatentServer {
         long t2 = System.currentTimeMillis();
         System.out.println("Time to start server: "+ ((t2-t1)/(1000*60)) + " minutes");
     }
-
-    public static void awaitTermination() throws Exception {
-        System.out.println("Awaiting termination...");
-        pool.shutdown();
-        pool.awaitTermination(Long.MAX_VALUE,TimeUnit.MICROSECONDS);
-    }
+    
 
     public static void main(String[] args) throws Exception {
         AbstractScriptAttribute.setBigQuery(true);
