@@ -2785,10 +2785,14 @@ public class BigQueryServer extends SimilarPatentServer {
         server();
         System.out.println("Finished starting server.");
 
-        GatherClassificationServer.StartServer();
-        HumanNamePredictionServer.startServer(-1);
-        DetermineAcquisitionsServer.startServer(-1);
-
+        // TODO turn these back on
+        boolean debugging = true;
+        if(!debugging) {
+            GatherClassificationServer.StartServer();
+            HumanNamePredictionServer.startServer(-1);
+            DetermineAcquisitionsServer.startServer(-1);
+        }
+        
         long t2 = System.currentTimeMillis();
         System.out.println("Time to start server: "+ ((t2-t1)/(1000*60)) + " minutes");
     }
