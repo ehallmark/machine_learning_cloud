@@ -63,6 +63,7 @@ public class DownloadPDFsFromReedTech {
                     System.out.println("Finished files: " + cnt.get());
                 //}
                 if (!file.exists() || file.length() < bytes) {
+                    // send request to pair proxy
                     final String urlStr = PAIR_URL + appNum + ".zip";
                     boolean complete = false;
                     try {
