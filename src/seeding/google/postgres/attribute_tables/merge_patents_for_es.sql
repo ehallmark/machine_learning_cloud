@@ -21,19 +21,24 @@ create table patents_global_merged (
     invention_title text,
     abstract text,
     claims text,
+    claim_count integer,
     description text,
     inventor text[],
     assignee text[],
     inventor_harmonized text[],
     inventor_harmonized_cc varchar(8)[],
+    inventor_count integer,
     assignee_harmonized text[],
     assignee_harmonized_cc varchar(8)[],
+    assignee_count integer,
     -- priority claims
     pc_publication_number_full varchar(32)[],
     pc_application_number_full varchar(32)[],
     pc_filing_date date[],
+    pc_count integer,
     -- cpc
     code varchar(32)[],
+    code_count integer,
     tree varchar(32)[],
     inventive boolean[],
     -- citations
@@ -43,6 +48,8 @@ create table patents_global_merged (
     cited_type varchar(32)[],
     cited_category varchar(32)[],
     cited_filing_date date[],
+    citation_count integer,
+
     -- value
     ai_value double precision,
     length_of_smallest_ind_claim integer,
@@ -51,14 +58,18 @@ create table patents_global_merged (
     -- sep
     sso text[],
     standard text[],
+    standard_count integer,
+
     -- wipo
     wipo_technology text,
     -- gtt tech
     technology text,
     technology2 text,
     keywords text[],
+    keyword_count integer,
     -- maintenance events
     maintenance_event text[],
+    maintenance_event_count integer,
     lapsed boolean,
     reinstated boolean,
 
@@ -70,6 +81,7 @@ create table patents_global_merged (
     latest_entity_type varchar(32),
     latest_first_filing_date date,
     latest_last_filing_date date,
+    latest_assignee_count integer,
 
     -- latest assignee fam
     latest_fam_assignee text[],
@@ -80,12 +92,14 @@ create table patents_global_merged (
     latest_fam_entity_type varchar(32),
     latest_fam_first_filing_date date,
     latest_fam_last_filing_date date,
+    latest_fam_assignee_count integer,
 
     -- embedding
     cpc_vae float[],
     rnn_enc float[],
     -- assignments
     reel_frame text[],
+    assignment_count integer,
     conveyance_text text[],
     execution_date date[],
     recorded_date date[],
@@ -98,6 +112,7 @@ create table patents_global_merged (
     rcite_filing_date date[],
     rcite_type varchar(32)[],
     rcite_category varchar(32)[],
+    rcite_count integer,
     -- pair (incorporate 'abandoned' field into 'lapsed')
     term_adjustments integer,
     compdb_deal_id varchar(32)[],
@@ -105,6 +120,7 @@ create table patents_global_merged (
     compdb_technology text[],
     compdb_inactive boolean[],
     compdb_acquisition boolean[],
+    compdb_count integer,
 
     gather_value integer,
     gather_stage varchar(32)[],
@@ -117,7 +133,8 @@ create table patents_global_merged (
     ptab_case_name text[],
     ptab_case_type varchar(100)[],
     ptab_case_status varchar(50)[],
-    ptab_case_text text[]
+    ptab_case_text text[],
+    ptab_count integer
 );
 
 
@@ -141,19 +158,24 @@ insert into patents_global_merged (
         invention_title,
         abstract,
         claims,
+        claim_count,
         description,
         inventor,
         assignee,
         inventor_harmonized,
         inventor_harmonized_cc,
+        inventor_count,
         assignee_harmonized,
         assignee_harmonized_cc,
+        assignee_count,
         -- priority claims
         pc_publication_number_full,
         pc_application_number_full,
         pc_filing_date,
+        pc_count,
         -- cpc
         code,
+        code_count,
         tree,
         inventive,
         -- citations
@@ -163,6 +185,7 @@ insert into patents_global_merged (
         cited_type,
         cited_category,
         cited_filing_date,
+        citation_count,
         -- value
         ai_value,
         length_of_smallest_ind_claim,
@@ -171,14 +194,17 @@ insert into patents_global_merged (
         -- sep
         sso,
         standard,
+        standard_count,
         -- wipo
         wipo_technology,
         -- gtt tech
         technology,
         technology2,
         keywords,
+        keyword_count,
         -- maintenance events
         maintenance_event,
+        maintenance_event_count,
         lapsed,
         reinstated,
         -- latest assignee pub
@@ -190,6 +216,7 @@ insert into patents_global_merged (
         latest_entity_type,
         latest_first_filing_date,
         latest_last_filing_date,
+        latest_assignee_count,
         -- latest assignee fam
         latest_fam_assignee,
         latest_fam_assignee_date,
@@ -199,6 +226,7 @@ insert into patents_global_merged (
         latest_fam_entity_type,
         latest_fam_first_filing_date,
         latest_fam_last_filing_date,
+        latest_fam_assignee_count,
         -- embedding
         cpc_vae,
         rnn_enc,
@@ -209,6 +237,7 @@ insert into patents_global_merged (
         recorded_date,
         recorded_assignee, -- first assignee of each reel frame
         recorded_assignor, -- first assignor of each reel frame
+        assignment_count,
         -- reverse citations
         rcite_publication_number_full,
         rcite_application_number_full,
@@ -216,6 +245,7 @@ insert into patents_global_merged (
         rcite_filing_date,
         rcite_type,
         rcite_category,
+        rcite_count,
         -- pair (incorporate 'abandoned' field into 'lapsed')
         term_adjustments,
         -- compdb
@@ -224,6 +254,7 @@ insert into patents_global_merged (
         compdb_technology,
         compdb_inactive,
         compdb_acquisition,
+        compdb_count,
         -- gather
         gather_value,
         gather_stage,
@@ -236,7 +267,8 @@ insert into patents_global_merged (
         ptab_case_name,
         ptab_case_type,
         ptab_case_status,
-        ptab_case_text
+        ptab_case_text,
+        ptab_count
 )
 (
     select   -- monster query
@@ -259,19 +291,24 @@ insert into patents_global_merged (
         p.invention_title[array_position(p.invention_title_lang,'en')],
         p.abstract[array_position(p.abstract_lang,'en')],
         p.claims[array_position(p.claims_lang,'en')],
+        value_claims.num_claims,
         p.description[array_position(p.description_lang,'en')],
         p.inventor,
         p.assignee,
         p.inventor_harmonized,
         p.inventor_harmonized_cc,
+        coalesce(array_length(p.inventor_harmonized,1),0),
         p.assignee_harmonized,
         p.assignee_harmonized_cc,
+        coalesce(array_length(p.assignee_harmonized,1),0),
         -- priority claims
         p.pc_publication_number_full,
         p.pc_application_number_full,
         p.pc_filing_date,
+        coalesce(array_length(p.pc_publication_number_full,1),0),
         -- cpc
         p.code,
+        coalesce(array_length(p.code,1),0),
         cpc_tree.tree,
         p.inventive,
         -- citations
@@ -281,6 +318,7 @@ insert into patents_global_merged (
         p.cited_type,
         p.cited_category,
         p.cited_filing_date,
+        coalesce(array_length(p.cited_publication_number_full,1),0),
         -- ai value
         ai_value.value,
         -- other value attrs
@@ -290,14 +328,17 @@ insert into patents_global_merged (
         -- sep
         sep.sso,
         sep.standard,
+        coalesce(array_length(sep.standard,1),0),
         -- wipo tech
         wipo.wipo_technology,
         -- gtt tech
         tech.technology,
         tech.secondary,
         ke.keywords,
+        coalesce(array_length(ke.keywords,1),0),
         -- maintenance events
         m_codes.codes,
+        coalesce(array_length(m_codes.codes,1),0),
         coalesce(coalesce(m.lapsed,pair.abandoned),'f'),
         coalesce(m.reinstated,'f'),
         -- latest assignee by pub
@@ -309,6 +350,7 @@ insert into patents_global_merged (
         latest_assignee_join.entity_type,
         latest_assignee_join.first_filing_date,
         latest_assignee_join.last_filing_date,
+        coalesce(array_length(latest_assignee.assignee,1),0),
         -- latest assignee by fam
         latest_assignee_fam.assignee,
         latest_assignee_fam.date,
@@ -318,6 +360,7 @@ insert into patents_global_merged (
         latest_assignee_fam_join.entity_type,
         latest_assignee_fam_join.first_filing_date,
         latest_assignee_fam_join.last_filing_date,
+        coalesce(array_length(latest_assignee_fam.assignee,1),0),
         -- embedding
         enc1.cpc_vae,
         enc2.rnn_enc,
@@ -328,6 +371,7 @@ insert into patents_global_merged (
         a.recorded_date,
         a.assignee, -- first assignee of each reel frame
         a.assignor, -- first assignor of each reel frame
+        coalesce(array_length(a.reel_frame,1),0),
         -- rcites
         rc.rcite_publication_number_full,
         rc.rcite_application_number_full,
@@ -335,6 +379,7 @@ insert into patents_global_merged (
         rc.rcite_filing_date,
         rc.rcite_type,
         rc.rcite_category,
+        coalesce(array_length(rc.rcite_publication_number_full,1),0),
         -- pair
         pair.term_adjustments,
         -- compdb
@@ -343,6 +388,7 @@ insert into patents_global_merged (
         compdb.technology,
         compdb.inactive,
         compdb.acquisition,
+        array_length(compdb.deal_id,1),
         -- gather
         gather.value,
         gather.stage,
@@ -355,7 +401,8 @@ insert into patents_global_merged (
         ptab.case_name,
         ptab.doc_type,
         ptab.status,
-        ptab.doc_text
+        ptab.doc_text,
+        coalesce(array_length(ptab.appeal_no,1),0)
 
 
     from patents_global as p

@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import spark.Request;
-import user_interface.acclaim_compatibility.Parser;
+import user_interface.acclaim_compatibility.USParser;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 
@@ -54,7 +54,7 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
         String queryStr = String.join("", SimilarPatentServer.extractArray(req, getName()));
         String user = req.session(false).attribute("username");
         if (user != null) {
-            Parser parser = new Parser(user);
+            USParser parser = new USParser(user);
             query = parser.parseAcclaimQuery(queryStr);
         }
     }

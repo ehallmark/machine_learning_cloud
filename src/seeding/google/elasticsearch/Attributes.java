@@ -1,15 +1,31 @@
 package seeding.google.elasticsearch;
 
+import org.nd4j.linalg.primitives.Pair;
 import seeding.google.elasticsearch.attributes.*;
+import user_interface.acclaim_compatibility.GlobalParser;
+import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Attributes {
+    // count
+    public static final String CITATIONS_COUNT = "citation_count";
+    public static final String RCITATIONS_COUNT = "rcite_count";
+    public static final String PRIORITY_CLAIMS_COUNT = "pc_count";
+    public static final String INVENTORS_COUNT = "inventor_count";
+    public static final String ASSIGNEES_COUNT = "assignee_count";
+    public static final String ASSIGNMENTS_COUNT = "assignment_count";
+    public static final String CLAIMS_COUNT = "claim_count";
+    public static final String KEYWORD_COUNT = "keyword_count";
+    public static final String MAINTENANCE_EVENT_COUNT = "maintenance_event_count";
+    public static final String LATEST_ASSIGNEE_COUNT = "latest_assignee_count";
+    public static final String LATEST_FAM_ASSIGNEE_COUNT = "latest_fam_assignee_count";
+    public static final String COMPDB_COUNT = "compdb_count";
+    public static final String PTAB_COUNT = "ptab_count";
     // helper
     public static final String PRIORITY_DATE_ESTIMATED = "priority_date_est";
     public static final String EXPIRED = "expired";
@@ -191,4 +207,80 @@ public class Attributes {
         });
         return nestedAttrMap;
     }
+
+
+    public static final Map<String,String> ACCLAIM_IP_TO_ATTR_NAME_MAP = Stream.of(
+            Arrays.asList("ANG",LATEST_FAM_ASSIGNEES+"."+LATEST_FAM_ASSIGNEE),
+            Arrays.asList("ANG_F",LATEST_FAM_ASSIGNEES+"."+LATEST_FAM_ASSIGNEE),
+            Arrays.asList("ANC",LATEST_ASSIGNEES+"."+LATEST_ASSIGNEE),
+            Arrays.asList("ANC_F",LATEST_ASSIGNEES+"."+LATEST_ASSIGNEE),
+            Arrays.asList("ANO",ASSIGNEES+"."+ASSIGNEE_HARMONIZED),
+            Arrays.asList("AN_ORIG",ASSIGNEES+"."+ASSIGNEE_HARMONIZED),
+            Arrays.asList("ACN", ASSIGNEES+"."+ASSIGNEE_HARMONIZED_CC),
+            Arrays.asList("PRIRD", PRIORITY_DATE),
+            Arrays.asList("APD", FILING_DATE),
+            Arrays.asList("ISD", PUBLICATION_DATE),
+            Arrays.asList("PD", PUBLICATION_DATE),
+            Arrays.asList("EXP", EXPIRATION_DATE_ESTIMATED),
+            Arrays.asList("APN", APPLICATION_NUMBER_FORMATTED),
+            Arrays.asList("GPN", PUBLICATION_NUMBER),
+            Arrays.asList("PN", PUBLICATION_NUMBER_FULL),
+            Arrays.asList("CC", COUNTRY_CODE),
+            Arrays.asList("PT", KIND_CODE),
+            Arrays.asList("DT", KIND_CODE),
+            Arrays.asList("SMALLENT", ORIGINAL_ENTITY_TYPE),
+            Arrays.asList("CPC", CODE),
+            Arrays.asList("IN", INVENTORS+"."+INVENTOR_HARMONIZED),
+            Arrays.asList("ICN", INVENTORS+"."+INVENTOR_HARMONIZED_CC),
+            Arrays.asList("RCITE", CITATIONS+"."+CITED_PUBLICATION_NUMBER_FULL),
+            Arrays.asList("FCITE", RCITATIONS+"."+RCITE_PUBLICATION_NUMBER_FULL),
+            Arrays.asList("RCITE_CT", CITATIONS_COUNT),
+            Arrays.asList("FCITE_CT", RCITATIONS_COUNT),
+            Arrays.asList("ANA_SFAM_CT", PRIORITY_CLAIMS_COUNT),
+            Arrays.asList("ANA_INV_CT", INVENTORS_COUNT),
+            Arrays.asList("ANA_AS_CT", ASSIGNEES_COUNT),
+            Arrays.asList("ANA_CLM_CT", CLAIMS_COUNT),
+            Arrays.asList("KCOD", KIND_CODE),
+            Arrays.asList("ANA_EXT_DAYS", TERM_ADJUSTMENTS),
+            Arrays.asList("ANA_FCLM_TW", LENGTH_OF_SMALLEST_IND_CLAIM),
+            Arrays.asList("ANA_CLM_TW", LENGTH_OF_SMALLEST_IND_CLAIM),
+            Arrays.asList("ANA_ANRE_EXE_CT",ASSIGNMENTS_COUNT),
+            Arrays.asList("REC_DT", ASSIGNMENTS+"."+RECORDED_DATE),
+            Arrays.asList("EXE_DT", ASSIGNMENTS+"."+EXECUTION_DATE),
+            Arrays.asList("ANRE_EXE_DT", LATEST_ASSIGNEE+"."+EXECUTION_DATE),
+            Arrays.asList("REFN",PUBLICATION_NUMBER_FULL),
+            Arrays.asList("REF",PUBLICATION_NUMBER_FULL),
+            Arrays.asList("EVENTCODE",MAINTENANCE_EVENT),
+            Arrays.asList("RVI", AI_VALUE),
+            Arrays.asList("TTL", INVENTION_TITLE),
+            Arrays.asList("ABST", ABSTRACT),
+            Arrays.asList("ACLM", CLAIMS),
+            Arrays.asList("SPEC", DESCRIPTION),
+            Arrays.asList("ANRE_CUR",LATEST_ASSIGNEES+"."+LATEST_ASSIGNEE),
+            Arrays.asList("SFAM", FAMILY_ID)
+    ).collect(Collectors.toMap(e->e.get(0), e->e.get(1)));
+
+    public static final List<Pair<String,String>> acclaimAttrs = Collections.synchronizedList(new ArrayList<>());
+    static {
+        Map<String, String> primaryAcclaimMap = Attributes.ACCLAIM_IP_TO_ATTR_NAME_MAP;
+        primaryAcclaimMap.forEach((k, v) -> acclaimAttrs.add(new Pair<>(k, v)));
+        Set<String> values = new HashSet<>(primaryAcclaimMap.values());
+        GlobalParser.transformationsForAttr.forEach((k, v) -> {
+            if (!values.contains(k) && !primaryAcclaimMap.containsKey(k)) {
+                acclaimAttrs.add(new Pair<>(k, SimilarPatentServer.humanAttributeFor(k)));
+            }
+        });
+    }
+
+    public static final Collection<String> NESTED_ATTRIBUTES = Arrays.asList(
+            ASSIGNEES,
+            INVENTORS,
+            CITATIONS,
+            RCITATIONS,
+            PRIORITY_CLAIMS,
+            ASSIGNMENTS,
+            STANDARDS,
+            PTAB
+    );
+
 }

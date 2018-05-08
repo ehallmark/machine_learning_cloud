@@ -24,7 +24,7 @@ import java.util.*;
 /**
  * Created by ehallmark on 1/5/18.
  */
-public class Parser {
+public class USParser {
     public static final Map<String,Function3<String,String,String,QueryBuilder>> transformationsForAttr;
     private static final Function3<String,String,String,QueryBuilder> defaultTransformation;
     private static final Map<String,Float> defaultFields = Collections.synchronizedMap(new HashMap<>());
@@ -231,7 +231,7 @@ public class Parser {
 
     private QueryParser parser;
     private String user;
-    public Parser(String user) {
+    public USParser(String user) {
         this.user=user;
         this.parser = new QueryParser("", new KeywordAnalyzer());
         parser.setDefaultOperator(QueryParser.Operator.AND);
@@ -609,7 +609,7 @@ public class Parser {
 
 
     public static void main(String[] args) throws Exception {
-        Parser parser = new Parser("ehallmark");
+        USParser parser = new USParser("ehallmark");
 
         QueryBuilder res = parser.parseAcclaimQuery("RFID:id.somethin && blah near2 blah \"search everything\" CPC:A02F33+ AND CPC:A02301\\/32 (ANC_F:\"HTC CORP\" OR ANC_F:\"HTC\") AND (ANO_F:HTC || FIELD:isEmptyANO_F) AND TTL:one ADJ21 (TTL: three AND TTL:two) CC:US AND DT:G AND EXP:[NOW+5YEARS TO NOW+6YEARS] AND EXP:f AND NOT PEND:false AND (PT:U OR PT:RE)");
 

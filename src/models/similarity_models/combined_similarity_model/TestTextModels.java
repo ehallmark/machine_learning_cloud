@@ -1,34 +1,16 @@
 package models.similarity_models.combined_similarity_model;
 
 import com.google.common.util.concurrent.AtomicDouble;
-import data_pipeline.helpers.Function2;
-import elasticsearch.DataSearcher;
 import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
-import seeding.Constants;
 import seeding.Database;
-import user_interface.acclaim_compatibility.Parser;
-import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.FilingNameAttribute;
-import user_interface.ui_models.attributes.computable_attributes.IsGrantedApplicationAttribute;
-import user_interface.ui_models.filters.AbstractBooleanExcludeFilter;
-import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.filters.AcclaimExpertSearchFilter;
-import user_interface.ui_models.portfolios.items.Item;
-import wiki.ScrapeWikipedia;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class TestTextModels extends TestModelHelper {
     public static double testModel(Map<String,Pair<String[],String>> cpcToTextAndNegMap, Function<String,INDArray> cpcModel, Function<String[],INDArray> textModel) {

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
 import seeding.Constants;
+import seeding.google.elasticsearch.Attributes;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.filters.*;
 
@@ -135,7 +136,7 @@ public abstract class AbstractAttribute {
     }
 
     private static String theOrAnd(String rootName) {
-        if(Constants.NESTED_ATTRIBUTES.contains(rootName)) {
+        if(Constants.NESTED_ATTRIBUTES.contains(rootName)|| Attributes.NESTED_ATTRIBUTES.contains(rootName)) {
             if(Arrays.asList("a","e","i","o","u","h").contains(rootName.substring(0,1))) {
                 return "an";
             } else {
