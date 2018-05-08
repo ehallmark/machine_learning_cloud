@@ -333,7 +333,7 @@ insert into patents_global_merged (
         wipo.wipo_technology,
         -- gtt tech
         tech.technology,
-        tech.secondary,
+        tech.technology2,
         ke.keywords,
         coalesce(array_length(ke.keywords,1),0),
         -- maintenance events
