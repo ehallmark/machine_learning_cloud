@@ -15,6 +15,7 @@ public class Attributes {
     // count
     public static final String CITATIONS_COUNT = "citation_count";
     public static final String RCITATIONS_COUNT = "rcite_count";
+    public static final String CODE_COUNT = "code_count";
     public static final String PRIORITY_CLAIMS_COUNT = "pc_count";
     public static final String INVENTORS_COUNT = "inventor_count";
     public static final String ASSIGNEES_COUNT = "assignee_count";
@@ -25,6 +26,7 @@ public class Attributes {
     public static final String LATEST_ASSIGNEE_COUNT = "latest_assignee_count";
     public static final String LATEST_FAM_ASSIGNEE_COUNT = "latest_fam_assignee_count";
     public static final String COMPDB_COUNT = "compdb_count";
+    public static final String STANDARD_COUNT = "standard_count";
     public static final String PTAB_COUNT = "ptab_count";
     // helper
     public static final String PRIORITY_DATE_ESTIMATED = "priority_date_est";
@@ -167,33 +169,48 @@ public class Attributes {
                 new Claims(),
                 new Description(),
                 new Inventors(),
+                new InventorCount(),
                 new Assignees(),
+                new AssigneeCount(),
                 new PriorityClaims(),
+                new PriorityClaimCount(),
                 new Code(),
+                new CodeCount(),
                 new Tree(),
                 new Citations(),
+                new CitationCount(),
                 new AIValue(),
                 new LengthOfSmallestIndClaim(),
+                new ClaimCount(),
                 new MeansPresent(),
                 new FamilySize(),
                 new Standards(),
+                new StandardCount(),
                 new WipoTechnology(),
                 new GttTechnology(),
                 new GttTechnology2(),
                 new GttKeywords(),
+                new KeywordCount(),
                 new MaintenanceEvent(),
+                new MaintenanceEventCount(),
                 new Lapsed(),
                 new Reinstated(),
                 new LatestAssignees(),
+                new LatestAssigneeCount(),
                 new LatestFamAssignees(),
+                new LatestFamAssigneeCount(),
                 new CPCVae(),
                 new RnnEnc(),
                 new Assignments(),
+                new AssignmentCount(),
                 new RCitations(),
+                new RCitationCount(),
                 new TermAdjustments(),
                 new CompDB(),
+                new CompDBCount(),
                 new Gather(),
                 new PTAB(),
+                new PTABCount(),
                 new Score()
         );
     }
