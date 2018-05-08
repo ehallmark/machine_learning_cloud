@@ -511,7 +511,7 @@ public class SimilarPatentServer {
                     });
                 });
 
-                preFilterModelMap.put(AcclaimExpertSearchFilter.NAME,new AcclaimExpertSearchFilter());
+                preFilterModelMap.put(AcclaimExpertSearchFilter.NAME,new AcclaimExpertSearchFilter(false));
                 preFilterModelMap.put(AssetDedupFilter.NAME, new AssetDedupFilter());
 
                 buildJavaToHumanAttrMap();
@@ -523,7 +523,7 @@ public class SimilarPatentServer {
                         return allAttributes.getName();
                     }
                 };
-                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false, new AcclaimExpertSearchFilter(), new AssetDedupFilter());
+                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false, new AcclaimExpertSearchFilter(false), new AssetDedupFilter());
             } catch(Exception e) {
                 e.printStackTrace();
             }

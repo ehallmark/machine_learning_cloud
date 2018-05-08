@@ -43,7 +43,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     protected AbstractFilter parent;
     protected boolean isScriptFilter;
     public AbstractFilter(AbstractAttribute attribute, FilterType filterType) {
-        super(Arrays.asList(filterType));
+        super(Collections.singleton(filterType));
         this.attribute=attribute!=null && attribute instanceof DependentAttribute ? ((DependentAttribute) attribute).dup() : attribute;
         this.filterType=filterType;
         this.isScriptFilter =attribute!=null &&  attribute instanceof AbstractScriptAttribute;
@@ -60,6 +60,11 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     public boolean isActive() { return true; }
 
     public abstract QueryBuilder getFilterQuery();
+
+    @Override
+    public AbstractFilter clone() {
+        return dup();
+    }
 
     public boolean contributesToScore() { return false; }
 

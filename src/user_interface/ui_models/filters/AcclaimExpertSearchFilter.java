@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import spark.Request;
+import user_interface.acclaim_compatibility.GlobalParser;
 import user_interface.acclaim_compatibility.USParser;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -22,13 +23,15 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
     @Setter
     protected QueryBuilder query;
 
-    public AcclaimExpertSearchFilter() {
+    private final boolean isBigQuery;
+    public AcclaimExpertSearchFilter(boolean isBigQuery) {
         super(new AcclaimAttribute(),FilterType.AdvancedKeyword);
+        this.isBigQuery=isBigQuery;
     }
 
     @Override
     public AbstractFilter dup() {
-        return new AcclaimExpertSearchFilter();
+        return new AcclaimExpertSearchFilter(isBigQuery);
     }
 
     @Override
@@ -54,8 +57,13 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
         String queryStr = String.join("", SimilarPatentServer.extractArray(req, getName()));
         String user = req.session(false).attribute("username");
         if (user != null) {
-            USParser parser = new USParser(user);
-            query = parser.parseAcclaimQuery(queryStr);
+            if(isBigQuery) {
+                GlobalParser parser = new GlobalParser(user);
+                query = parser.parseAcclaimQuery(queryStr);
+            } else {
+                USParser parser = new USParser(user);
+                query = parser.parseAcclaimQuery(queryStr);
+            }
         }
     }
 
