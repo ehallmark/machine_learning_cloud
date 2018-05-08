@@ -117,15 +117,14 @@ public class BigQueryServer extends SimilarPatentServer {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
         { // Attributes
             humanAttrToJavaAttrMap = new HashMap<>();
+            humanAttrToJavaAttrMap.put("Length of Smallest Independent Claim", Attributes.LENGTH_OF_SMALLEST_IND_CLAIM);
+            humanAttrToJavaAttrMap.put("Application Kind", Attributes.APPLICATION_KIND);
             humanAttrToJavaAttrMap.put("Latest Assignees (by Family)", Attributes.LATEST_FAM_ASSIGNEES);
             humanAttrToJavaAttrMap.put("Latest Assignees", Attributes.LATEST_ASSIGNEES);
             humanAttrToJavaAttrMap.put("Latest Assignee Name (by Family)", Attributes.LATEST_FAM_ASSIGNEE);
             humanAttrToJavaAttrMap.put("Latest Assignee Name", Attributes.LATEST_ASSIGNEE);
             humanAttrToJavaAttrMap.put("Portfolio Size (by Family)", Attributes.LATEST_FAM_PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Portfolio Size", Attributes.LATEST_PORTFOLIO_SIZE);
-            humanAttrToJavaAttrMap.put("Assignee Name", Attributes.ASSIGNEE_HARMONIZED);
-            humanAttrToJavaAttrMap.put("Latest Assignee Name", Attributes.LATEST_ASSIGNEE);
-            humanAttrToJavaAttrMap.put("Latest Assignee Name (by Family)", Attributes.LATEST_FAM_ASSIGNEE);
             humanAttrToJavaAttrMap.put("First Assignee Name", Attributes.LATEST_FIRST_ASSIGNEE);
             humanAttrToJavaAttrMap.put("First Assignee Name (by Family)", Attributes.LATEST_FAM_FIRST_ASSIGNEE);
             humanAttrToJavaAttrMap.put("Assignee Name", Attributes.ASSIGNEE_HARMONIZED);
@@ -244,7 +243,6 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Parent Claim Number", Constants.PARENT_CLAIM_NUM);
             humanAttrToJavaAttrMap.put("Document Kind", Constants.DOC_KIND);
             humanAttrToJavaAttrMap.put("Claim Length", Constants.CLAIM_LENGTH);
-            humanAttrToJavaAttrMap.put("Length of Smallest Independent Claim", Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH);
             humanAttrToJavaAttrMap.put("Abstract Text", Attributes.ABSTRACT);
             humanAttrToJavaAttrMap.put("Lapsed", Attributes.LAPSED);
             humanAttrToJavaAttrMap.put("Priority Date (estimated)", Attributes.PRIORITY_DATE_ESTIMATED);
@@ -2792,7 +2790,7 @@ public class BigQueryServer extends SimilarPatentServer {
             HumanNamePredictionServer.startServer(-1);
             DetermineAcquisitionsServer.startServer(-1);
         }
-        
+
         long t2 = System.currentTimeMillis();
         System.out.println("Time to start server: "+ ((t2-t1)/(1000*60)) + " minutes");
     }
