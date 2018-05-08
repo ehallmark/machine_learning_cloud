@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class DownloadPDFsFromReedTech {
@@ -49,42 +52,49 @@ public class DownloadPDFsFromReedTech {
         // go through data folder and ingest any files that are missing
         final AtomicLong cnt = new AtomicLong(0);
         Collections.shuffle(applicationNumbers, new Random(System.currentTimeMillis()));
-        applicationNumbers.parallelStream().forEach(p->{
-            String appNum = p._1;
-            long bytes = p._2;
-            File file = fileFromApplicationNumber(appNum);
-            if(cnt.getAndIncrement()%1000==999) {
-                System.out.println("Finished files: "+cnt.get());
-            }
-            if(!file.exists()||file.length()<bytes) {
-                final String urlStr = PAIR_URL + appNum + ".zip";
-                boolean complete = false;
-                try {
-                    URL url = new URL(urlStr);
-                    FileUtils.copyURLToFile(url, file);
-                    if(file.length()!=bytes) {
-                        System.out.println("Warning incorrect file size: "+file.length()+" != "+bytes);
-                    }
-                    complete = true;
-                } catch(Exception e) {
-                    e.printStackTrace();
-                    System.out.println("Error on url: "+urlStr);
-                } finally {
-                    if(!complete) {
-                        // delete
-                        System.out.println("Cleaning up partial: "+file.getAbsolutePath());
-                        try {
-                            boolean deleted = file.delete();
-                            if(!deleted) {
-                                System.out.println("Unable to delete on exit: "+file.getAbsolutePath());
+        final ExecutorService executor = Executors.newFixedThreadPool(16);
+        applicationNumbers.forEach(p->{
+            executor.execute(()-> {
+                String appNum = p._1;
+                long bytes = p._2;
+                File file = fileFromApplicationNumber(appNum);
+                //if (cnt.getAndIncrement() % 10 ==9) {
+                    cnt.getAndIncrement();
+                    System.out.println("Finished files: " + cnt.get());
+                //}
+                if (!file.exists() || file.length() < bytes) {
+                    final String urlStr = PAIR_URL + appNum + ".zip";
+                    boolean complete = false;
+                    try {
+                        URL url = new URL(urlStr);
+
+                        FileUtils.copyURLToFile(url, file);
+                        if (file.length() != bytes) {
+                            System.out.println("Warning incorrect file size: " + file.length() + " != " + bytes);
+                        }
+                        complete = true;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.out.println("Error on url: " + urlStr);
+                    } finally {
+                        if (!complete) {
+                            // delete
+                            System.out.println("Cleaning up partial: " + file.getAbsolutePath());
+                            try {
+                                boolean deleted = file.delete();
+                                if (!deleted) {
+                                    System.out.println("Unable to delete on exit: " + file.getAbsolutePath());
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                        } catch(Exception e) {
-                            e.printStackTrace();
                         }
                     }
                 }
-            }
+            });
         });
+        executor.shutdown();
+        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
     private static File fileFromApplicationNumber(String appNum8DigitFormat) {
