@@ -56,6 +56,7 @@ create table patents_global_merged (
     -- gtt tech
     technology text,
     technology2 text,
+    keywords text[],
     -- maintenance events
     maintenance_event text[],
     lapsed boolean,
@@ -175,6 +176,7 @@ insert into patents_global_merged (
         -- gtt tech
         technology,
         technology2,
+        keywords,
         -- maintenance events
         maintenance_event,
         lapsed,
@@ -293,6 +295,7 @@ insert into patents_global_merged (
         -- gtt tech
         tech.technology,
         tech.secondary,
+        ke.keywords,
         -- maintenance events
         m_codes.codes,
         coalesce(coalesce(m.lapsed,pair.abandoned),'f'),
@@ -364,7 +367,8 @@ insert into patents_global_merged (
         left outer join big_query_assignee as latest_assignee_join on (latest_assignee_join.name=latest_assignee.first_assignee)
     left outer join big_query_patent_to_latest_assignee_by_family as latest_assignee_fam on (latest_assignee_fam.family_id=p.family_id)
         left outer join big_query_assignee as latest_assignee_fam_join on (latest_assignee_fam.first_assignee=latest_assignee_fam_join.name)
-    left outer join big_query_technologies as tech on (p.family_id=tech.family_id)
+    left outer join big_query_technologies2 as tech on (p.family_id=tech.family_id)
+    left outer join big_query_keywords_all as ke on (p.family_id=ke.family_id)
     left outer join big_query_sep_by_family as sep on (sep.family_id=p.family_id)
     left outer join big_query_wipo_by_family as wipo on (wipo.family_id=p.family_id)
     left outer join big_query_ai_value_claims as value_claims on (value_claims.family_id=p.family_id)
