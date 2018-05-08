@@ -117,12 +117,46 @@ public class BigQueryServer extends SimilarPatentServer {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
         { // Attributes
             humanAttrToJavaAttrMap = new HashMap<>();
+            humanAttrToJavaAttrMap.put("Latest Assignees (by Family)", Attributes.LATEST_FAM_ASSIGNEES);
+            humanAttrToJavaAttrMap.put("Latest Assignees", Attributes.LATEST_ASSIGNEES);
+            humanAttrToJavaAttrMap.put("Latest Assignee Name (by Family)", Attributes.LATEST_FAM_ASSIGNEE);
+            humanAttrToJavaAttrMap.put("Latest Assignee Name", Attributes.LATEST_ASSIGNEE);
+            humanAttrToJavaAttrMap.put("Portfolio Size (by Family)", Attributes.LATEST_FAM_PORTFOLIO_SIZE);
+            humanAttrToJavaAttrMap.put("Portfolio Size", Attributes.LATEST_PORTFOLIO_SIZE);
+            humanAttrToJavaAttrMap.put("Assignee Name", Attributes.ASSIGNEE_HARMONIZED);
+            humanAttrToJavaAttrMap.put("Latest Assignee Name", Attributes.LATEST_ASSIGNEE);
+            humanAttrToJavaAttrMap.put("Latest Assignee Name (by Family)", Attributes.LATEST_FAM_ASSIGNEE);
+            humanAttrToJavaAttrMap.put("First Assignee Name", Attributes.LATEST_FIRST_ASSIGNEE);
+            humanAttrToJavaAttrMap.put("First Assignee Name (by Family)", Attributes.LATEST_FAM_FIRST_ASSIGNEE);
+            humanAttrToJavaAttrMap.put("Assignee Name", Attributes.ASSIGNEE_HARMONIZED);
+            humanAttrToJavaAttrMap.put("Assignee Country Code", Attributes.ASSIGNEE_HARMONIZED_CC);
+            humanAttrToJavaAttrMap.put("First Assignee Entity Type", Attributes.LATEST_ENTITY_TYPE);
+            humanAttrToJavaAttrMap.put("First Assignee Entity Type (by Family)", Attributes.LATEST_FAM_ENTITY_TYPE);
+            humanAttrToJavaAttrMap.put("First Assignee First Filing Date", Attributes.LATEST_FIRST_FILING_DATE);
+            humanAttrToJavaAttrMap.put("First Assignee First Filing Date (by Family)", Attributes.LATEST_FAM_FIRST_FILING_DATE);
+            humanAttrToJavaAttrMap.put("First Assignee Last Filing Date", Attributes.LATEST_LAST_FILING_DATE);
+            humanAttrToJavaAttrMap.put("First Assignee Last Filing Date (by Family)", Attributes.LATEST_FAM_LAST_FILING_DATE);
+            humanAttrToJavaAttrMap.put("First Assignee Date", Attributes.LATEST_ASSIGNEE_DATE);
+            humanAttrToJavaAttrMap.put("First Assignee Date (by Family)", Attributes.LATEST_FAM_ASSIGNEE_DATE);
+            humanAttrToJavaAttrMap.put("First Assignee Security Interest?", Attributes.LATEST_SECURITY_INTEREST);
+            humanAttrToJavaAttrMap.put("First Assignee Security Interest? (by Family)", Attributes.LATEST_FAM_SECURITY_INTEREST);
+            humanAttrToJavaAttrMap.put("Standards", Attributes.STANDARDS);
+            humanAttrToJavaAttrMap.put("Standard", Attributes.STANDARD);
+            humanAttrToJavaAttrMap.put("SSO",Attributes.SSO);
+            humanAttrToJavaAttrMap.put("Application Number (w/ Country)", Attributes.APPLICATION_NUMBER_WITH_COUNTRY);
+            humanAttrToJavaAttrMap.put("Application Number Formatted (w/ Country)", Attributes.APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY);
+            humanAttrToJavaAttrMap.put("Application Number Formatted", Attributes.APPLICATION_NUMBER_FORMATTED);
+            humanAttrToJavaAttrMap.put("Publication Number Full", Attributes.PUBLICATION_NUMBER_FULL);
+            humanAttrToJavaAttrMap.put("Publication Number (w/ Country)", Attributes.PUBLICATION_NUMBER_WITH_COUNTRY);
+            humanAttrToJavaAttrMap.put("Publication Number", Attributes.PUBLICATION_NUMBER);
+            humanAttrToJavaAttrMap.put("Application Number", Attributes.APPLICATION_NUMBER);
+            humanAttrToJavaAttrMap.put("Application Number Full", Attributes.APPLICATION_NUMBER_FULL);
             humanAttrToJavaAttrMap.put("(eg. FIELD:isEmptyANO_F OR FIELD:isNotEmptyTTL)", "FIELD");
             humanAttrToJavaAttrMap.put("Independent Claim", "ICLM");
+            humanAttrToJavaAttrMap.put("Kind Code", Attributes.KIND_CODE);
             humanAttrToJavaAttrMap.put("Dependent Claim", "DCLM");
             humanAttrToJavaAttrMap.put("Title + Abstract + Claims", "TAC");
             humanAttrToJavaAttrMap.put("Maintenance Fee Event Code", Attributes.MAINTENANCE_EVENT);
-            humanAttrToJavaAttrMap.put("Asset Number", Attributes.PUBLICATION_NUMBER);
             humanAttrToJavaAttrMap.put("Word Similarity", Attributes.RNN_ENC);
             humanAttrToJavaAttrMap.put("CPC Similarity", Attributes.CPC_VAE);
             humanAttrToJavaAttrMap.put("Technology Similarity", Constants.TECHNOLOGY_SIMILARITY);
@@ -131,8 +165,6 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("CPC Code Similarity", Constants.CPC_SIMILARITY);
             humanAttrToJavaAttrMap.put("Asset Similarity", Constants.PATENT_SIMILARITY);
             humanAttrToJavaAttrMap.put("Total Asset Count", Constants.TOTAL_ASSET_COUNT);
-            humanAttrToJavaAttrMap.put("Assignee Name", Constants.ASSIGNEE);
-            humanAttrToJavaAttrMap.put("Organization Name", Constants.ASSIGNEES+"."+Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Invention Title", Attributes.INVENTION_TITLE);
             humanAttrToJavaAttrMap.put("Reinstated", Constants.REINSTATED);
             humanAttrToJavaAttrMap.put("Result Type", Constants.DOC_TYPE);
@@ -197,7 +229,6 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Exclude All With Related Assets", AbstractFilter.FilterType.ExcludeWithRelated.toString());
             humanAttrToJavaAttrMap.put("Does Not Exist Filter", AbstractFilter.FilterType.DoesNotExist.toString());
             humanAttrToJavaAttrMap.put("Latest Execution Date", Constants.EXECUTION_DATE);
-            humanAttrToJavaAttrMap.put("Execution Date", Constants.ASSIGNMENTS+"."+Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("First Name", Constants.FIRST_NAME);
             humanAttrToJavaAttrMap.put("Number of Related Docs", Constants.NUM_RELATED_ASSETS);
             humanAttrToJavaAttrMap.put("Number of Forward Citations", Constants.NUM_BACKWARD_CITATIONS);
@@ -218,7 +249,6 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Lapsed", Attributes.LAPSED);
             humanAttrToJavaAttrMap.put("Priority Date (estimated)", Attributes.PRIORITY_DATE_ESTIMATED);
             humanAttrToJavaAttrMap.put("Expiration Date (estimated)", Attributes.EXPIRATION_DATE_ESTIMATED);
-            humanAttrToJavaAttrMap.put("Assignor Name", Attributes.RECORDED_ASSIGNOR);
             humanAttrToJavaAttrMap.put("Conveyance Text", Attributes.CONVEYANCE_TEXT);
             humanAttrToJavaAttrMap.put("Overall Score", Constants.SCORE);
             humanAttrToJavaAttrMap.put("PTAB", Attributes.PTAB);
@@ -240,7 +270,9 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Exclude Granted Applications Filter", Constants.GRANTED+ AbstractFilter.FilterType.BoolFalse+ Constants.FILTER_SUFFIX);
             humanAttrToJavaAttrMap.put("Related Docs", Constants.ALL_RELATED_ASSETS);
             // nested attrs
-            humanAttrToJavaAttrMap.put("Latest Assignee", Attributes.LATEST_ASSIGNEE);
+            humanAttrToJavaAttrMap.put("Recorded Assignee", Attributes.RECORDED_ASSIGNEE);
+            humanAttrToJavaAttrMap.put("Recorded Assignor", Attributes.RECORDED_ASSIGNOR);
+            humanAttrToJavaAttrMap.put("Execution Date", Attributes.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("Original Assignee", Attributes.ASSIGNEES);
             humanAttrToJavaAttrMap.put("Inventors", Attributes.INVENTORS);
             humanAttrToJavaAttrMap.put("Backward Citations", Constants.CITATIONS);
@@ -248,6 +280,22 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Description Text", Attributes.DESCRIPTION);
             humanAttrToJavaAttrMap.put("Priority Claims", Attributes.PRIORITY_CLAIMS);
             humanAttrToJavaAttrMap.put("Assignments", Attributes.ASSIGNMENTS);
+            humanAttrToJavaAttrMap.put("Forward Citations", Attributes.RCITATIONS);
+            humanAttrToJavaAttrMap.put("Forward Cite Filing Date", Attributes.RCITE_FILING_DATE);
+            humanAttrToJavaAttrMap.put("Forward Cite Type", Attributes.RCITE_TYPE);
+            humanAttrToJavaAttrMap.put("Forward Cite Category", Attributes.RCITE_CATEGORY);
+            humanAttrToJavaAttrMap.put("Forward Cite Family ID", Attributes.RCITE_FAMILY_ID);
+            humanAttrToJavaAttrMap.put("Forward Cite Application Number Full", Attributes.RCITE_APPLICATION_NUMBER_FULL);
+            humanAttrToJavaAttrMap.put("Forward Cite Publication Number Full", Attributes.RCITE_PUBLICATION_NUMBER_FULL);
+            humanAttrToJavaAttrMap.put("Cited Filing Date", Attributes.CITED_FILING_DATE);
+            humanAttrToJavaAttrMap.put("Cited Type", Attributes.CITED_TYPE);
+            humanAttrToJavaAttrMap.put("Cited Category", Attributes.CITED_CATEGORY);
+            humanAttrToJavaAttrMap.put("Cited NPL Text", Attributes.CITED_NPL_TEXT);
+            humanAttrToJavaAttrMap.put("Cited Application Number Full", Attributes.CITED_APPLICATION_NUMBER_FULL);
+            humanAttrToJavaAttrMap.put("Cited Publication Number Full", Attributes.CITED_PUBLICATION_NUMBER_FULL);
+            humanAttrToJavaAttrMap.put("Priority Application Number Full", Attributes.PC_APPLICATION_NUMBER_FULL);
+            humanAttrToJavaAttrMap.put("Priority Publication Number Full", Attributes.PC_PUBLICATION_NUMBER_FULL);
+            humanAttrToJavaAttrMap.put("Priority Filing Date", Attributes.PC_FILING_DATE);
 
             buildJavaToHumanAttrMap();
 
@@ -2744,7 +2792,7 @@ public class BigQueryServer extends SimilarPatentServer {
         long t2 = System.currentTimeMillis();
         System.out.println("Time to start server: "+ ((t2-t1)/(1000*60)) + " minutes");
     }
-    
+
 
     public static void main(String[] args) throws Exception {
         AbstractScriptAttribute.setBigQuery(true);
