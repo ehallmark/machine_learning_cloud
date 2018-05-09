@@ -11,9 +11,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class SetupCPCSimDBForKeras {
+    private static final Random rand = new Random(1235018);
     public static void main(String[] args) throws Exception {
         // this file sets up the data table in SQL so that CPCSim.py can run smoothly
         final CPCHierarchy hierarchy = CPCHierarchy.get();
@@ -50,12 +53,19 @@ public class SetupCPCSimDBForKeras {
                     cooccurrenceMap.put(new UndirectedEdge<>(cpc.getName(),cpc2.getName()), new AtomicDouble(alpha));
                 }
             });
+            if(cpc.getParent()!=null) {
+                cpc.getParent().getChildren().forEach(child -> {
+                    if(!cooccurrenceMap.containsKey(new UndirectedEdge<>(cpc.getName(),child.getName()))) {
+                        cooccurrenceMap.put(new UndirectedEdge<>(cpc.getName(),child.getName()), new AtomicDouble(alpha));
+                    }
+                });
+            }
         });
 
         System.out.println("Cooccurrence Size After Initialization: "+cooccurrenceMap.size());
 
         // now fill in with actual data
-        PreparedStatement seedPs = seedConn.prepareStatement("select publication_number_full,tree from big_query_cpc_tree tablesample system (25)");
+        PreparedStatement seedPs = seedConn.prepareStatement("select publication_number_full,tree from big_query_cpc_tree tablesample system (10)");
         seedPs.setFetchSize(10);
         ResultSet rs = seedPs.executeQuery();
 
@@ -95,21 +105,35 @@ public class SetupCPCSimDBForKeras {
         System.out.println("Saving cooccurrence results to database...");
 
         cnt.set(0);
-        PreparedStatement insert = seedConn.prepareStatement("insert into big_query_cpc_occurrence (id1,id2,freq) values (?,?,?) on conflict (id1,id2) do update set freq=excluded.freq");
-        cooccurrenceMap.forEach((edge,d)-> {
-            double v = d.get()/Math.sqrt(occurrenceMap.get(edge.getNode1())*occurrenceMap.get(edge.getNode2()));
+        final int maxSamples = 50;
+        allCPCs.forEach(cpc-> {
+            // random subset
+            List<String> samples = IntStream.range(0, maxSamples).mapToObj(i->allCPCs.get(rand.nextInt(allCPCs.size())))
+                    .collect(Collectors.toList());
+            StringJoiner values = new StringJoiner(",");
+            for(String sample : samples) {
+                StringJoiner value = new StringJoiner(",","(",")");
+                double d = cooccurrenceMap.getOrDefault(new UndirectedEdge<>(cpc,sample),new AtomicDouble(0d)).get();
+                double v = d == 0 ? 0 : d / Math.sqrt(occurrenceMap.get(cpc) * occurrenceMap.get(sample));
+                value.add(codeToIndexMap.get(cpc).toString()).add(codeToIndexMap.get(sample).toString()).add(String.valueOf(v));
+                values.add(value.toString());
+            }
+
             try {
-                insert.setInt(1, codeToIndexMap.get(edge.getNode1()));
-                insert.setInt(2, codeToIndexMap.get(edge.getNode2()));
-                insert.setDouble(3, v);
-                insert.executeUpdate();
-                if (cnt.getAndIncrement() % 10000 == 9999) {
-                    System.out.println("Completed: " + cnt.get());
-                    seedConn.commit();
-                }
+                String insert = "insert into big_query_cpc_occurrence (id1,id2,freq) values "+values.toString()+" on conflict (id1,id2) do update set freq=excluded.freq";
+                seedConn.createStatement().executeUpdate(insert);
             } catch(Exception e) {
                 e.printStackTrace();
             }
+            if (cnt.getAndIncrement() % 10000 == 9999) {
+                System.out.println("Completed: " + cnt.get());
+                try {
+                    seedConn.commit();
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
         });
 
         seedConn.commit();
