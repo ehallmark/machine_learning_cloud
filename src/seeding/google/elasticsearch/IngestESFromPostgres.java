@@ -4,6 +4,7 @@ import elasticsearch.MyClient;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.index.IndexRequest;
 import seeding.Database;
+import seeding.google.elasticsearch.attributes.ConvenienceAttribute;
 import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import seeding.google.mongo.ingest.IngestPatents;
 import user_interface.server.BigQueryServer;
@@ -16,6 +17,8 @@ import java.sql.Date;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class IngestESFromPostgres {
 
@@ -25,7 +28,14 @@ public class IngestESFromPostgres {
 
         Collection<AbstractAttribute> attributes = Attributes.buildAttributes();
 
-        PreparedStatement ps = conn.prepareStatement("select * from patents_global_merged");
+        final String attrString = String.join(", ", attributes.stream()
+                .flatMap(attr->attr instanceof NestedAttribute ? ((NestedAttribute) attr).getAttributes().stream() : Stream.of(attr))
+                .filter(attr->!(attr instanceof ConvenienceAttribute))
+                .map(attr->attr.getName())
+                .collect(Collectors.toList())
+        );
+
+        PreparedStatement ps = conn.prepareStatement("select "+attrString+" from patents_global_merged");
         ps.setFetchSize(100);
 
         final String idField = Attributes.PUBLICATION_NUMBER_FULL;

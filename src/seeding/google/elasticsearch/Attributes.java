@@ -167,7 +167,7 @@ public class Attributes {
                 new InventionTitle(),
                 new Abstract(),
                 new Claims(),
-                new Description(),
+                //new Description(), :(
                 new Inventors(),
                 new InventorCount(),
                 new Assignees(),

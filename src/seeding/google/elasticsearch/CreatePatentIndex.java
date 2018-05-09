@@ -28,14 +28,14 @@ import java.util.stream.Collectors;
      "index" : {
          "refresh_interval" : "-1"
      }
- }
+ }'
  java -cp target/classes:"target/dependency/*" -Xms10000m -Xmx10000m seeding.google.elasticsearch.IngestESFromPostgres
  curl -XPUT 'localhost:9200/big_query/_settings?pretty' -H 'Content-Type: application/json' -d'
  {
      "index" : {
          "refresh_interval" : "60"
      }
- }
+ }'
 
  */
 public class CreatePatentIndex {
