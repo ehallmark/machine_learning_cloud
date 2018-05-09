@@ -68,7 +68,7 @@ public class SetupCPCSimDBForKeras {
         System.out.println("Cooccurrence Size After Initialization: "+cooccurrenceMap.size());
 
         // now fill in with actual data
-        PreparedStatement seedPs = seedConn.prepareStatement("select publication_number_full,tree from big_query_cpc_tree tablesample system (10)");
+        PreparedStatement seedPs = seedConn.prepareStatement("select publication_number_full,tree from big_query_cpc_tree tablesample system (3)");
         seedPs.setFetchSize(10);
         ResultSet rs = seedPs.executeQuery();
 
@@ -108,10 +108,10 @@ public class SetupCPCSimDBForKeras {
         System.out.println("Saving cooccurrence results to database...");
 
         cnt.set(0);
-        final int maxSamples = 50;
-        allCPCs.forEach(cpc-> {
+        allCPCs.parallelStream().forEach(cpc-> {
             // random subset
-            List<String> samples = IntStream.range(0, maxSamples).mapToObj(i->allCPCs.get(rand.nextInt(allCPCs.size())))
+            int s = Math.round((float)Math.exp(Math.max(7-hierarchy.getLabelToCPCMap().get(cpc).getNumParts(),0)));
+            List<String> samples = IntStream.range(0, s).mapToObj(i->allCPCs.get(rand.nextInt(allCPCs.size())))
                     .collect(Collectors.toList());
             StringJoiner values = new StringJoiner(",");
             for(String sample : samples) {
