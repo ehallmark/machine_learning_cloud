@@ -40,11 +40,11 @@ public class SetupCPCSimDBForKeras {
         System.out.println("Adding bayesian starting alphas...");
 
         // bayesian initial (similarity to hierarchy)
-        Map<String,Integer> occurrenceMap = new HashMap<>();
+        Map<String,Double> occurrenceMap = new HashMap<>();
         Map<UndirectedEdge<String>,AtomicDouble> cooccurrenceMap = new HashMap<>();
         List<CPC> cpcs = new ArrayList<>(hierarchy.getLabelToCPCMap().values());
         cpcs.forEach(cpc->{
-            occurrenceMap.put(cpc.getName(),(int)alpha);
+            occurrenceMap.put(cpc.getName(),alpha);
             hierarchy.cpcWithAncestors(cpc).forEach(cpc2->{
                 if(!cooccurrenceMap.containsKey(new UndirectedEdge<>(cpc.getName(),cpc2.getName()))) {
                     cooccurrenceMap.put(new UndirectedEdge<>(cpc.getName(),cpc2.getName()), new AtomicDouble(alpha));
@@ -64,7 +64,15 @@ public class SetupCPCSimDBForKeras {
         AtomicInteger cnt = new AtomicInteger(0);
         while(rs.next()) {
             String[] tree = (String[])rs.getArray(2).getArray();
-            tree = Stream.of(tree).filter(cpc->occurrenceMap.containsKey(cpc)).toArray(s->new String[s]);
+            tree = Stream.of(tree).filter(cpc->{
+                boolean valid = occurrenceMap.containsKey(cpc);
+                if(valid) {
+                    // add to occurrence map
+                    occurrenceMap.putIfAbsent(cpc,alpha);
+                    occurrenceMap.put(cpc,occurrenceMap.get(cpc)+1d);
+                }
+                return valid;
+            }).toArray(s->new String[s]);
             for(int i = 0; i < tree.length; i++) {
                 for(int j = i+1; j < tree.length; j++) {
                     String cpc = tree[i];
