@@ -98,7 +98,7 @@ public class SetupCPCSimDBForKeras {
                 }
             }
             if(cnt.getAndIncrement()%10000==9999) {
-                System.out.println("Finished: "+cnt.get()+" \t\tNum Occurences: "+cooccurrenceMap.size());
+                System.out.println("Finished: "+cnt.get()+" \tNum Occurences: "+cooccurrenceMap.size());
             }
         }
         rs.close();

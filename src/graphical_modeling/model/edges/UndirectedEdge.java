@@ -8,8 +8,16 @@ import java.util.Objects;
 public class UndirectedEdge<T> extends Edge<T> {
     private static final long serialVersionUID = 1l;
 
+    final int hash;
     public UndirectedEdge(T node1, T node2) {
         super(node1,node2);
+        int h1 = node1.hashCode();
+        int h2 = node2.hashCode();
+        long hash = h1 + h2;
+        if(hash>=Integer.MAX_VALUE||hash<=Integer.MIN_VALUE) {
+            hash = Math.max(Objects.hash(node1,node2),Objects.hash(node2,node1));
+        }
+        this.hash=(int)hash;
     }
 
     // Checks whether connects the same pair of nodes
@@ -37,6 +45,6 @@ public class UndirectedEdge<T> extends Edge<T> {
 
     @Override
     public int hashCode() {
-        return Math.min(Objects.hash(node1,node2),Objects.hash(node2,node1));
+        return hash;
     }
 }
