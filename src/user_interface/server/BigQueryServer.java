@@ -2374,7 +2374,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                 )
                         ),div().withId("new-dataset-from-asset-list-overlay").with(
                                 div().withId("new-dataset-from-asset-list-inside").attr("style","background-color: lightgray; padding: 5px;").with(
-                                        textarea().withPlaceholder("Enter asset list separated by spaces or newlines (eg. 8234523 8323233 2013335323 RE032353).").withId("new-dataset-from-asset-list"),br(),
+                                        textarea().withPlaceholder("Enter asset list separated by spaces or newlines (eg. US8234523B1 CA8323233A US2013335323A9 USRE032353B9 ).").withId("new-dataset-from-asset-list"),br(),
                                         button("Create").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-submit"),
                                         button("Cancel").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-cancel")
                                 )
