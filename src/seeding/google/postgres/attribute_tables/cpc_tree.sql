@@ -16,7 +16,7 @@ insert into big_query_cpc_tree (publication_number_full,tree) (
 create table big_query_cpc_occurrence (
     id1 integer not null,
     id2 integer not null,
-    freq double precision not null
+    freq double precision not null,
     primary key (id1,id2)
 );
 
@@ -26,3 +26,4 @@ create table big_query_cpc_occurrence_ids (
 );
 
 create index big_query_cpc_occurrence_ids_code_idx on big_query_cpc_occurrence_ids (code);
+
