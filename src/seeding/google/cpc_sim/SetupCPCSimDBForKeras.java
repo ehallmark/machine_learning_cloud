@@ -21,6 +21,7 @@ public class SetupCPCSimDBForKeras {
         // this file sets up the data table in SQL so that CPCSim.py can run smoothly
         final CPCHierarchy hierarchy = CPCHierarchy.get();
         final double alpha = 20d;
+        final boolean reingestIndices = false; // only set to true for the first time
 
         List<String> allCPCs = new ArrayList<>(hierarchy.getLabelToCPCMap().keySet());
         Collections.sort(allCPCs);
@@ -32,9 +33,11 @@ public class SetupCPCSimDBForKeras {
         PreparedStatement insertIndices = seedConn.prepareStatement("insert into big_query_cpc_occurrence_ids (id,code) values (?,?) on conflict (id) do update set code=excluded.code");
         for(int i = 0; i < allCPCs.size(); i++) {
             codeToIndexMap.put(allCPCs.get(i),i);
-            insertIndices.setInt(1,i);
-            insertIndices.setString(2,allCPCs.get(i));
-            insertIndices.executeUpdate();
+            if(reingestIndices) {
+                insertIndices.setInt(1, i);
+                insertIndices.setString(2, allCPCs.get(i));
+                insertIndices.executeUpdate();
+            }
         }
         System.out.println("Finished updating index database.");
         seedConn.commit();
