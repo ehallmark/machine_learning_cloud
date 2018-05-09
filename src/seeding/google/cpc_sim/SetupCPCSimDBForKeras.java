@@ -52,14 +52,16 @@ public class SetupCPCSimDBForKeras {
         cpcs.forEach(cpc->{
             occurrenceMap.put(cpc.getName(),alpha);
             hierarchy.cpcWithAncestors(cpc).forEach(cpc2->{
-                if(!cooccurrenceMap.containsKey(new UndirectedEdge<>(cpc.getName(),cpc2.getName()))) {
-                    cooccurrenceMap.put(new UndirectedEdge<>(cpc.getName(),cpc2.getName()), new AtomicDouble(alpha));
+                UndirectedEdge<String> edge = new UndirectedEdge<>(cpc.getName(),cpc2.getName());
+                if(!cooccurrenceMap.containsKey(edge)) {
+                    cooccurrenceMap.put(edge, new AtomicDouble(alpha));
                 }
             });
             if(cpc.getParent()!=null) {
                 cpc.getParent().getChildren().forEach(child -> {
-                    if(!cooccurrenceMap.containsKey(new UndirectedEdge<>(cpc.getName(),child.getName()))) {
-                        cooccurrenceMap.put(new UndirectedEdge<>(cpc.getName(),child.getName()), new AtomicDouble(alpha));
+                    UndirectedEdge<String> edge = new UndirectedEdge<>(cpc.getName(),child.getName());
+                    if(!cooccurrenceMap.containsKey(edge)) {
+                        cooccurrenceMap.put(edge, new AtomicDouble(alpha));
                     }
                 });
             }
