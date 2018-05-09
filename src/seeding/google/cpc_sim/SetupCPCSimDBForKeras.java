@@ -66,6 +66,12 @@ public class SetupCPCSimDBForKeras {
                     if(!cooccurrenceMap.containsKey(edge)) {
                         cooccurrenceMap.put(edge, new AtomicDouble(alpha));
                     }
+                    child.getChildren().forEach(grandChild->{
+                        UndirectedEdge<String> edge2 = new UndirectedEdge<>(cpc.getName(),grandChild.getName());
+                        if(!cooccurrenceMap.containsKey(edge2)) {
+                            cooccurrenceMap.put(edge2, new AtomicDouble(alpha));
+                        }
+                    });
                 });
             }
         });
