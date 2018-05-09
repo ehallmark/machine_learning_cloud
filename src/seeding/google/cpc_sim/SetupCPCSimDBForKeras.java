@@ -25,6 +25,7 @@ public class SetupCPCSimDBForKeras {
         final CPCHierarchy hierarchy = CPCHierarchy.get();
         final double alpha = 200d;
         final boolean reingestIndices = false; // only set to true for the first run through
+        final boolean test = true;
 
         List<String> allCPCs = new ArrayList<>(hierarchy.getLabelToCPCMap().keySet());
         Collections.sort(allCPCs);
@@ -87,7 +88,7 @@ public class SetupCPCSimDBForKeras {
         System.out.println("Iterating over patent data...");
         AtomicInteger cnt = new AtomicInteger(0);
         ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        while(rs.next()) {
+        while(!test && rs.next()) {
             final String[] _tree = (String[])rs.getArray(2).getArray();
             service.execute(() -> {
                 String[] tree = Stream.of(_tree).filter(cpc->{
@@ -128,6 +129,11 @@ public class SetupCPCSimDBForKeras {
         seedPs.close();
         System.out.println("Cooccurrence Size After Training: "+cooccurrenceMap.size());
 
+        System.out.println("Truncating previous results...");
+
+        seedConn.createStatement().execute("truncate big_query_cpc_occurrence");
+
+        System.out.println("Truncated succesfully.");
         System.out.println("Saving cooccurrence results to database...");
 
         cnt.set(0);
@@ -146,7 +152,7 @@ public class SetupCPCSimDBForKeras {
             }
 
             try {
-                String insert = "insert into big_query_cpc_occurrence (id1,id2,freq) values "+values.toString()+" on conflict (id1,id2) do update set freq=excluded.freq where id1=excluded.id1 and id2=excluded.id2";
+                String insert = "insert into big_query_cpc_occurrence (id1,id2,freq) values "+values.toString()+" on conflict (id1,id2) do nothing";
                 seedConn.createStatement().executeUpdate(insert);
             } catch(Exception e) {
                 e.printStackTrace();
