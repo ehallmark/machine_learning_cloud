@@ -10,6 +10,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -77,31 +80,41 @@ public class SetupCPCSimDBForKeras {
 
         System.out.println("Iterating over patent data...");
         AtomicInteger cnt = new AtomicInteger(0);
+        ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         while(rs.next()) {
-            String[] tree = (String[])rs.getArray(2).getArray();
-            tree = Stream.of(tree).filter(cpc->{
-                boolean valid = occurrenceMap.containsKey(cpc);
-                if(valid) {
-                    // add to occurrence map
-                    occurrenceMap.putIfAbsent(cpc,alpha);
-                    occurrenceMap.put(cpc,occurrenceMap.get(cpc)+1d);
-                }
-                return valid;
-            }).toArray(s->new String[s]);
-            for(int i = 0; i < tree.length; i++) {
-                for(int j = i+1; j < tree.length; j++) {
-                    String cpc = tree[i];
-                    String cpc2 = tree[j];
-                    UndirectedEdge<String> edge = new UndirectedEdge<>(cpc,cpc2);
-                    if(!cooccurrenceMap.containsKey(edge)) {
-                        cooccurrenceMap.put(edge, new AtomicDouble(alpha));
+            final String[] _tree = (String[])rs.getArray(2).getArray();
+            service.execute(() -> {
+                String[] tree = Stream.of(_tree).filter(cpc->{
+                    boolean valid = occurrenceMap.containsKey(cpc);
+                    if(valid) {
+                        // add to occurrence map
+                        occurrenceMap.putIfAbsent(cpc,alpha);
+                        occurrenceMap.put(cpc,occurrenceMap.get(cpc)+1d);
                     }
-                    cooccurrenceMap.get(edge).getAndAdd(1d);
+                    return valid;
+                }).toArray(s->new String[s]);
+                for(int i = 0; i < tree.length; i++) {
+                    for(int j = i+1; j < tree.length; j++) {
+                        String cpc = tree[i];
+                        String cpc2 = tree[j];
+                        UndirectedEdge<String> edge = new UndirectedEdge<>(cpc,cpc2);
+                        if(!cooccurrenceMap.containsKey(edge)) {
+                            cooccurrenceMap.put(edge, new AtomicDouble(alpha));
+                        }
+                        cooccurrenceMap.get(edge).getAndAdd(1d);
+                    }
                 }
-            }
-            if(cnt.getAndIncrement()%10000==9999) {
-                System.out.println("Finished: "+cnt.get()+" \tNum Occurences: "+cooccurrenceMap.size());
-            }
+                if(cnt.getAndIncrement()%10000==9999) {
+                    System.out.println("Finished: "+cnt.get()+" \tNum Occurences: "+cooccurrenceMap.size());
+                }
+
+            });
+        }
+        service.shutdown();
+        try {
+            service.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        } catch(Exception e) {
+            e.printStackTrace();
         }
         rs.close();
         seedPs.close();
@@ -113,8 +126,8 @@ public class SetupCPCSimDBForKeras {
         allCPCs.parallelStream().forEach(cpc-> {
             // random subset
             int s = Math.round((float)Math.exp(Math.max(7-hierarchy.getLabelToCPCMap().get(cpc).getNumParts(),0)));
-            List<String> samples = IntStream.range(0, s).mapToObj(i->allCPCs.get(rand.nextInt(allCPCs.size())))
-                    .collect(Collectors.toList());
+            Set<String> samples = IntStream.range(0, s).mapToObj(i->allCPCs.get(rand.nextInt(allCPCs.size())))
+                    .collect(Collectors.toSet());
             StringJoiner values = new StringJoiner(",");
             for(String sample : samples) {
                 StringJoiner value = new StringJoiner(",","(",")");
@@ -125,7 +138,7 @@ public class SetupCPCSimDBForKeras {
             }
 
             try {
-                String insert = "insert into big_query_cpc_occurrence (id1,id2,freq) values "+values.toString()+" on conflict (id1,id2) do update set freq=excluded.freq";
+                String insert = "insert into big_query_cpc_occurrence (id1,id2,freq) values "+values.toString()+" on conflict (id1,id2) do update set freq=excluded.freq where id1=excluded.id1 and id2=excluded.id2";
                 seedConn.createStatement().executeUpdate(insert);
             } catch(Exception e) {
                 e.printStackTrace();

@@ -13,7 +13,6 @@ import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttri
 
 import java.sql.*;
 import java.sql.Date;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,7 +26,7 @@ public class IngestESFromPostgres {
         Collection<AbstractAttribute> attributes = Attributes.buildAttributes();
 
         PreparedStatement ps = conn.prepareStatement("select * from patents_global_merged");
-        ps.setFetchSize(10);
+        ps.setFetchSize(100);
 
         final String idField = Attributes.PUBLICATION_NUMBER_FULL;
 

@@ -73,10 +73,10 @@ public class MyClient {
 
                 }
             })
-                    .setBulkActions(100)
+                    .setBulkActions(200)
                     .setBulkSize(new ByteSizeValue(8, ByteSizeUnit.MB))
-                    .setFlushInterval(TimeValue.timeValueSeconds(5))
-                    .setConcurrentRequests(5)
+                    .setFlushInterval(TimeValue.timeValueSeconds(10))
+                    .setConcurrentRequests(10)
                     .setBackoffPolicy(BackoffPolicy.exponentialBackoff(TimeValue.timeValueMillis(1000),8))
                     .build();
         }
