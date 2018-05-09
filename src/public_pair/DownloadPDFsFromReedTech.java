@@ -2,11 +2,9 @@ package public_pair;
 
 import graphical_modeling.util.Pair;
 import org.apache.commons.io.FileUtils;
-import seeding.ai_db_updater.tools.ZipHelper;
 
-import java.io.*;
-import java.net.URL;
-import java.util.ArrayList;
+import java.io.File;
+import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -17,42 +15,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class DownloadPDFsFromReedTech {
     public static final String STORAGE_PREFIX = "/usb/public_pair/";
-    public static final String INDEX_FILE_URL = "http://patents.reedtech.com/downloads/PAIRIndex/Today/PAIRIndex.zip";
     public static final File PAIR_BULK_FOLDER = new File(STORAGE_PREFIX+"data/");
-    public static final String INDEX_OUTPUT_FILE = STORAGE_PREFIX+"PAIRIndex.txt";
-    public static final String PAIR_URL = "http://patents.reedtech.com/downloads/pairdownload/";
     public static void main(String[] args) throws Exception {
-        List<Pair<String,Long>> applicationNumbers = new ArrayList<>();
-        // pull latest index file from reedtech.com
-        {
-            URL url = new URL(INDEX_FILE_URL);
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(INDEX_OUTPUT_FILE));
-
-            ZipHelper.unzip(url.openStream(),bos);
-
-            bos.flush();
-            bos.close();
-
-            BufferedReader reader = new BufferedReader(new FileReader(INDEX_OUTPUT_FILE));
-
-            AtomicLong cnt = new AtomicLong(0);
-            reader.lines().forEach(line->{
-                String[] cell = line.split(",");
-                applicationNumbers.add(new Pair<>(cell[0],Long.valueOf(cell[2])));
-                if(cnt.getAndIncrement()%10000==9999) {
-                    System.out.println("Read index: "+cnt.get());
-                }
-            });
-
-            reader.close();
-
-            System.out.println("Total: "+applicationNumbers.size());
-        }
+        List<Pair<String,Long>> applicationNumbers = LoadIndexFile.load();
+        final ProxyHandler proxyHandler = new ProxyHandler();
 
         // go through data folder and ingest any files that are missing
         final AtomicLong cnt = new AtomicLong(0);
         Collections.shuffle(applicationNumbers, new Random(System.currentTimeMillis()));
-        final ExecutorService executor = Executors.newFixedThreadPool(16);
+        final ExecutorService executor = Executors.newFixedThreadPool(32);
         applicationNumbers.forEach(p->{
             executor.execute(()-> {
                 String appNum = p._1;
@@ -64,19 +35,17 @@ public class DownloadPDFsFromReedTech {
                 //}
                 if (!file.exists() || file.length() < bytes) {
                     // send request to pair proxy
-                    final String urlStr = PAIR_URL + appNum + ".zip";
                     boolean complete = false;
                     try {
-                        URL url = new URL(urlStr);
-
-                        FileUtils.copyURLToFile(url, file);
+                        HttpURLConnection conn = proxyHandler.getProxyUrlForApplication(appNum);
+                        FileUtils.copyInputStreamToFile(conn.getInputStream(), file);
                         if (file.length() != bytes) {
                             System.out.println("Warning incorrect file size: " + file.length() + " != " + bytes);
                         }
                         complete = true;
                     } catch (Exception e) {
                         e.printStackTrace();
-                        System.out.println("Error on url: " + urlStr);
+                        System.out.println("Error on application: " + appNum);
                     } finally {
                         if (!complete) {
                             // delete
