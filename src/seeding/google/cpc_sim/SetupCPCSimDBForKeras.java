@@ -129,10 +129,12 @@ public class SetupCPCSimDBForKeras {
         seedPs.close();
         System.out.println("Cooccurrence Size After Training: "+cooccurrenceMap.size());
 
-        System.out.println("Truncating previous results...");
-        seedConn.createStatement().executeUpdate("truncate big_query_cpc_occurrence");
-        seedConn.commit();
-        System.out.println("Truncated succesfully.");
+        if(!test) {
+            System.out.println("Truncating previous results...");
+            seedConn.createStatement().executeUpdate("truncate big_query_cpc_occurrence");
+            seedConn.commit();
+            System.out.println("Truncated succesfully.");
+        }
 
         System.out.println("Saving cooccurrence results to database...");
 
