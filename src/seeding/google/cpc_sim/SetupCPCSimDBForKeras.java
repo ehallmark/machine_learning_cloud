@@ -20,7 +20,7 @@ public class SetupCPCSimDBForKeras {
     public static void main(String[] args) throws Exception {
         // this file sets up the data table in SQL so that CPCSim.py can run smoothly
         final CPCHierarchy hierarchy = CPCHierarchy.get();
-        final double alpha = 20d;
+        final double alpha = 200d;
         final boolean reingestIndices = false; // only set to true for the first run through
 
         List<String> allCPCs = new ArrayList<>(hierarchy.getLabelToCPCMap().keySet());
