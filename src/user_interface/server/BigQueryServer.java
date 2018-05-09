@@ -294,6 +294,21 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Priority Application Number Full", Attributes.PC_APPLICATION_NUMBER_FULL);
             humanAttrToJavaAttrMap.put("Priority Publication Number Full", Attributes.PC_PUBLICATION_NUMBER_FULL);
             humanAttrToJavaAttrMap.put("Priority Filing Date", Attributes.PC_FILING_DATE);
+            humanAttrToJavaAttrMap.put("Number of Backward Citations", Attributes.CITATIONS_COUNT);
+            humanAttrToJavaAttrMap.put("Number of Forward Citations", Attributes.RCITATIONS_COUNT);
+            humanAttrToJavaAttrMap.put("Number of CPC Codes", Attributes.CODE_COUNT);
+            humanAttrToJavaAttrMap.put("Number of Priority Claims", Attributes.PRIORITY_CLAIMS_COUNT);
+            humanAttrToJavaAttrMap.put("Number of Inventors", Attributes.INVENTORS_COUNT);
+            humanAttrToJavaAttrMap.put("Number of Assignees", Attributes.ASSIGNEES_COUNT);
+            humanAttrToJavaAttrMap.put("Number of Claims", Attributes.CLAIMS_COUNT);
+            humanAttrToJavaAttrMap.put("Number of Keywords", Attributes.KEYWORD_COUNT);
+            humanAttrToJavaAttrMap.put("Number of Standards", Attributes.STANDARD_COUNT);
+            humanAttrToJavaAttrMap.put("Number of PTAB Cases", Attributes.PTAB_COUNT);
+            humanAttrToJavaAttrMap.put("Number of CompDB Deals", Attributes.COMPDB_COUNT);
+            humanAttrToJavaAttrMap.put("Number of Assignments", Attributes.ASSIGNMENTS_COUNT);
+            humanAttrToJavaAttrMap.put("Number of Maintenance Events", Attributes.MAINTENANCE_EVENT_COUNT);
+            humanAttrToJavaAttrMap.put("Number of Latest Assignees", Attributes.LATEST_ASSIGNEE_COUNT);
+            humanAttrToJavaAttrMap.put("Number of Latest Assignees (by Family)", Attributes.LATEST_FAM_ASSIGNEE_COUNT);
 
             buildJavaToHumanAttrMap();
 
