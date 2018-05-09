@@ -50,7 +50,7 @@ public class SetupCPCSimDBForKeras {
 
         // bayesian initial (similarity to hierarchy)
         Map<String,Double> occurrenceMap = new HashMap<>();
-        Map<UndirectedEdge<String>,AtomicDouble> cooccurrenceMap = new HashMap<>();
+        final Map<UndirectedEdge<String>,AtomicDouble> cooccurrenceMap = new HashMap<>();
         List<CPC> cpcs = new ArrayList<>(hierarchy.getLabelToCPCMap().values());
         cpcs.forEach(cpc->{
             occurrenceMap.put(cpc.getName(),alpha);
@@ -98,10 +98,12 @@ public class SetupCPCSimDBForKeras {
                         String cpc = tree[i];
                         String cpc2 = tree[j];
                         UndirectedEdge<String> edge = new UndirectedEdge<>(cpc,cpc2);
-                        if(!cooccurrenceMap.containsKey(edge)) {
-                            cooccurrenceMap.put(edge, new AtomicDouble(alpha));
+                        synchronized (cooccurrenceMap) {
+                            if (!cooccurrenceMap.containsKey(edge)) {
+                                cooccurrenceMap.put(edge, new AtomicDouble(alpha));
+                            }
+                            cooccurrenceMap.get(edge).getAndAdd(1d);
                         }
-                        cooccurrenceMap.get(edge).getAndAdd(1d);
                     }
                 }
                 if(cnt.getAndIncrement()%10000==9999) {
