@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class LoadIndexFile {
     // TODO run this query periodically
-    // \copy (select p.application_number_formatted from big_query_pair as p join patents_global as g on (p.application_number_formatted=g.application_number_formatted) where not abandoned and filing_date>=current_date-interval '20 years' and status_date>=current_date-interval '20 years' and country_code='US') to /usb/data/valid_application_numbers_for_public_pair.csv delimiter ',' csv
+    // \copy (select distinct p.application_number_formatted from big_query_pair as p join patents_global_merged as g on ('US'||p.application_number_formatted=g.application_number_formatted_with_country) where not lapsed and not abandoned and coalesce(priority_date,filing_date)>=current_date-interval '20 years' and status_date>=current_date-interval '20 years' and country_code='US') to /usb/data/valid_application_numbers_for_public_pair.csv delimiter ',' csv
 
     public static final String STORAGE_PREFIX = "public_pair/";
     public static final String INDEX_FILE_URL = "http://patents.reedtech.com/downloads/PAIRIndex/Today/PAIRIndex.zip";
