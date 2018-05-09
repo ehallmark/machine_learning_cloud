@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 public class ProxyHandler {
     public static final String PROXY_PREFIX = "http://";
-    public static final String PROXY_SUFFIX = "/public_pair?app_num=";
+    public static final String PROXY_SUFFIX = ":8080/public_pair?app_num=";
     public static final Random random = new Random(2351251);
     public static String[] IP_ADDRESSES;
     static {
@@ -44,11 +44,15 @@ public class ProxyHandler {
 
     private static String nextRandomIP() {
         if(IP_ADDRESSES==null||IP_ADDRESSES.length==0) {
-            try {
-                loadIPAddresses();
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException("Unable to get next random ip address...");
+            synchronized (ProxyHandler.class) {
+                if(IP_ADDRESSES==null||IP_ADDRESSES.length==0) {
+                    try {
+                        loadIPAddresses();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        throw new RuntimeException("Unable to get next random ip address...");
+                    }
+                }
             }
         }
         if(IP_ADDRESSES.length==0) {
@@ -67,6 +71,7 @@ public class ProxyHandler {
         try {
             URL url = new URL(PROXY_PREFIX + ip + PROXY_SUFFIX + app_num);
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+            System.out.println("URL: "+url);
             if(conn.getResponseCode()==200) {
                 return conn;
             } else {
@@ -99,8 +104,6 @@ public class ProxyHandler {
     public static void main(String[] args) throws Exception {
         // TESTING
         ProxyHandler handler = new ProxyHandler();
-        IP_ADDRESSES = new String[]{"127.0.0.1"};
-        System.out.println("Should be incorrect: "+handler.getProxyUrlForApplication("12900011").getResponseCode());
         loadIPAddresses();
         System.out.println("Should be 200: "+handler.getProxyUrlForApplication("12900011").getResponseCode());
     }

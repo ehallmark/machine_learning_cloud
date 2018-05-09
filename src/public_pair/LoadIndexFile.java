@@ -16,9 +16,9 @@ public class LoadIndexFile {
     // TODO run this query periodically
     // \copy (select p.application_number_formatted from big_query_pair as p join patents_global as g on (p.application_number_formatted=g.application_number_formatted) where not abandoned and filing_date>=current_date-interval '20 years' and status_date>=current_date-interval '20 years' and country_code='US') to /usb/data/valid_application_numbers_for_public_pair.csv delimiter ',' csv
 
-    public static final String STORAGE_PREFIX = "/usb/public_pair/";
+    public static final String STORAGE_PREFIX = "public_pair/";
     public static final String INDEX_FILE_URL = "http://patents.reedtech.com/downloads/PAIRIndex/Today/PAIRIndex.zip";
-    public static final String VALID_APPLICATION_NUMBERS_FILE = "/usb/valid_application_numbers_for_public_pair.csv";
+    public static final String VALID_APPLICATION_NUMBERS_FILE = "valid_application_numbers_for_public_pair.csv";
     public static final String INDEX_OUTPUT_FILE = STORAGE_PREFIX+"PAIRIndex.txt";
 
     public static List<Pair<String,Long>> load() throws Exception {
