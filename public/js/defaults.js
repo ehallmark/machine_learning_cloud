@@ -289,6 +289,11 @@ $(document).ready(function() {
         e.preventDefault();
         var name = 'default';
         var urlPrefix = $('#url-prefix').attr('prefix');
+        var extract_to_usergroup = false;
+        var $extractUG = $('#extract_to_usergroup');
+        if($extractUG.length>0) {
+            extract_to_usergroup = $extractUG.is(':checked');
+        };
         if(!urlPrefix) {
             urlPrefix = "/secure";
         }
@@ -298,7 +303,7 @@ $(document).ready(function() {
         var callback = function(data) {
             saveJSNodeFunction(null,null,name,true,data,'template',true,true,postSaveCallback,false);
         };
-        return templateDataFunction(null,null,name,true,callback);
+        return templateDataFunction(null,null,name,true,callback,extract_to_usergroup);
     });
 
     $('.update-default-attributes-button').click(function(e) {
@@ -1004,8 +1009,11 @@ var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dat
         dataMap[dataKey] = json;
     };
 
-var templateDataFunction = function(tree,node,name,deletable,callback) {
+var templateDataFunction = function(tree,node,name,deletable,callback,extract_to_usergroup) {
     var preData = {};
+    if(extract_to_usergroup) {
+        preData["extract_to_usergroup"] = true;
+    }
     preData["name"]=name;
     saveTemplateFormHelper("#searchOptionsForm",".attributeElement",preData,"searchOptionsMap");
     saveTemplateFormHelper("#attributesForm",".attributeElement",preData,"attributesMap");
