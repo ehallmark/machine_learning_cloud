@@ -57,9 +57,9 @@ public class AbstractHistogramChart extends ChartAttribute {
 
 
             RangeAttribute rangeAttribute = nameToRangeMap.get(attribute);
-            double min = rangeAttribute.min().doubleValue();
-            double max = rangeAttribute.max().doubleValue();
-            int nBins = rangeAttribute.nBins();
+            double min = rangeAttribute.getRanges().stream().filter(r->r.getFirst()!=null).mapToDouble(r->r.getFirst().doubleValue()).min().orElse(0);
+            double max = rangeAttribute.getRanges().stream().filter(r->r.getSecond()!=null).mapToDouble(r->r.getSecond().doubleValue()).min().orElse(0);
+            int nBins = rangeAttribute.getRanges().size();
             String xAxisSuffix = rangeAttribute.valueSuffix();
             String yAxisSuffix = "";
 

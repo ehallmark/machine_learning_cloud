@@ -143,9 +143,9 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             System.out.println("Building range for: " + attrName);
             RangeAttribute rangeAttribute = (RangeAttribute) attribute;
             if (attribute instanceof AbstractScriptAttribute) {
-                aggregation = new HistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), (rangeAttribute.max().doubleValue() - rangeAttribute.min().doubleValue()) / rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing());
+                aggregation = new HistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), rangeAttribute.getRanges(), rangeAttribute.missing());
             } else {
-                aggregation = new HistogramAggregation(attrName + aggSuffix, attrName, null, (rangeAttribute.max().doubleValue() - rangeAttribute.min().doubleValue()) / rangeAttribute.nBins(), rangeAttribute.min().doubleValue(), rangeAttribute.max().doubleValue(), rangeAttribute.missing());
+                aggregation = new HistogramAggregation(attrName + aggSuffix, attrName, null, rangeAttribute.getRanges(), rangeAttribute.missing());
             }
         } else if (attribute instanceof SignificantTermsAttribute) {
             System.out.println("Using significant terms bucketing for attr: "+attrName);

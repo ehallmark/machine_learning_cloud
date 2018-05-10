@@ -193,13 +193,17 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             dataSets = new ArrayList<>();
             RangeAttribute rangeAttribute = (RangeAttribute)attribute;
             // build categories
-            double min = rangeAttribute.min().doubleValue();
-            double max = rangeAttribute.max().doubleValue();
-            int nBins = rangeAttribute.nBins();
-            int step = (int) Math.round((max-min)/nBins);
-            for(int j = 0; j < max; j += step) {
-                dataSets.add(String.valueOf(j) + "-" + String.valueOf(j+step));
+            List<Pair<Number,Number>> ranges = rangeAttribute.getRanges();
+            for(Pair<Number,Number> range: ranges) {
+                String str=range.getFirst().toString();
+                if(range.getSecond()!=null) {
+                    str+="-"+range.getSecond().toString();
+                } else {
+                    str+="+";
+                }
+                dataSets.add(str);
             }
+
         } else {
             dataSets = null;
         }
