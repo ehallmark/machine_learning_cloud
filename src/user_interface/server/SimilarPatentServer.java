@@ -130,7 +130,7 @@ public class SimilarPatentServer {
     public static final String LIST_ITEM_SEPARATOR_FIELD = "listItemSeparatorField";
     public static final String ANALYST_USER = "analyst";
     public static final String INTERNAL_USER = "internal";
-    private static final List<String> USER_ROLES = Arrays.asList(ANALYST_USER,INTERNAL_USER);
+    protected static final List<String> USER_ROLES = Arrays.asList(ANALYST_USER,INTERNAL_USER);
     public static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     public static RecursiveTask<SimilarityEngineController> similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();

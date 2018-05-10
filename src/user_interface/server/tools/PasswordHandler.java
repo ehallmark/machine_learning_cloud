@@ -5,6 +5,7 @@ import org.apache.commons.crypto.stream.CryptoOutputStream;
 import org.apache.commons.io.FileUtils;
 import seeding.Constants;
 import seeding.Database;
+import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 
 import javax.crypto.spec.IvParameterSpec;
@@ -267,7 +268,11 @@ public class PasswordHandler {
                 System.out.println(pe.getMessage());
             }
         }
-
+        try {
+            handler.createUserGroup(BigQueryServer.PRESET_USER_GROUP);
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
         System.out.println("Authorized Super User: " + handler.authorizeUser(SimilarPatentServer.SUPER_USER, superPass));
 
     }

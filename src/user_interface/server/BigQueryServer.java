@@ -107,10 +107,7 @@ public class BigQueryServer extends SimilarPatentServer {
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
     public static final String SHOW_DATATABLE_URL = PROTECTED_URL_PREFIX+"/dataTable.json";
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
-    public static final String SUPER_USER = "form_creator";
-    public static final String ANALYST_USER = "analyst";
-    public static final String INTERNAL_USER = "internal";
-    public static final List<String> USER_ROLES = Arrays.asList(ANALYST_USER,INTERNAL_USER);
+    public static final String PRESET_USER_GROUP = "presets";
     private static Map<String,AggregationChart<?>> chartModelMap = new HashMap<>();
 
     static {
@@ -1482,9 +1479,13 @@ public class BigQueryServer extends SimilarPatentServer {
         String filename;
         if(defaultFile) {
             filename = Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+user+"/"+user;
-            // may not exist so default to super user default attributes form
+            // may not exist so default to super user group default and then global default attributes form
             if(! new File(filename).exists()) {
-                filename = Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+SUPER_USER+"/"+SUPER_USER;
+                // try to get the user group default (if exists)
+                filename = Constants.USER_DEFAULT_ATTRIBUTES_FOLDER+userGroup+"/"+userGroup;
+                if(! new File(filename).exists()) {
+                    filename = Constants.USER_DEFAULT_ATTRIBUTES_FOLDER + PRESET_USER_GROUP + "/" + PRESET_USER_GROUP;
+                }
             }
         } else {
             filename = baseFolder + (shared ? userGroup : user) + "/" + file;
@@ -1574,7 +1575,7 @@ public class BigQueryServer extends SimilarPatentServer {
 
                             System.out.println("Parent dirs of cluster: "+Arrays.toString(parentDirs));
 
-                            Pair<String, Map<String, Object>> pair = saveFormToFile(userGroup, formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user,userGroup), saveDatasetUpdatesFunction());
+                            Pair<String, Map<String, Object>> pair = saveFormToFile(req, userGroup, formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user,userGroup), saveDatasetUpdatesFunction());
 
                             Map<String, Object> clusterData = pair.getSecond();
                             clusterData.put("name",name);
@@ -1671,16 +1672,22 @@ public class BigQueryServer extends SimilarPatentServer {
 
     private static Object handleUpdateDefaultAttributes(Request req, Response res) {
         String username = req.session().attribute("username");
-        if(username == null) return null;
-        Function<Map<String,Object>,Map<String,Object>> afterFunction = map -> {
-            map.put("file", username);
+        String userGroup = getUserGroupFor(req.session());
+        if(username == null || userGroup==null) return null;
+        final boolean saveToUserGroup = extractBool(req,"extract_to_usergroup");
+        Function<Map<String, Object>, Map<String, Object>> afterFunction = map -> {
+            if(saveToUserGroup) {
+                map.put("file", userGroup);
+            } else {
+                map.put("file", username);
+            }
             return map;
         };
         return handleSaveForm(req,res,Constants.USER_DEFAULT_ATTRIBUTES_FOLDER,templateFormMapFunction().andThen(afterFunction),saveTemplatesFunction(),saveTemplateUpdatesFunction());
     }
 
 
-    private static Pair<String,Map<String,Object>> saveFormToFile(String userGroup, Map<String,Object> formMap, String name, String[] parentDirs, String actualUsername, String baseFolder, Function3<Map<String,Object>,File,Boolean,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
+    private static Pair<String,Map<String,Object>> saveFormToFile(Request req, String userGroup, Map<String,Object> formMap, String name, String[] parentDirs, String actualUsername, String baseFolder, Function3<Map<String,Object>,File,Boolean,Void> saveFunction, Function2<Map<String,Object>,File,Void> saveUpdatesFunction) {
         String message;
         Random random = new Random(System.currentTimeMillis());
         Map<String,Object> responseMap = new HashMap<>();
@@ -1696,8 +1703,9 @@ public class BigQueryServer extends SimilarPatentServer {
                 formMap.put("parentDirs", Arrays.copyOfRange(parentDirs,1,parentDirs.length));
             }
 
-            boolean isShared = false;
-            if(parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
+            boolean isShared = extractBool(req, "extract_to_usergroup");
+            // override is shared by parent dirs
+            if(!isShared && parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
                 isShared = true;
             }
             String username = isShared ? userGroup : actualUsername;
@@ -1777,7 +1785,7 @@ public class BigQueryServer extends SimilarPatentServer {
         String actualUsername = req.session().attribute("username");
         Map<String,Object> formMap = formMapFunction.apply(req);
 
-        Pair<String,Map<String,Object>> pairResponse = saveFormToFile(userGroup,formMap,name,parentDirs,actualUsername,baseFolder,saveFunction,saveUpdatesFunction);
+        Pair<String,Map<String,Object>> pairResponse = saveFormToFile(req, userGroup,formMap,name,parentDirs,actualUsername,baseFolder,saveFunction,saveUpdatesFunction);
 
         String message = pairResponse.getFirst();
         Map<String,Object> responseMap = pairResponse.getSecond();
@@ -2433,14 +2441,14 @@ public class BigQueryServer extends SimilarPatentServer {
                                                         (showTemplates ? div().withClass("tab-content").withId("sidebar-jstree-wrapper").attr("style","max-height: 50%; overflow-y: auto; text-align: left; display: none;").with(
                                                                 div().withClass("tab-pane active").attr("role","tabpanel").withId("templates-tree").with(
                                                                         ul().with(
-                                                                                getTemplatesForUser(SUPER_USER,false,"Preset Templates",false),
+                                                                                getTemplatesForUser(PRESET_USER_GROUP,false,"Preset Templates",false),
                                                                                 getTemplatesForUser(req.session().attribute("username"),true,"My Templates",false),
                                                                                 getTemplatesForUser(userGroup,true, "Shared Templates",false)
                                                                         )
 
                                                                 ),div().withClass("tab-pane").attr("role","tabpanel").withId("datasets-tree").with(
                                                                         ul().with(
-                                                                                getDatasetsForUser(SUPER_USER,false,"Preset Datasets"),
+                                                                                getDatasetsForUser(PRESET_USER_GROUP,false,"Preset Datasets"),
                                                                                 getDatasetsForUser(req.session().attribute("username"),true,"My Datasets"),
                                                                                 getDatasetsForUser(userGroup,true, "Shared Datasets")
                                                                         )
@@ -2569,6 +2577,7 @@ public class BigQueryServer extends SimilarPatentServer {
         if(user==null || role==null) return null;
         System.out.println("Loading default attributes page for user "+user+" with role "+role+".");
         Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
+        final boolean canUpdateUserGroup = role.equals(SUPER_USER)||role.equals(INTERNAL_USER);
         Tag buttons = div().withClass("col-10 offset-1").with(
                 div().withClass("btn-group row").with(
                         a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-secondary div-button go-back-default-attributes-button"),
@@ -2581,6 +2590,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                 h4("Update defaults for "+user+"."),
                                 a("Reset defaults").withHref(RESET_DEFAULT_TEMPLATE_URL)
                         ), br(),
+                        canUpdateUserGroup?label("Save to Current User Group? ").with(input().withType("checkbox").withId("extract_to_usergroup")) : span(),
                         form().withAction(UPDATE_DEFAULT_ATTRIBUTES_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId("update-default-attributes-form").with(
                                 input().withType("hidden").withName("name").withValue("default"),
                                 innerFiltersAndSettings(userRoleFunction,buttons),
