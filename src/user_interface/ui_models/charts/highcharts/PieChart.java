@@ -14,11 +14,13 @@ public class PieChart extends AbstractChart {
     public String getType() {
         return "pie";
     }
-
     public PieChart(String title, String subTitle, List<Series<?>> data, String yLabel) {
+        this(new Options(),title,subTitle,data,yLabel);
+    }
+    public PieChart(Options _options, String title, String subTitle, List<Series<?>> data, String yLabel) {
         SeriesType type = SeriesType.PIE;
         System.out.println("Starting to build: "+type);
-        options=new Options()
+        options=_options
                 .setExporting(new ExportingOptions().setEnabled(true))
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))

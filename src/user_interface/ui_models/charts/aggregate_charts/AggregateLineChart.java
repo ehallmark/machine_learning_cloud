@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
+import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import j2html.tags.ContainerTag;
@@ -80,14 +81,17 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
         if(isGrouped) {
             subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
         }
-        List<Series<?>> data = createDataForAggregationChart(aggregations,attribute,attrName,title,null);
+        boolean drilldown = attrToDrilldownMap.getOrDefault(attrName,false);
+
+        Options parentOptions = new Options();
+        List<Series<?>> data = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,null, drilldown);
         data.forEach(series->{
             series.setShowInLegend(false);
         });
         List<String> categories = data.isEmpty() ? Collections.singletonList("0")
                 : data.get(0).getData().stream().map(p->((Point)p).getName()).collect(Collectors.toList());
         System.out.println("Categories for timeline: "+String.join(", ",categories));
-        return Collections.singletonList(new LineChart(false,title, subtitle, data, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0,categories));
+        return Collections.singletonList(new LineChart(parentOptions,false,title, subtitle, data, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0,categories));
     }
 
     @Override

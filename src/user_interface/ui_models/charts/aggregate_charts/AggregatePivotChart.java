@@ -34,16 +34,12 @@ import static j2html.TagCreator.*;
 
 public class AggregatePivotChart extends AggregationChart<TableResponse> {
     private static final String AGG_SUFFIX = "_pivot";
-    protected Map<String,String> attrToCollectByAttrMap;
-    protected Map<String,Type> attrToCollectTypeMap;
     protected Collection<AbstractAttribute> collectByAttributes;
     @Setter
     private Map<String,SimilarityAttribute> similarityModels;
     public AggregatePivotChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectByAttrs) {
         super(true,"Pivot Table",AGG_SUFFIX, attributes, groupByAttrs, Constants.PIVOT_FUNCTION_TABLE_CHART, false);
         this.collectByAttributes=collectByAttrs;
-        this.attrToCollectByAttrMap=Collections.synchronizedMap(new HashMap<>());
-        this.attrToCollectTypeMap=Collections.synchronizedMap(new HashMap<>());
     }
 
 

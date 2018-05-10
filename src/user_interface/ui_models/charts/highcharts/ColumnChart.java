@@ -16,10 +16,13 @@ public class ColumnChart extends AbstractChart {
     }
 
     public ColumnChart(String title, List<Series<?>> data, Double min, Double max, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String subTitle, int yDecimals, List<String> categories) {
+        this(new Options(),title,data,min,max,xAxisSuffix,yAxisSuffix,xLabel,yLabel,subTitle,yDecimals,categories);
+    }
+    public ColumnChart(Options _options, String title, List<Series<?>> data, Double min, Double max, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String subTitle, int yDecimals, List<String> categories) {
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = data.size()>1 ? "{series.name}" : ("{point.key}"+xAxisSuffix);
         SeriesType type = SeriesType.COLUMN;
-        options=new Options()
+        options=_options
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))
                 .setExporting(new ExportingOptions().setEnabled(true))

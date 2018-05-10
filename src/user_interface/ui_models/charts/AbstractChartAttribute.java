@@ -39,6 +39,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected Map<String,String> attrToCollectByAttrMap;
     @Getter
     protected Map<String,Type> attrToCollectTypeMap;
+    @Getter
+    protected Map<String,Boolean> attrToDrilldownMap;
     protected Collection<String> searchTypes;
     @Getter
     protected List<String> attrNames;
@@ -67,6 +69,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         this.attrToCollectByAttrMap = Collections.synchronizedMap(new HashMap<>());
         this.attrToCollectTypeMap = Collections.synchronizedMap(new HashMap<>());
         this.groupByPerAttribute = groupByPerAttribute;
+        this.attrToDrilldownMap = Collections.synchronizedMap(new HashMap<>());
     }
 
     protected static String combineTypesToString(Collection<String> types) {
@@ -206,6 +209,12 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         }).collect(Collectors.toList());
         searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE_INCLUDE_FILTER_STR);
 
+        if(attrNames!=null) {
+            this.attrNames.forEach(attr -> {
+                boolean drilldown = SimilarPatentServer.extractBool(params, getDrilldownAttrFieldName(getName()+attr));
+                attrToDrilldownMap.put(attr,drilldown);
+         });
+        }
         if(groupByAttributes!=null) {
             List<String> attrsToCheck = new ArrayList<>();
             if(groupByPerAttribute) {
@@ -251,6 +260,10 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
     protected String getCollectTypeFieldName(String attrName) {
         return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_TYPE_FIELD+(attrName==null?"":attrName)).replace(".","").replace("[]","");
+    }
+
+    protected String getDrilldownAttrFieldName(String attrName) {
+        return (getName().replace("[","").replace("]","")+SimilarPatentServer.DRILLDOWN_BOOL_FIELD+(attrName==null?"":attrName)).replace(".","").replace("[]","");
     }
 
     @Override

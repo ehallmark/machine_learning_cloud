@@ -18,11 +18,14 @@ public class LineChart extends AbstractChart {
 
     @Getter
     private boolean stockChart;
-    public LineChart(boolean stockChart, String title, String subTitle, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, List<String> categories) {
+    public LineChart( boolean stockChart, String title, String subTitle, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, List<String> categories) {
+        this(new Options(),stockChart,title,subTitle,data,xAxisSuffix,yAxisSuffix,xLabel,yLabel,yDecimals,categories);
+    }
+    public LineChart(Options _options, boolean stockChart, String title, String subTitle, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, List<String> categories) {
         this.stockChart=stockChart;
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = "{point.key}"+xAxisSuffix;
-        options=new Options()
+        options=_options
                 .setChartOptions(new ChartOptions().setHeight(450).setType(SeriesType.LINE))
                 .setTitle(new Title(title))
                 .setLegend(new Legend(true))

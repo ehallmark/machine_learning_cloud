@@ -1,5 +1,7 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
+import com.googlecode.wickedcharts.highcharts.options.Options;
+import com.googlecode.wickedcharts.highcharts.options.drilldown.DrilldownPoint;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
@@ -51,12 +53,13 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         return GROUP_SUFFIX+aggSuffix;
     }
 
-    protected List<Series<?>> createDataForAggregationChart(Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit) {
+    protected List<Series<?>> createDataForAggregationChart(Options options, Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean drilldown) {
         List<Series<?>> data = new ArrayList<>();
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         final boolean isGrouped = groupedByAttrName!=null;
 
         if(isGrouped) {
+            PointSeries drilldownSeries = new PointSeries();
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
             final String groupAggName = groupedByAttrName+getGroupSuffix();
             if (groupByAttribute == null) {
@@ -76,11 +79,18 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                     String group = groupByDatasets==null?entry.getKeyAsString():groupByDatasets.get(i);
                     Aggregations nestedAggs = entry.getAggregations();
                     PointSeries series = getSeriesFromAgg(nestedAggs,attribute,attrName,group,limit);
-                    data.add(series);
+                    if(drilldown) {
+                        drilldownSeries.addPoint(createPoint(group,entry.getDocCount(),series,options));
+                    } else {
+                        data.add(series);
+                    }
                     i++;
                 }
             } else {
                 throw new RuntimeException("Unable to cast group aggregation "+groupAggName.getClass().getName()+" to MultiBucketsAggregation.class");
+            }
+            if(drilldown) {
+                data.add(drilldownSeries);
             }
         } else {
             PointSeries series = getSeriesFromAgg(aggregations, attribute, attrName, title, limit);
@@ -137,6 +147,20 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             series.addPoint(new Point("(remaining)",remaining));
         }
         return series;
+    }
+
+    private static Point createPoint(String label, Number val, PointSeries drillDownData, Options parentOptions) {
+        Point point;
+        if(drillDownData!=null) {
+            Options childOptions = new Options()
+                    .setSeries(Collections.singletonList(drillDownData));
+            point = new DrilldownPoint(parentOptions,childOptions)
+                    .setName(label)
+                    .setY(val);
+        } else {
+            point = new Point(label, val);;
+        }
+        return point;
     }
 
     public abstract List<? extends T> create(AbstractAttribute attribute, String attrName, Aggregations aggregations);

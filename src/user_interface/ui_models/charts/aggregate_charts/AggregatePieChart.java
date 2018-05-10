@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
+import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
@@ -65,8 +66,10 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         if(isGrouped) {
             subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
         }
-        List<Series<?>> data = createDataForAggregationChart(aggregations,attribute,attrName,title,limit);
-        return Collections.singletonList(new PieChart(title,  subtitle, data, combineTypesToString(searchTypes)));
+        Options parentOptions = new Options();
+        boolean drilldown = attrToDrilldownMap.getOrDefault(attrName,false);
+        List<Series<?>> data = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,limit,drilldown);
+        return Collections.singletonList(new PieChart(parentOptions, title,  subtitle, data, combineTypesToString(searchTypes)));
     }
 
     @Override

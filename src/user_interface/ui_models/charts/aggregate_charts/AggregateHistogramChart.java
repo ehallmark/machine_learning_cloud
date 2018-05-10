@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
+import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import org.elasticsearch.search.aggregations.Aggregations;
 import seeding.Constants;
@@ -41,13 +42,14 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         if(isGrouped) {
             subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
         }
-
-        List<Series<?>> data = createDataForAggregationChart(aggregations,attribute,attrName,title,null);
+        Options parentOptions = new Options();
+        boolean drilldown = attrToDrilldownMap.getOrDefault(attrName, false);
+        List<Series<?>> data = createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,null,drilldown);
         data.forEach(series-> {
             series.setShowInLegend(false);
         });
 
-        return Collections.singletonList(new ColumnChart(title, data, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories));
+        return Collections.singletonList(new ColumnChart(parentOptions, title, data, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories));
     }
 
 
