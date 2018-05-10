@@ -3,9 +3,13 @@ package user_interface.ui_models.attributes.computable_attributes;
 import models.value_models.ValueModelCombination;
 import models.value_models.graphical.WIPOValueModel;
 import models.value_models.regression.AIValueModel;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by ehallmark on 3/10/17.
@@ -22,21 +26,6 @@ public class OverallEvaluator extends ValueModelCombination implements RangeAttr
     }
 
     @Override
-    public Number min() {
-        return 0;
-    }
-
-    @Override
-    public Number max() {
-        return 100;
-    }
-
-    @Override
-    public int nBins() {
-        return 5;
-    }
-
-    @Override
     public String valueSuffix() {
         return "%";
     }
@@ -44,5 +33,16 @@ public class OverallEvaluator extends ValueModelCombination implements RangeAttr
     @Override
     public Object missing() {
         return null;
+    }
+
+    @Override
+    public List<Pair<Number, Number>> getRanges() {
+        return Arrays.asList(
+                new Pair<>(0,20),
+                new Pair<>(20,40),
+                new Pair<>(40,60),
+                new Pair<>(60,80),
+                new Pair<>(80,100)
+        );
     }
 }

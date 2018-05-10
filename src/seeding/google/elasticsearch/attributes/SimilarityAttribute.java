@@ -6,6 +6,7 @@ import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.primitives.Pair;
 import spark.Request;
 import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
@@ -14,10 +15,7 @@ import user_interface.ui_models.engines.AbstractSimilarityEngine;
 import user_interface.ui_models.engines.SimilarityEngineController;
 import user_interface.ui_models.filters.AbstractFilter;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
@@ -96,18 +94,17 @@ public abstract class SimilarityAttribute extends AbstractScriptAttribute implem
     }
 
     @Override
-    public Number min() {
-        return -100d;
-    }
-
-    @Override
-    public Number max() {
-        return 100d;
-    }
-
-    @Override
-    public int nBins() {
-        return 4;
+    public List<Pair<Number, Number>> getRanges() {
+        return Arrays.asList(
+                new Pair<>(-100,-80),
+                new Pair<>(-75,-50),
+                new Pair<>(-50,-25),
+                new Pair<>(-25,0),
+                new Pair<>(0,25),
+                new Pair<>(25,50),
+                new Pair<>(50,75),
+                new Pair<>(75,100)
+        );
     }
 
     @Override

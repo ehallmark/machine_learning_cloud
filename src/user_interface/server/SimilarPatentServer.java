@@ -720,7 +720,6 @@ public class SimilarPatentServer {
                 } else {
                     attributesToRemove.add(Constants.LATEST_ASSIGNEE);
                 }
-                attributesToRemove.add(SimilarityAttribute.VECTOR_NAME); // TODO remove this line after next pass through mongo
                 vectorizers.forEach((name,vectorizer)->{
                     INDArray vec = vectorizer.vectorFor(filing);
                     if(vec==null) {

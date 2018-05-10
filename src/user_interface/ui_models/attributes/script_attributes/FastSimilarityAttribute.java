@@ -5,6 +5,7 @@ import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
 import user_interface.ui_models.attributes.DependentAttribute;
@@ -108,18 +109,17 @@ public class FastSimilarityAttribute extends AbstractScriptAttribute implements 
     }
 
     @Override
-    public Number min() {
-        return -100d;
-    }
-
-    @Override
-    public Number max() {
-        return 100d;
-    }
-
-    @Override
-    public int nBins() {
-        return 4;
+    public List<Pair<Number, Number>> getRanges() {
+        return Arrays.asList(
+                new Pair<>(-100,-80),
+                new Pair<>(-75,-50),
+                new Pair<>(-50,-25),
+                new Pair<>(-25,0),
+                new Pair<>(0,25),
+                new Pair<>(25,50),
+                new Pair<>(50,75),
+                new Pair<>(75,100)
+        );
     }
 
     @Override
