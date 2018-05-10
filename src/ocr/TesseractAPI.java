@@ -9,9 +9,7 @@ import org.bytedeco.javacpp.lept;
 import org.bytedeco.javacpp.tesseract;
 
 import javax.imageio.ImageIO;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -52,14 +50,14 @@ public class TesseractAPI {
                             // System.out.println("Writing image:" + image);
 
                             // OCR recognition
-                            //File tempFile = File.createTempFile("images", "temp.png");
-                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                            ImageIO.write(imageObj.getImage(), "png", baos);
-                            byte[] imageBytes = baos.toByteArray();
-                            ByteBuffer imgBB = ByteBuffer.wrap(imageBytes);
+                            File tempFile = File.createTempFile("temp_images", "temp.png");
+                            //ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            ImageIO.write(imageObj.getImage(), "png", tempFile);
+                            //byte[] imageBytes = baos.toByteArray();
+                            //ByteBuffer imgBB = ByteBuffer.wrap(imageBytes);
 
-                            lept.PIX image = lept.pixReadMemPng(imgBB, imageBytes.length);
-                            //lept.PIX image = lept.pixRead(tempFile.getAbsolutePath());
+                            //lept.PIX image = lept.pixReadMemPng(imgBB, imageBytes.length);
+                            lept.PIX image = lept.pixRead(tempFile.getAbsolutePath());
                             api.SetImage(image);
 
                             // Get OCR result
@@ -79,6 +77,7 @@ public class TesseractAPI {
                             api.End();
                             outText.deallocate();
                             lept.pixDestroy(image);
+                            tempFile.delete();
 
                         } catch (Exception e) {
                             e.printStackTrace();
