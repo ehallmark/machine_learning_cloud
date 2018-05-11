@@ -114,9 +114,9 @@ public class SimilarityEngineController {
 
     private static int getResultLimitForRole(String role) {
         if (role == null) return 1;
-        if (role.equals(SimilarPatentServer.SUPER_USER)) return 10000000;
-        if (role.equals(SimilarPatentServer.INTERNAL_USER)) return 100000;
-        if (role.equals(SimilarPatentServer.ANALYST_USER)) return 10000;
+        if (role.equals(SimilarPatentServer.SUPER_USER)) return 100000;
+        if (role.equals(SimilarPatentServer.INTERNAL_USER)) return 10000;
+        if (role.equals(SimilarPatentServer.ANALYST_USER)) return 1000;
         return 1;
     }
 
