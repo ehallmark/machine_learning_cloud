@@ -4,6 +4,7 @@ import j2html.tags.Tag;
 import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import seeding.google.elasticsearch.attributes.ConvenienceAttribute;
 import spark.Request;
 import user_interface.acclaim_compatibility.GlobalParser;
 import user_interface.acclaim_compatibility.USParser;

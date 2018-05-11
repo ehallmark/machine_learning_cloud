@@ -211,7 +211,7 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Include By Prefix", AbstractFilter.FilterType.PrefixInclude.toString());
             humanAttrToJavaAttrMap.put("Exclude By Prefix", AbstractFilter.FilterType.PrefixExclude.toString());
             humanAttrToJavaAttrMap.put("Exclude All", AbstractFilter.FilterType.Exclude.toString());
-            humanAttrToJavaAttrMap.put("Acclaim Expert Query Syntax Filter", AcclaimExpertSearchFilter.NAME);
+            humanAttrToJavaAttrMap.put("Expert Query Syntax Filter", AcclaimExpertSearchFilter.NAME);
             humanAttrToJavaAttrMap.put("Advanced Keyword Filter", AbstractFilter.FilterType.AdvancedKeyword.toString());
             humanAttrToJavaAttrMap.put("Advanced Regexp Filter", AbstractFilter.FilterType.Regexp.toString());
             humanAttrToJavaAttrMap.put("Include", AbstractFilter.FilterType.BoolTrue.toString());
