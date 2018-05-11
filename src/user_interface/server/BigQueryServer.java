@@ -489,7 +489,13 @@ public class BigQueryServer extends SimilarPatentServer {
     }
 
     public static void server() {
-        port(8081);
+        try {
+            port(8080);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Trying port 8081");
+            port(8081);
+        }
 
         // HOST ASSETS
         staticFiles.externalLocation(new File("public").getAbsolutePath());
