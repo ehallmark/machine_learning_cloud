@@ -171,8 +171,9 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
 
         if(isGrouped) { // handle two dimensional case (pivot)
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
-            final String groupAggName = groupedByAttrName+getGroupSuffix();
-            final String nestedGroupAggName = groupedByAttrName+NESTED_SUFFIX+getGroupSuffix();
+            final String groupBySuffix = getGroupSuffix();
+            final String groupAggName = getGroupByAttrName(attrName,groupedByAttrName,groupBySuffix);
+            final String nestedGroupAggName = getGroupByAttrName(attrName,groupedByAttrName,groupBySuffix);
             if (groupByAttribute == null) {
                 throw new RuntimeException("Unable to find collecting attribute: " + groupByAttribute.getFullName());
             }
@@ -313,7 +314,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
             int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, MAXIMUM_AGGREGATION_SIZE);
-            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(groupedByAttrName,groupLimit,combinedAttrAgg.getAggregation());
+            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(attrName,groupedByAttrName,groupLimit,combinedAttrAgg.getAggregation());
             return Collections.singletonList(
                     twoDimensionalAgg
             );

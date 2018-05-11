@@ -53,6 +53,10 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         return GROUP_SUFFIX+aggSuffix;
     }
 
+    public String getGroupByAttrName(String attrName, String groupByAttr, String suffix) {
+        return attrName + groupByAttr + suffix;
+    }
+
     protected List<Series<?>> createDataForAggregationChart(Options options, Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean drilldown) {
         List<Series<?>> data = new ArrayList<>();
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
@@ -61,7 +65,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         if(isGrouped) {
             PointSeries drilldownSeries = new PointSeries();
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
-            final String groupAggName = groupedByAttrName+getGroupSuffix();
+            final String groupAggName = getGroupByAttrName(attrName,groupedByAttrName,getGroupSuffix());
             if (groupByAttribute == null) {
                 throw new RuntimeException("Unable to find collecting attribute: " + groupByAttribute.getFullName());
             }
@@ -99,13 +103,13 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         return data;
     }
 
-    protected AbstractAggregation createGroupedAttribute(String groupedByAttrName, int groupLimit, AggregationBuilder innerAgg) {
+    protected AbstractAggregation createGroupedAttribute(String attrName, String groupedByAttrName, int groupLimit, AggregationBuilder innerAgg) {
         AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
         if(groupByAttribute==null) {
-            throw new RuntimeException("Unable to find collecting attribute: "+groupByAttribute.getFullName());
+            throw new RuntimeException("Unable to find grouping attribute attribute: "+groupedByAttrName);
         }
         String groupBySuffix = getGroupSuffix();
-        BucketAggregation groupAgg = AggregatePieChart.buildDistributionAggregation(this,groupByAttribute,groupByAttribute.getFullName(),groupBySuffix,groupLimit);
+        BucketAggregation groupAgg = AggregatePieChart.buildDistributionAggregation(this,groupByAttribute,attrName+groupByAttribute.getFullName(),groupBySuffix,groupLimit);
         return new AbstractAggregation() {
             @Override
             public AggregationBuilder getAggregation() {
@@ -244,7 +248,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
             int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, MAXIMUM_AGGREGATION_SIZE);
-            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(groupedByAttrName,groupLimit,aggregation.getAggregation());
+            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(attrName,groupedByAttrName,groupLimit,aggregation.getAggregation());
             return Collections.singletonList(
                     twoDimensionalAgg
             );
