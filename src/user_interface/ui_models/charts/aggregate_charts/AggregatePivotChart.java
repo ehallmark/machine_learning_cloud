@@ -301,7 +301,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         if(collectorType==null && collectByAttrName!=null) throw new RuntimeException("Please select collector type.");
         if(collectByAttrName==null && collectorType!=null && !collectorType.equals(Type.Count)) throw new RuntimeException("Please select collect by attribute name.");
 
-        BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName, aggSuffix);
+        BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName,null, aggSuffix);
         AbstractAttribute collectByAttribute = collectByAttrName==null?null:findAttribute(collectByAttributes,collectByAttrName);
         if(collectByAttribute==null) {
             System.out.println("Collect by attribute could not be found: "+collectByAttrName);
