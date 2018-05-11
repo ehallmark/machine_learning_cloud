@@ -103,10 +103,12 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
                         div().withClass("row").with(
                                 div().withClass("col-12").with(
                                         label("Drilldown").attr("title","Plot groups using drilldowns.").attr("style","float: right;").with(
+                                                br(),
                                                 input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDonutBoolField(attrName))).withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
                                         )
                                 ), div().withClass("col-12").with(
                                         label("Donut").attr("title","Plot groups using donut chart.").attr("style","float: right;").with(
+                                                br(),
                                                 input().withId(getDonutBoolField(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDrilldownAttrFieldName(attrName))).withName(getDonutBoolField(attrName)).withType("checkbox")
                                         )
                                 )
