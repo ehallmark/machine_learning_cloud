@@ -301,6 +301,10 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         if(collectorType==null && collectByAttrName!=null) throw new RuntimeException("Please select collector type.");
         if(collectByAttrName==null && collectorType!=null && !collectorType.equals(Type.Count)) throw new RuntimeException("Please select collect by attribute name.");
 
+        System.out.println("Collecting by attribute: "+collectByAttrName);
+        System.out.println("Collect by: "+collectorType);
+        System.out.println("Available collector attrs: "+String.join("; ",attrToCollectByAttrMap.keySet()));
+
         BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName,null, aggSuffix);
         AbstractAttribute collectByAttribute = collectByAttrName==null?null:findAttribute(collectByAttributes,collectByAttrName);
         if(collectByAttribute==null) {
