@@ -27,6 +27,7 @@ import user_interface.ui_models.charts.highcharts.PieChart;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;
+import java.time.temporal.TemporalAmount;
 import java.util.*;
 import java.util.function.Function;
 
@@ -155,10 +156,12 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             if(xMax==null) {
                 xMax = ((DateRangeAttribute)attribute).getMaxDate();
             }
+            final String dateFormat = ((DateRangeAttribute)attribute).dateFormatString();
+            final TemporalAmount temporalAmount = ((DateRangeAttribute)attribute).timeInterval();
             if (attribute instanceof AbstractScriptAttribute) {
-                aggregation = new DateHistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), xMin,xMax, null);
+                aggregation = new DateHistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), xMin,xMax,temporalAmount,dateFormat, null);
             } else {
-                aggregation = new DateHistogramAggregation(attrName + aggSuffix, attrName, null, xMin,xMax,null);
+                aggregation = new DateHistogramAggregation(attrName + aggSuffix, attrName, null, xMin,xMax,temporalAmount,dateFormat,null);
             }
         } else if(attribute instanceof DatasetAttribute) {
             System.out.println("Building filters aggregations (datasets) for: "+attrName);
