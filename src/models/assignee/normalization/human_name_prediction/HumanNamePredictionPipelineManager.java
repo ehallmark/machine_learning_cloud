@@ -102,8 +102,6 @@ public class HumanNamePredictionPipelineManager extends DefaultPipelineManager<D
 
     @Override
     public void rebuildPrerequisiteData() {
-        final boolean debug = true;
-
         // need list of companies
         // need list of applicants/inventors
         int limit = -1;

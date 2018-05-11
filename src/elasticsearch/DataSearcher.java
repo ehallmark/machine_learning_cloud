@@ -77,7 +77,7 @@ public class DataSearcher {
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
     private static final int PAGE_LIMIT = 10000;
-    private static final boolean debug = true;
+    private static final boolean debug = false;
     private static final Lock lock = new ReentrantLock();
 
     // TODO LEGACY: need to remove
