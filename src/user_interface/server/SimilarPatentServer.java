@@ -3045,7 +3045,7 @@ public class SimilarPatentServer {
                                 ),
                                 div().withClass("col-6 attributeElement").with(
                                         label("Result Limit").attr("style","width: 100%;").with(
-                                                br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                                br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         )
                                 )
                         )

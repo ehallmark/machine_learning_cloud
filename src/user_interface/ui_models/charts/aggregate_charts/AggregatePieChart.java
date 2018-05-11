@@ -92,25 +92,25 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
 
     private ContainerTag getAdditionalTagPerAttr(String attrName) {
         return div().withClass("row").with(
-                div().withClass("col-6").with(
+                div().withClass("col-5").with(
                         label("Max Slices").attr("title", "The maximum number of slices for this pie chart.").attr("style","width: 100%;").with(
                                 br(),
-                                input().withId(getMaxSlicesField(attrName)).withName(getMaxSlicesField(attrName)).attr("style","height: 28px;").withType("number").withClass("form-control").withValue("20")
+                                input().withId(getMaxSlicesField(attrName)).withName(getMaxSlicesField(attrName)).withType("number").withClass("form-control").withValue("20")
                         )
-                ), div().withClass("col-6").with(
+                ), div().withClass("col-7").with(
                         label("Drilldown").attr("title","Plot groups using drilldowns.").with(
                                 br(),
-                                input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").attr("onclick",toggleCheckbox(getDonutBoolField(attrName))).withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
+                                input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDonutBoolField(attrName))).withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
                         ), label("Donut").attr("title","Plot groups using donut chart.").with(
                                 br(),
-                                input().withId(getDonutBoolField(attrName)).withValue("off").attr("onclick",toggleCheckbox(getDrilldownAttrFieldName(attrName))).withName(getDonutBoolField(attrName)).withType("checkbox")
+                                input().withId(getDonutBoolField(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDrilldownAttrFieldName(attrName))).withName(getDonutBoolField(attrName)).withType("checkbox")
                         )
                 )
         );
     }
 
-    private static String toggleCheckbox(String otherId) {
-        return "$("+otherId+").prop('checked', ! $(this).prop('checked'));";
+    private static String cancelOtherCheckbox(String otherId) {
+        return "$('#"+otherId+"').prop('checked', false);";
     }
 
 

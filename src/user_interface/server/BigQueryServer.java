@@ -519,7 +519,7 @@ public class BigQueryServer extends SimilarPatentServer {
             return null;
         });
 
-        get("/logout", (req,res)->{
+        get(GLOBAL_PREFIX+"/logout", (req,res)->{
             req.session(true).attribute("authorized",false);
             req.session().removeAttribute("role");
             req.session().removeAttribute("username");
@@ -529,7 +529,7 @@ public class BigQueryServer extends SimilarPatentServer {
             return null;
         });
 
-        post("/change_dynamic_user_group", (req,res) -> {
+        post(GLOBAL_PREFIX+"/change_dynamic_user_group", (req,res) -> {
             authorize(req,res);
             String role = req.session().attribute("role");
             if(!(role.equals(INTERNAL_USER)||role.equals(SUPER_USER))) {
@@ -696,7 +696,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                             return option(userGroup).withValue(userGroup);
                                         }).collect(Collectors.toList())
                                 ),
-                                a("Or create a new user group.").withHref("/user_groups")
+                                a("Or create a new user group.").withHref(GLOBAL_PREFIX+"/user_groups")
                         ), br(), br(), button("Update User Group").withClass("btn btn-secondary")
                 );
             }
@@ -2401,7 +2401,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").with(authorized ? div().withText("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : div().withText("Not signed in.")),
                                                         div().withClass("col-12").with(authorized && showDynamicUserGroups ? span().with(
-                                                                form().withAction("/change_dynamic_user_group").withMethod("POST").with(
+                                                                form().withAction(GLOBAL_PREFIX+"/change_dynamic_user_group").withMethod("POST").with(
                                                                         label("Change User Group").with(
                                                                                 select().withClass("single-select2 form-control").attr("onchange","this.form.submit()").withName("userGroup").with(
                                                                                         option(dynamicUserGroup==null?userGroup:dynamicUserGroup).attr("selected","selected").withValue(dynamicUserGroup==null?userGroup:dynamicUserGroup)
@@ -2416,7 +2416,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                                                         )
                                                                 )
                                                         ) : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Sign Out").withHref("/logout") : a("Log In").withHref("/")),
+                                                        div().withClass("col-12").with(authorized ? a("Sign Out").withHref(GLOBAL_PREFIX+"/logout") : a("Log In").withHref(GLOBAL_PREFIX+"/")),
                                                         div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withHref(CREATE_USER_URL) : a("Contact Us").withHref("http://www.gttgrp.com")),
                                                         div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withHref(EDIT_USER_GROUP_URL) : span()),
                                                         div().withClass("col-12").with(authorized ? a("Change Password").withHref(EDIT_USER_URL) : span()),
@@ -2709,7 +2709,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                 ),
                                 div().withClass("col-6 attributeElement").with(
                                         label("Result Limit").attr("style","width: 100%;").with(
-                                                br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                                br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         )
                                 )
                         )

@@ -179,7 +179,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                         )
                 ),div().withClass("col-2").with(
                         label("Max Groups").attr("title", "The maximum number of groups to build charts for.").attr("style","width: 100%;").with(
-                                br(), input().withClass("form-control").withType("number").attr("style","height: 28px;").attr("min","0").withId(id+MAX_GROUP_FIELD).withName(id+MAX_GROUP_FIELD).withValue("10")
+                                br(), input().withClass("form-control").withType("number").attr("min","0").withId(id+MAX_GROUP_FIELD).withName(id+MAX_GROUP_FIELD).withValue("10")
                         )
                 ),div().withClass("col-2").with(
                         label("Include Blanks").attr("title","Whether or not blank groups or values should be included.").attr("style","width: 100%;").with(

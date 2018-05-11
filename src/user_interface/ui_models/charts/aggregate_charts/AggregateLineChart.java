@@ -109,11 +109,11 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
                 div().withClass("col-6").with(
                         label("Min Date").attr("style","width: 100%;").with(
                                 br(),
-                                input().withId(minAttrName).attr("style","height: 28px;").withName(minAttrName).withType("text").withClass("datepicker form-control")
+                                input().withId(minAttrName).withName(minAttrName).withType("text").withClass("datepicker form-control")
                         )
                 ), div().withClass("col-6").with(
                         label("Max Date").attr("style","width: 100%;").with(
-                                br(),input().withId(maxAttrName).attr("style","height: 28px;").withName(maxAttrName).withType("text").withClass("datepicker form-control")
+                                br(),input().withId(maxAttrName).withName(maxAttrName).withType("text").withClass("datepicker form-control")
                         )
                 )
         );
