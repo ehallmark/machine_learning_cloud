@@ -1,6 +1,7 @@
 package seeding.google.elasticsearch.attributes;
 
 import org.elasticsearch.script.Script;
+import org.elasticsearch.script.ScriptType;
 import seeding.Constants;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -22,7 +23,7 @@ public class Score extends AbstractScriptAttribute implements ConvenienceAttribu
 
     @Override
     public Script getScript(boolean requireParams, boolean idOnly) {
-        return new Script("(_score==null) ? 0.0 : _score");
+        return new Script(ScriptType.INLINE,"expression","(_score==null) ? 0.0 : _score",Collections.emptyMap());
     }
 
     @Override
