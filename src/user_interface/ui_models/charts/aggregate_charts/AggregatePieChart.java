@@ -102,12 +102,12 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
                 ), div().withClass("col-6").with(
                         div().withClass("row").with(
                                 div().withClass("col-12").with(
-                                        label("Drilldown").attr("title","Plot groups using drilldowns.").attr("style","float: right;").with(
+                                        label("Drilldown").attr("title","Plot groups using drilldowns.").with(
                                                 br(),
                                                 input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDonutBoolField(attrName))).withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
                                         )
                                 ), div().withClass("col-12").with(
-                                        label("Donut").attr("title","Plot groups using donut chart.").attr("style","float: right;").with(
+                                        label("Donut").attr("title","Plot groups using donut chart.").with(
                                                 br(),
                                                 input().withId(getDonutBoolField(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDrilldownAttrFieldName(attrName))).withName(getDonutBoolField(attrName)).withType("checkbox")
                                         )
@@ -171,8 +171,9 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         } else if(attribute instanceof DatasetAttribute) {
             System.out.println("Building filters aggregations (datasets) for: "+attrName);
             List<Pair<String, Set<String>>> dataSets = ((DatasetAttribute) attribute).getCurrentDatasets();
+            final String _attrName = attrName;
             QueryBuilder[] queryBuilders = dataSets.stream().map(dataset -> {
-                return QueryBuilders.termsLookupQuery(attrName, new TermsLookup(((DatasetAttribute) attribute).getTermsIndex(), ((DatasetAttribute) attribute).getTermsType(), dataset.getFirst(), ((DatasetAttribute) attribute).getTermsPath()));
+                return QueryBuilders.termsLookupQuery(_attrName, new TermsLookup(((DatasetAttribute) attribute).getTermsIndex(), ((DatasetAttribute) attribute).getTermsType(), dataset.getFirst(), ((DatasetAttribute) attribute).getTermsPath()));
             }).toArray(size -> new QueryBuilder[size]);
             aggregation = new FiltersAggregation(aggNameWithPrefix + aggSuffix, false, null, queryBuilders);
         } else if (attribute instanceof RangeAttribute) {
@@ -185,6 +186,9 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             }
         } else if (attribute instanceof SignificantTermsAttribute) {
             System.out.println("Using significant terms bucketing for attr: "+attrName);
+            if(attribute.getNestedFields()!=null) {
+                attrName = attrName+".raw";
+            }
             aggregation = new SignificantTermsAggregation(aggNameWithPrefix + aggSuffix, attrName, null, missingVal, maxSize);
 
         } else {
