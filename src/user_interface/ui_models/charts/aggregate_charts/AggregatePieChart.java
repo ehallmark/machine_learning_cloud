@@ -123,11 +123,11 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         return "pie";
     }
 
-    public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggSuffix) {
-        return buildDistributionAggregation(chart, attribute,attrName,aggSuffix,MAXIMUM_AGGREGATION_SIZE);
+    public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggPrefix, String aggSuffix) {
+        return buildDistributionAggregation(chart, attribute,attrName,aggSuffix,aggSuffix,MAXIMUM_AGGREGATION_SIZE);
     }
 
-    public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggSuffix, int maxSize) {
+    public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggPrefix, String aggSuffix, int maxSize) {
         System.out.println("Building distribution agg for: "+attribute.getFullName()+" with suffix "+aggSuffix);
         boolean isNested = attribute.getParent()!=null&&(!(attribute.getParent() instanceof AbstractChartAttribute))&&(!attribute.getParent().isObject());
         final Object missingVal;
@@ -137,6 +137,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             missingVal = null;
         }
 
+        final String aggNameWithPrefix = (aggPrefix==null?"":aggPrefix)+attrName;
         BucketAggregation aggregation;
         if(attribute.getFieldType().equals(AbstractFilter.FieldType.Date)) {
             System.out.println("Building datehistogram for: "+attrName);
@@ -159,9 +160,9 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             final String dateFormat = ((DateRangeAttribute)attribute).dateFormatString();
             final TemporalAmount temporalAmount = ((DateRangeAttribute)attribute).timeInterval();
             if (attribute instanceof AbstractScriptAttribute) {
-                aggregation = new DateHistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), xMin,xMax,temporalAmount,dateFormat, null);
+                aggregation = new DateHistogramAggregation(aggNameWithPrefix + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), xMin,xMax,temporalAmount,dateFormat, null);
             } else {
-                aggregation = new DateHistogramAggregation(attrName + aggSuffix, attrName, null, xMin,xMax,temporalAmount,dateFormat,null);
+                aggregation = new DateHistogramAggregation(aggNameWithPrefix + aggSuffix, attrName, null, xMin,xMax,temporalAmount,dateFormat,null);
             }
         } else if(attribute instanceof DatasetAttribute) {
             System.out.println("Building filters aggregations (datasets) for: "+attrName);
@@ -169,28 +170,28 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             QueryBuilder[] queryBuilders = dataSets.stream().map(dataset -> {
                 return QueryBuilders.termsLookupQuery(attrName, new TermsLookup(((DatasetAttribute) attribute).getTermsIndex(), ((DatasetAttribute) attribute).getTermsType(), dataset.getFirst(), ((DatasetAttribute) attribute).getTermsPath()));
             }).toArray(size -> new QueryBuilder[size]);
-            aggregation = new FiltersAggregation(attrName + aggSuffix, false, null, queryBuilders);
+            aggregation = new FiltersAggregation(aggNameWithPrefix + aggSuffix, false, null, queryBuilders);
         } else if (attribute instanceof RangeAttribute) {
             System.out.println("Building range for: " + attrName);
             RangeAttribute rangeAttribute = (RangeAttribute) attribute;
             if (attribute instanceof AbstractScriptAttribute) {
-                aggregation = new HistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), rangeAttribute.getRanges(), rangeAttribute.missing());
+                aggregation = new HistogramAggregation(aggNameWithPrefix + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), rangeAttribute.getRanges(), rangeAttribute.missing());
             } else {
-                aggregation = new HistogramAggregation(attrName + aggSuffix, attrName, null, rangeAttribute.getRanges(), rangeAttribute.missing());
+                aggregation = new HistogramAggregation(aggNameWithPrefix + aggSuffix, attrName, null, rangeAttribute.getRanges(), rangeAttribute.missing());
             }
         } else if (attribute instanceof SignificantTermsAttribute) {
             System.out.println("Using significant terms bucketing for attr: "+attrName);
-            aggregation = new SignificantTermsAggregation(attrName + aggSuffix, attrName, null, missingVal, maxSize);
+            aggregation = new SignificantTermsAggregation(aggNameWithPrefix + aggSuffix, attrName, null, missingVal, maxSize);
 
         } else {
             if (attribute instanceof AbstractScriptAttribute) {
-                aggregation = new TermsAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), missingVal, maxSize);
+                aggregation = new TermsAggregation(aggNameWithPrefix + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), missingVal, maxSize);
             } else {
                 String fieldName = attrName;
                 if (attribute.getType().equals("text") && attribute.getNestedFields() != null) {
                     fieldName += ".raw";
                 }
-                aggregation = new TermsAggregation(attrName + aggSuffix, fieldName, null, missingVal, maxSize);
+                aggregation = new TermsAggregation(aggNameWithPrefix + aggSuffix, fieldName, null, missingVal, maxSize);
             }
         }
         if(isNested) {
@@ -201,7 +202,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             return new BucketAggregation() {
                 @Override
                 public AggregationBuilder getAggregation() {
-                    return new NestedAggregationBuilder(attrName+NESTED_SUFFIX+aggSuffix,attribute.getParent().getName())
+                    return new NestedAggregationBuilder(aggNameWithPrefix+NESTED_SUFFIX+aggSuffix,attribute.getParent().getName())
                             .subAggregation(aggregation.getAggregation());
                 }
             };

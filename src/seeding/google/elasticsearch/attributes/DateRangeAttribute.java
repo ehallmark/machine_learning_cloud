@@ -1,9 +1,7 @@
 package seeding.google.elasticsearch.attributes;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 
 public interface DateRangeAttribute {
