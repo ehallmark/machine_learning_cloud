@@ -98,12 +98,18 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
                                 input().withId(getMaxSlicesField(attrName)).withName(getMaxSlicesField(attrName)).withType("number").withClass("form-control").withValue("20")
                         )
                 ), div().withClass("col-7").with(
-                        label("Drilldown").attr("title","Plot groups using drilldowns.").with(
-                                br(),
-                                input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDonutBoolField(attrName))).withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
-                        ), label("Donut").attr("title","Plot groups using donut chart.").with(
-                                br(),
-                                input().withId(getDonutBoolField(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDrilldownAttrFieldName(attrName))).withName(getDonutBoolField(attrName)).withType("checkbox")
+                        div().withClass("row").with(
+                                div().withClass("col-6").with(
+                                        label("Drilldown").attr("title","Plot groups using drilldowns.").attr("style","float: left;").with(
+                                                br(),
+                                                input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDonutBoolField(attrName))).withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
+                                        )
+                                ), div().withClass("col-6").with(
+                                        label("Donut").attr("title","Plot groups using donut chart.").attr("style","float: right;").with(
+                                                br(),
+                                                input().withId(getDonutBoolField(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDrilldownAttrFieldName(attrName))).withName(getDonutBoolField(attrName)).withType("checkbox")
+                                        )
+                                )
                         )
                 )
         );
