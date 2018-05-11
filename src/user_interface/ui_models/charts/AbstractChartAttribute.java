@@ -29,7 +29,6 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     public static final String PLOT_GROUPS_ON_SAME_CHART_FIELD = "plotGroupsSameChart";
     public static final String MAX_GROUP_FIELD = "maxGroupSizeField";
     public static final String INCLUDE_BLANK_FIELD = "includeBlanks";
-    public static final String SIGNIFICANT_TERMS_LABEL = "Significant Terms";
     protected static final Function2<ContainerTag,ContainerTag,ContainerTag> DEFAULT_COMBINE_BY_FUNCTION = (tag1,tag2) -> {
         return div().with(tag1,tag2);
     };
@@ -81,11 +80,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         }
     }
 
-    protected String getGroupByChartFieldName(String attrName) {
-        return (getName().replace("[","").replace("]","")+SimilarPatentServer.CHARTS_GROUPED_BY_FIELD+(attrName==null?"":attrName)).replace(".","");
-    }
-
-    protected String idFromName(String attrName) {
+    private String idFromName(String attrName) {
         if(attrName==null) return "";
         return attrName.replace(getName().replace("[", "").replace("]", "") + ".", "").replace(".", "");
     }
@@ -96,11 +91,22 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     }
 
     private ContainerTag getPlotGroupsTogetherTag(String attrName) {
-        attrName = getGroupByChartFieldName(idFromName(attrName));
+        attrName = getGroupByChartFieldName(attrName);
         return div().withClass("row").with(
                 div().withClass("col-12").with(
                         label("Plot Groups Together").attr("title","Plot groups together on the same chart.").with(
                                 input().attr("style","float: left;").withValue("off").withId(attrName+ PLOT_GROUPS_ON_SAME_CHART_FIELD).withName(attrName+PLOT_GROUPS_ON_SAME_CHART_FIELD).withType("checkbox")
+                        )
+                )
+        );
+    }
+
+    private ContainerTag getDrillDownTag(String attrName) {
+        attrName = getDrilldownAttrFieldName(attrName);
+        return div().withClass("row").with(
+                div().withClass("col-12").with(
+                        label("Drilldown").attr("title","Plot groups using drilldowns.").with(
+                                input().attr("style","float: left;").withValue("off").withId(attrName).withName(attrName).withType("checkbox")
                         )
                 )
         );
@@ -127,7 +133,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             }
             if(groupByPerAttribute) {
                 Function<String, List<String>> groupedByInputIdsFunction = attrName -> {
-                    String groupById = getGroupByChartFieldName(idFromName(attrName));
+                    String groupById = getGroupByChartFieldName(attrName);
                     String groupByMaxLimit = groupById + MAX_GROUP_FIELD;
                     String groupByIncludeBlanks = groupById + INCLUDE_BLANK_FIELD;
                     return Arrays.asList(groupById, groupByMaxLimit, groupByIncludeBlanks);
@@ -142,7 +148,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                     newAdditionalIdsFunction = attrName->{
                         return Stream.of(
                                 _newAdditionalIdsFunction.apply(attrName),
-                                Collections.singletonList(getGroupByChartFieldName(idFromName(attrName)) + PLOT_GROUPS_ON_SAME_CHART_FIELD)
+                                Collections.singletonList(getGroupByChartFieldName(attrName) + PLOT_GROUPS_ON_SAME_CHART_FIELD)
                         ).flatMap(list -> list.stream()).collect(Collectors.toList());
                     };
                 } else {
@@ -160,7 +166,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     }
 
     protected ContainerTag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
-        String id = getGroupByChartFieldName(idFromName(attrName));
+        String id = getGroupByChartFieldName(attrName);
         List<AbstractAttribute> availableGroups = groupByAttributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
         Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
@@ -255,16 +261,46 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     }
 
     protected String getCollectByAttrFieldName(String attrName) {
-        return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_BY_ATTR_FIELD+(attrName==null?"":attrName)).replace(".","").replace("[]","");
+        return handleAttrName(attrName, SimilarPatentServer.COLLECT_BY_ATTR_FIELD);
     }
 
     protected String getCollectTypeFieldName(String attrName) {
-        return (getName().replace("[","").replace("]","")+SimilarPatentServer.COLLECT_TYPE_FIELD+(attrName==null?"":attrName)).replace(".","").replace("[]","");
+        return handleAttrName(attrName, SimilarPatentServer.COLLECT_TYPE_FIELD);
     }
 
+
     protected String getDrilldownAttrFieldName(String attrName) {
-        return (getName().replace("[","").replace("]","")+SimilarPatentServer.DRILLDOWN_BOOL_FIELD+(attrName==null?"":attrName)).replace(".","").replace("[]","");
+        return handleAttrName(attrName, SimilarPatentServer.DRILLDOWN_BOOL_FIELD);
     }
+
+    protected String getMaxSlicesField(String attrName) {
+        return handleAttrName(attrName, SimilarPatentServer.MAX_SLICES_FIELD);
+    }
+
+    protected String getDonutBoolField(String attrName) {
+        return handleAttrName(attrName, SimilarPatentServer.DONUT_BOOL_FIELD);
+    }
+
+
+    protected String getGroupByChartFieldName(String attrName) {
+        return handleAttrName(attrName, SimilarPatentServer.CHARTS_GROUPED_BY_FIELD);
+    }
+
+    protected String getChartMinByName(String attrName) {
+        return handleAttrName(attrName, SimilarPatentServer.LINE_CHART_MIN);
+    }
+
+
+    protected String getChartMaxByName(String attrName) {
+        return handleAttrName(attrName, SimilarPatentServer.LINE_CHART_MAX);
+    }
+
+
+    private String handleAttrName(String attrName, String field) {
+        attrName = idFromName(attrName);
+        return (getName().replace("[","").replace("]","")+ field +(attrName==null?"":attrName)).replace(".","").replace("[]","");
+    }
+
 
     @Override
     public AbstractFilter.FieldType getFieldType() { throw new UnsupportedOperationException("fieldType not defined for charts.");}

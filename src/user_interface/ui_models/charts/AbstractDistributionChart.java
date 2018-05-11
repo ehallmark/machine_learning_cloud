@@ -57,12 +57,12 @@ public class AbstractDistributionChart extends ChartAttribute {
     }
 
     private ContainerTag getAdditionalTagPerAttr(String attrName) {
-        attrName = idFromName(attrName);
+        attrName = getMaxSlicesField(attrName);
         return div().withClass("row").with(
                 div().withClass("col-12").with(
                         label("Max Slices").attr("title", "The maximum number of slices for this pie chart.").attr("style","width: 100%;").with(
                                 br(),
-                                input().withId(attrName+MAX_SLICES).attr("style","height: 28px;").withName(attrName+MAX_SLICES).withType("number").withClass("form-control").withValue("20")
+                                input().withId(attrName).attr("style","height: 28px;").withName(attrName).withType("number").withClass("form-control").withValue("20")
                         )
                 )
         );
@@ -71,7 +71,7 @@ public class AbstractDistributionChart extends ChartAttribute {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
-        Function<String,List<String>> additionalInputIdsFunction = attrName -> Collections.singletonList(idFromName(attrName)+MAX_SLICES);
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Collections.singletonList(getMaxSlicesField(attrName));
         Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
                 div().withClass("col-10").with(
                         tag1

@@ -33,11 +33,13 @@ import static j2html.TagCreator.*;
 
 public class AggregatePieChart extends AggregationChart<PieChart> {
     private static final String AGG_SUFFIX = "_pie";
-    private static final String MAX_SLICES = "maxSlices";
+
     protected Map<String,Integer> attrToLimitMap;
+    protected Map<String,Boolean> attrToDonutMap;
     public AggregatePieChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
         super(false,"Distribution",AGG_SUFFIX, attributes, groupByAttrs, Constants.PIE_CHART, false);
         this.attrToLimitMap=Collections.synchronizedMap(new HashMap<>());
+        this.attrToDonutMap=Collections.synchronizedMap(new HashMap<>());
     }
 
     @Override
@@ -50,8 +52,10 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         super.extractRelevantInformationFromParams(params);
         if(this.attrNames!=null) {
             this.attrNames.forEach(attr -> {
-                Integer limit = SimilarPatentServer.extractInt(params, attr.replace(".","")+MAX_SLICES, null);
+                Integer limit = SimilarPatentServer.extractInt(params, getMaxSlicesField(attr), null);
                 if(limit!=null) attrToLimitMap.put(attr,limit);
+                boolean donut = SimilarPatentServer.extractBool(params, getDonutBoolField(attr));
+                attrToDonutMap.put(attr,donut);
             });
         }
     }
@@ -75,11 +79,11 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
-        Function<String,List<String>> additionalInputIdsFunction = attrName -> Collections.singletonList(idFromName(attrName)+MAX_SLICES);
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getDonutBoolField(attrName),getMaxSlicesField(attrName));
         Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
-                div().withClass("col-10").with(
+                div().withClass("col-9").with(
                         tag1
-                ),div().withClass("col-2").with(
+                ),div().withClass("col-3").with(
                         tag2
                 )
         );
@@ -87,15 +91,26 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     }
 
     private ContainerTag getAdditionalTagPerAttr(String attrName) {
-        attrName = idFromName(attrName);
         return div().withClass("row").with(
-                div().withClass("col-12").with(
+                div().withClass("col-6").with(
                         label("Max Slices").attr("title", "The maximum number of slices for this pie chart.").attr("style","width: 100%;").with(
                                 br(),
-                                input().withId(attrName+MAX_SLICES).attr("style","height: 28px;").withName(attrName+MAX_SLICES).withType("number").withClass("form-control").withValue("20")
+                                input().withId(getMaxSlicesField(attrName)).withName(getMaxSlicesField(attrName)).attr("style","height: 28px;").withType("number").withClass("form-control").withValue("20")
+                        )
+                ), div().withClass("col-6").with(
+                        label("Drilldown").attr("title","Plot groups using drilldowns.").with(
+                                br(),
+                                input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").attr("onclick",toggleCheckbox(getDonutBoolField(attrName))).withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
+                        ), label("Donut").attr("title","Plot groups using donut chart.").with(
+                                br(),
+                                input().withId(getDonutBoolField(attrName)).withValue("off").attr("onclick",toggleCheckbox(getDrilldownAttrFieldName(attrName))).withName(getDonutBoolField(attrName)).withType("checkbox")
                         )
                 )
         );
+    }
+
+    private static String toggleCheckbox(String otherId) {
+        return "$("+otherId+").prop('checked', ! $(this).prop('checked'));";
     }
 
 

@@ -97,22 +97,23 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
-        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(idFromName(attrName)+SimilarPatentServer.LINE_CHART_MIN,idFromName(attrName)+SimilarPatentServer.LINE_CHART_MAX);
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getChartMinByName(attrName),getChartMaxByName(attrName));
         return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,(tag1,tag2)->div().with(tag1,tag2),true);
     }
 
 
     private ContainerTag getAdditionalTagPerAttr(String attrName) {
-        attrName = idFromName(attrName);
+        final String minAttrName = getChartMinByName(attrName);
+        final String maxAttrName = getChartMaxByName(attrName);
         return div().withClass("row").with(
                 div().withClass("col-6").with(
                         label("Min Date").attr("style","width: 100%;").with(
                                 br(),
-                                input().withId(attrName+SimilarPatentServer.LINE_CHART_MIN).attr("style","height: 28px;").withName(attrName+SimilarPatentServer.LINE_CHART_MIN).withType("text").withClass("datepicker form-control")
+                                input().withId(minAttrName).attr("style","height: 28px;").withName(minAttrName).withType("text").withClass("datepicker form-control")
                         )
                 ), div().withClass("col-6").with(
                         label("Max Date").attr("style","width: 100%;").with(
-                                br(),input().withId(attrName+SimilarPatentServer.LINE_CHART_MAX).attr("style","height: 28px;").withName(attrName+SimilarPatentServer.LINE_CHART_MAX).withType("text").withClass("datepicker form-control")
+                                br(),input().withId(maxAttrName).attr("style","height: 28px;").withName(maxAttrName).withType("text").withClass("datepicker form-control")
                         )
                 )
         );

@@ -33,4 +33,14 @@ public abstract class IntegerAttribute extends AbstractAttribute implements Rang
                 new Pair<>(1000, null)
         );
     }
+
+    @Override
+    public String valueSuffix() {
+        return "";
+    }
+
+    @Override
+    public Object missing() {
+        return null;
+    }
 }
