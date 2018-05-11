@@ -6,7 +6,6 @@ import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttri
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
@@ -23,7 +22,7 @@ public class Score extends AbstractScriptAttribute implements ConvenienceAttribu
 
     @Override
     public Script getScript(boolean requireParams, boolean idOnly) {
-        return new Script("_score");
+        return new Script("_score==null?0:_score");
     }
 
     @Override
