@@ -66,13 +66,11 @@
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>tesseract</artifactId>
             <version>3.04.01-1.2</version>
-            <classifier>${os.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>org.bytedeco.javacpp-presets</groupId>
             <artifactId>leptonica</artifactId>
             <version>1.73-1.2</version>
-            <classifier>${os.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
