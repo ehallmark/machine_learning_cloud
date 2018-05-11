@@ -6,7 +6,7 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.lept;
-import org.bytedeco.javacpp.tesseract;
+//import org.bytedeco.javacpp.tesseract;
 
 import javax.imageio.ImageIO;
 import java.io.BufferedWriter;
@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class TesseractAPI {
-
+/*
    public static void main(String[] args) throws Exception {
        System.setProperty("sun.java2d.cmm", "sun.java2d.cmm.kcms.KcmsServiceProvider"); // Do anything?
        long t0 = System.currentTimeMillis();
@@ -98,5 +98,5 @@ public class TesseractAPI {
         long t2 = System.currentTimeMillis();
 
         System.out.println("Time to complete: "+((t2-t0)/1000)+" seconds.");
-    }
+    }*/
 }
