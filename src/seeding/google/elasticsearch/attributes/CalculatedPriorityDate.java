@@ -6,6 +6,7 @@ import seeding.google.elasticsearch.Attributes;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -13,7 +14,7 @@ import java.util.Map;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class CalculatedPriorityDate extends AbstractScriptAttribute implements ConvenienceAttribute {
+public class CalculatedPriorityDate extends AbstractScriptAttribute implements ConvenienceAttribute, DateRangeAttribute {
     public CalculatedPriorityDate() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }
@@ -43,4 +44,5 @@ public class CalculatedPriorityDate extends AbstractScriptAttribute implements C
         if(idOnly) return new Script(ScriptType.STORED,"expression",getFullName(),getParams());
         return new Script(ScriptType.INLINE, "expression", getCalculatedPriorityDateField(), getParams());
     }
+
 }

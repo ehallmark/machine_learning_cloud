@@ -4,23 +4,27 @@ import lombok.Getter;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
-import org.elasticsearch.search.aggregations.bucket.histogram.ExtendedBounds;
+import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeAggregationBuilder;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
 public class DateHistogramAggregation extends BucketAggregation {
     @Getter
     protected AggregationBuilder aggregation;
     public DateHistogramAggregation(String name, String field, Script script, LocalDate xMin, LocalDate xMax, Object missingVal) {
-        DateHistogramAggregationBuilder _builder = AggregationBuilders.dateHistogram(name);
+        DateRangeAggregationBuilder _builder = AggregationBuilders.dateRange(name).format("yyyy");
         if(field!=null) _builder=_builder.field(field);
         if(script!=null) _builder=_builder.script(script);
         if(missingVal!=null) _builder = _builder.missing(missingVal);
-        if(xMax!=null&&xMin!=null) _builder = _builder.extendedBounds(new ExtendedBounds(dateToLong(xMin),dateToLong(xMax)));
-        aggregation = _builder.dateHistogramInterval(DateHistogramInterval.YEAR).format("yyyy");
+        LocalDate date = xMin;
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_DATE;
+        while(date.isBefore(xMax)) {
+            _builder.addRange(date.format(dateFormatter),date.plusYears(1).format(dateFormatter));
+            date = date.plusYears(1);
+        }
+        aggregation = _builder;
     }
 
     private static long dateToLong(LocalDate date) {

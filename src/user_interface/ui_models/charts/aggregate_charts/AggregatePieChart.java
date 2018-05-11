@@ -13,6 +13,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import seeding.google.elasticsearch.attributes.DateRangeAttribute;
 import seeding.google.elasticsearch.attributes.SignificantTermsAttribute;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
@@ -92,21 +93,17 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
 
     private ContainerTag getAdditionalTagPerAttr(String attrName) {
         return div().withClass("row").with(
-                div().withClass("col-5").with(
+                div().withClass("col-6").with(
                         label("Max Slices").attr("title", "The maximum number of slices for this pie chart.").attr("style","width: 100%;").with(
                                 br(),
                                 input().withId(getMaxSlicesField(attrName)).withName(getMaxSlicesField(attrName)).withType("number").withClass("form-control").withValue("20")
                         )
-                ), div().withClass("col-7").with(
+                ), div().withClass("col-6").with(
                         div().withClass("row").with(
-                                div().withClass("col-6").with(
-                                        label("Drilldown").attr("title","Plot groups using drilldowns.").attr("style","float: left;").with(
-                                                br(),
+                                div().withClass("col-12").with(
+                                        label("Drilldown").attr("title","Plot groups using drilldowns.").attr("style","float: right;").with(
                                                 input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDonutBoolField(attrName))).withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
-                                        )
-                                ), div().withClass("col-6").with(
-                                        label("Donut").attr("title","Plot groups using donut chart.").attr("style","float: right;").with(
-                                                br(),
+                                        ), br(), label("Donut").attr("title","Plot groups using donut chart.").attr("style","float: right;").with(
                                                 input().withId(getDonutBoolField(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDrilldownAttrFieldName(attrName))).withName(getDonutBoolField(attrName)).withType("checkbox")
                                         )
                                 )
@@ -147,6 +144,16 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             if(attribute instanceof AggregateLineChart) {
                 xMin = ((AggregateLineChart) chart).getMin(attrName);
                 xMax = ((AggregateLineChart) chart).getMax(attrName);
+            }
+            // override xMin and xMax if null
+            if(!(attribute instanceof DateRangeAttribute)) {
+                throw new RuntimeException("Attribute "+attribute.getFullName()+" is not a DateRangeAttribute.");
+            }
+            if(xMin==null) {
+                xMin = ((DateRangeAttribute)attribute).getMinDate();
+            }
+            if(xMax==null) {
+                xMax = ((DateRangeAttribute)attribute).getMaxDate();
             }
             if (attribute instanceof AbstractScriptAttribute) {
                 aggregation = new DateHistogramAggregation(attrName + aggSuffix, null, ((AbstractScriptAttribute) attribute).getSortScript(), xMin,xMax, null);
