@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  curl -XPUT 'localhost:9200/big_query/_settings?pretty' -H 'Content-Type: application/json' -d'
  {
      "index" : {
-         "refresh_interval" : "60"
+         "refresh_interval" : "60s"
      }
  }'
 
