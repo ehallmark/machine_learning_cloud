@@ -1937,7 +1937,6 @@ public class BigQueryServer extends SimilarPatentServer {
                     engine.extractRelevantInformationFromParams(req);
                     final PortfolioList portfolioList = engine.getPortfolioList();
                     final Aggregations aggregations = engine.getAggregations();
-                    System.out.println("Found aggregations: "+aggregations.asList().size());
                     final long totalCount = engine.getTotalCount();
 
                     if(Thread.currentThread().isInterrupted()) return null;
@@ -2048,6 +2047,9 @@ public class BigQueryServer extends SimilarPatentServer {
                         AtomicInteger totalTableCnt = new AtomicInteger(0);
                         List<String> chartTypes = new ArrayList<>();
                         List<TableResponse> tableResponses = new ArrayList<>();
+                        if(abstractCharts.size()>0 && aggregations==null) {
+                            System.out.println("WARNING:: Building charts but no aggregations were found!");
+                        }
                         abstractCharts.forEach(chart -> {
                             boolean isTable = chart.isTable();
                             for (int i = 0; i < chart.getAttrNames().size(); i++) {
