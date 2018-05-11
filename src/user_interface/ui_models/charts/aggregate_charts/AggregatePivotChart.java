@@ -79,10 +79,10 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         super.extractRelevantInformationFromParams(params);
         if(this.attrNames!=null) {
             this.attrNames.forEach(attr -> {
-                System.out.println("Looking for field: "+attr+" -> "+getCollectByAttrFieldName(getName()+attr));
-                String collectByName = SimilarPatentServer.extractString(params, getCollectByAttrFieldName(getName()+attr), null);
+                System.out.println("Looking for field: "+attr+" -> "+getCollectByAttrFieldName(attr));
+                String collectByName = SimilarPatentServer.extractString(params, getCollectByAttrFieldName(attr), null);
                 if(collectByName!=null) attrToCollectByAttrMap.put(attr,collectByName);
-                String collectByType = SimilarPatentServer.extractString(params, getCollectTypeFieldName(getName()+attr), Type.Count.toString());
+                String collectByType = SimilarPatentServer.extractString(params, getCollectTypeFieldName(attr), Type.Count.toString());
                 if(collectByType==null) collectByType = Type.Count.toString();
                 System.out.println("Found type: "+collectByType);
                 attrToCollectTypeMap.put(attr,Type.valueOf(collectByType));
