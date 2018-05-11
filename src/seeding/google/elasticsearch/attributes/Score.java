@@ -22,7 +22,7 @@ public class Score extends AbstractScriptAttribute implements ConvenienceAttribu
 
     @Override
     public Script getScript(boolean requireParams, boolean idOnly) {
-        return new Script("_score==null?0:_score");
+        return new Script("(_score==null) ? 0.0 : _score");
     }
 
     @Override
