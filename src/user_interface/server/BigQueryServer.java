@@ -301,6 +301,7 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Number of Maintenance Events", Attributes.MAINTENANCE_EVENT_COUNT);
             humanAttrToJavaAttrMap.put("Number of Latest Assignees", Attributes.LATEST_ASSIGNEE_COUNT);
             humanAttrToJavaAttrMap.put("Number of Latest Assignees (by Family)", Attributes.LATEST_FAM_ASSIGNEE_COUNT);
+            humanAttrToJavaAttrMap.put("Pivot Table", Constants.PIVOT_FUNCTION_TABLE_CHART);
 
             buildJavaToHumanAttrMap();
 
@@ -329,7 +330,7 @@ public class BigQueryServer extends SimilarPatentServer {
         List<AbstractAttribute> discreteAndNumeric = new ArrayList<>();
         discreteAndNumeric.addAll(duplicateAttributes(numericAttrs));
         discreteAndNumeric.addAll(duplicateAttributes(discreteAttrs));
-        chartModelMap.put(Constants.GROUPED_FUNCTION_TABLE_CHART, new AggregatePivotChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),discreteAndNumeric));
+        chartModelMap.put(Constants.PIVOT_FUNCTION_TABLE_CHART, new AggregatePivotChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),discreteAndNumeric));
 
         allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
             @Override
