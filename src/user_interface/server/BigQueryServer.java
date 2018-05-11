@@ -489,12 +489,12 @@ public class BigQueryServer extends SimilarPatentServer {
     }
 
     public static void server() {
-        try {
-            port(8080);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Trying port 8081");
+        if(GLOBAL_PREFIX.equals("/global")) {
+            System.out.println("Using port 8081");
             port(8081);
+        } else {
+            System.out.println("Using port 8080");
+            port(8080);
         }
 
         // HOST ASSETS
@@ -973,6 +973,23 @@ public class BigQueryServer extends SimilarPatentServer {
         post(SHOW_CHART_URL, (req, res) -> {
             authorize(req,res);
             return handleCharts(req,res);
+        });
+
+        get(GLOBAL_PREFIX+"/", (req, res)->{
+            try {
+                return templateWrapper(passwordHandler, false, req, res, form().withClass("form-group").withMethod("POST").withAction("/login").attr("style", "margin-top: 100px;").with(
+                        p("Log in"),
+                        label("Username").with(
+                                input().withType("text").withClass("form-control").withName("username")
+                        ), br(), br(), label("Password").with(
+                                input().withType("password").withClass("form-control").withName("password")
+                        ), br(), br(), button("Login").withType("submit").withClass("btn btn-secondary")
+                ), false);
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println("During /");
+                return null;
+            }
         });
 
         // Host my own image asset!
