@@ -27,11 +27,11 @@ $(document).ready(function() {
          e.preventDefault();
 
          var resultLimit = $('#main-options-limit').val();
-         if(resultLimit) {
+         /*if(resultLimit) {
             if(resultLimit > 10000) {
                 alert("Search for more than 10000 results may degrade performance.");
             }
-         }
+         }*/
 
          var $form = $('#'+formId);
          var $button = $('.'+buttonClass);
