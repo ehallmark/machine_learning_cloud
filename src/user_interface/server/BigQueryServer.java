@@ -77,7 +77,7 @@ public class BigQueryServer extends SimilarPatentServer {
     private static final boolean TEST = false;
     private static final boolean debug = false;
     private static final Map<String,Lock> fileSynchronizationMap = Collections.synchronizedMap(new HashMap<>());
-    private static final String GLOBAL_PREFIX = "/_global";
+    private static final String GLOBAL_PREFIX = "";// "/_global";
     private static final String PROTECTED_URL_PREFIX = GLOBAL_PREFIX+"/secure";
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = PROTECTED_URL_PREFIX+"/patent_recommendation_engine";
