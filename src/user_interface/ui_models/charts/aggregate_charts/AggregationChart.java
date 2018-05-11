@@ -61,8 +61,6 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         List<Series<?>> data = new ArrayList<>();
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         final boolean isGrouped = groupedByAttrName!=null;
-        System.out.println("Group by attrname for "+attrName+": "+groupedByAttrName);
-        System.out.println("Available keys: "+String.join("; ", attrNameToGroupByAttrNameMap.keySet()));
         if(isGrouped) {
             PointSeries drilldownSeries = new PointSeries();
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
@@ -180,6 +178,12 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         if(agg==null&&attrNameNestedWithSuffix!=null) {
             // try nested
             Nested nested = aggregations.get(attrNameNestedWithSuffix);
+            if(nested==null) {
+                System.out.println("Attr name with suffix: "+attrNameWithSuffix);
+                System.out.println("Attr name nested with suffix: "+attrNameNestedWithSuffix);
+                System.out.println("Available: "+String.join("; ", aggregations.getAsMap().keySet()));
+                throw new RuntimeException("Unable to find nested attribute: "+attrNameNestedWithSuffix);
+            }
             return handlePotentiallyNestedAgg(nested.getAggregations(),attrNameWithSuffix,null);
         }
         return agg;
