@@ -61,7 +61,8 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         List<Series<?>> data = new ArrayList<>();
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         final boolean isGrouped = groupedByAttrName!=null;
-
+        System.out.println("Group by attrname for "+attrName+": "+groupedByAttrName);
+        System.out.println("Available keys: "+String.join("; ", attrNameToGroupByAttrNameMap.keySet()));
         if(isGrouped) {
             PointSeries drilldownSeries = new PointSeries();
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
