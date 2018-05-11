@@ -59,6 +59,7 @@ import java.util.stream.Stream;
  * Created by Evan on 7/22/2017.
  */
 public class DataSearcher {
+    public static final Set<String> SIMILARITY_ATTRIBUTES = new HashSet<>(Arrays.asList(Constants.SIMILARITY_FAST,Attributes.RNN_ENC,Attributes.CPC_VAE));
     public static final HighlightBuilder highlighter = new HighlightBuilder()
             .highlighterType("plain")
             .postTags("</span>")
@@ -79,6 +80,7 @@ public class DataSearcher {
     private static final boolean debug = false;
     private static final Lock lock = new ReentrantLock();
 
+    // TODO LEGACY: need to remove
     public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String, NestedAttribute> nestedAttrNameMap, boolean highlight, boolean filterNestedObjects) {
         return searchForAssets(attributes, filters, comparator, sortOrder, maxLimit, nestedAttrNameMap, item -> item, true, highlight, filterNestedObjects);
     }
@@ -94,16 +96,18 @@ public class DataSearcher {
                 .findAny().orElse(null);
     }
 
+    // TODO LEGACY: need to remove
     public static List<Item> searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
         return searchForAssets(INDEX_NAME,TYPE_NAME,attributes,filters,_comparator,sortOrder,maxLimit,nestedAttrNameMap,transformer,merge,highlight,filterNestedObjects);
     }
 
+    // TODO LEGACY: need to remove
     public static List<Item> searchForAssets(String index, String type, Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects) {
         SearchResponse response = searchFor(index,type,attributes,filters,_comparator,sortOrder,maxLimit,nestedAttrNameMap,transformer,merge,highlight,filterNestedObjects,Constants.NAME);
         String comparator = getOrDefaultComparator(_comparator);
         boolean isOverallScore = comparator.equals(Constants.SCORE);
         boolean scroll = maxLimit > PAGE_LIMIT;
-        return iterateOverSearchResults(response, hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore, filterNestedObjects)), maxLimit, merge, scroll);
+        return iterateOverSearchResults(response, hit->transformer.transform(hitToItem(Constants.NAME,hit,nestedAttrNameMap, isOverallScore, filterNestedObjects)), maxLimit, merge, scroll);
     }
 
     private static String getOrDefaultComparator(String _comparator) {
@@ -117,7 +121,7 @@ public class DataSearcher {
         String comparator = getOrDefaultComparator(_comparator);
         boolean isOverallScore = comparator.equals(Constants.SCORE);
         boolean scroll = maxLimit > PAGE_LIMIT;
-        List<Item> items = iterateOverSearchResults(response, hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore, filterNestedObjects)), maxLimit, merge, scroll);
+        List<Item> items = iterateOverSearchResults(response, hit->transformer.transform(hitToItem(Attributes.PUBLICATION_NUMBER_FULL,hit,nestedAttrNameMap, isOverallScore, filterNestedObjects)), maxLimit, merge, scroll);
         return new ElasticSearchResponse(items,aggs,totalCount);
     }
     private static SearchResponse searchFor(String index, String type, Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight, boolean filterNestedObjects, String... defaultAttrs) {
@@ -211,10 +215,10 @@ public class DataSearcher {
 
             //System.out.println("Looking for similarity greater than...");
             filters.forEach(filter->{
-                if(filter instanceof AbstractSimilarityGreaterThanFilter && filter.getAttribute().getFullName().equals(Constants.SIMILARITY_FAST)) {
+                if(filter instanceof AbstractSimilarityGreaterThanFilter && SIMILARITY_ATTRIBUTES.contains(filter.getAttribute().getFullName())) {
                     AbstractSimilarityGreaterThanFilter simFilter = (AbstractSimilarityGreaterThanFilter)filter;
                     attributes.forEach(attr->{
-                        if(attr.getFullName().equals(Constants.SIMILARITY_FAST)) {
+                        if(SIMILARITY_ATTRIBUTES.contains(attr.getFullName())) {
                             //System.out.println("Found and setting similarity attribute for filter...");
                             simFilter.setAttribute(attr);
                         }
@@ -345,8 +349,7 @@ public class DataSearcher {
     }
 
     private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request) {
-        boolean componentOfScore = (usingScore && Constants.SIMILARITY_FAST.equals(attribute.getFullName()));
-
+        boolean componentOfScore = (usingScore && (SIMILARITY_ATTRIBUTES.contains(attribute.getFullName())));
         if (attribute instanceof AbstractScriptAttribute) {
             AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute) attribute;
             Script script = scriptAttribute.getSortScript();
@@ -406,8 +409,8 @@ public class DataSearcher {
         });
     }
 
-    private static Item hitToItem(SearchHit hit, Map<String,NestedAttribute> nestedAttrNameMap, boolean isUsingScore, boolean filterNestedObjects) {
-        Item item = new Item((String)hit.getSource().get(Constants.NAME));
+    private static Item hitToItem(String idField, SearchHit hit, Map<String,NestedAttribute> nestedAttrNameMap, boolean isUsingScore, boolean filterNestedObjects) {
+        Item item = new Item((String)hit.getSource().get(idField));
 
         Set<String> foundInnerHits = new HashSet<>();
         if(filterNestedObjects) {
