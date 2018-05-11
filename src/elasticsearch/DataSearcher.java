@@ -31,7 +31,6 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.google.elasticsearch.Attributes;
-import seeding.google.elasticsearch.attributes.Score;
 import seeding.google.mongo.ingest.IngestPatents;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -203,11 +202,6 @@ public class DataSearcher {
 
             if(!comparator.isEmpty()) {
                 request.set(request.get().addSort(sortBuilder));
-            }
-
-            if(!comparator.equals(Constants.SCORE) && attributes.stream().anyMatch(attr->attr instanceof Score)) {
-                System.out.println("Tracking scores even though not sorting by score...");
-                request.set(request.get().setTrackScores(true));
             }
 
             if(resortBuilder!=null) {

@@ -210,8 +210,7 @@ public class Attributes {
                 new CompDBCount(),
                 new Gather(),
                 new PTAB(),
-                new PTABCount(),
-                new Score()
+                new PTABCount()
         );
     }
 
