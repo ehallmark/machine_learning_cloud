@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
 import cpc_normalization.CPCHierarchy;
 import graphical_modeling.model.edges.UndirectedEdge;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 
 import java.sql.Connection;
@@ -139,19 +140,66 @@ public class SetupCPCSimDBForKeras {
         System.out.println("Saving cooccurrence results to database...");
 
         cnt.set(0);
-        allCPCs.parallelStream().forEach(cpc-> {
+        IntStream.range(0,allCPCs.size()).parallel().forEach(idx->{
+            String cpc = allCPCs.get(idx);
+            double sum = 0d;
+            Map<Integer,Double> occurrences = new HashMap<>();
+            List<Integer> negatives = new ArrayList<>();
+            for(int i = 0; i < allCPCs.size(); i++) {
+                if(i!=idx) {
+                    double val = cooccurrenceMap.getOrDefault(new UndirectedEdge<>(cpc,allCPCs.get(i)),new AtomicDouble(0d)).get();
+                    if(val>0d) {
+                        occurrences.put(i,val);
+                        sum+=val;
+                    } else {
+                        negatives.add(i);
+                    }
+                }
+            }
+
             // random subset
-            int s = Math.round((float)Math.exp(Math.max(7-hierarchy.getLabelToCPCMap().get(cpc).getNumParts(),0)));
-            Set<String> samples = IntStream.range(0, s).mapToObj(i->allCPCs.get(rand.nextInt(allCPCs.size())))
-                    .collect(Collectors.toSet());
+            final double _sum = sum;
+            int s = Math.round((float)Math.exp(Math.max(6-hierarchy.getLabelToCPCMap().get(cpc).getNumParts(),0)));
+            int negativeSamples = s*2;
+            Set<String> samples = new HashSet<>();
+            double[] randoms = IntStream.range(0, s).mapToDouble(i->rand.nextDouble()*_sum).toArray();
+            double[] holders = new double[randoms.length];
+
+            for(int j = 0; j < allCPCs.size(); j++) {
+                if(j==idx) continue;
+                double v = occurrences.getOrDefault(j,0d);
+                for(int r = 0; r < randoms.length; r++) {
+                    holders[r]+=v;
+                    if(holders[r]>randoms[r]) {
+                        samples.add(allCPCs.get(j));
+                        randoms[r]=Double.MAX_VALUE; // stops this index
+                    }
+                }
+            }
+
+            if(samples.isEmpty()) {
+                System.out.println("Warning: sample "+cpc+" is empty.");
+                return;
+            }
+
             StringJoiner values = new StringJoiner(",");
             for(String sample : samples) {
                 StringJoiner value = new StringJoiner(",","(",")");
-                double d = cooccurrenceMap.getOrDefault(new UndirectedEdge<>(cpc,sample),new AtomicDouble(0d)).get();
-                double v = d == 0 ? 0 : d / Math.sqrt(occurrenceMap.get(cpc) * occurrenceMap.get(sample));
-                value.add(codeToIndexMap.get(cpc).toString()).add(codeToIndexMap.get(sample).toString()).add(String.valueOf(v));
+                value.add(codeToIndexMap.get(cpc).toString()).add(codeToIndexMap.get(sample).toString()).add("1.0");
                 values.add(value.toString());
             }
+
+            if(negatives.size() < 30) {
+                System.out.println("Skipping negatives for "+cpc);
+            } else {
+                for (int i = 0; i < Math.min(negatives.size(), negativeSamples); i++) {
+                    int neg = rand.nextInt(negatives.size());
+                    StringJoiner value = new StringJoiner(",", "(", ")");
+                    value.add(codeToIndexMap.get(cpc).toString()).add(codeToIndexMap.get(allCPCs.get(neg)).toString()).add("0.0");
+                    values.add(value.toString());
+                }
+            }
+
 
             try {
                 String insert = "insert into big_query_cpc_occurrence (id1,id2,freq) values "+values.toString()+" on conflict (id1,id2) do nothing";

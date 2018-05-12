@@ -92,6 +92,11 @@ public class DatasetAttribute extends TermsLookupAttribute implements AjaxMultis
         return AbstractIncludeFilter.ajaxMultiSelect(name,ajaxUrl(),id);
     }
 
+    @Override
+    public AbstractAttribute clone() {
+        return dup();
+    }
+
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
