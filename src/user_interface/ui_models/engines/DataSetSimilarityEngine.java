@@ -20,7 +20,7 @@ import static j2html.TagCreator.div;
  * Created by ehallmark on 2/28/17.
  */
 public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
-    private DatasetAttribute datasetAttribute = new DatasetAttribute();
+    private DatasetAttribute datasetAttribute = DatasetAttribute.getDatasetAttribute();
 
     @Override
     protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
