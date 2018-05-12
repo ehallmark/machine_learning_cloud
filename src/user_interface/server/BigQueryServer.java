@@ -23,6 +23,7 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import seeding.google.elasticsearch.Attributes;
+import seeding.google.elasticsearch.attributes.SignificantTermsAttribute;
 import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -1937,6 +1938,9 @@ public class BigQueryServer extends SimilarPatentServer {
                             }
                             if(attribute instanceof DependentAttribute) {
                                 ((DependentAttribute)attribute).extractRelevantInformationFromParams(req);
+                            }
+                            if(attribute instanceof SignificantTermsAttribute && !chart.getAttrNameToGroupByAttrNameMap().containsKey(attrName)) {
+                                throw new RuntimeException(humanAttributeFor(attrName)+" must have a group by clause.");
                             }
                             List<AggregationBuilder> aggregations = chart.getAggregations(req, attribute,attrName).stream().map(a->a.getAggregation()).collect(Collectors.toList());
                             aggregations.forEach(agg->{
