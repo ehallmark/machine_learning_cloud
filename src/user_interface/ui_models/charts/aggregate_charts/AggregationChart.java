@@ -12,7 +12,9 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
 import org.nd4j.linalg.primitives.Pair;
+import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
@@ -102,10 +104,13 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         return data;
     }
 
-    protected AbstractAggregation createGroupedAttribute(String attrName, String groupedByAttrName, int groupLimit, AggregationBuilder innerAgg) {
+    protected AbstractAggregation createGroupedAttribute(Request req, String attrName, String groupedByAttrName, int groupLimit, AggregationBuilder innerAgg) {
         AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
         if(groupByAttribute==null) {
             throw new RuntimeException("Unable to find grouping attribute attribute: "+groupedByAttrName);
+        }
+        if(groupByAttribute instanceof DependentAttribute) {
+            ((DependentAttribute)groupByAttribute).extractRelevantInformationFromParams(req);
         }
         String groupBySuffix = getGroupSuffix();
         BucketAggregation groupAgg = AggregatePieChart.buildDistributionAggregation(this,groupByAttribute,groupByAttribute.getFullName(),attrName,groupBySuffix,groupLimit);
@@ -248,12 +253,12 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         return nonNestedAttributes.stream().filter(attr->attr.getFullName().equals(attrName)).limit(1).findFirst().orElse(null);
     }
 
-    public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
+    public List<AbstractAggregation> getAggregations(Request req, AbstractAttribute attribute, String attrName) {
         AbstractAggregation aggregation = AggregatePieChart.buildDistributionAggregation(this,attribute,attrName,null,aggSuffix);
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
             int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, MAXIMUM_AGGREGATION_SIZE);
-            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(attrName,groupedByAttrName,groupLimit,aggregation.getAggregation());
+            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(req, attrName,groupedByAttrName,groupLimit,aggregation.getAggregation());
             return Collections.singletonList(
                     twoDimensionalAgg
             );

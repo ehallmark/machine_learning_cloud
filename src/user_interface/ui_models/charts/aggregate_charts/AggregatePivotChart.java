@@ -19,6 +19,7 @@ import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
@@ -295,7 +296,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     }
 
     @Override
-    public List<AbstractAggregation> getAggregations(AbstractAttribute attribute, String attrName) {
+    public List<AbstractAggregation> getAggregations(Request req, AbstractAttribute attribute, String attrName) {
         Type collectorType = attrToCollectTypeMap.get(attrName);
         String collectByAttrName = attrToCollectByAttrMap.get(attrName);
         if(collectorType==null && collectByAttrName!=null) throw new RuntimeException("Please select collector type.");
@@ -313,12 +314,15 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         if(collectByAttribute!=null && collectByAttribute instanceof SimilarityAttribute) {
             // need to get the original model for the vectors
             collectByAttribute=similarityModels.get(collectByAttribute.getName());
+        } else if(collectByAttribute!=null && collectByAttribute instanceof DependentAttribute) {
+            ((DependentAttribute)collectByAttribute).extractRelevantInformationFromParams(req);
         }
+        
         CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getStatsAggName(attrName), collectByAttribute, collectorType);
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
             int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, MAXIMUM_AGGREGATION_SIZE);
-            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(attrName,groupedByAttrName,groupLimit,combinedAttrAgg.getAggregation());
+            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(req, attrName,groupedByAttrName,groupLimit,combinedAttrAgg.getAggregation());
             return Collections.singletonList(
                     twoDimensionalAgg
             );

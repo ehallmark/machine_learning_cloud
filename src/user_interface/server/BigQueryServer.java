@@ -1944,7 +1944,7 @@ public class BigQueryServer extends SimilarPatentServer {
                             if(attribute instanceof DependentAttribute) {
                                 ((DependentAttribute)attribute).extractRelevantInformationFromParams(req);
                             }
-                            List<AggregationBuilder> aggregations = chart.getAggregations(attribute,attrName).stream().map(a->a.getAggregation()).collect(Collectors.toList());
+                            List<AggregationBuilder> aggregations = chart.getAggregations(req, attribute,attrName).stream().map(a->a.getAggregation()).collect(Collectors.toList());
                             aggregations.forEach(agg->{
                                 System.out.println("Agg: "+agg.toString());
                             });
