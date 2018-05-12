@@ -48,7 +48,7 @@ public class RNNTextEncodingPipelineManager extends DefaultPipelineManager<Multi
     }
 
     @Override
-    protected void initModel(boolean forceRecreateModels) {
+    public void initModel(boolean forceRecreateModels) {
         model = new RNNTextEncodingModel(this,modelName,word2VecSize,encodingSize);
         if(!forceRecreateModels) {
             System.out.println("Warning: Loading previous model.");

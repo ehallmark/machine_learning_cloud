@@ -405,7 +405,7 @@ public class BigQueryServer extends SimilarPatentServer {
             // nested attribute names
             buildJavaToHumanAttrMap();
 
-            SimilarityEngineController.setAllEngines(Arrays.asList(new DataSetSimilarityEngine("big_query_embedding2"), new PatentSimilarityEngine("big_query_embedding2"), new AssigneeSimilarityEngine("big_query_assignee_embedding1"), new TextSimilarityEngine(false), new CPCSimilarityEngine("big_query_cpc_embedding1")));
+            SimilarityEngineController.setAllEngines(Arrays.asList(new DataSetSimilarityEngine("big_query_embedding2"), new PatentSimilarityEngine("big_query_embedding2"), new AssigneeSimilarityEngine("big_query_assignee_embedding1"), new TextSimilarityEngine(), new CPCSimilarityEngine("big_query_cpc_embedding1")));
 
             // similarity engine
             similarityEngine = new RecursiveTask<SimilarityEngineController>() {
