@@ -126,31 +126,41 @@ public class Database {
 	public static List<String> searchBigQuery(String tableName, String search, String desiredField, int limit, String... fields) {
 		if(search==null||search.trim().isEmpty()) return Collections.emptyList();
 		StringJoiner where = new StringJoiner(" and ", "", "");
-		StringJoiner order = new StringJoiner(", ", "", "");
-		final int minFieldLength = 5;
 		for (String field : fields) {
 			where.add("lower("+field + ") like ? || '%'");
-			if(search.length()>minFieldLength) {
-				order.add("ts_rank(to_tsvector("+field+"),to_tsquery('english', ?))");
-			} else {
-				order.add("lower("+field+")");
-			}
 		}
-		if(search.length()>minFieldLength) order.add(desiredField);
 		List<String> results = new ArrayList<>(limit);
 		try {
-			PreparedStatement ps = conn.prepareStatement("select " + desiredField + " from " + tableName + " where " + where.toString() + " order by " + order.toString() + " limit " + limit);
+			PreparedStatement ps = conn.prepareStatement("select " + desiredField + " from " + tableName + " where " + where.toString() + " limit " + limit);
 			ps.setFetchSize(limit);
 			for(int i = 0; i < fields.length; i++) {
 				ps.setString(1+i, search.toLowerCase());
-				if(search.length()>minFieldLength) {
-					ps.setString(1 + fields.length + i, search.toLowerCase());
-				}
 			}
 			System.out.println("Searching big query: "+ps.toString());
 			ResultSet rs = ps.executeQuery();
 			while(rs.next()) {
 				results.add(rs.getString(1));
+			}
+			rs.close();
+			ps.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return results;
+	}
+
+	public static List<String> searchBigQueryAssignees(String tableName, String search, int limit, Map<String,Integer> portfolioSizeMap) {
+		if(search==null||search.trim().isEmpty()) return Collections.emptyList();
+		List<String> results = new ArrayList<>(limit);
+		try {
+			PreparedStatement ps = conn.prepareStatement("select name,portfolio_size from " + tableName + " where lower(name) like '%' || ? limit " + limit);
+			ps.setFetchSize(limit);
+			ps.setString(1, search.toLowerCase());
+			System.out.println("Searching big query: "+ps.toString());
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) {
+				results.add(rs.getString(1));
+				portfolioSizeMap.put(rs.getString(1),rs.getInt(2));
 			}
 			rs.close();
 			ps.close();

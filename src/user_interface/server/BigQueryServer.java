@@ -1054,8 +1054,9 @@ public class BigQueryServer extends SimilarPatentServer {
 
         // setup select2 ajax remote data sources
         get(Constants.ASSIGNEE_NAME_AJAX_URL, (req,res)->{
-            Function<String,List<String>> resultsSearchFunction = search -> Database.searchBigQuery("big_query_assignee",search, "name", 10, "name");
-            Function<String,String> displayFunction = result ->  result;
+            Map<String,Integer> portfolioSizeMap = new HashMap<>();
+            Function<String,List<String>> resultsSearchFunction = search -> Database.searchBigQueryAssignees("big_query_assignee",search, 10, portfolioSizeMap);
+            Function<String,String> displayFunction = result ->  result + " ("+portfolioSizeMap.getOrDefault(result,0)+")";
             return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
         });
 
