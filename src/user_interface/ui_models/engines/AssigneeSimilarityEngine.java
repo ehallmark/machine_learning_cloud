@@ -31,7 +31,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine implement
     }
 
     public AssigneeSimilarityEngine(String tableName) {
-        super(tableName, "name");
+        super(tableName, "name", "cpc_vae", false);
     }
 
     @Override

@@ -194,16 +194,25 @@ public class Database {
 		return collection;
 	}
 
-	public static Map<String,INDArray> loadCPCVaeVectorsFor(List<String> assets) {
-		return loadVectorsFor("big_query_embedding1","cpc_vae",assets);
+	public static Map<String,INDArray> loadCPCVaeVectorsForAssets(List<String> assets) {
+		return loadVectorsFor("big_query_embedding1","publication_number_full","cpc_vae",assets, true);
 	}
 
-	public static Map<String,INDArray> loadVectorsFor(String tableName, String fieldName, List<String> assets) {
+	public static Map<String,INDArray> loadCPCVaeVectorsForAssignees(List<String> assignees) {
+		return loadVectorsFor("big_query_assignee_embedding1", "name","cpc_vae", assignees, false);
+	}
+
+	public static Map<String,INDArray> loadVectorsFor(String tableName, String attrName, String vecName, List<String> assets, boolean join) {
 		Map<String,INDArray> data = new HashMap<>();
 		PreparedStatement ps = null;
 		ResultSet rs = null;
+		String statement = "select "+attrName+","+vecName+" from "+tableName+" as p ";
+		if(join) {
+			statement += "join big_query_family_id as e on (p.family_id=e.family_id) ";
+		}
+		statement += "where "+attrName+" in ('" + String.join("','", assets) + "')";
 		try {
-			ps = conn.prepareStatement("select publication_number_full,"+fieldName+" from big_query_family_id as p join "+tableName+" as e on (p.family_id=e.family_id) where publication_number_full in ('" + String.join("','", assets) + "')");
+			ps = conn.prepareStatement(statement);
 			ps.setFetchSize(10);
 			rs = ps.executeQuery();
 			while(rs.next()) {

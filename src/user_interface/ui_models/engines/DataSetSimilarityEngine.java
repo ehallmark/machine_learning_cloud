@@ -29,7 +29,7 @@ public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     public DataSetSimilarityEngine(String tableName) {
-        super(tableName, Attributes.PUBLICATION_NUMBER_FULL);
+        super(tableName, Attributes.PUBLICATION_NUMBER_FULL, "rnn_enc", true);
     }
 
     @Override

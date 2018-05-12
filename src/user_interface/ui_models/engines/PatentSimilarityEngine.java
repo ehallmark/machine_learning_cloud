@@ -28,7 +28,7 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     public PatentSimilarityEngine(String tableName) {
-        super(tableName, Attributes.PUBLICATION_NUMBER_FULL);
+        super(tableName, Attributes.PUBLICATION_NUMBER_FULL, "rnn_enc", true);
     }
 
     @Override

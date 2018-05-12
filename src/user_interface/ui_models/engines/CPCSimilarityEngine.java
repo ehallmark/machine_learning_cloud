@@ -25,7 +25,7 @@ public class CPCSimilarityEngine extends AbstractSimilarityEngine implements Aja
     }
 
     public CPCSimilarityEngine(String tableName) {
-        super(tableName, Attributes.CODE);
+        super(tableName, Attributes.CODE, "cpc_vae", false);
     }
 
     @Override
