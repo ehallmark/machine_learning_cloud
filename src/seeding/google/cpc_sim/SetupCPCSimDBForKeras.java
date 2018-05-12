@@ -173,7 +173,7 @@ public class SetupCPCSimDBForKeras {
                 int r = rand.nextInt(allCPCs.size());
                 if(r!=idx) {
                     if(!occurrences.containsKey(r)) {
-                        negatives.add(i);
+                        negatives.add(r);
                     }
                 }
             }

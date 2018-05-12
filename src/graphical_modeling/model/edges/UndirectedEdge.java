@@ -9,7 +9,6 @@ public class UndirectedEdge<T> extends Edge<T> {
     private Integer hash;
     public UndirectedEdge(T node1, T node2) {
         super(node1,node2);
-
     }
 
     // Checks whether connects the same pair of nodes
