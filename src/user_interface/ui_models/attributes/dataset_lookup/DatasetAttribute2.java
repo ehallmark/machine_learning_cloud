@@ -4,6 +4,7 @@ import elasticsearch.DatasetIndex;
 import j2html.tags.Tag;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import seeding.google.elasticsearch.Attributes;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -18,6 +19,10 @@ import java.util.stream.Collectors;
  */
 public class DatasetAttribute2 extends DatasetAttribute {
 
+    public DatasetAttribute2(String termsName) {
+        super(termsName);
+    }
+
     @Override
     public String getName() {
         return Constants.DATASET2_NAME;
@@ -25,6 +30,14 @@ public class DatasetAttribute2 extends DatasetAttribute {
 
     @Override
     public AbstractAttribute dup() {
-        return new DatasetAttribute2();
+        return new DatasetAttribute2(getTermsName());
+    }
+
+    public static DatasetAttribute getOldDatasetAttribute() {
+        return new DatasetAttribute2(Constants.NAME);
+    }
+
+    public static DatasetAttribute getDatasetAttribute() {
+        return new DatasetAttribute2(Attributes.PUBLICATION_NUMBER_FULL);
     }
 }

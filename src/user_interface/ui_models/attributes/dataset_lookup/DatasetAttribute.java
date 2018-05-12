@@ -5,6 +5,7 @@ import j2html.tags.Tag;
 import lombok.Getter;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import seeding.google.elasticsearch.Attributes;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -35,6 +36,19 @@ public class DatasetAttribute extends TermsLookupAttribute implements AjaxMultis
         }).filter(l->l!=null).collect(Collectors.toList());
     }
 
+    private String termsName;
+    public DatasetAttribute(String termsName) {
+        this.termsName=termsName;
+    }
+
+    public static DatasetAttribute getOldDatasetAttribute() {
+        return new DatasetAttribute(Constants.NAME);
+    }
+
+    public static DatasetAttribute getDatasetAttribute() {
+        return new DatasetAttribute(Attributes.PUBLICATION_NUMBER_FULL);
+    }
+
     @Override
     public String getTermsIndex() {
         return DatasetIndex.INDEX;
@@ -52,7 +66,7 @@ public class DatasetAttribute extends TermsLookupAttribute implements AjaxMultis
 
     @Override
     public String getTermsName() {
-        return Constants.NAME;
+        return termsName;
     }
 
     @Override
@@ -99,7 +113,7 @@ public class DatasetAttribute extends TermsLookupAttribute implements AjaxMultis
 
     @Override
     public AbstractAttribute dup() {
-        return new DatasetAttribute();
+        return new DatasetAttribute(termsName);
     }
 
     @Override

@@ -398,8 +398,8 @@ public class BigQueryServer extends SimilarPatentServer {
             Attributes.buildAttributes().forEach(attr->{
                 attributesMap.put(attr.getName(),attr);
             });
-            attributesMap.put(Constants.DATASET_NAME, new DatasetAttribute());
-            attributesMap.put(Constants.DATASET2_NAME, new DatasetAttribute2());
+            attributesMap.put(Constants.DATASET_NAME, DatasetAttribute.getDatasetAttribute());
+            attributesMap.put(Constants.DATASET2_NAME, DatasetAttribute2.getDatasetAttribute());
 
             // nested attribute names
             buildJavaToHumanAttrMap();
