@@ -128,7 +128,7 @@ public class Database {
 		StringJoiner order = new StringJoiner(", ", "", "");
 		for (String field : fields) {
 			where.add(field + " ilike '%' || ? || '%'");
-			order.add("to_tsrank(to_tsvector(?),to_tsquery('english', ?))");
+			order.add("tsrank(to_tsvector(?),to_tsquery('english', ?))");
 		}
 		order.add(desiredField);
 		List<String> results = new ArrayList<>(limit);
