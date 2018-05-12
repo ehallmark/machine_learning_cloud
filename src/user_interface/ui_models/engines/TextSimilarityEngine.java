@@ -76,6 +76,8 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
 
 
     private void loadSimilarityNetworks() {
+        System.out.println("WARNING: TRYING TO LOAD OLD SIMILARITY MODELS!!!");
+        if(true) return;
         synchronized (TextSimilarityEngine.class) {
             if (encodingModelOld == null) {
                 CombinedCPC2Vec2VAEEncodingPipelineManager combinedSimilarityPipelineManager = CombinedCPC2Vec2VAEEncodingPipelineManager.getOrLoadManager(true);
