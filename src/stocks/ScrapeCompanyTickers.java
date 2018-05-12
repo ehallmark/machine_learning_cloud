@@ -60,7 +60,6 @@ public class ScrapeCompanyTickers {
         Map<String,List<Pair<LocalDate,Double>>> dataMap = Collections.synchronizedMap(new HashMap<>());
         tickerToNameMap.entrySet().parallelStream().limit(5000).forEach(e->{
             String ticker = e.getKey();
-            String company = e.getValue();
             //System.out.println(""+cnt.getAndIncrement()+" / "+tickers.size());
             try {
                 List<Pair<LocalDate, Double>> data = stockDataFor(ticker, from, to);
