@@ -128,7 +128,7 @@ public class Database {
 		StringJoiner where = new StringJoiner(" and ", "", "");
 		StringJoiner order = new StringJoiner(", ", "", "");
 		for (String field : fields) {
-			where.add(field + " ilike '%' || ? || '%'");
+			where.add("lower("+field + ") like ? || '%'");
 			order.add("ts_rank(to_tsvector("+field+"),to_tsquery('english', ?))");
 		}
 		order.add(desiredField);
@@ -138,7 +138,7 @@ public class Database {
 			ps.setFetchSize(limit);
 			for(int i = 0; i < fields.length; i++) {
 				ps.setString(1+i,fields[i]);
-				ps.setString(1+fields.length+i,search);
+				ps.setString(1+fields.length+i,search.toLowerCase());
 			}
 			System.out.println("Searching big query: "+ps.toString());
 			ResultSet rs = ps.executeQuery();
