@@ -21,11 +21,11 @@ public class RnnEnc extends SimilarityAttribute {
 
     @Override
     public SimilarityAttribute clone() {
-        return null;
+        return dup();
     }
 
     @Override
-    public AbstractScriptAttribute dup() {
+    public SimilarityAttribute dup() {
         return new RnnEnc();
     }
 }
