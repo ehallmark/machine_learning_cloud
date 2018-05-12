@@ -206,7 +206,7 @@ public class SetupCPCSimDBForKeras {
                 values.add(value.toString());
             }
 
-            if(negatives.size() < 30) {
+            if(negatives.size() < s) {
                 System.out.println("Skipping negatives for "+cpc);
             } else {
                 for (int i = 0; i < Math.min(negatives.size(), negativeSamples); i++) {
