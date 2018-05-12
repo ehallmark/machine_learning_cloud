@@ -54,13 +54,17 @@ public class SetupCPCSimDBForKeras {
         Map<String,Double> occurrenceMap = new HashMap<>();
         final Map<UndirectedEdge<String>,AtomicDouble> cooccurrenceMap = new HashMap<>();
         List<CPC> cpcs = new ArrayList<>(hierarchy.getLabelToCPCMap().values());
+        Map<String,Set<String>> cpcToOccurrenceMap = new HashMap<>();
         cpcs.forEach(cpc->{
             occurrenceMap.put(cpc.getName(),alpha);
+            cpcToOccurrenceMap.putIfAbsent(cpc.getName(), new HashSet<>());
             hierarchy.cpcWithAncestors(cpc).forEach(cpc2->{
                 UndirectedEdge<String> edge = new UndirectedEdge<>(cpc.getName(),cpc2.getName());
                 if(!cooccurrenceMap.containsKey(edge)) {
                     cooccurrenceMap.put(edge, new AtomicDouble(alpha));
                 }
+                cpcToOccurrenceMap.get(cpc.getName()).add(cpc2.getName());
+
             });
             if(cpc.getParent()!=null) {
                 cpc.getParent().getChildren().forEach(child -> {
@@ -68,11 +72,13 @@ public class SetupCPCSimDBForKeras {
                     if(!cooccurrenceMap.containsKey(edge)) {
                         cooccurrenceMap.put(edge, new AtomicDouble(alpha));
                     }
+                    cpcToOccurrenceMap.get(cpc.getName()).add(cpc.getName());
                     child.getChildren().forEach(grandChild->{
                         UndirectedEdge<String> edge2 = new UndirectedEdge<>(cpc.getName(),grandChild.getName());
                         if(!cooccurrenceMap.containsKey(edge2)) {
                             cooccurrenceMap.put(edge2, new AtomicDouble(alpha));
                         }
+                        cpcToOccurrenceMap.get(cpc.getName()).add(grandChild.getName());
                     });
                 });
             }
@@ -96,14 +102,13 @@ public class SetupCPCSimDBForKeras {
                     boolean valid = occurrenceMap.containsKey(cpc);
                     if(valid) {
                         // add to occurrence map
-                        occurrenceMap.putIfAbsent(cpc,alpha);
                         occurrenceMap.put(cpc,occurrenceMap.get(cpc)+1d);
                     }
                     return valid;
                 }).toArray(s->new String[s]);
                 for(int i = 0; i < tree.length; i++) {
+                    String cpc = tree[i];
                     for(int j = i+1; j < tree.length; j++) {
-                        String cpc = tree[i];
                         String cpc2 = tree[j];
                         UndirectedEdge<String> edge = new UndirectedEdge<>(cpc,cpc2);
                         synchronized (cooccurrenceMap) {
@@ -112,6 +117,7 @@ public class SetupCPCSimDBForKeras {
                             }
                             cooccurrenceMap.get(edge).getAndAdd(1d);
                         }
+                        cpcToOccurrenceMap.get(cpc).add(cpc2);
                     }
                 }
                 if(cnt.getAndIncrement()%10000==9999) {
@@ -145,22 +151,33 @@ public class SetupCPCSimDBForKeras {
             double sum = 0d;
             Map<Integer,Double> occurrences = new HashMap<>();
             List<Integer> negatives = new ArrayList<>();
-            for(int i = 0; i < allCPCs.size(); i++) {
-                if(i!=idx) {
-                    double val = cooccurrenceMap.getOrDefault(new UndirectedEdge<>(cpc,allCPCs.get(i)),new AtomicDouble(0d)).get();
-                    if(val>0d) {
-                        occurrences.put(i,val);
-                        sum+=val;
-                    } else {
+            Set<String> occurring = cpcToOccurrenceMap.get(cpc);
+            if(occurring==null||occurring.isEmpty()) {
+                System.out.println("Warning: No occurring cpcs for: "+cpc);
+                return;
+            }
+            for(String occ : occurring) {
+                if(occ.equals(cpc)) continue;
+                double val = cooccurrenceMap.getOrDefault(new UndirectedEdge<>(cpc,occ),new AtomicDouble(0d)).get();
+                occurrences.put(codeToIndexMap.get(occ),val);
+                sum+=val;
+            }
+
+            // random subset
+            final double _sum = sum;
+            int s = Math.round((float)Math.exp(Math.max(5-hierarchy.getLabelToCPCMap().get(cpc).getNumParts(),1)));
+            final int negativeSamples = (int)s;
+
+            for(int i = 0; i < negativeSamples * 10 && negatives.size() < negativeSamples; i++) {
+                int r = rand.nextInt(allCPCs.size());
+                if(r!=idx) {
+                    if(!occurrences.containsKey(r)) {
                         negatives.add(i);
                     }
                 }
             }
 
-            // random subset
-            final double _sum = sum;
-            int s = Math.round((float)Math.exp(Math.max(6-hierarchy.getLabelToCPCMap().get(cpc).getNumParts(),0)));
-            int negativeSamples = s*2;
+
             Set<String> samples = new HashSet<>();
             double[] randoms = IntStream.range(0, s).mapToDouble(i->rand.nextDouble()*_sum).toArray();
             double[] holders = new double[randoms.length];
