@@ -198,10 +198,6 @@ public class Database {
 		return loadVectorsFor("big_query_embedding1","publication_number_full","cpc_vae",assets, true);
 	}
 
-	public static Map<String,INDArray> loadCPCVaeVectorsForAssignees(List<String> assignees) {
-		return loadVectorsFor("big_query_assignee_embedding1", "name","cpc_vae", assignees, false);
-	}
-
 	public static Map<String,INDArray> loadVectorsFor(String tableName, String attrName, String vecName, List<String> assets, boolean join) {
 		Map<String,INDArray> data = new HashMap<>();
 		PreparedStatement ps = null;
