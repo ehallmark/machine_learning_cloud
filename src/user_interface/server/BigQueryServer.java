@@ -32,6 +32,7 @@ import user_interface.server.tools.AjaxChartMessage;
 import user_interface.server.tools.PasswordHandler;
 import user_interface.server.tools.SimpleAjaxMessage;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
@@ -1939,6 +1940,9 @@ public class BigQueryServer extends SimilarPatentServer {
                             AbstractAttribute attribute = findAttribute(chart.getAttributes(),attrName,attrStartIdx);
                             if (attribute == null || attribute instanceof NestedAttribute) {
                                 continue;
+                            }
+                            if(attribute instanceof DependentAttribute) {
+                                ((DependentAttribute)attribute).extractRelevantInformationFromParams(req);
                             }
                             List<AggregationBuilder> aggregations = chart.getAggregations(attribute,attrName).stream().map(a->a.getAggregation()).collect(Collectors.toList());
                             aggregations.forEach(agg->{
