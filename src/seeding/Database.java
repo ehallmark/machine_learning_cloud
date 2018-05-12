@@ -136,13 +136,13 @@ public class Database {
 				order.add("lower("+field+")");
 			}
 		}
-		order.add(desiredField);
+		if(search.length()>minFieldLength) order.add(desiredField);
 		List<String> results = new ArrayList<>(limit);
 		try {
 			PreparedStatement ps = conn.prepareStatement("select " + desiredField + " from " + tableName + " where " + where.toString() + " order by " + order.toString() + " limit " + limit);
 			ps.setFetchSize(limit);
 			for(int i = 0; i < fields.length; i++) {
-				ps.setString(1+i,fields[i]);
+				ps.setString(1+i, search.toLowerCase());
 				if(search.length()>minFieldLength) {
 					ps.setString(1 + fields.length + i, search.toLowerCase());
 				}
