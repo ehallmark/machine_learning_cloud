@@ -69,6 +69,11 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
         if(loadVectors) inputToVectorFunction.apply(Collections.emptyList());
     }
 
+    @Override
+    public AbstractSimilarityEngine clone() {
+        return dup();
+    }
+
 
     private void loadSimilarityNetworks() {
         synchronized (TextSimilarityEngine.class) {

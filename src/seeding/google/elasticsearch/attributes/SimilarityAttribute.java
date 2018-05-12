@@ -1,6 +1,7 @@
 package seeding.google.elasticsearch.attributes;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
@@ -25,14 +26,19 @@ import static user_interface.server.SimilarPatentServer.extractArray;
 public abstract class SimilarityAttribute extends AbstractScriptAttribute implements DependentAttribute<AbstractScriptAttribute>, RangeAttribute {
     @Getter @Setter
     protected List<INDArray> simVectors;
-    public SimilarityAttribute() {
+    private Collection<String> validEngines;
+    public SimilarityAttribute(@NonNull Collection<String> validEngines) {
         super(Collections.singleton(AbstractFilter.FilterType.GreaterThan));
+        this.validEngines=validEngines;
     }
 
     @Override
     public String getType() {
         return "double";
     }
+
+    @Override
+    public abstract SimilarityAttribute clone();
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
@@ -42,7 +48,7 @@ public abstract class SimilarityAttribute extends AbstractScriptAttribute implem
     @Override
     public void extractRelevantInformationFromParams(Request req) {
         List<String> similarityEngines = extractArray(req, PRE_FILTER_ARRAY_FIELD);
-        List<AbstractSimilarityEngine> relevantEngines = SimilarityEngineController.getAllEngines().stream().filter(engine->similarityEngines.contains(engine.getName())).collect(Collectors.toList());
+        List<AbstractSimilarityEngine> relevantEngines = SimilarityEngineController.getAllEngines().stream().filter(engine->similarityEngines.contains(engine.getName())&&validEngines.contains(engine.getName())).collect(Collectors.toList());
         simVectors = relevantEngines.stream().map(engine->{
             engine = engine.dup();
             engine.extractRelevantInformationFromParams(req);
