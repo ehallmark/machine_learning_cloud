@@ -213,11 +213,11 @@ public class Database {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
-			ps = conn.prepareStatement("select publication_number_full,Array[technology,secondary] as technologies from big_query_family_id as p join big_query_technologies as t on (p.family_id=t.family_id) where publication_number_full in ('" + String.join("','", assets) + "')");
+			ps = conn.prepareStatement("select publication_number_full,technology2  from big_query_family_id as p join big_query_technologies2 as t on (p.family_id=t.family_id) where technology2 is not null and publication_number_full in ('" + String.join("','", assets) + "')");
 			ps.setFetchSize(10);
 			rs = ps.executeQuery();
 			while(rs.next()) {
-				data.put(rs.getString(1),Arrays.asList((String[])rs.getArray(2).getArray()));
+				data.put(rs.getString(1),Collections.singletonList(rs.getString(2)));
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
