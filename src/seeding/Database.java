@@ -123,6 +123,35 @@ public class Database {
 		return all;
 	}
 
+	public static List<String> searchBigQuery(String tableName, String search, String desiredField, int limit, String... fields) {
+		StringJoiner where = new StringJoiner(" and ", "", "");
+		StringJoiner order = new StringJoiner(", ", "", "");
+		for (String field : fields) {
+			where.add(field + " ilike '%' || ? || '%'");
+			order.add("to_tsrank(to_tsvector(?),to_tsquery('english', ?))");
+		}
+		order.add(desiredField);
+		List<String> results = new ArrayList<>(limit);
+		try {
+			PreparedStatement ps = conn.prepareStatement("select " + desiredField + " from " + tableName + " where " + where.toString() + " order by " + order.toString() + " limit " + limit);
+			ps.setFetchSize(limit);
+			for(int i = 0; i < fields.length; i++) {
+				ps.setString(1+i,fields[i]);
+				ps.setString(1+fields.length+2*i,fields[i]);
+				ps.setString(2+fields.length+2*i, search);
+			}
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) {
+				results.add(rs.getString(1));
+			}
+			rs.close();
+			ps.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return results;
+	}
+
 	public static List<String> loadKeysFromDatabaseTable(Connection conn, String tableName, String field) {
 		List<String> data = new LinkedList<>();
 		try {

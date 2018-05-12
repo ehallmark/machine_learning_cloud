@@ -164,7 +164,7 @@ public class SetupCPCSimDBForKeras {
                 if(occ.equals(cpc)) continue;
                 int cIdx = codeToIndexMap.get(occ);
                 double norm = cooccurrencesNorm[cIdx];
-                double val = cooccurrenceMap.getOrDefault(new UndirectedEdge<>(cpc,occ),new AtomicDouble(0d)).get() * Math.pow(cpcs.get(cIdx).getNumParts(),2);
+                double val = cooccurrenceMap.getOrDefault(new UndirectedEdge<>(cpc,occ),new AtomicDouble(0d)).get();
                 if(norm <= 1) val = 0;
                 else val /= Math.log(norm);
                 occurrences.put(cIdx,val);
@@ -173,8 +173,8 @@ public class SetupCPCSimDBForKeras {
 
             // random subset
             final double _sum = sum;
-            int s = Math.round((float)Math.exp(Math.max(6-hierarchy.getLabelToCPCMap().get(cpc).getNumParts(),1)));
-            final int negativeSamples = (int)s;
+            int s = Math.round((float)Math.exp(Math.max(7-hierarchy.getLabelToCPCMap().get(cpc).getNumParts(),1)));
+            final int negativeSamples = s+s;
 
             for(int i = 0; i < negativeSamples * 10 && negatives.size() < negativeSamples; i++) {
                 int r = rand.nextInt(allCPCs.size());

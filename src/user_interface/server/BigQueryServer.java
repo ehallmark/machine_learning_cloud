@@ -1053,14 +1053,14 @@ public class BigQueryServer extends SimilarPatentServer {
 
         // setup select2 ajax remote data sources
         get(Constants.ASSIGNEE_NAME_AJAX_URL, (req,res)->{
-            Function<String,List<String>> resultsSearchFunction = search -> Database.sortedPossibleAssignees(search);
-            Function<String,String> displayFunction = result ->  result + " (" + Database.getAssetCountFor(result)+")";
+            Function<String,List<String>> resultsSearchFunction = search -> Database.searchBigQuery("big_query_assignee",search, "name", 10, "name");
+            Function<String,String> displayFunction = result ->  result;
             return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
         });
 
         // setup select2 ajax remote data sources
         get(Constants.CPC_CODE_AJAX_URL, (req,res)->{
-            Function<String,List<String>> resultsSearchFunction = search -> Database.sortedPossibleClassCodes(search);
+            Function<String,List<String>> resultsSearchFunction = search -> Database.searchBigQuery("big_query_cpc_definition",search, "code", 10,"code", "title_full");
             Function<String,String> displayFunction = result -> result;
             return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
         });
@@ -1072,12 +1072,6 @@ public class BigQueryServer extends SimilarPatentServer {
             return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
         });
 
-        // setup select2 ajax remote data sources
-        get(Constants.NORMALIZED_ASSIGNEE_NAME_AJAX_URL, (req,res)->{
-            Function<String,List<String>> resultsSearchFunction = search -> Database.sortedPossibleNormalizedAssignees(search);
-            Function<String,String> displayFunction = result ->  result + " (" + Database.getNormalizedAssetCountFor(result)+")";
-            return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
-        });
     }
 
     private static Object handleAjaxRequest(Request req, Function<String,List<String>> resultsSearchFunction, Function<String,String> displayFunction) {
