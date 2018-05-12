@@ -77,7 +77,6 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
 
     private void loadSimilarityNetworks() {
         System.out.println("WARNING: TRYING TO LOAD OLD SIMILARITY MODELS!!!");
-        if(true) return;
         synchronized (TextSimilarityEngine.class) {
             if (encodingModelOld == null) {
                 CombinedCPC2Vec2VAEEncodingPipelineManager combinedSimilarityPipelineManager = CombinedCPC2Vec2VAEEncodingPipelineManager.getOrLoadManager(true);
@@ -96,12 +95,16 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        String text = extractString(req, TEXT_TO_SEARCH_FOR, "").toLowerCase().trim();
-        if(text.length()>0) {
-            avg = encodeTextOld(text.split("\\s+"));
-            if(avg==null) throw new RuntimeException("Unable to find similarity from provided text.");
+        if(oldModel) {
+            String text = extractString(req, TEXT_TO_SEARCH_FOR, "").toLowerCase().trim();
+            if (text.length() > 0) {
+                avg = encodeTextOld(text.split("\\s+"));
+                if (avg == null) throw new RuntimeException("Unable to find similarity from provided text.");
+            }
+            System.out.println("Running text similarity model...");
+        } else {
+            super.extractRelevantInformationFromParams(req);
         }
-        System.out.println("Running text similarity model...");
     }
 
     public INDArray encodeTextOld(String[] text) {
