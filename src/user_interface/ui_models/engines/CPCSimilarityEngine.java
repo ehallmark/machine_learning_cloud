@@ -2,6 +2,7 @@ package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
 import seeding.Constants;
+import seeding.google.elasticsearch.Attributes;
 import spark.Request;
 import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -17,6 +18,15 @@ import static user_interface.server.SimilarPatentServer.*;
  * Created by ehallmark on 2/28/17.
  */
 public class CPCSimilarityEngine extends AbstractSimilarityEngine implements AjaxMultiselect {
+
+    @Deprecated
+    public CPCSimilarityEngine() {
+        super();
+    }
+
+    public CPCSimilarityEngine(String tableName) {
+        super(tableName, Attributes.CODE);
+    }
 
     @Override
     protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
@@ -52,7 +62,11 @@ public class CPCSimilarityEngine extends AbstractSimilarityEngine implements Aja
 
     @Override
     public AbstractSimilarityEngine dup() {
-        return new CPCSimilarityEngine();
+        if(tableName!=null) {
+            return new CPCSimilarityEngine(tableName);
+        } else {
+            return new CPCSimilarityEngine();
+        }
     }
 
     @Override

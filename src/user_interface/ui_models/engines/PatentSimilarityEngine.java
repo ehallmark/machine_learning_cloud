@@ -2,6 +2,7 @@ package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
 import seeding.Constants;
+import seeding.google.elasticsearch.Attributes;
 import spark.Request;
 import user_interface.ui_models.filters.AbstractFilter;
 
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static j2html.TagCreator.div;
+import static j2html.TagCreator.table;
 import static j2html.TagCreator.textarea;
 import static user_interface.server.SimilarPatentServer.*;
 
@@ -19,6 +21,15 @@ import static user_interface.server.SimilarPatentServer.*;
  * Created by ehallmark on 2/28/17.
  */
 public class PatentSimilarityEngine extends AbstractSimilarityEngine {
+
+    @Deprecated
+    public PatentSimilarityEngine() {
+        super();
+    }
+
+    public PatentSimilarityEngine(String tableName) {
+        super(tableName, Attributes.PUBLICATION_NUMBER_FULL);
+    }
 
     @Override
     protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
@@ -55,6 +66,10 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public AbstractSimilarityEngine dup() {
-        return new PatentSimilarityEngine();
+        if(tableName!=null) {
+            return new PatentSimilarityEngine(tableName);
+        } else {
+            return new PatentSimilarityEngine();
+        }
     }
 }

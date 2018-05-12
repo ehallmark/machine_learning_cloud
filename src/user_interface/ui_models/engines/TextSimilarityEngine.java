@@ -11,6 +11,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
+import seeding.google.elasticsearch.Attributes;
 import spark.Request;
 import user_interface.ui_models.filters.AbstractFilter;
 
@@ -32,10 +33,13 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     private static final int maxNumSamples = 30;
 
     private boolean loadVectors;
+
     public TextSimilarityEngine(boolean loadVectors) {
+        super();
         this.loadVectors=loadVectors;
         if(loadVectors)loadSimilarityNetworks();
     }
+
 
     private void loadSimilarityNetworks() {
         synchronized (TextSimilarityEngine.class) {

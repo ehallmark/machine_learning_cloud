@@ -2,6 +2,7 @@ package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
 import seeding.Constants;
+import seeding.google.elasticsearch.Attributes;
 import spark.Request;
 import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -22,6 +23,15 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine implement
     @Override
     public String getName() {
         return Constants.ASSIGNEE_SIMILARITY;
+    }
+
+    @Deprecated
+    public AssigneeSimilarityEngine() {
+        super();
+    }
+
+    public AssigneeSimilarityEngine(String tableName) {
+        super(tableName, "name");
     }
 
     @Override
@@ -54,7 +64,11 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine implement
 
     @Override
     public AbstractSimilarityEngine dup() {
-        return new AssigneeSimilarityEngine();
+        if(tableName!=null) {
+            return new AssigneeSimilarityEngine(tableName);
+        } else {
+            return new AssigneeSimilarityEngine();
+        }
     }
 
     @Override

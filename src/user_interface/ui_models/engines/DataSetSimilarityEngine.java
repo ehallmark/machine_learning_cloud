@@ -2,6 +2,7 @@ package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
 import org.nd4j.linalg.primitives.Pair;
+import seeding.google.elasticsearch.Attributes;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
@@ -21,6 +22,15 @@ import static j2html.TagCreator.div;
  */
 public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
     private DatasetAttribute datasetAttribute = DatasetAttribute.getDatasetAttribute();
+
+    @Deprecated
+    public DataSetSimilarityEngine() {
+        super();
+    }
+
+    public DataSetSimilarityEngine(String tableName) {
+        super(tableName, Attributes.PUBLICATION_NUMBER_FULL);
+    }
 
     @Override
     protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
@@ -63,6 +73,10 @@ public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public AbstractSimilarityEngine dup() {
-        return new DataSetSimilarityEngine();
+        if(tableName!=null) {
+            return new DataSetSimilarityEngine(tableName);
+        } else {
+            return new DataSetSimilarityEngine();
+        }
     }
 }

@@ -26,6 +26,7 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
     protected Collection<String> inputs;
     @Getter
     protected INDArray avg;
+    protected String tableName;
     protected static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
     protected Function<Collection<String>,INDArray> inputsToAvgVectorFunction;
     public AbstractSimilarityEngine(Function<Collection<String>,INDArray> inputsToAvgVectorFunction) {
@@ -56,6 +57,7 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
 
     public AbstractSimilarityEngine(String tableName, String fieldName) {
         this(newFunction(tableName,fieldName));
+        this.tableName=tableName;
     }
 
     protected abstract Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes);
