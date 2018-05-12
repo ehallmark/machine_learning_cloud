@@ -26,7 +26,6 @@ public class SetupCPCSimDBForKeras {
         final CPCHierarchy hierarchy = CPCHierarchy.get();
         final double alpha = 200d;
         final boolean reingestIndices = false; // only set to true for the first run through
-        final boolean test = true;
 
         List<String> allCPCs = new ArrayList<>(hierarchy.getLabelToCPCMap().keySet());
         Collections.sort(allCPCs);
@@ -95,7 +94,7 @@ public class SetupCPCSimDBForKeras {
         System.out.println("Iterating over patent data...");
         AtomicInteger cnt = new AtomicInteger(0);
         ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        while(!test && rs.next()) {
+        while(rs.next()) {
             final String[] _tree = (String[])rs.getArray(2).getArray();
             service.execute(() -> {
                 String[] tree = Stream.of(_tree).filter(cpc->{
@@ -136,12 +135,10 @@ public class SetupCPCSimDBForKeras {
         seedPs.close();
         System.out.println("Cooccurrence Size After Training: "+cooccurrenceMap.size());
 
-        if(!test) {
-            System.out.println("Truncating previous results...");
-            seedConn.createStatement().executeUpdate("truncate big_query_cpc_occurrence");
-            seedConn.commit();
-            System.out.println("Truncated succesfully.");
-        }
+        System.out.println("Truncating previous results...");
+        seedConn.createStatement().executeUpdate("truncate big_query_cpc_occurrence");
+        seedConn.commit();
+        System.out.println("Truncated succesfully.");
 
         System.out.println("Saving cooccurrence results to database...");
 
@@ -158,14 +155,15 @@ public class SetupCPCSimDBForKeras {
             }
             for(String occ : occurring) {
                 if(occ.equals(cpc)) continue;
-                double val = cooccurrenceMap.getOrDefault(new UndirectedEdge<>(cpc,occ),new AtomicDouble(0d)).get();
-                occurrences.put(codeToIndexMap.get(occ),val);
+                int cIdx = codeToIndexMap.get(occ);
+                double val = cooccurrenceMap.getOrDefault(new UndirectedEdge<>(cpc,occ),new AtomicDouble(0d)).get() * Math.pow(cpcs.get(cIdx).getNumParts(),2);
+                occurrences.put(cIdx,val);
                 sum+=val;
             }
 
             // random subset
             final double _sum = sum;
-            int s = Math.round((float)Math.exp(Math.max(5-hierarchy.getLabelToCPCMap().get(cpc).getNumParts(),1)));
+            int s = Math.round((float)Math.exp(Math.max(6-hierarchy.getLabelToCPCMap().get(cpc).getNumParts(),1)));
             final int negativeSamples = (int)s;
 
             for(int i = 0; i < negativeSamples * 10 && negatives.size() < negativeSamples; i++) {
