@@ -2,6 +2,9 @@ package user_interface.ui_models.charts.aggregate_charts;
 
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
+import data_pipeline.helpers.Function2;
+import j2html.tags.ContainerTag;
+import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregations;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
@@ -9,9 +12,15 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.charts.highcharts.ColumnChart;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+
+import static j2html.TagCreator.*;
+import static j2html.TagCreator.br;
+import static j2html.TagCreator.input;
 
 public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     private static final String AGG_SUFFIX = "_hist";
@@ -50,6 +59,32 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         });
 
         return Collections.singletonList(new ColumnChart(parentOptions, title, data, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories));
+    }
+
+    @Override
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+        Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getDrilldownAttrFieldName(attrName));
+        Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
+                div().withClass("col-10").with(
+                        tag1
+                ),div().withClass("col-2").with(
+                        tag2
+                )
+        );
+        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineFunction,true);
+    }
+
+
+    private ContainerTag getAdditionalTagPerAttr(String attrName) {
+        return div().withClass("row").with(
+                div().withClass("col-12").with(
+                        label("Drilldown").attr("title","Plot groups using drilldowns.").with(
+                                br(),
+                                input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
+                        )
+                )
+        );
     }
 
 
