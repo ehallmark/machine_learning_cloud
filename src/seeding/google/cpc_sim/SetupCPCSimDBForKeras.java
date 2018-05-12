@@ -87,7 +87,7 @@ public class SetupCPCSimDBForKeras {
         System.out.println("Cooccurrence Size After Initialization: "+cooccurrenceMap.size());
 
         // now fill in with actual data
-        PreparedStatement seedPs = seedConn.prepareStatement("select publication_number_full,tree from big_query_cpc_tree tablesample system (5)");
+        PreparedStatement seedPs = seedConn.prepareStatement("select publication_number_full,tree from big_query_cpc_tree tablesample bernoulli (5)");
         seedPs.setFetchSize(10);
         ResultSet rs = seedPs.executeQuery();
 
