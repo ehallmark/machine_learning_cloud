@@ -140,6 +140,7 @@ public class Database {
 				ps.setString(1+fields.length+2*i,fields[i]);
 				ps.setString(2+fields.length+2*i, search);
 			}
+			System.out.println("Searching big query: "+ps.toString());
 			ResultSet rs = ps.executeQuery();
 			while(rs.next()) {
 				results.add(rs.getString(1));
