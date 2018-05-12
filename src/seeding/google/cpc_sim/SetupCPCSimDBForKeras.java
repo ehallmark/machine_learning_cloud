@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -51,9 +52,9 @@ public class SetupCPCSimDBForKeras {
 
         // bayesian initial (similarity to hierarchy)
         Map<String,Double> occurrenceMap = new HashMap<>();
-        final Map<UndirectedEdge<String>,AtomicDouble> cooccurrenceMap = new HashMap<>();
+        final Map<UndirectedEdge<String>,AtomicDouble> cooccurrenceMap = new ConcurrentHashMap<>(allCPCs.size()+1);
         List<CPC> cpcs = new ArrayList<>(hierarchy.getLabelToCPCMap().values());
-        Map<String,Set<String>> cpcToOccurrenceMap = new HashMap<>();
+        Map<String,Set<String>> cpcToOccurrenceMap = new ConcurrentHashMap<>(cpcs.size()+1);
         cpcs.forEach(cpc->{
             occurrenceMap.put(cpc.getName(),alpha);
             cpcToOccurrenceMap.putIfAbsent(cpc.getName(), new HashSet<>());
@@ -86,7 +87,7 @@ public class SetupCPCSimDBForKeras {
         System.out.println("Cooccurrence Size After Initialization: "+cooccurrenceMap.size());
 
         // now fill in with actual data
-        PreparedStatement seedPs = seedConn.prepareStatement("select publication_number_full,tree from big_query_cpc_tree tablesample system (10)");
+        PreparedStatement seedPs = seedConn.prepareStatement("select publication_number_full,tree from big_query_cpc_tree tablesample system (5)");
         seedPs.setFetchSize(10);
         ResultSet rs = seedPs.executeQuery();
 
@@ -101,7 +102,9 @@ public class SetupCPCSimDBForKeras {
                     boolean valid = occurrenceMap.containsKey(cpc);
                     if(valid) {
                         // add to occurrence map
-                        occurrenceMap.put(cpc,occurrenceMap.get(cpc)+1d);
+                        synchronized (occurrenceMap) {
+                            occurrenceMap.put(cpc, occurrenceMap.get(cpc) + 1d);
+                        }
                     }
                     return valid;
                 }).toArray(s->new String[s]);

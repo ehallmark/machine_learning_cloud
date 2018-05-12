@@ -317,7 +317,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         } else if(collectByAttribute!=null && collectByAttribute instanceof DependentAttribute) {
             ((DependentAttribute)collectByAttribute).extractRelevantInformationFromParams(req);
         }
-        
+
         CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getStatsAggName(attrName), collectByAttribute, collectorType);
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
