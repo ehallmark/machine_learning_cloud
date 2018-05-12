@@ -144,6 +144,10 @@ public class SetupCPCSimDBForKeras {
         System.out.println("Truncated succesfully.");
 
         System.out.println("Saving cooccurrence results to database...");
+        double[] cooccurrencesNorm = new double[allCPCs.size()];
+        for(int i = 0; i < allCPCs.size(); i++) {
+            cooccurrencesNorm[i]=cpcToOccurrenceMap.getOrDefault(allCPCs.get(i), Collections.emptySet()).size();
+        }
 
         cnt.set(0);
         IntStream.range(0,allCPCs.size()).forEach(idx->{
@@ -159,7 +163,10 @@ public class SetupCPCSimDBForKeras {
             for(String occ : occurring) {
                 if(occ.equals(cpc)) continue;
                 int cIdx = codeToIndexMap.get(occ);
+                double norm = cooccurrencesNorm[cIdx];
                 double val = cooccurrenceMap.getOrDefault(new UndirectedEdge<>(cpc,occ),new AtomicDouble(0d)).get() * Math.pow(cpcs.get(cIdx).getNumParts(),2);
+                if(norm <= 1) val = 0;
+                else val /= Math.log(norm);
                 occurrences.put(cIdx,val);
                 sum+=val;
             }
