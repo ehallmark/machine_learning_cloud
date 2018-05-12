@@ -129,27 +129,19 @@ public class SimilarityEngineController {
         setPrefilters(req);
 
         Set<String> attributesRequired = new HashSet<>();
-            attributesRequired.add(comparator);
+        attributesRequired.add(comparator);
 
         List<String> attributesFromUser = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
-            attributesRequired.addAll(attributesFromUser);
-            attributesFromUser.forEach(attr ->
-
-        {
-            attributesRequired.addAll(extractArray(req, attr + "[]"));
-        });
-            if(isBigQuery)attributesRequired.add(Attributes.FAMILY_ID); // IMPORTANT
+        attributesRequired.addAll(attributesFromUser);
+        attributesFromUser.forEach(attr -> attributesRequired.addAll(extractArray(req, attr + "[]")));
+        if(isBigQuery)attributesRequired.add(Attributes.FAMILY_ID); // IMPORTANT
 
         // add chart prerequisites
-            if(chartPrerequisites !=null)
-
-        {
+        if(chartPrerequisites !=null) {
             attributesRequired.addAll(chartPrerequisites);
         }
 
-            if(comparator.equals(Constants.SCORE))
-
-        {
+        if(comparator.equals(Constants.SCORE)) {
             if (isBigQuery) {
                 attributesRequired.add(Attributes.RNN_ENC);
                 attributesRequired.add(Attributes.CPC_VAE);
@@ -158,7 +150,7 @@ public class SimilarityEngineController {
             }
         }
 
-            System.out.println("Required attributes: "+String.join("; ",attributesRequired));
+        System.out.println("Required attributes: "+String.join("; ",attributesRequired));
 
         topLevelAttributes = SimilarPatentServer.getAllTopLevelAttributes()
                 .stream()

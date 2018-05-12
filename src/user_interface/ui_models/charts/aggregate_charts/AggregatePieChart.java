@@ -1,6 +1,7 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
 import com.googlecode.wickedcharts.highcharts.options.Options;
+import com.googlecode.wickedcharts.highcharts.options.PixelOrPercent;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
@@ -74,7 +75,13 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         }
         Options parentOptions = new Options();
         boolean drilldown = attrToDrilldownMap.getOrDefault(attrName,false);
+        System.out.println("Drilling down Pie chart: "+drilldown);
         List<Series<?>> data = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,limit,drilldown);
+        if(!drilldown && data.size()>1) {
+            data.get(0).setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
+            data.get(1).setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
+                    .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
+        }
         return Collections.singletonList(new PieChart(parentOptions, title,  subtitle, data, combineTypesToString(searchTypes)));
     }
 

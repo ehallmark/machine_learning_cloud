@@ -16,7 +16,7 @@ public class RnnEnc extends SimilarityAttribute {
     }
 
     public RnnEnc() {
-        super(Arrays.asList(Constants.TEXT_SIMILARITY, Constants.ASSIGNEE_SIMILARITY,Constants.PATENT_SIMILARITY, SimilarPatentServer.DATASETS_TO_SEARCH_IN_FIELD));
+        super(Arrays.asList(Constants.TEXT_SIMILARITY,Constants.PATENT_SIMILARITY, SimilarPatentServer.DATASETS_TO_SEARCH_IN_FIELD));
     }
 
     @Override

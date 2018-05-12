@@ -83,6 +83,7 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
             subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
         }
         boolean drilldown = attrToDrilldownMap.getOrDefault(attrName,false);
+        System.out.println("Drilling down Line chart: "+drilldown);
 
         Options parentOptions = new Options();
         List<Series<?>> data = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,null, drilldown);
@@ -124,7 +125,7 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
                 )
         );
     }
-    
+
 
     @Override
     public String getType() {
