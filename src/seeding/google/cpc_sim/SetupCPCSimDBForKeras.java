@@ -218,7 +218,7 @@ public class SetupCPCSimDBForKeras {
                 System.out.println("Skipping negatives for "+cpc);
             } else {
                 for (int i = 0; i < Math.min(negatives.size(), negativeSamples); i++) {
-                    int neg = rand.nextInt(negatives.size());
+                    int neg = negatives.get(rand.nextInt(negatives.size()));
                     StringJoiner value = new StringJoiner(",", "(", ")");
                     value.add(codeToIndexMap.get(cpc).toString()).add(codeToIndexMap.get(allCPCs.get(neg)).toString()).add("0.0");
                     values.add(value.toString());
