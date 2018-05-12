@@ -140,7 +140,7 @@ public class SetupCPCSimDBForKeras {
         System.out.println("Saving cooccurrence results to database...");
 
         cnt.set(0);
-        IntStream.range(0,allCPCs.size()).parallel().forEach(idx->{
+        IntStream.range(0,allCPCs.size()).forEach(idx->{
             String cpc = allCPCs.get(idx);
             double sum = 0d;
             Map<Integer,Double> occurrences = new HashMap<>();
