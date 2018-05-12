@@ -127,9 +127,10 @@ public class Database {
 		if(search==null||search.trim().isEmpty()) return Collections.emptyList();
 		StringJoiner where = new StringJoiner(" and ", "", "");
 		StringJoiner order = new StringJoiner(", ", "", "");
+		final int minFieldLength = 5;
 		for (String field : fields) {
 			where.add("lower("+field + ") like ? || '%'");
-			if(field.length()>5) {
+			if(search.length()>minFieldLength) {
 				order.add("ts_rank(to_tsvector("+field+"),to_tsquery('english', ?))");
 			} else {
 				order.add("lower("+field+")");
@@ -142,7 +143,9 @@ public class Database {
 			ps.setFetchSize(limit);
 			for(int i = 0; i < fields.length; i++) {
 				ps.setString(1+i,fields[i]);
-				ps.setString(1+fields.length+i,search.toLowerCase());
+				if(search.length()>minFieldLength) {
+					ps.setString(1 + fields.length + i, search.toLowerCase());
+				}
 			}
 			System.out.println("Searching big query: "+ps.toString());
 			ResultSet rs = ps.executeQuery();
