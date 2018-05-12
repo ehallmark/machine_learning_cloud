@@ -129,7 +129,11 @@ public class Database {
 		StringJoiner order = new StringJoiner(", ", "", "");
 		for (String field : fields) {
 			where.add("lower("+field + ") like ? || '%'");
-			order.add("ts_rank(to_tsvector("+field+"),to_tsquery('english', ?))");
+			if(field.length()>5) {
+				order.add("ts_rank(to_tsvector("+field+"),to_tsquery('english', ?))");
+			} else {
+				order.add("lower("+field+")");
+			}
 		}
 		order.add(desiredField);
 		List<String> results = new ArrayList<>(limit);
