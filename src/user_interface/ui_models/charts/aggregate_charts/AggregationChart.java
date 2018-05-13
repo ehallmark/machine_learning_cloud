@@ -75,11 +75,14 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         if(isGrouped) {
             List<Pair<Number,PointSeries>> drilldownData = new ArrayList<>();
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
-            final String groupAggName = getGroupByAttrName(attrName,groupedByAttrName,getGroupSuffix());
+            final String groupBySuffix = getGroupSuffix();
+            final String groupAggName = getGroupByAttrName(attrName,groupedByAttrName,groupBySuffix);
+            final String nestedGroupAggName = getGroupByAttrName(attrName,groupedByAttrName,groupBySuffix);
             if (groupByAttribute == null) {
-                throw new RuntimeException("Unable to find collecting attribute: " + groupByAttribute.getFullName());
+                throw new RuntimeException("Unable to find group by attribute: " + groupedByAttrName);
             }
-            Aggregation groupAgg = aggregations.get(groupAggName);
+
+            Aggregation groupAgg = handlePotentiallyNestedAgg(aggregations,groupAggName,nestedGroupAggName);
             if(groupAgg==null) {
                 System.out.println("Group agg: "+groupAggName);
                 System.out.println("Available aggs: "+String.join(", ",aggregations.getAsMap().keySet()));
@@ -93,6 +96,9 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                     String group = groupByDatasets==null?entry.getKeyAsString():groupByDatasets.get(i);
                     Aggregations nestedAggs = entry.getAggregations();
                     PointSeries series = getSeriesFromAgg(nestedAggs,attribute,attrName,group,limit,includeBlanks);
+                    if(series.getData()==null) {
+                        System.out.println("No data found for "+attrName+" grouped by "+groupedByAttrName);
+                    }
                     if(this instanceof AggregatePieChart) {
                         series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
                                 .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
@@ -239,7 +245,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             if(agg!=null) {
                 aggregations = ((SingleBucketAggregation)agg).getAggregations();
                 if(aggregations!=null) {
-                    agg = aggregations.get(attrNameWithSuffix);
+                    return handlePotentiallyNestedAgg(aggregations,attrNameWithSuffix,attrNameNestedWithSuffix);
                 }
             }
         }

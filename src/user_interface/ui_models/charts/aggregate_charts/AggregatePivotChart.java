@@ -176,7 +176,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
             final String groupAggName = getGroupByAttrName(attrName,groupedByAttrName,groupBySuffix);
             final String nestedGroupAggName = getGroupByAttrName(attrName,groupedByAttrName,groupBySuffix);
             if (groupByAttribute == null) {
-                throw new RuntimeException("Unable to find collecting attribute: " + groupByAttribute.getFullName());
+                throw new RuntimeException("Unable to find group by attribute in pivot chart: " + groupedByAttrName);
             }
             final List<String> dataSets = getCategoriesForAttribute(attribute);
             Aggregation groupAgg = handlePotentiallyNestedAgg(aggregations,groupAggName,nestedGroupAggName);
