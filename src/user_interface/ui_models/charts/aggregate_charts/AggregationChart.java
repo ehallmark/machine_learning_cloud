@@ -64,7 +64,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
     }
 
     // Set series in options param
-    protected void createDataForAggregationChart(Options options, Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean drilldown, boolean includeBlanks) {
+    protected Options createDataForAggregationChart(Options options, Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean drilldown, boolean includeBlanks) {
         List<Series<?>> data = new ArrayList<>();
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         final boolean isGrouped = groupedByAttrName!=null;
@@ -105,16 +105,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             }
             if(drilldown) {
                 System.out.println("Drilldown data points: "+drilldownData.size());
-                DrilldownChart.createDrilldownChart(options, drilldownData);
-                if(this instanceof AggregateLineChart) {
-                    List<String> categories = options.getSeries().isEmpty() ? Collections.singletonList("0")
-                            : ((PointSeries)options.getSeries().get(0)).getData().stream().map(p -> ((Point) p).getName()).collect(Collectors.toList());
-                    System.out.println("Categories for timeline: " + String.join(", ", categories));
-                    if(options.getSingleXAxis()==null) {
-                        options.setxAxis(Collections.singletonList(new Axis()));
-                    }
-                    options.getSingleXAxis().setCategories(categories);
-                }
+                options = DrilldownChart.createDrilldownChart(options, drilldownData);
 
             } else if(this instanceof AggregatePieChart) {
                 // Create PIE Donut
@@ -137,6 +128,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             }
             options.setSeries(data);
         }
+        return options;
     }
 
     public static List<Series<?>> flattenSeriesForDonutChart(List<Series<?>> data, String seriesTitle) {

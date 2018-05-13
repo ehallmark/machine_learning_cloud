@@ -86,7 +86,7 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
         }
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         Options parentOptions = new Options();
-        createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,null, false, includeBlank);
+        parentOptions = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,null, false, includeBlank);
 
         List<? extends Series> data = parentOptions.getSeries();
         data.forEach(series->{

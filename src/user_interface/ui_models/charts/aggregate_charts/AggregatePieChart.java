@@ -73,7 +73,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         Options parentOptions = new Options();
         boolean drilldown = attrToDrilldownMap.getOrDefault(attrName,false);
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
-        createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,limit,drilldown,includeBlank);
+        parentOptions = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,limit,drilldown,includeBlank);
         return Collections.singletonList(new PieChart(parentOptions, title,  subtitle, combineTypesToString(searchTypes)));
     }
 

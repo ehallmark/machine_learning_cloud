@@ -12,30 +12,32 @@ import user_interface.ui_models.charts.aggregate_charts.AggregateLineChart;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class DrilldownChart extends Options {
-    public static void createDrilldownChart(Options baseOptions, List<Pair<Number,PointSeries>> baseSeries) {
+public class DrilldownChart {
+    public static Options createDrilldownChart(Options baseOptions, List<Pair<Number,PointSeries>> baseSeries) {
         PointSeries groupesSeries = new PointSeries();
+        AtomicInteger inc = new AtomicInteger(0);
+        List<DrilldownPointSeries> drilldownSeries = new ArrayList<>(baseSeries.size());
+        DrilldownOptions drilldownOptions = new DrilldownOptions();
+        drilldownOptions.copyFrom(baseOptions);
         for(Pair<Number,PointSeries> seriesPair : baseSeries) {
+            String id = String.valueOf(inc.getAndIncrement());
             PointSeries series = seriesPair.getRight();
-            groupesSeries.addPoint(new DrilldownPoint(baseOptions,createDrilldownOptions(baseOptions, series))
-                    .setY(seriesPair.getFirst()).setName(series.getName())
-            );
+            groupesSeries.addPoint(new DrilldownParentPoint(series.getName(), seriesPair.getFirst(),id));
+            drilldownSeries.add(createDrilldownSeries(series, id));
         }
-        baseOptions.setSeries(Collections.singletonList(groupesSeries));
+        drilldownOptions.setDrilldownData(drilldownSeries);
+        drilldownOptions.setSeries(Collections.singletonList(groupesSeries));
+        return drilldownOptions;
     }
 
-    private static Options createDrilldownOptions(Options baseOptions, PointSeries series) {
-        Options options = new Options();
-        options.copyFrom(baseOptions);
-        PointSeries newSeries = new PointSeries();
+    private static DrilldownPointSeries createDrilldownSeries(PointSeries series, String id) {
+        DrilldownPointSeries newSeries = new DrilldownPointSeries();
+        newSeries.setId(id);
         newSeries.setName(series.getName());
         newSeries.setDataLabels(series.getDataLabels());
-        for(Point point : series.getData()) {
-            newSeries.addPoint(new DrilldownPoint(options, baseOptions).setY(point.getY()).setName(point.getName()));
-        }
-        options.setSeries(Collections.singletonList(newSeries));
-        return options;
+        newSeries.setData(series.getData());
+        return newSeries;
     }
 }
