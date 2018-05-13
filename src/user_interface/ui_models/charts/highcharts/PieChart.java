@@ -27,7 +27,6 @@ public class PieChart extends AbstractChart {
                 .setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}%</b><br/>Count: <b> {point.y} "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setyAxis(new Axis())
-                .setxAxis(new Axis())
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT)).setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
         for(Series<?> series : options.getSeries()) {
             if(series.getDataLabels()==null) {
