@@ -66,7 +66,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
         super(inputToVectorFunction);
         this.loadVectors=true;
         this.oldModel=false;
-        if(loadVectors) inputToVectorFunction.apply(Collections.emptyList());
+       // if(loadVectors) inputToVectorFunction.apply(Collections.emptyList());
     }
 
     @Override
