@@ -75,11 +75,6 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         System.out.println("Keys in drilldown: "+String.join("; ",attrToDrilldownMap.keySet()));
         System.out.println("Drilling down Pie chart with attr "+attrName+": "+drilldown);
         List<Series<?>> data = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,limit,drilldown);
-        if(!drilldown && isGrouped) {
-            for(Series<?> series : data) {
-                series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
-            }
-        }
         return Collections.singletonList(new PieChart(parentOptions, title,  subtitle, data, combineTypesToString(searchTypes)));
     }
 

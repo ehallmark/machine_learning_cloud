@@ -108,6 +108,8 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 PointSeries combined = flattenSeries(data);
                 data.clear();
                 data.add(combined);
+                combined.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
+                    .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
                 PointSeries series = getSeriesFromAgg(aggregations, groupByAttribute, getGroupByAttrName(attrName,groupedByAttrName,GROUP_SUFFIX), title, limit);
                 series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT))
                         .setDataLabels(new DataLabels().setDistance(-30));
