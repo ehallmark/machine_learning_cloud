@@ -256,7 +256,7 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Patent Family ID",Attributes.FAMILY_ID);
             humanAttrToJavaAttrMap.put("Means Present", Attributes.MEANS_PRESENT);
             humanAttrToJavaAttrMap.put("AI Value", Attributes.AI_VALUE);
-
+            humanAttrToJavaAttrMap.put("CompDB Recorded Date", Attributes.COMPDB_RECORDED_DATE);
             // custom filter name for excluding granted apps
             humanAttrToJavaAttrMap.put("Exclude Granted Applications Filter", Constants.GRANTED+ AbstractFilter.FilterType.BoolFalse+ Constants.FILTER_SUFFIX);
             humanAttrToJavaAttrMap.put("Related Docs", Constants.ALL_RELATED_ASSETS);
