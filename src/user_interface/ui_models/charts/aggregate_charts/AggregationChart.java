@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 6/17/2017.
  */
 public abstract class AggregationChart<T> extends AbstractChartAttribute {
-    public static final int MAXIMUM_AGGREGATION_SIZE = 1000;
+    public static final int MAXIMUM_AGGREGATION_SIZE = 250;
     public static final String NESTED_SUFFIX = "_n_";
     public static final String BUCKET_SUFFIX = "_b_";
     public static final String GROUP_SUFFIX = "_g_";
@@ -309,7 +309,16 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
     }
 
     public List<AbstractAggregation> getAggregations(Request req, AbstractAttribute attribute, String attrName) {
-        AbstractAggregation aggregation = AggregatePieChart.buildDistributionAggregation(this,attribute,attrName,null,aggSuffix);
+        Integer maxSlices = null;
+        if(this instanceof AggregatePieChart) {
+            // check for max slices
+            maxSlices = ((AggregatePieChart) this).attrToLimitMap.get(attrName);
+            System.out.println("Max slices: " + maxSlices);
+        }
+        if(maxSlices==null) {
+            maxSlices = AggregatePieChart.MAXIMUM_AGGREGATION_SIZE;
+        }
+        AbstractAggregation aggregation = AggregatePieChart.buildDistributionAggregation(this,attribute,attrName,null,aggSuffix,maxSlices);
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
             int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, MAXIMUM_AGGREGATION_SIZE);

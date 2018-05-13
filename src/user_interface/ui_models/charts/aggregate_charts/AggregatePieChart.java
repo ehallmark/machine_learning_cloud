@@ -197,6 +197,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
                 aggregation = new TermsAggregation(aggNameWithPrefix + aggSuffix, fieldName, null, missingVal, maxSize);
             }
         }
+
         if(isNested) {
             System.out.println("Is Parent Object: "+attribute.getParent().isObject());
             System.out.println("Parent attr name: "+attribute.getParent().getFullName());
