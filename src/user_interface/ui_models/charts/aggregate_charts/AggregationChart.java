@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 6/17/2017.
  */
 public abstract class AggregationChart<T> extends AbstractChartAttribute {
-    public static final int MAXIMUM_AGGREGATION_SIZE = 250;
+    public static final int MAXIMUM_AGGREGATION_SIZE = 100;
     public static final String NESTED_SUFFIX = "_n_";
     public static final String BUCKET_SUFFIX = "_b_";
     public static final String GROUP_SUFFIX = "_g_";
@@ -99,13 +99,13 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                     if(series.getData()==null) {
                         System.out.println("No data found for "+attrName+" grouped by "+groupedByAttrName);
                     }
-                    if(this instanceof AggregatePieChart) {
-                        series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
-                                .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
-                    }
                     if(drilldown) {
                         drilldownData.add(new Pair<>(series.getData().stream().mapToDouble(p->p.getY().doubleValue()).sum(),series));
                     } else {
+                        if(this instanceof AggregatePieChart) {
+                            series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
+                                    .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
+                        }
                         data.add(series);
                     }
                     i++;
@@ -304,7 +304,8 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             // For each entry
             int i = 0;
             for (MultiBucketsAggregation.Bucket entry : agg.getBuckets()) {
-                String key = categories==null?entry.getKeyAsString():categories.get(i);          // bucket key
+                String key = categories==null?entry.getKeyAsString():categories.get(i);
+                if(key==null && entry.getKey()!=null) key = entry.getKey().toString();// bucket key
                 long docCount = entry.getDocCount();            // Doc count
                 if(subAggregationHandler==null) {
                     bucketData.add(new Pair<>(key, docCount));
