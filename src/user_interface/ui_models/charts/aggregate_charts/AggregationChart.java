@@ -13,7 +13,10 @@ import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
+import org.elasticsearch.search.aggregations.bucket.SingleBucketAggregation;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
+import org.elasticsearch.search.aggregations.bucket.sampler.SamplerAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.sampler.SamplerAggregator;
 import org.nd4j.linalg.primitives.AtomicDouble;
 import org.nd4j.linalg.primitives.Pair;
 import spark.Request;
@@ -24,6 +27,7 @@ import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
+import user_interface.ui_models.charts.aggregations.buckets.SignificantTermsAggregation;
 import user_interface.ui_models.charts.highcharts.DrilldownChart;
 
 import java.awt.*;
@@ -230,6 +234,16 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
     public Aggregation handlePotentiallyNestedAgg(Aggregations aggregations, String attrNameWithSuffix, String attrNameNestedWithSuffix) {
         if(aggregations==null) return null; // important to stop recursion
         Aggregation agg = aggregations.get(attrNameWithSuffix);
+        if(agg==null) {
+            agg=aggregations.get(attrNameWithSuffix+ SignificantTermsAggregation.SAMPLER_SUFFIX);
+            if(agg!=null) {
+                aggregations = ((SingleBucketAggregation)agg).getAggregations();
+                if(aggregations!=null) {
+                    agg = aggregations.get(attrNameWithSuffix);
+                }
+            }
+        }
+
         if(agg==null&&attrNameNestedWithSuffix!=null) {
             // try nested
             Nested nested = aggregations.get(attrNameNestedWithSuffix);

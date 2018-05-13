@@ -7,6 +7,7 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.significant.SignificantTermsAggregationBuilder;
 
 public class SignificantTermsAggregation extends BucketAggregation {
+    public static final String SAMPLER_SUFFIX = "_samp";
     @Getter
     protected AggregationBuilder aggregation;
     public SignificantTermsAggregation(String name, String field, Script script, Object missingVal, Integer size) {
@@ -16,6 +17,8 @@ public class SignificantTermsAggregation extends BucketAggregation {
         if(missingVal!=null)_builder= _builder.missing(missingVal);
         if(size!=null)_builder=_builder.size(size);
         aggregation=_builder;
+        aggregation=AggregationBuilders.sampler(name+SAMPLER_SUFFIX)
+                .subAggregation(aggregation);
     }
 
 }
