@@ -45,7 +45,7 @@ public class ColumnChart extends AbstractChart {
             );
         }
         if(min!=null) options.getSingleYAxis().setMin(min);
-        if(max!=null&&max>min) options.getSingleYAxis().setMax(max);
+        if(max!=null&&min!=null&&max>min) options.getSingleYAxis().setMax(max);
     }
 
     static String capitalize(String str) {

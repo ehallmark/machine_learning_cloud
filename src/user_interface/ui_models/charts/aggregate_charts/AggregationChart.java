@@ -105,10 +105,11 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 throw new RuntimeException("Unable to cast group aggregation "+groupAggName.getClass().getName()+" to MultiBucketsAggregation.class");
             }
             if(drilldown) {
+                System.out.println("Drilldown data points: "+drilldownData.size());
                 DrilldownChart.createDrilldownChart(options, drilldownData, this instanceof AggregateLineChart);
                 if(this instanceof AggregateLineChart) {
-                    List<String> categories = data.isEmpty() ? Collections.singletonList("0")
-                            : data.get(0).getData().stream().map(p -> ((Point) p).getName()).collect(Collectors.toList());
+                    List<String> categories = options.getSeries().isEmpty() ? Collections.singletonList("0")
+                            : ((PointSeries)options.getSeries().get(0)).getData().stream().map(p -> ((Point) p).getName()).collect(Collectors.toList());
                     System.out.println("Categories for timeline: " + String.join(", ", categories));
                     if(options.getSingleXAxis()==null) {
                         options.setxAxis(Collections.singletonList(new Axis()));
