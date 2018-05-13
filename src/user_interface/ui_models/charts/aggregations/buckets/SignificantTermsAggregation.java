@@ -18,6 +18,7 @@ public class SignificantTermsAggregation extends BucketAggregation {
         if(size!=null)_builder=_builder.size(size);
         aggregation=_builder;
         aggregation=AggregationBuilders.sampler(name+SAMPLER_SUFFIX)
+                .shardSize(1000)
                 .subAggregation(aggregation);
     }
 
