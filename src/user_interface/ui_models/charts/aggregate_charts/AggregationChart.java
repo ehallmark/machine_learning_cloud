@@ -99,6 +99,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                     if(series.getData()==null) {
                         System.out.println("No data found for "+attrName+" grouped by "+groupedByAttrName);
                     }
+                    System.out.println("Nested aggs: "+nestedAggs.toString());
                     if(drilldown) {
                         drilldownData.add(new Pair<>(series.getData().stream().mapToDouble(p->p.getY().doubleValue()).sum(),series));
                     } else {
