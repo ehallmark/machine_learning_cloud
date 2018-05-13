@@ -72,9 +72,8 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         }
         Options parentOptions = new Options();
         boolean drilldown = attrToDrilldownMap.getOrDefault(attrName,false);
-        System.out.println("Keys in drilldown: "+String.join("; ",attrToDrilldownMap.keySet()));
-        System.out.println("Drilling down Pie chart with attr "+attrName+": "+drilldown);
-        createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,limit,drilldown);
+        boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
+        createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,limit,drilldown,includeBlank);
         return Collections.singletonList(new PieChart(parentOptions, title,  subtitle, combineTypesToString(searchTypes)));
     }
 
@@ -122,15 +121,15 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         return "pie";
     }
 
-    public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggPrefix, String aggSuffix) {
-        return buildDistributionAggregation(chart, attribute,attrName,aggPrefix,aggSuffix,MAXIMUM_AGGREGATION_SIZE);
+    public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggPrefix, String aggSuffix, boolean includeBlank) {
+        return buildDistributionAggregation(chart, attribute,attrName,aggPrefix,aggSuffix,MAXIMUM_AGGREGATION_SIZE, includeBlank);
     }
 
-    public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggPrefix, String aggSuffix, int maxSize) {
+    public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggPrefix, String aggSuffix, int maxSize, boolean includeBlank) {
         System.out.println("Building distribution agg for: "+attribute.getFullName()+" with suffix "+aggSuffix);
         boolean isNested = attribute.getParent()!=null&&(!(attribute.getParent() instanceof AbstractChartAttribute))&&(!attribute.getParent().isObject());
         final Object missingVal;
-        if(attribute.getType().equals("text")||attribute.getType().equals("keyword")) {
+        if(includeBlank && (attribute.getType().equals("text")||attribute.getType().equals("keyword"))) {
             missingVal = "(empty)";
         } else {
             missingVal = null;

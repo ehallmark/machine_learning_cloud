@@ -116,7 +116,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
 
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         final boolean isGrouped = groupedByAttrName!=null;
-
+        boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         List<String> headers = new ArrayList<>();
         headers.add(attrName);
         Set<String> numericAttrNames = new HashSet<>();
@@ -213,6 +213,9 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                         MultiBucketsAggregation.Bucket bucket = bucketAgg.getBuckets().get(i);
                         Object group = groupByDatasets == null ? bucket.getKeyAsString() : groupByDatasets.get(i);
                         if (group == null || group.toString().isEmpty()) group = "(empty)";
+                        if(!includeBlank && group.equals("(empty)")) {
+                            continue;
+                        }
                         Aggregations nestedAggs = bucket.getAggregations();
                         List<Pair<String,Number>> nestedBucketData = extractValuesFromAggregation(nestedAggs,attribute,attrName,subAggregationHandler);
                         Map<String,Number> pairsByGroup = new HashMap<>();
@@ -299,6 +302,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     public List<AbstractAggregation> getAggregations(Request req, AbstractAttribute attribute, String attrName) {
         Type collectorType = attrToCollectTypeMap.get(attrName);
         String collectByAttrName = attrToCollectByAttrMap.get(attrName);
+        boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         if(collectorType==null && collectByAttrName!=null) throw new RuntimeException("Please select collector type.");
         if(collectByAttrName==null && collectorType!=null && !collectorType.equals(Type.Count)) throw new RuntimeException("Please select collect by attribute name.");
 
@@ -306,7 +310,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         System.out.println("Collect by: "+collectorType);
         System.out.println("Available collector attrs: "+String.join("; ",attrToCollectByAttrMap.keySet()));
 
-        BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName,null, aggSuffix);
+        BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName,null, aggSuffix, includeBlank);
         AbstractAttribute collectByAttribute = collectByAttrName==null?null:findAttribute(collectByAttributes,collectByAttrName);
         if(collectByAttribute==null) {
             System.out.println("Collect by attribute could not be found: "+collectByAttrName);
@@ -322,7 +326,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
             int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, MAXIMUM_AGGREGATION_SIZE);
-            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(req, attrName,groupedByAttrName,groupLimit,combinedAttrAgg.getAggregation());
+            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(req, attrName,groupedByAttrName,groupLimit,combinedAttrAgg.getAggregation(), includeBlank);
             return Collections.singletonList(
                     twoDimensionalAgg
             );

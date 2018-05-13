@@ -215,14 +215,6 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         }).collect(Collectors.toList());
         searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE_INCLUDE_FILTER_STR);
 
-        if(attrNames!=null) {
-            this.attrNames.forEach(attr -> {
-                boolean drilldown = SimilarPatentServer.extractBool(params, getDrilldownAttrFieldName(attr));
-                System.out.println("Drilldown field "+attr+": "+getDrilldownAttrFieldName(attr));
-                System.out.println("Drilling down "+attr+"? "+drilldown);
-                attrToDrilldownMap.put(attr,drilldown);
-         });
-        }
         if(groupByAttributes!=null) {
             List<String> attrsToCheck = new ArrayList<>();
             if(groupByPerAttribute) {
@@ -253,6 +245,16 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                     attrToPlotOnSameChartMap.put(attrName,plotOnSameChart);
                 }
 
+            });
+        }
+
+        if(attrNames!=null) {
+            this.attrNames.forEach(attr -> {
+                boolean drilldown = SimilarPatentServer.extractBool(params, getDrilldownAttrFieldName(attr));
+                if(drilldown && !attrNameToGroupByAttrNameMap.containsKey(attr)) {
+                    throw new RuntimeException("Must specify group by attribute in order use Drilldown for "+SimilarPatentServer.humanAttributeFor(attr)+".");
+                }
+                attrToDrilldownMap.put(attr,drilldown);
             });
         }
 

@@ -53,7 +53,8 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         }
         Options parentOptions = new Options();
         boolean drilldown = attrToDrilldownMap.getOrDefault(attrName, false);
-        createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,null,drilldown);
+        boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
+        createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,null,drilldown,includeBlank);
         List<? extends Series> data = parentOptions.getSeries();
                 data.forEach(series-> {
             series.setShowInLegend(false);

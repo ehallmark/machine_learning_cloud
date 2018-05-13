@@ -19,7 +19,7 @@ public class DrilldownChart extends Options {
         for(Pair<Number,PointSeries> seriesPair : baseSeries) {
             PointSeries series = seriesPair.getRight();
             groupesSeries.addPoint(new DrilldownPoint(baseOptions,createDrilldownOptions(baseOptions, series, createCategories))
-                    .setY(seriesPair.getFirst())
+                    .setY(seriesPair.getFirst()).setName(series.getName())
             );
         }
         baseOptions.setSeries(Collections.singletonList(groupesSeries));
@@ -27,7 +27,7 @@ public class DrilldownChart extends Options {
 
     private static Options createDrilldownOptions(Options baseOptions, PointSeries series, boolean createCategories) {
         Options options = new Options();
-        //options.copyFrom(baseOptions);
+        options.copyFrom(baseOptions);
         PointSeries newSeries = new PointSeries();
         newSeries.setName(series.getName());
         newSeries.setDataLabels(series.getDataLabels());

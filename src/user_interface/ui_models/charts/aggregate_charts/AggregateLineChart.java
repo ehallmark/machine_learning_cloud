@@ -84,11 +84,9 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
         if(isGrouped) {
             subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
         }
-        boolean drilldown = attrToDrilldownMap.getOrDefault(attrName,false);
-        System.out.println("Drilling down Line chart: "+drilldown);
-
+        boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         Options parentOptions = new Options();
-        createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,null, drilldown);
+        createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,null, false, includeBlank);
 
         List<? extends Series> data = parentOptions.getSeries();
         data.forEach(series->{
@@ -100,7 +98,7 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
-        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getChartMinByName(attrName),getChartMaxByName(attrName),getDrilldownAttrFieldName(attrName));
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getChartMinByName(attrName),getChartMaxByName(attrName));
         return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,(tag1,tag2)->div().with(tag1,tag2),true);
     }
 
@@ -109,19 +107,14 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
         final String minAttrName = getChartMinByName(attrName);
         final String maxAttrName = getChartMaxByName(attrName);
         return div().withClass("row").with(
-                div().withClass("col-5").with(
+                div().withClass("col-6").with(
                         label("Min Date").attr("style","width: 100%;").with(
                                 br(),
                                 input().withId(minAttrName).withName(minAttrName).withType("text").withClass("datepicker form-control")
                         )
-                ), div().withClass("col-5").with(
+                ), div().withClass("col-6").with(
                         label("Max Date").attr("style","width: 100%;").with(
                                 br(),input().withId(maxAttrName).withName(maxAttrName).withType("text").withClass("datepicker form-control")
-                        )
-                ), div().withClass("col-2").with(
-                        label("Drilldown").attr("title","Plot groups using drilldowns.").with(
-                                br(),
-                                input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
                         )
                 )
         );

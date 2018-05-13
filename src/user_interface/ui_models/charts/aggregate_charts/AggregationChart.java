@@ -65,7 +65,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
     }
 
     // Set series in options param
-    protected void createDataForAggregationChart(Options options, Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean drilldown) {
+    protected void createDataForAggregationChart(Options options, Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean drilldown, boolean includeBlanks) {
         List<Series<?>> data = new ArrayList<>();
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         final boolean isGrouped = groupedByAttrName!=null;
@@ -89,13 +89,13 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 for(MultiBucketsAggregation.Bucket entry : agg.getBuckets()) {
                     String group = groupByDatasets==null?entry.getKeyAsString():groupByDatasets.get(i);
                     Aggregations nestedAggs = entry.getAggregations();
-                    PointSeries series = getSeriesFromAgg(nestedAggs,attribute,attrName,group,limit);
+                    PointSeries series = getSeriesFromAgg(nestedAggs,attribute,attrName,group,limit,includeBlanks);
                     if(this instanceof AggregatePieChart) {
                         series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
                                 .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
                     }
                     if(drilldown) {
-                        drilldownData.add(new Pair<>(entry.getDocCount(),series));
+                        drilldownData.add(new Pair<>(series.getData().stream().mapToDouble(p->p.getY().doubleValue()).sum(),series));
                     } else {
                         data.add(series);
                     }
@@ -125,13 +125,13 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 data.add(combined);
                 combined.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
                     .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
-                PointSeries series = getSeriesFromAgg(aggregations, groupByAttribute, getGroupByAttrName(attrName,groupedByAttrName,GROUP_SUFFIX), title, limit);
+                PointSeries series = getSeriesFromAgg(aggregations, groupByAttribute, getGroupByAttrName(attrName,groupedByAttrName,GROUP_SUFFIX), title, limit,includeBlanks);
                 series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT))
                         .setDataLabels(new DataLabels().setColor(Color.WHITE).setDistance(-50));
                 data.add(0, series);
             }
         } else {
-            PointSeries series = getSeriesFromAgg(aggregations, attribute, attrName, title, limit);
+            PointSeries series = getSeriesFromAgg(aggregations, attribute, attrName, title, limit,includeBlanks);
             data.add(series);
         }
         if(!drilldown) {
@@ -159,7 +159,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         return combinedSeries;
     }
 
-    protected AbstractAggregation createGroupedAttribute(Request req, String attrName, String groupedByAttrName, int groupLimit, AggregationBuilder innerAgg) {
+    protected AbstractAggregation createGroupedAttribute(Request req, String attrName, String groupedByAttrName, int groupLimit, AggregationBuilder innerAgg, boolean includeBlank) {
         AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
         if(groupByAttribute==null) {
             throw new RuntimeException("Unable to find grouping attribute attribute: "+groupedByAttrName);
@@ -168,7 +168,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             ((DependentAttribute)groupByAttribute).extractRelevantInformationFromParams(req);
         }
         String groupBySuffix = getGroupSuffix();
-        BucketAggregation groupAgg = AggregatePieChart.buildDistributionAggregation(this,groupByAttribute,groupByAttribute.getFullName(),attrName,groupBySuffix,groupLimit);
+        BucketAggregation groupAgg = AggregatePieChart.buildDistributionAggregation(this,groupByAttribute,groupByAttribute.getFullName(),attrName,groupBySuffix,groupLimit,includeBlank);
         return new AbstractAggregation() {
             @Override
             public AggregationBuilder getAggregation() {
@@ -177,7 +177,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         };
     }
 
-    protected PointSeries getSeriesFromAgg(Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit) {
+    protected PointSeries getSeriesFromAgg(Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean includeBlank) {
         PointSeries series = new PointSeries();
         series.setName(title);
         final List<String> dataSets = getCategoriesForAttribute(attribute);
@@ -198,6 +198,9 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             Pair<String,Long> bucket = bucketData.get(i);
             Object label = bucket.getFirst();
             if(label==null||label.toString().isEmpty()) label = "(empty)";
+            if(!includeBlank && label.equals("(empty)")) {
+                continue;
+            }
             double prob = bucket.getSecond().doubleValue();
             if(limit!=null&&i>=limit) {
                 remaining+=prob;
@@ -318,11 +321,12 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         if(maxSlices==null) {
             maxSlices = AggregatePieChart.MAXIMUM_AGGREGATION_SIZE;
         }
-        AbstractAggregation aggregation = AggregatePieChart.buildDistributionAggregation(this,attribute,attrName,null,aggSuffix,maxSlices);
+        boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
+        AbstractAggregation aggregation = AggregatePieChart.buildDistributionAggregation(this,attribute,attrName,null,aggSuffix,maxSlices, includeBlank);
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
             int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, MAXIMUM_AGGREGATION_SIZE);
-            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(req, attrName,groupedByAttrName,groupLimit,aggregation.getAggregation());
+            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(req, attrName,groupedByAttrName,groupLimit,aggregation.getAggregation(), includeBlank);
             return Collections.singletonList(
                     twoDimensionalAgg
             );
