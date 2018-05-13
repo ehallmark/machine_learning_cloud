@@ -105,7 +105,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             }
             if(drilldown) {
                 System.out.println("Drilldown data points: "+drilldownData.size());
-                DrilldownChart.createDrilldownChart(options, drilldownData, this instanceof AggregateLineChart);
+                DrilldownChart.createDrilldownChart(options, drilldownData);
                 if(this instanceof AggregateLineChart) {
                     List<String> categories = options.getSeries().isEmpty() ? Collections.singletonList("0")
                             : ((PointSeries)options.getSeries().get(0)).getData().stream().map(p -> ((Point) p).getName()).collect(Collectors.toList());
