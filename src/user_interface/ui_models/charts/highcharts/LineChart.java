@@ -5,6 +5,7 @@ import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import lombok.Getter;
 
 import java.awt.*;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,10 +19,8 @@ public class LineChart extends AbstractChart {
 
     @Getter
     private boolean stockChart;
-    public LineChart( boolean stockChart, String title, String subTitle, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, List<String> categories) {
-        this(new Options(),stockChart,title,subTitle,data,xAxisSuffix,yAxisSuffix,xLabel,yLabel,yDecimals,categories);
-    }
-    public LineChart(Options _options, boolean stockChart, String title, String subTitle, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, List<String> categories) {
+
+    public LineChart(Options _options, boolean stockChart, String title, String subTitle, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals) {
         this.stockChart=stockChart;
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = "{point.key}"+xAxisSuffix;
@@ -31,18 +30,20 @@ public class LineChart extends AbstractChart {
                 .setLegend(new Legend(true))
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()))
                 .setExporting(new ExportingOptions().setEnabled(true))
-                .setTooltip(new Tooltip().setEnabled(true).setShared(data.size()>1).setUseHTML(true)
+                .setTooltip(new Tooltip().setEnabled(true).setShared(options.getSeries().size()>1).setUseHTML(true)
                         .setHeaderFormat("<small>"+xFormatStr+"</small><table>")
                         .setPointFormat("<tr><td><span style=\"color:{point.color}\">\u25CF</span> {series.name}</td><td> <b> "+yFormatStr+" "+yLabel+"</b></td></tr>")
                         .setFooterFormat("</table>")
                 )
-                .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
-                .setSeries(data);
+                .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"));
         if(subTitle!=null) options.setSubtitle(new Title(subTitle));
         if(isStockChart()) {
             options.setxAxis(new Axis().setType(AxisType.LINEAR).setTickInterval(1f).setTitle(new Title(xLabel)));
         } else {
-            options.setxAxis(new Axis().setType(AxisType.CATEGORY).setCategories(categories).setTitle(new Title(xLabel)));
+            if(options.getSingleXAxis()==null) {
+                options.setxAxis(Collections.singletonList(new Axis()));
+            }
+            options.getSingleXAxis().setTitle(new Title(xLabel));
         }
         options.setyAxis(new Axis().setType(AxisType.LINEAR).setMin(0).setTitle(new Title(ColumnChart.capitalize(yLabel)+" Count")));
         if(options.getSeries().size()==1) {

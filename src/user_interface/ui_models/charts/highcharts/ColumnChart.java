@@ -15,12 +15,9 @@ public class ColumnChart extends AbstractChart {
         return "column";
     }
 
-    public ColumnChart(String title, List<Series<?>> data, Double min, Double max, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String subTitle, int yDecimals, List<String> categories) {
-        this(new Options(),title,data,min,max,xAxisSuffix,yAxisSuffix,xLabel,yLabel,subTitle,yDecimals,categories);
-    }
-    public ColumnChart(Options _options, String title, List<Series<?>> data, Double min, Double max, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String subTitle, int yDecimals, List<String> categories) {
+    public ColumnChart(Options _options, String title, Double min, Double max, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String subTitle, int yDecimals, List<String> categories) {
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
-        String xFormatStr = data.size()>1 ? "{series.name}" : ("{point.key}"+xAxisSuffix);
+        String xFormatStr = options.getSeries().size()>1 ? "{series.name}" : ("{point.key}"+xAxisSuffix);
         SeriesType type = SeriesType.COLUMN;
         options=_options
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
@@ -28,7 +25,6 @@ public class ColumnChart extends AbstractChart {
                 .setExporting(new ExportingOptions().setEnabled(true))
                 .setTooltip(new Tooltip().setEnabled(true).setHeaderFormat(xFormatStr+"<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> <b> Count: "+yFormatStr+" "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
-                .setSeries(data)
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
         if(subTitle!=null) options.setSubtitle(new Title(subTitle));
         options.setxAxis(new Axis().setTitle(new Title(xLabel)).setMin(-0.5).setMax(-0.5+categories.size()).setShowFirstLabel(true).setShowLastLabel(true).setStartOnTick(false).setEndOnTick(false).setTickmarkPlacement(TickmarkPlacement.BETWEEN).setCategories(categories));

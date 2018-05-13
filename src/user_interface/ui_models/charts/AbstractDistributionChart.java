@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts;
 
+import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
@@ -51,7 +52,7 @@ public class AbstractDistributionChart extends ChartAttribute {
         return Stream.of(attrNames.get(i)).flatMap(attribute-> {
             String title = SimilarPatentServer.humanAttributeFor(attribute) + " Distribution";
             return groupPortfolioListForGivenAttribute(portfolioList,attribute).map(groupPair->{
-                    return new PieChart(title,  groupPair.getFirst(), collectDistributionData(groupPair.getSecond(), attribute, title, attrToLimitMap.getOrDefault(attribute, 20)), combineTypesToString(searchTypes));
+                    return new PieChart(new Options().setSeries(collectDistributionData(groupPair.getSecond(), attribute, title, attrToLimitMap.getOrDefault(attribute, 20))), title,  groupPair.getFirst(), combineTypesToString(searchTypes));
             });
         }).collect(Collectors.toList());
     }

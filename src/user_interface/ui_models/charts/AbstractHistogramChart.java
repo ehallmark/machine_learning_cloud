@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts;
 
+import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
@@ -79,12 +80,12 @@ public class AbstractHistogramChart extends ChartAttribute {
                 List<Series<?>> seriesList = groupPortfolioListForGivenAttribute(portfolioList, attribute).flatMap(groupPair -> {
                     return collectDistributionData(groupPair.getSecond().getItemList(), _min, _max, _nBins, attribute, SimilarPatentServer.humanAttributeFor(groupPair.getFirst()), categories).stream();
                 }).collect(Collectors.toList());
-                return Stream.of(new ColumnChart(title, seriesList, 0d, null, _xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, null, 0, categories));
+                return Stream.of(new ColumnChart(new Options().setSeries(seriesList), title, 0d, null, _xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, null, 0, categories));
             } else {
                 return groupPortfolioListForGivenAttribute(portfolioList, attribute).map(groupPair -> {
                     String name = groupPair.getFirst();
                     PortfolioList group = groupPair.getSecond();
-                    return new ColumnChart(title, collectDistributionData(group.getItemList(), _min, _max, _nBins, attribute, title, categories), 0d, null, _xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, name, 0, categories);
+                    return new ColumnChart(new Options().setSeries(collectDistributionData(group.getItemList(), _min, _max, _nBins, attribute, title, categories)), title, 0d, null, _xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, name, 0, categories);
                 });
             }
         }).collect(Collectors.toList());

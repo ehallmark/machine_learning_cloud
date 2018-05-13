@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts;
 
+import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import com.googlecode.wickedcharts.highcharts.options.series.SimpleSeries;
 import elasticsearch.DataSearcher;
@@ -136,11 +137,11 @@ public class AbstractLineChart extends ChartAttribute {
                         return updateSeries((SimpleSeries)series,actualMin,actualMax);
                     }).collect(Collectors.toList());
                 }
-                return Stream.of(new LineChart(true,title,null, seriesList, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0, null));
+                return Stream.of(new LineChart(new Options().setSeries(seriesList),true,title,null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
 
             } else {
                 return groupPortfolioListForGivenAttribute(portfolioList, attribute).map(groupPair -> {
-                    return new LineChart(true,title, groupPair.getFirst(), collectTimelineData(groupPair.getSecond().getItemList(), attribute, singularize(humanSearchType) + " Count", min, max), xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0, null);
+                    return new LineChart(new Options().setSeries(collectTimelineData(groupPair.getSecond().getItemList(), attribute, singularize(humanSearchType) + " Count", min, max)),true,title, groupPair.getFirst(), xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0);
                 });
             }
         }).collect(Collectors.toList());

@@ -2,11 +2,13 @@ package user_interface.ui_models.charts.aggregate_charts;
 
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
+import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
@@ -86,14 +88,13 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
         System.out.println("Drilling down Line chart: "+drilldown);
 
         Options parentOptions = new Options();
-        List<Series<?>> data = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,null, drilldown);
+        createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,null, drilldown);
+
+        List<? extends Series> data = parentOptions.getSeries();
         data.forEach(series->{
             series.setShowInLegend(false);
         });
-        List<String> categories = data.isEmpty() ? Collections.singletonList("0")
-                : data.get(0).getData().stream().map(p->((Point)p).getName()).collect(Collectors.toList());
-        System.out.println("Categories for timeline: "+String.join(", ",categories));
-        return Collections.singletonList(new LineChart(parentOptions,false,title, subtitle, data, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0,categories));
+        return Collections.singletonList(new LineChart(parentOptions,false,title, subtitle, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
     }
 
     @Override

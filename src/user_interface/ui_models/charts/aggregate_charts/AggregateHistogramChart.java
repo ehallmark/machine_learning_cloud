@@ -53,12 +53,13 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         }
         Options parentOptions = new Options();
         boolean drilldown = attrToDrilldownMap.getOrDefault(attrName, false);
-        List<Series<?>> data = createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,null,drilldown);
-        data.forEach(series-> {
+        createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,null,drilldown);
+        List<? extends Series> data = parentOptions.getSeries();
+                data.forEach(series-> {
             series.setShowInLegend(false);
         });
 
-        return Collections.singletonList(new ColumnChart(parentOptions, title, data, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories));
+        return Collections.singletonList(new ColumnChart(parentOptions, title, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories));
     }
 
     @Override

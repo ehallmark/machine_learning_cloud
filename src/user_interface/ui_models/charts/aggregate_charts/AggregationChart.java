@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
+import com.googlecode.wickedcharts.highcharts.options.Axis;
 import com.googlecode.wickedcharts.highcharts.options.DataLabels;
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.PixelOrPercent;
@@ -22,7 +23,9 @@ import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
+import user_interface.ui_models.charts.highcharts.DrilldownChart;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,12 +64,13 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         return attrName + groupByAttr + suffix;
     }
 
-    protected List<Series<?>> createDataForAggregationChart(Options options, Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean drilldown) {
+    // Set series in options param
+    protected void createDataForAggregationChart(Options options, Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean drilldown) {
         List<Series<?>> data = new ArrayList<>();
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         final boolean isGrouped = groupedByAttrName!=null;
         if(isGrouped) {
-            PointSeries drilldownSeries = new PointSeries();
+            List<Pair<Number,PointSeries>> drilldownData = new ArrayList<>();
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
             final String groupAggName = getGroupByAttrName(attrName,groupedByAttrName,getGroupSuffix());
             if (groupByAttribute == null) {
@@ -91,7 +95,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                                 .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
                     }
                     if(drilldown) {
-                        drilldownSeries.addPoint(createPoint(group,entry.getDocCount(),series,options));
+                        drilldownData.add(new Pair<>(entry.getDocCount(),series));
                     } else {
                         data.add(series);
                     }
@@ -101,7 +105,17 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 throw new RuntimeException("Unable to cast group aggregation "+groupAggName.getClass().getName()+" to MultiBucketsAggregation.class");
             }
             if(drilldown) {
-                data.add(drilldownSeries);
+                DrilldownChart.createDrilldownChart(options, drilldownData, this instanceof AggregateLineChart);
+                if(this instanceof AggregateLineChart) {
+                    List<String> categories = data.isEmpty() ? Collections.singletonList("0")
+                            : data.get(0).getData().stream().map(p -> ((Point) p).getName()).collect(Collectors.toList());
+                    System.out.println("Categories for timeline: " + String.join(", ", categories));
+                    if(options.getSingleXAxis()==null) {
+                        options.setxAxis(Collections.singletonList(new Axis()));
+                    }
+                    options.getSingleXAxis().setCategories(categories);
+                }
+
             } else if(this instanceof AggregatePieChart) {
                 // Create PIE Donut
                 System.out.println("Creating PIE chart donut");
@@ -112,14 +126,25 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                     .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
                 PointSeries series = getSeriesFromAgg(aggregations, groupByAttribute, getGroupByAttrName(attrName,groupedByAttrName,GROUP_SUFFIX), title, limit);
                 series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT))
-                        .setDataLabels(new DataLabels().setDistance(-30));
+                        .setDataLabels(new DataLabels().setColor(Color.WHITE).setDistance(-50));
                 data.add(0, series);
             }
         } else {
             PointSeries series = getSeriesFromAgg(aggregations, attribute, attrName, title, limit);
             data.add(series);
         }
-        return data;
+        if(!drilldown) {
+            if(this instanceof AggregateLineChart) {
+                List<String> categories = data.isEmpty() ? Collections.singletonList("0")
+                        : data.get(0).getData().stream().map(p -> ((Point) p).getName()).collect(Collectors.toList());
+                System.out.println("Categories for timeline: " + String.join(", ", categories));
+                if(options.getSingleXAxis()==null) {
+                    options.setxAxis(Collections.singletonList(new Axis()));
+                }
+                options.getSingleXAxis().setCategories(categories);
+            }
+            options.setSeries(data);
+        }
     }
 
     public static PointSeries flattenSeries(List<Series<?>> data) {
