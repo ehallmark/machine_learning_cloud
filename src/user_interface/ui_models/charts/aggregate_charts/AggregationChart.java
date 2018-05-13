@@ -14,6 +14,7 @@ import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
+import org.nd4j.linalg.primitives.AtomicDouble;
 import org.nd4j.linalg.primitives.Pair;
 import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -26,9 +27,7 @@ import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
 import user_interface.ui_models.charts.highcharts.DrilldownChart;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -120,15 +119,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             } else if(this instanceof AggregatePieChart) {
                 // Create PIE Donut
                 System.out.println("Creating PIE chart donut");
-                PointSeries combined = flattenSeries(data);
-                data.clear();
-                data.add(combined);
-                combined.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
-                    .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
-                PointSeries series = getSeriesFromAgg(aggregations, groupByAttribute, getGroupByAttrName(attrName,groupedByAttrName,GROUP_SUFFIX), title, limit,includeBlanks);
-                series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT))
-                        .setDataLabels(new DataLabels().setColor(Color.WHITE).setDistance(-50));
-                data.add(0, series);
+                data = flattenSeriesForDonutChart(data, title);
             }
         } else {
             PointSeries series = getSeriesFromAgg(aggregations, attribute, attrName, title, limit,includeBlanks);
@@ -148,15 +139,24 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         }
     }
 
-    public static PointSeries flattenSeries(List<Series<?>> data) {
+    public static List<Series<?>> flattenSeriesForDonutChart(List<Series<?>> data, String seriesTitle) {
         PointSeries combinedSeries = new PointSeries();
+        combinedSeries.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
+                .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
+        PointSeries series = new PointSeries();
+        series.setName(seriesTitle);
+        series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT))
+                .setDataLabels(new DataLabels().setColor(Color.WHITE).setDistance(-10));
         for(int i = 0; i < data.size(); i++) {
-            PointSeries series = (PointSeries) data.get(i);
-            series.getData().forEach(point->{
+            PointSeries d = (PointSeries) data.get(i);
+            double sum = 0d;
+            for(Point point : d.getData()) {
                 combinedSeries.addPoint(point);
-            });
+                sum+=point.getY().doubleValue();
+            }
+            series.addPoint(new Point().setName(d.getName()).setY(sum));
         }
-        return combinedSeries;
+        return Arrays.asList(series,combinedSeries);
     }
 
     protected AbstractAggregation createGroupedAttribute(Request req, String attrName, String groupedByAttrName, int groupLimit, AggregationBuilder innerAgg, boolean includeBlank) {
