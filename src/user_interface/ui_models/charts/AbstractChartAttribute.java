@@ -217,7 +217,9 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
         if(attrNames!=null) {
             this.attrNames.forEach(attr -> {
-                boolean drilldown = SimilarPatentServer.extractBool(params, getDrilldownAttrFieldName(getName()+attr));
+                boolean drilldown = SimilarPatentServer.extractBool(params, getDrilldownAttrFieldName(attr));
+                System.out.println("Drilldown field "+attr+": "+getDrilldownAttrFieldName(attr));
+                System.out.println("Drilling down "+attr+"? "+drilldown);
                 attrToDrilldownMap.put(attr,drilldown);
          });
         }
@@ -275,10 +277,6 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
     protected String getMaxSlicesField(String attrName) {
         return handleAttrName(attrName, SimilarPatentServer.MAX_SLICES_FIELD);
-    }
-
-    protected String getDonutBoolField(String attrName) {
-        return handleAttrName(attrName, SimilarPatentServer.DONUT_BOOL_FIELD);
     }
 
 

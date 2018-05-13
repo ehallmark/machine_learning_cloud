@@ -39,11 +39,9 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     private static final String AGG_SUFFIX = "_pie";
 
     protected Map<String,Integer> attrToLimitMap;
-    protected Map<String,Boolean> attrToDonutMap;
     public AggregatePieChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
         super(false,"Distribution",AGG_SUFFIX, attributes, groupByAttrs, Constants.PIE_CHART, false);
         this.attrToLimitMap=Collections.synchronizedMap(new HashMap<>());
-        this.attrToDonutMap=Collections.synchronizedMap(new HashMap<>());
     }
 
     @Override
@@ -58,8 +56,6 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             this.attrNames.forEach(attr -> {
                 Integer limit = SimilarPatentServer.extractInt(params, getMaxSlicesField(attr), null);
                 if(limit!=null) attrToLimitMap.put(attr,limit);
-                boolean donut = SimilarPatentServer.extractBool(params, getDonutBoolField(attr));
-                attrToDonutMap.put(attr,donut);
             });
         }
     }
@@ -90,7 +86,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
-        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getDonutBoolField(attrName),getDrilldownAttrFieldName(attrName),getMaxSlicesField(attrName));
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getDrilldownAttrFieldName(attrName),getMaxSlicesField(attrName));
         Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
                 div().withClass("col-9").with(
                         tag1
@@ -113,12 +109,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
                                 div().withClass("col-12").with(
                                         label("Drilldown").attr("title","Plot groups using drilldowns.").with(
                                                 br(),
-                                                input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDonutBoolField(attrName))).withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
-                                        )
-                                ), div().withClass("col-12").with(
-                                        label("Donut").attr("title","Plot groups using donut chart.").with(
-                                                br(),
-                                                input().withId(getDonutBoolField(attrName)).withValue("off").attr("onclick",cancelOtherCheckbox(getDrilldownAttrFieldName(attrName))).withName(getDonutBoolField(attrName)).withType("checkbox")
+                                                input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
                                         )
                                 )
                         )

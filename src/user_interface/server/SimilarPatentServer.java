@@ -103,7 +103,6 @@ public class SimilarPatentServer {
     public static final String COMPARATOR_FIELD = "comparator";
     public static final String NOT_IMPLEMENTED_STRING = "This functionality is not yet implemented.";
     public static final String SORT_DIRECTION_FIELD = "sortDirection";
-    public static final String DONUT_BOOL_FIELD = "donutBool";
     public static final String MAX_SLICES_FIELD = "maxSlices";
     public static final String CHARTS_GROUPED_BY_FIELD = "chartsGroupedBy";
     public static final String COLLECT_BY_ATTR_FIELD = "collectByAttr";

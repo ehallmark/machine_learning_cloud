@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
+import com.googlecode.wickedcharts.highcharts.options.DataLabels;
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.PixelOrPercent;
 import com.googlecode.wickedcharts.highcharts.options.drilldown.DrilldownPoint;
@@ -101,9 +102,15 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             }
             if(drilldown) {
                 data.add(drilldownSeries);
-            } else {
+            } else if(this instanceof AggregatePieChart) {
+                // Create PIE Donut
+                System.out.println("Creating PIE chart donut");
+                PointSeries combined = flattenSeries(data);
+                data.clear();
+                data.add(combined);
                 PointSeries series = getSeriesFromAgg(aggregations, groupByAttribute, getGroupByAttrName(attrName,groupedByAttrName,GROUP_SUFFIX), title, limit);
-                if(this instanceof AggregatePieChart) series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
+                series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT))
+                        .setDataLabels(new DataLabels().setDistance(-30));
                 data.add(0, series);
             }
         } else {
@@ -111,6 +118,17 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             data.add(series);
         }
         return data;
+    }
+
+    public static PointSeries flattenSeries(List<Series<?>> data) {
+        PointSeries combinedSeries = new PointSeries();
+        for(int i = 0; i < data.size(); i++) {
+            PointSeries series = (PointSeries) data.get(i);
+            series.getData().forEach(point->{
+                combinedSeries.addPoint(point);
+            });
+        }
+        return combinedSeries;
     }
 
     protected AbstractAggregation createGroupedAttribute(Request req, String attrName, String groupedByAttrName, int groupLimit, AggregationBuilder innerAgg) {
