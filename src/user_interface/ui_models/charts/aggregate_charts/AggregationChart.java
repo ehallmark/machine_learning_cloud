@@ -1,6 +1,7 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
 import com.googlecode.wickedcharts.highcharts.options.Options;
+import com.googlecode.wickedcharts.highcharts.options.PixelOrPercent;
 import com.googlecode.wickedcharts.highcharts.options.drilldown.DrilldownPoint;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
@@ -84,6 +85,10 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                     String group = groupByDatasets==null?entry.getKeyAsString():groupByDatasets.get(i);
                     Aggregations nestedAggs = entry.getAggregations();
                     PointSeries series = getSeriesFromAgg(nestedAggs,attribute,attrName,group,limit);
+                    if(this instanceof AggregatePieChart) {
+                        series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
+                                .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
+                    }
                     if(drilldown) {
                         drilldownSeries.addPoint(createPoint(group,entry.getDocCount(),series,options));
                     } else {
