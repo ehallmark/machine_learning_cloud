@@ -153,7 +153,7 @@ public class Database {
 		if(search==null||search.trim().isEmpty()) return Collections.emptyList();
 		List<String> results = new ArrayList<>(limit);
 		try {
-			PreparedStatement ps = conn.prepareStatement("select name,portfolio_size from " + tableName + " where lower(name) like ? || ''% limit " + limit);
+			PreparedStatement ps = conn.prepareStatement("select name,portfolio_size from " + tableName + " where lower(name) like ? || '%' limit " + limit);
 			ps.setFetchSize(limit);
 			ps.setString(1, search.toLowerCase());
 			System.out.println("Searching big query: "+ps.toString());
