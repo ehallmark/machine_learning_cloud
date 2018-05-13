@@ -146,7 +146,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         PointSeries series = new PointSeries();
         series.setName(seriesTitle);
         series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT))
-                .setDataLabels(new DataLabels().setColor(Color.WHITE).setDistance(-10));
+                .setDataLabels(new DataLabels(true).setColor(Color.WHITE).setDistance(-30));
         for(int i = 0; i < data.size(); i++) {
             PointSeries d = (PointSeries) data.get(i);
             double sum = 0d;

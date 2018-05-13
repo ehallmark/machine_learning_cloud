@@ -9,41 +9,45 @@ import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import org.nd4j.linalg.primitives.Pair;
 import user_interface.ui_models.charts.aggregate_charts.AggregateLineChart;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class DrilldownChart extends Options {
-    public static void createDrilldownChart(Options baseOptions, List<Pair<Number,PointSeries>> baseSeries, boolean createCategories) {
+    public static void createDrilldownChart(Options baseOptions, List<Pair<Number,PointSeries>> baseSeries) {
         PointSeries groupesSeries = new PointSeries();
+        List<String> categories = new ArrayList<>(baseSeries.size());
         for(Pair<Number,PointSeries> seriesPair : baseSeries) {
             PointSeries series = seriesPair.getRight();
-            groupesSeries.addPoint(new DrilldownPoint(baseOptions,createDrilldownOptions(baseOptions, series, createCategories))
-                    .setY(seriesPair.getFirst()).setName(series.getName())
+            groupesSeries.addPoint(new DrilldownPoint(baseOptions,createDrilldownOptions(baseOptions, series))
+                    .setY(seriesPair.getFirst())//.setName(series.getName())
             );
+            categories.add(series.getName());
         }
+        if(baseOptions.getSingleXAxis()==null) {
+            baseOptions.setxAxis(Collections.singletonList(new Axis()));
+        }
+        baseOptions.getSingleXAxis().setType(AxisType.CATEGORY).setCategories(categories);
         baseOptions.setSeries(Collections.singletonList(groupesSeries));
     }
 
-    private static Options createDrilldownOptions(Options baseOptions, PointSeries series, boolean createCategories) {
+    private static Options createDrilldownOptions(Options baseOptions, PointSeries series) {
         Options options = new Options();
         options.copyFrom(baseOptions);
         PointSeries newSeries = new PointSeries();
         newSeries.setName(series.getName());
         newSeries.setDataLabels(series.getDataLabels());
+        List<String> categories = new ArrayList<>(series.getData().size());
         for(Point point : series.getData()) {
-            newSeries.addPoint(new DrilldownPoint(options, baseOptions).setY(point.getY()).setName(point.getName()));
+            categories.add(point.getName());
+            newSeries.addPoint(new DrilldownPoint(options, baseOptions).setName(point.getName()));
         }
         options.setSeries(Collections.singletonList(newSeries));
-        if(createCategories) {
-            List<String> categories = newSeries.getData().isEmpty() ? Collections.singletonList("0")
-                    : newSeries.getData().stream().map(p -> ((Point) p).getName()).collect(Collectors.toList());
-            System.out.println("Categories for timeline: " + String.join(", ", categories));
-            if(options.getSingleXAxis()==null) {
-                options.setxAxis(Collections.singletonList(new Axis()));
-            }
-            options.getSingleXAxis().setCategories(categories).setType(AxisType.CATEGORY);
+        if(options.getSingleXAxis()==null) {
+            options.setxAxis(Collections.singletonList(new Axis()));
         }
+        options.getSingleXAxis().setCategories(categories).setType(AxisType.CATEGORY);
         return options;
     }
 }

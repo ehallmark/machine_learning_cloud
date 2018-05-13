@@ -30,13 +30,15 @@ public class PieChart extends AbstractChart {
                 .setxAxis(new Axis())
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT)).setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
         for(Series<?> series : options.getSeries()) {
-            series.setDataLabels(new DataLabels(true)
-                    .setRotation(0)
-                    .setColor(Color.black)
-                    .setAlign(HorizontalAlignment.CENTER)
-                    .setFormat("<b>{point.name}</b>: {point.percentage:.1f}%")
-                    .setY(-5)
-            );
+            if(series.getDataLabels()==null) {
+                series.setDataLabels(new DataLabels(true)
+                        .setRotation(0)
+                        .setColor(Color.black)
+                        .setAlign(HorizontalAlignment.CENTER)
+                        .setFormat("<b>{point.name}</b>: {point.percentage:.1f}%")
+                        .setY(-5)
+                );
+            }
         }
     }
 }
