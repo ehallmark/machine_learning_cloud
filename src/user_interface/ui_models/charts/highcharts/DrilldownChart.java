@@ -22,7 +22,7 @@ public class DrilldownChart {
         DrilldownOptions drilldownOptions = new DrilldownOptions();
         drilldownOptions.copyFrom(baseOptions);
         for(Pair<Number,PointSeries> seriesPair : baseSeries) {
-            String id = String.valueOf(inc.getAndIncrement());
+            String id = "drilldown"+String.valueOf(inc.getAndIncrement());
             PointSeries series = seriesPair.getRight();
             groupesSeries.addPoint(new DrilldownParentPoint(series.getName(), seriesPair.getFirst(),id));
             drilldownSeries.add(createDrilldownSeries(series, id));
