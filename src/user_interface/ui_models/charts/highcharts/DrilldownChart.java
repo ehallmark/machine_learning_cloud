@@ -17,18 +17,12 @@ import java.util.stream.Collectors;
 public class DrilldownChart extends Options {
     public static void createDrilldownChart(Options baseOptions, List<Pair<Number,PointSeries>> baseSeries) {
         PointSeries groupesSeries = new PointSeries();
-        List<String> categories = new ArrayList<>(baseSeries.size());
         for(Pair<Number,PointSeries> seriesPair : baseSeries) {
             PointSeries series = seriesPair.getRight();
             groupesSeries.addPoint(new DrilldownPoint(baseOptions,createDrilldownOptions(baseOptions, series))
-                    .setY(seriesPair.getFirst())//.setName(series.getName())
+                    .setY(seriesPair.getFirst()).setName(series.getName())
             );
-            categories.add(series.getName());
         }
-        if(baseOptions.getSingleXAxis()==null) {
-            baseOptions.setxAxis(Collections.singletonList(new Axis()));
-        }
-        baseOptions.getSingleXAxis().setType(AxisType.CATEGORY).setCategories(categories);
         baseOptions.setSeries(Collections.singletonList(groupesSeries));
     }
 
@@ -38,16 +32,10 @@ public class DrilldownChart extends Options {
         PointSeries newSeries = new PointSeries();
         newSeries.setName(series.getName());
         newSeries.setDataLabels(series.getDataLabels());
-        List<String> categories = new ArrayList<>(series.getData().size());
         for(Point point : series.getData()) {
-            categories.add(point.getName());
-            newSeries.addPoint(new DrilldownPoint(options, baseOptions).setName(point.getName()));
+            newSeries.addPoint(new DrilldownPoint(options, baseOptions).setY(point.getY()).setName(point.getName()));
         }
         options.setSeries(Collections.singletonList(newSeries));
-        if(options.getSingleXAxis()==null) {
-            options.setxAxis(Collections.singletonList(new Axis()));
-        }
-        options.getSingleXAxis().setCategories(categories).setType(AxisType.CATEGORY);
         return options;
     }
 }
