@@ -35,8 +35,8 @@ public class DrilldownChart {
     private static DrilldownPointSeries createDrilldownSeries(PointSeries series, String id) {
         DrilldownPointSeries newSeries = new DrilldownPointSeries();
         newSeries.setId(id);
-        newSeries.setName(series.getName());
-        newSeries.setDataLabels(series.getDataLabels());
+        //newSeries.setName(series.getName());
+        //newSeries.setDataLabels(series.getDataLabels());
         newSeries.setData(series.getData());
         return newSeries;
     }
