@@ -24,7 +24,8 @@ public class LineChart extends AbstractChart {
         this.stockChart=stockChart;
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = "{point.key}"+xAxisSuffix;
-        options=_options
+        options=_options;
+        options = options
                 .setChartOptions(new ChartOptions().setHeight(450).setType(SeriesType.LINE))
                 .setTitle(new Title(title))
                 .setLegend(new Legend(true))

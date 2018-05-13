@@ -18,7 +18,8 @@ public class PieChart extends AbstractChart {
     public PieChart(Options _options, String title, String subTitle, String yLabel) {
         SeriesType type = SeriesType.PIE;
         System.out.println("Starting to build: "+type);
-        options=_options
+        options=_options;
+        options = options
                 .setExporting(new ExportingOptions().setEnabled(true))
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))
