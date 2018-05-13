@@ -102,7 +102,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             if(drilldown) {
                 data.add(drilldownSeries);
             } else {
-                PointSeries series = getSeriesFromAgg(aggregations, groupByAttribute, getGroupByAttrName(attrName,groupedByAttrName,""), title, limit);
+                PointSeries series = getSeriesFromAgg(aggregations, groupByAttribute, getGroupByAttrName(attrName,groupedByAttrName,GROUP_SUFFIX), title, limit);
                 if(this instanceof AggregatePieChart) series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
                 data.add(0, series);
             }
