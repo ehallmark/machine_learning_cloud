@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
+import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.options.Axis;
 import com.googlecode.wickedcharts.highcharts.options.DataLabels;
 import com.googlecode.wickedcharts.highcharts.options.Options;
@@ -99,7 +100,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                     if(series.getData()==null) {
                         System.out.println("No data found for "+attrName+" grouped by "+groupedByAttrName);
                     }
-                    System.out.println("Nested aggs: "+nestedAggs.toString());
+                    System.out.println("Nested aggs: "+String.join("\n",nestedAggs.getAsMap().entrySet().stream().map(e->e.getKey()+": "+new Gson().toJson(e.getValue())).collect(Collectors.toList())));
                     if(drilldown) {
                         drilldownData.add(new Pair<>(series.getData().stream().mapToDouble(p->p.getY().doubleValue()).sum(),series));
                     } else {
