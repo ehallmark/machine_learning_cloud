@@ -310,7 +310,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         System.out.println("Collect by: "+collectorType);
         System.out.println("Available collector attrs: "+String.join("; ",attrToCollectByAttrMap.keySet()));
 
-        BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName,null, aggSuffix, includeBlank);
+        BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName,null, aggSuffix, MAXIMUM_AGGREGATION_SIZE, includeBlank);
         AbstractAttribute collectByAttribute = collectByAttrName==null?null:findAttribute(collectByAttributes,collectByAttrName);
         if(collectByAttribute==null) {
             System.out.println("Collect by attribute could not be found: "+collectByAttrName);
@@ -325,7 +325,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getStatsAggName(attrName), collectByAttribute, collectorType);
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
-            int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, MAXIMUM_AGGREGATION_SIZE);
+            int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);
             AbstractAggregation twoDimensionalAgg = createGroupedAttribute(req, attrName,groupedByAttrName,groupLimit,combinedAttrAgg.getAggregation(), includeBlank);
             return Collections.singletonList(
                     twoDimensionalAgg

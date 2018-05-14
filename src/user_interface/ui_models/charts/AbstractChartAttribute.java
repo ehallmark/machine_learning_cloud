@@ -281,6 +281,9 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         return handleAttrName(attrName, SimilarPatentServer.MAX_SLICES_FIELD);
     }
 
+    protected String getIncludeRemainingField(String attrName) {
+        return handleAttrName(attrName, SimilarPatentServer.INCLUDE_REMAINING_FIELD);
+    }
 
     protected String getGroupByChartFieldName(String attrName) {
         return handleAttrName(attrName, SimilarPatentServer.CHARTS_GROUPED_BY_FIELD);

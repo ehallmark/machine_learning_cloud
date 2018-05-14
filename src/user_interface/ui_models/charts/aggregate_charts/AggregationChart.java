@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 6/17/2017.
  */
 public abstract class AggregationChart<T> extends AbstractChartAttribute {
-    public static final int MAXIMUM_AGGREGATION_SIZE = 100;
+    public static final int MAXIMUM_AGGREGATION_SIZE = 5000;
     public static final String NESTED_SUFFIX = "_n_";
     public static final String BUCKET_SUFFIX = "_b_";
     public static final String GROUP_SUFFIX = "_g_";
@@ -332,7 +332,11 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         Integer maxSlices = null;
         if(this instanceof AggregatePieChart) {
             // check for max slices
-            maxSlices = ((AggregatePieChart) this).attrToLimitMap.get(attrName);
+            maxSlices = ((AggregatePieChart) this).attrToLimitMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);
+            boolean includeRemaining = ((AggregatePieChart) this).attrToIncludeRemainingMap.getOrDefault(attrName, false);
+            if(includeRemaining) {
+                maxSlices = AggregatePieChart.MAXIMUM_AGGREGATION_SIZE;
+            }
             System.out.println("Max slices: " + maxSlices);
         }
         if(maxSlices==null) {
@@ -342,7 +346,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         AbstractAggregation aggregation = AggregatePieChart.buildDistributionAggregation(this,attribute,attrName,null,aggSuffix,maxSlices, includeBlank);
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
-            int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, MAXIMUM_AGGREGATION_SIZE);
+            int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);
             AbstractAggregation twoDimensionalAgg = createGroupedAttribute(req, attrName,groupedByAttrName,groupLimit,aggregation.getAggregation(), includeBlank);
             return Collections.singletonList(
                     twoDimensionalAgg

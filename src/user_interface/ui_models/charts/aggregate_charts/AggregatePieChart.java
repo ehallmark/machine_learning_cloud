@@ -37,11 +37,14 @@ import static j2html.TagCreator.*;
 
 public class AggregatePieChart extends AggregationChart<PieChart> {
     private static final String AGG_SUFFIX = "_pie";
+    public static final int DEFAULT_MAX_SLICES = 30;
 
     protected Map<String,Integer> attrToLimitMap;
+    protected Map<String,Boolean> attrToIncludeRemainingMap;
     public AggregatePieChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
         super(false,"Distribution",AGG_SUFFIX, attributes, groupByAttrs, Constants.PIE_CHART, false);
         this.attrToLimitMap=Collections.synchronizedMap(new HashMap<>());
+        this.attrToIncludeRemainingMap = Collections.synchronizedMap(new HashMap<>());
     }
 
     @Override
@@ -54,8 +57,10 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         super.extractRelevantInformationFromParams(params);
         if(this.attrNames!=null) {
             this.attrNames.forEach(attr -> {
-                Integer limit = SimilarPatentServer.extractInt(params, getMaxSlicesField(attr), null);
+                Integer limit = SimilarPatentServer.extractInt(params, getMaxSlicesField(attr), DEFAULT_MAX_SLICES);
                 if(limit!=null) attrToLimitMap.put(attr,limit);
+                boolean includeRemaining = SimilarPatentServer.extractBool(params, getIncludeRemainingField(attr));
+                attrToIncludeRemainingMap.put(attr, includeRemaining);
             });
         }
     }
@@ -64,7 +69,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     public List<? extends PieChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
         String title = SimilarPatentServer.humanAttributeFor(attrName) + " "+chartTitle;
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
-        Integer limit = attrToLimitMap.get(attrName);
+        Integer limit = attrToLimitMap.getOrDefault(attrName, DEFAULT_MAX_SLICES);
         String subtitle = "";
         final boolean isGrouped = groupedByAttrName!=null;
         if(isGrouped) {
@@ -73,6 +78,10 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         Options parentOptions = new Options();
         boolean drilldown = attrToDrilldownMap.getOrDefault(attrName,false);
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
+        boolean includedRemaining = attrToIncludeRemainingMap.getOrDefault(attrName, false);
+        if(!includedRemaining) {
+            limit = null; // turns off accumulating remaining pie piece
+        }
         parentOptions = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,limit,drilldown,includeBlank);
         return Collections.singletonList(new PieChart(parentOptions, title,  subtitle, combineTypesToString(searchTypes)));
     }
@@ -80,7 +89,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
-        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getDrilldownAttrFieldName(attrName),getMaxSlicesField(attrName));
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getDrilldownAttrFieldName(attrName),getIncludeRemainingField(attrName),getMaxSlicesField(attrName));
         Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
                 div().withClass("col-9").with(
                         tag1
@@ -105,6 +114,11 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
                                                 br(),
                                                 input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
                                         )
+                                ), div().withClass("col-12").with(
+                                        label("Include Remaining").attr("title", "Including remaining counts in the pie chart.").with(
+                                                br(),
+                                                input().withId(getIncludeRemainingField(attrName)).withName(getIncludeRemainingField(attrName)).withType("checkbox").withValue("off")
+                                        )
                                 )
                         )
                 )
@@ -121,9 +135,6 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         return "pie";
     }
 
-    public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggPrefix, String aggSuffix, boolean includeBlank) {
-        return buildDistributionAggregation(chart, attribute,attrName,aggPrefix,aggSuffix,MAXIMUM_AGGREGATION_SIZE, includeBlank);
-    }
 
     public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggPrefix, String aggSuffix, int maxSize, boolean includeBlank) {
         System.out.println("Building distribution agg for: "+attribute.getFullName()+" with suffix "+aggSuffix);
