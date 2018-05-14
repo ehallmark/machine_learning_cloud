@@ -15,7 +15,7 @@ public class CombinedAggregation implements AbstractAggregation {
     @Getter
     protected AggregationBuilder aggregation;
 
-    public CombinedAggregation(BucketAggregation base, String name, AbstractAttribute collectByAttr, Type mode) {
+    public CombinedAggregation(BucketAggregation base, String name, String nestedName, AbstractAttribute collectByAttr, Type mode) {
         if(collectByAttr==null) {
             // default to count
             if(mode!=null&&!mode.equals(Type.Count)) {
@@ -96,7 +96,7 @@ public class CombinedAggregation implements AbstractAggregation {
                 }
             }
             if(isNested) {
-                aggregation = AggregationBuilders.nested(name+ AggregationChart.NESTED_SUFFIX, collectByAttr.getParent().getName())
+                aggregation = AggregationBuilders.nested(nestedName, collectByAttr.getParent().getName())
                         .subAggregation(aggregation);
             }
             aggregation = base.getAggregation().subAggregation(

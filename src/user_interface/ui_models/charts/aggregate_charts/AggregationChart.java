@@ -72,7 +72,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
             final String groupBySuffix = getGroupSuffix();
             final String groupAggName = getGroupByAttrName(attrName,groupedByAttrName,groupBySuffix);
-            final String nestedGroupAggName = getGroupByAttrName(attrName,groupedByAttrName,groupBySuffix);
+            final String nestedGroupAggName = getGroupByAttrName(attrName,groupedByAttrName,NESTED_SUFFIX+groupBySuffix);
             if (groupByAttribute == null) {
                 throw new RuntimeException("Unable to find group by attribute: " + groupedByAttrName);
             }

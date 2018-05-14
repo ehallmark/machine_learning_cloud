@@ -107,6 +107,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     @Override
     public List<? extends TableResponse> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
         final String statsAggName = getStatsAggName(attrName);
+        final String nestedStatsAggName = getStatsAggName(attrName+NESTED_SUFFIX);
         Type collectorType = attrToCollectTypeMap.get(attrName);
         String collectByAttrName = attrToCollectByAttrMap.get(attrName);
 
@@ -127,7 +128,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         List<String> groupByDatasets;
 
         Function<Aggregations,Number> subAggregationHandler = collectByAttrName == null ? null : subAggs -> {
-            Aggregation sub = subAggs.get(statsAggName);
+            final Aggregation sub = handlePotentiallyNestedAgg(subAggs,statsAggName,nestedStatsAggName);
             Number val;
             switch (collectorType) {
                 case Max: {
@@ -174,7 +175,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
             final String groupBySuffix = getGroupSuffix();
             final String groupAggName = getGroupByAttrName(attrName,groupedByAttrName,groupBySuffix);
-            final String nestedGroupAggName = getGroupByAttrName(attrName,groupedByAttrName,groupBySuffix);
+            final String nestedGroupAggName = getGroupByAttrName(attrName,groupedByAttrName,NESTED_SUFFIX+groupBySuffix);
             if (groupByAttribute == null) {
                 throw new RuntimeException("Unable to find group by attribute in pivot chart: " + groupedByAttrName);
             }
@@ -322,7 +323,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
             ((DependentAttribute)collectByAttribute).extractRelevantInformationFromParams(req);
         }
 
-        CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getStatsAggName(attrName), collectByAttribute, collectorType);
+        CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getStatsAggName(attrName), getStatsAggName(attrName+NESTED_SUFFIX), collectByAttribute, collectorType);
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
             int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);
