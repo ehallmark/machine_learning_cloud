@@ -16,6 +16,7 @@ import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.SingleBucketAggregation;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
 
+import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.nd4j.linalg.primitives.Pair;
 import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -171,11 +172,11 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             ((DependentAttribute)groupByAttribute).extractRelevantInformationFromParams(req);
         }
         String groupBySuffix = getGroupSuffix();
-        BucketAggregation groupAgg = AggregatePieChart.buildDistributionAggregation(this,groupByAttribute,groupByAttribute.getFullName(),attrName,groupBySuffix,groupLimit,includeBlank);
+        BucketAggregation groupAgg = AggregatePieChart.buildDistributionAggregation(this,groupByAttribute,groupByAttribute.getFullName(),attrName,groupBySuffix,groupLimit,includeBlank,innerAgg);
         return new AbstractAggregation() {
             @Override
             public AggregationBuilder getAggregation() {
-                return groupAgg.getAggregation().subAggregation(innerAgg);
+               return groupAgg.getAggregation();
             }
         };
     }
@@ -336,7 +337,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             maxSlices = AggregatePieChart.MAXIMUM_AGGREGATION_SIZE;
         }
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
-        AbstractAggregation aggregation = AggregatePieChart.buildDistributionAggregation(this,attribute,attrName,null,aggSuffix,maxSlices, includeBlank);
+        AbstractAggregation aggregation = AggregatePieChart.buildDistributionAggregation(this,attribute,attrName,null,aggSuffix,maxSlices, includeBlank, null);
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
             int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);

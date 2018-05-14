@@ -24,6 +24,7 @@ import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
+import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.*;
 import user_interface.ui_models.charts.highcharts.PieChart;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -132,7 +133,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     }
 
 
-    public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggPrefix, String aggSuffix, int maxSize, boolean includeBlank) {
+    public static BucketAggregation buildDistributionAggregation(AggregationChart<?> chart, AbstractAttribute attribute, String attrName, String aggPrefix, String aggSuffix, int maxSize, boolean includeBlank, AggregationBuilder innerAgg) {
         System.out.println("Building distribution agg for: "+attribute.getFullName()+" with suffix "+aggSuffix);
         boolean isNested = attribute.getParent()!=null&&(!(attribute.getParent() instanceof AbstractChartAttribute))&&(!attribute.getParent().isObject());
         final Object missingVal;
@@ -202,6 +203,9 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
                 }
                 aggregation = new TermsAggregation(aggNameWithPrefix + aggSuffix, fieldName, null, missingVal, maxSize);
             }
+        }
+        if(innerAgg!=null) {
+            aggregation.getAggregation().subAggregation(innerAgg);
         }
 
         if(isNested) {
