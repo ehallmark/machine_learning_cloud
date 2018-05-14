@@ -1940,9 +1940,6 @@ public class BigQueryServer extends SimilarPatentServer {
                             if(attribute instanceof DependentAttribute) {
                                 ((DependentAttribute)attribute).extractRelevantInformationFromParams(req);
                             }
-                            if(attribute instanceof SignificantTermsAttribute && !chart.getAttrNameToGroupByAttrNameMap().containsKey(attrName)) {
-                                throw new RuntimeException(humanAttributeFor(attrName)+" must have a group by clause.");
-                            }
                             List<AggregationBuilder> aggregations = chart.getAggregations(req, attribute,attrName).stream().map(a->a.getAggregation()).collect(Collectors.toList());
                             aggregations.forEach(agg->{
                                 System.out.println("Agg: "+agg.toString());
