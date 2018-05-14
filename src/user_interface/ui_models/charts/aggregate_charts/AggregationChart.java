@@ -125,15 +125,15 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             data.add(series);
         }
         if(!drilldown) {
-            /*if(this instanceof AggregateLineChart) {
+            if(this instanceof AggregateLineChart) {
                 List<String> categories = data.isEmpty() ? Collections.singletonList("0")
-                        : data.get(0).getData().stream().map(p -> (String)((List) p).get(0)).collect(Collectors.toList());
+                        : data.get(0).getData().stream().map(p -> (String)p.get(0)).collect(Collectors.toList());
                 System.out.println("Categories for timeline: " + String.join(", ", categories));
                 if(options.getSingleXAxis()==null) {
                     options.setxAxis(Collections.singletonList(new Axis()));
                 }
                 options.getSingleXAxis().setCategories(categories);
-            }*/
+            }
             options.setSeries(new ArrayList<>());
             for(Series series : data) {
                 options.addSeries(series);
