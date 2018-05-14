@@ -98,9 +98,11 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                     Aggregations nestedAggs = entry.getAggregations();
                     PointSeries series = getSeriesFromAgg(nestedAggs,attribute,attrName,group,limit,includeBlanks);
                     if(series.getData()==null) {
-                        System.out.println("No data found for "+attrName+" grouped by "+groupedByAttrName);
+                        System.out.println("Omitting data point. No data found for "+attrName+" grouped by "+groupedByAttrName);
+                        series.setData(Collections.singletonList(new Point("",0)));
+                        System.out.println("Nested aggs: "+String.join("\n",nestedAggs.getAsMap().entrySet().stream().map(e->e.getKey()+": "+new Gson().toJson(e.getValue())).collect(Collectors.toList())));
+                        continue;
                     }
-                    System.out.println("Nested aggs: "+String.join("\n",nestedAggs.getAsMap().entrySet().stream().map(e->e.getKey()+": "+new Gson().toJson(e.getValue())).collect(Collectors.toList())));
                     if(drilldown) {
                         drilldownData.add(new Pair<>(series.getData().stream().mapToDouble(p->p.getY().doubleValue()).sum(),series));
                     } else {
