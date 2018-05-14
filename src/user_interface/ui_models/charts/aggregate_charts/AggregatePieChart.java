@@ -91,9 +91,9 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
         Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getDrilldownAttrFieldName(attrName),getIncludeRemainingField(attrName),getMaxSlicesField(attrName));
         Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
-                div().withClass("col-12").with(
+                div().withClass("col-8").with(
                         tag1
-                ),div().withClass("col-12").with(
+                ),div().withClass("col-4").with(
                         tag2
                 )
         );
@@ -102,24 +102,20 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
 
     private ContainerTag getAdditionalTagPerAttr(String attrName) {
         return div().withClass("row").with(
-                div().withClass("col-6").with(
+                div().withClass("col-4").with(
                         label("Max Slices").attr("title", "The maximum number of slices for this pie chart.").attr("style","width: 100%;").with(
                                 br(),
                                 input().withId(getMaxSlicesField(attrName)).withName(getMaxSlicesField(attrName)).withType("number").withClass("form-control").withValue("20")
                         )
-                ), div().withClass("col-6").with(
-                        div().withClass("row").with(
-                                div().withClass("col-6").with(
-                                        label("Drilldown").attr("title","Plot groups using drilldowns.").with(
-                                                br(),
-                                                input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
-                                        )
-                                ), div().withClass("col-6").with(
-                                        label("Include Remaining").attr("title", "Including remaining counts in the pie chart.").with(
-                                                br(),
-                                                input().withId(getIncludeRemainingField(attrName)).withName(getIncludeRemainingField(attrName)).withType("checkbox").withValue("off")
-                                        )
-                                )
+                ), div().withClass("col-4").with(
+                        label("Drilldown").attr("title","Plot groups using drilldowns.").with(
+                                br(),
+                                input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
+                        )
+                ), div().withClass("col-4").with(
+                        label("Include Remaining").attr("title", "Including remaining counts in the pie chart.").with(
+                                br(),
+                                input().withId(getIncludeRemainingField(attrName)).withName(getIncludeRemainingField(attrName)).withType("checkbox").withValue("off")
                         )
                 )
         );
