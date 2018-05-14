@@ -208,7 +208,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 continue;
             }
             double prob = bucket.getSecond().doubleValue();
-            if(limit!=null&&i>=limit) {
+            if(limit!=null&&(series.getData()==null?0:series.getData().size()) >= i) {
                 remaining+=prob;
             } else {
                 Point point = new Point(label.toString(), prob);
