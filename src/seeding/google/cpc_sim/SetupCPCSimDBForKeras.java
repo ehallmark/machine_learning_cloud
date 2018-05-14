@@ -31,6 +31,7 @@ public class SetupCPCSimDBForKeras {
         final boolean reingestIndices = false; // only set to true for the first run through
         final int negativeSamples = 5;
         final long maxDatapoints = 100000000L;
+        final int alpha = 500;
         List<String> allCPCs = new ArrayList<>(hierarchy.getLabelToCPCMap().keySet());
         Collections.sort(allCPCs);
 
@@ -56,7 +57,7 @@ public class SetupCPCSimDBForKeras {
         System.out.println("Adding bayesian starting alphas...");
 
         // now fill in with actual data
-        PreparedStatement seedPs = seedConn.prepareStatement("select publication_number_full,tree from big_query_cpc_tree tablesample bernoulli (5)");
+        PreparedStatement seedPs = seedConn.prepareStatement("select publication_number_full,tree from big_query_cpc_tree tablesample bernoulli (10)");
         seedPs.setFetchSize(100);
         ResultSet rs = seedPs.executeQuery();
 
@@ -66,8 +67,24 @@ public class SetupCPCSimDBForKeras {
         if(!folder.exists()) {
             folder.mkdirs();
         }
-        AtomicInteger fileCnt = new AtomicInteger(0);
-        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(folder, "data-"+fileCnt.getAndIncrement()+".csv")));
+
+        System.out.println("Creating initial distribution...");
+        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(folder, "data-0.csv")));
+        for(CPC node : hierarchy.getLabelToCPCMap().values()) {
+            int idx1 = codeToIndexMap.get(node.getName());
+            Collection<CPC> ancestors = hierarchy.cpcWithAncestors(node);
+            ancestors.remove(node);
+            if(ancestors.size()>0) {
+                for(int i = 0; i < alpha; i++) {
+                List<String> pos = ancestors.stream().map(cpc->cpc.getName()).collect(Collectors.toList());
+                    String r = pos.get(rand.nextInt(pos.size()));
+                    int idx2 = codeToIndexMap.get(r);
+                    writer.write(String.valueOf(idx1)+","+String.valueOf(idx2)+",1\n");
+                }
+            }
+        }
+        writer.flush();
+        System.out.println("Starting to read data from postgres...");
         AtomicLong maxNum = new AtomicLong(0);
         while(rs.next() && cnt.get()<maxDatapoints) {
             final String[] _tree = (String[])rs.getArray(2).getArray();
@@ -76,7 +93,7 @@ public class SetupCPCSimDBForKeras {
                 String cpc = tree[i];
                 for(int j = i+1; j < tree.length; j++) {
                     // randomly skip a quarter of the data
-                    if(rand.nextBoolean()||rand.nextBoolean()) continue;
+                    if(rand.nextDouble()>0.1) continue;
                     String cpc2 = tree[j];
                     int idx1 = codeToIndexMap.get(cpc);
                     int idx2 = codeToIndexMap.get(cpc2);
@@ -97,7 +114,7 @@ public class SetupCPCSimDBForKeras {
                     }
                 }
             }
-            if(maxNum.get()%100==99) {
+            if(maxNum.getAndIncrement()%100==99) {
                 System.out.println("Finished: "+maxNum.get()+"\t Num sequences: "+cnt.get());
             }
         }
