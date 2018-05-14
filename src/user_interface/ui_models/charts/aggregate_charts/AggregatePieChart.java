@@ -91,9 +91,9 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
         Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getDrilldownAttrFieldName(attrName),getIncludeRemainingField(attrName),getMaxSlicesField(attrName));
         Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
-                div().withClass("col-9").with(
+                div().withClass("col-12").with(
                         tag1
-                ),div().withClass("col-3").with(
+                ),div().withClass("col-12").with(
                         tag2
                 )
         );
@@ -109,12 +109,12 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
                         )
                 ), div().withClass("col-6").with(
                         div().withClass("row").with(
-                                div().withClass("col-12").with(
+                                div().withClass("col-6").with(
                                         label("Drilldown").attr("title","Plot groups using drilldowns.").with(
                                                 br(),
                                                 input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
                                         )
-                                ), div().withClass("col-12").with(
+                                ), div().withClass("col-6").with(
                                         label("Include Remaining").attr("title", "Including remaining counts in the pie chart.").with(
                                                 br(),
                                                 input().withId(getIncludeRemainingField(attrName)).withName(getIncludeRemainingField(attrName)).withType("checkbox").withValue("off")
