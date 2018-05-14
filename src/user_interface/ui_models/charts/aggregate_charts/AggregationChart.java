@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 6/17/2017.
  */
 public abstract class AggregationChart<T> extends AbstractChartAttribute {
-    public static final int MAXIMUM_AGGREGATION_SIZE = 5000;
+    public static final int MAXIMUM_AGGREGATION_SIZE = 10000;
     public static final String NESTED_SUFFIX = "_n_";
     public static final String BUCKET_SUFFIX = "_b_";
     public static final String GROUP_SUFFIX = "_g_";
