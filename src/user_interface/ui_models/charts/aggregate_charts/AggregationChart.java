@@ -5,7 +5,6 @@ import com.googlecode.wickedcharts.highcharts.options.Axis;
 import com.googlecode.wickedcharts.highcharts.options.DataLabels;
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.PixelOrPercent;
-import com.googlecode.wickedcharts.highcharts.options.drilldown.DrilldownPoint;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
@@ -16,9 +15,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.SingleBucketAggregation;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
-import org.elasticsearch.search.aggregations.bucket.sampler.SamplerAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.sampler.SamplerAggregator;
-import org.nd4j.linalg.primitives.AtomicDouble;
+
 import org.nd4j.linalg.primitives.Pair;
 import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -29,6 +26,7 @@ import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.SignificantTermsAggregation;
+import user_interface.ui_models.charts.highcharts.ArraySeries;
 import user_interface.ui_models.charts.highcharts.DrilldownChart;
 
 import java.awt.*;
@@ -56,10 +54,6 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         this.chartTitle=chartTitle;
     }
 
-    protected String removeChartNameFromAttrName(String attrName) {
-        return attrName.substring(getName().replace("[]","").length()+1);
-    }
-
     protected String getGroupSuffix() {
         return GROUP_SUFFIX+aggSuffix;
     }
@@ -70,11 +64,11 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
 
     // Set series in options param
     protected Options createDataForAggregationChart(Options options, Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean drilldown, boolean includeBlanks) {
-        List<Series<?>> data = new ArrayList<>();
+        List<ArraySeries> data = new ArrayList<>();
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         final boolean isGrouped = groupedByAttrName!=null;
         if(isGrouped) {
-            List<Pair<Number,PointSeries>> drilldownData = new ArrayList<>();
+            List<Pair<Number,ArraySeries>> drilldownData = new ArrayList<>();
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
             final String groupBySuffix = getGroupSuffix();
             final String groupAggName = getGroupByAttrName(attrName,groupedByAttrName,groupBySuffix);
@@ -96,15 +90,15 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 for(MultiBucketsAggregation.Bucket entry : agg.getBuckets()) {
                     String group = groupByDatasets==null?entry.getKeyAsString():groupByDatasets.get(i);
                     Aggregations nestedAggs = entry.getAggregations();
-                    PointSeries series = getSeriesFromAgg(nestedAggs,attribute,attrName,group,limit,includeBlanks);
+                    ArraySeries series = getSeriesFromAgg(nestedAggs,attribute,attrName,group,limit,includeBlanks);
                     if(series.getData()==null) {
                         System.out.println("Omitting data point. No data found for "+attrName+" grouped by "+groupedByAttrName);
-                        series.setData(Collections.singletonList(new Point("",0)));
+                        series.setData(Collections.emptyList());
                         System.out.println("Nested aggs: "+String.join("\n",nestedAggs.getAsMap().entrySet().stream().map(e->e.getKey()+": "+new Gson().toJson(e.getValue())).collect(Collectors.toList())));
                         continue;
                     }
                     if(drilldown) {
-                        drilldownData.add(new Pair<>(series.getData().stream().mapToDouble(p->p.getY().doubleValue()).sum(),series));
+                        drilldownData.add(new Pair<>(series.getData().stream().mapToDouble(p->((Number)p.get(1)).doubleValue()).sum(),series));
                     } else {
                         if(this instanceof AggregatePieChart) {
                             series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
@@ -127,7 +121,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 data = flattenSeriesForDonutChart(data, title);
             }
         } else {
-            PointSeries series = getSeriesFromAgg(aggregations, attribute, attrName, title, limit,includeBlanks);
+            ArraySeries series = getSeriesFromAgg(aggregations, attribute, attrName, title, limit,includeBlanks);
             data.add(series);
         }
         if(!drilldown) {
@@ -140,27 +134,30 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 }
                 options.getSingleXAxis().setCategories(categories);
             }
-            options.setSeries(data);
+            options.setSeries(new ArrayList<>());
+            for(Series series : data) {
+                options.addSeries(series);
+            }
         }
         return options;
     }
 
-    public static List<Series<?>> flattenSeriesForDonutChart(List<Series<?>> data, String seriesTitle) {
-        PointSeries combinedSeries = new PointSeries();
+    public static List<ArraySeries> flattenSeriesForDonutChart(List<ArraySeries> data, String seriesTitle) {
+        ArraySeries combinedSeries = new ArraySeries();
         combinedSeries.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
                 .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
-        PointSeries series = new PointSeries();
+        ArraySeries series = new ArraySeries();
         series.setName(seriesTitle);
         series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT))
                 .setDataLabels(new DataLabels(true).setColor(Color.WHITE).setDistance(-30));
         for(int i = 0; i < data.size(); i++) {
-            PointSeries d = (PointSeries) data.get(i);
+            ArraySeries d = data.get(i);
             double sum = 0d;
-            for(Point point : d.getData()) {
+            for(List point : d.getData()) {
                 combinedSeries.addPoint(point);
-                sum+=point.getY().doubleValue();
+                sum+=((Number)point.get(1)).doubleValue();
             }
-            series.addPoint(new Point().setName(d.getName()).setY(sum));
+            series.addPoint(Arrays.asList(d.getName(),sum));
         }
         return Arrays.asList(series,combinedSeries);
     }
@@ -183,8 +180,18 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         };
     }
 
-    protected PointSeries getSeriesFromAgg(Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean includeBlank) {
-        PointSeries series = new PointSeries();
+    public static PointSeries pointSeriesFromArraySeries(ArraySeries in) {
+        PointSeries ps = new PointSeries();
+        if(in.getData()!=null) {
+            in.getData().forEach(point->{
+                ps.addPoint(new Point((String)point.get(0),(Number)point.get(1)));
+            });
+        }
+        return ps;
+    }
+
+    protected ArraySeries getSeriesFromAgg(Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean includeBlank) {
+        ArraySeries series = new ArraySeries();
         series.setName(title);
         final List<String> dataSets = getCategoriesForAttribute(attribute);
         List<Pair<String,Long>> bucketData = new ArrayList<>();
@@ -212,27 +219,13 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 remaining+=prob;
             } else {
                 Point point = new Point(label.toString(), prob);
-                series.addPoint(point);
+                series.addPoint(Arrays.asList(point.getName(),point.getY()));
             }
         }
         if(remaining>0) {
-            series.addPoint(new Point("(remaining)",remaining));
+            series.addPoint(Arrays.asList("(remaining)",remaining));
         }
         return series;
-    }
-
-    private static Point createPoint(String label, Number val, PointSeries drillDownData, Options parentOptions) {
-        Point point;
-        if(drillDownData!=null) {
-            Options childOptions = new Options()
-                    .setSeries(Collections.singletonList(drillDownData));
-            point = new DrilldownPoint(parentOptions,childOptions)
-                    .setName(label)
-                    .setY(val);
-        } else {
-            point = new Point(label, val);;
-        }
-        return point;
     }
 
     public abstract List<? extends T> create(AbstractAttribute attribute, String attrName, Aggregations aggregations);

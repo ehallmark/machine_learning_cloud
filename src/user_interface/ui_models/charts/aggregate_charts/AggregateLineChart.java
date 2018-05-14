@@ -1,14 +1,10 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
 import com.googlecode.wickedcharts.highcharts.options.Options;
-import com.googlecode.wickedcharts.highcharts.options.series.Point;
-import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
@@ -18,7 +14,6 @@ import user_interface.ui_models.charts.highcharts.LineChart;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
 
