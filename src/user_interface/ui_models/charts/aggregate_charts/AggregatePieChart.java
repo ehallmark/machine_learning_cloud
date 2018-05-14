@@ -91,9 +91,9 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
         Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getDrilldownAttrFieldName(attrName),getIncludeRemainingField(attrName),getMaxSlicesField(attrName));
         Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
-                div().withClass("col-7").with(
+                div().withClass("col-8").with(
                         tag1
-                ),div().withClass("col-5").with(
+                ),div().withClass("col-4").with(
                         tag2
                 )
         );
