@@ -14,7 +14,7 @@ services:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 60g
+    mem_limit: 62g
     volumes:
       - esdata1:/usr/share/elasticsearch/data
     ports:
@@ -36,7 +36,7 @@ services:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 60g
+    mem_limit: 62g
     volumes:
       - esdata2:/usr/share/elasticsearch/data
     ports:
@@ -57,7 +57,7 @@ services:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 60g
+    mem_limit: 62g
     volumes:
       - esdata3:/usr/share/elasticsearch/data
     ports:

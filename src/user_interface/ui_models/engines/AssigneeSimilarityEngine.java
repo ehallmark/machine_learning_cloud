@@ -53,7 +53,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
                 textarea().withClass("form-control").attr("placeholder","1 assignee name per line.").withId(getId()).withName(getId())
         );
     }
-    
+
     @Override
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Text;
