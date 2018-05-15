@@ -214,10 +214,11 @@ public class DataSearcher {
 
             //System.out.println("Looking for similarity greater than...");
             filters.forEach(filter->{
-                if(filter instanceof AbstractSimilarityGreaterThanFilter && SIMILARITY_ATTRIBUTES.contains(filter.getAttribute().getFullName())) {
+                if(filter instanceof AbstractSimilarityGreaterThanFilter) {
                     AbstractSimilarityGreaterThanFilter simFilter = (AbstractSimilarityGreaterThanFilter)filter;
+                    String attrName = simFilter.getAttribute().getFullName();
                     attributes.forEach(attr->{
-                        if(SIMILARITY_ATTRIBUTES.contains(attr.getFullName())) {
+                        if(attr.equals(attr.getFullName())) {
                             //System.out.println("Found and setting similarity attribute for filter...");
                             simFilter.setAttribute(attr);
                         }
