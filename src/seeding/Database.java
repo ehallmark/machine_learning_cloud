@@ -212,7 +212,7 @@ public class Database {
 			ps.setFetchSize(10);
 			rs = ps.executeQuery();
 			while(rs.next()) {
-				data.put(rs.getString(1),Nd4j.create(Stream.of((Float[])rs.getArray(2).getArray()).mapToDouble(d->d).toArray()));
+				data.put(rs.getString(1),Nd4j.create(Stream.of((Float[])rs.getArray(2).getArray()).mapToDouble(d->d.doubleValue()).toArray()));
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
