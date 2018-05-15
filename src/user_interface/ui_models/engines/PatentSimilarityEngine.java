@@ -8,12 +8,13 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static j2html.TagCreator.div;
-import static j2html.TagCreator.table;
 import static j2html.TagCreator.textarea;
 import static user_interface.server.SimilarPatentServer.*;
 
@@ -35,8 +36,12 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
     protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
         System.out.println("Collecting inputs to search for...");
         // get input data
-        Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
-        patents = patents.stream().limit(1000).flatMap(patent-> Stream.of(assetToFilingMap.getPatentDataMap().getOrDefault(patent, patent),assetToFilingMap.getApplicationDataMap().getOrDefault(patent, patent))).distinct().collect(Collectors.toList());
+        List<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9A-Z]");
+        Collections.shuffle(patents, new Random(125));
+        patents = patents.subList(0, Math.min(patents.size(),1000));
+        if(!isBigQuery) {
+            patents = patents.stream().flatMap(patent -> Stream.of(assetToFilingMap.getPatentDataMap().getOrDefault(patent, patent), assetToFilingMap.getApplicationDataMap().getOrDefault(patent, patent))).distinct().collect(Collectors.toList());
+        }
         System.out.println("Found "+patents.size()+" patents...");
         return patents;
     }
@@ -66,7 +71,7 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public AbstractSimilarityEngine dup() {
-        if(tableName!=null) {
+        if(isBigQuery) {
             return new PatentSimilarityEngine(tableName);
         } else {
             return new PatentSimilarityEngine();

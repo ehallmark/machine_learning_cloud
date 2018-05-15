@@ -64,7 +64,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine implement
 
     @Override
     public AbstractSimilarityEngine dup() {
-        if(tableName!=null) {
+        if(isBigQuery) {
             return new AssigneeSimilarityEngine(tableName);
         } else {
             return new AssigneeSimilarityEngine();

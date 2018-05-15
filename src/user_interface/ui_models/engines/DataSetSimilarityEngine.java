@@ -73,7 +73,7 @@ public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public AbstractSimilarityEngine dup() {
-        if(tableName!=null) {
+        if(isBigQuery) {
             return new DataSetSimilarityEngine(tableName);
         } else {
             return new DataSetSimilarityEngine();

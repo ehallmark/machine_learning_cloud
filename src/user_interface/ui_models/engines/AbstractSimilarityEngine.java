@@ -29,8 +29,10 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
     protected String tableName;
     protected static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
     protected Function<Collection<String>,INDArray> inputsToAvgVectorFunction;
-    public AbstractSimilarityEngine(Function<Collection<String>,INDArray> inputsToAvgVectorFunction) {
+    protected boolean isBigQuery;
+    public AbstractSimilarityEngine(Function<Collection<String>,INDArray> inputsToAvgVectorFunction, boolean isBigQuery) {
         super(Collections.emptyList());
+        this.isBigQuery=isBigQuery;
         this.inputsToAvgVectorFunction=inputsToAvgVectorFunction;
     }
 
@@ -52,11 +54,11 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
 
     @Deprecated
     public AbstractSimilarityEngine() {
-        this(oldFunction);
+        this(oldFunction,false);
     }
 
     public AbstractSimilarityEngine(String tableName, String attrName, String vecName, boolean join) {
-        this(newFunction(tableName,attrName,vecName,join));
+        this(newFunction(tableName,attrName,vecName,join),true);
         this.tableName=tableName;
     }
 

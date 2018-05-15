@@ -62,7 +62,7 @@ public class CPCSimilarityEngine extends AbstractSimilarityEngine implements Aja
 
     @Override
     public AbstractSimilarityEngine dup() {
-        if(tableName!=null) {
+        if(isBigQuery) {
             return new CPCSimilarityEngine(tableName);
         } else {
             return new CPCSimilarityEngine();
