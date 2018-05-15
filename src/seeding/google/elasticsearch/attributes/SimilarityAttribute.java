@@ -63,7 +63,7 @@ public abstract class SimilarityAttribute extends AbstractScriptAttribute implem
         if(simVectors==null||simVectors.size()==0) return Collections.emptyMap();
         Map<String, Object> params = new HashMap<>();
         INDArray avgVector = simVectors.size() == 1 ? simVectors.get(0) : Nd4j.vstack(simVectors).mean(0);
-        List<Double> vector = DoubleStream.of(avgVector.data().asDouble()).mapToObj(d->d).collect(Collectors.toList());
+        List<Double> vector = DoubleStream.of(avgVector.data().asDouble()).boxed().collect(Collectors.toList());
         params.put("vector", vector);
         params.put("field", getName());
         params.put("cosine", false);
@@ -89,8 +89,7 @@ public abstract class SimilarityAttribute extends AbstractScriptAttribute implem
 
         Script searchScript = null;
         if((!requireParams)||(simVectors!=null&&simVectors.size()>0)) {
-            System.out.println("Found similarity vectors!!!");
-
+            //System.out.println("Found similarity vectors!!!");
             searchScript = new Script(
                     ScriptType.INLINE,
                     "knn",
