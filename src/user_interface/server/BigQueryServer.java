@@ -1064,7 +1064,7 @@ public class BigQueryServer extends SimilarPatentServer {
         get(Constants.CPC_CODE_AJAX_URL, (req,res)->{
             Map<String,String> titlePartMap = new HashMap<>();
             Function<String,List<String>> resultsSearchFunction = search -> Database.searchBigQueryCPCs("big_query_cpc_definition",search, 10,titlePartMap,"code", "title_full");
-            Function<String,String> displayFunction = result -> result;
+            Function<String,String> displayFunction = result ->  result + (" ("+titlePartMap.getOrDefault(result,"")+")").replace(" ()","");
             return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
         });
 
