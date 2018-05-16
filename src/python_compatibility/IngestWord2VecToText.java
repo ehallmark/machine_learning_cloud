@@ -52,6 +52,13 @@ public class IngestWord2VecToText {
                 }
                 bw.write("\n");
             }
+            for(int i = 0; i < word2Vec.getLayerSize(); i++) {
+                bw.write("0");
+                if(i<word2Vec.getLayerSize()-1) {
+                    bw.write(" ");
+                }
+            }
+            bw.write("\n");
             bw.flush();
             bw.close();
         }
