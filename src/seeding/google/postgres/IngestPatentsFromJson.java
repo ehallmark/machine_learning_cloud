@@ -1,12 +1,9 @@
 package seeding.google.postgres;
 
-import com.mongodb.client.model.WriteModel;
-import elasticsearch.IngestMongoIntoElasticSearch;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.bson.Document;
 import seeding.Database;
 import seeding.google.mongo.ingest.IngestJsonHelper;
-import seeding.google.mongo.ingest.IngestPatents;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
 
@@ -15,7 +12,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -140,6 +136,12 @@ public class IngestPatentsFromJson {
         arrayFields.add(SeedingConstants.CPC);
         arrayFields.add(SeedingConstants.CITATION);
 
+        Set<String> fieldsToCapitalize = new HashSet<>();
+        fieldsToCapitalize.add(SeedingConstants.ASSIGNEE);
+        fieldsToCapitalize.add(SeedingConstants.ASSIGNOR);
+        fieldsToCapitalize.add(SeedingConstants.ASSIGNEE_HARMONIZED);
+        fieldsToCapitalize.add(SeedingConstants.NAME);
+
         Set<String> booleanFields = new HashSet<>();
         booleanFields.add(SeedingConstants.CPC+"."+SeedingConstants.INVENTIVE);
         Connection conn = Database.getConn();
@@ -186,7 +188,17 @@ public class IngestPatentsFromJson {
                 List<Object> data = new ArrayList<>(fields.length);
                 for(int i = 0; i < fields.length; i++) {
                     String field = fields[i];
+                    String parentField;
+                    String childField;
+                    if(field.contains(".")) {
+                        parentField = field.substring(0,field.indexOf("."));
+                        childField = field.substring(field.indexOf(".")+1,field.length());
+                    } else {
+                        parentField = field;
+                        childField = field;
+                    }
                     Object val;
+                    final boolean capitalizeValues = (fieldsToCapitalize.contains(childField));
                     if(field.contains(".")) {
                         boolean isDate = field.equals("date")||field.endsWith("_date")||field.endsWith("Date");
                         List<Map<String,Object>> fieldData = (List<Map<String,Object>>)doc.get(field.substring(0,field.indexOf(".")));
@@ -209,6 +221,10 @@ public class IngestPatentsFromJson {
                                         }
                                         objs[j]=date;
                                     }
+                                } else if(capitalizeValues) {
+                                    if(objs[j]!=null) {
+                                        objs[j]=((String)objs[j]).toUpperCase();
+                                    }
                                 }
                             }
                             val = objs;
@@ -217,6 +233,18 @@ public class IngestPatentsFromJson {
                         }
                     } else {
                         val = doc.get(fields[i]);
+                        if(capitalizeValues && val!=null) {
+                            final boolean isArray = arrayFields.contains(parentField);
+                            if(isArray) {
+                                val = ((List<String>)val).stream().map(x->{
+                                    if(x!=null) {
+                                        return x.toUpperCase();
+                                    } else return null;
+                                }).collect(Collectors.toList());
+                            } else {
+                                val = ((String)val).toUpperCase();
+                            }
+                        }
                     }
                     if(i==7) { // priority date
                         if(val==null||val.equals("0")) {

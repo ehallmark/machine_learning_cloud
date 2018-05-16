@@ -2,7 +2,6 @@ package seeding.google.postgres;
 
 import seeding.Database;
 import seeding.ai_db_updater.handlers.NestedHandler;
-import seeding.ai_db_updater.handlers.USPTOAssignmentHandler;
 import seeding.ai_db_updater.iterators.WebIterator;
 import seeding.ai_db_updater.iterators.ZipFileIterator;
 import seeding.data_downloader.AssignmentDataDownloader;
@@ -18,8 +17,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 
 /**
@@ -109,13 +106,13 @@ public class IngestAssignmentData {
             // assignees
             String[] assigneeArray = new String[assignees.size()];
             for(int i = 0; i < assignees.size(); i++) {
-                assigneeArray[i] = (String)assignees.get(i).get(seeding.Constants.ASSIGNEE);
+                assigneeArray[i] = ((String)assignees.get(i).get(seeding.Constants.ASSIGNEE)).toUpperCase();
             }
             assignmentData.add(assigneeArray);
             // assignors
             String[] assignorArray = new String[assignors.size()];
             for(int i = 0; i < assignors.size(); i++) {
-                assignorArray[i] = (String)assignors.get(i).get(seeding.Constants.FULL_NAME);
+                assignorArray[i] = ((String)assignors.get(i).get(seeding.Constants.FULL_NAME)).toUpperCase();
             }
             assignmentData.add(assignorArray);
             try {
