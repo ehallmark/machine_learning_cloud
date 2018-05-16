@@ -123,15 +123,15 @@ public class Database {
 		return all;
 	}
 
-	public static List<String> searchBigQuery(String tableName, String search, String desiredField, int limit, String... fields) {
+	public static List<String> searchBigQueryCPCs(String tableName, String search, int limit, Map<String,String> titlePartMap, String... fields) {
 		if(search==null||search.trim().isEmpty()) return Collections.emptyList();
-		StringJoiner where = new StringJoiner(" and ", "", "");
+		StringJoiner where = new StringJoiner(" or ", "", "");
 		for (String field : fields) {
 			where.add("lower("+field + ") like ? || '%'");
 		}
 		List<String> results = new ArrayList<>(limit);
 		try {
-			PreparedStatement ps = conn.prepareStatement("select " + desiredField + " from " + tableName + " where " + where.toString() + " limit " + limit);
+			PreparedStatement ps = conn.prepareStatement("select code,title_part from " + tableName + " where " + where.toString() + " limit " + limit);
 			ps.setFetchSize(limit);
 			for(int i = 0; i < fields.length; i++) {
 				ps.setString(1+i, search.toLowerCase());
@@ -140,6 +140,10 @@ public class Database {
 			ResultSet rs = ps.executeQuery();
 			while(rs.next()) {
 				results.add(rs.getString(1));
+				String titlePart = rs.getString(2);
+				if(titlePart!=null) {
+                    titlePartMap.put(rs.getString(1), titlePart);
+                }
 			}
 			rs.close();
 			ps.close();

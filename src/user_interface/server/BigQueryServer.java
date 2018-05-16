@@ -1062,7 +1062,8 @@ public class BigQueryServer extends SimilarPatentServer {
 
         // setup select2 ajax remote data sources
         get(Constants.CPC_CODE_AJAX_URL, (req,res)->{
-            Function<String,List<String>> resultsSearchFunction = search -> Database.searchBigQuery("big_query_cpc_definition",search, "code", 10,"code", "title_full");
+            Map<String,String> titlePartMap = new HashMap<>();
+            Function<String,List<String>> resultsSearchFunction = search -> Database.searchBigQueryCPCs("big_query_cpc_definition",search, 10,titlePartMap,"code", "title_full");
             Function<String,String> displayFunction = result -> result;
             return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
         });
