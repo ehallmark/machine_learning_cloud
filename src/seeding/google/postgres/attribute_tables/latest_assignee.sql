@@ -69,4 +69,3 @@ insert into big_query_patent_to_latest_assignee_by_family (family_id,first_assig
 );
 
 create index big_query_latest_by_family_first_assignee_idx on big_query_patent_to_latest_assignee_by_family (first_assignee);
-

@@ -23,7 +23,6 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import seeding.google.elasticsearch.Attributes;
-import seeding.google.elasticsearch.attributes.SignificantTermsAttribute;
 import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import spark.QueryParamsMap;
 import spark.Request;

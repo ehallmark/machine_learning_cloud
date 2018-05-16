@@ -64,9 +64,11 @@ public class PredictTechTags {
                     "MATERIALS SCIENCE",
                     //"INDUSTRIAL PROCESSES",
                     "DISNEY SECOND SCREEN",
+                    "ACOUSTICS", // to broad...
                     "FILM PRODUCTION",
                     "MOVIE PROJECTOR",
                     "NANOPHOTONIC RESONATOR",
+                    "TECHNOLOGICAL CHANGE",
                     "EMERGING TECHNOLOGIES",
                     "EMERGING TECHNOLOGY",
                     //"COLOR",
