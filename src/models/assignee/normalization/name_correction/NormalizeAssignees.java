@@ -115,8 +115,7 @@ public class NormalizeAssignees {
     }
 
     public static String manualCleanse(String cleanIsh) {
-        String orig = cleanIsh;
-        cleanIsh = cleanIsh.trim();
+        cleanIsh = cleanIsh.toUpperCase().trim();
 
         if(cleanIsh.length() > MIN_ASSIGNEE_LENGTH && cleanIsh.contains(" ")) {
             int idx = cleanIsh.indexOf("(");

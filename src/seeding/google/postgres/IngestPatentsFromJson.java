@@ -1,5 +1,6 @@
 package seeding.google.postgres;
 
+import models.assignee.normalization.name_correction.NormalizeAssignees;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.bson.Document;
 import seeding.Database;
@@ -25,7 +26,7 @@ import java.util.stream.Stream;
 
 public class IngestPatentsFromJson {
 
-    private static final LocalDate twentyFiveYearsAgo = LocalDate.of(2018,4,7).minusYears(25);
+    private static final LocalDate twentyFiveYearsAgo = LocalDate.of(2018,4,7).minusYears(22);
     protected static final Function<Map<String,Object>,Boolean> filterDocumentFunction = doc -> {
         String filingDate = (String)doc.get(SeedingConstants.FILING_DATE);
         if(filingDate==null||filingDate.length()!=10) return false;
@@ -238,11 +239,11 @@ public class IngestPatentsFromJson {
                             if(isArray) {
                                 val = ((List<String>)val).stream().map(x->{
                                     if(x!=null) {
-                                        return x.toUpperCase();
+                                        return NormalizeAssignees.manualCleanse(x);
                                     } else return null;
                                 }).collect(Collectors.toList());
                             } else {
-                                val = ((String)val).toUpperCase();
+                                val = NormalizeAssignees.manualCleanse((String)val);
                             }
                         }
                     }
