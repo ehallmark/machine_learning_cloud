@@ -1,4 +1,4 @@
-package seeding.google.cpc_sim;
+package python_compatibility;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
