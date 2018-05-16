@@ -37,8 +37,8 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
         super.extractRelevantInformationFromParams(params);
         if(this.attrNames!=null) {
             this.attrNames.forEach(attr -> {
-                Object min = SimilarPatentServer.extractString(params, attr.replace(".","")+SimilarPatentServer.LINE_CHART_MIN, null);
-                Object max = SimilarPatentServer.extractString(params, attr.replace(".","")+SimilarPatentServer.LINE_CHART_MAX, null);
+                Object min = SimilarPatentServer.extractString(params, getChartMinByName(attr), null);
+                Object max = SimilarPatentServer.extractString(params, getChartMaxByName(attr), null);
                 if(min != null && min.toString().length()>0) {
                     try {
                         min = LocalDate.parse(min.toString());

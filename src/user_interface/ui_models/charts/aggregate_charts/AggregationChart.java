@@ -15,9 +15,8 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.SingleBucketAggregation;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
-
-import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.nd4j.linalg.primitives.Pair;
+import seeding.google.elasticsearch.attributes.DateRangeAttribute;
 import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
@@ -273,18 +272,21 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                     .map(e -> e.getFirst()).collect(Collectors.toList());
         } else if (attribute instanceof RangeAttribute) {
             dataSets = new ArrayList<>();
-            RangeAttribute rangeAttribute = (RangeAttribute)attribute;
+            RangeAttribute rangeAttribute = (RangeAttribute) attribute;
             // build categories
-            List<Pair<Number,Number>> ranges = rangeAttribute.getRanges();
-            for(Pair<Number,Number> range: ranges) {
-                String str=range.getFirst().toString();
-                if(range.getSecond()!=null) {
-                    str+="-"+range.getSecond().toString();
+            List<Pair<Number, Number>> ranges = rangeAttribute.getRanges();
+            for (Pair<Number, Number> range : ranges) {
+                String str = range.getFirst().toString();
+                if (range.getSecond() != null) {
+                    str += "-" + range.getSecond().toString();
                 } else {
-                    str+="+";
+                    str += "+";
                 }
                 dataSets.add(str);
             }
+        } else if (attribute instanceof DateRangeAttribute) {
+            DateRangeAttribute dateRangeAttribute = (DateRangeAttribute)attribute;
+            dateRangeAttribute.getMaxDate()
 
         } else {
             dataSets = null;
