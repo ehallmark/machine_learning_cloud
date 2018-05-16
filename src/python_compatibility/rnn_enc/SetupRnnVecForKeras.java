@@ -26,7 +26,7 @@ public class SetupRnnVecForKeras {
         final File yFile = new File("/home/ehallmark/Downloads/rnn_keras_y.csv");
         final Random random = new Random(211);
         final int negativeSamples = 4;
-        final int limit = 3000000;
+        final int limit = 2000000;
         final int maxLen = 256;
 
         Word2Vec word2Vec = Word2VecManager.getOrLoadManager();
