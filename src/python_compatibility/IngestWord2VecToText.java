@@ -41,8 +41,16 @@ public class IngestWord2VecToText {
             BufferedWriter bw = new BufferedWriter(new FileWriter(new File("/home/ehallmark/Downloads/word2vec256_vectors.txt")));
             INDArray weights = word2Vec.getLookupTable().getWeights();
             for(int i = 0; i < weights.rows(); i++) {
-                bw.write(String.join(" ",DoubleStream.of(weights.get(NDArrayIndex.point(i),NDArrayIndex.interval(0,256)).data().asDouble())
-                        .mapToObj(d->String.valueOf(d)).collect(Collectors.toList()))+"\n");
+                INDArray row = weights.getRow(i);
+                double[] d = row.data().asDouble();
+                for(int j = 0; j < d.length; j++) {
+                    double x = d[j];
+                    bw.write(String.valueOf(x));
+                    if(j < d.length-1) {
+                        bw.write(" ");
+                    }
+                }
+                bw.write("\n");
             }
             bw.flush();
             bw.close();
