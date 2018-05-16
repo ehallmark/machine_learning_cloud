@@ -22,3 +22,4 @@ insert into big_query_assignee (name,country_code,portfolio_size,entity_type,las
 );
 
 create index big_query_assignee_lower_name_idx on big_query_assignee (lower(name));
+create index big_query_assignee_portfolio_size_idx on big_query_assignee (portfolio_size);

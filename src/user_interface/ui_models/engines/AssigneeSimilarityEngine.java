@@ -1,11 +1,16 @@
 package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
+import seeding.Database;
 import spark.Request;
 import user_interface.ui_models.filters.AbstractFilter;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.function.Function;
 
 import static j2html.TagCreator.div;
@@ -17,6 +22,14 @@ import static user_interface.server.SimilarPatentServer.extractArray;
  * Created by ehallmark on 2/28/17.
  */
 public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
+    private static Function<Collection<String>,INDArray> newAssigneeFunction(String tableName, String attrName, String vecName, boolean join) {
+        return inputs -> {
+            Map<String,INDArray> vecMap = Database.loadAssigneeVectorsFor(tableName,attrName,vecName,new ArrayList<>(inputs),join);
+            if (vecMap.size() > 0) {
+                return Nd4j.vstack(vecMap.values()).mean(0);
+            } else return null;
+        };
+    }
 
     @Override
     public String getName() {
@@ -29,7 +42,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     public AssigneeSimilarityEngine(String tableName) {
-        super(tableName, "name", "cpc_vae", false);
+        super(newAssigneeFunction(tableName, "name", "cpc_vae", false),true);
     }
 
     @Override

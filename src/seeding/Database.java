@@ -198,6 +198,37 @@ public class Database {
 		return loadVectorsFor("big_query_embedding1","publication_number_full","cpc_vae",assets, true);
 	}
 
+	public static Map<String,INDArray> loadAssigneeVectorsFor(String tableName, String attrName, String vecName, List<String> assets, boolean join) {
+		Map<String,INDArray> data = new HashMap<>();
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		assets = assets.stream().map(asset->asset.toLowerCase()).collect(Collectors.toList());
+		String statement = "select "+attrName+","+vecName+" from "+tableName+" as p ";
+		statement += "where lower("+attrName+") like ANY ('" + String.join("'%,'", assets) + "%') order by portfolio_size desc nulls last limit 100";
+		try {
+			ps = conn.prepareStatement(statement);
+			ps.setFetchSize(10);
+			rs = ps.executeQuery();
+			while(rs.next()) {
+				data.put(rs.getString(1),Nd4j.create(Stream.of((Number[])rs.getArray(2).getArray()).mapToDouble(d->d.doubleValue()).toArray()));
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs!=null) {
+					rs.close();
+				}
+				if(ps!=null) {
+					ps.close();
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return data;
+	}
+
 	public static Map<String,INDArray> loadVectorsFor(String tableName, String attrName, String vecName, List<String> assets, boolean join) {
 		Map<String,INDArray> data = new HashMap<>();
 		PreparedStatement ps = null;
