@@ -32,7 +32,7 @@ public class SetupRnnVecForKeras {
         Word2Vec word2Vec = Word2VecManager.getOrLoadManager();
         int paddingIdx = word2Vec.getVocab().numWords();
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("select abstract from big_query_patent_english_abstract as p tablesample system(10) limit "+limit);
+        PreparedStatement ps = conn.prepareStatement("select abstract from big_query_patent_english_abstract as p tablesample system(2) limit "+limit);
         ResultSet rs = ps.executeQuery();
 
         BufferedWriter x1 = new BufferedWriter(new FileWriter(x1File));
@@ -73,8 +73,13 @@ public class SetupRnnVecForKeras {
                 }
                 String[] words2 = samples.get(randIdx);
                 int[] indices2 = Stream.of(words2).mapToInt(word -> word2Vec.indexOf(word))
+                        .limit(maxLen)
                         .filter(i -> i >= 0).toArray();
-                writeToFile(maxLen, paddingIdx, x1, x2, y, indices, indices2, 0);
+                if(random.nextBoolean()) { // randomly switch x1 and x2
+                    writeToFile(maxLen, paddingIdx, x1, x2, y, indices, indices2, 0);
+                } else {
+                    writeToFile(maxLen, paddingIdx, x1, x2, y, indices2, indices, 0);
+                }
             }
             if(cnt.getAndIncrement()%1000==999) {
                 System.out.println("Saved results for: "+cnt.get());
