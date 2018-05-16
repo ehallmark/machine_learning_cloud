@@ -1,4 +1,4 @@
-package python_compatibility;
+package python_compatibility.rnn_enc;
 
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -52,13 +52,15 @@ public class IngestWord2VecToText {
                 }
                 bw.write("\n");
             }
-            for(int i = 0; i < word2Vec.getLayerSize(); i++) {
-                bw.write("0");
-                if(i<word2Vec.getLayerSize()-1) {
-                    bw.write(" ");
+            for(int n = 0; n < 2; n++) {
+                for (int i = 0; i < word2Vec.getLayerSize(); i++) {
+                    bw.write("0");
+                    if (i < word2Vec.getLayerSize() - 1) {
+                        bw.write(" ");
+                    }
                 }
+                bw.write("\n");
             }
-            bw.write("\n");
             bw.flush();
             bw.close();
         }

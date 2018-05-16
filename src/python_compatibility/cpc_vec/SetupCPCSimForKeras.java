@@ -1,4 +1,4 @@
-package python_compatibility;
+package python_compatibility.cpc_vec;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import cpc_normalization.CPC;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class SetupCPCSimDBForKeras {
+public class SetupCPCSimForKeras {
     private static final Random rand = new Random(1235018);
     public static void main(String[] args) throws Exception {
         // this file sets up the data table in SQL so that CPCSim.py can run smoothly
