@@ -1,9 +1,6 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
 import com.googlecode.wickedcharts.highcharts.options.Options;
-import com.googlecode.wickedcharts.highcharts.options.PixelOrPercent;
-import com.googlecode.wickedcharts.highcharts.options.drilldown.DrilldownPoint;
-import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
@@ -24,7 +21,6 @@ import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
-import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.*;
 import user_interface.ui_models.charts.highcharts.PieChart;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -149,7 +145,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             System.out.println("Building datehistogram for: "+attrName);
             LocalDate xMin = null;
             LocalDate xMax = null;
-            if(attribute instanceof AggregateLineChart) {
+            if(chart instanceof AggregateLineChart) {
                 xMin = ((AggregateLineChart) chart).getMin(attrName);
                 xMax = ((AggregateLineChart) chart).getMax(attrName);
             }

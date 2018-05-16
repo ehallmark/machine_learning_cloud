@@ -16,7 +16,6 @@ import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.SingleBucketAggregation;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
 import org.nd4j.linalg.primitives.Pair;
-import seeding.google.elasticsearch.attributes.DateRangeAttribute;
 import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
@@ -265,7 +264,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         return handlePotentiallyNestedAgg(aggregations,attrName+aggSuffix,attrName+NESTED_SUFFIX+aggSuffix);
     }
 
-    protected static List<String> getCategoriesForAttribute(AbstractAttribute attribute) {
+    protected List<String> getCategoriesForAttribute(AbstractAttribute attribute) {
         List<String> dataSets; // custom category names
         if (attribute instanceof DatasetAttribute) {
             dataSets = ((DatasetAttribute) attribute).getCurrentDatasets().stream()
@@ -284,10 +283,6 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 }
                 dataSets.add(str);
             }
-        } else if (attribute instanceof DateRangeAttribute) {
-            DateRangeAttribute dateRangeAttribute = (DateRangeAttribute)attribute;
-            dateRangeAttribute.getMaxDate()
-
         } else {
             dataSets = null;
         }
