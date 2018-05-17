@@ -78,7 +78,7 @@ public class FilterKeywordsByTFIDF {
 
 
     private static String[] handleTfidf(double numDocuments, Map<String,Long> countMap, Map<String,Pair<Integer,Integer>> wordData) {
-        final int tfidfLimit = 5;
+        final int tfidfLimit = Math.min(10, countMap.size()/2);
         return countMap.entrySet().stream().filter(e->wordData.containsKey(e.getKey())).map(e->{
             Pair<Integer,Integer> p = wordData.get(e.getKey());
             double tfidf = e.getValue().doubleValue() * Math.log(p._1) * Math.log(numDocuments/p._2);
