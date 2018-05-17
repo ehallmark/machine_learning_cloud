@@ -56,7 +56,7 @@ public class FilterKeywordsByTFIDF {
         int seen = 0;
         while(rs.next()) {
             String familyId = rs.getString(1);
-            String[] text = (String[])rs.getArray(1).getArray();
+            String[] text = (String[])rs.getArray(2).getArray();
             Map<String,Long> countMap = Stream.of(text).collect(Collectors.groupingBy(word->word, Collectors.counting()));
             text = handleTfidf(numDocuments.get(), countMap, wordData);
             if(text.length > 0) {
