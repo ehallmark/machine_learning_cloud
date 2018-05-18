@@ -208,10 +208,11 @@ public class Database {
 		ResultSet rs = null;
 		assets = assets.stream().map(asset->asset.toLowerCase()).collect(Collectors.toList());
 		String statement = "select "+attrName+","+vecName+" from "+tableName+" as p ";
-		statement += "where lower("+attrName+") like ANY ('" + String.join("'%,'", assets) + "%') order by portfolio_size desc nulls last limit 100";
+		statement += "where lower("+attrName+") like ANY ('" + String.join("%','", assets) + "%') order by portfolio_size desc nulls last limit 100";
 		try {
 			ps = conn.prepareStatement(statement);
 			ps.setFetchSize(10);
+			System.out.println("Assignee Vector Query: "+ps.toString());
 			rs = ps.executeQuery();
 			while(rs.next()) {
 				data.put(rs.getString(1),Nd4j.create(Stream.of((Number[])rs.getArray(2).getArray()).mapToDouble(d->d.doubleValue()).toArray()));
