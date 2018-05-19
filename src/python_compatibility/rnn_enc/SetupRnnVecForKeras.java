@@ -27,7 +27,7 @@ public class SetupRnnVecForKeras {
         final Random random = new Random(211);
         final int negativeSamples = 4;
         final int limit = 5000000;
-        final int maxLen = 32;
+        final int maxLen = 128;
 
         Word2Vec word2Vec = Word2VecManager.getOrLoadManager();
         Connection conn = Database.getConn();
