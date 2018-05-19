@@ -1,7 +1,13 @@
 package models.classification_models;
 
+import elasticsearch.MyClient;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.nd4j.linalg.primitives.Pair;
-import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
+import seeding.google.elasticsearch.Attributes;
+import seeding.google.mongo.ingest.IngestPatents;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,57 +16,39 @@ import java.util.stream.Stream;
 /**
  * Created by Evan on 3/4/2017.
  */
-public class TechnologyClassifier extends ClassificationAttr {
-    private ComputableAttribute<? extends Collection<String>> attribute;
-    public TechnologyClassifier(ComputableAttribute<? extends Collection<String>> attribute) {
-        this.attribute=attribute;
+public class TechnologyClassifier {
+    private String fieldName;
+    public TechnologyClassifier(String fieldName) {
+        this.fieldName=fieldName;
     }
 
-    @Override
-    public void save() {
-        // do nothing
-    }
-
-    @Override
-    public void train(Map<String, Collection<String>> trainingData) {
-
-    }
-
-    @Override
-    public ClassificationAttr optimizeHyperParameters(Map<String, Collection<String>> trainingData, Map<String, Collection<String>> validationData) {
-        return this;
-    }
-
-    public int numClassifications() {
-        return WIPOHelper.getDefinitionMap().size();
-    }
-
-    public Collection<String> getClassifications() { return attribute.getAllValues(); }
-
-    @Override
-    public ClassificationAttr untrainedDuplicate() {
-        return new TechnologyClassifier(attribute);
-    }
-
-
-    private List<Pair<String,Double>> technologyHelper(Collection<String> patents, int limit, Boolean isApp) {
+    private List<Pair<String,Double>> wipoHelper(Collection<String> patents, int limit) {
         if(patents.isEmpty()) return Collections.emptyList();
-        return patents.stream().flatMap(item->{
-            Collection<String> attributes = attribute.attributesFor(Arrays.asList(item),1,isApp);
-            if(attributes==null) return Stream.empty();
-            else return attributes.stream();
-        }).filter(tech->tech!=null).collect(Collectors.groupingBy(tech->tech,Collectors.counting()))
+        String[] patentArray = patents.toArray(new String[patents.size()]);
+        SearchRequestBuilder builder = MyClient.get().prepareSearch(IngestPatents.INDEX_NAME)
+                .setTypes(IngestPatents.TYPE_NAME)
+                .setFetchSource(new String[]{fieldName}, new String[]{})
+                .setSize(1000)
+                .setFrom(0)
+                .setQuery(
+                        QueryBuilders.boolQuery().filter(
+                                QueryBuilders.boolQuery()
+                                        .must(QueryBuilders.termQuery(Attributes.COUNTRY_CODE, "US"))
+                                        .must(QueryBuilders.boolQuery()
+                                                .should(QueryBuilders.termsQuery(Attributes.PUBLICATION_NUMBER, patentArray))
+                                                .should(QueryBuilders.termsQuery(Attributes.APPLICATION_NUMBER_FORMATTED, patentArray))
+                                        )
+                                )
+                );
+        SearchResponse response = builder.get();
+        SearchHit[] hits = response.getHits().getHits();
+        return Stream.of(hits).map(item->item.getSource().get(fieldName)).filter(tech->tech!=null).flatMap(a -> a instanceof List ? ((List<String>)a).stream(): Stream.of(a)).collect(Collectors.groupingBy(tech->tech.toString(),Collectors.counting()))
                 .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(limit)
                 .map(e->new Pair<>(e.getKey(),e.getValue().doubleValue()/patents.size())).collect(Collectors.toList());
     }
 
-    @Override
     public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int n) {
-        return attributesFor(portfolio,n,null);
-    }
-
-    public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int n, Boolean isApp) {
-        return technologyHelper(portfolio,n, isApp);
+        return wipoHelper(portfolio,n);
     }
 
 }

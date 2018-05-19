@@ -97,7 +97,7 @@ public class PredictTechTags {
 
 
     private static final Function<String,String> technologyTransformer = tech -> {
-        return tech;
+        return tech.replace("APPLICATIONS OF ","");
     };
 
     public static void main(String[] args) throws Exception {

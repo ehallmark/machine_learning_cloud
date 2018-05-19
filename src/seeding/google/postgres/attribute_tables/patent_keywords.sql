@@ -26,9 +26,3 @@ create table big_query_keywords_tfidf (
     keywords text[] not null
 );
 
-
-insert into big_query_keywords_tfidf (family_id,keywords) (
-    select
-
-    from big_query_keyword_count_helper
-);

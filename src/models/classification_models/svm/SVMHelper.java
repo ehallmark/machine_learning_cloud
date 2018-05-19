@@ -1,41 +1,12 @@
 package models.classification_models.svm;
 
-import org.nd4j.linalg.api.ndarray.INDArray;
-import models.classification_models.NaiveGatherClassifier;
-import org.nd4j.linalg.primitives.Pair;
 import models.classification_models.svm.libsvm.*;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 5/4/17.
  */
 public class SVMHelper {
 
-    // helper for gather data
-    public static Pair<double[][],double[][]> mapToSVMData(Map<String,Collection<String>> gatherMap, List<String> technologies, Map<String,INDArray> lookupTable) {
-        Map<String,Collection<String>> invertedGatherMap = NaiveGatherClassifier.invert(gatherMap).entrySet().stream()
-                .filter(e-> e.getValue().size()>0&&lookupTable.get(e.getKey())!=null)
-                .collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
-        int N = invertedGatherMap.entrySet().stream().collect(Collectors.summingInt(e->e.getValue().size()));
-        double[][] x = new double[N][];
-        double[][] y = new double[N][];
-
-        AtomicInteger idx = new AtomicInteger(0);
-        invertedGatherMap.entrySet().parallelStream().forEach(e->{
-            String patent = e.getKey();
-            Collection<String> techs = e.getValue();
-            techs.forEach(tech->{
-                int i = idx.getAndIncrement();
-                x[i] = lookupTable.get(patent).data().asDouble();
-                y[i] = new double[]{technologies.indexOf(tech)};
-            });
-        });
-
-        return new Pair<>(x,y);
-    }
 
     public static svm_model svmTrain(double[][] xtrain, double[][] ytrain, svm_parameter param) {
         svm_problem prob = new svm_problem();

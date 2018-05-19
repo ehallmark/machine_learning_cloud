@@ -1,5 +1,6 @@
 package seeding.google.postgres;
 
+import models.assignee.normalization.name_correction.NormalizeAssignees;
 import seeding.Database;
 import seeding.ai_db_updater.handlers.NestedHandler;
 import seeding.ai_db_updater.iterators.WebIterator;
@@ -106,13 +107,13 @@ public class IngestAssignmentData {
             // assignees
             String[] assigneeArray = new String[assignees.size()];
             for(int i = 0; i < assignees.size(); i++) {
-                assigneeArray[i] = ((String)assignees.get(i).get(seeding.Constants.ASSIGNEE)).toUpperCase();
+                assigneeArray[i] = NormalizeAssignees.manualCleanse((String)assignees.get(i).get(seeding.Constants.ASSIGNEE));
             }
             assignmentData.add(assigneeArray);
             // assignors
             String[] assignorArray = new String[assignors.size()];
             for(int i = 0; i < assignors.size(); i++) {
-                assignorArray[i] = ((String)assignors.get(i).get(seeding.Constants.FULL_NAME)).toUpperCase();
+                assignorArray[i] = NormalizeAssignees.manualCleanse((String)assignors.get(i).get(seeding.Constants.FULL_NAME));
             }
             assignmentData.add(assignorArray);
             try {
