@@ -40,6 +40,13 @@ public class IngestWord2VecToText {
         }
         {
             BufferedWriter bw = new BufferedWriter(new FileWriter(new File("/home/ehallmark/Downloads/word2vec256_vectors.txt")));
+            for (int i = 0; i < word2Vec.getLayerSize(); i++) {
+                bw.write("0");
+                if (i < word2Vec.getLayerSize() - 1) {
+                    bw.write(" ");
+                }
+            }
+            bw.write("\n");
             double[] weights = word2Vec.getLookupTable().getWeights().data().asDouble();
             for(int i = 0; i < weights.length/word2Vec.getLayerSize(); i++) {
                 double[] d = Arrays.copyOfRange(weights, i*word2Vec.getLayerSize(), i*word2Vec.getLayerSize()+word2Vec.getLayerSize());
@@ -53,15 +60,13 @@ public class IngestWord2VecToText {
                 }
                 bw.write("\n");
             }
-            for(int n = 0; n < 2; n++) {
-                for (int i = 0; i < word2Vec.getLayerSize(); i++) {
-                    bw.write("0");
-                    if (i < word2Vec.getLayerSize() - 1) {
-                        bw.write(" ");
-                    }
+            for (int i = 0; i < word2Vec.getLayerSize(); i++) {
+                bw.write("0");
+                if (i < word2Vec.getLayerSize() - 1) {
+                    bw.write(" ");
                 }
-                bw.write("\n");
             }
+            bw.write("\n");
             bw.flush();
             bw.close();
         }
