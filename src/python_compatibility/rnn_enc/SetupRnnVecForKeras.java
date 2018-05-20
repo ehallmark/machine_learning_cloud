@@ -26,12 +26,12 @@ public class SetupRnnVecForKeras {
         final File yFile = new File("/home/ehallmark/Downloads/rnn_keras_y.csv");
         final Random random = new Random(211);
         final int negativeSamples = 4;
-        final int limit = 5000000;
-        final int maxLen = 128;
+        final int limit = 4000000;
+        final int maxLen = 96;
 
         Word2Vec word2Vec = Word2VecManager.getOrLoadManager();
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("select abstract from big_query_patent_english_abstract as p tablesample system(10) limit "+limit);
+        PreparedStatement ps = conn.prepareStatement("select abstract from big_query_patent_english_abstract as p tablesample system(15) limit "+limit);
         ResultSet rs = ps.executeQuery();
 
         BufferedWriter x1 = new BufferedWriter(new FileWriter(x1File));
@@ -45,7 +45,9 @@ public class SetupRnnVecForKeras {
             if(words==null || words.length>0) {
                 int[] indices = Stream.of(words).mapToInt(word -> word2Vec.indexOf(word))
                         .filter(i -> i >= 0).limit(maxLen * 2).toArray();
-                samples.add(indices);
+                if(indices.length>3) {
+                    samples.add(indices);
+                }
             }
 
             if(cnt.getAndIncrement()%10000==9999) {
@@ -57,7 +59,10 @@ public class SetupRnnVecForKeras {
         ps.close();
         conn.close();
 
-        //Collections.shuffle(samples);
+        System.out.println("Shuffling...");
+        Collections.shuffle(samples);
+        System.out.println("Finished shuffling.");
+
         cnt.set(0);
         for(int s = 0; s < samples.size(); s++) {
             // write identity
@@ -88,10 +93,13 @@ public class SetupRnnVecForKeras {
                 }
                 int[] indices2 = samples.get(randIdx);
                 if(random.nextBoolean()) {
-                    int st = random.nextInt(Math.max(1,indices2.length-maxLen));
-                    int end = Math.min(indices2.length-1,st+maxLen);
-                    indices2 = Arrays.copyOfRange(indices2, st, end);
+                    indices2 = Arrays.copyOfRange(indices2, 0, indices2.length/2);
+                } else {
+                    indices2 = Arrays.copyOfRange(indices2, indices2.length/2, indices2.length);
                 }
+                int st = random.nextInt(Math.max(1,indices2.length-maxLen));
+                int end = Math.min(indices2.length-1,st+maxLen);
+                indices2 = Arrays.copyOfRange(indices2, st, end);
                 if(random.nextBoolean()) { // randomly switch x1 and x2
                     writeToFile(maxLen, x1, x2, y, indices, indices2, 0);
                 } else {
