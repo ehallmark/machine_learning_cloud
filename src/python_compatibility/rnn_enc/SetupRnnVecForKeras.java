@@ -1,5 +1,6 @@
 package python_compatibility.rnn_enc;
 
+import graphical_modeling.util.Pair;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import seeding.Database;
 import seeding.google.postgres.Util;
@@ -66,17 +67,9 @@ public class SetupRnnVecForKeras {
         cnt.set(0);
         for(int s = 0; s < samples.size(); s++) {
             // write identity
-            int[] idx1 = new int[maxLen];
-            int[] idx2 = new int[maxLen];
-            {
-                int[] indices = samples.get(s);
-                int idx = 0;
-                for (int i = maxLen - indices.length / 2; i < maxLen; i++) {
-                    idx1[i] = indices[idx];
-                    idx2[i] = indices[indices.length / 2 + idx];
-                    idx++;
-                }
-            }
+            Pair<int[],int[]> sample = splitIndices(samples.get(s), maxLen, random);
+            int[] idx1 = sample._1;
+            int[] idx2 = sample._2;
             int[] indices;
             if(random.nextBoolean()) {
                 indices=idx1;
@@ -91,15 +84,8 @@ public class SetupRnnVecForKeras {
                 while (randIdx < 0 || randIdx == s) {
                     randIdx = random.nextInt(samples.size());
                 }
-                int[] indices2 = samples.get(randIdx);
-                if(random.nextBoolean()) {
-                    indices2 = Arrays.copyOfRange(indices2, 0, indices2.length/2);
-                } else {
-                    indices2 = Arrays.copyOfRange(indices2, indices2.length/2, indices2.length);
-                }
-                int st = random.nextInt(Math.max(1,indices2.length-maxLen));
-                int end = Math.min(indices2.length-1,st+maxLen);
-                indices2 = Arrays.copyOfRange(indices2, st, end);
+                Pair<int[],int[]> possible = splitIndices(samples.get(neg), maxLen, random);
+                int[] indices2 = possible._1;
                 if(random.nextBoolean()) { // randomly switch x1 and x2
                     writeToFile(maxLen, x1, x2, y, indices, indices2, 0);
                 } else {
@@ -122,6 +108,35 @@ public class SetupRnnVecForKeras {
 
     }
 
+    private static Pair<int[],int[]> splitIndices(int[] indices, int maxLen, Random random) {
+        int[] ret1 = new int[maxLen];
+        int[] ret2 = new int[maxLen];
+        Arrays.fill(ret1,-1);
+        Arrays.fill(ret2, -1);
+        int[] idx1 = Arrays.copyOfRange(indices, 0, indices.length/2);
+        int[] idx2 = Arrays.copyOfRange(indices, indices.length/2, indices.length);
+        int st = random.nextInt(Math.max(1,idx1.length-maxLen));
+        int end = Math.min(idx1.length-1,st+maxLen);
+        idx1 = Arrays.copyOfRange(idx1, st, end);
+        st = random.nextInt(Math.max(1,idx2.length-maxLen));
+        end = Math.min(idx2.length-1,st+maxLen);
+        idx2 = Arrays.copyOfRange(idx2, st, end);
+        int idx = 0;
+        for (int i = maxLen - idx1.length; i < maxLen; i++) {
+            ret1[i] = idx1[idx];
+            idx++;
+        }
+        idx = 0;
+        for (int i = maxLen - idx2.length; i < maxLen; i++) {
+            ret2[i] = idx2[idx];
+            idx++;
+        }
+        if(random.nextBoolean()) {
+            return new Pair<>(ret1,ret2);
+        } else {
+            return new Pair<>(ret2,ret1);
+        }
+    }
 
     private static void writeToFile(int maxLen, BufferedWriter x1, BufferedWriter x2, BufferedWriter y, int[] indices, int[] indices2, int label) throws IOException {
         if(indices.length>0 && indices2.length>0) {

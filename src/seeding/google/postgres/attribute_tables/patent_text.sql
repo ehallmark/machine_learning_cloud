@@ -33,6 +33,7 @@ create table big_query_patent_english_abstract (
     publication_number_full varchar(32) not null,
     abstract text not null
 );
+create index big_query_patent_english_abstract_pub_idx on big_query_patent_english_abstract (publication_number_full);
 
 insert into big_query_patent_english_abstract (family_id,publication_number_full,abstract) (
     select distinct on (family_id)
