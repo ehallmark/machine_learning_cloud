@@ -155,7 +155,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         ArraySeries series = new ArraySeries();
         series.setName(seriesTitle);
         series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT))
-                .setDataLabels(new DataLabels(true).setColor(Color.WHITE).setDistance(-30));
+                .setDataLabels(new DataLabels(true).setColor(Color.WHITE).setDistance(-40));
         List<String> outerColors = new ArrayList<>();
         List<String> innerColors = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
@@ -167,7 +167,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             for (List point : d.getData()) {
                 combinedSeries.addPoint(point);
                 sum += ((Number) point.get(1)).doubleValue();
-                String innerColor = AbstractChart.getColor(i, Math.min(80, p*5));
+                String innerColor = AbstractChart.getColor(i, Math.min(90, p*10));
                 innerColors.add(innerColor);
                 p++;
             }

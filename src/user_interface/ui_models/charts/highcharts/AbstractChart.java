@@ -12,7 +12,7 @@ import java.util.List;
 public abstract class AbstractChart {
 
     private static final List<int[]> RGB_COLORS = Arrays.asList(
-            new int[]{124,128,236},
+            new int[]{124,181,236},
             new int[]{67,67,72},
             new int[]{144,237,125},
             new int[]{247,163,92},
