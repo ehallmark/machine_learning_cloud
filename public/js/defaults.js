@@ -1,9 +1,8 @@
 $(document).ready(function() {
-    setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
-    setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[lastGeneratedDatasetDataFunction,assetListDatasetDataFunction],["From Last Generated Report", "From Asset List", "From CSV File"]);
-
     $('.loader').show();
 
+    setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
+    setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[lastGeneratedDatasetDataFunction,assetListDatasetDataFunction],["From Last Generated Report", "From Asset List", "From CSV File"]);
     $('.miniTip').miniTip({
         title: 'Advanced Keyword Syntax',
         event: 'click',
@@ -311,12 +310,9 @@ $(document).ready(function() {
         $('#update-default-attributes-form').submit();
     });
 
+    var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
     // nested forms
-    $('select.nested-filter-select').each(function() {
-        $this = $(this);
-        var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
-        $this.select2(displayItemSelectOptions);
-    });
+    $('select.nested-filter-select').select2(displayItemSelectOptions);
 
 
 
