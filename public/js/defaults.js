@@ -483,7 +483,7 @@ $(document).ready(function() {
     $('.multiselect-ajax').select2({
       width: "100%",
       ajax: {
-        url: $(this).attr("data-url"),
+        url: function() { return $(this).attr("data-url"); },
         dataType: "json",
         delay: 100,
         data: function(params) {
