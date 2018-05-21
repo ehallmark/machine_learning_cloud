@@ -24,13 +24,13 @@ import static j2html.TagCreator.input;
 
 public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     private static final String AGG_SUFFIX = "_hist";
-    public AggregateHistogramChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
-        super(false,"Histogram",AGG_SUFFIX, attributes, groupByAttrs, Constants.HISTOGRAM, false);
+    public AggregateHistogramChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectAttrs) {
+        super(false,"Histogram",AGG_SUFFIX, attributes, groupByAttrs, collectAttrs, Constants.HISTOGRAM, false);
     }
 
     @Override
     public AggregateHistogramChart dup() {
-        return new AggregateHistogramChart(attributes,groupByAttributes);
+        return new AggregateHistogramChart(attributes,groupByAttributes,collectByAttributes);
     }
 
     @Override

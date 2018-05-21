@@ -30,19 +30,41 @@ import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static j2html.TagCreator.*;
 
 public class AggregatePivotChart extends AggregationChart<TableResponse> {
     private static final String AGG_SUFFIX = "_pivot";
-    protected Collection<AbstractAttribute> collectByAttributes;
-    @Setter
-    private Map<String,SimilarityAttribute> similarityModels;
     public AggregatePivotChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectByAttrs) {
-        super(true,"Pivot Table",AGG_SUFFIX, attributes, groupByAttrs, Constants.PIVOT_FUNCTION_TABLE_CHART, false);
-        this.collectByAttributes=collectByAttrs;
+        super(true,"Pivot Table",AGG_SUFFIX, attributes, groupByAttrs, collectByAttrs, Constants.PIVOT_FUNCTION_TABLE_CHART, false);
     }
 
+
+    public static Tag getTable(TableResponse response, String type, int tableIdx) {
+        List<String> nonHumanAttrs = response.nonHumanAttrs;
+        List<String> humanHeaders = response.headers.stream().map(header->{
+            if(nonHumanAttrs==null || !nonHumanAttrs.contains(header)) {
+                return SimilarPatentServer.fullHumanAttributeFor(header);
+            } else {
+                return header;
+            }
+        }).collect(Collectors.toList());
+        return div().attr("style", "width: 96%; margin-left: 2%; margin-bottom: 30px; overflow-x: auto;").withClass(type).withId("table-" + tableIdx).with(
+                h5(response.title),br(),
+                form().withMethod("post").withTarget("_blank").withAction(SimilarPatentServer.DOWNLOAD_URL).with(
+                        input().withType("hidden").withName("tableId").withValue(String.valueOf(tableIdx)),
+                        button("Download to Excel").withType("submit").withClass("btn btn-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
+                ),
+                table().withClass("table table-striped").withId(type+"-table-"+tableIdx+"table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
+                        thead().with(
+                                tr().with(
+                                        IntStream.range(0,humanHeaders.size()).mapToObj(i->th(humanHeaders.get(i)).attr("data-dynatable-column", response.headers.get(i))).collect(Collectors.toList())
+                                )
+                        ), tbody()
+                )
+        )   ;
+    }
 
 
     @Override
@@ -106,8 +128,6 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
 
     @Override
     public List<? extends TableResponse> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
-        final String statsAggName = getStatsAggName(attrName);
-        final String nestedStatsAggName = getStatsAggName(attrName+NESTED_SUFFIX);
         Type collectorType = attrToCollectTypeMap.get(attrName);
         String collectByAttrName = attrToCollectByAttrMap.get(attrName);
 
@@ -126,50 +146,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         TableResponse response = new TableResponse();
         List<String> nonHumanAttrs = new ArrayList<>(0);
         List<String> groupByDatasets;
-
-        Function<Aggregations,Number> subAggregationHandler = collectByAttrName == null ? null : subAggs -> {
-            final Aggregation sub = handlePotentiallyNestedAgg(subAggs,statsAggName,nestedStatsAggName);
-            Number val;
-            switch (collectorType) {
-                case Max: {
-                    val= ((Max)sub).getValue();
-                    break;
-                }
-                case Min: {
-                    val= ((Min)sub).getValue();
-                    break;
-                }
-                case Sum: {
-                    val= ((Sum)sub).getValue();
-                    break;
-                }
-                case Average: {
-                    val= ((Avg)sub).getValue();
-                    break;
-                }
-                case Cardinality: {
-                    val= ((Cardinality)sub).getValue();
-                    break;
-                }
-                case Count: {
-                    val= ((ValueCount)sub).getValue();
-                    break;
-                }
-                case Variance: {
-                    val= ((ExtendedStats)sub).getVariance();
-                    break;
-                }
-                case StdDeviation: {
-                    val= ((ExtendedStats)sub).getStdDeviation();
-                    break;
-                }
-                default: {
-                    val = null;
-                    break;
-                }
-            }
-            return val;
-        };
+        Function<Aggregations, Number> subAggregationHandler = getSubAggregationHandler(attrName);
 
         if(isGrouped) { // handle two dimensional case (pivot)
             AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
@@ -290,52 +267,5 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     public String getType() {
         return "pivot";
     }
-
-    private String getStatsSuffix() {
-        return BUCKET_SUFFIX + aggSuffix;
-    }
-
-    private String getStatsAggName(String attrName) {
-        return attrName + getStatsSuffix();
-    }
-
-    @Override
-    public List<AbstractAggregation> getAggregations(Request req, AbstractAttribute attribute, String attrName) {
-        Type collectorType = attrToCollectTypeMap.get(attrName);
-        String collectByAttrName = attrToCollectByAttrMap.get(attrName);
-        boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
-        if(collectorType==null && collectByAttrName!=null) throw new RuntimeException("Please select collector type.");
-        if(collectByAttrName==null && collectorType!=null && !collectorType.equals(Type.Count)) throw new RuntimeException("Please select collect by attribute name.");
-
-        System.out.println("Collecting by attribute: "+collectByAttrName);
-        System.out.println("Collect by: "+collectorType);
-        System.out.println("Available collector attrs: "+String.join("; ",attrToCollectByAttrMap.keySet()));
-
-        AbstractAttribute collectByAttribute = collectByAttrName==null?null:findAttribute(collectByAttributes,collectByAttrName);
-        if(collectByAttribute==null) {
-            System.out.println("Collect by attribute could not be found: "+collectByAttrName);
-        }
-        if(collectByAttribute!=null && collectByAttribute instanceof SimilarityAttribute) {
-            // need to get the original model for the vectors
-            collectByAttribute=similarityModels.get(collectByAttribute.getName());
-        } else if(collectByAttribute!=null && collectByAttribute instanceof DependentAttribute) {
-            ((DependentAttribute)collectByAttribute).extractRelevantInformationFromParams(req);
-        }
-        BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName,null, aggSuffix, MAXIMUM_AGGREGATION_SIZE, includeBlank, null);
-        CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getStatsAggName(attrName), getStatsAggName(attrName+NESTED_SUFFIX), collectByAttribute, collectorType);
-        String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
-        if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
-            int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);
-            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(req, attrName,groupedByAttrName,groupLimit,combinedAttrAgg.getAggregation(), includeBlank);
-            return Collections.singletonList(
-                    twoDimensionalAgg
-            );
-        } else {
-            return Collections.singletonList(
-                    combinedAttrAgg
-            );
-        }
-    }
-
 
 }

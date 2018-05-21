@@ -38,15 +38,15 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
 
     protected Map<String,Integer> attrToLimitMap;
     protected Map<String,Boolean> attrToIncludeRemainingMap;
-    public AggregatePieChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
-        super(false,"Distribution",AGG_SUFFIX, attributes, groupByAttrs, Constants.PIE_CHART, false);
+    public AggregatePieChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectAttrs) {
+        super(false,"Distribution",AGG_SUFFIX, attributes, groupByAttrs, collectAttrs,Constants.PIE_CHART, false);
         this.attrToLimitMap=Collections.synchronizedMap(new HashMap<>());
         this.attrToIncludeRemainingMap = Collections.synchronizedMap(new HashMap<>());
     }
 
     @Override
     public AggregatePieChart dup() {
-        return new AggregatePieChart(attributes,groupByAttributes);
+        return new AggregatePieChart(attributes,groupByAttributes,collectByAttributes);
     }
 
     @Override

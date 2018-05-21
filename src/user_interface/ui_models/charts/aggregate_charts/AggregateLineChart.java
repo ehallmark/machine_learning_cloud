@@ -21,15 +21,15 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
     private static final String AGG_SUFFIX = "_line";
     protected Map<String,LocalDate> attrToMinMap;
     protected Map<String,LocalDate> attrToMaxMap;
-    public AggregateLineChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs) {
-        super(false,"Timeline",AGG_SUFFIX, attributes, groupByAttrs, Constants.LINE_CHART, false);
+    public AggregateLineChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectAttrs) {
+        super(false,"Timeline",AGG_SUFFIX, attributes, groupByAttrs, collectAttrs, Constants.LINE_CHART, false);
         this.attrToMaxMap = Collections.synchronizedMap(new HashMap<>());
         this.attrToMinMap = Collections.synchronizedMap(new HashMap<>());
     }
 
     @Override
     public AggregateLineChart dup() {
-        return new AggregateLineChart(attributes,groupByAttributes);
+        return new AggregateLineChart(attributes,groupByAttributes,collectByAttributes);
     }
 
     @Override

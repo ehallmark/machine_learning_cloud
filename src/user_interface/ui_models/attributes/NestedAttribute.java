@@ -6,7 +6,7 @@ import j2html.tags.Tag;
 import lombok.Getter;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.charts.AbstractChartAttribute;
-import user_interface.ui_models.charts.AbstractPivotChart;
+import user_interface.ui_models.charts.aggregate_charts.AggregatePivotChart;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
@@ -92,7 +92,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                 div().with(
                         groupbyTag==null?span():div().with(
                                 groupbyTag,br(),
-                                p(this instanceof AbstractPivotChart ? "Row Attributes" : "Column Attributes")
+                                p(this instanceof AggregatePivotChart ? "Row Attributes" : "Column Attributes")
                         ),
                         SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),id,clazz, applicableAttributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(

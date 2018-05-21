@@ -38,7 +38,6 @@ import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
-import user_interface.ui_models.charts.TableAttribute;
 import user_interface.ui_models.charts.aggregate_charts.*;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.tables.TableResponse;
@@ -323,14 +322,15 @@ public class BigQueryServer extends SimilarPatentServer {
         List<AbstractAttribute> dateAttrs = attributes.stream().filter(attr->attr.getType().equals("date")).collect(Collectors.toList());
         List<AbstractAttribute> rangeAttrs = attributes.stream().filter(attr->attr instanceof RangeAttribute).collect(Collectors.toList());
         List<AbstractAttribute> numericAttrs = attributes.stream().filter(attr->attr.getFieldType().equals(AbstractFilter.FieldType.Double)||attr.getFieldType().equals(AbstractFilter.FieldType.Integer)).collect(Collectors.toList());
-
-        chartModelMap.put(Constants.PIE_CHART, new AggregatePieChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs)));
-        chartModelMap.put(Constants.HISTOGRAM, new AggregateHistogramChart(groupAttributesToNewParents(rangeAttrs),duplicateAttributes(discreteAttrs)));
-        chartModelMap.put(Constants.LINE_CHART, new AggregateLineChart(groupAttributesToNewParents(dateAttrs),duplicateAttributes(discreteAttrs)));
         List<AbstractAttribute> discreteAndNumeric = new ArrayList<>();
         discreteAndNumeric.addAll(duplicateAttributes(numericAttrs));
         discreteAndNumeric.addAll(duplicateAttributes(discreteAttrs));
-        chartModelMap.put(Constants.PIVOT_FUNCTION_TABLE_CHART, new AggregatePivotChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),discreteAndNumeric));
+
+        chartModelMap.put(Constants.PIE_CHART, new AggregatePieChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs), duplicateAttributes(discreteAndNumeric)));
+        chartModelMap.put(Constants.HISTOGRAM, new AggregateHistogramChart(groupAttributesToNewParents(rangeAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAndNumeric)));
+        chartModelMap.put(Constants.LINE_CHART, new AggregateLineChart(groupAttributesToNewParents(dateAttrs),duplicateAttributes(discreteAttrs), duplicateAttributes(discreteAndNumeric)));
+
+        chartModelMap.put(Constants.PIVOT_FUNCTION_TABLE_CHART, new AggregatePivotChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAndNumeric)));
 
         allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
             @Override
@@ -1922,11 +1922,11 @@ public class BigQueryServer extends SimilarPatentServer {
 
                     Map<String,SimilarityAttribute> similarityAttributeMap = engine.getSimilarityAttributeMap();
 
+                    // set similarity engines
+                    abstractCharts.forEach(chart->{
+                        chart.setSimilarityModels(similarityAttributeMap);
+                    });
 
-                    AggregatePivotChart pivotChart = abstractCharts.stream().filter(c->c instanceof AggregatePivotChart).map(c->(AggregatePivotChart)c).limit(1).findFirst().orElse(null);
-                    if(pivotChart!=null) {
-                        pivotChart.setSimilarityModels(similarityAttributeMap);
-                    }
                     abstractCharts.forEach(chart->chart.extractRelevantInformationFromParams(req));
                     List<AggregationBuilder> aggregationBuilders = abstractCharts.stream().flatMap(chart->{
                         List<AggregationBuilder> builders = new ArrayList<>();
@@ -2114,7 +2114,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                 span().withId("data-charts").withClass("collapse show").with(
                                         totalChartCnt.get() == 0 ? Collections.emptyList() : chartTypes.stream().map(type -> div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(type).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 ).with(
-                                        totalTableCnt.get() == 0 ? Collections.emptyList() : tableResponses.stream().map(table -> TableAttribute.getTable(table,table.type,tableCnt.getAndIncrement())).collect(Collectors.toList())
+                                        totalTableCnt.get() == 0 ? Collections.emptyList() : tableResponses.stream().map(table -> AggregatePivotChart.getTable(table,table.type,tableCnt.getAndIncrement())).collect(Collectors.toList())
                                 )
                         );
                         Tag dataTable = div().withClass("row").attr("style", "margin-top: 10px;").with(

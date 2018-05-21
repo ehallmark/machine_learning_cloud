@@ -4,8 +4,10 @@ import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
+import lombok.Setter;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -55,9 +57,13 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected boolean groupByPerAttribute;
     protected boolean groupsPlottableOnSameChart;
     protected Map<String,Boolean> attrNameToIncludeBlanksMap;
-    public AbstractChartAttribute(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttributes, String name, boolean groupByPerAttribute, boolean groupsPlottableOnSameChart) {
+    protected Collection<AbstractAttribute> collectByAttributes;
+    @Setter
+    protected Map<String,SimilarityAttribute> similarityModels;
+    public AbstractChartAttribute(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttributes, Collection<AbstractAttribute> collectByAttributes, String name, boolean groupByPerAttribute, boolean groupsPlottableOnSameChart) {
         super(attributes);
         this.groupByAttributes=groupByAttributes;
+        this.collectByAttributes=collectByAttributes;
         this.groupsPlottableOnSameChart=groupsPlottableOnSameChart;
         //if(groupByAttributes!=null)groupByAttributes.forEach(attr->attr.setParent(this));
         this.name=name;
@@ -162,7 +168,25 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             newTagFunction = additionalTagFunction;
             newAdditionalIdsFunction = additionalInputIdsFunction;
         }
-        return super.getOptionsTag(userRoleFunction,newTagFunction,newAdditionalIdsFunction,DEFAULT_COMBINE_BY_FUNCTION,groupByPerAttribute);
+        List<AbstractAttribute> availableGroups = collectByAttributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
+        Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
+                .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
+        Function<String,ContainerTag> collectorTagFunction = getCombineByTagFunction(groupedGroupAttrs);
+        Function<String,List<String>> collectorIdsFunction = attrName -> {
+            List<String> ids = Arrays.asList(getCollectByAttrFieldName(attrName),getCollectTypeFieldName(attrName));
+            return ids;
+        };
+        Function<String, ContainerTag> tagFunction = str -> div().withClass("row").with(
+                div().withClass("col-12").with(
+                        newTagFunction.apply(str)
+                ), div().withClass("col-12").with(
+                        collectorTagFunction.apply(str)
+                )
+        );
+        Function<String,List<String>> idsFunction = str -> {
+            return Stream.of(collectorIdsFunction.apply(str), newAdditionalIdsFunction.apply(str)).flatMap(list->list.stream()).collect(Collectors.toList());
+        };
+        return super.getOptionsTag(userRoleFunction,tagFunction,idsFunction,DEFAULT_COMBINE_BY_FUNCTION,groupByPerAttribute);
     }
 
     protected ContainerTag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
@@ -188,6 +212,32 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 )
         );
     }
+
+    protected Function<String, ContainerTag> getCombineByTagFunction(Map<String, List<String>> groupedGroupAttrs) {
+        return attrName -> {
+            return div().withClass("row collect-container").with(
+                    div().withClass("col-8").with(
+                            label("Collect By"),br(),
+                            select().attr("style","width:100%;").withName(getCollectByAttrFieldName(attrName)).withId(getCollectByAttrFieldName(attrName)).withClass("collect-by-select")
+                                    .with(option("").withValue(""))
+                                    .with(
+                                            groupedGroupAttrs.entrySet().stream().map(e-> {
+                                                String optGroup = e.getKey();
+                                                return optgroup().attr("label",SimilarPatentServer.humanAttributeFor(optGroup)).attr("name",optGroup).with(
+                                                        e.getValue().stream().map(technology->{
+                                                            return div().with(option(SimilarPatentServer.humanAttributeFor(technology)).withValue(technology));
+                                                        }).collect(Collectors.toList())
+                                                );
+                                            }).collect(Collectors.toList())
+                                    )
+                    ),div().withClass("col-4").with(
+                            label("Collecting Function"),br(),
+                            select().withClass("single-select2 collect-type").withName(getCollectTypeFieldName(attrName)).withId(getCollectTypeFieldName(attrName))
+                    )
+            );
+        };
+    }
+
 
     protected Stream<Pair<String,PortfolioList>> groupPortfolioListForGivenAttribute(PortfolioList portfolioList, String attribute) {
         String groupedBy = attrNameToGroupByAttrNameMap.get(attribute);
@@ -283,6 +333,11 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
     protected String getIncludeRemainingField(String attrName) {
         return handleAttrName(attrName, SimilarPatentServer.INCLUDE_REMAINING_FIELD);
+    }
+
+
+    protected String getStatsAggName(String attrName) {
+        return handleAttrName(attrName, "_mStat");
     }
 
     protected String getGroupByChartFieldName(String attrName) {
