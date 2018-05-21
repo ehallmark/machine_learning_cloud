@@ -214,23 +214,12 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
 
     protected ArraySeries getSeriesFromAgg(Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean includeBlank) {
         ArraySeries series = new ArraySeries();
+        Function<Aggregations, Number> subAggregationHandler = getSubAggregationHandler(attrName);
         series.setName(title);
-        final List<String> dataSets = getCategoriesForAttribute(attribute);
-        List<Pair<String, Long>> bucketData = new ArrayList<>();
-        MultiBucketsAggregation agg = (MultiBucketsAggregation) handlePotentiallyNestedAgg(aggregations, attrName);
-        // For each entry
-        {
-            int i = 0;
-            for (MultiBucketsAggregation.Bucket entry : agg.getBuckets()) {
-                String key = dataSets == null ? entry.getKeyAsString() : dataSets.get(i);          // bucket key
-                long docCount = entry.getDocCount();            // Doc count
-                bucketData.add(new Pair<>(key, docCount));
-                i++;
-            }
-        }
+        List<Pair<String,Number>> bucketData = extractValuesFromAggregation(aggregations,attribute,attrName,subAggregationHandler);
         double remaining = 0d;
         for (int i = 0; i < bucketData.size(); i++) {
-            Pair<String, Long> bucket = bucketData.get(i);
+            Pair<String, Number> bucket = bucketData.get(i);
             Object label = bucket.getFirst();
             if (label == null || label.toString().isEmpty()) label = "(empty)";
             if (!includeBlank && label.equals("(empty)")) {
