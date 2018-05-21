@@ -2407,7 +2407,7 @@ public class SimilarPatentServer {
         return html().with(
                 head().with(
                         title("AI Search Platform"),
-                        script().withSrc("/js/jquery-3.1.0.min.js"),
+                        script().withSrc("/js/jquery-3.3.1.min.js"),
                         script().withSrc("/js/jquery-ui-1.12.1.min.js"),
                         script().withSrc("/js/highstock.js"),
                         script().withSrc("/js/exporting.js"),
