@@ -1,13 +1,11 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
-import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
-import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.charts.aggregations.Type;
@@ -57,47 +55,6 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     @Override
     public AggregatePivotChart dup() {
         return new AggregatePivotChart(attributes,groupByAttributes,collectByAttributes);
-    }
-
-    protected Function<String, ContainerTag> getCombineByTagFunction(Map<String, List<String>> groupedGroupAttrs) {
-        return attrName -> {
-            return div().withClass("row collect-container").with(
-                    div().withClass("col-8").with(
-                            label("Collect By"),br(),
-                            select().attr("style","width:100%;").withName(getCollectByAttrFieldName(attrName)).withId(getCollectByAttrFieldName(attrName)).withClass("collect-by-select")
-                                    .with(option("").withValue(""))
-                                    .with(
-                                            groupedGroupAttrs.entrySet().stream().map(e-> {
-                                                String optGroup = e.getKey();
-                                                return optgroup().attr("label",SimilarPatentServer.humanAttributeFor(optGroup)).attr("name",optGroup).with(
-                                                        e.getValue().stream().map(technology->{
-                                                            return div().with(option(SimilarPatentServer.humanAttributeFor(technology)).withValue(technology));
-                                                        }).collect(Collectors.toList())
-                                                );
-                                            }).collect(Collectors.toList())
-                                    )
-                    ),div().withClass("col-4").with(
-                            label("Collecting Function"),br(),
-                            select().withClass("single-select2 collect-type").withName(getCollectTypeFieldName(attrName)).withId(getCollectTypeFieldName(attrName))
-                    )
-            );
-        };
-    }
-
-    @Override
-    public void extractRelevantInformationFromParams(Request params) {
-        super.extractRelevantInformationFromParams(params);
-        if(this.attrNames!=null) {
-            this.attrNames.forEach(attr -> {
-                System.out.println("Looking for field: "+attr+" -> "+getCollectByAttrFieldName(attr));
-                String collectByName = SimilarPatentServer.extractString(params, getCollectByAttrFieldName(attr), null);
-                if(collectByName!=null) attrToCollectByAttrMap.put(attr,collectByName);
-                String collectByType = SimilarPatentServer.extractString(params, getCollectTypeFieldName(attr), Type.Count.toString());
-                if(collectByType==null) collectByType = Type.Count.toString();
-                System.out.println("Found type: "+collectByType);
-                attrToCollectTypeMap.put(attr,Type.valueOf(collectByType));
-            });
-        }
     }
 
     @Override

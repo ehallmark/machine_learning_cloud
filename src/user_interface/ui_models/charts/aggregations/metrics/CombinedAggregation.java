@@ -6,7 +6,6 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
-import user_interface.ui_models.charts.aggregate_charts.AggregationChart;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
@@ -84,6 +83,7 @@ public class CombinedAggregation implements AbstractAggregation {
                         aggregation = AggregationBuilders.cardinality(name)
                                 .field(collectByAttr.getFullName());
                     }
+                    break;
                 } default: {
                     if(isScript) {
                         aggregation = AggregationBuilders.extendedStats(name)
