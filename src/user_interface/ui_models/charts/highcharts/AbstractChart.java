@@ -12,7 +12,7 @@ public abstract class AbstractChart {
     };
 
     public static String getColor(int i) {
-        return HEX_COLORS[i*HEX_COLORS.length];
+        return HEX_COLORS[i%HEX_COLORS.length];
     }
 
     protected Options options;

@@ -34,8 +34,6 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected static final Function2<ContainerTag,ContainerTag,ContainerTag> DEFAULT_COMBINE_BY_FUNCTION = (tag1,tag2) -> {
         return div().with(tag1,tag2);
     };
-    @Getter // OLD
-    protected String collectByAttrName; // OLD TODO REMOVE
     @Getter
     protected Map<String,String> attrToCollectByAttrMap;
     @Getter
@@ -305,6 +303,13 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                     throw new RuntimeException("Must specify group by attribute in order use Drilldown for "+SimilarPatentServer.humanAttributeFor(attr)+".");
                 }
                 attrToDrilldownMap.put(attr,drilldown);
+                System.out.println("Looking for field: "+attr+" -> "+getCollectByAttrFieldName(attr));
+                String collectByName = SimilarPatentServer.extractString(params, getCollectByAttrFieldName(attr), null);
+                if(collectByName!=null) attrToCollectByAttrMap.put(attr,collectByName);
+                String collectByType = SimilarPatentServer.extractString(params, getCollectTypeFieldName(attr), Type.Count.toString());
+                if(collectByType==null) collectByType = Type.Count.toString();
+                System.out.println("Found type: "+collectByType);
+                attrToCollectTypeMap.put(attr,Type.valueOf(collectByType));
             });
         }
 

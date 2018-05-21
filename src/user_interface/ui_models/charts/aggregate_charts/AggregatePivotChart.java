@@ -2,28 +2,15 @@ package user_interface.ui_models.charts.aggregate_charts;
 
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
-import lombok.Setter;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
-import org.elasticsearch.search.aggregations.metrics.avg.Avg;
-import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality;
-import org.elasticsearch.search.aggregations.metrics.max.Max;
-import org.elasticsearch.search.aggregations.metrics.min.Min;
-import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
-import org.elasticsearch.search.aggregations.metrics.sum.Sum;
-import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
-import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.DependentAttribute;
-import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.Type;
-import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
-import user_interface.ui_models.charts.aggregations.metrics.CombinedAggregation;
 import user_interface.ui_models.charts.tables.TableResponse;
 
 import java.util.*;
@@ -111,19 +98,6 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                 attrToCollectTypeMap.put(attr,Type.valueOf(collectByType));
             });
         }
-    }
-
-    @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        List<AbstractAttribute> availableGroups = collectByAttributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
-        Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
-                .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
-        Function<String,ContainerTag> additionalTagFunction = getCombineByTagFunction(groupedGroupAttrs);
-        Function<String,List<String>> additionalInputIdsFunction = attrName -> {
-            List<String> ids = Arrays.asList(getCollectByAttrFieldName(attrName),getCollectTypeFieldName(attrName));
-            return ids;
-        };
-        return this.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,DEFAULT_COMBINE_BY_FUNCTION,groupByPerAttribute);
     }
 
     @Override
