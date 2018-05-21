@@ -5,28 +5,35 @@ import com.googlecode.wickedcharts.highcharts.options.Options;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Created by ehallmark on 2/14/17.
  */
 public abstract class AbstractChart {
 
-    private static final List<Function<Double,String>> RGB_COLORS = Arrays.asList(
-            alpha -> "rgb(124,128,236,"+alpha+")",
-            alpha -> "rgb(67,67,72,"+alpha+")",
-            alpha -> "rgb(144,237,125,"+alpha+")",
-            alpha -> "rgb(247,163,92,"+alpha+")",
-            alpha -> "rgb(128,133,233,"+alpha+")",
-            alpha -> "rgb(241,92,128,"+alpha+")",
-            alpha -> "rgb(228,211,84,"+alpha+")",
-            alpha -> "rgb(43,144,143,"+alpha+")",
-            alpha -> "rgb(244,91,91,"+alpha+")",
-            alpha -> "rgb(145,232,225,"+alpha+")"
+    private static final List<int[]> RGB_COLORS = Arrays.asList(
+            new int[]{124,128,236},
+            new int[]{67,67,72},
+            new int[]{144,237,125},
+            new int[]{247,163,92},
+            new int[]{128,133,233},
+            new int[]{241,92,128},
+            new int[]{228,211,84},
+            new int[]{43,144,143},
+            new int[]{244,91,91},
+            new int[]{145,232,225}
     );
 
-    public static String getColor(int i, double alpha) {
-        return RGB_COLORS.get(i%RGB_COLORS.size()).apply(alpha);
+    private static String convertToRGB(int r, int g, int b, int brightenPercent) {
+        r += (brightenPercent * (255-r)) / 100;
+        g += (brightenPercent * (255-g)) / 100;
+        b += (brightenPercent * (255-b)) / 100;
+        return "rgb("+r+","+g+","+b+", 1.0)";
+    }
+
+    public static String getColor(int i, int brightenPercent) {
+        int[] rgb = RGB_COLORS.get(i%RGB_COLORS.size());
+        return convertToRGB(rgb[0], rgb[1], rgb[2], brightenPercent);
     }
 
     protected Options options;

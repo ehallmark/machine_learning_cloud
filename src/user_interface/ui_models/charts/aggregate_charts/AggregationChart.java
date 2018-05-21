@@ -110,10 +110,6 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                     if (drilldown) {
                         drilldownData.add(new Pair<>(series.getData().stream().mapToDouble(p -> ((Number) p.get(1)).doubleValue()).sum(), series));
                     } else {
-                        if (this instanceof AggregatePieChart) {
-                            series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
-                                    .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
-                        }
                         data.add(series);
                     }
                     i++;
@@ -165,13 +161,13 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         for (int i = 0; i < data.size(); i++) {
             ArraySeries d = data.get(i);
             double sum = 0d;
-            String color = AbstractChart.getColor(i, 1.0);
+            String color = AbstractChart.getColor(i, 0);
             outerColors.add(color);
             int p = 0;
             for (List point : d.getData()) {
                 combinedSeries.addPoint(point);
                 sum += ((Number) point.get(1)).doubleValue();
-                String innerColor = AbstractChart.getColor(i, Math.max(0.2, 1.0-0.05*p));
+                String innerColor = AbstractChart.getColor(i, Math.min(80, p*5));
                 innerColors.add(innerColor);
                 p++;
             }
