@@ -312,9 +312,7 @@ $(document).ready(function() {
 
     var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
     // nested forms
-    $('select.nested-filter-select').filter(':visible').select2(displayItemSelectOptions);
-
-
+    $('select.nested-filter-select').select2(displayItemSelectOptions);
 
     var nestedFilterSelectFunction = function(e,preventHighlight) {
          var $options = $(e.currentTarget.selectedOptions);
@@ -482,13 +480,11 @@ $(document).ready(function() {
         templateSelection: select2SelectedFunction
     });
 
-    $('.multiselect-ajax').each(function() {
-        var $this = $(this);
-        var url = $this.attr("data-url");
-        $this.select2({
+    $('.multiselect-ajax').select2(function() {
+        return {
           width: "100%",
           ajax: {
-            url: url,
+            url: $(this).attr("data-url"),
             dataType: "json",
             delay: 100,
             data: function(params) {
@@ -500,7 +496,7 @@ $(document).ready(function() {
                 return query;
             }
           }
-        });
+        };
     });
 
     $('.single-select2').select2({
