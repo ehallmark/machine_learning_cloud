@@ -5,11 +5,12 @@ import com.googlecode.wickedcharts.highcharts.options.Axis;
 import com.googlecode.wickedcharts.highcharts.options.DataLabels;
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.PixelOrPercent;
+import com.googlecode.wickedcharts.highcharts.options.color.ColorReference;
+import com.googlecode.wickedcharts.highcharts.options.color.HexColor;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import lombok.Getter;
-import lombok.Setter;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
@@ -36,6 +37,7 @@ import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
 import user_interface.ui_models.charts.aggregations.buckets.SignificantTermsAggregation;
 import user_interface.ui_models.charts.aggregations.metrics.CombinedAggregation;
+import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.highcharts.ArraySeries;
 import user_interface.ui_models.charts.highcharts.DrilldownChart;
 
@@ -44,10 +46,6 @@ import java.util.*;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static user_interface.ui_models.charts.aggregations.Type.Count;
-import static user_interface.ui_models.charts.aggregations.Type.StdDeviation;
-import static user_interface.ui_models.charts.aggregations.Type.Variance;
 
 /*
  * Created by Evan on 6/17/2017.
@@ -164,15 +162,25 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         series.setName(seriesTitle);
         series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT))
                 .setDataLabels(new DataLabels(true).setColor(Color.WHITE).setDistance(-30));
+        List<ColorReference> outerColors = new ArrayList<>();
+        List<ColorReference> innerColors = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
             ArraySeries d = data.get(i);
             double sum = 0d;
+            String hex = AbstractChart.getColor(i);
+            HexColor color = new HexColor(hex);
+            outerColors.add(color);
             for (List point : d.getData()) {
                 combinedSeries.addPoint(point);
                 sum += ((Number) point.get(1)).doubleValue();
+                ColorReference innerColor = new HexColor(hex).brighten(Math.max(0.1f, 1.0f-i*0.05f));
+                innerColors.add(innerColor);
             }
             series.addPoint(Arrays.asList(d.getName(), sum));
+
         }
+        series.setColors(outerColors);
+        combinedSeries.setColors(innerColors);
         return Arrays.asList(series, combinedSeries);
     }
 
