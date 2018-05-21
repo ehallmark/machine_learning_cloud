@@ -3,16 +3,30 @@ package user_interface.ui_models.charts.highcharts;
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import com.googlecode.wickedcharts.highcharts.options.Options;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
 /**
  * Created by ehallmark on 2/14/17.
  */
 public abstract class AbstractChart {
-    private static final String[] HEX_COLORS = new String[]{
-            "#7cb5ec", "#434348", "#90ed7d", "#f7a35c", "#8085e9", "#f15c80", "#e4d354", "#2b908f", "#f45b5b", "#91e8e1"
-    };
 
-    public static String getColor(int i) {
-        return HEX_COLORS[i%HEX_COLORS.length];
+    private static final List<Function<Double,String>> RGB_COLORS = Arrays.asList(
+            alpha -> "rgb(124,128,236,"+alpha+")",
+            alpha -> "rgb(67,67,72,"+alpha+")",
+            alpha -> "rgb(144,237,125,"+alpha+")",
+            alpha -> "rgb(247,163,92,"+alpha+")",
+            alpha -> "rgb(128,133,233,"+alpha+")",
+            alpha -> "rgb(241,92,128,"+alpha+")",
+            alpha -> "rgb(228,211,84,"+alpha+")",
+            alpha -> "rgb(43,144,143,"+alpha+")",
+            alpha -> "rgb(244,91,91,"+alpha+")",
+            alpha -> "rgb(145,232,225,"+alpha+")"
+    );
+
+    public static String getColor(int i, double alpha) {
+        return RGB_COLORS.get(i%RGB_COLORS.size()).apply(alpha);
     }
 
     protected Options options;

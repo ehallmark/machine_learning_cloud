@@ -5,8 +5,6 @@ import com.googlecode.wickedcharts.highcharts.options.Axis;
 import com.googlecode.wickedcharts.highcharts.options.DataLabels;
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.PixelOrPercent;
-import com.googlecode.wickedcharts.highcharts.options.color.ColorReference;
-import com.googlecode.wickedcharts.highcharts.options.color.HexColor;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
@@ -162,19 +160,20 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         series.setName(seriesTitle);
         series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT))
                 .setDataLabels(new DataLabels(true).setColor(Color.WHITE).setDistance(-30));
-        List<ColorReference> outerColors = new ArrayList<>();
-        List<ColorReference> innerColors = new ArrayList<>();
+        List<String> outerColors = new ArrayList<>();
+        List<String> innerColors = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
             ArraySeries d = data.get(i);
             double sum = 0d;
-            String hex = AbstractChart.getColor(i);
-            HexColor color = new HexColor(hex);
+            String color = AbstractChart.getColor(i, 1.0);
             outerColors.add(color);
+            int p = 0;
             for (List point : d.getData()) {
                 combinedSeries.addPoint(point);
                 sum += ((Number) point.get(1)).doubleValue();
-                ColorReference innerColor = new HexColor(hex).brighten(Math.max(0.1f, 1.0f-i*0.05f));
+                String innerColor = AbstractChart.getColor(i, Math.max(0.2, 1.0-0.05*p));
                 innerColors.add(innerColor);
+                p++;
             }
             series.addPoint(Arrays.asList(d.getName(), sum));
 

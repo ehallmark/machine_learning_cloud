@@ -1,6 +1,5 @@
 package user_interface.ui_models.charts.highcharts;
 
-import com.googlecode.wickedcharts.highcharts.options.color.ColorReference;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +10,6 @@ public class ArraySeries extends Series<List> {
     private static final long serialVersionUID = 1L;
 
     @Setter @Getter
-    protected List<ColorReference> colors;
+    protected List<String> colors;
 
 }
