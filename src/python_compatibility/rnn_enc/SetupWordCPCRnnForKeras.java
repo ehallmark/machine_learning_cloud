@@ -1,7 +1,6 @@
 package python_compatibility.rnn_enc;
 
 import cpc_normalization.CPCHierarchy;
-import graphical_modeling.util.Pair;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import seeding.Database;
 import seeding.google.postgres.Util;
@@ -20,18 +19,25 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class SetupRnnVecByCPCForKeras {
+public class SetupWordCPCRnnForKeras {
 
     public static void main(String[] args) throws Exception {
-        final File x1File = new File("/home/ehallmark/Downloads/rnncpc_keras_x1.csv");
-        final File x2File = new File("/home/ehallmark/Downloads/rnncpc_keras_x2.csv");
-        final File yFile = new File("/home/ehallmark/Downloads/rnncpc_keras_y.csv");
+        final File x1File = new File("/home/ehallmark/Downloads/word_cpc_rnn_keras_x1.csv");
+        final File x2File = new File("/home/ehallmark/Downloads/word_cpc_rnn_keras_x2.csv");
+        final File cpcFile = new File("/home/ehallmark/Downloads/word_cpc_rnn_keras_cpc.csv");
+        final File yFile = new File("/home/ehallmark/Downloads/word_cpc_rnn_keras_y.csv");
         final Random random = new Random(211);
         final int negativeSamples = 4;
         final int maxLen = 128;
 
         Connection conn = Database.getConn();
         CPCHierarchy hierarchy = CPCHierarchy.get();
+        List<String> allCPCs = new ArrayList<>(hierarchy.getLabelToCPCMap().keySet());
+        Collections.sort(allCPCs);
+        Map<String,Integer> cpcToIndexMap = new HashMap<>();
+        for(int i = 0; i < allCPCs.size(); i++) {
+            cpcToIndexMap.put(allCPCs.get(i), i);
+        }
         Map<String,List<String>> pubToCPCMap = new HashMap<>();
         {
             PreparedStatement ps = conn.prepareStatement("select publication_number_full, tree from big_query_cpc_tree tablesample system (20)");
@@ -62,6 +68,7 @@ public class SetupRnnVecByCPCForKeras {
         ResultSet rs = ps.executeQuery();
 
         BufferedWriter x1 = new BufferedWriter(new FileWriter(x1File));
+        BufferedWriter cpc = new BufferedWriter(new FileWriter(cpcFile));
         BufferedWriter x2 = new BufferedWriter(new FileWriter(x2File));
         BufferedWriter y = new BufferedWriter(new FileWriter(yFile));
 
@@ -82,9 +89,9 @@ public class SetupRnnVecByCPCForKeras {
 
                     if(cpcList.size()>0) {
                         samples.add(indices);
-                        for(String cpc : cpcList) {
-                            cpcSampleMap.putIfAbsent(cpc, new ArrayList<>());
-                            cpcSampleMap.get(cpc).add(indices);
+                        for(String c : cpcList) {
+                            cpcSampleMap.putIfAbsent(c, new ArrayList<>());
+                            cpcSampleMap.get(c).add(indices);
                         }
                         cpcsByIndex.add(cpcList);
                     }
@@ -111,15 +118,16 @@ public class SetupRnnVecByCPCForKeras {
             // write identity
             int[] indices = splitIndices(samples.get(s), maxLen, random);
             List<String> cpcs = cpcsByIndex.get(s);
-            String cpc = cpcs.get(random.nextInt(cpcs.size()));
-            List<int[]> cooccurring = new ArrayList<>(cpcSampleMap.get(cpc));
+            String c = cpcs.get(random.nextInt(cpcs.size()));
+            int cpcIdx = cpcToIndexMap.get(c);
+            List<int[]> cooccurring = new ArrayList<>(cpcSampleMap.get(c));
             cooccurring.remove(samples.get(s));
             if(cooccurring.size()>0) {
                 int[] positive = splitIndices(cooccurring.get(random.nextInt(cooccurring.size())), maxLen, random);
                 if(random.nextBoolean()) {
-                    writeToFile(maxLen, x1, x2, y, indices, positive, 1);
+                    writeToFile(maxLen, x1, x2, cpc, y, indices, positive, cpcIdx,1);
                 } else {
-                    writeToFile(maxLen, x1, x2, y, positive, indices, 1);
+                    writeToFile(maxLen, x1, x2, cpc, y, positive, indices, cpcIdx,1);
                 }
                 // create negative samples
                 for (int neg = 0; neg < negativeSamples; neg++) {
@@ -129,9 +137,13 @@ public class SetupRnnVecByCPCForKeras {
                     }
                     int[] negative = splitIndices(samples.get(randIdx), maxLen, random);
                     if (random.nextBoolean()) { // randomly switch x1 and x2
-                        writeToFile(maxLen, x1, x2, y, indices, negative, 0);
+                        List<String> negCpcs = cpcsByIndex.get(randIdx);
+                        String randCpc = negCpcs.get(random.nextInt(negCpcs.size()));
+                        int randCpcIdx = cpcToIndexMap.get(randCpc);
+                        writeToFile(maxLen, x1, x2, cpc, y, indices, negative, randCpcIdx,0);
+
                     } else {
-                        writeToFile(maxLen, x1, x2, y, negative, indices, 0);
+                        writeToFile(maxLen, x1, x2, cpc, y, negative, indices, cpcIdx,0);
                     }
                 }
                 if (cnt.getAndIncrement() % 1000 == 999) {
@@ -166,7 +178,7 @@ public class SetupRnnVecByCPCForKeras {
         return ret1;
     }
 
-    private static void writeToFile(int maxLen, BufferedWriter x1, BufferedWriter x2, BufferedWriter y, int[] indices, int[] indices2, int label) throws IOException {
+    private static void writeToFile(int maxLen, BufferedWriter x1, BufferedWriter x2, BufferedWriter cpc, BufferedWriter y, int[] indices, int[] indices2, int cpcIdx, int label) throws IOException {
         if(indices.length>0 && indices2.length>0) {
             String indicesStr = String.join(",", IntStream.of(indices).mapToObj(i->String.valueOf(i+1)).limit(maxLen).collect(Collectors.toList()));
             String indicesStr2 = String.join(",", IntStream.of(indices2).mapToObj(i->String.valueOf(i+1)).limit(maxLen).collect(Collectors.toList()));
@@ -181,6 +193,7 @@ public class SetupRnnVecByCPCForKeras {
             x1.write("\n");
             x2.write("\n");
             y.write(String.valueOf(label)+"\n");
+            cpc.write(String.valueOf(cpcIdx)+"\n");
         }
     }
 }

@@ -84,7 +84,7 @@ public class SetupRnnVecForKeras {
                 while (randIdx < 0 || randIdx == s) {
                     randIdx = random.nextInt(samples.size());
                 }
-                Pair<int[],int[]> possible = splitIndices(samples.get(neg), maxLen, random);
+                Pair<int[],int[]> possible = splitIndices(samples.get(randIdx), maxLen, random);
                 int[] indices2 = possible._1;
                 if(random.nextBoolean()) { // randomly switch x1 and x2
                     writeToFile(maxLen, x1, x2, y, indices, indices2, 0);
