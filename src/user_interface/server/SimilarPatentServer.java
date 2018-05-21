@@ -35,7 +35,6 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Session;
-import user_interface.server.tools.AjaxChartMessage;
 import user_interface.server.tools.PasswordHandler;
 import user_interface.server.tools.SimpleAjaxMessage;
 import user_interface.ui_models.attributes.*;
@@ -46,7 +45,7 @@ import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 import user_interface.ui_models.attributes.script_attributes.*;
-import user_interface.ui_models.charts.*;
+import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.tables.TableResponse;
 import user_interface.ui_models.engines.*;
@@ -67,7 +66,10 @@ import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
@@ -984,7 +986,7 @@ public class SimilarPatentServer {
                                         }).collect(Collectors.toList())
                                 ),
                                 a("Or create a new user group.").withHref("/user_groups")
-                        ), br(), br(), button("Update User Group").withClass("btn btn-secondary")
+                        ), br(), br(), button("Update User Group").withClass("btn btn-outline-secondary")
                 );
             }
             return templateWrapper(passwordHandler,true, req, res, form, false);
@@ -1032,7 +1034,7 @@ public class SimilarPatentServer {
                             )),br(),
                             label("New User Group").with(
                                     input().withType("text").withClass("form-control").withName("user_group")
-                            ), br(), br(),  button("Create").withClass("btn btn-secondary")
+                            ), br(), br(),  button("Create").withClass("btn btn-outline-secondary")
                     ), div().with(
                             p("Current user groups: "),
                             ul().with(
@@ -1058,7 +1060,7 @@ public class SimilarPatentServer {
                             input().withType("password").withClass("form-control").withName("old_password")
                     ), br(), br(), label("New Password").with(
                             input().withType("password").withClass("form-control").withName("new_password")
-                    ), br(), br(), button("Change Password").withClass("btn btn-secondary")
+                    ), br(), br(), button("Change Password").withClass("btn btn-outline-secondary")
             );
             return templateWrapper(passwordHandler,true, req, res, form, false);
         });
@@ -1082,7 +1084,7 @@ public class SimilarPatentServer {
                                         return option(role).withValue(role);
                                     }).collect(Collectors.toList())
                             )
-                    ), br(), br(), button("Create User").withClass("btn btn-secondary")
+                    ), br(), br(), button("Create User").withClass("btn btn-outline-secondary")
             );
             return templateWrapper(passwordHandler,true, req, res, form, false);
         });
@@ -1134,7 +1136,7 @@ public class SimilarPatentServer {
                                             return option(user).withValue(user);
                                         }).collect(Collectors.toList())
                                 )
-                        ), br(), br(), button("Remove User").withClass("btn btn-secondary")
+                        ), br(), br(), button("Remove User").withClass("btn btn-outline-secondary")
                 );
             } else {
                 form = div().with(
@@ -1152,7 +1154,7 @@ public class SimilarPatentServer {
                                 input().withType("text").withClass("form-control").withName("username")
                         ), br(), br(), label("Password").with(
                                 input().withType("password").withClass("form-control").withName("password")
-                        ), br(), br(), button("Login").withType("submit").withClass("btn btn-secondary")
+                        ), br(), br(), button("Login").withType("submit").withClass("btn btn-outline-secondary")
                 ), false);
             } catch(Exception e) {
                 e.printStackTrace();
@@ -2179,7 +2181,7 @@ public class SimilarPatentServer {
     static Tag tableFromPatentList(List<String> attributes) {
         return span().withClass("collapse show").withId("data-table").with(
                 form().withMethod("post").withTarget("_blank").withAction(DOWNLOAD_URL).with(
-                        button("Download to Excel").withType("submit").withClass("btn btn-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
+                        button("Download to Excel").withType("submit").withClass("btn btn-outline-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
                 ),
                 dataTableFromHeadersAndData(attributes)
         );
@@ -2661,8 +2663,8 @@ public class SimilarPatentServer {
         Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
         Tag buttons = div().withClass("col-10 offset-1").with(
                 div().withClass("btn-group row").with(
-                        a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-secondary div-button go-back-default-attributes-button"),
-                        div().withText("Update Defaults").withClass("btn btn-secondary div-button update-default-attributes-button")
+                        a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-outline-secondary div-button go-back-default-attributes-button"),
+                        div().withText("Update Defaults").withClass("btn btn-outline-secondary div-button update-default-attributes-button")
                 )
         );
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px; margin-top: 20px;").with(
@@ -2687,8 +2689,8 @@ public class SimilarPatentServer {
         Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
         Tag buttons =  div().withClass("col-10 offset-1").with(
                 div().withClass("btn-group row").with(
-                        div().withText("Generate Report").withClass("btn btn-secondary div-button "+GENERATE_REPORTS_FORM_ID+"-button"),
-                        div().withText("Download to Excel").withClass("btn btn-secondary div-button download-to-excel-button")
+                        div().withText("Generate Report").withClass("btn btn-outline-secondary div-button "+GENERATE_REPORTS_FORM_ID+"-button"),
+                        div().withText("Download to Excel").withClass("btn btn-outline-secondary div-button download-to-excel-button")
                 )
         );
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(

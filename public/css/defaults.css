@@ -86,6 +86,11 @@ h5 {
     width: 100%;
 }
 
+.btn-outline-secondary {
+    border-style: solid;
+    border-width: 1px;
+}
+
 .target {
     margin-top: 10px;
 }

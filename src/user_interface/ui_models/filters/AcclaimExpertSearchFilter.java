@@ -4,7 +4,6 @@ import j2html.tags.Tag;
 import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import seeding.google.elasticsearch.attributes.ConvenienceAttribute;
 import spark.Request;
 import user_interface.acclaim_compatibility.GlobalParser;
 import user_interface.acclaim_compatibility.USParser;
@@ -71,7 +70,7 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
-                button("Syntax").withClass("miniTip2 btn btn-sm btn-secondary"),
+                button("Syntax").withClass("miniTip2 btn btn-sm btn-outline-secondary"),
                 textarea().withId(getId()).withClass("form-control").attr("placeholder","Example: (ACLM:\"find in claim text\"^3 OR TTL:\"in invention title\"~6) || ACLM:prefi* || TTL:wil?card && NOT EXP:expired AND EXP:[NOW+5years TO *]").withName(getName())
         );
     }

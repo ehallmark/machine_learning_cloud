@@ -56,7 +56,7 @@ public class RegexpTextFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
-                a("Syntax").withHref("https://www.elastic.co/guide/en/elasticsearch/reference/5.6/query-dsl-regexp-query.html#regexp-syntax").withClass("btn btn-sm btn-secondary"),
+                a("Syntax").withHref("https://www.elastic.co/guide/en/elasticsearch/reference/5.6/query-dsl-regexp-query.html#regexp-syntax").withClass("btn btn-sm btn-outline-secondary"),
                 textarea().withId(getId()).withClass("form-control").attr("placeholder","Certain regular expressions may drastically reduce performance. Use with caution.").withName(getName())
         );
     }
