@@ -480,23 +480,21 @@ $(document).ready(function() {
         templateSelection: select2SelectedFunction
     });
 
-    $('.multiselect-ajax').select2(function() {
-        return {
-          width: "100%",
-          ajax: {
-            url: $(this).attr("data-url"),
-            dataType: "json",
-            delay: 100,
-            data: function(params) {
-                var query = {
-                    search: params.term,
-                    page: params.page || 1
-                };
+    $('.multiselect-ajax').select2({
+      width: "100%",
+      ajax: {
+        url: $(this).attr("data-url"),
+        dataType: "json",
+        delay: 100,
+        data: function(params) {
+            var query = {
+                search: params.term,
+                page: params.page || 1
+            };
 
-                return query;
-            }
-          }
-        };
+            return query;
+        }
+      }
     });
 
     $('.single-select2').select2({
