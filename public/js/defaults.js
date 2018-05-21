@@ -312,7 +312,7 @@ $(document).ready(function() {
 
     var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
     // nested forms
-    $('select.nested-filter-select').select2(displayItemSelectOptions);
+    $('select.nested-filter-select').filter(':visible').select2(displayItemSelectOptions);
 
 
 
