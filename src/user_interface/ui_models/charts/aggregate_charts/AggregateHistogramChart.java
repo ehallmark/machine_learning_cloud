@@ -60,6 +60,7 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         Type collectorType = attrToCollectTypeMap.getOrDefault(attrName, Type.Count);
         Options parentOptions = new Options();
         boolean drilldown = attrToDrilldownMap.getOrDefault(attrName, false);
+        boolean swapAxis = false;
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         parentOptions = createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,null,drilldown,includeBlank);
         List<? extends Series> data = parentOptions.getSeries();
