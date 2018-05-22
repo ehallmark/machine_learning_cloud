@@ -1,7 +1,6 @@
 package user_interface.ui_models.charts.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.options.Options;
-import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import org.nd4j.linalg.primitives.Pair;
 
 import java.util.ArrayList;
@@ -11,9 +10,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DrilldownChart {
     public static Options createDrilldownChart(boolean isHistogram, boolean swapAxis, Options baseOptions, List<Pair<Number,ArraySeries>> baseSeries) {
-        PointSeries groupesSeries = new PointSeries();
+        ExtendedPointSeries groupesSeries = new ExtendedPointSeries();
         if(isHistogram) {
             groupesSeries.setShowInLegend(false);
+            groupesSeries.setColorByPoint(!swapAxis);
         }
         AtomicInteger inc = new AtomicInteger(0);
         List<DrilldownPointSeries> drilldownSeries = new ArrayList<>(baseSeries.size());

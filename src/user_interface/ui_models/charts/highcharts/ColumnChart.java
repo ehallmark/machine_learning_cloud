@@ -30,16 +30,25 @@ public class ColumnChart extends AbstractChart {
                         .setHeaderFormat(xFormatStr+"<br/>")
                         .setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> <b> "+collectorType+": "+yFormatStr+" "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
-                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
+                .setPlotOptions(new PlotOptionsChoice().setSeries(
+                        new PlotOptions()
+                                .setGroupPadding(0f)
+                                .setPointPadding(0f)
+                                .setPointPlacement(null)
+                ));
         if(subTitle!=null) options.setSubtitle(new Title(subTitle));
-        options.setxAxis(new Axis().setTitle(new Title(xLabel)).setStartOnTick(false).setEndOnTick(false).setTickmarkPlacement(TickmarkPlacement.ON).setShowFirstLabel(true).setShowLastLabel(true));
+        options.setxAxis(new Axis().setTitle(new Title(xLabel))
+                .setStartOnTick(false)
+                .setEndOnTick(false)
+                .setTickmarkPlacement(TickmarkPlacement.ON)
+                .setShowFirstLabel(true)
+                .setShowLastLabel(true));
         options.setyAxis(new Axis().setTitle(new Title(capitalize(yLabel))));
-        options.getSingleXAxis().setLabels(new Labels().setFormat("{value}"+xAxisSuffix).setRotation(45)).setType(AxisType.CATEGORY);
+        options.getSingleXAxis().setLabels(new Labels().setFormat("{value}"+xAxisSuffix).setAlign(HorizontalAlignment.CENTER).setRotation(45)).setType(AxisType.CATEGORY);
         options.getSingleYAxis().setLabels(new Labels().setFormat("{value}"+yAxisSuffix)).setType(AxisType.LINEAR);
         for(Series<?> series : options.getSeries()) {
             series.setPointPadding(0f);
             series.setType(type);
-            series.setPointPlacement(PointPlacement.ON);
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)
                     .setColor(Color.black)
