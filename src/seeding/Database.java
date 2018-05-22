@@ -131,7 +131,7 @@ public class Database {
 		}
 		List<String> results = new ArrayList<>(limit);
 		try {
-			PreparedStatement ps = conn.prepareStatement("select code,title_part from " + tableName + " where " + where.toString() + " limit " + limit);
+			PreparedStatement ps = conn.prepareStatement("select code,title_full from " + tableName + " where " + where.toString() + " limit " + limit);
 			ps.setFetchSize(limit);
 			for(int i = 0; i < fields.length; i++) {
 				ps.setString(1+i, search.toLowerCase());
