@@ -85,7 +85,7 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
 
         List<? extends Series> data = parentOptions.getSeries();
         data.forEach(series->{
-            series.setShowInLegend(false);
+            series.setShowInLegend(isGrouped);
         });
         return Collections.singletonList(new LineChart(parentOptions,false,title, subtitle, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
     }

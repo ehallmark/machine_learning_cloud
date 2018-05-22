@@ -6,7 +6,6 @@ import lombok.Getter;
 
 import java.awt.*;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * Created by ehallmark on 2/14/17.
@@ -28,7 +27,7 @@ public class LineChart extends AbstractChart {
         options = options
                 .setChartOptions(new ChartOptions().setHeight(450).setType(SeriesType.LINE))
                 .setTitle(new Title(title))
-                .setLegend(new Legend(true))
+                .setLegend(new Legend(true).setAlign(HorizontalAlignment.CENTER).setLayout(LegendLayout.HORIZONTAL).setVerticalAlign(VerticalAlignment.BOTTOM))
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()))
                 .setExporting(new ExportingOptions().setEnabled(true))
                 .setTooltip(new Tooltip().setEnabled(true).setShared(options.getSeries().size()>1).setUseHTML(true)
