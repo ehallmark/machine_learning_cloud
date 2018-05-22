@@ -161,6 +161,9 @@ public class SetupWordCPCRnnForKeras {
         y.flush();
         y.close();
 
+        cpc.flush();
+        cpc.close();
+
     }
 
     private static int[] splitIndices(int[] indices, int maxLen, Random random) {
