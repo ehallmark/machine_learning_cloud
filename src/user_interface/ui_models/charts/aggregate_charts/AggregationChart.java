@@ -146,7 +146,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                     }
                 }
                 System.out.println("Drilldown data points: " + drilldownData.size());
-                options = DrilldownChart.createDrilldownChart(this, options, drilldownData);
+                options = DrilldownChart.createDrilldownChart(isHistogram, isHistogram && swapAxis, options, drilldownData);
 
             } else if (this instanceof AggregatePieChart) {
                 // Create PIE Donut
