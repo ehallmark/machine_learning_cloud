@@ -30,7 +30,7 @@ public class ColumnChart extends AbstractChart {
                         .setHeaderFormat(xFormatStr+"<br/>")
                         .setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> <b> "+collectorType+": "+yFormatStr+" "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
-                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.BETWEEN)));
+                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
         if(subTitle!=null) options.setSubtitle(new Title(subTitle));
         options.setxAxis(new Axis().setTitle(new Title(xLabel)).setStartOnTick(false).setEndOnTick(false).setTickmarkPlacement(TickmarkPlacement.ON).setShowFirstLabel(true).setShowLastLabel(true));
         options.setyAxis(new Axis().setTitle(new Title(capitalize(yLabel))));

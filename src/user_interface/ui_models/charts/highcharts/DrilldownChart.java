@@ -24,16 +24,17 @@ public class DrilldownChart {
             ArraySeries series = seriesPair.getRight();
             String seriesName = series.getName();
             groupesSeries.addPoint(new DrilldownParentPoint(seriesName, seriesPair.getFirst(),id));
-            drilldownSeries.add(createDrilldownSeries(series, id, colorByPoint));
+            drilldownSeries.add(createDrilldownSeries(series, id, colorByPoint, !colorByPoint));
         }
         drilldownOptions.setDrilldownData(drilldownSeries);
         drilldownOptions.setSeries(Collections.singletonList(groupesSeries));
         return drilldownOptions;
     }
 
-    private static DrilldownPointSeries createDrilldownSeries(ArraySeries series, String id, boolean colorByPoint) {
+    private static DrilldownPointSeries createDrilldownSeries(ArraySeries series, String id, boolean colorByPoint, boolean showInLegend) {
         DrilldownPointSeries newSeries = new DrilldownPointSeries();
         newSeries.setId(id);
+        newSeries.setShowInLegend(showInLegend);
         newSeries.setColorByPoint(colorByPoint);
         newSeries.setData(series.getData());
         return newSeries;
