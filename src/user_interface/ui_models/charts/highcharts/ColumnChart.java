@@ -32,7 +32,7 @@ public class ColumnChart extends AbstractChart {
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
         if(subTitle!=null) options.setSubtitle(new Title(subTitle));
-        options.setxAxis(new Axis().setTitle(new Title(xLabel)));
+        options.setxAxis(new Axis().setTitle(new Title(xLabel)).setStartOnTick(true).setEndOnTick(true).setShowFirstLabel(true).setShowLastLabel(true));
         options.setyAxis(new Axis().setTitle(new Title(capitalize(yLabel))));
         options.getSingleXAxis().setLabels(new Labels().setFormat("{value}"+xAxisSuffix)).setType(AxisType.CATEGORY);
         options.getSingleYAxis().setLabels(new Labels().setFormat("{value}"+yAxisSuffix)).setType(AxisType.LINEAR);
@@ -41,7 +41,7 @@ public class ColumnChart extends AbstractChart {
             series.setType(type);
             series.setPointPlacement(PointPlacement.ON);
             series.setDataLabels(new DataLabels(true)
-                    .setRotation(0)
+                    .setRotation(45)
                     .setColor(Color.black)
                     .setAlign(HorizontalAlignment.CENTER)
                     .setFormat(yFormatStr)

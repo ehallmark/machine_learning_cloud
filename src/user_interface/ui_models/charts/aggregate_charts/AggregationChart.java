@@ -120,7 +120,8 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             }
             if (drilldown) {
                 boolean isHistogram = this instanceof AggregateHistogramChart;
-                if (isHistogram) {
+                boolean swapAxis = false;
+                if (isHistogram && swapAxis) {
                     // need to regroup data across buckets
                     List<String> groups = drilldownData.stream().map(d->d.getSecond().getName()).collect(Collectors.toList());
                     if(groups.size()>0) {
