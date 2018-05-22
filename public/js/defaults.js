@@ -482,10 +482,10 @@ $(document).ready(function() {
 
     // how results look in the dropdown
     var ajaxMultiTemplateResultFunction = function(elem) {
-        if (!elem.result_html) {
+        if (!elem.html_result) {
             return elem.text;
         }
-        return $(elem.result_html);
+        return $(elem.html_result);
     };
 
     $('.multiselect-ajax').select2({
