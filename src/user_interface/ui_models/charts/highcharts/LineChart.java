@@ -30,7 +30,7 @@ public class LineChart extends AbstractChart {
                 .setLegend(new Legend(true).setAlign(HorizontalAlignment.CENTER).setLayout(LegendLayout.HORIZONTAL).setVerticalAlign(VerticalAlignment.BOTTOM))
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()))
                 .setExporting(new ExportingOptions().setEnabled(true))
-                .setTooltip(new Tooltip().setEnabled(true).setShared(options.getSeries().size()>1).setUseHTML(true)
+                .setTooltip(new Tooltip().setEnabled(true).setShared(false).setUseHTML(true)
                         .setHeaderFormat("<small>"+xFormatStr+"</small><table>")
                         .setPointFormat("<tr><td><span style=\"color:{point.color}\">\u25CF</span> {series.name}</td><td> <b> "+yFormatStr+" "+yLabel+"</b></td></tr>")
                         .setFooterFormat("</table>")
