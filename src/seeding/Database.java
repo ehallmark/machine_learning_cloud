@@ -205,15 +205,22 @@ public class Database {
 		return loadVectorsFor("big_query_embedding1","publication_number_full","cpc_vae",assets, true);
 	}
 
-	public static Map<String,INDArray> loadAssigneeVectorsFor(String tableName, String attrName, String vecName, List<String> assets, boolean join) {
+	public static Map<String,INDArray> loadAssigneeVectorsFor(String tableName, String attrName, String vecName, List<String> assignees) {
 		Map<String,INDArray> data = new HashMap<>();
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		assets = assets.stream().map(asset->asset.toLowerCase()).collect(Collectors.toList());
+		assignees = assignees.stream().map(asset->asset.toLowerCase()).collect(Collectors.toList());
 		String statement = "select "+attrName+","+vecName+" from "+tableName+" as p ";
-		statement += "where lower("+attrName+") like ANY ('" + String.join("%','", assets) + "%') order by portfolio_size desc nulls last limit 100";
+		StringJoiner where = new StringJoiner(" OR ");
+		for(int i = 0; i < assignees.size(); i++) {
+			where.add("lower("+attrName+") like ?||'%'");
+		}
+		statement += "where "+where.toString()+" order by portfolio_size desc nulls last limit 100";
 		try {
 			ps = conn.prepareStatement(statement);
+			for(int i = 0; i < assignees.size(); i++) {
+				ps.setString(i+1, assignees.get(i));
+			}
 			ps.setFetchSize(10);
 			System.out.println("Assignee Vector Query: "+ps.toString());
 			rs = ps.executeQuery();
@@ -238,6 +245,7 @@ public class Database {
 	}
 
 	public static Map<String,INDArray> loadVectorsFor(String tableName, String attrName, String vecName, List<String> assets, boolean join) {
+		if(assets == null || assets.isEmpty()) return Collections.emptyMap();
 		Map<String,INDArray> data = new HashMap<>();
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -245,9 +253,17 @@ public class Database {
 		if(join) {
 			statement += "join big_query_family_id as e on (p.family_id=e.family_id) ";
 		}
-		statement += "where "+attrName+" in ('" + String.join("','", assets) + "')";
+		StringJoiner anyClause = new StringJoiner(",","(",")");
+		int numAssets = assets.size();
+		for(int i = 0; i < numAssets; i++) {
+			anyClause.add("?");
+		}
+		statement += "where "+attrName+" in "+anyClause.toString();
 		try {
 			ps = conn.prepareStatement(statement);
+			for(int i = 0; i < assets.size(); i++) {
+				ps.setString(i+1, assets.get(i));
+			}
 			ps.setFetchSize(10);
 			rs = ps.executeQuery();
 			while(rs.next()) {
