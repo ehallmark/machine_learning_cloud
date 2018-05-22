@@ -480,6 +480,14 @@ $(document).ready(function() {
         templateSelection: select2SelectedFunction
     });
 
+    // how results look in the dropdown
+    var ajaxMultiTemplateResultFunction = function(elem) {
+        if (!elem.result_html) {
+            return elem.text;
+        }
+        return $(elem.result_html);
+    };
+
     $('.multiselect-ajax').select2({
       width: "100%",
       ajax: {
@@ -494,7 +502,9 @@ $(document).ready(function() {
 
             return query;
         }
-      }
+      },
+      templateResult: ajaxMultiTemplateResultFunction,
+      templateSelection: ajaxMultiTemplateSelectionFunction
     });
 
     $('.single-select2').select2({

@@ -43,6 +43,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
 
     public AssigneeSimilarityEngine(String tableName) {
         super(newAssigneeFunction(tableName, "name", "cpc_vae", false),true);
+        this.tableName=tableName;
     }
 
     @Override

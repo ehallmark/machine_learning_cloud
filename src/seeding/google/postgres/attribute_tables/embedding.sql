@@ -28,6 +28,8 @@ create table big_query_assignee_embedding1 (
     cpc_vae float[] not null
 );
 
+create index big_query_assignee_embedding1_lower_name on big_query_assignee_embedding1 (lower(name));
+
 -- warning patents_global_merged must already exist!
 create table big_query_assignee_embedding1_help (
     name text primary key,

@@ -1047,7 +1047,7 @@ public class BigQueryServer extends SimilarPatentServer {
             Function<String,String> displayFunction = result ->  idToNameMap.get(result);
 
             req.session(false).attribute("dataset-lastSearchTime",currentSearchTime);
-            return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
+            return handleAjaxRequest(req, resultsSearchFunction, displayFunction, null);
         });
 
 
@@ -1056,31 +1056,32 @@ public class BigQueryServer extends SimilarPatentServer {
             Map<String,Integer> portfolioSizeMap = new HashMap<>();
             Function<String,List<String>> resultsSearchFunction = search -> Database.searchBigQueryAssignees("big_query_assignee",search, 10, portfolioSizeMap);
             Function<String,String> displayFunction = result ->  result + " ("+portfolioSizeMap.getOrDefault(result,0)+")";
-            return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
+            return handleAjaxRequest(req, resultsSearchFunction, displayFunction, null);
         });
 
         // setup select2 ajax remote data sources
         get(Constants.CPC_CODE_AJAX_URL, (req,res)->{
             Map<String,String> titlePartMap = new HashMap<>();
-            Function<String,List<String>> resultsSearchFunction = search -> Database.searchBigQueryCPCs("big_query_cpc_definition",search, 10,titlePartMap,"code", "title_full");
-            Function<String,String> displayFunction = result ->  result + (" ("+titlePartMap.getOrDefault(result,"")+")").replace(" ()","");
-            return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
+            Function<String,List<String>> resultsSearchFunction = search -> Database.searchBigQueryCPCs("big_query_cpc_definition",search, 10,titlePartMap);
+            Function<String,String> displayFunction = result ->  result;
+            Function<String,String> htmlFunction = result -> "<span>"+ (result+" ("+titlePartMap.getOrDefault(result,"")+")").replace(" ()","") + "</span>";
+            return handleAjaxRequest(req, resultsSearchFunction, displayFunction, htmlFunction);
         });
 
         // setup select2 ajax remote data sources
         get(Constants.GTT_TECHNOLOGY_AJAX_URL, (req,res)->{
             Function<String,List<String>> resultsSearchFunction = search -> new ArrayList<>();
             Function<String,String> displayFunction = result -> result;
-            return handleAjaxRequest(req, resultsSearchFunction, displayFunction);
+            return handleAjaxRequest(req, resultsSearchFunction, displayFunction, null);
         });
 
     }
 
-    private static Object handleAjaxRequest(Request req, Function<String,List<String>> resultsSearchFunction, Function<String,String> displayFunction) {
+    private static Object handleAjaxRequest(Request req, Function<String,List<String>> resultsSearchFunction, Function<String,String> labelFunction, Function<String,String> htmlResultFunction) {
         List<String> neededLabels = extractArray(req,"get_label_for[]");
         if(neededLabels.size()>0) {
             Map<String,Object> response = new HashMap<>();
-            List<String> labels = neededLabels.stream().map(label->displayFunction.apply(label)).collect(Collectors.toList());
+            List<String> labels = neededLabels.stream().map(label->labelFunction.apply(label)).collect(Collectors.toList());
             response.put("labels", labels);
             response.put("values", neededLabels);
             return new Gson().toJson(response);
@@ -1104,7 +1105,11 @@ public class BigQueryServer extends SimilarPatentServer {
                 results = allResults.subList(start, Math.min(allResults.size(), end)).stream().map(result -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("id", result);
-                    map.put("text", displayFunction.apply(result));
+                    String html = htmlResultFunction == null ? null : htmlResultFunction.apply(result);
+                    if(result!=null) {
+                        map.put("html_result", html);
+                    }
+                    map.put("text", labelFunction.apply(result));
                     return map;
                 }).collect(Collectors.toList());
             }

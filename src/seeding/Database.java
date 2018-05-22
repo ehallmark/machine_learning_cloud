@@ -123,26 +123,29 @@ public class Database {
 		return all;
 	}
 
-	public static List<String> searchBigQueryCPCs(String tableName, String search, int limit, Map<String,String> titlePartMap, String... fields) {
+	public static List<String> searchBigQueryCPCs(String tableName, String search, int limit, Map<String,String> titlePartHtmlMap) {
 		if(search==null||search.trim().isEmpty()) return Collections.emptyList();
-		StringJoiner where = new StringJoiner(" or ", "", "");
-		for (String field : fields) {
-			where.add("lower("+field + ") like ? || '%'");
-		}
 		List<String> results = new ArrayList<>(limit);
 		try {
-			PreparedStatement ps = conn.prepareStatement("select code,title_full from " + tableName + " where " + where.toString() + " limit " + limit);
+			PreparedStatement ps = conn.prepareStatement("select code,title_full,title_part::varchar[] from " + tableName + " where code like ?||'%' or lower(title_full) like ?||'%' order by case when code like ?||'%' then 0.0 else 1.0 end limit " + limit);
 			ps.setFetchSize(limit);
-			for(int i = 0; i < fields.length; i++) {
-				ps.setString(1+i, search.toLowerCase());
-			}
+			ps.setString(1, search.toUpperCase());
+			ps.setString(3, search.toUpperCase());
+			ps.setString(2, search.toLowerCase());
 			System.out.println("Searching big query: "+ps.toString());
 			ResultSet rs = ps.executeQuery();
 			while(rs.next()) {
 				results.add(rs.getString(1));
-				String titlePart = rs.getString(2);
-				if(titlePart!=null) {
-                    titlePartMap.put(rs.getString(1), titlePart);
+				String titleFull = rs.getString(2);
+				if(titleFull!=null) {
+					Array titlePart = rs.getArray(3);
+					if(titlePart!=null) {
+						String[] titlePartArray = (String[]) titlePart.getArray();
+						for(String part : titlePartArray) {
+							titleFull = titleFull.replace(part, "<b>"+part+"</b>");
+						}
+					}
+					titlePartHtmlMap.put(rs.getString(1), titleFull);
                 }
 			}
 			rs.close();
