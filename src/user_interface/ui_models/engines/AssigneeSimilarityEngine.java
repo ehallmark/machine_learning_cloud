@@ -22,9 +22,9 @@ import static user_interface.server.SimilarPatentServer.extractArray;
  * Created by ehallmark on 2/28/17.
  */
 public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
-    private static Function<Collection<String>,INDArray> newAssigneeFunction(String tableName, String attrName, String vecName, boolean join) {
+    private static Function<Collection<String>,INDArray> newAssigneeFunction(String tableName, String attrName, String vecName) {
         return inputs -> {
-            Map<String,INDArray> vecMap = Database.loadAssigneeVectorsFor(tableName,attrName,vecName,new ArrayList<>(inputs),join);
+            Map<String,INDArray> vecMap = Database.loadAssigneeVectorsFor(tableName,attrName,vecName,new ArrayList<>(inputs));
             if (vecMap.size() > 0) {
                 return Nd4j.vstack(vecMap.values()).mean(0);
             } else return null;
@@ -42,7 +42,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     public AssigneeSimilarityEngine(String tableName) {
-        super(newAssigneeFunction(tableName, "name", "cpc_vae", false),true);
+        super(newAssigneeFunction(tableName, "name", "cpc_vae"),true);
         this.tableName=tableName;
     }
 
