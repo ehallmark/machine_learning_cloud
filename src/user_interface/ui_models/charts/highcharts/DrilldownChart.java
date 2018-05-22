@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DrilldownChart {
-    public static Options createDrilldownChart(boolean isHistogram, boolean colorByPoint, Options baseOptions, List<Pair<Number,ArraySeries>> baseSeries) {
+    public static Options createDrilldownChart(boolean isHistogram, boolean swapAxis, Options baseOptions, List<Pair<Number,ArraySeries>> baseSeries) {
         PointSeries groupesSeries = new PointSeries();
         if(isHistogram) {
             groupesSeries.setShowInLegend(false);
@@ -24,7 +24,7 @@ public class DrilldownChart {
             ArraySeries series = seriesPair.getRight();
             String seriesName = series.getName();
             groupesSeries.addPoint(new DrilldownParentPoint(seriesName, seriesPair.getFirst(),id));
-            drilldownSeries.add(createDrilldownSeries(series, id, colorByPoint, !colorByPoint));
+            drilldownSeries.add(createDrilldownSeries(series, id, swapAxis, false));
         }
         drilldownOptions.setDrilldownData(drilldownSeries);
         drilldownOptions.setSeries(Collections.singletonList(groupesSeries));
