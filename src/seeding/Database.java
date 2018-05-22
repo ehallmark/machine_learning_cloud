@@ -209,13 +209,13 @@ public class Database {
 		Map<String,INDArray> data = new HashMap<>();
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		assignees = assignees.stream().map(asset->asset.toLowerCase()).collect(Collectors.toList());
+		assignees = assignees.stream().map(asset->asset.toLowerCase()).filter(f->f.length()>0).collect(Collectors.toList());
 		String statement = "select "+attrName+","+vecName+" from "+tableName+" as p ";
 		StringJoiner where = new StringJoiner(" OR ");
 		for(int i = 0; i < assignees.size(); i++) {
 			where.add("lower("+attrName+") like ?||'%'");
 		}
-		statement += "where "+where.toString()+" order by portfolio_size desc nulls last limit 100";
+		statement += "where "+where.toString()+" order by random() limit 30";
 		try {
 			ps = conn.prepareStatement(statement);
 			for(int i = 0; i < assignees.size(); i++) {
