@@ -10,13 +10,13 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.textarea;
-import static user_interface.server.SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD;
-import static user_interface.server.SimilarPatentServer.extractArray;
+import static user_interface.server.SimilarPatentServer.*;
 
 /**
  * Created by ehallmark on 2/28/17.
@@ -50,9 +50,8 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
     protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
         System.out.println("Collecting inputs to search for...");
         // get input data
-        Collection<String> inputsToSearchFor = extractArray(req, ASSIGNEES_TO_SEARCH_FOR_FIELD);
-
-        System.out.println("Found "+inputsToSearchFor.size()+" assignees to search for.");
+        List<String> inputsToSearchFor = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, ""), "\\n", "[^0-9A-Za-z ]");
+        System.out.println("Found "+inputsToSearchFor.size()+" assignees to search for: "+String.join("; ", inputsToSearchFor));
         return inputsToSearchFor;
     }
 
