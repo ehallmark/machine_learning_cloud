@@ -26,11 +26,13 @@ public class ColumnChart extends AbstractChart {
                 .setTitle(new Title(title))
                 //.setLegend(new Legend(true).setAlign(HorizontalAlignment.CENTER).setLayout(LegendLayout.HORIZONTAL).setVerticalAlign(VerticalAlignment.BOTTOM))
                 .setExporting(new ExportingOptions().setEnabled(true))
-                .setTooltip(new Tooltip().setEnabled(true).setHeaderFormat(xFormatStr+"<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> <b> "+collectorType+": "+yFormatStr+" "+yLabel+"</b><br/>"))
+                .setTooltip(new Tooltip().setEnabled(true)
+                        .setHeaderFormat(xFormatStr+"<br/>")
+                        .setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> <b> "+collectorType+": "+yFormatStr+" "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
         if(subTitle!=null) options.setSubtitle(new Title(subTitle));
-        options.setxAxis(new Axis().setTitle(new Title(xLabel)).setMin(-0.5).setMax(-0.5+categories.size()).setShowFirstLabel(true).setShowLastLabel(true).setStartOnTick(false).setEndOnTick(false).setTickmarkPlacement(TickmarkPlacement.BETWEEN).setCategories(categories));
+        options.setxAxis(new Axis().setTitle(new Title(xLabel)));
         options.setyAxis(new Axis().setTitle(new Title(capitalize(yLabel))));
         options.getSingleXAxis().setLabels(new Labels().setFormat("{value}"+xAxisSuffix)).setType(AxisType.CATEGORY);
         options.getSingleYAxis().setLabels(new Labels().setFormat("{value}"+yAxisSuffix)).setType(AxisType.LINEAR);

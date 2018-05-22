@@ -7,4 +7,6 @@ public class DrilldownPointSeries extends ArraySeries {
 
     @Getter @Setter
     private String id;
+    @Getter @Setter
+    private boolean colorByPoint;
 }

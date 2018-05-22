@@ -14,7 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DrilldownChart {
     public static Options createDrilldownChart(AggregationChart chart, Options baseOptions, List<Pair<Number,ArraySeries>> baseSeries) {
         PointSeries groupesSeries = new PointSeries();
-        if(chart instanceof AggregateHistogramChart) {
+        final boolean isHistogram = chart instanceof AggregateHistogramChart;
+        if(isHistogram) {
             groupesSeries.setShowInLegend(false);
         }
         AtomicInteger inc = new AtomicInteger(0);
@@ -24,23 +25,19 @@ public class DrilldownChart {
         for(Pair<Number,ArraySeries> seriesPair : baseSeries) {
             String id = "drilldown"+String.valueOf(inc.getAndIncrement());
             ArraySeries series = seriesPair.getRight();
-            String seriesName;
-            if(chart instanceof AggregateHistogramChart) {
-                seriesName = String.valueOf(inc.get());
-            } else {
-                seriesName = series.getName();
-            }
+            String seriesName = series.getName();
             groupesSeries.addPoint(new DrilldownParentPoint(seriesName, seriesPair.getFirst(),id));
-            drilldownSeries.add(createDrilldownSeries(series, id));
+            drilldownSeries.add(createDrilldownSeries(series, id, isHistogram));
         }
         drilldownOptions.setDrilldownData(drilldownSeries);
         drilldownOptions.setSeries(Collections.singletonList(groupesSeries));
         return drilldownOptions;
     }
 
-    private static DrilldownPointSeries createDrilldownSeries(ArraySeries series, String id) {
+    private static DrilldownPointSeries createDrilldownSeries(ArraySeries series, String id, boolean colorByPoint) {
         DrilldownPointSeries newSeries = new DrilldownPointSeries();
         newSeries.setId(id);
+        newSeries.setColorByPoint(colorByPoint);
         newSeries.setData(series.getData());
         return newSeries;
     }
