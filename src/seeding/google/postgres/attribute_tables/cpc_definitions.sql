@@ -15,4 +15,5 @@ create table big_query_cpc_definition (
 -- sets the 'tree' attribute
 update big_query_cpc_definition set tree=ARRAY[code]||coalesce(parents,'{}'::varchar[]);
 create index big_query_cpc_definition_title_full_idx on big_query_cpc_definition (title_full);
+create index big_query_cpc_definition_title_full_lower_idx on big_query_cpc_definition (lower(title_full));
 create index big_query_cpc_definition_title_part_idx on big_query_cpc_definition (title_part);
