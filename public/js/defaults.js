@@ -503,8 +503,7 @@ $(document).ready(function() {
             return query;
         }
       },
-      templateResult: ajaxMultiTemplateResultFunction,
-      templateSelection: ajaxMultiTemplateSelectionFunction
+      templateResult: ajaxMultiTemplateResultFunction
     });
 
     $('.single-select2').select2({
