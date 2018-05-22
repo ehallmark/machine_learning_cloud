@@ -24,7 +24,7 @@ public class DrilldownChart {
             ArraySeries series = seriesPair.getRight();
             String seriesName = series.getName();
             groupesSeries.addPoint(new DrilldownParentPoint(seriesName, seriesPair.getFirst(),id));
-            drilldownSeries.add(createDrilldownSeries(series, id, swapAxis, false));
+            drilldownSeries.add(createDrilldownSeries(series, id, !isHistogram || swapAxis, false));
         }
         drilldownOptions.setDrilldownData(drilldownSeries);
         drilldownOptions.setSeries(Collections.singletonList(groupesSeries));
