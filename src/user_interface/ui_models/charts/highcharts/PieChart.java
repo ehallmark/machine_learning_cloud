@@ -2,9 +2,9 @@ package user_interface.ui_models.charts.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.options.*;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
+import user_interface.ui_models.charts.aggregations.Type;
 
 import java.awt.*;
-import java.util.List;
 
 /**
  * Created by ehallmark on 2/14/17.
@@ -15,7 +15,7 @@ public class PieChart extends AbstractChart {
         return "pie";
     }
 
-    public PieChart(Options _options, String title, String subTitle, String yLabel) {
+    public PieChart(Options _options, String title, String subTitle, String yLabel, Type collectorType) {
         SeriesType type = SeriesType.PIE;
         System.out.println("Starting to build: "+type);
         options=_options;
@@ -24,7 +24,7 @@ public class PieChart extends AbstractChart {
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))
                 .setSubtitle(new Title(subTitle))
-                .setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}%</b><br/>Count: <b> {point.y} "+yLabel+"</b><br/>"))
+                .setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}%</b><br/>"+collectorType+": <b> {point.y} "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setyAxis(new Axis())
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT)).setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));

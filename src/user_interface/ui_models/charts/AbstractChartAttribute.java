@@ -40,7 +40,6 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected Map<String,Type> attrToCollectTypeMap;
     @Getter
     protected Map<String,Boolean> attrToDrilldownMap;
-    protected Collection<String> searchTypes;
     @Getter
     protected List<String> attrNames;
     protected Collection<AbstractAttribute> groupByAttributes;
@@ -261,7 +260,6 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 return Stream.of(name.substring(name.indexOf(".")+1));
             }
         }).collect(Collectors.toList());
-        searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE_INCLUDE_FILTER_STR);
 
         if(groupByAttributes!=null) {
             List<String> attrsToCheck = new ArrayList<>();
@@ -311,11 +309,6 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 System.out.println("Found type: "+collectByType);
                 attrToCollectTypeMap.put(attr,Type.valueOf(collectByType));
             });
-        }
-
-        // what to do if not present?
-        if(searchTypes.isEmpty()) {
-            searchTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
         }
     }
 

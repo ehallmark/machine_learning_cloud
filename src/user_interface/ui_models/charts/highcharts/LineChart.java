@@ -3,6 +3,7 @@ package user_interface.ui_models.charts.highcharts;
 import com.googlecode.wickedcharts.highcharts.options.*;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import lombok.Getter;
+import user_interface.ui_models.charts.aggregations.Type;
 
 import java.awt.*;
 import java.util.Collections;
@@ -19,7 +20,7 @@ public class LineChart extends AbstractChart {
     @Getter
     private boolean stockChart;
 
-    public LineChart(Options _options, boolean stockChart, String title, String subTitle, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals) {
+    public LineChart(Options _options, boolean stockChart, String title, String subTitle, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, Type collectorType) {
         this.stockChart=stockChart;
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = "{point.key}"+xAxisSuffix;
@@ -45,7 +46,7 @@ public class LineChart extends AbstractChart {
             }
             options.getSingleXAxis().setTitle(new Title(xLabel));
         }
-        options.setyAxis(new Axis().setType(AxisType.LINEAR).setMin(0).setTitle(new Title(ColumnChart.capitalize(yLabel)+" Count")));
+        options.setyAxis(new Axis().setType(AxisType.LINEAR).setMin(0).setTitle(new Title(ColumnChart.capitalize(yLabel)+" "+collectorType)));
         if(options.getSeries().size()==1) {
             for (Series<?> series : options.getSeries()) {
                 series.setDataLabels(new DataLabels(true)

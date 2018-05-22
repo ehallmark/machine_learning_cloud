@@ -15,12 +15,14 @@ import seeding.Constants;
 import seeding.google.elasticsearch.attributes.DateRangeAttribute;
 import seeding.google.elasticsearch.attributes.SignificantTermsAttribute;
 import spark.Request;
+import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
+import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.aggregations.buckets.*;
 import user_interface.ui_models.charts.highcharts.PieChart;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -67,6 +69,13 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         String title = SimilarPatentServer.humanAttributeFor(attrName) + " "+chartTitle;
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         Integer limit = attrToLimitMap.getOrDefault(attrName, DEFAULT_MAX_SLICES);
+        Type collectorType = attrToCollectTypeMap.getOrDefault(attrName, Type.Count);
+        String collectAttr = attrToCollectByAttrMap.get(attrName);
+        if(collectAttr==null) {
+            collectAttr = "Assets";
+        } else {
+            collectAttr = BigQueryServer.fullHumanAttributeFor(collectAttr);
+        }
         String subtitle = "";
         final boolean isGrouped = groupedByAttrName!=null;
         if(isGrouped) {
@@ -80,7 +89,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             limit = null; // turns off accumulating remaining pie piece
         }
         parentOptions = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,limit,drilldown,includeBlank);
-        return Collections.singletonList(new PieChart(parentOptions, title,  subtitle, combineTypesToString(searchTypes)));
+        return Collections.singletonList(new PieChart(parentOptions, title,  subtitle, collectAttr, collectorType));
     }
 
     @Override

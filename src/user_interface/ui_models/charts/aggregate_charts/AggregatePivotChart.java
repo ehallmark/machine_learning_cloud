@@ -63,8 +63,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         String collectByAttrName = attrToCollectByAttrMap.get(attrName);
 
         String humanAttr = SimilarPatentServer.fullHumanAttributeFor(attrName);
-        String humanSearchType = combineTypesToString(searchTypes);
-        String yTitle = (collectByAttrName==null?humanSearchType:SimilarPatentServer.fullHumanAttributeFor(collectByAttrName)) + " "+ collectorType + " by "+ humanAttr;
+        String yTitle = (collectByAttrName==null?"Assets":SimilarPatentServer.fullHumanAttributeFor(collectByAttrName)) + " "+ collectorType + " by "+ humanAttr;
 
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         final boolean isGrouped = groupedByAttrName!=null;

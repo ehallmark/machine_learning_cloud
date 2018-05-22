@@ -7,8 +7,10 @@ import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregations;
 import seeding.Constants;
 import spark.Request;
+import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.highcharts.LineChart;
 
 import java.time.LocalDate;
@@ -67,8 +69,14 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
 
     @Override
     public List<? extends LineChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
-        String humanAttr = SimilarPatentServer.fullHumanAttributeFor(attribute.getFullName());
-        String humanSearchType = combineTypesToString(searchTypes);
+        String humanAttr = SimilarPatentServer.fullHumanAttributeFor(attrName);
+        String collectAttr = attrToCollectByAttrMap.get(attrName);
+        if(collectAttr==null) {
+            collectAttr = "Assets";
+        } else {
+            collectAttr = BigQueryServer.fullHumanAttributeFor(collectAttr);
+        }
+        String humanSearchType = collectAttr;
         String title = humanAttr + " "+chartTitle;
         String xAxisSuffix = "";
         String yAxisSuffix = "";
@@ -82,12 +90,13 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         Options parentOptions = new Options();
         parentOptions = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,null, false, includeBlank);
+        Type collectorType = attrToCollectTypeMap.getOrDefault(attrName, Type.Count);
 
         List<? extends Series> data = parentOptions.getSeries();
         data.forEach(series->{
             series.setShowInLegend(isGrouped);
         });
-        return Collections.singletonList(new LineChart(parentOptions,false,title, subtitle, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0));
+        return Collections.singletonList(new LineChart(parentOptions,false,title, subtitle, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0, collectorType));
     }
 
     @Override

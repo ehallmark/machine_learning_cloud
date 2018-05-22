@@ -7,9 +7,11 @@ import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregations;
 import seeding.Constants;
+import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
+import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.highcharts.ColumnChart;
 
 import java.util.Arrays;
@@ -19,8 +21,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import static j2html.TagCreator.*;
-import static j2html.TagCreator.br;
-import static j2html.TagCreator.input;
 
 public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     private static final String AGG_SUFFIX = "_hist";
@@ -36,8 +36,14 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     @Override
     public List<? extends ColumnChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
         RangeAttribute rangeAttribute = (RangeAttribute)attribute;
-        String humanAttr = SimilarPatentServer.humanAttributeFor(attribute.getFullName());
-        String humanSearchType = combineTypesToString(searchTypes);
+        String humanAttr = SimilarPatentServer.humanAttributeFor(attrName);
+        String collectAttr = attrToCollectByAttrMap.get(attrName);
+        if(collectAttr==null) {
+            collectAttr = "Assets";
+        } else {
+            collectAttr = BigQueryServer.fullHumanAttributeFor(collectAttr);
+        }
+        String humanSearchType = collectAttr;
         String title = humanAttr + " "+chartTitle;
 
         String xAxisSuffix = rangeAttribute.valueSuffix();
@@ -51,6 +57,7 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         if(isGrouped) {
             subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
         }
+        Type collectorType = attrToCollectTypeMap.getOrDefault(attrName, Type.Count);
         Options parentOptions = new Options();
         boolean drilldown = attrToDrilldownMap.getOrDefault(attrName, false);
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
@@ -59,7 +66,7 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         data.forEach(series-> {
             series.setShowInLegend(isGrouped);
         });
-        return Collections.singletonList(new ColumnChart(parentOptions, title, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories));
+        return Collections.singletonList(new ColumnChart(parentOptions, title, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories, collectorType));
     }
 
     @Override
