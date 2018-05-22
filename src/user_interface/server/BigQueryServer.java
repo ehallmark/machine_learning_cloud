@@ -250,8 +250,8 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Interference No.", Attributes.PTAB_INTERFERENCE_NO);
             humanAttrToJavaAttrMap.put("Inventor First Name", Attributes.PTAB_INVENTOR_FIRST_NAME);
             humanAttrToJavaAttrMap.put("Inventor Last Name", Attributes.PTAB_INVENTOR_LAST_NAME);
-            humanAttrToJavaAttrMap.put("Patent Family Size", Attributes.FAMILY_SIZE);
-            humanAttrToJavaAttrMap.put("Patent Family ID",Attributes.FAMILY_ID);
+            humanAttrToJavaAttrMap.put("Family Size", Attributes.FAMILY_SIZE);
+            humanAttrToJavaAttrMap.put("Family ID",Attributes.FAMILY_ID);
             humanAttrToJavaAttrMap.put("Means Present", Attributes.MEANS_PRESENT);
             humanAttrToJavaAttrMap.put("AI Value", Attributes.AI_VALUE);
             humanAttrToJavaAttrMap.put("CompDB Recorded Date", Attributes.COMPDB_RECORDED_DATE);
