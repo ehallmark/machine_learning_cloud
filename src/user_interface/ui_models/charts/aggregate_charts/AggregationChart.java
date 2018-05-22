@@ -44,6 +44,7 @@ import java.util.*;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /*
  * Created by Evan on 6/17/2017.
@@ -118,8 +119,33 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 throw new RuntimeException("Unable to cast group aggregation " + groupAggName.getClass().getName() + " to MultiBucketsAggregation.class");
             }
             if (drilldown) {
+                boolean isHistogram = this instanceof AggregateHistogramChart;
+                if (isHistogram) {
+                    // need to regroup data across buckets
+                    List<String> groups = drilldownData.stream().map(d->d.getSecond().getName()).collect(Collectors.toList());
+                    if(groups.size()>0) {
+                        List<String> newGroups = drilldownData.get(0).getSecond().getData().stream().map(l->(String)l.get(0)).collect(Collectors.toList());
+                        int dataSize = newGroups.size();
+                        List<Pair<Number,ArraySeries>> tmp = drilldownData;
+                        drilldownData = IntStream.range(0, dataSize).mapToObj(i -> {
+                            double total = 0;
+                            List<List> newData = new ArrayList<>(dataSize);
+                            for(Pair<Number,ArraySeries> pair : tmp) {
+                                ArraySeries series = pair.getRight();
+                                Number val = ((Number)series.getData().get(i).get(1));
+                                newData.add(Arrays.asList(series.getName(), val));
+                                total += val.doubleValue();
+                            }
+                            ArraySeries series = new ArraySeries();
+                            series.setName(newGroups.get(i));
+                            series.setData(newData);
+                            series.setShowInLegend(true);
+                            return new Pair<>((Number)total, series);
+                        }).collect(Collectors.toList());
+                    }
+                }
                 System.out.println("Drilldown data points: " + drilldownData.size());
-                options = DrilldownChart.createDrilldownChart(options, drilldownData);
+                options = DrilldownChart.createDrilldownChart(this, options, drilldownData);
 
             } else if (this instanceof AggregatePieChart) {
                 // Create PIE Donut

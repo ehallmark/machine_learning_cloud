@@ -63,9 +63,11 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         parentOptions = createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,null,drilldown,includeBlank);
         List<? extends Series> data = parentOptions.getSeries();
-        data.forEach(series-> {
-            series.setShowInLegend(isGrouped);
-        });
+        if(!drilldown) {
+            data.forEach(series -> {
+                series.setShowInLegend(isGrouped);
+            });
+        }
         return Collections.singletonList(new ColumnChart(parentOptions, title, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories, collectorType));
     }
 

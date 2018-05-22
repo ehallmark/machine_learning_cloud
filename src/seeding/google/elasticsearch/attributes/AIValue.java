@@ -16,11 +16,11 @@ public class AIValue extends DoubleAttribute implements RangeAttribute {
     @Override
     public List<Pair<Number, Number>> getRanges() {
         return Arrays.asList(
-                new Pair<>(0,20),
-                new Pair<>(20,40),
-                new Pair<>(40,60),
-                new Pair<>(60,80),
-                new Pair<>(80,100)
+                new Pair<>(0.0,0.20), // % format
+                new Pair<>(0.20,0.40),
+                new Pair<>(0.40,0.60),
+                new Pair<>(0.60,0.80),
+                new Pair<>(0.80,0.100)
         );
     }
 
@@ -31,6 +31,6 @@ public class AIValue extends DoubleAttribute implements RangeAttribute {
 
     @Override
     public String valueSuffix() {
-        return "%";
+        return "";
     }
 }
