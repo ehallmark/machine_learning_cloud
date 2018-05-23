@@ -14,6 +14,8 @@ public class DrilldownChart {
         if(isHistogram) {
             groupesSeries.setShowInLegend(false);
             groupesSeries.setColorByPoint(!swapAxis);
+        } else {
+            groupesSeries.setColorByPoint(true);
         }
         AtomicInteger inc = new AtomicInteger(0);
         List<DrilldownPointSeries> drilldownSeries = new ArrayList<>(baseSeries.size());
