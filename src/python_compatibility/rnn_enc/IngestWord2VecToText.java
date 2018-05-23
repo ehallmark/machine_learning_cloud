@@ -1,8 +1,6 @@
 package python_compatibility.rnn_enc;
 
 import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.indexing.NDArrayIndex;
 import seeding.google.word2vec.Word2VecManager;
 
 import java.io.BufferedWriter;
@@ -11,8 +9,6 @@ import java.io.FileWriter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 
 public class IngestWord2VecToText {
 
@@ -26,7 +22,7 @@ public class IngestWord2VecToText {
                 words.add(word.getLabel());
                 indices.add(word.getIndex());
                 try {
-                    bw.write(word.getLabel() + "," + word.getIndex() + "," + word.getElementFrequency() + "\n");
+                    bw.write(word.getLabel() + "," + (word.getIndex() + 1) + "," + word.getElementFrequency() + "\n");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
