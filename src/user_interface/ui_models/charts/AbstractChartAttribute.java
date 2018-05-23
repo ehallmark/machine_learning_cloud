@@ -74,6 +74,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         this.attrToCollectTypeMap = Collections.synchronizedMap(new HashMap<>());
         this.groupByPerAttribute = groupByPerAttribute;
         this.attrToDrilldownMap = Collections.synchronizedMap(new HashMap<>());
+        this.attrToSwapAxesMap = Collections.synchronizedMap(new HashMap<>());
     }
 
     protected static String combineTypesToString(Collection<String> types) {
