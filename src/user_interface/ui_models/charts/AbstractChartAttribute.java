@@ -41,6 +41,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     @Getter
     protected Map<String,Boolean> attrToDrilldownMap;
     @Getter
+    protected Map<String,Boolean> attrToSwapAxesMap;
+    @Getter
     protected List<String> attrNames;
     protected Collection<AbstractAttribute> groupByAttributes;
     @Getter
@@ -298,9 +300,14 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             this.attrNames.forEach(attr -> {
                 boolean drilldown = SimilarPatentServer.extractBool(params, getDrilldownAttrFieldName(attr));
                 if(drilldown && !attrNameToGroupByAttrNameMap.containsKey(attr)) {
-                    throw new RuntimeException("Must specify group by attribute in order use Drilldown for "+SimilarPatentServer.humanAttributeFor(attr)+".");
+                    throw new RuntimeException("Must specify group by attribute to use 'Drilldown' for "+SimilarPatentServer.humanAttributeFor(attr)+".");
                 }
                 attrToDrilldownMap.put(attr,drilldown);
+                boolean swapAxes = SimilarPatentServer.extractBool(params, getDrilldownAttrFieldName(attr));
+                if(swapAxes && !drilldown) {
+                    throw new RuntimeException("Must use 'Drilldown' feature to use 'Swap Axes' for "+SimilarPatentServer.humanAttributeFor(attr)+".");
+                }
+                attrToSwapAxesMap.put(attr,swapAxes);
                 System.out.println("Looking for field: "+attr+" -> "+getCollectByAttrFieldName(attr));
                 String collectByName = SimilarPatentServer.extractString(params, getCollectByAttrFieldName(attr), null);
                 if(collectByName!=null) attrToCollectByAttrMap.put(attr,collectByName);
@@ -320,6 +327,9 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         return handleAttrName(attrName, SimilarPatentServer.COLLECT_TYPE_FIELD);
     }
 
+    protected String getSwapAxesAttrFieldName(String attrName) {
+        return handleAttrName(attrName, SimilarPatentServer.SWAP_AXES_FIELD);
+    }
 
     protected String getDrilldownAttrFieldName(String attrName) {
         return handleAttrName(attrName, SimilarPatentServer.DRILLDOWN_BOOL_FIELD);

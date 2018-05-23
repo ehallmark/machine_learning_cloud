@@ -60,7 +60,6 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         Type collectorType = attrToCollectTypeMap.getOrDefault(attrName, Type.Count);
         Options parentOptions = new Options();
         boolean drilldown = attrToDrilldownMap.getOrDefault(attrName, false);
-        boolean swapAxis = false;
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         parentOptions = createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,null,drilldown,includeBlank);
         List<? extends Series> data = parentOptions.getSeries();
@@ -77,9 +76,9 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
         Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getDrilldownAttrFieldName(attrName));
         Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
-                div().withClass("col-10").with(
+                div().withClass("col-9").with(
                         tag1
-                ),div().withClass("col-2").with(
+                ),div().withClass("col-3").with(
                         tag2
                 )
         );
@@ -89,10 +88,15 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
 
     private ContainerTag getAdditionalTagPerAttr(String attrName) {
         return div().withClass("row").with(
-                div().withClass("col-12").with(
+                div().withClass("col-6").with(
                         label("Drilldown").attr("title","Plot groups using drilldowns.").with(
                                 br(),
                                 input().withId(getDrilldownAttrFieldName(attrName)).withValue("off").withName(getDrilldownAttrFieldName(attrName)).withType("checkbox")
+                        )
+                ),div().withClass("col-6").with(
+                        label("Swap Axes").attr("title","Swap axes of histogram drilldown chart.").with(
+                                br(),
+                                input().withId(getSwapAxesAttrFieldName(attrName)).withValue("off").withName(getSwapAxesAttrFieldName(attrName)).withType("checkbox")
                         )
                 )
         );

@@ -110,6 +110,7 @@ public class SimilarPatentServer {
     public static final String CHARTS_GROUPED_BY_FIELD = "chartsGroupedBy";
     public static final String COLLECT_BY_ATTR_FIELD = "collectByAttr";
     public static final String COLLECT_TYPE_FIELD = "collectType";
+    public static final String SWAP_AXES_FIELD = "swapAxes";
     public static final String DRILLDOWN_BOOL_FIELD = "useDrilldown";
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = PROTECTED_URL_PREFIX+"/patent_recommendation_engine";
