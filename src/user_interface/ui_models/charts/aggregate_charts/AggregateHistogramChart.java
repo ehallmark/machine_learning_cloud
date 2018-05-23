@@ -74,7 +74,7 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
-        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getDrilldownAttrFieldName(attrName));
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getSwapAxesAttrFieldName(attrName),getDrilldownAttrFieldName(attrName));
         Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
                 div().withClass("col-9").with(
                         tag1
