@@ -2837,8 +2837,7 @@ public class BigQueryServer extends SimilarPatentServer {
         server();
         System.out.println("Finished starting server.");
 
-        // TODO turn these back on
-        boolean debugging = true;
+        boolean debugging = false;
         if(!debugging) {
             GatherClassificationServer.StartServer();
             HumanNamePredictionServer.startServer(-1);
