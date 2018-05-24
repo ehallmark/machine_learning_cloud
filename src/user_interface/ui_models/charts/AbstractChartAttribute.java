@@ -107,16 +107,6 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         );
     }
 
-    private ContainerTag getDrillDownTag(String attrName) {
-        attrName = getDrilldownAttrFieldName(attrName);
-        return div().withClass("row").with(
-                div().withClass("col-12").with(
-                        label("Drilldown").attr("title","Plot groups using drilldowns.").with(
-                                input().attr("style","float: left;").withValue("off").withId(attrName).withName(attrName).withType("checkbox")
-                        )
-                )
-        );
-    }
 
     @Override
     protected ContainerTag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr) {
@@ -301,12 +291,12 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             this.attrNames.forEach(attr -> {
                 boolean drilldown = SimilarPatentServer.extractBool(params, getDrilldownAttrFieldName(attr));
                 if(drilldown && !attrNameToGroupByAttrNameMap.containsKey(attr)) {
-                    throw new RuntimeException("Must specify group by attribute to use 'Drilldown' for "+SimilarPatentServer.humanAttributeFor(attr)+".");
+                    throw new RuntimeException("While building charts... Must specify group by attribute to use 'Drilldown' for "+SimilarPatentServer.humanAttributeFor(attr)+". Please unselect 'Drilldown' in chart options or select a group by attribute.");
                 }
                 attrToDrilldownMap.put(attr,drilldown);
-                boolean swapAxes = SimilarPatentServer.extractBool(params, getDrilldownAttrFieldName(attr));
+                boolean swapAxes = SimilarPatentServer.extractBool(params, getSwapAxesAttrFieldName(attr));
                 if(swapAxes && !drilldown) {
-                    throw new RuntimeException("Must use 'Drilldown' feature to use 'Swap Axes' for "+SimilarPatentServer.humanAttributeFor(attr)+".");
+                    throw new RuntimeException("While building charts... Must use 'Drilldown' feature to use 'Swap Axes' for "+SimilarPatentServer.humanAttributeFor(attr)+". Please unselect 'Swap Axes' in chart options or select 'Drilldown'.");
                 }
                 attrToSwapAxesMap.put(attr,swapAxes);
                 System.out.println("Looking for field: "+attr+" -> "+getCollectByAttrFieldName(attr));
