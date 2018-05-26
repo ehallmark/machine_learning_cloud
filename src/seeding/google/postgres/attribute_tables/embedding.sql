@@ -63,4 +63,10 @@ insert into big_query_embedding1 (family_id,cpc_vae) (
     order by p.family_id, p.publication_date desc nulls last
 );
 
--- build embedding 2
+
+
+-- new embeddings (keras model)
+create table big_query_embedding_by_fam (
+    family_id varchar(32) primary key,
+    enc float[] not null
+);
