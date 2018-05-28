@@ -95,8 +95,7 @@ create table patents_global_merged (
     latest_fam_assignee_count integer,
 
     -- embedding
-    cpc_vae float[],
-    rnn_enc float[],
+    enc float[],
     -- assignments
     reel_frame text[],
     assignment_count integer,
@@ -362,8 +361,7 @@ insert into patents_global_merged (
         latest_assignee_fam_join.last_filing_date,
         coalesce(array_length(latest_assignee_fam.assignee,1),0),
         -- embedding
-        enc1.cpc_vae,
-        enc2.rnn_enc,
+        enc.enc,
         -- assignments
         a.reel_frame,
         a.conveyance_text,
@@ -421,8 +419,7 @@ insert into patents_global_merged (
     left outer join big_query_ai_value_claims as value_claims on (value_claims.family_id=p.family_id)
     left outer join big_query_ai_value_family_size as value_family_size on (value_family_size.family_id=p.family_id)
     left outer join big_query_ai_value as ai_value on (ai_value.family_id=p.family_id)
-    left outer join big_query_embedding1 as enc1 on (enc1.family_id=p.family_id)
-    left outer join big_query_embedding2 as enc2 on (enc2.family_id=p.family_id)
+    left outer join big_query_embedding_by_fam as enc on (enc.family_id=p.family_id)
     left outer join big_query_cpc_tree as cpc_tree on (cpc_tree.publication_number_full=p.publication_number_full)
     left outer join big_query_gather_with_pub as gather on (gather.publication_number_full=p.publication_number_full)
     left outer join big_query_compdb_deals_by_pub as compdb on (compdb.publication_number_full=p.publication_number_full)
