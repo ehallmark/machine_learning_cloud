@@ -592,6 +592,8 @@ $(document).ready(function() {
     resetSearchForm();
     showTemplateFunction({file: 'default'},null,null);
 
+    $('.select2-selection__rendered').attr('title', 'Click to view available options...');
+
     $(document).uitooltip({
         content: function() {
             return $(this).attr('title');
