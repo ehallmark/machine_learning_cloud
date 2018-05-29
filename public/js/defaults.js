@@ -523,8 +523,8 @@ $(document).ready(function() {
         templateSelection: select2SelectedFunction
     }).on('change', function(e) {
         var val = $(this).val();
+        var $type = $(this).closest('.collect-container').find('select.collect-type');
         if(val) {
-            var $type = $(this).closest('.collect-container').find('select.collect-type');
             var prevType = $type.val();
             // update type select from selected value
             var usePrevType = false;
@@ -534,8 +534,8 @@ $(document).ready(function() {
                 }
 
                 $type.empty();
-                $type.append('<option value="Count">Count</option>');
-                $type.append('<option value="Cardinality">Cardinality</option>');
+                $type.append('<option value="Cardinality">Distinct Count</option>');
+                $type.append('<option value="Count">Total Count</option>');
             } else {
                 if(prevType && ['Sum','Average','Max','Min','StdDeviation','Variance'].includes(prevType)) {
                     usePrevType=true;
@@ -548,8 +548,8 @@ $(document).ready(function() {
                 $type.append('<option value="Min">Min</option>');
                 $type.append('<option value="StdDeviation">Standard Deviation</option>');
                 $type.append('<option value="Variance">Variance</option>');
-                $type.append('<option value="Count">Count</option>');
-                $type.append('<option value="Cardinality">Cardinality</option>');
+                $type.append('<option value="Count">Total Count</option>');
+                $type.append('<option value="Cardinality">Distinct Count</option>');
             }
             $type.select2({
                 minimumResultsForSearch: 10,
@@ -559,17 +559,12 @@ $(document).ready(function() {
             if(usePrevType) {
                 $type.val(prevType).trigger('select2.change');
             }
+        } else {
+            $type.val(null).trigger('select2.change');
         }
     });
 
     setCollapsibleHeaders(".collapsible-header");
-
-    $('#main-content-id').tooltip({
-        content: function() { return $(this).attr('title'); },
-        show: 500,
-        hide: 100,
-        delay: 500
-    });
 
     var $nestedLists = $('.nested-form-list');
     $nestedLists.sortable();
@@ -596,6 +591,14 @@ $(document).ready(function() {
 
     resetSearchForm();
     showTemplateFunction({file: 'default'},null,null);
+
+    $('#main-content-id').tooltip({
+        content: function() { return $(this).attr('title'); },
+        show: 500,
+        hide: 100,
+        delay: 500
+    });
+
 });
 
 
@@ -1565,6 +1568,10 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                 return false;
             }
         }
+        return true;
+    });
+    $(tree_id).bind("hover_node.jstree", function(event,data) {
+        $('#'+data.node.id).prop('title', 'Right click for more options...');
         return true;
     });
 };
