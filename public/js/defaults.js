@@ -592,13 +592,13 @@ $(document).ready(function() {
     resetSearchForm();
     showTemplateFunction({file: 'default'},null,null);
 
-    $('#main-content-id').tooltip({
+    $(document).tooltip({
         content: function() { return $(this).attr('title'); },
-        show: 500,
-        hide: 100,
-        delay: 500
+        show: {
+            delay: 200,
+            duration: 100
+        }
     });
-
 });
 
 
