@@ -224,20 +224,14 @@ input.form-control {
     width: 50%;
 }
 
-
-ul.select2-selection__rendered {
-    padding-right: 30px !important;
-}
-
-ul.select2-selection__rendered:after {
+.select2-selection--multiple:before {
     content: "";
     position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    border-top: 5px solid #333;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
+    right: 7px;
+    top: 42%;
+    border-top: 5px solid #888;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
 }
 
 
