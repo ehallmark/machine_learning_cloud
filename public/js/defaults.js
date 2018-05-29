@@ -592,14 +592,14 @@ $(document).ready(function() {
     resetSearchForm();
     showTemplateFunction({file: 'default'},null,null);
 
-    $('[title]').uitooltip({
+    $(document).uitooltip({
         content: function() {
             return $(this).attr('title');
         },
-        html: true,
-        delay: {
-            show: 200,
-            hide: 100
+        //html: true,
+        show: {
+            delay: 200,
+            duration: 100
         }
     });
 });
