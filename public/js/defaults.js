@@ -592,7 +592,7 @@ $(document).ready(function() {
     resetSearchForm();
     showTemplateFunction({file: 'default'},null,null);
 
-    $('[title]').ui.tooltip({
+    $('[title]').uitooltip({
         content: function() {
             return $(this).attr('title');
         },
