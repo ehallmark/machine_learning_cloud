@@ -592,7 +592,7 @@ $(document).ready(function() {
     resetSearchForm();
     showTemplateFunction({file: 'default'},null,null);
 
-    $(document).tooltip({
+    $('body').tooltip({
         content: function() { return $(this).attr('title'); },
         show: {
             delay: 200,
