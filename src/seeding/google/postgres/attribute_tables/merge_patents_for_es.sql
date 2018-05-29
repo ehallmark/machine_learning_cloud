@@ -1,6 +1,7 @@
 
 \connect patentdb
 
+drop table patents_global_merged;
 create table patents_global_merged (
     publication_number_full varchar(32) primary key, -- eg. US9923222B1
     publication_number varchar(32) not null, -- eg. 9923222
@@ -308,7 +309,7 @@ insert into patents_global_merged (
         -- cpc
         p.code,
         coalesce(array_length(p.code,1),0),
-        cpc_tree.tree,
+        coalesce(cpc_tree.tree,cpc_tree_by_fam.tree)
         p.inventive,
         -- citations
         p.cited_publication_number_full,
@@ -421,6 +422,7 @@ insert into patents_global_merged (
     left outer join big_query_ai_value as ai_value on (ai_value.family_id=p.family_id)
     left outer join big_query_embedding_by_fam as enc on (enc.family_id=p.family_id)
     left outer join big_query_cpc_tree as cpc_tree on (cpc_tree.publication_number_full=p.publication_number_full)
+    left outer join big_query_cpc_tree_by_fam as cpc_tree_by_fam on (cpc_tree_by_fam.family_id=p.family_id)
     left outer join big_query_gather_with_pub as gather on (gather.publication_number_full=p.publication_number_full)
     left outer join big_query_compdb_deals_by_pub as compdb on (compdb.publication_number_full=p.publication_number_full)
     left outer join big_query_assignment_documentid_by_pub as a on (p.publication_number_full=a.publication_number_full)
