@@ -312,6 +312,10 @@ $(document).ready(function() {
 
     var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
     // nested forms
+
+    $('select.nested-filter-select').each(function(){
+        $(this).attr('title', 'Click to view available options...');
+    });
     $('select.nested-filter-select').select2(displayItemSelectOptions);
 
     var nestedFilterSelectFunction = function(e,preventHighlight) {
@@ -588,11 +592,8 @@ $(document).ready(function() {
     });
     $('#sidebar-jstree-wrapper').show();
 
-
     resetSearchForm();
     showTemplateFunction({file: 'default'},null,null);
-
-    $('.select2-selection__rendered').attr('title', 'Click to view available options...');
 
     $(document).uitooltip({
         content: function() {
@@ -600,8 +601,8 @@ $(document).ready(function() {
         },
         //html: true,
         show: {
-            delay: 200,
-            duration: 100
+            delay: 400,
+            duration: 200
         }
     });
 });
