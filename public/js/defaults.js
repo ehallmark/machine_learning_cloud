@@ -361,7 +361,8 @@ $(document).ready(function() {
          $options.each(function(i,option){
              var id = $(option).val();
              var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
-             if(!preventHighlight && $draggable.parent().is(':hidden')) {
+             var wasHidden = $draggable.parent().is(':hidden');
+             if(!preventHighlight && wasHidden) {
                  addedDraggables.push($draggable);
              }
 
@@ -377,7 +378,7 @@ $(document).ready(function() {
                     if($this.length == 0) {
                         alert('Missing: '+this);
                     } else {
-                        $('#'+this).prop('disabled', false).filter('select').trigger('change', [preventHighlight]);
+                        $('#'+this).prop('disabled', false).filter('select').trigger('change', [preventHighlight]).trigger('focus');
                     }
                 });
              }
@@ -609,7 +610,7 @@ $(document).ready(function() {
     function createRichInput(original) {
          var newId = "richtext_" + $(original).attr('id');
          var newElement = "<div class=\"richtext\" id=\"" + newId + "\"></div>";
-
+         var parentId = '#' + $(original).parent().attr('id');
          newId = '#' + newId;
 
          $(original).wrap(newElement);
@@ -633,20 +634,21 @@ $(document).ready(function() {
              'padding': 0
          });
 
-         $(original).bind('propertychange keyup input paste click', function() {
+         $(original).bind('propertychange keyup input paste click focus', function() {
              $(original).trigger('scroll');
              var text = $(original).val();
              $(newId + "> pre").html(colorize(text, $(original).getCursorPosition()));
          });
          $(original).scroll(function() {
          		//alert('scrolltop: '+$(this).scrollTop());
-             $(newId).height($(this).height()).width($(this).width());
-             $(newId + '> pre').height($(this).height()).width($(this).width());
+         	 var parentHeight = $(parentId).height();
+         	 var parentWidth = $(parentId).width();
+         	 $(original).height(parentHeight).width(parentWidth);
+             $(newId).height(parentHeight).width(parentWidth);
+             $(newId + '> pre').height(parentHeight).width(parentWidth);
              $(newId + '> pre').css({
            	     'top': $(this).position().top,
-                 'left': $(this).position().left,
-                 'height': $(this).height(),
-                 'width': $(this).width()
+                 'left': $(this).position().left
              }).scrollTop($(this).scrollTop());
          });
          resizeable($(original), function() {
