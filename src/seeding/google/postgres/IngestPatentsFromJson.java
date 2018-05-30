@@ -99,7 +99,6 @@ public class IngestPatentsFromJson {
                 SeedingConstants.KIND_CODE,
                 SeedingConstants.APPLICATION_KIND,
                 SeedingConstants.FAMILY_ID,
-                SeedingConstants.ENTITY_STATUS,
                 SeedingConstants.TITLE_LOCALIZED+"."+SeedingConstants.TEXT,
                 SeedingConstants.TITLE_LOCALIZED+"."+SeedingConstants.LANGUAGE,
                 SeedingConstants.ABSTRACT_LOCALIZED+"."+SeedingConstants.TEXT,
@@ -182,7 +181,7 @@ public class IngestPatentsFromJson {
             return ret;
         }).collect(Collectors.toList()))+")";
 
-        final String sql = "insert into patents_global (publication_number_full,publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,original_entity_type,invention_title,invention_title_lang,abstract,abstract_lang,claims,claims_lang,description,description_lang,inventor,assignee,inventor_harmonized,inventor_harmonized_cc,assignee_harmonized,assignee_harmonized_cc,pc_publication_number_full,pc_application_number_full,pc_filing_date,code,inventive,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date) values "+valueStr+" on conflict do nothing";
+        final String sql = "insert into patents_global (publication_number_full,publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,invention_title,invention_title_lang,abstract,abstract_lang,claims,claims_lang,description,description_lang,inventor,assignee,inventor_harmonized,inventor_harmonized_cc,assignee_harmonized,assignee_harmonized_cc,pc_publication_number_full,pc_application_number_full,pc_filing_date,code,inventive,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date) values "+valueStr+" on conflict do nothing";
 
         DefaultApplier applier = new DefaultApplier(false, conn, fields);
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
