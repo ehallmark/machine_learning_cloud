@@ -40,6 +40,10 @@ public class IngestPatentsFromJson {
                 if(publicationNumber!=null) {
                     String[] parts = publicationNumber.split("-");
                     if(parts.length==3) {
+                        if(parts[0].equals("US")&&parts[2].length()==10) {
+                            // fix
+                            parts[2]=parts[2].substring(0,4)+"0"+parts[2].substring(4);
+                        }
                         String fullNumber = String.join("",parts);
                         String countryAndNumber = parts[0]+parts[1];
                         String number = parts[1];
@@ -141,6 +145,7 @@ public class IngestPatentsFromJson {
         fieldsToCapitalize.add(SeedingConstants.ASSIGNEE);
         fieldsToCapitalize.add(SeedingConstants.ASSIGNOR);
         fieldsToCapitalize.add(SeedingConstants.ASSIGNEE_HARMONIZED);
+        fieldsToCapitalize.add(SeedingConstants.INVENTOR);
         fieldsToCapitalize.add(SeedingConstants.NAME);
 
         Set<String> booleanFields = new HashSet<>();
