@@ -611,6 +611,7 @@ $(document).ready(function() {
          var newId = "richtext_" + $(original).attr('id');
          var newElement = "<div class=\"richtext\" id=\"" + newId + "\"></div>";
          var $parent = $(original).parent();
+         newId = '#' + newId;
          $(original).wrap(newElement);
          $(original).before("<pre></pre>");
          $(newId).before('<br>');
@@ -646,7 +647,9 @@ $(document).ready(function() {
              $(newId + '> pre').outerHeight(parentHeight).outerWidth(parentWidth);
              $(newId + '> pre').css({
            	     'top': $(this).position().top,
-                 'left': $(this).position().left
+                 'left': $(this).position().left,
+                 'height': $(this).height(),
+                 'width': $(this).width()
              }).scrollTop($(this).scrollTop());
          });
          resizeable($(original), function() {
