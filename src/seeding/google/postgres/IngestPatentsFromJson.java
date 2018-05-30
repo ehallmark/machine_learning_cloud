@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -20,7 +21,6 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -150,7 +150,6 @@ public class IngestPatentsFromJson {
 
         Set<String> booleanFields = new HashSet<>();
         booleanFields.add(SeedingConstants.CPC+"."+SeedingConstants.INVENTIVE);
-        Connection conn = Database.getConn();
 
         int numFields = fields.length;
         String valueStr = "("+String.join(",",IntStream.range(0,numFields).mapToObj(i->{
@@ -186,10 +185,7 @@ public class IngestPatentsFromJson {
 
         final String sql = "insert into patents_global (publication_number_full,publication_number,application_number_full,application_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,invention_title,invention_title_lang,abstract,abstract_lang,claims,claims_lang,description,description_lang,inventor,assignee,inventor_harmonized,inventor_harmonized_cc,assignee_harmonized,assignee_harmonized_cc,pc_publication_number_full,pc_application_number_full,pc_filing_date,code,inventive,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date) values "+valueStr+" on conflict do nothing";
 
-        DefaultApplier applier = new DefaultApplier(false, conn, fields);
-        QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
-
-        Consumer<Document> consumer = doc -> {
+        Function<Document, List<Object>> transformer = doc -> {
             try {
                 List<Object> data = new ArrayList<>(fields.length);
                 for(int i = 0; i < fields.length; i++) {
@@ -260,21 +256,36 @@ public class IngestPatentsFromJson {
                     }
                     data.add(val);
                 }
-                queryStream.ingest(data);
+                return data;
             } catch(Exception e) {
                 e.printStackTrace();
                 System.exit(1);
+                return null;
             }
         };
 
-        ExecutorService service = Executors.newFixedThreadPool(6);
+        ExecutorService service = Executors.newFixedThreadPool(8);
         Stream.of(dataDir.listFiles()).forEach(file-> {
             service.execute(() -> {
                 try (InputStream stream = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+                    Connection conn = Database.newSeedConn();
+                    PreparedStatement ps = conn.prepareStatement(sql);
+                    DefaultApplier applier = new DefaultApplier(false, conn, fields);
+                    QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
                     IngestJsonHelper.streamJsonFile(stream, attributeFunctions).filter(map -> filterDocumentFunction.apply(map)).forEach(map -> {
-                        consumer.accept(new Document(map));
+                        List<Object> data = transformer.apply(new Document(map));
+                        if(data!=null) {
+                            try {
+                                queryStream.ingest(data, null, ps);
+                            } catch(Exception e2) {
+                                e2.printStackTrace();
+                                System.exit(1);
+                            }
+                        }
                     });
-
+                    ps.close();
+                    conn.commit();
+                    conn.close();
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.exit(1);
@@ -288,8 +299,6 @@ public class IngestPatentsFromJson {
         } catch(Exception e) {
             e.printStackTrace();
         }
-        queryStream.close();
-        conn.close();
     }
 
 }
