@@ -16,6 +16,10 @@ public class UpdateAll {
             System.exit(1);
         }
 
+        // add indices to patents_global
+        // TODO
+
+        // scrape missing family ids
         try {
             ScrapeEPO.main(args);
         } catch(Exception e) {
@@ -52,6 +56,7 @@ public class UpdateAll {
 
         // pair data
         try {
+            DownloadLatestPAIR.main(args);
             IngestPairData.main(args);
         } catch(Exception e) {
             e.printStackTrace();
@@ -87,8 +92,9 @@ public class UpdateAll {
         }
 
         // run helper sql commands to build dependent tables
+        // TODO
 
         // more advanced models (tech tag, similarity, etc...)
-
+        // TODO
     }
 }
