@@ -614,11 +614,11 @@ $(document).ready(function() {
 
          var width = $(original).width();
          var height = $(original).height();
-         if(!width || width==0) {
+         if(!width || width<=0) {
             width = 200;
             $(original).width(width);
          }
-         if(!height || height==0) {
+         if(!height || height<=0) {
             height = 100;
             $(original).height(height);
          }
