@@ -612,17 +612,6 @@ $(document).ready(function() {
 
          newId = '#' + newId;
 
-         var width = $(original).width();
-         var height = $(original).height();
-         if(!width || width<=0) {
-            width = 200;
-            $(original).width(width);
-         }
-         if(!height || height<=0) {
-            height = 100;
-            $(original).height(height);
-         }
-
          $(original).wrap(newElement);
          $(original).before("<pre></pre>");
          $(newId).before('<br>');
@@ -641,19 +630,19 @@ $(document).ready(function() {
              'position': 'absolute',
              'z-index': 100,
              'margin': 0,
-             'width': width,
              'border': 0,
              'padding': 0
- //            'color': 'transparent'
          });
 
          $(original).bind('propertychange keyup input paste click', function() {
+             $(original).trigger('scroll');
              var text = $(original).val();
              $(newId + "> pre").html(colorize(text, $(original).getCursorPosition()));
          });
          $(original).scroll(function() {
          		//alert('scrolltop: '+$(this).scrollTop());
-         		//$(newId + '> pre').height($(this).height()).width($(this).width());
+             $(newId).height($(this).height()).width($(this).width());
+             $(newId + '> pre').height($(this).height()).width($(this).width());
              $(newId + '> pre').css({
            	     'top': $(this).position().top,
                  'left': $(this).position().left,

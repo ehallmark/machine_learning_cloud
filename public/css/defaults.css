@@ -253,13 +253,11 @@ input.form-control {
 
 
 .richtext {
-    display: inline-block;
     overflow: hidden;
     margin: 2px 0;
     vertical-align: top;
 }
 .richtext > pre {
-    display: inline-block;
     border: 1px solid transparent;
     z-index: 1;
     position: absolute;
