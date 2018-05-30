@@ -607,104 +607,138 @@ $(document).ready(function() {
     });
 
     function createRichInput(original) {
-        var newId = "richtext_" + $(original).attr('id');
-        var newElement = "<div class=\"richtext\" id=\"" + newId + "\"></div>";
+         var newId = "richtext_" + $(original).attr('id');
+         var newElement = "<div class=\"richtext\" id=\"" + newId + "\"></div>";
 
-        newId = '#' + newId;
+         newId = '#' + newId;
 
-        var width = $(original).width();
-        var height = $(original).height();
+         var width = $(original).width();
+         var height = $(original).height();
 
-        $(original).wrap(newElement);
-        $(original).before("<pre></pre>");
+         $(original).wrap(newElement);
+         $(original).before("<pre></pre>");
 
-        $(newId).width(width).height(height);
-        $(newId + '> pre').width(width).height(height);
+         $(newId).width(width).height(height).css('z-index', 98);
+         $(newId + '> pre').width(width).height(height).css('position', 'absolute');;
 
-        $(original).css({
-            'background': 'transparent',
-            'position': 'absolute',
-            'z-index': 100,
-            'margin': 0,
-            'width': width,
-            'border': 0,
-            'padding': 0
-//            'color': 'transparent'
-        });
+         $(original).css({
+             'background': 'transparent',
+             'position': 'absolute',
+             'display': 'block',
+             'z-index': 100,
+             'margin': 0,
+             'width': width,
+             'border': 0,
+             'padding': 0
+ //            'color': 'transparent'
+         });
 
-        $(original).bind('propertychange keyup input paste click', function() {
-            var text = $(original).val();
-            $(newId + "> pre").html(colorize(text, $(original).getCursorPosition()));
-        });
-    }
+         $(original).bind('propertychange keyup input paste click', function() {
+             var text = $(original).val();
+             $(newId + "> pre").html(colorize(text, $(original).getCursorPosition()));
+             $(original).trigger('scroll');
+         });
+         $(original).scroll(function() {
+         		//alert('scrolltop: '+$(this).scrollTop());
+         		//$(newId + '> pre').height($(this).height()).width($(this).width());
+             $(newId + '> pre').css({
+           			'top': $(this).position().top,
+                 'left': $(this).position().left,
+                 'height': $(this).height()
+             }).scrollTop($(this).scrollTop());
+         });
+         resizeable($(original), function() {
+           	var width = $(original).width();
+           	var height = $(original).height();
+ 	          $(newId).width(width).height(height);
+   	        $(newId + '> pre').width(width).height(height);
+         });
+     }
 
-    function colorize(text, pos) {
-        var i = 0, current_times = 0;
-        var startc = '(', endc = ')';
-        var current = -1;
+     function resizeable($textareas, func) {
+         // set init (default) state
+         $textareas.data('x', $textareas.outerWidth());
+         $textareas.data('y', $textareas.outerHeight());
 
-        var entities = {'>': '&gt;','<':'&lt;'};
-        var p2 = 0;
-        var regex = new RegExp(Object.keys(entities).join("|"),'g');
-        var converted = text.replace(regex, function(x, j) {
-            if(pos > j) p2 += entities[x].length - 1;
-            return entities[x];
-        });
+         $textareas.mouseup(function () {
 
-        pos += p2;
-        var parens = [], indices = [], o = {};
-        var newText = converted.replace(/((?:\\)*)([()])/g, function(full, escape, x, idx) {
-            var len = escape.split(/\\/g).length - 1;
-            if (len % 2 == 0) {
-                indices.push(idx);
-                if (x == startc) ++i;
-                o[idx] = { selected: false, type: x, depth: i, idx: idx, pair: -1, extra: escape };
-                if (idx == pos) o[idx].selected = true;
-                if (x == startc) parens.push(idx);
-                else {
-                    if (parens.length > 0) {
-                        var p = parens.pop();
-                        o[idx].pair = p;
-                        if (o[p].selected) o[idx].selected = true;
-                        o[p].pair = idx;
-                        if (o[idx].selected) o[p].selected = true;
-                    }
-                    --i
-                }
-            }
-        });
-        newtext = converted;
-        indices = indices.sort(function(x,y) { return Number(y) - Number(x); });
-        indices.forEach(function(i) {
-            newtext = newtext.substr(0,i) + o[i].extra +
-            "<span class='" + (o[i].pair == -1 ? "unmatched " : "paren_" + (o[i].depth % 5)) +
-            (o[i].selected ? " selected_paren": "") + "'>" + o[i].type + "</span>" +
-            newtext.substr(i + 1 + o[i].extra.length)
-        });
-        return newtext;
-    }
+             var $this = $(this);
 
-    (function($) {
-        $.fn.getCursorPosition = function() {
-            var input = this.get(0);
-            if (!input) return; // No (input) element found
-            if ('selectionStart' in input) {
-                // Standard-compliant browsers
-                return input.selectionStart;
-            } else if (document.selection) {
-                // IE
-                input.focus();
-                var sel = document.selection.createRange();
-                var selLen = document.selection.createRange().text.length;
-                sel.moveStart('character', -input.value.length);
-                return sel.text.length - selLen;
-            }
-        }
-    })(jQuery);
+             if ($this.outerWidth() != $this.data('x') || $this.outerHeight() != $this.data('y')) {
+                 func();
+             }
 
-    var $expert_filter = $('#acclaim_expert_filter');
-    $expert_filter.addClass('paren_match');
-    createRichInput('#acclaim_expert_filter');
+             // set new height/width
+             $this.data('x', $this.outerWidth());
+             $this.data('y', $this.outerHeight());
+         });
+     };
+
+     function colorize(text, pos) {
+         var i = 0, current_times = 0;
+         var startc = '(', endc = ')';
+         var current = -1;
+
+         var entities = {'>': '&gt;','<':'&lt;'};
+         var p2 = 0;
+         var regex = new RegExp(Object.keys(entities).join("|"),'g');
+         var converted = text.replace(regex, function(x, j) {
+             if(pos > j) p2 += entities[x].length - 1;
+             return entities[x];
+         });
+
+         pos += p2;
+         var parens = [], indices = [], o = {};
+         var newText = converted.replace(/((?:\\)*)([()])/g, function(full, escape, x, idx) {
+             var len = escape.split(/\\/g).length - 1;
+             if (len % 2 == 0) {
+                 indices.push(idx);
+                 if (x == startc) ++i;
+                 o[idx] = { selected: false, type: x, depth: i, idx: idx, pair: -1, extra: escape };
+                 if (idx == pos) o[idx].selected = true;
+                 if (x == startc) parens.push(idx);
+                 else {
+                     if (parens.length > 0) {
+                         var p = parens.pop();
+                         o[idx].pair = p;
+                         if (o[p].selected) o[idx].selected = true;
+                         o[p].pair = idx;
+                         if (o[idx].selected) o[p].selected = true;
+                     }
+                     --i
+                 }
+             }
+         });
+         newtext = converted;
+         indices = indices.sort(function(x,y) { return Number(y) - Number(x); });
+         indices.forEach(function(i) {
+             newtext = newtext.substr(0,i) + o[i].extra +
+             "<span class='" + (o[i].pair == -1 ? "unmatched " : "paren_" + (o[i].depth % 5)) +
+             (o[i].selected ? " selected_paren": "") + "'>" + o[i].type + "</span>" +
+             newtext.substr(i + 1 + o[i].extra.length)
+         });
+         return newtext+'\n';
+     }
+
+     (function($) {
+         $.fn.getCursorPosition = function() {
+             var input = this.get(0);
+             if (!input) return; // No (input) element found
+             if ('selectionStart' in input) {
+                 // Standard-compliant browsers
+                 return input.selectionStart;
+             } else if (document.selection) {
+                 // IE
+                 input.focus();
+                 var sel = document.selection.createRange();
+                 var selLen = document.selection.createRange().text.length;
+                 sel.moveStart('character', -input.value.length);
+                 return sel.text.length - selLen;
+             }
+         }
+     })(jQuery);
+
+     createRichInput('#acclaim_expert_filter');
 });
 
 

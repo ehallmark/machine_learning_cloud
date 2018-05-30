@@ -267,14 +267,14 @@ input.form-control {
     height: 25px;
     background: #fff;
 }
-.paren_match, .richtext {
+textarea, .richtext {
     padding: 5px;
     color: #282828;
     background: #fff;
     outline: 0;
     border: 1px solid #BABABA;
 }
-.paren_match, .richtext > pre {
+textarea, .richtext > pre {
     font-family: monaco, courier;
     font-size: 100%;
     width: 400px;
