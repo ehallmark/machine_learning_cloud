@@ -643,7 +643,7 @@ $(document).ready(function() {
          	 var parentHeight = $parent.height();
          	 var parentWidth = $parent.width();
          	 //$(original).height(parentHeight).width(parentWidth);
-             $(newId).outerHeight(parentHeight).outerWidth(parentWidth);
+             //$(newId).outerHeight(parentHeight).outerWidth(parentWidth);
              $(newId + '> pre').outerHeight(parentHeight).outerWidth(parentWidth);
              $(newId + '> pre').css({
            	     'top': $(this).position().top,
