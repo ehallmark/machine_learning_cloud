@@ -641,9 +641,9 @@ $(document).ready(function() {
          		//alert('scrolltop: '+$(this).scrollTop());
          	 var parentHeight = $parent.height();
          	 var parentWidth = $parent.width();
-         	 $(original).height(parentHeight).width(parentWidth);
-             $(newId).height(parentHeight).width(parentWidth);
-             $(newId + '> pre').height(parentHeight).width(parentWidth);
+         	 //$(original).height(parentHeight).width(parentWidth);
+             $(newId).outerHeight(parentHeight).outerWidth(parentWidth);
+             $(newId + '> pre').outerHeight(parentHeight).outerWidth(parentWidth);
              $(newId + '> pre').css({
            	     'top': $(this).position().top,
                  'left': $(this).position().left
