@@ -175,13 +175,18 @@ public class ScrapeEPO {
     }
 
     private static List<String> getAssetsWithoutFamilyIds(Connection conn) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("select country_code||publication_number from patents_global where family_id='-1' and publication_number is not null and country_code is not null and not kind_code like 'S%' and not kind_code like 'H%' and not kind_code like 'P%'");
+        PreparedStatement ps = conn.prepareStatement("select country_code||publication_number from patents_global where family_id='-1' and publication_number is not null and country_code ='US' and not kind_code like 'S%' and not kind_code like 'H%' and not kind_code like 'P%'");
         ps.setFetchSize(100);
         ResultSet rs = ps.executeQuery();
         List<String> assets = new LinkedList<>();
         int i = 0;
         while(rs.next()) {
-            assets.add(rs.getString(1));
+            // need to convert publication numbers to docdb format
+            String asset = rs.getString(1);
+            if(asset.startsWith("US")&&asset.length()==13) {
+                asset = asset.substring(0,6)+asset.substring(7);
+            }
+            assets.add(asset);
             if(i%10000==9999) {
                 System.out.println("Found "+i+" assets");
             }
@@ -202,7 +207,6 @@ public class ScrapeEPO {
                 .filter(asset->!seenSoFar.contains(asset))
                 .collect(Collectors.toList());
 
-        //test
         ScrapeEPO fullDocumentScraper = new ScrapeEPO();
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dataDir, "epo" +"_"+ LocalDateTime.now().toString())));
