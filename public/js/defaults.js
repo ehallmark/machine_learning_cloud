@@ -616,8 +616,7 @@ $(document).ready(function() {
          $(original).before("<pre></pre>");
          $(newId).before('<br>');
 
-         $(newId).width(width).height(height);
-         $(newId + '> pre').width(width).height(height).css({
+         $(newId + '> pre').css({
             'position': 'absolute',
             'margin': 0,
             'display': 'block',
@@ -646,14 +645,12 @@ $(document).ready(function() {
              $(newId + '> pre').css({
            	     'top': $(this).position().top,
                  'left': $(this).position().left,
-                 'height': $(this).height()
+                 'height': $(this).height(),
+                 'width': $(this).width()
              }).scrollTop($(this).scrollTop());
          });
          resizeable($(original), function() {
-           	 var width = $(original).width();
-           	 var height = $(original).height();
- 	         $(newId).width(width).height(height);
-   	         $(newId + '> pre').width(width).height(height);
+           	 $(original).trigger('scroll');
          });
      }
 
