@@ -1,11 +1,9 @@
 package seeding.google.postgres;
 
-import elasticsearch.IngestMongoIntoElasticSearch;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.bson.Document;
 import seeding.Database;
 import seeding.google.mongo.ingest.IngestJsonHelper;
-import seeding.google.mongo.ingest.IngestSEP;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
 
@@ -14,13 +12,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class IngestSEPFromJson extends IngestPatentsFromJson {
@@ -60,6 +55,9 @@ public class IngestSEPFromJson extends IngestPatentsFromJson {
                 List<Object> data = new ArrayList<>(fields.length);
                 for(int i = 0; i < fields.length; i++) {
                     Object val = doc.get(fields[i]);
+                    if(i==1 && val==null || val.toString().equals("-1")) {
+                        return; // skip bad family ids
+                    }
                     data.add(val);
                 }
                 queryStream.ingest(data);

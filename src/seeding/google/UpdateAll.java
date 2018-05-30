@@ -1,13 +1,14 @@
 package seeding.google;
 
-import seeding.google.postgres.IngestAssignmentData;
-import seeding.google.postgres.IngestPatentsFromJson;
+import project_box.PGDumpLatest;
+import seeding.google.postgres.*;
 import seeding.google.postgres.epo.IngestScrapedXMLIntoPostgres;
 import seeding.google.postgres.epo.ScrapeEPO;
 
 public class UpdateAll {
     public static void main(String[] args) {
         try {
+            PGDumpLatest.startProcess("");
             IngestPatentsFromJson.main(args);
         } catch(Exception e) {
             e.printStackTrace();
@@ -39,5 +40,55 @@ public class UpdateAll {
             System.out.println("Exited during stage 4...");
             System.exit(1);
         }
+
+        // maintenance data
+        try {
+            IngestMaintenanceFeeData.main(args);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Exited during stage 5...");
+            System.exit(1);
+        }
+
+        // pair data
+        try {
+            IngestPairData.main(args);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Exited during stage 6...");
+            System.exit(1);
+        }
+
+        // ptab data
+        try {
+            IngestPTABData.main(args);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Exited during stage 7...");
+            System.exit(1);
+        }
+
+        // sep
+        try {
+            IngestSEPFromJson.main(args);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Exited during stage 8...");
+            System.exit(1);
+        }
+
+        // wipo
+        try {
+            IngestWIPOTechnologies.main(args);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Exited during stage 9...");
+            System.exit(1);
+        }
+
+        // run helper sql commands to build dependent tables
+
+        // more advanced models (tech tag, similarity, etc...)
+
     }
 }
