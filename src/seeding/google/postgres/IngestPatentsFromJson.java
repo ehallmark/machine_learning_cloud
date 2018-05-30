@@ -17,6 +17,9 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -264,18 +267,27 @@ public class IngestPatentsFromJson {
             }
         };
 
+        ExecutorService service = Executors.newFixedThreadPool(6);
         Stream.of(dataDir.listFiles()).forEach(file-> {
-            try(InputStream stream = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-                IngestJsonHelper.streamJsonFile(stream,attributeFunctions).filter(map->filterDocumentFunction.apply(map)).forEach(map->{
-                    consumer.accept(new Document(map));
-                });
+            service.execute(() -> {
+                try (InputStream stream = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+                    IngestJsonHelper.streamJsonFile(stream, attributeFunctions).filter(map -> filterDocumentFunction.apply(map)).forEach(map -> {
+                        consumer.accept(new Document(map));
+                    });
 
-            } catch(Exception e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+            });
         });
 
+        service.shutdown();
+        try {
+            service.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
         queryStream.close();
         conn.close();
     }
