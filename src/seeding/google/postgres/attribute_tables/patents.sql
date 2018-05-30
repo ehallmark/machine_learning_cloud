@@ -1,6 +1,7 @@
 
 \connect patentdb
 
+drop table patents_global;
 create table patents_global (
     publication_number_full varchar(32) primary key, -- eg. US9923222B1
     publication_number varchar(32) not null, -- eg. 9923222
