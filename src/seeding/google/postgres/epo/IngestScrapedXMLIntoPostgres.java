@@ -29,6 +29,10 @@ public class IngestScrapedXMLIntoPostgres {
     public static void main(String[] args) throws SQLException {
         // this class takes the scraped xml files and updates family ids
         File dataFolder = ScrapeEPO.dataDir;
+        if(!dataFolder.exists()) {
+            System.out.println("Error... ScrapeEPO.dataDir does not exist...");
+            return;
+        }
 
         Connection conn = Database.getConn();
         PreparedStatement ps = conn.prepareStatement("update patents_global set family_id = ? where family_id='-1' and publication_number=? and country_code='US'");

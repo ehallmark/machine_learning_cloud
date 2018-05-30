@@ -19,6 +19,8 @@ public class UpdateAll {
 
         // scrape missing family ids
         try {
+            IngestScrapedXMLIntoPostgres.main(args); // get pre
+            System.out.println("Finished loading pre scraped xmls...");
             ScrapeEPO.main(args);
         } catch(Exception e) {
             e.printStackTrace();
