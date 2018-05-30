@@ -614,17 +614,28 @@ $(document).ready(function() {
 
          var width = $(original).width();
          var height = $(original).height();
+         if(!width) {
+            width = 200;
+         }
+         if(!height) {
+            height = 100;
+         }
 
          $(original).wrap(newElement);
          $(original).before("<pre></pre>");
+         $(newId).before('<br>');
 
-         $(newId).width(width).height(height).css('z-index', 98);
-         $(newId + '> pre').width(width).height(height).css('position', 'absolute');;
+         $(newId).width(width).height(height);
+         $(newId + '> pre').width(width).height(height).css({
+            'position': 'absolute',
+            'margin': 0,
+            'padding': 0,
+            'text-align': 'left'
+         });
 
          $(original).css({
              'background': 'transparent',
              'position': 'absolute',
-             'display': 'block',
              'z-index': 100,
              'margin': 0,
              'width': width,
@@ -636,22 +647,21 @@ $(document).ready(function() {
          $(original).bind('propertychange keyup input paste click', function() {
              var text = $(original).val();
              $(newId + "> pre").html(colorize(text, $(original).getCursorPosition()));
-             $(original).trigger('scroll');
          });
          $(original).scroll(function() {
          		//alert('scrolltop: '+$(this).scrollTop());
          		//$(newId + '> pre').height($(this).height()).width($(this).width());
              $(newId + '> pre').css({
-           			'top': $(this).position().top,
+           	     'top': $(this).position().top,
                  'left': $(this).position().left,
                  'height': $(this).height()
              }).scrollTop($(this).scrollTop());
          });
          resizeable($(original), function() {
-           	var width = $(original).width();
-           	var height = $(original).height();
- 	          $(newId).width(width).height(height);
-   	        $(newId + '> pre').width(width).height(height);
+           	 var width = $(original).width();
+           	 var height = $(original).height();
+ 	         $(newId).width(width).height(height);
+   	         $(newId + '> pre').width(width).height(height);
          });
      }
 
