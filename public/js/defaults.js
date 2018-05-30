@@ -614,11 +614,13 @@ $(document).ready(function() {
 
          var width = $(original).width();
          var height = $(original).height();
-         if(!width) {
+         if(!width || width==0) {
             width = 200;
+            $(original).width(width);
          }
-         if(!height) {
+         if(!height || height==0) {
             height = 100;
+            $(original).height(height);
          }
 
          $(original).wrap(newElement);
@@ -629,6 +631,7 @@ $(document).ready(function() {
          $(newId + '> pre').width(width).height(height).css({
             'position': 'absolute',
             'margin': 0,
+            'display': 'block',
             'padding': 0,
             'text-align': 'left'
          });
