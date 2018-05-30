@@ -378,7 +378,7 @@ $(document).ready(function() {
                     if($this.length == 0) {
                         alert('Missing: '+this);
                     } else {
-                        $('#'+this).prop('disabled', false).filter('select').trigger('change', [preventHighlight]).trigger('focus');
+                        $('#'+this).prop('disabled', false).trigger('focus').filter('select').trigger('change', [preventHighlight]);
                     }
                 });
              }
@@ -610,8 +610,6 @@ $(document).ready(function() {
     function createRichInput(original) {
          var newId = "richtext_" + $(original).attr('id');
          var newElement = "<div class=\"richtext\" id=\"" + newId + "\"></div>";
-         var parentId = '#' + $(original).parent().attr('id');
-         newId = '#' + newId;
 
          $(original).wrap(newElement);
          $(original).before("<pre></pre>");
@@ -627,7 +625,7 @@ $(document).ready(function() {
 
          $(original).css({
              'background': 'transparent',
-             'position': 'absolute',
+             'position': 'relative',
              'z-index': 100,
              'margin': 0,
              'border': 0,
