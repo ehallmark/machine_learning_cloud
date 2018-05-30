@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 public class IngestCPCDefinitionFromJson extends IngestPatentsFromJson {
 
     public static void main(String[] args) throws SQLException {
-        final File dataDir = new File("/home/ehallmark/google-big-query/google-big-query/cpc/");
+        final File dataDir = new File("/usb/data/google-big-query/cpc/");
 
         String[] fields = new String[]{
                 "symbol",

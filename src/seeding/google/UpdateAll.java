@@ -1,6 +1,5 @@
 package seeding.google;
 
-import project_box.PGDumpLatest;
 import seeding.google.postgres.*;
 import seeding.google.postgres.epo.IngestScrapedXMLIntoPostgres;
 import seeding.google.postgres.epo.ScrapeEPO;
@@ -8,7 +7,6 @@ import seeding.google.postgres.epo.ScrapeEPO;
 public class UpdateAll {
     public static void main(String[] args) {
         try {
-            PGDumpLatest.startProcess("");
             IngestPatentsFromJson.main(args);
         } catch(Exception e) {
             e.printStackTrace();
