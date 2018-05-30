@@ -610,7 +610,7 @@ $(document).ready(function() {
     function createRichInput(original) {
          var newId = "richtext_" + $(original).attr('id');
          var newElement = "<div class=\"richtext\" id=\"" + newId + "\"></div>";
-
+         var $parent = $(original).parent();
          $(original).wrap(newElement);
          $(original).before("<pre></pre>");
          $(newId).before('<br>');
@@ -639,8 +639,8 @@ $(document).ready(function() {
          });
          $(original).scroll(function() {
          		//alert('scrolltop: '+$(this).scrollTop());
-         	 var parentHeight = $(parentId).height();
-         	 var parentWidth = $(parentId).width();
+         	 var parentHeight = $parent.height();
+         	 var parentWidth = $parent.width();
          	 $(original).height(parentHeight).width(parentWidth);
              $(newId).height(parentHeight).width(parentWidth);
              $(newId + '> pre').height(parentHeight).width(parentWidth);
