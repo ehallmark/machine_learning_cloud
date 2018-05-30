@@ -276,7 +276,7 @@ textarea, .richtext {
 }
 textarea, .richtext > pre {
     font-family: monaco, courier;
-    font-size: 100%;
+    font-size: 1rem;
     width: 400px;
 }
 .unmatched {
