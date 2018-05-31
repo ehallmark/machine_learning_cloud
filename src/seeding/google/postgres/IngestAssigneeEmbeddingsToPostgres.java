@@ -1,9 +1,5 @@
 package seeding.google.postgres;
 
-import cpc_normalization.CPCHierarchy;
-import models.similarity_models.deep_cpc_encoding_model.DeepCPCVAEPipelineManager;
-import models.similarity_models.deep_cpc_encoding_model.DeepCPCVariationalAutoEncoderNN;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 
 import java.sql.Connection;
@@ -13,8 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class IngestAssigneeEmbeddingsToPostgres {
 
@@ -45,7 +39,7 @@ public class IngestAssigneeEmbeddingsToPostgres {
         int cnt = 0;
         Connection seedConn = Database.newSeedConn();
         PreparedStatement ps = seedConn.prepareStatement("select assignee_harmonized[1] as name,enc from patents_global as g join big_query_embedding_by_fam as f on (g.family_id=f.family_id) where g.family_id!='-1' and assignee_harmonized[1] is not null");
-        ps.setFetchSize(100);
+        ps.setFetchSize(512);
         ResultSet rs = ps.executeQuery();
         Connection conn = Database.getConn();
         while(rs.next()) {
@@ -60,7 +54,7 @@ public class IngestAssigneeEmbeddingsToPostgres {
             }
             assigneeToVecMap.put(assignee,previous);
             if(cnt%10000==9999) {
-                System.out.println("Found trees for: "+cnt);
+                System.out.println("Found vectors for: "+cnt);
             }
             cnt++;
         }

@@ -250,19 +250,19 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Include By Prefix", AbstractFilter.FilterType.PrefixInclude.toString());
             humanAttrToJavaAttrMap.put("Exclude By Prefix", AbstractFilter.FilterType.PrefixExclude.toString());
             humanAttrToJavaAttrMap.put("Exclude All", AbstractFilter.FilterType.Exclude.toString());
-            humanAttrToJavaAttrMap.put("Acclaim Expert Query Syntax Filter", AcclaimExpertSearchFilter.NAME);
-            humanAttrToJavaAttrMap.put("Advanced Keyword Filter", AbstractFilter.FilterType.AdvancedKeyword.toString());
-            humanAttrToJavaAttrMap.put("Advanced Regexp Filter", AbstractFilter.FilterType.Regexp.toString());
+            humanAttrToJavaAttrMap.put("Expert Query Syntax", AcclaimExpertSearchFilter.NAME);
+            humanAttrToJavaAttrMap.put("Advanced Keyword", AbstractFilter.FilterType.AdvancedKeyword.toString());
+            humanAttrToJavaAttrMap.put("Advanced Regexp", AbstractFilter.FilterType.Regexp.toString());
             humanAttrToJavaAttrMap.put("Include", AbstractFilter.FilterType.BoolTrue.toString());
             humanAttrToJavaAttrMap.put("Exclude", AbstractFilter.FilterType.BoolFalse.toString());
-            humanAttrToJavaAttrMap.put("Between Filter", AbstractFilter.FilterType.Between.toString());
-            humanAttrToJavaAttrMap.put("Greater Than Filter", AbstractFilter.FilterType.GreaterThan.toString());
-            humanAttrToJavaAttrMap.put("Less Than Filter", AbstractFilter.FilterType.LessThan.toString());
+            humanAttrToJavaAttrMap.put("Range", AbstractFilter.FilterType.Between.toString());
+            humanAttrToJavaAttrMap.put("Greater Than", AbstractFilter.FilterType.GreaterThan.toString());
+            humanAttrToJavaAttrMap.put("Less Than", AbstractFilter.FilterType.LessThan.toString());
             humanAttrToJavaAttrMap.put("Filters", AbstractFilter.FilterType.Nested.toString());
-            humanAttrToJavaAttrMap.put("Exists Filter", AbstractFilter.FilterType.Exists.toString());
+            humanAttrToJavaAttrMap.put("Exists", AbstractFilter.FilterType.Exists.toString());
             humanAttrToJavaAttrMap.put("Include All With Related Assets", AbstractFilter.FilterType.IncludeWithRelated.toString());
             humanAttrToJavaAttrMap.put("Exclude All With Related Assets", AbstractFilter.FilterType.ExcludeWithRelated.toString());
-            humanAttrToJavaAttrMap.put("Does Not Exist Filter", AbstractFilter.FilterType.DoesNotExist.toString());
+            humanAttrToJavaAttrMap.put("Does Not Exist", AbstractFilter.FilterType.DoesNotExist.toString());
             humanAttrToJavaAttrMap.put("Latest Execution Date", Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("Execution Date", Constants.ASSIGNMENTS+"."+Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("First Name", Constants.FIRST_NAME);
@@ -292,7 +292,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Overall Score", Constants.SCORE);
 
             // custom filter name for excluding granted apps
-            humanAttrToJavaAttrMap.put("Exclude Granted Applications Filter", Constants.GRANTED+ AbstractFilter.FilterType.BoolFalse+ Constants.FILTER_SUFFIX);
+            humanAttrToJavaAttrMap.put("Exclude Granted Applications", Constants.GRANTED+ AbstractFilter.FilterType.BoolFalse+ Constants.FILTER_SUFFIX);
             humanAttrToJavaAttrMap.put("Related Docs", Constants.ALL_RELATED_ASSETS);
             // nested attrs
             humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
@@ -518,7 +518,7 @@ public class SimilarPatentServer {
         String filterHumanName;
         if(!javaAttrToHumanAttrMap.containsKey(filter.getName())) {
             // build name
-            filterHumanName = AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getFullPrerequisite()) + " Filter" : humanAttributeFor(filter.getFullPrerequisite()) + " " + humanAttributeFor(filter.getFilterType().toString());
+            filterHumanName = AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getFullPrerequisite()) : humanAttributeFor(filter.getFullPrerequisite()) + " " + humanAttributeFor(filter.getFilterType().toString());
             while (humanAttrToJavaAttrMap.containsKey(filterHumanName)) {
                 // already exists
                 filterHumanName = filterHumanName + RANDOM_TOKEN;

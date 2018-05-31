@@ -1712,8 +1712,8 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         }
         return true;
     });
-    $(tree_id).bind("hover_node.jstree", function(event,data) {
-        $('#'+data.node.id).prop('title', 'Right click for more options...');
-        return true;
-    });
+    //$(tree_id).bind("hover_node.jstree", function(event,data) {
+    //    $('#'+data.node.id).prop('title', 'Right click for more options...');
+    //    return true;
+    //});
 };

@@ -212,19 +212,19 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Include By Prefix", AbstractFilter.FilterType.PrefixInclude.toString());
             humanAttrToJavaAttrMap.put("Exclude By Prefix", AbstractFilter.FilterType.PrefixExclude.toString());
             humanAttrToJavaAttrMap.put("Exclude All", AbstractFilter.FilterType.Exclude.toString());
-            humanAttrToJavaAttrMap.put("Expert Query Syntax Filter", AcclaimExpertSearchFilter.NAME);
-            humanAttrToJavaAttrMap.put("Advanced Keyword Filter", AbstractFilter.FilterType.AdvancedKeyword.toString());
-            humanAttrToJavaAttrMap.put("Advanced Regexp Filter", AbstractFilter.FilterType.Regexp.toString());
+            humanAttrToJavaAttrMap.put("Expert Query Syntax", AcclaimExpertSearchFilter.NAME);
+            humanAttrToJavaAttrMap.put("Advanced Keyword", AbstractFilter.FilterType.AdvancedKeyword.toString());
+            humanAttrToJavaAttrMap.put("Advanced Regexp", AbstractFilter.FilterType.Regexp.toString());
             humanAttrToJavaAttrMap.put("Include", AbstractFilter.FilterType.BoolTrue.toString());
             humanAttrToJavaAttrMap.put("Exclude", AbstractFilter.FilterType.BoolFalse.toString());
-            humanAttrToJavaAttrMap.put("Between Filter", AbstractFilter.FilterType.Between.toString());
-            humanAttrToJavaAttrMap.put("Greater Than Filter", AbstractFilter.FilterType.GreaterThan.toString());
-            humanAttrToJavaAttrMap.put("Less Than Filter", AbstractFilter.FilterType.LessThan.toString());
+            humanAttrToJavaAttrMap.put("Range", AbstractFilter.FilterType.Between.toString());
+            humanAttrToJavaAttrMap.put("Greater Than", AbstractFilter.FilterType.GreaterThan.toString());
+            humanAttrToJavaAttrMap.put("Less Than", AbstractFilter.FilterType.LessThan.toString());
             humanAttrToJavaAttrMap.put("Filters", AbstractFilter.FilterType.Nested.toString());
-            humanAttrToJavaAttrMap.put("Exists Filter", AbstractFilter.FilterType.Exists.toString());
+            humanAttrToJavaAttrMap.put("Exists", AbstractFilter.FilterType.Exists.toString());
             humanAttrToJavaAttrMap.put("Include All With Related Assets", AbstractFilter.FilterType.IncludeWithRelated.toString());
             humanAttrToJavaAttrMap.put("Exclude All With Related Assets", AbstractFilter.FilterType.ExcludeWithRelated.toString());
-            humanAttrToJavaAttrMap.put("Does Not Exist Filter", AbstractFilter.FilterType.DoesNotExist.toString());
+            humanAttrToJavaAttrMap.put("Does Not Exist", AbstractFilter.FilterType.DoesNotExist.toString());
             humanAttrToJavaAttrMap.put("Latest Execution Date", Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("First Name", Constants.FIRST_NAME);
             humanAttrToJavaAttrMap.put("Last Name", Constants.LAST_NAME);
@@ -258,7 +258,7 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("AI Value", Attributes.AI_VALUE);
             humanAttrToJavaAttrMap.put("CompDB Recorded Date", Attributes.COMPDB_RECORDED_DATE);
             // custom filter name for excluding granted apps
-            humanAttrToJavaAttrMap.put("Exclude Granted Applications Filter", Constants.GRANTED+ AbstractFilter.FilterType.BoolFalse+ Constants.FILTER_SUFFIX);
+            humanAttrToJavaAttrMap.put("Exclude Granted Applications", Constants.GRANTED+ AbstractFilter.FilterType.BoolFalse+ Constants.FILTER_SUFFIX);
             humanAttrToJavaAttrMap.put("Related Docs", Constants.ALL_RELATED_ASSETS);
             // nested attrs
             humanAttrToJavaAttrMap.put("Recorded Assignee", Attributes.RECORDED_ASSIGNEE);
@@ -381,7 +381,7 @@ public class BigQueryServer extends SimilarPatentServer {
         String filterHumanName;
         if(!javaAttrToHumanAttrMap.containsKey(filter.getName())) {
             // build name
-            filterHumanName = AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getFullPrerequisite()) + " Filter" : humanAttributeFor(filter.getFullPrerequisite()) + " " + humanAttributeFor(filter.getFilterType().toString());
+            filterHumanName = AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getFullPrerequisite()) : humanAttributeFor(filter.getFullPrerequisite()) + " " + humanAttributeFor(filter.getFilterType().toString());
             while (humanAttrToJavaAttrMap.containsKey(filterHumanName)) {
                 // already exists
                 filterHumanName = filterHumanName + RANDOM_TOKEN;
@@ -2460,12 +2460,12 @@ public class BigQueryServer extends SimilarPatentServer {
                                                         div().attr("style","display: none;").withId("numeric-attributes-list")
                                                         .attr("value", new Gson().toJson(getNumericAttributes().stream().collect(Collectors.toList()))),
                                                         ul().withClass("nav nav-tabs nav-fill").attr("role","tablist").with(
-                                                                li().withClass("nav-item").with(
+                                                                li().withClass("nav-item").attr("title", "Double click to apply template, or right click for more options.").with(
                                                                         a("Templates").withClass("nav-link active").attr("data-toggle", "tab")
                                                                                 .attr("role","tab")
                                                                                 .withHref("#templates-tree")
                                                                 ),
-                                                                li().withClass("nav-item").with(
+                                                                li().withClass("nav-item").attr("title","Double click to apply dataset, or right click for more options.").with(
                                                                         a("Datasets").withClass("nav-link").attr("data-toggle", "tab")
                                                                                 .attr("role","tab")
                                                                                 .withHref("#datasets-tree")

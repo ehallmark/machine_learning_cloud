@@ -1,21 +1,28 @@
 package seeding.google;
 
+import seeding.Database;
 import seeding.google.postgres.*;
 import seeding.google.postgres.epo.IngestScrapedXMLIntoPostgres;
 import seeding.google.postgres.epo.ScrapeEPO;
+
+import java.sql.Connection;
 
 public class UpdateAll {
     public static void main(String[] args) {
         try {
             IngestPatentsFromJson.main(args);
+            // add indices to patents_global
+            Connection conn = Database.getConn();
+            conn.createStatement().executeUpdate("create index patents_global_family_id_idx on patents_global (family_id)");
+            conn.createStatement().executeUpdate("create index patents_global_publication_num_idx on patents_global (publication_number)");
+            conn.createStatement().executeUpdate("create index patents_global_app_num_full_idx on patents_global (application_number_full)");
+            conn.createStatement().executeUpdate("create index patents_global_app_and_pub_num_idx on patents_global (publication_number,application_number)");
+            conn.commit();
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Exited during stage 1...");
             System.exit(1);
         }
-
-        // add indices to patents_global
-        // TODO
 
         // scrape missing family ids
         try {
@@ -95,6 +102,8 @@ public class UpdateAll {
         // TODO
 
         // more advanced models (tech tag, similarity, etc...)
-        // TODO
+        // TODO\
+
+        Database.close();
     }
 }
