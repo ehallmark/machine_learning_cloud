@@ -9,10 +9,9 @@ import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.*;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.google.elasticsearch.Attributes;
-import seeding.google.elasticsearch.attributes.CalculatedExpirationDate;
-import seeding.google.elasticsearch.attributes.CalculatedPriorityDate;
-import seeding.google.elasticsearch.attributes.Expired;
+import seeding.google.elasticsearch.attributes.*;
 import user_interface.ui_models.filters.AbstractBetweenFilter;
+import user_interface.ui_models.filters.AbstractBooleanExcludeFilter;
 import user_interface.ui_models.filters.AbstractBooleanIncludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 
@@ -51,21 +50,26 @@ public class GlobalParser {
         };
         transformationsForAttr = Collections.synchronizedMap(new HashMap<>());
         transformationsForAttr.put(Attributes.COUNTRY_CODE,(name,str,user)->QueryBuilders.termQuery(name,str.toUpperCase()));
-        transformationsForAttr.put(Attributes.KIND_CODE,(name,str,user) ->{
+        transformationsForAttr.put("PT",(name,str,user) ->{
             QueryBuilder ret;
             str=str.toUpperCase();
-            if(str.equals("U")) ret = QueryBuilders.termsQuery(name,"B1","B","B2");
-            else if(str.equals("A")) ret =QueryBuilders.termsQuery(name,"A1","A","A2","A9");
+            if(str.equals("U")) ret = QueryBuilders.termsQuery(name,"B1","B","B2", "B3", "B8", "B9", "U");
+            else if(str.equals("A")) ret =QueryBuilders.termsQuery(name,"A1","A","A2","A9","A4", "A8");
             else if(str.equals("P")) ret = QueryBuilders.termsQuery(name,"P","PP","P1","P2","P3","P4","P9");
             else if(str.equals("H")) ret = QueryBuilders.termsQuery(name,"H");
             else if(str.equals("D")) ret = QueryBuilders.termQuery(name,"S");
-            else if(str.equals("RE")) ret = QueryBuilders.termQuery(name,"E");
+            else if(str.equals("RE")) ret = QueryBuilders.termsQuery(name,"E","E1","E2");
             else ret = QueryBuilders.queryStringQuery(name+":"+str).defaultOperator(Operator.AND);
-            return ret;
+            return QueryBuilders.boolQuery()
+                .must(ret).must(QueryBuilders.termQuery(Attributes.COUNTRY_CODE, "US")); // US ONLY
         });
         transformationsForAttr.put(Attributes.EXPIRATION_DATE_ESTIMATED,(name,val,user)->{
-            if(val.equals("expired")) {
+            if(val.toLowerCase().equals("expired")) {
                 return new AbstractBooleanIncludeFilter(new Expired(), AbstractFilter.FilterType.BoolTrue).getFilterQuery();
+            } else if (val.toLowerCase().equals("active")) {
+                return new AbstractBooleanExcludeFilter(new Expired(), AbstractFilter.FilterType.BoolFalse).getFilterQuery();
+            } else if (val.toLowerCase().equals("lapsed")) {
+                return new AbstractBooleanIncludeFilter(new Lapsed(), AbstractFilter.FilterType.BoolTrue).getFilterQuery();
             }
             if(val.length()>2) {
                 String[] vals = val.substring(1, val.length() - 1).split(" TO ");
@@ -141,6 +145,30 @@ public class GlobalParser {
             }
             return null;
         });
+        transformationsForAttr.put("DT", (name, val, user) -> {
+            if(true) throw new RuntimeException("DT expert field is not yet supported... Please ask Evan Hallmark for more details.");
+            if(val.toLowerCase().equals("g")) {
+                // granted
+                return new AbstractBooleanIncludeFilter(new Granted(), AbstractFilter.FilterType.BoolTrue).getFilterQuery();
+            } else if(val.toLowerCase().equals("a")) {
+                return new AbstractBooleanExcludeFilter(new Granted(), AbstractFilter.FilterType.BoolFalse).getFilterQuery();
+            } else {
+                System.out.println("Warning unknown DT value: "+val);
+                return null;
+            }
+        });
+        transformationsForAttr.put("DOC_STATUS", (name, val, user)-> {
+            if(val.toLowerCase().equals("expired")) {
+                return new AbstractBooleanIncludeFilter(new Expired(), AbstractFilter.FilterType.BoolTrue).getFilterQuery();
+            } else if (val.toLowerCase().equals("active")) {
+                return new AbstractBooleanExcludeFilter(new Expired(), AbstractFilter.FilterType.BoolFalse).getFilterQuery();
+            } else if (val.toLowerCase().equals("lapsed")) {
+                return new AbstractBooleanIncludeFilter(new Lapsed(), AbstractFilter.FilterType.BoolTrue).getFilterQuery();
+            } else {
+                System.out.println("Warning: could not match DOC_STATUS filter value: "+val);
+                return null;
+            }
+        });
         transformationsForAttr.put("ICLM",(name,val,user)->{
             String attrName = Attributes.CLAIMS;
             return QueryBuilders.queryStringQuery(val).field(attrName).analyzeWildcard(true).defaultOperator(Operator.AND);
@@ -154,16 +182,17 @@ public class GlobalParser {
         });
         transformationsForAttr.put(Attributes.CODE, (name,val,user)->{
             val = val.trim();
-            if(val.endsWith("+")) {
+            if(val.endsWith("+") || val.endsWith("*")) {
                 if(val.length()>1) {
                     val = val.substring(0,val.length()-1);
-                    return QueryBuilders.termQuery(Attributes.TREE,val);
                 } else {
                     throw new RuntimeException("Must specify a CPC Prefix before the '+' in the Expert Query Filter.");
                 }
-            } else {
-                return QueryBuilders.queryStringQuery(name+":"+val).defaultOperator(Operator.AND);
             }
+            if(val.length()>4 && !val.contains("/")) {
+                val = val + "/00"; // MAIN GROUP
+            }
+            return QueryBuilders.queryStringQuery(Attributes.TREE+":"+val).defaultOperator(Operator.AND);
         });
 
     }
