@@ -47,6 +47,7 @@ create table patents_global (
 
 
 create index patents_global_family_id_idx on patents_global (family_id);
+create index patents_global_publication_num_idx on patents_global (publication_number);
 create index patents_global_app_num_full_idx on patents_global (application_number_full);
 create index patents_global_app_and_pub_num_idx on patents_global (publication_number,application_number);
 
