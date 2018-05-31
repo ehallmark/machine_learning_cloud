@@ -1,5 +1,5 @@
 .select2-results__options {
-    max-height: 350px;
+    max-height: 350px !important;
 }
 
 .vakata-context {
