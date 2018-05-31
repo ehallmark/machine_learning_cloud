@@ -14,6 +14,8 @@ create table patents_global_merged (
     filing_date date not null,
     publication_date date,
     priority_date date not null,
+    priority_date_estimated date,
+    expiration_date_estimated date,
     country_code varchar(8),
     kind_code varchar(8),
     application_kind varchar(8),
@@ -134,7 +136,8 @@ create table patents_global_merged (
     ptab_case_type varchar(100)[],
     ptab_case_status varchar(50)[],
     ptab_case_text text[],
-    ptab_count integer
+    ptab_count integer,
+    granted boolean
 );
 
 
@@ -150,6 +153,8 @@ insert into patents_global_merged (
         filing_date,
         publication_date,
         priority_date,
+        priority_date_estimated,
+        expiration_date_estimated,
         country_code,
         kind_code,
         application_kind,
@@ -268,7 +273,8 @@ insert into patents_global_merged (
         ptab_case_type,
         ptab_case_status,
         ptab_case_text,
-        ptab_count
+        ptab_count,
+        granted
 )
 (
     select   -- monster query
@@ -283,6 +289,8 @@ insert into patents_global_merged (
         p.filing_date,
         p.publication_date,
         p.priority_date,
+        p_and_e.priority_date_estimated,
+        p_and_e.expiration_date_estimated,
         p.country_code,
         p.kind_code,
         p.application_kind,
@@ -401,8 +409,8 @@ insert into patents_global_merged (
         ptab.doc_type,
         ptab.status,
         ptab.doc_text,
-        coalesce(array_length(ptab.appeal_no,1),0)
-
+        coalesce(array_length(ptab.appeal_no,1),0),
+        granted.granted
 
     from patents_global as p
     left outer join big_query_pair_by_pub as pair on (p.publication_number_full=pair.publication_number_full)
@@ -427,7 +435,8 @@ insert into patents_global_merged (
     left outer join big_query_compdb_deals_by_pub as compdb on (compdb.publication_number_full=p.publication_number_full)
     left outer join big_query_assignment_documentid_by_pub as a on (p.publication_number_full=a.publication_number_full)
     left outer join big_query_ptab_by_pub as ptab on (p.publication_number_full=ptab.publication_number_full)
-
+    left outer join big_query_granted as granted on (p.publication_number_full=granted.publication_number_full)
+    left outer join big_query_priority_and_expiration as p_and_e on (p_and_e.publication_number_full=p.publication_number_full)
 );
 
 vacuum;

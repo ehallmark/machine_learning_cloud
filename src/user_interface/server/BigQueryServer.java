@@ -356,7 +356,7 @@ public class BigQueryServer extends SimilarPatentServer {
                     });
                 });
 
-                preFilterModelMap.put(AcclaimExpertSearchFilter.NAME,new AcclaimExpertSearchFilter(true));
+                preFilterModelMap.put(AcclaimExpertSearchFilter.NAME,new AcclaimExpertSearchFilter());
                 preFilterModelMap.put(AssetDedupFilter.NAME, new AssetDedupFilter());
 
                 buildJavaToHumanAttrMap();
@@ -368,7 +368,7 @@ public class BigQueryServer extends SimilarPatentServer {
                         return allAttributes.getName();
                     }
                 };
-                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false, new AcclaimExpertSearchFilter(true), new AssetDedupFilter());
+                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false, new AcclaimExpertSearchFilter(), new AssetDedupFilter());
             } catch(Exception e) {
                 e.printStackTrace();
             }
