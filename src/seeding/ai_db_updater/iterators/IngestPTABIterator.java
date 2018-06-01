@@ -39,7 +39,7 @@ public class IngestPTABIterator implements DateIterator {
     }
 
     @Override
-    public void run(LocalDate startDate, Collection<LocalDate> failedDates) {
+    public void run(LocalDate startDate, Collection<String> failedDates) {
         // get ptab urls from https://patents.reedtech.com/pgptab.php
         List<String> filenames = Collections.synchronizedList(new ArrayList<>());
         List<URL> urls = Collections.synchronizedList(new ArrayList<>());

@@ -29,20 +29,20 @@ public abstract class IngestUSPTOIterator implements DateIterator {
     }
 
     @Override
-    public void run(LocalDate startDate, Collection<LocalDate> failedDates) {
+    public void run(LocalDate startDate, Collection<String> failedDates) {
         List<RecursiveAction> tasks = new ArrayList<>();
-        List<LocalDate> failedDatesList = new ArrayList<>(failedDates);
+        List<String> failedDatesList = new ArrayList<>(failedDates);
         System.out.println("Starting to run ingest uspto iterator from "+startDate);
         while (startDate.isBefore(LocalDate.now())||failedDatesList.size()>0) {
             if(failedDatesList.size()>0) {
-                final LocalDate date = failedDatesList.remove(0);
-                final String zipFilename = zipFilePrefix + date.format(DateTimeFormatter.ISO_DATE);
+                final String date = failedDatesList.remove(0);
+                final String zipFilename = zipFilePrefix + date;
                 RecursiveAction action = new RecursiveAction() {
                     @Override
                     protected void compute() {
                         for (UrlCreator urlCreator : urlCreators) {
                             try {
-                                URL website = new URL(urlCreator.create(date));
+                                URL website = new URL(urlCreator.create(LocalDate.parse(date, DateTimeFormatter.ISO_DATE)));
                                 System.out.println("Trying: " + website.toString());
                                 ReadableByteChannel rbc = Channels.newChannel(website.openStream());
                                 FileOutputStream fos = new FileOutputStream(zipFilename);

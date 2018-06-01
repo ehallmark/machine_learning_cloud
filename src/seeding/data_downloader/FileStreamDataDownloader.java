@@ -27,20 +27,21 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     protected String zipFilePrefix;
     protected String name;
     protected Set<String> finishedFiles;
-    protected Set<LocalDate> failedDates;
+    protected Set<String> failedFiles;
     protected transient DateIterator zipDownloader;
-    public FileStreamDataDownloader(String name, Class<? extends DateIterator> zipDownloader, LocalDate lastUpdatedDate) {
+    public FileStreamDataDownloader(String name, Class<? extends DateIterator> zipDownloader) {
         // check for previous one
         FileStreamDataDownloader pastLife = load(name);
         if(pastLife==null) {
             this.name = name;
             this.finishedFiles = Collections.synchronizedSet(new HashSet<>());
-            this.failedDates = Collections.synchronizedSet(new HashSet<>());
+            this.failedFiles = Collections.synchronizedSet(new HashSet<>());
         } else {
             this.name = name;
             this.finishedFiles = pastLife.finishedFiles;
-            this.failedDates = pastLife.failedDates;
-            if(this.failedDates==null)this.failedDates=new HashSet<>();
+            if(this.finishedFiles==null) this.finishedFiles = Collections.synchronizedSet(new HashSet<>());
+            this.failedFiles = pastLife.failedFiles;
+            if(this.failedFiles==null)this.failedFiles=Collections.synchronizedSet(new HashSet<>());
         }
         this.finishedFiles = this.finishedFiles.stream().map(f->{
             if(f.contains("/")) {
@@ -82,7 +83,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
             }
         }
         System.out.println("Date to start from: "+dateToUse);
-        if(dateToUse!=null) zipDownloader.run(dateToUse,failedDates);
+        if(dateToUse!=null) zipDownloader.run(dateToUse,failedFiles);
     }
 
     public Stream<File> zipFileStream(Function<File,Boolean> orFilter) {
@@ -95,9 +96,9 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
 
     public synchronized void clearCache() {
         boolean deleted = new File(Constants.DATA_FOLDER, Constants.DATA_DOWNLOADERS_FOLDER+name).delete();
-        if(!deleted) System.out.println("Error deleted cache for: "+name);
+        if(!deleted) System.out.println("Error deleting cache for: "+name);
         finishedFiles.clear();
-        failedDates.clear();
+        failedFiles.clear();
         save();
         System.out.println("Cleared cache for: "+name);
     }
@@ -149,7 +150,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     public synchronized void errorOnFile(File file) {
         System.out.println("Error on file: "+file.getName());
         try {
-            failedDates.add(dateFromFileName(file.getName()));
+            failedFiles.add(file.getName());
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -160,7 +161,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     public synchronized void finishedIngestingFile(File file) {
         System.out.println("Finished file: "+file.getName());
         try {
-            failedDates.remove(dateFromFileName(file.getName()));
+            failedFiles.remove(file.getName());
         } catch(Exception e) {
             e.printStackTrace();
         }

@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 public class AppDataDownloader extends FileStreamDataDownloader {
     private static final long serialVersionUID = 1L;
     public AppDataDownloader() {
-        super(PortfolioList.Type.applications.toString(), AppUSPTOIterator.class, Constants.DEFAULT_START_DATE);
+        super(PortfolioList.Type.applications.toString(), AppUSPTOIterator.class);
     }
 
     @Override

@@ -23,8 +23,8 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
     @Getter
     private String zipFilePrefix = Constants.ASSIGNMENT_ZIP_FOLDER;
 
-    public void run(LocalDate startDate, Collection<LocalDate> failedDates) {
-        List<LocalDate> failedDatesList = new ArrayList<>(failedDates);
+    public void run(LocalDate startDate, Collection<String> _failedDates) {
+        List<String> failedDatesList = new ArrayList<>(_failedDates);
         // go through assignment xml data and update records using assignment sax handler
         LocalDate date = LocalDate.now();
         String endDateStr = String.valueOf(date.getYear()).substring(2, 4) + String.format("%02d", date.getMonthValue()) + String.format("%02d", date.getDayOfMonth());
@@ -43,6 +43,17 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
             }
         }
 
+        for(String failedDate : failedDatesList) {
+            try {
+                Integer.valueOf(failedDate);
+            } catch(Exception e) {
+                if(!backYearDates.contains(failedDate)) {
+                    backYearDates.add(failedDate);
+                }
+            }
+        }
+        failedDatesList.removeAll(backYearDates);
+
         int lastIngestedDate = startDateNum;
         System.out.println("Starting with date: " + lastIngestedDate);
         System.out.println("Ending with date: " + endDateInt);
@@ -54,7 +65,7 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
             boolean wasFailed = false;
             if(failedDatesList.size()>0) {
                 wasFailed= true;
-                int failedDate = Integer.valueOf(failedDatesList.remove(0).format(DateTimeFormatter.BASIC_ISO_DATE)) % 20000000;
+                int failedDate = Integer.valueOf(failedDatesList.remove(0)) % 20000000;
                 finalUrlString = base_url + String.format("%06d", failedDate) + ".zip";
                 finalUrlString = finalUrlString.replace("---", "20" + String.format("%02d", failedDate / 10000));
                 zipDate=String.valueOf(failedDate);

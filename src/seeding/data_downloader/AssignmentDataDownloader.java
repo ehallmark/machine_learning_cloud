@@ -22,6 +22,6 @@ public class AssignmentDataDownloader extends FileStreamDataDownloader {
         this(Constants.ASSIGNMENTS);}
 
     public AssignmentDataDownloader(String name) {
-        super(name, IngestUSPTOAssignmentIterator.class, Constants.DEFAULT_ASSIGNMENT_START_DATE);
+        super(name, IngestUSPTOAssignmentIterator.class);
     }
 }

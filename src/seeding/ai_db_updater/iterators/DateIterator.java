@@ -8,6 +8,6 @@ import java.util.Collection;
  * Created by Evan on 8/13/2017.
  */
 public interface DateIterator {
-    void run(LocalDate startDate, Collection<LocalDate> failedDates);
+    void run(LocalDate startDate, Collection<String> failedDates);
     String getZipFilePrefix();
 }

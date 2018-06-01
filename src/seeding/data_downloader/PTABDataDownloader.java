@@ -17,7 +17,7 @@ public class PTABDataDownloader extends FileStreamDataDownloader {
     }
 
     public PTABDataDownloader() {
-        super(SeedingConstants.PTAB, IngestPTABIterator.class, null);
+        super(SeedingConstants.PTAB, IngestPTABIterator.class);
     }
 
     public File getBackFile() {
@@ -27,6 +27,6 @@ public class PTABDataDownloader extends FileStreamDataDownloader {
     @Override
     public synchronized void pullMostRecentData() {
         System.out.println("Pulling most recent data...");
-        zipDownloader.run(null,failedDates);
+        zipDownloader.run(null,failedFiles);
     }
 }
