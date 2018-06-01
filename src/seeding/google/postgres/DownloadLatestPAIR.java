@@ -16,7 +16,7 @@ public class DownloadLatestPAIR {
         lastIngestedDate = (LocalDate) Database.tryLoadObject(lastIngestedDateFile);
     }
     public static void main(String[] args) {
-        if(lastIngestedDate!=null && lastIngestedDate.isBefore(LocalDate.now().minusDays(7))) {
+        if(lastIngestedDate==null || lastIngestedDate.isBefore(LocalDate.now().minusDays(7))) {
             PAIRDataDownloader downloader = new PAIRDataDownloader();
             downloader.pullMostRecentData();
             Database.trySaveObject(LocalDate.now(), lastIngestedDateFile);
