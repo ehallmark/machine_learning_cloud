@@ -79,10 +79,11 @@ public class IngestAssigneeEmbeddingsToPostgres {
             insert.executeUpdate();
             if(i%1000==999) {
                 System.out.println("Completed batch. Ingested: " + i);
+                Database.commit();
             }
-            Database.commit();
         }
-
+        
+        Database.commit();
         insert.close();
         conn.close();
     }
