@@ -5,6 +5,7 @@ create table big_query_wipo (
     wipo_technology text not null
 );
 
+drop table big_query_wipo_by_family;
 create table big_query_wipo_by_family (
     family_id varchar(32) primary key,
     wipo_technology text not null

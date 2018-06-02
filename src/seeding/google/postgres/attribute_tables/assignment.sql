@@ -25,6 +25,7 @@ create index big_query_assignment_documentid_is_filing_idx on big_query_assignme
 --create index big_query_merge_helper_idx on big_query_assignment_documentid (country_code,publication_number);
 --create index big_query_merge_helper_idx2 on big_query_assignment_documentid (country_code,application_number_formatted);
 
+drop table big_query_assignment_documentid_by_pub;
 create table big_query_assignment_documentid_by_pub (
     publication_number_full varchar(32) primary key,
     reel_frame varchar(50)[] not null,
@@ -45,7 +46,7 @@ insert into big_query_assignment_documentid_by_pub (publication_number_full,reel
         group by doc_number
     ) as a
     inner join patents_global as p on ((p.country_code='US') AND ((p.application_number_formatted = a.doc_number)))
-    where p.country_code = 'US' and p.application_number_formatted is not null and family_id!='-1'
+    where p.country_code = 'US' and p.application_number_formatted is not null
     order by publication_number_full,publication_date desc nulls last
 );
 

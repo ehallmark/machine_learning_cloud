@@ -44,6 +44,7 @@ create table big_query_ptab (
 create index big_query_ptab_app_no_idx on big_query_ptab (application_no);
 
 
+drop table big_query_ptab_by_pub;
 create table big_query_ptab_by_pub (
       publication_number_full varchar(32) primary key,
       appeal_no varchar(100)[] not null,

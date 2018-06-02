@@ -14,9 +14,10 @@ insert into big_query_cpc_tree_by_fam (family_id,tree) (
 );
 
 
+drop table big_query_cpc_tree;
 create table big_query_cpc_tree (
     publication_number_full varchar(32) primary key,
-    family_id varchar(32) primary key,
+    family_id varchar(32),
     tree varchar(32)[] not null
 );
 

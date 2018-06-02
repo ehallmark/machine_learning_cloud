@@ -1,5 +1,6 @@
 \connect patentdb
 
+drop table big_query_reverse_citations;
 create table big_query_reverse_citations (
     doc_number_full varchar(32) not null,
     is_filing boolean not null,
@@ -19,7 +20,7 @@ insert into big_query_reverse_citations (doc_number_full,is_filing,rcite_publica
         temp.cited_publication_number_full is null,
         (array_agg(publication_number_full))[1:10000], -- limit rcites
         (array_agg(application_number_full))[1:10000], -- limit rcites
-        (array_agg(family_id))[1:10000], -- limit rcites
+        (array_agg(case when family_id='-1' then null else family_id end))[1:10000], -- limit rcites
         (array_agg(filing_date))[1:10000], -- limit rcites
         (array_agg(temp.cited_type))[1:10000],
         (array_agg(temp.cited_category))[1:10000]
@@ -28,7 +29,7 @@ insert into big_query_reverse_citations (doc_number_full,is_filing,rcite_publica
     group by (coalesce(temp.cited_publication_number_full,temp.cited_application_number_full),temp.cited_publication_number_full is null)
 );
 
-
+drop table big_query_reverse_citations_by_pub;
 create table big_query_reverse_citations_by_pub (
     publication_number_full varchar(32) primary key,
     rcite_publication_number_full varchar(32)[] not null,

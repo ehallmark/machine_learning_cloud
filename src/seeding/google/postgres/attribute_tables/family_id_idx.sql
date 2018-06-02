@@ -1,7 +1,7 @@
 \connect patentdb
 
 -- helper table for user interface to quickly find family members
-drop table big_query_family_id
+drop table big_query_family_id;
 create table big_query_family_id (
     publication_number_full varchar(32) primary key,
     publication_number_with_country varchar(32) not null,
@@ -35,3 +35,4 @@ create index big_query_family_id_app_num_with_country on big_query_family_id (ap
 create index big_query_family_id_app_num on big_query_family_id (application_number);
 create index big_query_family_id_app_num_f on big_query_family_id (application_number_formatted);
 create index big_query_family_id_app_num_f_with_country on big_query_family_id (application_number_formatted_with_country);
+

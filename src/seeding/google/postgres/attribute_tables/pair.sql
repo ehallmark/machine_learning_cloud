@@ -10,6 +10,7 @@ create table big_query_pair (
     term_adjustments integer
 );
 
+drop table big_query_pair_by_pub;
 create table big_query_pair_by_pub (
     publication_number_full varchar(32) primary key,
     original_entity_type varchar(32),
