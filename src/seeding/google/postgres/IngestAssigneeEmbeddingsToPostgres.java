@@ -21,12 +21,12 @@ public class IngestAssigneeEmbeddingsToPostgres {
     }
 
     private static float[] toUnitVec(float[] in) {
-        double norm = 0d;
+        float norm = 0f;
         for(float x : in) {
             norm+=x*x;
         }
         for(int i = 0; i < in.length; i++) {
-            in[i]=in[i]/=norm;
+            in[i]= in[i]/norm;
         }
         return in;
     }
@@ -39,7 +39,7 @@ public class IngestAssigneeEmbeddingsToPostgres {
         int cnt = 0;
         Connection seedConn = Database.newSeedConn();
         PreparedStatement ps = seedConn.prepareStatement("select assignee_harmonized[1] as name,enc from patents_global as g join big_query_embedding_by_fam as f on (g.family_id=f.family_id) where g.family_id!='-1' and assignee_harmonized[1] is not null");
-        ps.setFetchSize(512);
+        ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
         Connection conn = Database.getConn();
         while(rs.next()) {
