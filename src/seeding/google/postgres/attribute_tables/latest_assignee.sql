@@ -40,7 +40,7 @@ create table big_query_patent_to_latest_assignee_by_pub (
 );
 
 insert into big_query_patent_to_latest_assignee_by_pub (publication_number_full,first_assignee,assignee,date,security_interest) (
-    select distinct on (publication_number_full) publication_number_full,coalesce(la.assignee,p.assignee_harmonized))[1],coalesce(la.assignee,p.assignee_harmonized),coalesce(la.date,case when la.assignee is null then coalesce(p.priority_date,p.filing_date) else null end),coalesce(la.security_interest,'f')
+    select distinct on (publication_number_full) publication_number_full,(coalesce(la.assignee,p.assignee_harmonized))[1],coalesce(la.assignee,p.assignee_harmonized),coalesce(la.date,case when la.assignee is null then coalesce(p.priority_date,p.filing_date) else null end),coalesce(la.security_interest,'f')
     from patents_global as p
     left outer join big_query_patent_to_latest_assignee as la
     on (p.country_code='US' and((p.publication_number=la.doc_number and not la.is_filing) OR (p.application_number=la.doc_number and la.is_filing)))
@@ -50,6 +50,7 @@ insert into big_query_patent_to_latest_assignee_by_pub (publication_number_full,
 
 
 create index big_query_latest_by_pub_first_assignee_idx on big_query_patent_to_latest_assignee_by_pub (first_assignee);
+
 
 
 -- good guess
