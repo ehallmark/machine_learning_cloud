@@ -39,7 +39,7 @@ public class IngestAssigneeEmbeddingsToPostgres {
         int cnt = 0;
         Connection seedConn = Database.newSeedConn();
         PreparedStatement ps = seedConn.prepareStatement("select assignee_harmonized[1] as name,enc from patents_global as g join big_query_embedding_by_fam as f on (g.family_id=f.family_id) where g.family_id!='-1' and assignee_harmonized[1] is not null");
-        ps.setFetchSize(10);
+        ps.setFetchSize(100);
         ResultSet rs = ps.executeQuery();
         Connection conn = Database.getConn();
         while(rs.next()) {
@@ -53,7 +53,11 @@ public class IngestAssigneeEmbeddingsToPostgres {
                 previous[i]+=encoding[i];
             }
             assigneeToVecMap.put(assignee,previous);
+            if(cnt%100==99) {
+                System.out.print("-");
+            }
             if(cnt%10000==9999) {
+                System.out.println();
                 System.out.println("Found vectors for: "+cnt);
             }
             cnt++;
