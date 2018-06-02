@@ -16,6 +16,7 @@ create table patents_global_merged (
     priority_date date not null,
     priority_date_est date,
     expiration_date_est date,
+    expiration_reason text,
     country_code varchar(8),
     kind_code varchar(8),
     application_kind varchar(8),
@@ -137,8 +138,7 @@ create table patents_global_merged (
     ptab_case_status varchar(50)[],
     ptab_case_text text[],
     ptab_count integer,
-    granted boolean,
-    expired boolean
+    granted boolean
 );
 
 insert into patents_global_merged (
@@ -155,6 +155,7 @@ insert into patents_global_merged (
         priority_date,
         priority_date_est,
         expiration_date_est,
+        expiration_reason,
         country_code,
         kind_code,
         application_kind,
@@ -233,8 +234,7 @@ insert into patents_global_merged (
         latest_fam_last_filing_date,
         latest_fam_assignee_count,
         -- embedding
-        cpc_vae,
-        rnn_enc,
+        enc,
         -- assignments
         reel_frame,
         conveyance_text,
@@ -274,8 +274,7 @@ insert into patents_global_merged (
         ptab_case_status,
         ptab_case_text,
         ptab_count,
-        granted,
-        expired
+        granted
 )
 (
     select   -- monster query
@@ -292,6 +291,7 @@ insert into patents_global_merged (
         p.priority_date,
         p_and_e.priority_date_est,
         p_and_e.expiration_date_est,
+        p_and_e.expiration_reason,
         p.country_code,
         p.kind_code,
         p.application_kind,
@@ -318,7 +318,7 @@ insert into patents_global_merged (
         -- cpc
         p.code,
         coalesce(array_length(p.code,1),0),
-        coalesce(cpc_tree.tree,cpc_tree_by_fam.tree)
+        coalesce(cpc_tree.tree,cpc_tree_by_fam.tree),
         p.inventive,
         -- citations
         p.cited_publication_number_full,
@@ -411,8 +411,7 @@ insert into patents_global_merged (
         ptab.status,
         ptab.doc_text,
         coalesce(array_length(ptab.appeal_no,1),0),
-        granted.granted,
-        expired.expired
+        granted.granted
 
     from patents_global as p
     left outer join big_query_pair_by_pub as pair on (p.publication_number_full=pair.publication_number_full)
@@ -439,7 +438,7 @@ insert into patents_global_merged (
     left outer join big_query_ptab_by_pub as ptab on (p.publication_number_full=ptab.publication_number_full)
     left outer join big_query_granted as granted on (p.publication_number_full=granted.publication_number_full)
     left outer join big_query_priority_and_expiration as p_and_e on (p_and_e.publication_number_full=p.publication_number_full)
-    left outer join big_query_expired as expired on (expired.publication_number_full=p.publication_number_full)
+    --left outer join big_query_expired as expired on (expired.publication_number_full=p.publication_number_full)
 );
 
 vacuum;

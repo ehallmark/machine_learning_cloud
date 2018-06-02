@@ -1,10 +1,12 @@
 -- TODO make this a global thing
+drop table big_query_priority_and_expiration;
 create table big_query_priority_and_expiration (
     publication_number_full varchar(32) primary key,
     priority_date date not null,
     priority_date_est date not null,
     expiration_date_est date,
-    expiration_reason text
+    expiration_reason text,
+    term_adjustments integer
 );
 
 insert into big_query_priority_and_expiration (
@@ -15,7 +17,7 @@ insert into big_query_priority_and_expiration (
         then
             case when kind_code like 'S%'
                 then publication_date + interval '14 years'
-                else coalesce(priority_date, filing_date) + interval '1' day * term_adjustments + interval '20 years'
+                else coalesce(priority_date, filing_date) + interval '1' day * coalesce(term_adjustments,0) + interval '20 years'
             end
         else null
     end,
@@ -26,7 +28,8 @@ insert into big_query_priority_and_expiration (
                 else 'US Patent: Expiration Date = Priority Date + Term Adjustments + 20 years'
             end
         else null
-    end
+    end,
+    term_adjustments
     from patents_global as p
     left outer join big_query_pair_by_pub as pair
     on (p.publication_number_full=pair.publication_number_full)
