@@ -52,6 +52,7 @@ import java.util.stream.IntStream;
 public abstract class AggregationChart<T> extends AbstractChartAttribute {
     public static final int MAXIMUM_AGGREGATION_SIZE = 10000;
     public static final String NESTED_SUFFIX = "_n_";
+    public static final String REVERSE_NESTED_SUFFIX = "_reverse_nest_";
     public static final String GROUP_SUFFIX = "_g_";
     protected final String aggSuffix;
     @Getter
@@ -269,6 +270,8 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
 
     public Aggregation handlePotentiallyNestedAgg(Aggregations aggregations, String attrNameWithSuffix, String attrNameNestedWithSuffix) {
         if (aggregations == null) return null; // important to stop recursion
+        System.out.println("Handling potentially nested agg: "+attrNameNestedWithSuffix+" with nested name: "+attrNameNestedWithSuffix);
+        System.out.println("Available aggregations: "+String.join("; ", aggregations.getAsMap().keySet()));
         Aggregation agg = aggregations.get(attrNameWithSuffix);
         if (agg == null) {
             agg = aggregations.get(attrNameWithSuffix + SignificantTermsAggregation.SAMPLER_SUFFIX);
@@ -278,11 +281,32 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                     return handlePotentiallyNestedAgg(aggregations, attrNameWithSuffix, attrNameNestedWithSuffix);
                 }
             }
+            // check for reverse nested
+            if(agg==null) {
+                agg = aggregations.get(attrNameWithSuffix+ REVERSE_NESTED_SUFFIX);
+                if(agg!=null) {
+                    aggregations = ((SingleBucketAggregation) agg).getAggregations();
+                    if (aggregations != null) {
+                        return handlePotentiallyNestedAgg(aggregations, attrNameWithSuffix, attrNameNestedWithSuffix);
+                    }
+                }
+            }
         }
 
         if (agg == null && attrNameNestedWithSuffix != null) {
             // try nested
             Nested nested = aggregations.get(attrNameNestedWithSuffix);
+            // check for reverse nested
+            if(nested==null) {
+                nested = aggregations.get(attrNameNestedWithSuffix + REVERSE_NESTED_SUFFIX);
+                if(nested!=null) {
+                    aggregations = nested.getAggregations();
+                    if (aggregations != null) {
+                        System.out.println("Found reverse nested suffix!!: ");
+                        return handlePotentiallyNestedAgg(aggregations, attrNameWithSuffix, null);
+                    }
+                }
+            }
             if (nested == null) {
                 System.out.println("Attr name with suffix: " + attrNameWithSuffix);
                 System.out.println("Attr name nested with suffix: " + attrNameNestedWithSuffix);

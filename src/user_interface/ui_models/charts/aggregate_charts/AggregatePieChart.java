@@ -8,6 +8,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.TermsLookup;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.nd4j.linalg.primitives.Pair;
@@ -211,6 +212,11 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             }
         }
         if(innerAgg!=null) {
+            if(isNested) {
+                // need to break out of nested
+                innerAgg = AggregationBuilders.reverseNested(innerAgg.getName()+REVERSE_NESTED_SUFFIX)
+                        .subAggregation(innerAgg);
+            }
             aggregation.getAggregation().subAggregation(innerAgg);
         }
 
