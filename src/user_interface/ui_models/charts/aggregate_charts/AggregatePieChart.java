@@ -205,6 +205,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
                 String fieldName = attrName;
                 if (attribute.getType().equals("text") && attribute.getNestedFields() != null) {
                     fieldName += ".raw";
+                    System.out.println("Using raw field name: "+fieldName);
                 }
                 aggregation = new TermsAggregation(aggNameWithPrefix + aggSuffix, fieldName, null, missingVal, maxSize);
             }
@@ -214,14 +215,16 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         }
 
         if(isNested) {
+            String name = aggNameWithPrefix+NESTED_SUFFIX+aggSuffix;
             System.out.println("Is Parent Object: "+attribute.getParent().isObject());
             System.out.println("Parent attr name: "+attribute.getParent().getFullName());
             System.out.println("Parent attr class: "+attribute.getParent().getClass().getName());
             System.out.println("Nested attribute for aggregation: "+attribute.getFullName());
+            System.out.println("Nested aggregation name: "+name);
             return new BucketAggregation() {
                 @Override
                 public AggregationBuilder getAggregation() {
-                    return new NestedAggregationBuilder(aggNameWithPrefix+NESTED_SUFFIX+aggSuffix,attribute.getParent().getName())
+                    return new NestedAggregationBuilder(name,attribute.getParent().getName())
                             .subAggregation(aggregation.getAggregation());
                 }
             };

@@ -206,6 +206,8 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Publication Date", Attributes.PUBLICATION_DATE);
             humanAttrToJavaAttrMap.put("Timeline Chart", Constants.LINE_CHART);
             humanAttrToJavaAttrMap.put("Reel Frames", Attributes.REEL_FRAME);
+            humanAttrToJavaAttrMap.put("Inventor Name", Attributes.INVENTOR_HARMONIZED);
+            humanAttrToJavaAttrMap.put("Inventor Country", Attributes.INVENTOR_HARMONIZED_CC);
             humanAttrToJavaAttrMap.put("Include All", AbstractFilter.FilterType.Include.toString());
             humanAttrToJavaAttrMap.put("Include By Prefix", AbstractFilter.FilterType.PrefixInclude.toString());
             humanAttrToJavaAttrMap.put("Exclude By Prefix", AbstractFilter.FilterType.PrefixExclude.toString());
