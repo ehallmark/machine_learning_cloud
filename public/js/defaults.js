@@ -416,6 +416,7 @@ $(document).ready(function() {
                  $parent.parent().prepend($parent);
              });
          }
+         $('#acclaim_expert_filter').trigger('scroll');
          return true;
     }
 
@@ -655,9 +656,9 @@ $(document).ready(function() {
          resizeable($(original), function() {
            	 $(original).trigger('scroll');
          });
-     }
+    }
 
-     function resizeable($textareas, func) {
+    function resizeable($textareas, func) {
          // set init (default) state
          $textareas.data('x', $textareas.outerWidth());
          $textareas.data('y', $textareas.outerHeight());
@@ -674,9 +675,9 @@ $(document).ready(function() {
              $this.data('x', $this.outerWidth());
              $this.data('y', $this.outerHeight());
          });
-     };
+    };
 
-     function colorize(text, pos) {
+    function colorize(text, pos) {
          var i = 0, current_times = 0;
          var startc = '(', endc = ')';
          var current = -1;
@@ -720,9 +721,9 @@ $(document).ready(function() {
              newtext.substr(i + 1 + o[i].extra.length)
          });
          return newtext+'\n';
-     }
+    }
 
-     (function($) {
+    (function($) {
          $.fn.getCursorPosition = function() {
              var input = this.get(0);
              if (!input) return; // No (input) element found
@@ -738,9 +739,9 @@ $(document).ready(function() {
                  return sel.text.length - selLen;
              }
          }
-     })(jQuery);
+    })(jQuery);
 
-     createRichInput('#acclaim_expert_filter');
+    createRichInput('#acclaim_expert_filter');
 });
 
 
