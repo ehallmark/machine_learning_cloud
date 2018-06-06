@@ -103,8 +103,7 @@ public class SimilarityEngineController {
         }
 
         if(comparator.equals(Constants.SCORE)) {
-            attributesRequired.add(Attributes.RNN_ENC);
-            attributesRequired.add(Attributes.CPC_VAE);
+            attributesRequired.add(Attributes.ENC);
         }
 
         System.out.println("Required attributes: "+String.join("; ",attributesRequired));

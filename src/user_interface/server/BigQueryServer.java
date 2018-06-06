@@ -153,8 +153,7 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Dependent Claim", "DCLM");
             humanAttrToJavaAttrMap.put("Title + Abstract + Claims", "TAC");
             humanAttrToJavaAttrMap.put("Maintenance Fee Event Code", Attributes.MAINTENANCE_EVENT);
-            humanAttrToJavaAttrMap.put("Word Similarity", Attributes.RNN_ENC);
-            humanAttrToJavaAttrMap.put("CPC Similarity", Attributes.CPC_VAE);
+            humanAttrToJavaAttrMap.put("AI Similarity", Attributes.ENC);
             humanAttrToJavaAttrMap.put("Technology Similarity", Constants.TECHNOLOGY_SIMILARITY);
             humanAttrToJavaAttrMap.put("Assignee Similarity", Constants.ASSIGNEE_SIMILARITY);
             humanAttrToJavaAttrMap.put("Text Similarity", Constants.TEXT_SIMILARITY);
@@ -2704,7 +2703,7 @@ public class BigQueryServer extends SimilarPatentServer {
     }
 
     public static List<String> allSortableAttributes() {
-        return Stream.of(Stream.of(Constants.SCORE, Attributes.CPC_VAE, Attributes.RNN_ENC, Attributes.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Attributes.LATEST_PORTFOLIO_SIZE, Attributes.LATEST_FAM_PORTFOLIO_SIZE, Attributes.REMAINING_LIFE),
+        return Stream.of(Stream.of(Constants.SCORE, Attributes.ENC, Attributes.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Attributes.LATEST_PORTFOLIO_SIZE, Attributes.LATEST_FAM_PORTFOLIO_SIZE, Attributes.REMAINING_LIFE),
                 getAllTopLevelAttributes().stream()
                         .flatMap(attr->{
                             if(attr instanceof NestedAttribute) {

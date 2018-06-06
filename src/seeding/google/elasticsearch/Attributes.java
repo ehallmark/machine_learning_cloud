@@ -106,8 +106,7 @@ public class Attributes {
     public static final String LATEST_FAM_ENTITY_TYPE = "latest_fam_entity_type";
     public static final String LATEST_FAM_FIRST_FILING_DATE = "latest_fam_first_filing_date";
     public static final String LATEST_FAM_LAST_FILING_DATE = "latest_fam_last_filing_date";
-    public static final String CPC_VAE = "cpc_vae";
-    public static final String RNN_ENC = "rnn_enc";
+    public static final String ENC = "enc";
     public static final String ASSIGNMENTS = "assignments";
     public static final String REEL_FRAME = "reel_frame";
     public static final String CONVEYANCE_TEXT = "conveyance_text";
@@ -200,8 +199,7 @@ public class Attributes {
                 new LatestAssigneeCount(),
                 new LatestFamAssignees(),
                 new LatestFamAssigneeCount(),
-                new CPCVae(),
-                new RnnEnc(),
+                new Enc(),
                 new Assignments(),
                 new AssignmentCount(),
                 new RCitations(),

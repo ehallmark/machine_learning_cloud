@@ -59,7 +59,7 @@ import java.util.stream.Stream;
  * Created by Evan on 7/22/2017.
  */
 public class DataSearcher {
-    public static final Set<String> SIMILARITY_ATTRIBUTES = new HashSet<>(Arrays.asList(Constants.SIMILARITY_FAST,Attributes.RNN_ENC,Attributes.CPC_VAE));
+    public static final Set<String> SIMILARITY_ATTRIBUTES = new HashSet<>(Arrays.asList(Constants.SIMILARITY_FAST,Attributes.ENC));
     public static final HighlightBuilder highlighter = new HighlightBuilder()
             .highlighterType("plain")
             .postTags("</span>")

@@ -1,13 +1,11 @@
 package user_interface.ui_models.attributes.script_attributes;
 
-import lombok.Setter;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.script.Script;
-import seeding.Constants;
 import seeding.google.elasticsearch.Attributes;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -25,19 +23,17 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute  {
     protected static final long millisecondsPerDay = 86400000L;
     protected static final String TREND_PARAM_EXPRESSION = "trend";
     protected static final String TREND_PARAM_PAINLESS = "params.trend";
-    @Setter
-    private static boolean isBigQuery = false;
 
     private String getPriorityDate() {
-        return isBigQuery ? Attributes.PRIORITY_DATE : Constants.PRIORITY_DATE;
+        return Attributes.PRIORITY_DATE_ESTIMATED;
     }
 
     private String getFilingDate() {
-        return isBigQuery ? Attributes.FILING_DATE : Constants.FILING_DATE;
+        return Attributes.FILING_DATE;
     }
 
     private String getTermAdjustments() {
-        return isBigQuery ? Attributes.TERM_ADJUSTMENTS : Constants.PATENT_TERM_ADJUSTMENT;
+        return Attributes.TERM_ADJUSTMENTS;
     }
 
     public static double getCurrentYearAndMonth() {
@@ -49,7 +45,7 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute  {
     }
 
     protected String getPriorityDateField(String dateField) {
-        return "(doc['"+ getPriorityDate()+"'].empty ? doc['"+getFilingDate()+"']."+dateField+" : doc['"+getPriorityDate()+"']."+dateField+")";
+        return "(doc['"+getPriorityDate()+"']."+dateField+")";
     }
 
     protected String getCalculatedPriorityDateField() {
@@ -70,7 +66,7 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute  {
     }
 
     public String getRemainingLifeQuery(boolean expression) {
-        return "("+getPriorityDateField("date.year")+"+20+("+getPriorityDateField("date.monthOfYear")+"-1)/12)+("+getTermExtensionField()+"/365.25)- "+(expression?TREND_PARAM_EXPRESSION:TREND_PARAM_PAINLESS);
+        return "("+getPriorityDateField("date.year")+"+20+("+getPriorityDateField("date.monthOfYear")+"-1)/12)-"+(expression?TREND_PARAM_EXPRESSION:TREND_PARAM_PAINLESS);
     }
 
 
