@@ -37,7 +37,6 @@ import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
-import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.aggregate_charts.*;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.tables.TableResponse;
@@ -2853,7 +2852,6 @@ public class BigQueryServer extends SimilarPatentServer {
 
 
     public static void main(String[] args) throws Exception {
-        AbstractScriptAttribute.setBigQuery(true);
         loadStuff();
         HelpPage.helpPage(false);
     }
