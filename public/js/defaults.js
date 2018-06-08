@@ -593,9 +593,6 @@ $(document).ready(function() {
     });
     $('#sidebar-jstree-wrapper').show();
 
-    resetSearchForm();
-    showTemplateFunction({file: 'default'},null,null);
-
     $(document).uitooltip({
         content: function() {
             return $(this).attr('title');
@@ -812,6 +809,8 @@ $(document).ready(function() {
         return false;
     };
 
+    resetSearchForm();
+    showTemplateFunction({file: 'default'},null,null);
 
 
     setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
