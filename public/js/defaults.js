@@ -1,8 +1,6 @@
 $(document).ready(function() {
     $('.loader').show();
 
-    setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
-    setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[lastGeneratedDatasetDataFunction,assetListDatasetDataFunction],["From Last Generated Report", "From Asset List", "From CSV File"]);
     $('.miniTip').miniTip({
         title: 'Advanced Keyword Syntax',
         event: 'click',
@@ -680,7 +678,9 @@ $(document).ready(function() {
         }
         callback(preData);
     };
-
+    setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
+    setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[lastGeneratedDatasetDataFunction,assetListDatasetDataFunction],["From Last Generated Report", "From Asset List", "From CSV File"]);
+ 
 
 });
 
