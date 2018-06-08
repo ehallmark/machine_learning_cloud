@@ -1,11 +1,12 @@
 package user_interface.ui_models.attributes.computable_attributes;
 
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import seeding.Constants;
 import seeding.Database;
+import seeding.google.elasticsearch.attributes.Granted;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
+import user_interface.ui_models.filters.AbstractBooleanIncludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
@@ -25,7 +26,7 @@ public class IsGrantedApplicationAttribute extends ComputableAttribute<Boolean> 
 
     @Override
     public QueryBuilder getQueryScope() {
-        return QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.applications.toString());
+        return new AbstractBooleanIncludeFilter(new Granted(), AbstractFilter.FilterType.BoolTrue).getFilterQuery();
     }
 
     @Override

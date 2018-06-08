@@ -6,6 +6,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import spark.Request;
 import user_interface.acclaim_compatibility.GlobalParser;
+import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 
@@ -54,7 +55,8 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
         String queryStr = String.join("", SimilarPatentServer.extractArray(req, getName()));
         String user = req.session(false).attribute("username");
         if (user != null) {
-            GlobalParser parser = new GlobalParser(user);
+            String userGroup = BigQueryServer.getUserGroupFor(req.session());
+            GlobalParser parser = new GlobalParser(user, userGroup);
             query = parser.parseAcclaimQuery(queryStr);
         }
     }

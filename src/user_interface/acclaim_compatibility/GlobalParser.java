@@ -7,9 +7,13 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.*;
+import org.elasticsearch.indices.TermsLookup;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.google.elasticsearch.Attributes;
 import seeding.google.elasticsearch.attributes.*;
+import user_interface.server.BigQueryServer;
+import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
+import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
 import user_interface.ui_models.filters.AbstractBetweenFilter;
 import user_interface.ui_models.filters.AbstractBooleanExcludeFilter;
 import user_interface.ui_models.filters.AbstractBooleanIncludeFilter;
@@ -53,15 +57,19 @@ public class GlobalParser {
         transformationsForAttr.put("PT",(name,str,user) ->{
             QueryBuilder ret;
             str=str.toUpperCase();
-            if(str.equals("U")) ret = QueryBuilders.termsQuery(name,"B1","B","B2", "B3", "B8", "B9", "U");
-            else if(str.equals("A")) ret =QueryBuilders.termsQuery(name,"A1","A","A2","A9","A4", "A8");
+            if(str.equals("U")) ret = QueryBuilders.boolQuery()
+                    .should(QueryBuilders.boolQuery()
+                            .must(QueryBuilders.rangeQuery(Attributes.PUBLICATION_DATE).lte("2000-12-31"))
+                            .must(QueryBuilders.termQuery(Attributes.KIND_CODE, "A")))
+                    .should(QueryBuilders.termsQuery(name,"B1","B","B2", "B3", "B8", "B9", "U"));
+            else if(str.equals("A")) ret =QueryBuilders.termsQuery(name,"A1","A2","A9","A4", "A8");
             else if(str.equals("P")) ret = QueryBuilders.termsQuery(name,"P","PP","P1","P2","P3","P4","P9");
             else if(str.equals("H")) ret = QueryBuilders.termsQuery(name,"H");
             else if(str.equals("D")) ret = QueryBuilders.termQuery(name,"S");
             else if(str.equals("RE")) ret = QueryBuilders.termsQuery(name,"E","E1","E2");
             else ret = QueryBuilders.queryStringQuery(name+":"+str).defaultOperator(Operator.AND);
             return QueryBuilders.boolQuery()
-                .must(ret).must(QueryBuilders.termQuery(Attributes.COUNTRY_CODE, "US")); // US ONLY
+                .must(ret).filter(QueryBuilders.termQuery(Attributes.COUNTRY_CODE, "US")); // US ONLY
         });
         transformationsForAttr.put(Attributes.EXPIRATION_DATE_ESTIMATED,(name,val,user)->{
             if(val.toLowerCase().equals("expired")) {
@@ -146,7 +154,6 @@ public class GlobalParser {
             return null;
         });
         transformationsForAttr.put("DT", (name, val, user) -> {
-            if(true) throw new RuntimeException("DT expert field is not yet supported... Please ask Evan Hallmark for more details.");
             if(val.toLowerCase().equals("g")) {
                 // granted
                 return new AbstractBooleanIncludeFilter(new Granted(), AbstractFilter.FilterType.BoolTrue).getFilterQuery();
@@ -166,7 +173,7 @@ public class GlobalParser {
                 return new AbstractBooleanIncludeFilter(new Lapsed(), AbstractFilter.FilterType.BoolTrue).getFilterQuery();
             } else {
                 System.out.println("Warning: could not match DOC_STATUS filter value: "+val);
-                return null;
+                throw new RuntimeException("Unknown DOC_STATUS in expert filter: "+val+". Expected: {EXPIRED, LAPSED, ACTIVE}");
             }
         });
         transformationsForAttr.put("ICLM",(name,val,user)->{
@@ -195,6 +202,22 @@ public class GlobalParser {
             return QueryBuilders.queryStringQuery(Attributes.TREE+":"+val).defaultOperator(Operator.AND);
         });
 
+        transformationsForAttr.put("RFID",(name,val,user)->{
+            System.out.println("Found dataset path RFID: "+user+" -> "+val);
+            // need to get id
+            DatasetAttribute ds = DatasetAttribute.getDatasetAttribute();
+            TermsLookup lookup = new TermsLookup(ds.getTermsIndex(),ds.getTermsType(), val, ds.getTermsPath());
+            return QueryBuilders.termsLookupQuery(ds.getTermsName(), lookup);
+        });
+
+        transformationsForAttr.put("RFID2",(name,val,user)->{
+            System.out.println("Found dataset path RFID2: "+user+" -> "+val);
+            // need to get id
+            DatasetAttribute2 ds = DatasetAttribute2.getDatasetAttribute();
+            TermsLookup lookup = new TermsLookup(ds.getTermsIndex(),ds.getTermsType(), val, ds.getTermsPath());
+            return QueryBuilders.termsLookupQuery(ds.getTermsName(), lookup);
+        });
+
     }
 
     private static String tryCoerceDate(String val) {
@@ -212,8 +235,10 @@ public class GlobalParser {
 
     private QueryParser parser;
     private String user;
-    public GlobalParser(String user) {
+    private String userGroup;
+    public GlobalParser(String user, String userGroup) {
         this.user=user;
+        this.userGroup=userGroup;
         this.parser = new QueryParser("", new KeywordAnalyzer());
         parser.setDefaultOperator(QueryParser.Operator.AND);
     }
@@ -258,7 +283,7 @@ public class GlobalParser {
         return val;
     }
 
-    private static QueryBuilder replaceAcclaimName(String queryStr, Query query, String user) {
+    private static QueryBuilder replaceAcclaimName(String queryStr, Query query, String user, String userGroup) {
         String nestedPath = null;
         String fullAttr = null;
         String val = null;
@@ -292,7 +317,6 @@ public class GlobalParser {
 
         // check date
         if(query instanceof TermRangeQuery) {
-            TermRangeQuery numericRangeQuery = (TermRangeQuery) query;
             int s = queryStr.indexOf(" TO ");
             if(queryStr.length()-1>s+4) {
                 int r = Math.max(queryStr.indexOf("["),queryStr.indexOf("{"));
@@ -345,7 +369,31 @@ public class GlobalParser {
         // check for transformation
         if(fullAttr!=null) {
             Function3<String, String, String, QueryBuilder> builder = transformationsForAttr.getOrDefault(fullAttr, defaultTransformation);
-            strQuery = builder.apply(fullAttr,val,user);
+            // CHECK FOR DATASETS
+            if(Arrays.asList("rfid","rfid2").contains(fullAttr.toLowerCase())) {
+                // need to set val equal to id to retrieve
+                List<String> allDatasets = new ArrayList<>();
+                List<String> userDatasets = BigQueryServer.searchForIds(user, val.split("/"));
+                List<String> userGroupDatasets = BigQueryServer.searchForIds(userGroup, val.split("/"));
+                allDatasets.addAll(userDatasets);
+                allDatasets.addAll(userGroupDatasets);
+                if(allDatasets.size()>0) {
+                    BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+                    for(String dataset : userDatasets) {
+                        boolQueryBuilder = boolQueryBuilder
+                                .should(builder.apply(fullAttr, dataset+"_"+user, user));
+                    }
+                    for(String dataset : userGroupDatasets) {
+                        boolQueryBuilder = boolQueryBuilder
+                                .should(builder.apply(fullAttr, dataset+"_"+userGroup, user));
+                    }
+                    strQuery = boolQueryBuilder;
+                } else {
+                    throw new RuntimeException("Error in expert search query. Unable to find dataset: "+val);
+                }
+            } else {
+                strQuery = builder.apply(fullAttr, val, user);
+            }
         } else {
             strQuery = defaultTransformation.apply(null,val,user);
         }
@@ -378,7 +426,7 @@ public class GlobalParser {
             booleanQuery = (BooleanQuery)query;
             return parseAcclaimQueryHelper(booleanQuery);
         } else {
-            return replaceAcclaimName(query.toString(),query,user);
+            return replaceAcclaimName(query.toString(),query,user, userGroup);
         }
     }
 
@@ -551,7 +599,7 @@ public class GlobalParser {
                     }
 
                 } else {
-                    builder = replaceAcclaimName(queryStr,subQuery,user);
+                    builder = replaceAcclaimName(queryStr,subQuery,user,userGroup);
                 }
                 if(builder!=null) {
                     if(isProximityQuery||c.isRequired()) {
@@ -580,7 +628,7 @@ public class GlobalParser {
 
 
     public static void main(String[] args) throws Exception {
-        GlobalParser parser = new GlobalParser("ehallmark");
+        GlobalParser parser = new GlobalParser("ehallmark", "ehallmark");
 
         QueryBuilder res = parser.parseAcclaimQuery("RFID:id.somethin && blah near2 blah \"search everything\" CPC:A02F33+ AND CPC:A02301\\/32 (ANC_F:\"HTC CORP\" OR ANC_F:\"HTC\") AND (ANO_F:HTC || FIELD:isEmptyANO_F) AND TTL:one ADJ21 (TTL: three AND TTL:two) CC:US AND DT:G AND EXP:[NOW+5YEARS TO NOW+6YEARS] AND EXP:f AND NOT PEND:false AND (PT:U OR PT:RE)");
 

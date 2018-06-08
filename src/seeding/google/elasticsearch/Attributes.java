@@ -227,9 +227,9 @@ public class Attributes {
 
     public static final Map<String,String> ACCLAIM_IP_TO_ATTR_NAME_MAP = Stream.of(
             Arrays.asList("ANG",LATEST_FAM_ASSIGNEES+"."+LATEST_FAM_ASSIGNEE),
-            Arrays.asList("ANG_F",LATEST_FAM_ASSIGNEES+"."+LATEST_FAM_ASSIGNEE),
+            Arrays.asList("ANG_F",LATEST_FAM_ASSIGNEES+"."+LATEST_FAM_FIRST_ASSIGNEE),
             Arrays.asList("ANC",LATEST_ASSIGNEES+"."+LATEST_ASSIGNEE),
-            Arrays.asList("ANC_F",LATEST_ASSIGNEES+"."+LATEST_ASSIGNEE),
+            Arrays.asList("ANC_F",LATEST_ASSIGNEES+"."+LATEST_FIRST_ASSIGNEE),
             Arrays.asList("ANO",ASSIGNEES+"."+ASSIGNEE_HARMONIZED),
             Arrays.asList("AN_ORIG",ASSIGNEES+"."+ASSIGNEE_HARMONIZED),
             Arrays.asList("ACN", ASSIGNEES+"."+ASSIGNEE_HARMONIZED_CC),
@@ -242,8 +242,6 @@ public class Attributes {
             Arrays.asList("GPN", PUBLICATION_NUMBER),
             Arrays.asList("PN", PUBLICATION_NUMBER_FULL),
             Arrays.asList("CC", COUNTRY_CODE),
-            Arrays.asList("PT", KIND_CODE),
-            Arrays.asList("DT", KIND_CODE),
             Arrays.asList("SMALLENT", ORIGINAL_ENTITY_TYPE),
             Arrays.asList("CPC", CODE),
             Arrays.asList("IN", INVENTORS+"."+INVENTOR_HARMONIZED),
@@ -274,6 +272,7 @@ public class Attributes {
             Arrays.asList("SPEC", DESCRIPTION),
             Arrays.asList("ANRE_CUR",LATEST_ASSIGNEES+"."+LATEST_ASSIGNEE),
             Arrays.asList("SFAM", FAMILY_ID)
+
     ).collect(Collectors.toMap(e->e.get(0), e->e.get(1)));
 
     public static final List<Pair<String,String>> acclaimAttrs = Collections.synchronizedList(new ArrayList<>());

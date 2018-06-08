@@ -255,10 +255,9 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Means Present", Attributes.MEANS_PRESENT);
             humanAttrToJavaAttrMap.put("AI Value", Attributes.AI_VALUE);
             humanAttrToJavaAttrMap.put("CompDB Recorded Date", Attributes.COMPDB_RECORDED_DATE);
-            // custom filter name for excluding granted apps
-            humanAttrToJavaAttrMap.put("Exclude Granted Applications", Constants.GRANTED+ AbstractFilter.FilterType.BoolFalse+ Constants.FILTER_SUFFIX);
             humanAttrToJavaAttrMap.put("Related Docs", Constants.ALL_RELATED_ASSETS);
             // nested attrs
+            humanAttrToJavaAttrMap.put("Granted", Attributes.GRANTED);
             humanAttrToJavaAttrMap.put("Recorded Assignee", Attributes.RECORDED_ASSIGNEE);
             humanAttrToJavaAttrMap.put("Recorded Assignor", Attributes.RECORDED_ASSIGNOR);
             humanAttrToJavaAttrMap.put("Execution Date", Attributes.EXECUTION_DATE);
@@ -451,7 +450,7 @@ public class BigQueryServer extends SimilarPatentServer {
         return false;
     }
 
-    private static String getUserGroupFor(Session session) {
+    public static String getUserGroupFor(Session session) {
         String role = session.attribute("role");
         String dynamicUserGroup = session.attribute("dynamicUserGroup");
         if(dynamicUserGroup!=null && dynamicUserGroup.length()>0 && (role.equals(SUPER_USER)||role.equals(INTERNAL_USER))) {
@@ -2286,6 +2285,43 @@ public class BigQueryServer extends SimilarPatentServer {
             });
             return results;
         } else return Collections.emptyMap();
+    }
+
+    public static List<String> searchForIds(String username, String[] query) {
+        List<String> ret = new ArrayList<>();
+        if(query==null||query.length==0) return ret;
+        File folder = new File(Constants.USER_DATASET_FOLDER+username+"/");
+        if(!folder.exists()) folder.mkdirs();
+        Pair<Map<String,Object>,List<FormTemplate>> directoryStructure = new Pair<>(new HashMap<>(),new ArrayList<>());
+        Arrays.stream(folder.listFiles(file->!file.getName().endsWith("_updates"))).forEach(file->{
+            Map<String,Object> templateMap = getMapFromFile(file, false);
+
+            String[] parentDirs = (String[])templateMap.get("parentDirs");
+            Pair<Map<String, Object>, List<FormTemplate>> currentDirectory = directoryStructure;
+            StringJoiner toMatch = new StringJoiner("<<>>");
+            if (parentDirs != null) { // build directory as necessary
+                //System.out.println("Parent Dirs for "+file.getName()+": "+Arrays.toString(parentDirs));
+                for (String dir : parentDirs) {
+                    toMatch.add(dir);
+                    currentDirectory.getFirst().putIfAbsent(dir, new Pair<>(new HashMap<>(), new ArrayList<>()));
+                    currentDirectory = (Pair<Map<String, Object>, List<FormTemplate>>) currentDirectory.getFirst().get(dir);
+                }
+            }
+            String name = (String)templateMap.get("name");
+            if(name!=null) {
+                toMatch.add(name);
+            }
+            String toMatchStr = toMatch.toString().toLowerCase();
+            String queryStr = String.join("<<>>",query).toLowerCase();
+            System.out.println("To Match: "+toMatchStr);
+            System.out.println("Query: "+queryStr);
+            if(toMatchStr.endsWith(queryStr)) {
+                ret.add(file.getName());
+                System.out.println("Found match! "+file.getName());
+            }
+        });
+
+        return ret;
     }
 
     public static Tag getDataForUser(String username, boolean deletable, String rootName, String baseFolder, boolean loadData, Function2<Map<String,Object>,File,FormTemplate> formTemplateFunction) {

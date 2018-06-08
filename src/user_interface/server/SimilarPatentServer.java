@@ -745,7 +745,7 @@ public class SimilarPatentServer {
         return false;
     }
 
-    private static String getUserGroupFor(Session session) {
+    public static String getUserGroupFor(Session session) {
         String role = session.attribute("role");
         String dynamicUserGroup = session.attribute("dynamicUserGroup");
         if(dynamicUserGroup!=null && dynamicUserGroup.length()>0 && (role.equals(SUPER_USER)||role.equals(INTERNAL_USER))) {
