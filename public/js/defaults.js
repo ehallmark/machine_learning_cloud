@@ -22,16 +22,10 @@ $(document).ready(function() {
         content: "<div>Supports most functionality available in the Acclaim Expert Search form.</div><div>Note: To query by research folder (RFID), please use the Dataset Name Filter.</div><div>Supported Fields: </div>"+$('#acclaim-supported-fields').html()
     });
 
-    var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
-                 lineNumbers: false,
-                 matchBrackets: true,
-                 autoCloseBrackets: true
-             });
 
     var submitFormFunction = function(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successFunction) {
          e.preventDefault();
-         // text area
-         $('#acclaim_expert_filter').val(editor.getValue());
+         update_expert_query();
 
          var resultLimit = $('#main-options-limit').val();
          /*if(resultLimit) {
@@ -617,6 +611,17 @@ $(document).ready(function() {
 
 });
 
+var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
+             lineNumbers: false,
+             matchBrackets: true,
+             autoCloseBrackets: true
+         });
+
+var update_expert_query = function() {
+    // text area
+    $('#acclaim_expert_filter').val(editor.getValue());
+};
+
 
 var resetSearchForm = function() {
     $('.attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
@@ -1028,6 +1033,8 @@ var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dat
     };
 
 var templateDataFunction = function(tree,node,name,deletable,callback,extract_to_usergroup) {
+    update_expert_query();
+
     var preData = {};
     if(extract_to_usergroup) {
         preData["extract_to_usergroup"] = true;
