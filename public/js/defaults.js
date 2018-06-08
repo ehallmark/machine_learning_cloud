@@ -742,7 +742,9 @@ $(document).ready(function() {
     })(jQuery);
 
     var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
-        lineNumbers: true
+        lineNumbers: true,
+        matchBrackets: true,
+        autoCloseBrackets: true
     });
     //createRichInput('#acclaim_expert_filter');
 });
