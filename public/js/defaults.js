@@ -23,7 +23,7 @@ $(document).ready(function() {
 
     var submitFormFunction = function(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successFunction) {
          e.preventDefault();
-         update_expert_query_textarea();
+         update_expert_query_text_area();
 
          var resultLimit = $('#main-options-limit').val();
          /*if(resultLimit) {
@@ -646,7 +646,7 @@ $(document).ready(function() {
     };
 
     var templateDataFunction = function(tree,node,name,deletable,callback,extract_to_usergroup) {
-        update_expert_query_textarea();
+        update_expert_query_text_area();
 
         var preData = {};
         if(extract_to_usergroup) {
