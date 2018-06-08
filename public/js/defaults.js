@@ -609,19 +609,19 @@ $(document).ready(function() {
         }
     });
 
+    var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
+        lineNumbers: false,
+        matchBrackets: true,
+        autoCloseBrackets: true
+    });
+
+    var update_expert_query = function() {
+        // text area
+        $('#acclaim_expert_filter').val(editor.getValue());
+    };
+
+
 });
-
-var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
-             lineNumbers: false,
-             matchBrackets: true,
-             autoCloseBrackets: true
-         });
-
-var update_expert_query = function() {
-    // text area
-    $('#acclaim_expert_filter').val(editor.getValue());
-};
-
 
 var resetSearchForm = function() {
     $('.attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
