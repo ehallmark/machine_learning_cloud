@@ -742,7 +742,7 @@ $(document).ready(function() {
     })(jQuery);
 
     var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
-        lineNumbers: true,
+        lineNumbers: false,
         matchBrackets: true,
         autoCloseBrackets: true
     });
