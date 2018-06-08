@@ -2438,6 +2438,9 @@ public class BigQueryServer extends SimilarPatentServer {
                         link().withRel("stylesheet").withHref("/css/miniTip.css"),
                         link().withRel("stylesheet").withHref("/css/jstree.min.css"),
                         link().withRel("stylesheet").withHref("/css/jquery-ui.min.css"),
+                        script().withSrc("/js/codemirror.js"),
+                        link().withRel("stylesheet").withHref("/css/codemirror.css"),
+                        script().withSrc("/js/javascript_mode.js"),
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
                 body().with(

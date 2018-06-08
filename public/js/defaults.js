@@ -741,7 +741,10 @@ $(document).ready(function() {
          }
     })(jQuery);
 
-    createRichInput('#acclaim_expert_filter');
+    var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
+        lineNumbers: true
+    });
+    //createRichInput('#acclaim_expert_filter');
 });
 
 
