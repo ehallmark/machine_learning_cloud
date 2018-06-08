@@ -23,7 +23,7 @@ $(document).ready(function() {
 
     var submitFormFunction = function(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successFunction) {
          e.preventDefault();
-         update_expert_query();
+         update_expert_query_textarea();
 
          var resultLimit = $('#main-options-limit').val();
          /*if(resultLimit) {
@@ -610,11 +610,15 @@ $(document).ready(function() {
         autoCloseBrackets: true
     });
 
-    var update_expert_query = function() {
+    var update_expert_query_display = function() {
+        // text area
+        editor.setValue($('#acclaim_expert_filter').val());
+    };
+
+    var update_expert_query_text_area = function() {
         // text area
         $('#acclaim_expert_filter').val(editor.getValue());
     };
-
 
     var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dataKey) {
         var tmpData = {};
@@ -642,7 +646,7 @@ $(document).ready(function() {
     };
 
     var templateDataFunction = function(tree,node,name,deletable,callback,extract_to_usergroup) {
-        update_expert_query();
+        update_expert_query_textarea();
 
         var preData = {};
         if(extract_to_usergroup) {
@@ -805,7 +809,7 @@ $(document).ready(function() {
                 dataType: "json"
             });
         }
-        update_expert_query();
+        update_expert_query_display();
         return false;
     };
 
