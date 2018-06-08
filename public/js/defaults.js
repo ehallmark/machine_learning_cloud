@@ -692,7 +692,7 @@ $(document).ready(function() {
 
          pos += p2;
          var parens = [], indices = [], o = {};
-         var newText = converted.replace(/((?:\\)*)([()])/g, function(full, escape, x, idx) {
+         var newText = converted.replace(/\n$/g, '\n\n').replace(/((?:\\)*)([()])/g, function(full, escape, x, idx) {
              var len = escape.split(/\\/g).length - 1;
              if (len % 2 == 0) {
                  indices.push(idx);
