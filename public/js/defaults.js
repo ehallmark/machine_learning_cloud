@@ -621,6 +621,67 @@ $(document).ready(function() {
     };
 
 
+    var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dataKey) {
+        var tmpData = {};
+        $(containerSelector+" "+itemSelector).find('textarea,input,select,div.attribute').each(function(i,e) {
+            var $elem = $(this);
+            var id = $elem.attr('id');
+            if(id && ! ($elem.prop('disabled') || $elem.hasClass('disabled'))) {
+                if(! (id in tmpData)) {
+                    if($elem.attr('type')==='checkbox') {
+                        if($elem.prop("checked")==true) {
+                            $elem.val('on');
+                        } else {
+                            $elem.val('off');
+                        }
+                    }
+                    tmpData[id]=$elem.val();
+                    if($elem.is('select.nested-filter-select') || $elem.is('div.attribute')) {
+                        tmpData["order_"+id]=i;
+                    }
+                }
+            }
+        });
+        var json = JSON.stringify(tmpData);
+        dataMap[dataKey] = json;
+    };
+
+    var templateDataFunction = function(tree,node,name,deletable,callback,extract_to_usergroup) {
+        update_expert_query();
+
+        var preData = {};
+        if(extract_to_usergroup) {
+            preData["extract_to_usergroup"] = true;
+        }
+        preData["name"]=name;
+        saveTemplateFormHelper("#searchOptionsForm",".attributeElement",preData,"searchOptionsMap");
+        saveTemplateFormHelper("#attributesForm",".attributeElement",preData,"attributesMap");
+        saveTemplateFormHelper("#filtersForm",".attributeElement",preData,"filtersMap");
+        saveTemplateFormHelper("#chartsForm",".attributeElement",preData,"chartsMap");
+        saveTemplateFormHelper("#highlightForm",".attributeElement",preData,"highlightMap");
+        preData["deletable"] = deletable;
+
+        if(node!==null) {
+            if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
+                preData["file"] = node.data.file;
+            }
+            if(node.hasOwnProperty('data') && node.data.hasOwnProperty('user')) {
+                preData["user"] = node.data.user;
+            }
+            preData["parentDirs"] = [];
+            var nodeData = node;
+            while(typeof nodeData.text !== 'undefined') {
+                if(nodeData.type==='folder') {
+                    preData["parentDirs"].unshift(nodeData.text);
+                }
+                var currId = nodeData.parent;
+                nodeData = tree.get_node(currId);
+            }
+        }
+        callback(preData);
+    };
+
+
 });
 
 var resetSearchForm = function() {
@@ -1005,66 +1066,6 @@ var removeJSNodeFunction = function(tree,node,file,node_type){
          dataType: "json"
      });
      return false;
-};
-
-var saveTemplateFormHelper = function(containerSelector,itemSelector,dataMap,dataKey) {
-        var tmpData = {};
-        $(containerSelector+" "+itemSelector).find('textarea,input,select,div.attribute').each(function(i,e) {
-            var $elem = $(this);
-            var id = $elem.attr('id');
-            if(id && ! ($elem.prop('disabled') || $elem.hasClass('disabled'))) {
-                if(! (id in tmpData)) {
-                    if($elem.attr('type')==='checkbox') {
-                        if($elem.prop("checked")==true) {
-                            $elem.val('on');
-                        } else {
-                            $elem.val('off');
-                        }
-                    }
-                    tmpData[id]=$elem.val();
-                    if($elem.is('select.nested-filter-select') || $elem.is('div.attribute')) {
-                        tmpData["order_"+id]=i;
-                    }
-                }
-            }
-        });
-        var json = JSON.stringify(tmpData);
-        dataMap[dataKey] = json;
-    };
-
-var templateDataFunction = function(tree,node,name,deletable,callback,extract_to_usergroup) {
-    update_expert_query();
-
-    var preData = {};
-    if(extract_to_usergroup) {
-        preData["extract_to_usergroup"] = true;
-    }
-    preData["name"]=name;
-    saveTemplateFormHelper("#searchOptionsForm",".attributeElement",preData,"searchOptionsMap");
-    saveTemplateFormHelper("#attributesForm",".attributeElement",preData,"attributesMap");
-    saveTemplateFormHelper("#filtersForm",".attributeElement",preData,"filtersMap");
-    saveTemplateFormHelper("#chartsForm",".attributeElement",preData,"chartsMap");
-    saveTemplateFormHelper("#highlightForm",".attributeElement",preData,"highlightMap");
-    preData["deletable"] = deletable;
-
-    if(node!==null) {
-        if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
-            preData["file"] = node.data.file;
-        }
-        if(node.hasOwnProperty('data') && node.data.hasOwnProperty('user')) {
-            preData["user"] = node.data.user;
-        }
-        preData["parentDirs"] = [];
-        var nodeData = node;
-        while(typeof nodeData.text !== 'undefined') {
-            if(nodeData.type==='folder') {
-                preData["parentDirs"].unshift(nodeData.text);
-            }
-            var currId = nodeData.parent;
-            nodeData = tree.get_node(currId);
-        }
-    }
-    callback(preData);
 };
 
 var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable,callback) {
