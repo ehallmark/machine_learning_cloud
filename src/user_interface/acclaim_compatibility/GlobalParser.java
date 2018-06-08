@@ -96,7 +96,7 @@ public class GlobalParser {
                 AbstractBetweenFilter betweenFilter = new AbstractBetweenFilter(new CalculatedExpirationDate(), AbstractFilter.FilterType.Between);
                 betweenFilter.setMin(date1);
                 betweenFilter.setMax(date2);
-                return betweenFilter.getScriptFilter();
+                return betweenFilter.getFilterQuery();
             }
             return null;
         });
@@ -118,7 +118,7 @@ public class GlobalParser {
                 AbstractBetweenFilter betweenFilter = new AbstractBetweenFilter(new CalculatedPriorityDate(), AbstractFilter.FilterType.Between);
                 betweenFilter.setMin(date1);
                 betweenFilter.setMax(date2);
-                return betweenFilter.getScriptFilter();
+                return betweenFilter.getFilterQuery();
             }
             return null;
         });
