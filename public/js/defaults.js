@@ -678,9 +678,145 @@ $(document).ready(function() {
         }
         callback(preData);
     };
+
+
+    var showTemplateFormHelper = function(formSelector,dataMap) {
+        $.each(dataMap,function(id,value) {
+            if(!id.startsWith("order_")) {
+                var order = null;
+                if(dataMap.hasOwnProperty("order_"+id)) {
+                    order = dataMap["order_"+id];
+                }
+
+                var $elem = $('#'+id);
+                var $draggable = $elem.closest(".attributeElement");
+                $draggable.parent().show();
+                if(order!==null&& ($elem.is('select.nested-filter-select') || $elem.is('div.attribute'))) {
+                    $draggable.parent().attr("sort-order",order);
+                }
+                if($elem.attr('type')==="checkbox") {
+                    $elem.prop('checked',value==='on');
+                }
+                if($elem.hasClass('multiselect-ajax')) {
+                    var labeledValues = [];
+                    var needToFindLabels = [];
+                    for(var i = 0; i < value.length; i++) {
+                        var val = value[i];
+                        if($elem.find('option[value="'+val+'"]').length) {
+                            labeledValues.push(val); // good to go
+                        } else {
+                            needToFindLabels.push(val); // not good :(
+                        }
+                    }
+                    $elem.val(labeledValues).trigger('change');
+                    if(needToFindLabels.length > 0) {
+                      // get label
+                      $.ajax({
+                        type: "GET",
+                        url: $elem.attr("data-url"),
+                        data: {
+                          get_label_for: needToFindLabels
+                        },
+                        success: function(data) {
+                          if(data.hasOwnProperty('labels')&&data.hasOwnProperty('values')) {
+                            for(var i = 0; i < data.labels.length; i++) {
+                              var newVal = new Option(data.labels[i],data.values[i],true,true);
+                              $elem.append(newVal);
+                            }
+                          }
+                        },
+                        error: function(jqXHR, exception) {
+                          for(var i = 0; i < needToFindLabels.length; i++) {
+                            var val = needToFindLabels[i];
+                            var newVal = new Option(val,val,true,true);
+                            $elem.append(newVal);
+                          }
+                        },
+                        dataType: "json"
+                      });
+                    }
+
+                } else {
+                    $elem.val(value);
+                }
+                $elem.not('select.nested-filter-select').trigger('change');
+            }
+        });
+        $(formSelector+' select.nested-filter-select').filter(':first').trigger('change', [true]);
+    };
+
+    var showTemplateFunction = function(data,tree,node){
+        if(node!==null){ resetSearchForm(); }
+        var $loaders = $('.loader');
+        $loaders.show();
+        if(data===null) {
+            alert("Error finding template.");
+            $loaders.hide();
+        } else if(data.hasOwnProperty('searchoptionsmap')) { // data came from li node
+            showTemplateFormHelper("#searchOptionsForm",data["searchoptionsmap"]);
+            showTemplateFormHelper("#attributesForm",data["attributesmap"]);
+            showTemplateFormHelper("#filtersForm",data["filtersmap"]);
+            showTemplateFormHelper("#chartsForm",data["chartsmap"]);
+            try {
+                showTemplateFormHelper("#highlightForm",data["highlightmap"]);
+            } catch(err) {
+
+            }
+            $loaders.hide();
+        } else if(data.hasOwnProperty('searchOptionsMap')) { // data came from newly added node
+            showTemplateFormHelper("#searchOptionsForm",$.parseJSON(data["searchOptionsMap"]));
+            showTemplateFormHelper("#attributesForm",$.parseJSON(data["attributesMap"]));
+            showTemplateFormHelper("#filtersForm",$.parseJSON(data["filtersMap"]));
+            showTemplateFormHelper("#chartsForm",$.parseJSON(data["chartsMap"]));
+            try {
+                showTemplateFormHelper("#highlightForm",data["highlightMap"]);
+            } catch(err) {
+
+            }
+            $loaders.hide();
+        } else if(data.hasOwnProperty('file')) {
+            // need to get data
+            var defaultFile = node === null || !node.data.deletable;
+            var shared = false;
+            if(node!==null) {
+                var nodeData = node;
+                var parents = [];
+                while(typeof nodeData.text !== 'undefined') {
+                    if(nodeData.type==='folder') {
+                        parents.unshift(nodeData.text);
+                    }
+                    var currId = nodeData.parent;
+                    nodeData = tree.get_node(currId);
+                }
+                shared = parents.length > 0 && parents[0].startsWith("Shared");
+            }
+            var urlPrefix = $('#url-prefix').attr('prefix');
+            if(!urlPrefix) {
+                urlPrefix = "/secure";
+            }
+            $.ajax({
+                type: "POST",
+                url: urlPrefix+'/get_template',
+                data: {
+                    file: data.file,
+                    shared: shared,
+                    defaultFile: defaultFile
+                },
+                success: function(data) {
+                    showTemplateFunction(data,null,null);
+                },
+                dataType: "json"
+            });
+        }
+        update_expert_query();
+        return false;
+    };
+
+
+
     setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
     setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[lastGeneratedDatasetDataFunction,assetListDatasetDataFunction],["From Last Generated Report", "From Asset List", "From CSV File"]);
- 
+
 
 });
 
@@ -740,137 +876,6 @@ var setCollapsibleHeaders = function(selector) {
             });
         }
     });
-};
-
-var showTemplateFormHelper = function(formSelector,dataMap) {
-    $.each(dataMap,function(id,value) {
-        if(!id.startsWith("order_")) {
-            var order = null;
-            if(dataMap.hasOwnProperty("order_"+id)) {
-                order = dataMap["order_"+id];
-            }
-
-            var $elem = $('#'+id);
-            var $draggable = $elem.closest(".attributeElement");
-            $draggable.parent().show();
-            if(order!==null&& ($elem.is('select.nested-filter-select') || $elem.is('div.attribute'))) {
-                $draggable.parent().attr("sort-order",order);
-            }
-            if($elem.attr('type')==="checkbox") {
-                $elem.prop('checked',value==='on');
-            }
-            if($elem.hasClass('multiselect-ajax')) {
-                var labeledValues = [];
-                var needToFindLabels = [];
-                for(var i = 0; i < value.length; i++) {
-                    var val = value[i];
-                    if($elem.find('option[value="'+val+'"]').length) {
-                        labeledValues.push(val); // good to go
-                    } else {
-                        needToFindLabels.push(val); // not good :(
-                    }
-                }
-                $elem.val(labeledValues).trigger('change');
-                if(needToFindLabels.length > 0) {
-                  // get label
-                  $.ajax({
-                    type: "GET",
-                    url: $elem.attr("data-url"),
-                    data: {
-                      get_label_for: needToFindLabels
-                    },
-                    success: function(data) {
-                      if(data.hasOwnProperty('labels')&&data.hasOwnProperty('values')) {
-                        for(var i = 0; i < data.labels.length; i++) {
-                          var newVal = new Option(data.labels[i],data.values[i],true,true);
-                          $elem.append(newVal);
-                        }
-                      }
-                    },
-                    error: function(jqXHR, exception) {
-                      for(var i = 0; i < needToFindLabels.length; i++) {
-                        var val = needToFindLabels[i];
-                        var newVal = new Option(val,val,true,true);
-                        $elem.append(newVal);
-                      }
-                    },
-                    dataType: "json"
-                  });
-                }
-
-            } else {
-                $elem.val(value);
-            }
-            $elem.not('select.nested-filter-select').trigger('change');
-        }
-    });
-    $(formSelector+' select.nested-filter-select').filter(':first').trigger('change', [true]);
-};
-
-var showTemplateFunction = function(data,tree,node){
-    if(node!==null){ resetSearchForm(); }
-    var $loaders = $('.loader');
-    $loaders.show();
-    if(data===null) {
-        alert("Error finding template.");
-        $loaders.hide();
-    } else if(data.hasOwnProperty('searchoptionsmap')) { // data came from li node
-        showTemplateFormHelper("#searchOptionsForm",data["searchoptionsmap"]);
-        showTemplateFormHelper("#attributesForm",data["attributesmap"]);
-        showTemplateFormHelper("#filtersForm",data["filtersmap"]);
-        showTemplateFormHelper("#chartsForm",data["chartsmap"]);
-        try {
-            showTemplateFormHelper("#highlightForm",data["highlightmap"]);
-        } catch(err) {
-
-        }
-        $loaders.hide();
-    } else if(data.hasOwnProperty('searchOptionsMap')) { // data came from newly added node
-        showTemplateFormHelper("#searchOptionsForm",$.parseJSON(data["searchOptionsMap"]));
-        showTemplateFormHelper("#attributesForm",$.parseJSON(data["attributesMap"]));
-        showTemplateFormHelper("#filtersForm",$.parseJSON(data["filtersMap"]));
-        showTemplateFormHelper("#chartsForm",$.parseJSON(data["chartsMap"]));
-        try {
-            showTemplateFormHelper("#highlightForm",data["highlightMap"]);
-        } catch(err) {
-
-        }
-        $loaders.hide();
-    } else if(data.hasOwnProperty('file')) {
-        // need to get data
-        var defaultFile = node === null || !node.data.deletable;
-        var shared = false;
-        if(node!==null) {
-            var nodeData = node;
-            var parents = [];
-            while(typeof nodeData.text !== 'undefined') {
-                if(nodeData.type==='folder') {
-                    parents.unshift(nodeData.text);
-                }
-                var currId = nodeData.parent;
-                nodeData = tree.get_node(currId);
-            }
-            shared = parents.length > 0 && parents[0].startsWith("Shared");
-        }
-        var urlPrefix = $('#url-prefix').attr('prefix');
-        if(!urlPrefix) {
-            urlPrefix = "/secure";
-        }
-        $.ajax({
-            type: "POST",
-            url: urlPrefix+'/get_template',
-            data: {
-                file: data.file,
-                shared: shared,
-                defaultFile: defaultFile
-            },
-            success: function(data) {
-                showTemplateFunction(data,null,null);
-            },
-            dataType: "json"
-        });
-    }
-    return false;
 };
 
 var showDatasetFunction = function(data,tree,node){
