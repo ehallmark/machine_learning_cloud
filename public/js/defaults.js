@@ -22,8 +22,16 @@ $(document).ready(function() {
         content: "<div>Supports most functionality available in the Acclaim Expert Search form.</div><div>Note: To query by research folder (RFID), please use the Dataset Name Filter.</div><div>Supported Fields: </div>"+$('#acclaim-supported-fields').html()
     });
 
+    var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
+                 lineNumbers: false,
+                 matchBrackets: true,
+                 autoCloseBrackets: true
+             });
+
     var submitFormFunction = function(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successFunction) {
          e.preventDefault();
+         // text area
+         $('#acclaim_expert_filter').val(editor.getValue());
 
          var resultLimit = $('#main-options-limit').val();
          /*if(resultLimit) {
@@ -416,7 +424,6 @@ $(document).ready(function() {
                  $parent.parent().prepend($parent);
              });
          }
-         $('#acclaim_expert_filter').trigger('scroll');
          return true;
     }
 
@@ -608,145 +615,6 @@ $(document).ready(function() {
         }
     });
 
-    function createRichInput(original) {
-         var newId = "richtext_" + $(original).attr('id');
-         var newElement = "<div class=\"richtext\" id=\"" + newId + "\"></div>";
-         var $parent = $(original).parent();
-         newId = '#' + newId;
-         $(original).wrap(newElement);
-         $(original).before("<pre></pre>");
-         $(newId).before('<br>');
-
-         $(newId + '> pre').css({
-            'position': 'absolute',
-            'margin': 0,
-            'display': 'block',
-            'padding': 0,
-            'text-align': 'left'
-         });
-
-         $(original).css({
-             'background': 'transparent',
-             'position': 'relative',
-             'z-index': 100,
-             'margin': 0,
-             'border': 0,
-             'padding': 0
-         });
-
-         $(original).bind('propertychange keyup input paste click focus', function() {
-             $(original).trigger('scroll');
-             var text = $(original).val();
-             $(newId + "> pre").html(colorize(text, $(original).getCursorPosition()));
-         });
-         $(original).scroll(function() {
-         		//alert('scrolltop: '+$(this).scrollTop());
-         	 var parentHeight = $parent.height();
-         	 var parentWidth = $parent.width();
-         	 //$(original).height(parentHeight).width(parentWidth);
-             //$(newId).outerHeight(parentHeight).outerWidth(parentWidth);
-             $(newId + '> pre').outerHeight(parentHeight).outerWidth(parentWidth);
-             $(newId + '> pre').css({
-           	     'top': $(this).position().top,
-                 'left': $(this).position().left,
-                 'height': $(this).height(),
-                 'width': $(this).width()
-             }).scrollTop($(this).scrollTop());
-         });
-         resizeable($(original), function() {
-           	 $(original).trigger('scroll');
-         });
-    }
-
-    function resizeable($textareas, func) {
-         // set init (default) state
-         $textareas.data('x', $textareas.outerWidth());
-         $textareas.data('y', $textareas.outerHeight());
-
-         $textareas.mouseup(function () {
-
-             var $this = $(this);
-
-             if ($this.outerWidth() != $this.data('x') || $this.outerHeight() != $this.data('y')) {
-                 func();
-             }
-
-             // set new height/width
-             $this.data('x', $this.outerWidth());
-             $this.data('y', $this.outerHeight());
-         });
-    };
-
-    function colorize(text, pos) {
-         var i = 0, current_times = 0;
-         var startc = '(', endc = ')';
-         var current = -1;
-
-         var entities = {'>': '&gt;','<':'&lt;'};
-         var p2 = 0;
-         var regex = new RegExp(Object.keys(entities).join("|"),'g');
-         var converted = text.replace(regex, function(x, j) {
-             if(pos > j) p2 += entities[x].length - 1;
-             return entities[x];
-         });
-
-         pos += p2;
-         var parens = [], indices = [], o = {};
-         var newText = converted.replace(/\n$/g, '\n\n').replace(/((?:\\)*)([()])/g, function(full, escape, x, idx) {
-             var len = escape.split(/\\/g).length - 1;
-             if (len % 2 == 0) {
-                 indices.push(idx);
-                 if (x == startc) ++i;
-                 o[idx] = { selected: false, type: x, depth: i, idx: idx, pair: -1, extra: escape };
-                 if (idx == pos) o[idx].selected = true;
-                 if (x == startc) parens.push(idx);
-                 else {
-                     if (parens.length > 0) {
-                         var p = parens.pop();
-                         o[idx].pair = p;
-                         if (o[p].selected) o[idx].selected = true;
-                         o[p].pair = idx;
-                         if (o[idx].selected) o[p].selected = true;
-                     }
-                     --i
-                 }
-             }
-         });
-         newtext = converted;
-         indices = indices.sort(function(x,y) { return Number(y) - Number(x); });
-         indices.forEach(function(i) {
-             newtext = newtext.substr(0,i) + o[i].extra +
-             "<span class='" + (o[i].pair == -1 ? "unmatched " : "paren_" + (o[i].depth % 5)) +
-             (o[i].selected ? " selected_paren": "") + "'>" + o[i].type + "</span>" +
-             newtext.substr(i + 1 + o[i].extra.length)
-         });
-         return newtext+'\n';
-    }
-
-    (function($) {
-         $.fn.getCursorPosition = function() {
-             var input = this.get(0);
-             if (!input) return; // No (input) element found
-             if ('selectionStart' in input) {
-                 // Standard-compliant browsers
-                 return input.selectionStart;
-             } else if (document.selection) {
-                 // IE
-                 input.focus();
-                 var sel = document.selection.createRange();
-                 var selLen = document.selection.createRange().text.length;
-                 sel.moveStart('character', -input.value.length);
-                 return sel.text.length - selLen;
-             }
-         }
-    })(jQuery);
-
-    var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
-        lineNumbers: false,
-        matchBrackets: true,
-        autoCloseBrackets: true
-    });
-    //createRichInput('#acclaim_expert_filter');
 });
 
 
