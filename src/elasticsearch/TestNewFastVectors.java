@@ -86,6 +86,7 @@ public class TestNewFastVectors {
         params.put("float",true);
         params.put("scale", 100D);
         SearchResponse response = client.prepareSearch("test").setTypes("type1").setSize(2)
+                .setTrackScores(true)
                 .addSort(SortBuilders.scriptSort(new Script(ScriptType.INLINE,"knn","binary_vector_score", params), ScriptSortBuilder.ScriptSortType.NUMBER).order(SortOrder.DESC))
                 .addScriptField("dot", new Script(ScriptType.INLINE,"knn","binary_vector_score", params))
                 .setQuery(QueryBuilders.functionScoreQuery(
