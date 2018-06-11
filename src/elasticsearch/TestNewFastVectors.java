@@ -69,7 +69,7 @@ public class TestNewFastVectors {
         }
 
         client.prepareIndex("test","type1","doc1")
-                .setSource(Collections.singletonMap("embedding_vector", vectorToHex(new float[]{0.5f,-0.5f,0.25f,-0.31f,0.1f})))
+                .setSource(Collections.singletonMap("embedding_vector", vectorToHex(new float[]{-0.2f,-0.15f,0.5f,-0.1f,0.21f})))
                 .get();
 
         client.prepareIndex("test","type1","doc2")
