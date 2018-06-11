@@ -160,6 +160,7 @@ public class DataSearcher {
                     } else {
                         ScriptSortBuilder.ScriptSortType scriptType = comparatorAttr.getType().equals("text") || comparatorAttr.getType().equals("keyword") ? ScriptSortBuilder.ScriptSortType.STRING : ScriptSortBuilder.ScriptSortType.NUMBER;
                         Script sortScript = ((AbstractScriptAttribute) comparatorAttr).getSortScript();
+                        System.out.println("Sort script builder: "+sortScript);
                         if(sortScript!=null) {
                             sortBuilder = SortBuilders.scriptSort(sortScript, scriptType).order(sortOrder);
                         } else {
@@ -218,7 +219,7 @@ public class DataSearcher {
                     AbstractSimilarityGreaterThanFilter simFilter = (AbstractSimilarityGreaterThanFilter)filter;
                     String attrName = simFilter.getAttribute().getFullName();
                     attributes.forEach(attr->{
-                        if(attr.equals(attr.getFullName())) {
+                        if(attrName.equals(attr.getFullName())) {
                             //System.out.println("Found and setting similarity attribute for filter...");
                             simFilter.setAttribute(attr);
                         }

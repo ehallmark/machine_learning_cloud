@@ -1,6 +1,5 @@
 package seeding.google.elasticsearch.attributes;
 
-import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -71,7 +70,6 @@ public abstract class SimilarityAttribute extends AbstractScriptAttribute implem
         params.put("cosine", false);
         params.put("float", true);
         params.put("scale", 100D);
-        System.out.println("Found similarity params: "+new Gson().toJson(params));
         return params;
     }
 
@@ -99,7 +97,6 @@ public abstract class SimilarityAttribute extends AbstractScriptAttribute implem
                     "binary_vector_score",
                     getParams()
             );
-            System.out.println("Similarity sort script: "+searchScript.toString());
         }
         return searchScript;
     }
