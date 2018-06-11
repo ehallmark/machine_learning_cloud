@@ -5,6 +5,7 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
+import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
@@ -92,7 +93,7 @@ public class TestNewFastVectors {
                         ScoreFunctionBuilders.scriptFunction(
                                 new Script(ScriptType.INLINE,"knn","binary_vector_score", params)
                         )
-                ).boostMode(CombineFunction.SUM)).get();
+                ).boostMode(CombineFunction.SUM).scoreMode(FiltersFunctionScoreQuery.ScoreMode.SUM)).get();
 
         Stream.of(response.getHits().getHits()).forEach(hit->{
             System.out.println("Hit "+hit.getId()+": "+new Gson().toJson(hit.getSource()));

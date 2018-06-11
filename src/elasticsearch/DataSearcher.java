@@ -361,7 +361,7 @@ public class DataSearcher {
                 // add script to query
                 if (componentOfScore) {
                     // try adding custom sort script
-                    QueryBuilder sortScript = AbstractScriptAttribute.getSortQuery(scriptAttribute.getSortScript(),FiltersFunctionScoreQuery.ScoreMode.MAX, scriptAttribute.getWeight());
+                    QueryBuilder sortScript = AbstractScriptAttribute.getSortQuery(scriptAttribute.getSortScript(),FiltersFunctionScoreQuery.ScoreMode.SUM, scriptAttribute.getWeight());
                     if (sortScript != null) {
                         if (attribute.getParent() != null && !attribute.getParent().isObject()) {
                             queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), sortScript, ScoreMode.Max)));
