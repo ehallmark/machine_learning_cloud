@@ -105,7 +105,7 @@ public class TestNewFastVectors {
             System.out.println("Score: "+hit.getScore());
         });
 
-        System.out.println("Patent test...");
+        System.out.println("Patent test 1...");
         params.put("field", Attributes.ENC);
         response = client.prepareSearch(IngestPatents.INDEX_NAME).setTypes(IngestPatents.TYPE_NAME).setSize(2)
                 //.setTrackScores(true)
@@ -125,5 +125,30 @@ public class TestNewFastVectors {
             System.out.println("Fields "+hit.getId()+": "+new Gson().toJson(hit.getFields()));
             System.out.println("Score: "+hit.getScore());
         });
+
+
+        System.out.println("Patent test 2...");
+        params.put("field", Attributes.ENC);
+        params.put("float", false);
+        response = client.prepareSearch(IngestPatents.INDEX_NAME).setTypes(IngestPatents.TYPE_NAME).setSize(2)
+                //.setTrackScores(true)
+                .addSort(SortBuilders.scriptSort(new Script(ScriptType.INLINE,"knn","binary_vector_score", params), ScriptSortBuilder.ScriptSortType.NUMBER).order(SortOrder.DESC))
+                .addScriptField(Attributes.SIMILARITY, new Script(ScriptType.INLINE,"knn","binary_vector_score", params))
+                .setQuery(
+                        QueryBuilders.boolQuery()
+                                .must(QueryBuilders.functionScoreQuery(
+                                        QueryBuilders.matchAllQuery(),
+                                        ScoreFunctionBuilders.scriptFunction(new Script(ScriptType.INLINE,"knn","binary_vector_score", params))).boostMode(CombineFunction.SUM).scoreMode(FiltersFunctionScoreQuery.ScoreMode.SUM)
+                                ).must(
+                                QueryBuilders.existsQuery(Attributes.ENC)
+                        )
+                ).get();
+        Stream.of(response.getHits().getHits()).forEach(hit->{
+            System.out.println("Hit "+hit.getId()+": "+new Gson().toJson(hit.getSource()));
+            System.out.println("Fields "+hit.getId()+": "+new Gson().toJson(hit.getFields()));
+            System.out.println("Score: "+hit.getScore());
+        });
+
+
     }
 }
