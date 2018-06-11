@@ -152,7 +152,7 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Dependent Claim", "DCLM");
             humanAttrToJavaAttrMap.put("Title + Abstract + Claims", "TAC");
             humanAttrToJavaAttrMap.put("Maintenance Fee Event Code", Attributes.MAINTENANCE_EVENT);
-            humanAttrToJavaAttrMap.put("AI Similarity", Attributes.ENC);
+            humanAttrToJavaAttrMap.put("Similarity", Attributes.SIMILARITY);
             humanAttrToJavaAttrMap.put("Technology Similarity", Constants.TECHNOLOGY_SIMILARITY);
             humanAttrToJavaAttrMap.put("Assignee Similarity", Constants.ASSIGNEE_SIMILARITY);
             humanAttrToJavaAttrMap.put("Text Similarity", Constants.TEXT_SIMILARITY);

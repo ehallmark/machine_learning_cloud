@@ -9,7 +9,7 @@ import java.util.Arrays;
 public class Enc extends SimilarityAttribute {
     @Override
     public String getName() {
-        return Attributes.ENC;
+        return Attributes.SIMILARITY;
     }
 
     public Enc() {
@@ -19,6 +19,11 @@ public class Enc extends SimilarityAttribute {
     @Override
     public SimilarityAttribute clone() {
         return dup();
+    }
+
+    @Override
+    public String getFieldName() {
+        return Attributes.ENC;
     }
 
     @Override

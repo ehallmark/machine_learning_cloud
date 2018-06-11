@@ -31,7 +31,7 @@ public class IngestESFromPostgres {
         final String attrString = String.join(", ", attributes.stream()
                 .flatMap(attr->attr instanceof NestedAttribute ? ((NestedAttribute) attr).getAttributes().stream() : Stream.of(attr))
                 .filter(attr->!(attr instanceof ConvenienceAttribute))
-                .map(attr->attr.getName())
+                .map(attr->attr instanceof SimilarityAttribute ? ((SimilarityAttribute)attr).getFieldName() : attr.getName())
                 .collect(Collectors.toList())
         );
 
@@ -61,10 +61,10 @@ public class IngestESFromPostgres {
         return date.toLocalDate().format(DateTimeFormatter.ISO_DATE);
     }
 
-    private static Object getValueFromResultSet(ResultSet rs, AbstractAttribute attr) throws SQLException {
+    private static Object getValueFromResultSet(ResultSet rs, AbstractAttribute attr, String fieldName) throws SQLException {
         Object obj = null;
         try {
-            obj = rs.getObject(attr.getName());
+            obj = rs.getObject(fieldName);
         } catch(Exception e) {
             if(attr instanceof SimilarityAttribute || !(attr instanceof AbstractScriptAttribute)) {
                 e.printStackTrace();
@@ -99,18 +99,19 @@ public class IngestESFromPostgres {
     private static void ingest(ResultSet rs, String id, Collection<AbstractAttribute> attributes, BulkProcessor bulkProcessor) throws Exception {
         Map<String,Object> doc = new HashMap<>();
         for(AbstractAttribute attr : attributes) {
+            final String fieldName = attr instanceof SimilarityAttribute ? ((SimilarityAttribute)attr).getFieldName() : attr.getName();
             if(attr instanceof NestedAttribute) {
                 List<AbstractAttribute> children = new ArrayList<>(((NestedAttribute) attr).getAttributes());
                 if(attr.isObject()) { // not nested
                     // single map
                     Map<String,Object> parentMaps = new HashMap<>();
                     for(AbstractAttribute child : children) {
-                        Object val = getValueFromResultSet(rs,child);
+                        Object val = getValueFromResultSet(rs,child,child.getName());
                         if(val!=null) {
                             parentMaps.put(child.getName(),val);
                         }
                     }
-                    doc.put(attr.getName(),parentMaps);
+                    doc.put(fieldName,parentMaps);
                 } else { // nested
                     // list of maps
                     List<Map<String,Object>> parentMaps = new ArrayList<>();
@@ -118,7 +119,7 @@ public class IngestESFromPostgres {
                     int maxLength = 0;
                     for(int i = 0; i < childData.length; i++) {
                         AbstractAttribute child = children.get(i);
-                        Object val = getValueFromResultSet(rs,child);
+                        Object val = getValueFromResultSet(rs,child,child.getName());
                         if(val!=null) {
                             childData[i]=(Object[])val;
                             maxLength = Math.max(maxLength,childData[i].length);
@@ -134,13 +135,13 @@ public class IngestESFromPostgres {
                             }
                             parentMaps.add(innerMap);
                         }
-                        doc.put(attr.getName(),parentMaps);
+                        doc.put(fieldName,parentMaps);
                     }
                 }
             } else {
-                Object val = getValueFromResultSet(rs,attr);
+                Object val = getValueFromResultSet(rs,attr,fieldName);
                 if(val!=null) {
-                    doc.put(attr.getName(),val);
+                    doc.put(fieldName,val);
                 }
             }
         }

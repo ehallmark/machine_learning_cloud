@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 public class Attributes {
     // count
     public static final String GRANTED = "granted";
+    public static final String SIMILARITY = "similarity";
     public static final String CITATIONS_COUNT = "citation_count";
     public static final String RCITATIONS_COUNT = "rcite_count";
     public static final String CODE_COUNT = "code_count";

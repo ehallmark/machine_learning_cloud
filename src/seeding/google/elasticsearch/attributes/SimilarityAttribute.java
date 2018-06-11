@@ -7,6 +7,7 @@ import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import spark.Request;
 import user_interface.ui_models.attributes.DependentAttribute;
@@ -63,15 +64,17 @@ public abstract class SimilarityAttribute extends AbstractScriptAttribute implem
     public Map<String, Object> getParams() {
         if(simVectors==null||simVectors.size()==0) return Collections.emptyMap();
         Map<String, Object> params = new HashMap<>();
-        INDArray avgVector = simVectors.size() == 1 ? simVectors.get(0) : Nd4j.vstack(simVectors).mean(0);
+        INDArray avgVector = simVectors.size() == 1 ? Transforms.unitVec(simVectors.get(0)) : Transforms.unitVec(Nd4j.vstack(simVectors).mean(0));
         List<Double> vector = DoubleStream.of(avgVector.data().asDouble()).boxed().collect(Collectors.toList());
         params.put("vector", vector);
-        params.put("field", getName());
+        params.put("field", getFieldName());
         params.put("cosine", false);
         params.put("float", true);
         params.put("scale", 100D);
         return params;
     }
+
+    public abstract String getFieldName();
 
     @Override
     public Script getScript(boolean requireParams, boolean idOnly) {

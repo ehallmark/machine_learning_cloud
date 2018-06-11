@@ -83,7 +83,7 @@ public class CreatePatentIndex {
                 Map<String,Object> type = new HashMap<>();
                 type.put("doc_values", true);
                 type.put("type","binary");
-                properties.put(attribute.getName(),type);
+                properties.put(((SimilarityAttribute)attribute).getFieldName(),type);
             } else {
                 recursiveHelper(attribute, properties);
             }
