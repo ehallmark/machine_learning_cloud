@@ -84,7 +84,7 @@ public class TestNewFastVectors {
         Map<String,Object> params = new HashMap<>();
         params.put("cosine",true);
         params.put("field","embedding_vector");
-        params.put("vector", Arrays.asList(0.2d,0.15,-0.5,0.1,-0.21));
+        params.put("vector", Arrays.asList(0.2d,0.15,-0.5,0.1));
         params.put("float",true);
         params.put("scale", 100D);
         SearchResponse response = client.prepareSearch("test").setTypes("type1").setSize(2)
