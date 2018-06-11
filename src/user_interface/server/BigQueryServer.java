@@ -2743,7 +2743,7 @@ public class BigQueryServer extends SimilarPatentServer {
     }
 
     public static List<String> allSortableAttributes() {
-        return Stream.of(Stream.of(Constants.SCORE, Attributes.ENC, Attributes.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Attributes.LATEST_PORTFOLIO_SIZE, Attributes.LATEST_FAM_PORTFOLIO_SIZE, Attributes.REMAINING_LIFE),
+        return Stream.of(Stream.of(Constants.SCORE, Attributes.SIMILARITY, Attributes.AI_VALUE, Constants.RANDOM_SORT, Constants.NO_SORT, Attributes.LATEST_PORTFOLIO_SIZE, Attributes.LATEST_FAM_PORTFOLIO_SIZE, Attributes.REMAINING_LIFE),
                 getAllTopLevelAttributes().stream()
                         .flatMap(attr->{
                             if(attr instanceof NestedAttribute) {
