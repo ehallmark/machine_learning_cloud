@@ -61,20 +61,25 @@ public class TestNewFastVectors {
     public static void main(String[] args) {
         TransportClient client = MyClient.get();
 
-        //createDatabase(client);
+        try {
+            createDatabase(client);
+        } catch(Exception e) {
+            System.out.println("Error creating database: "+e.getMessage());
+        }
 
         client.prepareIndex("test","type1","doc1")
-                .setSource(Collections.singletonMap("embedding_vector", vectorToHex(new double[]{0.5,-0.5,0.25,-0.31,0.1})))
+                .setSource(Collections.singletonMap("embedding_vector", vectorToHex(new float[]{0.5f,-0.5f,0.25f,-0.31f,0.1f})))
                 .get();
 
         client.prepareIndex("test","type1","doc2")
-                .setSource(Collections.singletonMap("embedding_vector", vectorToHex(new double[]{0.2,0.15,-0.5,0.1,-0.21})))
+                .setSource(Collections.singletonMap("embedding_vector", vectorToHex(new float[]{0.2f,0.15f,-0.5f,0.1f,-0.21f})))
                 .get();
 
         Map<String,Object> params = new HashMap<>();
         params.put("cosine",false);
         params.put("field","embedding_vector");
         params.put("vector", Arrays.asList(0.2d,0.15,-0.5,0.1,-0.21));
+        params.put("float",true);
         SearchResponse response = client.prepareSearch("test").setTypes("type1").setSize(1)
                 .setQuery(QueryBuilders.functionScoreQuery(
                         QueryBuilders.matchAllQuery(),
