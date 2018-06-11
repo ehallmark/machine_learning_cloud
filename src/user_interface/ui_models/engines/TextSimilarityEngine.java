@@ -1,8 +1,6 @@
 package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
-import models.similarity_models.combined_similarity_model.CombinedCPC2Vec2VAEEncodingModel;
-import models.similarity_models.combined_similarity_model.CombinedCPC2Vec2VAEEncodingPipelineManager;
 import models.similarity_models.rnn_encoding_model.RNNTextEncodingModel;
 import models.similarity_models.rnn_encoding_model.RNNTextEncodingPipelineManager;
 import org.deeplearning4j.models.word2vec.Word2Vec;
@@ -20,18 +18,15 @@ import java.util.stream.Stream;
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.textarea;
 import static user_interface.server.SimilarPatentServer.TEXT_TO_SEARCH_FOR;
-import static user_interface.server.SimilarPatentServer.extractString;
 
 /**
  * Created by ehallmark on 2/28/17.
  */
 public class TextSimilarityEngine extends AbstractSimilarityEngine {
-    private static CombinedCPC2Vec2VAEEncodingModel encodingModelOld;
     private static RNNTextEncodingModel encodingModel;
     private static Word2Vec word2Vec;
     private static final int maxNumSamples = 128;
 
-    private boolean loadVectors;
     private static final Function<Collection<String>,INDArray> inputToVectorFunction = inputs -> {
         synchronized (TextSimilarityEngine.class) {
             if (encodingModel == null) {
@@ -47,16 +42,10 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
         }
     };
 
-    @Deprecated
-    public TextSimilarityEngine(boolean loadVectors) {
-        super();
-        this.loadVectors=loadVectors;
-        if(loadVectors)loadSimilarityNetworks();
-    }
+
 
     public TextSimilarityEngine() {
-        super(inputToVectorFunction, true);
-        this.loadVectors=true;
+        super(inputToVectorFunction);
        // if(loadVectors) inputToVectorFunction.apply(Collections.emptyList());
     }
 
@@ -66,41 +55,10 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     }
 
 
-    private void loadSimilarityNetworks() {
-        System.out.println("WARNING: TRYING TO LOAD OLD SIMILARITY MODELS!!!");
-        synchronized (TextSimilarityEngine.class) {
-            if (encodingModelOld == null) {
-                CombinedCPC2Vec2VAEEncodingPipelineManager combinedSimilarityPipelineManager = CombinedCPC2Vec2VAEEncodingPipelineManager.getOrLoadManager(true);
-                combinedSimilarityPipelineManager.initModel(false);
-
-                encodingModelOld = (CombinedCPC2Vec2VAEEncodingModel)combinedSimilarityPipelineManager.getModel();
-            }
-        }
-    }
-
     @Override
     protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
         // get input data
         return null;
-    }
-
-    @Override
-    public void extractRelevantInformationFromParams(Request req) {
-        if(!isBigQuery) {
-            String text = extractString(req, TEXT_TO_SEARCH_FOR, "").toLowerCase().trim();
-            if (text.length() > 0) {
-                avg = encodeTextOld(text.split("\\s+"));
-                if (avg == null) throw new RuntimeException("Unable to find similarity from provided text.");
-            }
-            System.out.println("Running text similarity model...");
-        } else {
-            super.extractRelevantInformationFromParams(req);
-        }
-    }
-
-    public INDArray encodeTextOld(String[] text) {
-        if(encodingModelOld==null)loadSimilarityNetworks();
-        return encodingModelOld.encodeText(Arrays.asList(text),maxNumSamples);
     }
 
     public static INDArray textToInputVector(String[] words) {
@@ -136,10 +94,6 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public AbstractSimilarityEngine dup() {
-        if(!isBigQuery) {
-            return new TextSimilarityEngine(loadVectors);
-        } else {
-            return new TextSimilarityEngine();
-        }
+        return new TextSimilarityEngine();
     }
 }

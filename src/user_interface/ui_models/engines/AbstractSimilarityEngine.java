@@ -2,7 +2,6 @@ package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
 import lombok.Getter;
-import models.similarity_models.DefaultSimilarityModel;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -29,19 +28,10 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
     protected String tableName;
     protected static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
     protected Function<Collection<String>,INDArray> inputsToAvgVectorFunction;
-    protected boolean isBigQuery;
-    public AbstractSimilarityEngine(Function<Collection<String>,INDArray> inputsToAvgVectorFunction, boolean isBigQuery) {
+    public AbstractSimilarityEngine(Function<Collection<String>,INDArray> inputsToAvgVectorFunction) {
         super(Collections.emptyList());
-        this.isBigQuery=isBigQuery;
         this.inputsToAvgVectorFunction=inputsToAvgVectorFunction;
     }
-
-    private static Function<Collection<String>,INDArray> oldFunction = inputs -> {
-         DefaultSimilarityModel finder = new DefaultSimilarityModel(inputs);
-         if (finder.getItemList().length > 0) {
-             return finder.computeAvg();
-         } else return null;
-    };
 
     private static Function<Collection<String>,INDArray> newFunction(String tableName, String attrName, String vecName, boolean join) {
         return inputs -> {
@@ -52,13 +42,8 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
         };
     }
 
-    @Deprecated
-    public AbstractSimilarityEngine() {
-        this(oldFunction,false);
-    }
-
     public AbstractSimilarityEngine(String tableName, String attrName, String vecName, boolean join) {
-        this(newFunction(tableName,attrName,vecName,join),true);
+        this(newFunction(tableName,attrName,vecName,join));
         this.tableName=tableName;
     }
 

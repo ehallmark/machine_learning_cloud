@@ -11,8 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.textarea;
@@ -23,13 +21,8 @@ import static user_interface.server.SimilarPatentServer.*;
  */
 public class PatentSimilarityEngine extends AbstractSimilarityEngine {
 
-    @Deprecated
-    public PatentSimilarityEngine() {
-        super();
-    }
-
     public PatentSimilarityEngine(String tableName) {
-        super(tableName, Attributes.PUBLICATION_NUMBER_FULL, "rnn_enc", true);
+        super(tableName, Attributes.PUBLICATION_NUMBER_FULL, Attributes.ENC, true);
     }
 
     @Override
@@ -39,9 +32,6 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
         List<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9A-Z]");
         Collections.shuffle(patents, new Random(125));
         patents = patents.subList(0, Math.min(patents.size(),1000));
-        if(!isBigQuery) {
-            patents = patents.stream().flatMap(patent -> Stream.of(assetToFilingMap.getPatentDataMap().getOrDefault(patent, patent), assetToFilingMap.getApplicationDataMap().getOrDefault(patent, patent))).distinct().collect(Collectors.toList());
-        }
         System.out.println("Found "+patents.size()+" patents...");
         return patents;
     }
@@ -71,10 +61,6 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public AbstractSimilarityEngine dup() {
-        if(isBigQuery) {
-            return new PatentSimilarityEngine(tableName);
-        } else {
-            return new PatentSimilarityEngine();
-        }
+        return new PatentSimilarityEngine(tableName);
     }
 }

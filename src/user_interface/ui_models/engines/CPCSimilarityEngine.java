@@ -19,13 +19,8 @@ import static user_interface.server.SimilarPatentServer.*;
  */
 public class CPCSimilarityEngine extends AbstractSimilarityEngine implements AjaxMultiselect {
 
-    @Deprecated
-    public CPCSimilarityEngine() {
-        super();
-    }
-
     public CPCSimilarityEngine(String tableName) {
-        super(tableName, Attributes.CODE, "cpc_vae", false);
+        super(tableName, Attributes.CODE, Attributes.ENC, false);
     }
 
     @Override
@@ -62,11 +57,7 @@ public class CPCSimilarityEngine extends AbstractSimilarityEngine implements Aja
 
     @Override
     public AbstractSimilarityEngine dup() {
-        if(isBigQuery) {
-            return new CPCSimilarityEngine(tableName);
-        } else {
-            return new CPCSimilarityEngine();
-        }
+        return new CPCSimilarityEngine(tableName);
     }
 
     @Override

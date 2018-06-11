@@ -23,13 +23,8 @@ import static j2html.TagCreator.div;
 public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
     private DatasetAttribute datasetAttribute = DatasetAttribute.getDatasetAttribute();
 
-    @Deprecated
-    public DataSetSimilarityEngine() {
-        super();
-    }
-
     public DataSetSimilarityEngine(String tableName) {
-        super(tableName, Attributes.PUBLICATION_NUMBER_FULL, "rnn_enc", true);
+        super(tableName, Attributes.PUBLICATION_NUMBER_FULL, Attributes.ENC, true);
     }
 
     @Override
@@ -73,10 +68,6 @@ public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public AbstractSimilarityEngine dup() {
-        if(isBigQuery) {
-            return new DataSetSimilarityEngine(tableName);
-        } else {
-            return new DataSetSimilarityEngine();
-        }
+        return new DataSetSimilarityEngine(tableName);
     }
 }

@@ -607,7 +607,7 @@ public class SimilarPatentServer {
             // nested attribute names
             buildJavaToHumanAttrMap();
 
-            SimilarityEngineController.setAllEngines(Arrays.asList(new DataSetSimilarityEngine(), new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(false/*!TEST&&loadVectors*/), new CPCSimilarityEngine()));
+           // SimilarityEngineController.setAllEngines(Arrays.asList(new DataSetSimilarityEngine(), new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TextSimilarityEngine(), new CPCSimilarityEngine()));
 
             // similarity engine
             similarityEngine = new RecursiveTask<SimilarityEngineController>() {

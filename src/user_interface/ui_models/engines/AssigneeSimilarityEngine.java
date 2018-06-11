@@ -5,6 +5,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
+import seeding.google.elasticsearch.Attributes;
 import spark.Request;
 import user_interface.ui_models.filters.AbstractFilter;
 
@@ -36,13 +37,8 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
         return Constants.ASSIGNEE_SIMILARITY;
     }
 
-    @Deprecated
-    public AssigneeSimilarityEngine() {
-        super();
-    }
-
     public AssigneeSimilarityEngine(String tableName) {
-        super(newAssigneeFunction(tableName, "name", "cpc_vae"),true);
+        super(newAssigneeFunction(tableName, "name", Attributes.ENC));
         this.tableName=tableName;
     }
 
@@ -74,10 +70,6 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public AbstractSimilarityEngine dup() {
-        if(isBigQuery) {
-            return new AssigneeSimilarityEngine(tableName);
-        } else {
-            return new AssigneeSimilarityEngine();
-        }
+        return new AssigneeSimilarityEngine(tableName);
     }
 }
