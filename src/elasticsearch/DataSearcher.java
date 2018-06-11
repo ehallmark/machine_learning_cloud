@@ -353,9 +353,10 @@ public class DataSearcher {
         if (attribute instanceof AbstractScriptAttribute) {
             AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute) attribute;
             Script script = scriptAttribute.getSortScript();
+            System.out.println("Similarity script: "+script);
             if (script != null) {
                 request.set(request.get().addScriptField(scriptAttribute.getFullName(), script));
-
+                System.out.println("Found similarity model: "+scriptAttribute.getFullName());
                 // add script to query
                 if (componentOfScore) {
                     // try adding custom sort script
@@ -367,6 +368,7 @@ public class DataSearcher {
                             queryBuilder.set(queryBuilder.get().must(sortScript));
                         }
                     }
+                    System.out.println("Sort script: "+sortScript);
                 }
             }
         } else if (componentOfScore) {
