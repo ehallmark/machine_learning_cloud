@@ -84,6 +84,9 @@ public class TestNewFastVectors {
         params.put("scale", 100D);
         SearchResponse response = client.prepareSearch("test").setTypes("type1").setSize(2)
                 .addSort(SortBuilders.scoreSort())
+                .addScriptField("dot",
+                                new Script(ScriptType.INLINE,"knn","binary_vector_score", params)
+                        )
                 .setQuery(QueryBuilders.functionScoreQuery(
                         QueryBuilders.matchAllQuery(),
                         ScoreFunctionBuilders.scriptFunction(
@@ -93,6 +96,7 @@ public class TestNewFastVectors {
 
         Stream.of(response.getHits().getHits()).forEach(hit->{
             System.out.println("Hit "+hit.getId()+": "+new Gson().toJson(hit.getSource()));
+            System.out.println("Fields "+hit.getId()+": "+new Gson().toJson(hit.getFields()));
             System.out.println("Score: "+hit.getScore());
         });
 
