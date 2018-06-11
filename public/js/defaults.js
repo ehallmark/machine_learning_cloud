@@ -604,19 +604,23 @@ $(document).ready(function() {
         }
     });
 
-    var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
-        lineNumbers: false,
-        matchBrackets: true,
-        autoCloseBrackets: true
-    });
+    if(document.getElementById('acclaim_expert_filter')) {
+        var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
+            lineNumbers: false,
+            matchBrackets: true,
+            autoCloseBrackets: true
+        });
+    }
 
     var update_expert_query_display = function() {
         // text area
+        if(!editor) return;
         editor.setValue($('#acclaim_expert_filter').val());
     };
 
     var update_expert_query_text_area = function() {
         // text area
+        if(!editor) return;
         $('#acclaim_expert_filter').val(editor.getValue());
     };
 
