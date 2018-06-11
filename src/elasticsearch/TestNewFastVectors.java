@@ -91,7 +91,6 @@ public class TestNewFastVectors {
                         )
                 ).boostMode(CombineFunction.MAX)).get();
 
-        System.out.println("Hits: "+response.getHits());
         Stream.of(response.getHits().getHits()).forEach(hit->{
             System.out.println("Hit: "+new Gson().toJson(hit.getSource()));
         });
