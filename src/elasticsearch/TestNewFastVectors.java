@@ -14,6 +14,8 @@ import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
+import seeding.google.elasticsearch.Attributes;
+import seeding.google.mongo.ingest.IngestPatents;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -103,5 +105,23 @@ public class TestNewFastVectors {
             System.out.println("Score: "+hit.getScore());
         });
 
+        System.out.println("Patent test...");
+        params.put("field", Attributes.ENC);
+        response = client.prepareSearch(IngestPatents.INDEX_NAME).setTypes(IngestPatents.TYPE_NAME).setSize(2)
+                //.setTrackScores(true)
+                .addSort(SortBuilders.scriptSort(new Script(ScriptType.INLINE,"knn","binary_vector_score", params), ScriptSortBuilder.ScriptSortType.NUMBER).order(SortOrder.DESC))
+                .addScriptField(Attributes.SIMILARITY, new Script(ScriptType.INLINE,"knn","binary_vector_score", params))
+                .setQuery(QueryBuilders.functionScoreQuery(
+                        QueryBuilders.matchAllQuery(),
+                        ScoreFunctionBuilders.scriptFunction(
+                                new Script(ScriptType.INLINE,"knn","binary_vector_score", params)
+                        )
+                        ).boostMode(CombineFunction.SUM).scoreMode(FiltersFunctionScoreQuery.ScoreMode.SUM)
+                ).get();
+        Stream.of(response.getHits().getHits()).forEach(hit->{
+            System.out.println("Hit "+hit.getId()+": "+new Gson().toJson(hit.getSource()));
+            System.out.println("Fields "+hit.getId()+": "+new Gson().toJson(hit.getFields()));
+            System.out.println("Score: "+hit.getScore());
+        });
     }
 }
