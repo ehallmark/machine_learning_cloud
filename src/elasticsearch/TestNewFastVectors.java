@@ -10,6 +10,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
+import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 
 import java.nio.ByteBuffer;
@@ -83,11 +84,9 @@ public class TestNewFastVectors {
         params.put("float",true);
         params.put("scale", 100D);
         SearchResponse response = client.prepareSearch("test").setTypes("type1").setSize(2)
-                .addSort(SortBuilders.scoreSort())
+                .addSort(SortBuilders.scriptSort(new Script(ScriptType.INLINE,"knn","binary_vector_score", params), ScriptSortBuilder.ScriptSortType.NUMBER))
                 .setMinScore(-100f)
-                .addScriptField("dot",
-                                new Script(ScriptType.INLINE,"knn","binary_vector_score", params)
-                        )
+                .addScriptField("dot", new Script(ScriptType.INLINE,"knn","binary_vector_score", params))
                 .setQuery(QueryBuilders.functionScoreQuery(
                         QueryBuilders.matchAllQuery(),
                         ScoreFunctionBuilders.scriptFunction(
