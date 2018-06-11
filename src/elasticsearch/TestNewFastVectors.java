@@ -86,14 +86,14 @@ public class TestNewFastVectors {
         params.put("scale", 100D);
         SearchResponse response = client.prepareSearch("test").setTypes("type1").setSize(2)
                 .addSort(SortBuilders.scriptSort(new Script(ScriptType.INLINE,"knn","binary_vector_score", params), ScriptSortBuilder.ScriptSortType.NUMBER))
-                .setMinScore(-100f)
                 .addScriptField("dot", new Script(ScriptType.INLINE,"knn","binary_vector_score", params))
                 .setQuery(QueryBuilders.functionScoreQuery(
-                        QueryBuilders.matchAllQuery(),
-                        ScoreFunctionBuilders.scriptFunction(
-                                new Script(ScriptType.INLINE,"knn","binary_vector_score", params)
-                        )
-                ).boostMode(CombineFunction.SUM).scoreMode(FiltersFunctionScoreQuery.ScoreMode.SUM)).get();
+                                QueryBuilders.matchAllQuery(),
+                                ScoreFunctionBuilders.scriptFunction(
+                                        new Script(ScriptType.INLINE,"knn","binary_vector_score", params)
+                                )
+                        ).boostMode(CombineFunction.SUM).scoreMode(FiltersFunctionScoreQuery.ScoreMode.SUM)
+                ).get();
 
         Stream.of(response.getHits().getHits()).forEach(hit->{
             System.out.println("Hit "+hit.getId()+": "+new Gson().toJson(hit.getSource()));
