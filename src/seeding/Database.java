@@ -11,6 +11,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.compdb.CreateCompDBAssigneeTransactionData;
+import seeding.google.elasticsearch.Attributes;
 import tools.ClassCodeHandler;
 import user_interface.ui_models.attributes.AssetNumberAttribute;
 import user_interface.ui_models.attributes.ReelFrameAttribute;
@@ -201,8 +202,8 @@ public class Database {
 		return collection;
 	}
 
-	public static Map<String,INDArray> loadCPCVaeVectorsForAssets(List<String> assets) {
-		return loadVectorsFor("big_query_embedding1","publication_number_full","cpc_vae",assets, true);
+	public static Map<String,INDArray> loadPatentVectorsFor(List<String> assets) {
+		return loadVectorsFor("big_query_embedding_by_fam", Attributes.PUBLICATION_NUMBER_FULL,Attributes.ENC,assets, true);
 	}
 
 	public static Map<String,INDArray> loadAssigneeVectorsFor(String tableName, String attrName, String vecName, List<String> assignees) {

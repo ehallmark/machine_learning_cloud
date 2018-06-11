@@ -1561,7 +1561,7 @@ public class BigQueryServer extends SimilarPatentServer {
                 if (assets == null) {
                     message.add("assets are null");
                 } else {
-                    Map<String,INDArray> vectorMap = Database.loadCPCVaeVectorsForAssets(assets);
+                    Map<String,INDArray> vectorMap = Database.loadPatentVectorsFor(assets);
                     Map<String,List<String>> technologyMap = Database.loadTechnologiesFor(assets);
                     Function<String,List<String>> techPredictionFunction = asset -> technologyMap.getOrDefault(asset,Collections.emptyList());
                     AssetKMeans kMeans = new AssetKMeans(techPredictionFunction, assets, vectorMap, k);
