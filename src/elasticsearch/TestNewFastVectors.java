@@ -93,7 +93,7 @@ public class TestNewFastVectors {
                         ScoreFunctionBuilders.scriptFunction(
                                 new Script(ScriptType.INLINE,"knn","binary_vector_score", params)
                         )
-                ).boostMode(CombineFunction.MAX)).get();
+                ).boostMode(CombineFunction.SUM)).get();
 
         Stream.of(response.getHits().getHits()).forEach(hit->{
             System.out.println("Hit "+hit.getId()+": "+new Gson().toJson(hit.getSource()));
