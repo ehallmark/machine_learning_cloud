@@ -24,7 +24,7 @@ public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
     private DatasetAttribute datasetAttribute = DatasetAttribute.getDatasetAttribute();
 
     public DataSetSimilarityEngine(String tableName) {
-        super(tableName, Attributes.PUBLICATION_NUMBER_FULL, Attributes.ENC, true);
+        super(tableName, Attributes.PUBLICATION_NUMBER_FULL, Attributes.ENC, false);
     }
 
     @Override

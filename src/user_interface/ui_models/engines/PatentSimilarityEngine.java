@@ -22,7 +22,7 @@ import static user_interface.server.SimilarPatentServer.*;
 public class PatentSimilarityEngine extends AbstractSimilarityEngine {
 
     public PatentSimilarityEngine(String tableName) {
-        super(tableName, Attributes.PUBLICATION_NUMBER_FULL, Attributes.ENC, true);
+        super(tableName, Attributes.PUBLICATION_NUMBER_FULL, Attributes.ENC, false);
     }
 
     @Override

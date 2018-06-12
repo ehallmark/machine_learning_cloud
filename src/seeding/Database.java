@@ -203,7 +203,7 @@ public class Database {
 	}
 
 	public static Map<String,INDArray> loadPatentVectorsFor(List<String> assets) {
-		return loadVectorsFor("big_query_embedding_by_fam", Attributes.PUBLICATION_NUMBER_FULL,Attributes.ENC,assets, true);
+		return loadVectorsFor("big_query_embedding_by_pub", Attributes.PUBLICATION_NUMBER_FULL,Attributes.ENC,assets, false);
 	}
 
 	public static Map<String,INDArray> loadAssigneeVectorsFor(String tableName, String attrName, String vecName, List<String> assignees) {
@@ -266,10 +266,14 @@ public class Database {
 				ps.setString(i+1, assets.get(i));
 			}
 			ps.setFetchSize(10);
+			long t0 = System.currentTimeMillis();
+			System.out.println("Executing query: "+ps.toString());
 			rs = ps.executeQuery();
 			while(rs.next()) {
 				data.put(rs.getString(1),Nd4j.create(Stream.of((Number[])rs.getArray(2).getArray()).mapToDouble(d->d.doubleValue()).toArray()));
 			}
+			long t1 = System.currentTimeMillis();
+			System.out.println("Finished query: "+(t1-t0)/1000+" seconds");
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {
