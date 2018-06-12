@@ -91,13 +91,14 @@ public class PredictTechTags {
                     "AMATEUR RADIO RECEIVERS",
                     "WATER MANAGEMENT",
                     "INTERNET TERMINOLOGY",
-                    "LIMELIGHT"
+                    "LIMELIGHT",
+                    "TACTICAL MEDIA"
             )
     );
 
 
     private static final Function<String,String> technologyTransformer = tech -> {
-        return tech.replace("APPLICATIONS OF ","");
+        return tech.replace("APPLICATIONS OF ","").replace("DATA GOVERNANCE", "DATA MANAGEMENT");
     };
 
     public static void main(String[] args) throws Exception {
