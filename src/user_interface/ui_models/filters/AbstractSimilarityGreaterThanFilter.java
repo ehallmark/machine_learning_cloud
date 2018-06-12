@@ -6,11 +6,11 @@ import lombok.NonNull;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
+import seeding.google.elasticsearch.Attributes;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
-import user_interface.ui_models.attributes.script_attributes.FastSimilarityAttribute;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -64,7 +64,7 @@ public class AbstractSimilarityGreaterThanFilter extends AbstractFilter {
         return QueryBuilders.boolQuery()
                 .must(QueryBuilders.scriptQuery(filterScript))
                 // make sure vector exists
-                .filter(QueryBuilders.existsQuery(FastSimilarityAttribute.VECTOR_NAME));
+                .filter(QueryBuilders.existsQuery(Attributes.ENC));
     }
 
     public Script getScript() {
