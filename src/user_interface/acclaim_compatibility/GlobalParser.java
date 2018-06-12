@@ -10,11 +10,12 @@ import org.elasticsearch.index.query.*;
 import org.elasticsearch.indices.TermsLookup;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.google.elasticsearch.Attributes;
-import seeding.google.elasticsearch.attributes.*;
+import seeding.google.elasticsearch.attributes.Expired;
+import seeding.google.elasticsearch.attributes.Granted;
+import seeding.google.elasticsearch.attributes.Lapsed;
 import user_interface.server.BigQueryServer;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
-import user_interface.ui_models.filters.AbstractBetweenFilter;
 import user_interface.ui_models.filters.AbstractBooleanExcludeFilter;
 import user_interface.ui_models.filters.AbstractBooleanIncludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -27,6 +28,33 @@ import java.util.*;
  * Created by ehallmark on 1/5/18.
  */
 public class GlobalParser {
+    private static final Function3<String,String,String,QueryBuilder> defaultDateTransformation = (name,val,user) -> {
+        if(val==null||val.length()<=2) return null;
+        String[] vals = val.toUpperCase().substring(1, val.length() - 1).split(" TO ");
+        String date1= null;
+        String date2= null;
+        for(int i = 0; i < vals.length; i++) {
+            vals[i] = tryCoerceDate(vals[i]);
+        }
+        try {
+            if(vals.length>0) {
+                date1 = LocalDate.parse(vals[0], DateTimeFormatter.ISO_DATE).format(DateTimeFormatter.ISO_DATE);
+            }
+        } catch (Exception e) {
+
+        }
+        try {
+            if(vals.length>1) {
+                date2 = LocalDate.parse(vals[1], DateTimeFormatter.ISO_DATE).format(DateTimeFormatter.ISO_DATE);
+            }
+        } catch(Exception e) {
+
+        }
+        return QueryBuilders.rangeQuery(name)
+                .gte(date1)
+                .lt(date2);
+    };
+
     public static final Map<String,Function3<String,String,String,QueryBuilder>> transformationsForAttr;
     private static final Function3<String,String,String,QueryBuilder> defaultTransformation;
     private static final Map<String,Float> defaultFields = Collections.synchronizedMap(new HashMap<>());
@@ -41,8 +69,11 @@ public class GlobalParser {
 
         defaultTransformation = (name,val,user) -> {
             if(name!=null && name.length()>0) {
-                if(name.endsWith("Date")||name.endsWith("_date")||name.equals("date")) {
+                if(name.endsWith("Date")||name.endsWith("_date")||name.equals("date")||name.contains("_date_")) {
                     // try date formatting
+                    if(val!=null&&val.toUpperCase().contains(" TO ")) {
+                        return defaultDateTransformation.apply(name,val,user);
+                    }
                     val = tryCoerceDate(val);
                 }
                 return QueryBuilders.queryStringQuery(name + ":" + val.toLowerCase()).defaultOperator(Operator.AND);
@@ -55,6 +86,7 @@ public class GlobalParser {
         transformationsForAttr = Collections.synchronizedMap(new HashMap<>());
         transformationsForAttr.put(Attributes.COUNTRY_CODE,(name,str,user)->QueryBuilders.termQuery(name,str.toUpperCase()));
         transformationsForAttr.put("PT",(name,str,user) ->{
+            name = Attributes.KIND_CODE;
             QueryBuilder ret;
             str=str.toUpperCase();
             if(str.equals("U")) ret = QueryBuilders.boolQuery()
@@ -79,49 +111,9 @@ public class GlobalParser {
             } else if (val.toLowerCase().equals("lapsed")) {
                 return new AbstractBooleanIncludeFilter(new Lapsed(), AbstractFilter.FilterType.BoolTrue).getFilterQuery();
             }
-            if(val.length()>2) {
-                String[] vals = val.substring(1, val.length() - 1).split(" TO ");
-                LocalDate date1= null;
-                LocalDate date2= null;
-                try {
-                    date1 = LocalDate.parse(vals[0], DateTimeFormatter.ISO_DATE);
-                } catch (Exception e) {
-
-                }
-                try {
-                    date2 = LocalDate.parse(vals[1], DateTimeFormatter.ISO_DATE);
-                } catch(Exception e) {
-
-                }
-                AbstractBetweenFilter betweenFilter = new AbstractBetweenFilter(new CalculatedExpirationDate(), AbstractFilter.FilterType.Between);
-                betweenFilter.setMin(date1);
-                betweenFilter.setMax(date2);
-                return betweenFilter.getFilterQuery();
-            }
-            return null;
+            return defaultDateTransformation.apply(Attributes.EXPIRATION_DATE_ESTIMATED,val,user);
         });
-        transformationsForAttr.put(Attributes.PRIORITY_DATE_ESTIMATED,(name,val,user)->{
-            if(val.length()>2) {
-                String[] vals = val.substring(1, val.length() - 1).split(" TO ");
-                LocalDate date1= null;
-                LocalDate date2= null;
-                try {
-                    date1 = LocalDate.parse(vals[0], DateTimeFormatter.ISO_DATE);
-                } catch (Exception e) {
-
-                }
-                try {
-                    date2 = LocalDate.parse(vals[1], DateTimeFormatter.ISO_DATE);
-                } catch(Exception e) {
-
-                }
-                AbstractBetweenFilter betweenFilter = new AbstractBetweenFilter(new CalculatedPriorityDate(), AbstractFilter.FilterType.Between);
-                betweenFilter.setMin(date1);
-                betweenFilter.setMax(date2);
-                return betweenFilter.getFilterQuery();
-            }
-            return null;
-        });
+        
         transformationsForAttr.put("FIELD",(name,val,user)->{
             String replace;
             if(val.startsWith("isEmpty")) {

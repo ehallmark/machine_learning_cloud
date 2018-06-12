@@ -1,9 +1,6 @@
 package seeding.google.postgres;
 
-import org.deeplearning4j.text.stopwords.StopWords;
-
 import java.util.Collection;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -27,7 +24,7 @@ public class Util {
                 parentField = field;
                 childField = field;
             }
-            boolean isDate = childField.equals("date")||childField.endsWith("_date")||childField.endsWith("Date");
+            boolean isDate = childField.equals("date")||childField.endsWith("_date")||childField.endsWith("Date")||childField.contains("_date_");
             String ret = "?";
             if(arrayFields.contains(parentField)) {
                 // is array field

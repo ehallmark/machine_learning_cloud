@@ -474,7 +474,7 @@ public class DataSearcher {
             if(!alreadyFound.contains(k)) {
                 if (val != null) {
                     // check for date field
-                    if ((k.endsWith("Date")||k.equals("date")||k.endsWith("_date")) && val instanceof Number) {
+                    if ((k.endsWith("Date")||k.equals("date")||k.endsWith("_date")||k.contains("_date_")) && val instanceof Number) {
                         long longValue = ((Number) val).longValue();
                         val = Instant.ofEpochMilli(longValue).atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ISO_DATE);
                     }

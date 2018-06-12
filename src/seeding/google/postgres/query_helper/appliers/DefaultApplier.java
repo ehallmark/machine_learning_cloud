@@ -5,7 +5,6 @@ import data_pipeline.helpers.Function2;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.SQLType;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -44,7 +43,7 @@ public class DefaultApplier implements Function2<PreparedStatement,List<Object>,
         if(data == null) {
             preparedStatement.setObject(idx, null);
         } else if(data instanceof String) {
-            if(field.equals("date")||field.endsWith("_date")||field.endsWith("Date")) {
+            if(field.equals("date")||field.endsWith("_date")||field.endsWith("Date")||field.contains("_date_")) {
                 // is a date
                 if(data.equals("0")) {
                     preparedStatement.setObject(idx, null);

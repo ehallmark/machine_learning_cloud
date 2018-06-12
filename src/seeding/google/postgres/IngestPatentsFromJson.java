@@ -163,7 +163,7 @@ public class IngestPatentsFromJson {
                 parentField = field;
                 childField = field;
             }
-            boolean isDate = childField.equals("date")||childField.endsWith("_date")||childField.endsWith("Date");
+            boolean isDate = childField.equals("date")||childField.endsWith("_date")||childField.endsWith("Date")||childField.contains("_date_");
             String ret = "?";
             if(arrayFields.contains(parentField)) {
                 // is array field
@@ -202,7 +202,7 @@ public class IngestPatentsFromJson {
                     Object val;
                     final boolean capitalizeValues = (fieldsToCapitalize.contains(childField));
                     if(field.contains(".")) {
-                        boolean isDate = field.equals("date")||field.endsWith("_date")||field.endsWith("Date");
+                        boolean isDate = field.equals("date")||field.endsWith("_date")||field.endsWith("Date")||field.contains("_date_");
                         List<Map<String,Object>> fieldData = (List<Map<String,Object>>)doc.get(field.substring(0,field.indexOf(".")));
                         if(fieldData!=null&&fieldData.size()>0) {
                             Object[] objs = new Object[fieldData.size()];
