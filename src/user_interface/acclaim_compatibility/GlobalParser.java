@@ -113,7 +113,7 @@ public class GlobalParser {
             }
             return defaultDateTransformation.apply(Attributes.EXPIRATION_DATE_ESTIMATED,val,user);
         });
-        
+
         transformationsForAttr.put("FIELD",(name,val,user)->{
             String replace;
             if(val.startsWith("isEmpty")) {
