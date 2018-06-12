@@ -414,11 +414,7 @@ public class DataSearcher {
 
     private static Item hitToItem(String idField, SearchHit hit, Map<String,NestedAttribute> nestedAttrNameMap, boolean isUsingScore, boolean filterNestedObjects) {
         Item item = new Item((String)hit.getSource().get(idField));
-
-        if(true) {
-            System.out.println("Source: "+new Gson().toJson(hit.getSource()));
-            System.out.println("Fields: "+new Gson().toJson(hit.getFields()));
-        }
+        
         Set<String> foundInnerHits = new HashSet<>();
         if(filterNestedObjects) {
             filterNestedObjects(nestedAttrNameMap,hit,item,foundInnerHits);
