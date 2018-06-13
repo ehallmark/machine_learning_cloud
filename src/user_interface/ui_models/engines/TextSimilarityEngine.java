@@ -1,17 +1,24 @@
 package user_interface.ui_models.engines;
 
+import com.google.gson.Gson;
 import j2html.tags.Tag;
 import models.similarity_models.rnn_encoding_model.RNNTextEncodingModel;
 import models.similarity_models.rnn_encoding_model.RNNTextEncodingPipelineManager;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.google.postgres.Util;
 import spark.Request;
 import user_interface.ui_models.filters.AbstractFilter;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -23,22 +30,44 @@ import static user_interface.server.SimilarPatentServer.TEXT_TO_SEARCH_FOR;
  * Created by ehallmark on 2/28/17.
  */
 public class TextSimilarityEngine extends AbstractSimilarityEngine {
-    private static RNNTextEncodingModel encodingModel;
-    private static Word2Vec word2Vec;
-    private static final int maxNumSamples = 128;
-
     private static final Function<Collection<String>,INDArray> inputToVectorFunction = inputs -> {
-        synchronized (TextSimilarityEngine.class) {
-            if (encodingModel == null) {
-                RNNTextEncodingPipelineManager rnnTextEncodingPipelineManager = RNNTextEncodingPipelineManager.getOrLoadManager(true);
-                rnnTextEncodingPipelineManager.initModel(false);
+        // send request to http://127.0.0.1:5000/encode?text={text}
+        try {
+            URL url = new URL("http://127.0.0.1:5000/encode");
+            Map<String, Object> params = new LinkedHashMap<>();
+            if(inputs==null || inputs.isEmpty()) return null;
+            params.put("text", String.join(" ", inputs));
 
-                encodingModel = (RNNTextEncodingModel)rnnTextEncodingPipelineManager.getModel();
-                word2Vec = rnnTextEncodingPipelineManager.getWord2Vec();
+            StringBuilder postData = new StringBuilder();
+            for (Map.Entry<String, Object> param : params.entrySet()) {
+                if (postData.length() != 0) postData.append('&');
+                postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+                postData.append('=');
+                postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
             }
-            String[] words = inputs.stream().filter(input->input!=null).flatMap(input-> Stream.of(Util.textToWordFunction.apply(input))).filter(w->w!=null&&w.length()>0).toArray(s->new String[s]);
-            if(words.length==0) return null;
-            return encodingModel.encode(textToInputVector(words));
+            byte[] postDataBytes = postData.toString().getBytes("UTF-8");
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+            conn.setDoOutput(true);
+            conn.getOutputStream().write(postDataBytes);
+
+            Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+
+            StringBuilder sb = new StringBuilder();
+            for (int c; (c = in.read()) >= 0;)
+                sb.append((char)c);
+            String response = sb.toString();
+            List<Double> results = (List<Double>)new Gson().fromJson(response, List.class);
+            if(results!=null) {
+                return Nd4j.create(results.stream().mapToDouble(d->d).toArray());
+            }
+            return null;
+        } catch(Exception e) {
+            e.printStackTrace();
+            return null;
         }
     };
 
@@ -46,7 +75,6 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
 
     public TextSimilarityEngine() {
         super(inputToVectorFunction);
-       // if(loadVectors) inputToVectorFunction.apply(Collections.emptyList());
     }
 
     @Override
@@ -61,14 +89,6 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
         return null;
     }
 
-    public static INDArray textToInputVector(String[] words) {
-        if(words==null||words.length<1) return null;
-        words = Arrays.copyOf(words,Math.min(maxNumSamples,words.length));
-        INDArray vectors = word2Vec.getWordVectors(Arrays.asList(words));
-        if(vectors.rows()==0) return null;
-        vectors = vectors.transpose().reshape(1,vectors.columns(),vectors.rows());
-        return encodingModel.encode(vectors);
-    }
 
     @Override
     public String getId() {
