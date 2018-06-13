@@ -13,7 +13,7 @@ public class Enc extends SimilarityAttribute {
     }
 
     public Enc() {
-        super(Arrays.asList(Constants.TEXT_SIMILARITY,Constants.PATENT_SIMILARITY, SimilarPatentServer.DATASETS_TO_SEARCH_IN_FIELD));
+        super(Arrays.asList(Constants.ASSIGNEE_SIMILARITY, Constants.CPC_SIMILARITY, Constants.TEXT_SIMILARITY,Constants.PATENT_SIMILARITY, SimilarPatentServer.DATASETS_TO_SEARCH_IN_FIELD));
     }
 
     @Override

@@ -50,9 +50,11 @@ public abstract class SimilarityAttribute extends AbstractScriptAttribute implem
     public void extractRelevantInformationFromParams(Request req) {
         if(simVectors==null) {
             List<String> similarityEngines = extractArray(req, PRE_FILTER_ARRAY_FIELD);
+            System.out.println("Found similarity engines in similarity attribute: "+String.join("; ", similarityEngines));
             List<AbstractSimilarityEngine> relevantEngines = SimilarityEngineController.getAllEngines().stream().filter(engine -> similarityEngines.contains(engine.getName()) && validEngines.contains(engine.getName())).collect(Collectors.toList());
             simVectors = relevantEngines.stream().map(engine -> {
                 engine = engine.dup();
+                System.out.println("Extracting data from engine: "+engine.getName());
                 engine.extractRelevantInformationFromParams(req);
                 return engine.getAvg();
             }).filter(avg -> avg != null).collect(Collectors.toList());
