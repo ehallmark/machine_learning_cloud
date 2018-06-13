@@ -25,7 +25,11 @@ import static user_interface.server.SimilarPatentServer.*;
 public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
     private static Function<Collection<String>,INDArray> newAssigneeFunction(String tableName, String attrName, String vecName) {
         return inputs -> {
+            int inputSize = inputs.size();
             Map<String,INDArray> vecMap = Database.loadAssigneeVectorsFor(tableName,attrName,vecName,new ArrayList<>(inputs));
+            if(inputSize>0 && vecMap.isEmpty()) {
+                throw new RuntimeException("Unable to compute similarity for assignees: "+String.join("; ", inputs));
+            }
             if (vecMap.size() > 0) {
                 return Nd4j.vstack(vecMap.values()).mean(0);
             } else return null;

@@ -35,7 +35,11 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
 
     private static Function<Collection<String>,INDArray> newFunction(String tableName, String attrName, String vecName, boolean join) {
         return inputs -> {
+            int sizeInputs = inputs.size();
             Map<String,INDArray> vecMap = Database.loadVectorsFor(tableName,attrName,vecName,new ArrayList<>(inputs),join);
+            if(sizeInputs>0 && vecMap.size() == 0) {
+                throw new RuntimeException("Unable to compute similarity of: "+String.join("; ", inputs));
+            }
             if (vecMap.size() > 0) {
                 return Nd4j.vstack(vecMap.values()).mean(0);
             } else return null;

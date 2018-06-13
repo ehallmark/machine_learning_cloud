@@ -2,13 +2,9 @@ package user_interface.ui_models.engines;
 
 import com.google.gson.Gson;
 import j2html.tags.Tag;
-import models.similarity_models.rnn_encoding_model.RNNTextEncodingModel;
-import models.similarity_models.rnn_encoding_model.RNNTextEncodingPipelineManager;
-import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
-import seeding.google.postgres.Util;
 import spark.Request;
 import user_interface.ui_models.filters.AbstractFilter;
 
@@ -18,9 +14,11 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.textarea;
@@ -63,8 +61,9 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
             List<Double> results = (List<Double>)new Gson().fromJson(response, List.class);
             if(results!=null) {
                 return Nd4j.create(results.stream().mapToDouble(d->d).toArray());
+            } else {
+                throw new RuntimeException("Unable to compute similarity for text: "+String.join("; ", inputs));
             }
-            return null;
         } catch(Exception e) {
             e.printStackTrace();
             return null;
