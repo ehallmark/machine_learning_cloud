@@ -2,6 +2,7 @@ package user_interface.ui_models.engines;
 
 import com.google.gson.Gson;
 import j2html.tags.Tag;
+import org.bson.Document;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
@@ -55,8 +56,9 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
             for (int c; (c = in.read()) >= 0;)
                 sb.append((char)c);
             String response = sb.toString();
-            List<Double> results = (List<Double>)new Gson().fromJson(response, List.class);
-            if(results!=null) {
+            List<Double> results = new Gson().fromJson(response, List.class);
+            System.out.println("Results: "+results);
+            if(results!=null&&results.size()>0) {
                 return Nd4j.create(results.stream().mapToDouble(d->d).toArray());
             } else {
                 throw new RuntimeException("Unable to compute similarity for text: "+String.join("; ", inputs));
