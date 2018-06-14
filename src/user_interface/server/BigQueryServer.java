@@ -2774,7 +2774,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                 ),
                                 div().withClass("col-6 attributeElement").with(
                                         label("Export Limit").attr("style","width: 100%;").attr("title", "The maximum number of documents to include when creating Datasets or exporting to CSV. The maximum limit is 10,000. <br/> If the number of search results is greater than the Export Limit, the 'Sort By' and 'Sort Direction' fields determine which documents will be retrieved. <br/> Please note: The Export Limit does not limit the number of documents used in chart aggregation calculations.").with(
-                                                br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                                br(),input().withId("main-options-"+LIMIT_FIELD).attr("style", "height: 28px !important;").withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         )
                                 )
                         )
