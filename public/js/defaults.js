@@ -66,6 +66,9 @@ $(document).ready(function() {
              $form.prop('disabled', false);
              var $scrollTo = $('div.content');
              if($scrollTo.length>0) {
+                $('html,body').animate({
+                    scrollTop: $scrollTo.offset().top-100
+                }, 500);
                 $(window).scrollTop($scrollTo.scrollTop());
              }
            },
