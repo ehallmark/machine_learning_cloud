@@ -629,6 +629,9 @@ $(document).ready(function() {
             duration: 200
         }
     });
+    $(document).click(function() {
+        $('.ui-tooltip').remove();
+    });
 
     if(document.getElementById('acclaim_expert_filter')) {
         var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
