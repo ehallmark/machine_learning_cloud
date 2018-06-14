@@ -591,11 +591,6 @@ $(document).ready(function() {
     $nestedLists.sortable();
     $nestedLists.disableSelection();
 
-    // prevent bug with text editor and sortable lists
-    $('.CodeMirror-wrap').mousedown(function(e) {
-        e.stopPropagation();
-    });
-
     $('#main-content-id').addClass('show');
 
     $('input[type="checkbox"]').click(function(e) {
@@ -841,6 +836,11 @@ $(document).ready(function() {
         update_expert_query_display();
         return false;
     };
+
+    // prevent bug with text editor and sortable lists
+    $('.CodeMirror-wrap').mousedown(function(e) {
+        e.stopPropagation();
+    });
 
     resetSearchForm();
     showTemplateFunction({file: 'default'},null,null);
