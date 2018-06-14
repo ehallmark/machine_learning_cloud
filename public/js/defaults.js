@@ -33,10 +33,13 @@ $(document).ready(function() {
          }*/
 
          var $form = $('#'+formId);
+         if($form.prop('disabled')) {
+            alert('Previous search is still in progress...');
+            return;
+         }
+         $form.prop('disabled', true);
          var $button = $('.'+buttonClass);
          var url = $form.attr('action');
-         var tempScrollTop = $(window).scrollTop();
-
          $button.prop('disabled',true).text(buttonTextWhileSearching);
 
          $(".attributeElement .attribute").not('.disabled').each(function() {
@@ -60,7 +63,11 @@ $(document).ready(function() {
            data: $form.serialize(),
            complete: function(jqxhr,status) {
              $button.prop('disabled',false).text(buttonText);
-             $(window).scrollTop(tempScrollTop);
+             $form.prop('disabled', false);
+             var $scrollTo = $('div.content');
+             if($scrollTo.length>0) {
+                $(window).scrollTop($scrollTo.scrollTop());
+             }
            },
            error: function(jqxhr,status,error) {
              if(jqxhr.status==404 || jqxhr.status==502) {
