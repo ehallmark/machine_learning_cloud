@@ -165,7 +165,7 @@ $(document).ready(function() {
                       alert(chartData.message);
                    } else {
                       var $chartDiv = $('#'+chartData.chartId.toString());
-                      if(chartData.chartId===0) {
+                      if(chartData.chartId==='chart-0') {
                         if($chartDiv.is(':visible')) {
                             $('html,body').animate({
                                 scrollTop: $chartDiv.offset().top-150
