@@ -29,26 +29,16 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     private static final Function<Collection<String>,INDArray> inputToVectorFunction = inputs -> {
         // send request to http://127.0.0.1:5000/encode?text={text}
         try {
-            URL url = new URL("http://127.0.0.1:5000/encode");
             Map<String, Object> params = new LinkedHashMap<>();
             if(inputs==null || inputs.isEmpty()) return null;
             params.put("text", String.join(" ", inputs));
-
-            StringBuilder postData = new StringBuilder();
-            for (Map.Entry<String, Object> param : params.entrySet()) {
-                if (postData.length() != 0) postData.append('&');
-                postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
-                postData.append('=');
-                postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
-            }
-            byte[] postDataBytes = postData.toString().getBytes("UTF-8");
+            StringBuilder stringBuilder = new StringBuilder("http://127.0.0.1:5000/encode");
+            stringBuilder.append("?text=");
+            stringBuilder.append(URLEncoder.encode(String.join(" ", inputs), "UTF-8"));
+            URL url = new URL(stringBuilder.toString());
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-            conn.setDoOutput(true);
-            conn.getOutputStream().write(postDataBytes);
+            conn.setRequestMethod("GET");
 
             Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 
