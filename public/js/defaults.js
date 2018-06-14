@@ -592,10 +592,7 @@ $(document).ready(function() {
         sort: function(event,ui) {
             if($(ui.item).find('#collapse-filters-acclaim_expert_filter').length>0) {
                 $(this).sortable('disable');
-                $(this).prop("disabled", true);
-            } else if($(this).prop('disabled')) {
-                $(this).sortable('enable');
-                $(this).prop('disabled', false);
+                setTimeout(100, function() {$(this).sortable('enable')});
             }
         }
     });
