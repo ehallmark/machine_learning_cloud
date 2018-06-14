@@ -64,12 +64,11 @@ $(document).ready(function() {
            complete: function(jqxhr,status) {
              $button.prop('disabled',false).text(buttonText);
              $form.prop('disabled', false);
-             var $scrollTo = $('div.content');
-             if($scrollTo.length>0) {
+             var $scrollTo = $('#data-table');
+             if($scrollTo.length>0 && $scrollTo.is(':visible')) {
                 $('html,body').animate({
-                    scrollTop: $scrollTo.offset().top-100
+                    scrollTop: $scrollTo.offset().top-150
                 }, 500);
-                $(window).scrollTop($scrollTo.scrollTop());
              }
            },
            error: function(jqxhr,status,error) {
@@ -166,6 +165,13 @@ $(document).ready(function() {
                       alert(chartData.message);
                    } else {
                       var $chartDiv = $('#'+chartData.chartId.toString());
+                      if(chartData.chartId===0) {
+                        if($chartDiv.is(':visible')) {
+                            $('html,body').animate({
+                                scrollTop: $chartDiv.offset().top-150
+                            }, 500);
+                        }
+                      }
                       for(var j = 0; j < chartData.charts.length; j++) {
                         var $currChart = $('<div id="'+ chartData.chartId+"-"+j.toString() +'"></div>');
                         var isStockChart = chartData.isStockCharts[j];
