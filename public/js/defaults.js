@@ -589,8 +589,8 @@ $(document).ready(function() {
 
     var $nestedLists = $('.nested-form-list');
     $nestedLists.sortable({
-        sort: function() {
-            if($(this).find('#collapse-filters-acclaim_expert_filter').length>0) {
+        sort: function(event,ui) {
+            if($(ui.item).find('#collapse-filters-acclaim_expert_filter').length>0) {
                 $(this).sortable('disable');
                 $(this).prop("disabled", true);
             } else if($(this).prop('disabled')) {
