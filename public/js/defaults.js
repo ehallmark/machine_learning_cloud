@@ -588,15 +588,13 @@ $(document).ready(function() {
     setCollapsibleHeaders(".collapsible-header");
 
     var $nestedLists = $('.nested-form-list');
-    $nestedLists.sortable({
-        sort: function(event,ui) {
-            if($(ui.item).find('#collapse-filters-acclaim_expert_filter').length>0) {
-                $(this).sortable('disable');
-                setTimeout(100, function() {$(this).sortable('enable');});
-            }
-        }
-    });
+    $nestedLists.sortable();
     $nestedLists.disableSelection();
+
+    // prevent bug with text editor and sortable lists
+    $('.CodeMirror-wrap').mousedown(function(e) {
+        e.stopPropagation();
+    });
 
     $('#main-content-id').addClass('show');
 
