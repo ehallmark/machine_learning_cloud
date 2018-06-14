@@ -103,7 +103,7 @@ public class SimilarityEngineController {
         }
 
         if(comparator.equals(Constants.SCORE)) {
-            attributesRequired.add(Attributes.ENC);
+            attributesRequired.add(Attributes.SIMILARITY);
         }
 
         System.out.println("Required attributes: "+String.join("; ",attributesRequired));
