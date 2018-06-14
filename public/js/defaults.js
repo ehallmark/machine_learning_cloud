@@ -588,7 +588,13 @@ $(document).ready(function() {
     setCollapsibleHeaders(".collapsible-header");
 
     var $nestedLists = $('.nested-form-list');
-    $nestedLists.sortable();
+    $nestedLists.sortable({
+        sort: function() {
+            if($(this).find('#collapse-filters-acclaim_expert_filter').length>0) {
+                $(this).sortable('cancel');
+            }
+        }
+    });
     $nestedLists.disableSelection();
 
     $('#main-content-id').addClass('show');
