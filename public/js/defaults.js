@@ -294,7 +294,7 @@ $(document).ready(function() {
         e.preventDefault();
         $('#generate-reports-form').find('#only-excel-hidden-input').val(true);
         var buttonClass = "download-to-excel-button";
-        var buttonText = "Download to Excel";
+        var buttonText = "Download to CSV";
         var buttonTextWhileSearching = "Downloading...";
         var formId = 'generate-reports-form';
         return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFromExcelOnly);
