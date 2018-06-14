@@ -47,10 +47,10 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
+    protected Collection<String> getInputsToSearchFor(Request req) {
         System.out.println("Collecting inputs to search for...");
         // get input data
-        List<String> inputsToSearchFor = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, ""), "\\n", "[^0-9A-Za-z ]");
+        List<String> inputsToSearchFor = preProcess(extractString(req, getId(), ""), "\\n", "[^0-9A-Za-z ]");
         System.out.println("Found "+inputsToSearchFor.size()+" assignees to search for: "+String.join("; ", inputsToSearchFor));
         return inputsToSearchFor;
     }

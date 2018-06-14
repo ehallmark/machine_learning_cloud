@@ -26,10 +26,10 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
+    protected Collection<String> getInputsToSearchFor(Request req) {
         System.out.println("Collecting inputs to search for...");
         // get input data
-        List<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9A-Z]");
+        List<String> patents = preProcess(extractString(req, getId(), ""), "\\s+", "[^0-9A-Z]");
         Collections.shuffle(patents, new Random(125));
         patents = patents.subList(0, Math.min(patents.size(),1000));
         System.out.println("Found "+patents.size()+" patents...");

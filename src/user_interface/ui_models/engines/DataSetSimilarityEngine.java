@@ -28,7 +28,7 @@ public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
+    protected Collection<String> getInputsToSearchFor(Request req) {
         System.out.println("Collecting inputs to search for...");
         // get input data
         Collection<String> labels = SimilarPatentServer.extractArray(req, getId());

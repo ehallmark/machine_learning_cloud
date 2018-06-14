@@ -14,15 +14,12 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.textarea;
-import static user_interface.server.SimilarPatentServer.TEXT_TO_SEARCH_FOR;
+import static user_interface.server.SimilarPatentServer.*;
 
 /**
  * Created by ehallmark on 2/28/17.
@@ -83,9 +80,13 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
 
 
     @Override
-    protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
+    protected Collection<String> getInputsToSearchFor(Request req) {
+        System.out.println("Collecting text similarity inputs to search for...");
         // get input data
-        return null;
+        String text = extractString(req, getId(), "");
+        System.out.println("Found text: "+text);
+        if(text==null||text.isEmpty()) return null;
+        return Collections.singletonList(text.toLowerCase());
     }
 
 

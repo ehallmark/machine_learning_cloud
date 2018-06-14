@@ -51,11 +51,10 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
         this.tableName=tableName;
     }
 
-    protected abstract Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes);
+    protected abstract Collection<String> getInputsToSearchFor(Request req);
 
     public void extractRelevantInformationFromParams(Request req) {
-        List<String> resultTypes = SimilarPatentServer.extractArray(req,  Constants.DOC_TYPE_INCLUDE_FILTER_STR);
-        inputs = getInputsToSearchFor(req,resultTypes);
+        inputs = getInputsToSearchFor(req);
         if(inputs!=null&&inputs.size()>0) {
             avg = inputsToAvgVectorFunction.apply(inputs);
         }

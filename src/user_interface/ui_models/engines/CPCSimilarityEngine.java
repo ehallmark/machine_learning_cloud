@@ -24,12 +24,12 @@ public class CPCSimilarityEngine extends AbstractSimilarityEngine implements Aja
     }
 
     @Override
-    protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
+    protected Collection<String> getInputsToSearchFor(Request req) {
         System.out.println("Collecting inputs to search for...");
         // get input data
-        Collection<String> inputsToSearchFor = extractArray(req, CPCS_TO_SEARCH_FOR_FIELD);
+        Collection<String> inputsToSearchFor = extractArray(req, getId());
 
-        System.out.println("Found "+inputsToSearchFor.size()+" assignees to search for.");
+        System.out.println("Found "+inputsToSearchFor.size()+" cpc to search for.");
         return inputsToSearchFor;
     }
 
