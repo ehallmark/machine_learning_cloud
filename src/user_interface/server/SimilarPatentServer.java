@@ -2182,7 +2182,7 @@ public class SimilarPatentServer {
     static Tag tableFromPatentList(List<String> attributes) {
         return span().withClass("collapse show").withId("data-table").with(
                 form().withMethod("post").withTarget("_blank").withAction(DOWNLOAD_URL).with(
-                        button("Download to Excel").withType("submit").withClass("btn btn-outline-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
+                        button("Download to CSV").withType("submit").withClass("btn btn-outline-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
                 ),
                 dataTableFromHeadersAndData(attributes)
         );
@@ -2691,7 +2691,7 @@ public class SimilarPatentServer {
         Tag buttons =  div().withClass("col-10 offset-1").with(
                 div().withClass("btn-group row").with(
                         div().withText("Generate Report").withClass("btn btn-outline-secondary div-button "+GENERATE_REPORTS_FORM_ID+"-button"),
-                        div().withText("Download to Excel").withClass("btn btn-outline-secondary div-button download-to-excel-button")
+                        div().withText("Download to CSV").withClass("btn btn-outline-secondary div-button download-to-excel-button")
                 )
         );
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(

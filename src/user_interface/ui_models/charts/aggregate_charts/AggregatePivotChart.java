@@ -39,7 +39,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                 h5(response.title),br(),
                 form().withMethod("post").withTarget("_blank").withAction(SimilarPatentServer.DOWNLOAD_URL).with(
                         input().withType("hidden").withName("tableId").withValue(String.valueOf(tableIdx)),
-                        button("Download to Excel").withType("submit").withClass("btn btn-outline-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
+                        button("Download to CSV").withType("submit").withClass("btn btn-outline-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
                 ),
                 table().withClass("table table-striped").withId(type+"-table-"+tableIdx+"table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                         thead().with(

@@ -2588,10 +2588,8 @@ public class BigQueryServer extends SimilarPatentServer {
                                 ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
                                         li().withClass("nav-item").with(
                                                 a("Filters").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
-                                        ),li().withClass("nav-item").with(
-                                                a("Sort And Limit").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
-                                        ),li().withClass("nav-item").with(
-                                                a("Settings").withClass("nav-link").attr("data-toggle","tab").withHref("#tab3").attr("role","tab")
+                                        ), li().withClass("nav-item").with(
+                                                a("Settings").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
                                         )
                                 )
                         ),
@@ -2599,21 +2597,18 @@ public class BigQueryServer extends SimilarPatentServer {
                                 div().withClass("row tab-content").with(
                                         div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("tab1").with(
                                                 div().withClass("row").with(
+                                                        div().withClass("col-12").withId("searchOptionsForm").with(
+                                                                mainOptionsRow()
+                                                        )
+                                                ),
+                                                div().withClass("row").with(
                                                         loaderTag(),
                                                         div().withClass("col-12").withId("filtersForm").with(
                                                                 customFormRow("filters", allFilters, userRoleFunction)
                                                         )
                                                 )
                                         ),
-                                        div().withClass("col-12 tab-pane fade show").attr("role","tabpanel").withId("tab2").with(
-                                                div().withClass("row").with(
-                                                        loaderTag(),
-                                                        div().withClass("col-12").withId("searchOptionsForm").with(
-                                                                mainOptionsRow()
-                                                        )
-                                                )
-                                        ),
-                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab3").with(
+                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
                                                 div().withClass("collapsible-form row").withId("highlightForm").with(
                                                         loaderTag(),
                                                         h5("Settings"),
@@ -2680,7 +2675,7 @@ public class BigQueryServer extends SimilarPatentServer {
         Tag buttons =  div().withClass("col-10 offset-1").with(
                 div().withClass("btn-group row").with(
                         div().withText("Generate Report").withClass("btn btn-outline-secondary div-button "+GENERATE_REPORTS_FORM_ID+"-button"),
-                        div().withText("Download to Excel").withClass("btn btn-outline-secondary div-button download-to-excel-button")
+                        div().withText("Download to CSV").withClass("btn btn-outline-secondary div-button download-to-excel-button")
                 )
         );
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
@@ -2778,7 +2773,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                         )
                                 ),
                                 div().withClass("col-6 attributeElement").with(
-                                        label("Result Limit").attr("style","width: 100%;").with(
+                                        label("Export/Dataset Limit").attr("style","width: 100%;").attr("title", "The maximum number of documents to include when creating Datasets or exporting to CSV. The maximum limit is 10,000. <br/> If the number of search results is greater than the Export Limit, the 'Sort By' and 'Sort Direction' fields determine which documents will be retrieved. <br/> Please note: The Export Limit does not limit the number of documents used in chart aggregation calculations.").with(
                                                 br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         )
                                 )
