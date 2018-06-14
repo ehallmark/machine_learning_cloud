@@ -591,7 +591,11 @@ $(document).ready(function() {
     $nestedLists.sortable({
         sort: function() {
             if($(this).find('#collapse-filters-acclaim_expert_filter').length>0) {
-                $(this).sortable('cancel');
+                $(this).sortable('disable');
+                $(this).prop("disabled", true);
+            } else if($(this).prop('disabled')) {
+                $(this).sortable('enable');
+                $(this).prop('disabled', false);
             }
         }
     });
