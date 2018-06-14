@@ -624,7 +624,8 @@ $(document).ready(function() {
         var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
             lineNumbers: false,
             matchBrackets: true,
-            autoCloseBrackets: true
+            autoCloseBrackets: true,
+            lineWrapping: true
         });
     }
 
