@@ -2,9 +2,9 @@ package seeding.google.elasticsearch.attributes;
 
 import seeding.google.elasticsearch.Attributes;
 
-public class ApplicationNumberWithCountry extends AssetKeywordAttribute {
+public class RciteFamilyId extends KeywordAttribute {
     @Override
     public String getName() {
-        return Attributes.APPLICATION_NUMBER_WITH_COUNTRY;
+        return Attributes.RCITE_FAMILY_ID;
     }
 }
