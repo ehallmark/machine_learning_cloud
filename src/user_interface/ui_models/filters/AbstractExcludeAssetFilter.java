@@ -11,15 +11,15 @@ import java.util.Collection;
 /**
  * Created by Evan on 6/17/2017.
  */
-public class AbstractExcludeWithRelatedFilter extends AbstractIncludeWithRelatedFilter {
-    public AbstractExcludeWithRelatedFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
+public class AbstractExcludeAssetFilter extends AbstractIncludeAssetFilter {
+    public AbstractExcludeAssetFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
         super(attribute, filterType, fieldType, labels==null?null:new ArrayList<>(labels));
 
     }
 
     @Override
     public AbstractFilter dup() {
-        return new AbstractExcludeWithRelatedFilter(attribute,filterType,fieldType, labels==null?null:new ArrayList<>(labels));
+        return new AbstractExcludeAssetFilter(attribute,filterType,fieldType, labels==null?null:new ArrayList<>(labels));
     }
 
     @Override

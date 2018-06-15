@@ -6,14 +6,14 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Collections;
 
-public class PCPublicationNumberFull extends AbstractAttribute {
-    public PCPublicationNumberFull() {
+public class PCApplicationNumberFormattedWithCountry extends AbstractAttribute {
+    public PCApplicationNumberFormattedWithCountry() {
         super(Collections.emptyList());
     }
 
     @Override
     public String getName() {
-        return Attributes.PC_PUBLICATION_NUMBER_FULL;
+        return Attributes.PC_APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY;
     }
 
     @Override

@@ -157,6 +157,28 @@ public class Database {
 		return results;
 	}
 
+	public static Set<String> familyIdsForAssets(List<String> assets, String assetField) {
+		Set<String> familyIds = new HashSet<>();
+		try {
+			StringJoiner parens = new StringJoiner(",");
+			for(int i = 0; i < assets.size(); i++) {
+				parens.add("?");
+			}
+			PreparedStatement ps = conn.prepareStatement("select family_id from big_query_family_id where "+assetField+" in ("+parens+") where family_id !='-1'");
+			for(int i = 0; i < assets.size(); i++) {
+				ps.setString(i+1, assets.get(i));
+			}
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) {
+				familyIds.add(rs.getString(1));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return familyIds;
+	}
+
+
 	public static List<String> searchBigQueryAssignees(String tableName, String search, int limit, Map<String,Integer> portfolioSizeMap) {
 		if(search==null||search.trim().isEmpty()) return Collections.emptyList();
 		List<String> results = new ArrayList<>(limit);

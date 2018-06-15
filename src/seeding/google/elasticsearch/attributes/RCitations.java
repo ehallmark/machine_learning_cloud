@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class RCitations extends NestedAttribute {
     public RCitations() {
-        super(Arrays.asList(new RcitePublicationNumberFull(), new RciteApplicationNumberFull(), new RciteFamilyId(), new RciteFilingDate(), new RciteType(), new RciteCategory()),true);
+        super(Arrays.asList(new RcitePublicationNumberFull(), new RcitePublicationNumber(), new RcitePublicationNumberWithCountry(), new RciteApplicationNumberFormattedWithCountry(), new RciteApplicationNumberFormatted(), new RciteFamilyId(), new RciteFilingDate(), new RciteType(), new RciteCategory()),true);
     }
 
         @Override

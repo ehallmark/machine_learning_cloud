@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class PriorityClaims extends NestedAttribute {
     public PriorityClaims() {
-        super(Arrays.asList(new PCApplicationNumberFull(), new PCFilingDate(), new PCPublicationNumberFull()),true);
+        super(Arrays.asList(new PCPublicationNumberFull(), new PCPublicationNumber(), new PCPublicationNumberWithCountry(), new PCApplicationNumberFormatted(), new PCApplicationNumberFormattedWithCountry(), new PCFamilyId(), new PCFilingDate()),true);
     }
 
         @Override

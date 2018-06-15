@@ -1,4 +1,6 @@
 package seeding.google.elasticsearch.attributes;
 
-public class AssetAttribute {
+public interface AssetAttribute {
+    String getAssetPrefix();
+    boolean isApplication();
 }

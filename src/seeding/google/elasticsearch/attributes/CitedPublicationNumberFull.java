@@ -7,4 +7,14 @@ public class CitedPublicationNumberFull extends AssetKeywordAttribute {
     public String getName() {
         return Attributes.CITED_PUBLICATION_NUMBER_FULL;
     }
+
+    @Override
+    public String getAssetPrefix() {
+        return Attributes.CITATIONS+".cited_";
+    }
+
+    @Override
+    public boolean isApplication() {
+        return false;
+    }
 }

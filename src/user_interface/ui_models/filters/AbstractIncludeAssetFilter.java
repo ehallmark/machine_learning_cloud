@@ -2,156 +2,128 @@ package user_interface.ui_models.filters;
 
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.indices.TermsLookup;
-import seeding.Constants;
+import seeding.google.elasticsearch.Attributes;
+import seeding.google.elasticsearch.attributes.AssetAttribute;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
-import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
-import static user_interface.server.SimilarPatentServer.extractInt;
-import static user_interface.server.SimilarPatentServer.preProcess;
 
 /**
  * Created by Evan on 6/17/2017.
  */
-public class AbstractIncludeFilter extends AbstractFilter {
-    private static final int DEFAULT_MINIMUM_SHOULD_MATCH = 1;
-    @Getter @Setter
-    protected Collection<String> labels;
-    protected FieldType fieldType;
-    protected int minimumShouldMatch;
-    public AbstractIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
-        super(attribute, filterType);
-        this.fieldType=fieldType;
-        this.labels = labels;
-
-    }
-
-    public String getMinShouldMatchId() {
-        if(filterType.equals(FilterType.PrefixInclude)||filterType.equals(FilterType.Include)) {
-            return getId()+Constants.MINIMUM_SHOULD_MATCH_SUFFIX;
-        } else {
-            return null;
-        }
-    }
-
-    @Override public String getId() {
-        if(!fieldType.equals(FieldType.Multiselect)||filterType.equals(FilterType.PrefixExclude)||filterType.equals(FilterType.PrefixInclude)) {
-            return super.getId();
-        } else {
-            return ("multiselect-multiselect-" + getName()).replaceAll("[\\[\\] ]", "");
-        }
+public class AbstractIncludeAssetFilter extends AbstractIncludeFilter {
+    private static final String ENFORCE_COUNTRY_SUFFIX = "_enforce_cc";
+    private static final String ENFORCE_KIND_CODE_SUFFIX = "_enforce_kc";
+    protected String assetField;
+    protected boolean enforceCountryCode;
+    protected boolean enforceKindCode;
+    protected boolean isApplication;
+    protected String assetPrefix;
+    public AbstractIncludeAssetFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
+        super(attribute, filterType, fieldType, labels);
+        if(!(attribute instanceof AssetAttribute)) throw new RuntimeException("Illegal filter type for asset attribute: "+attribute.getFullName());
+        this.isApplication = ((AssetAttribute) attribute).isApplication();
+        this.assetPrefix = ((AssetAttribute) attribute).getAssetPrefix();
     }
 
     @Override
     public AbstractFilter dup() {
-        return new AbstractIncludeFilter(attribute,filterType,fieldType, labels==null?null:new ArrayList<>(labels));
-    }
-
-    @Override
-    protected String transformAttributeScript(String attributeScript) {
-        throw new UnsupportedOperationException("Include Filter not supported by scripts");
+        return new AbstractIncludeAssetFilter(attribute,filterType,fieldType, labels==null?null:new ArrayList<>(labels));
     }
 
     @Override
     public QueryBuilder getFilterQuery() {
-        final String preReq;
-        final boolean termQuery;
-        if(!attribute.getType().equals("keyword")) {
-            if (fieldType.equals(FieldType.Multiselect)&&attribute.getNestedFields() != null) {
-                preReq = getFullPrerequisite()+".raw";
-                termQuery = true;
-            } else {
-                preReq = getFullPrerequisite();
-                termQuery = false;
-            }
-        } else {
-            preReq = getFullPrerequisite();
-            termQuery = true;
-        }
-
-
-        if(minimumShouldMatch<=1 && !(attribute instanceof TermsLookupAttribute) && termQuery) {
+        String preReq = assetPrefix+assetField;
+        System.out.println("Using prereq: "+preReq);
+        if(minimumShouldMatch<=1 && !(attribute instanceof TermsLookupAttribute)) {
             return QueryBuilders.termsQuery(preReq,labels);
         } else {
             BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().minimumShouldMatch(this.minimumShouldMatch);
             for (String label : labels) {
                 if (attribute instanceof TermsLookupAttribute) {
-                    TermsLookupAttribute termsLookupAttribute = (TermsLookupAttribute) attribute;
-                    boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.termsLookupQuery(termsLookupAttribute.getTermsName(), new TermsLookup(termsLookupAttribute.getTermsIndex(), termsLookupAttribute.getTermsType(), label, termsLookupAttribute.getTermsPath())));
-                } else if (termQuery) {
-                    boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.termQuery(preReq, label));
+                    throw new RuntimeException("Unable to use 'Include Asset Filter' for attribute: "+getFullPrerequisite()+". Reason: Currently not supported.");
                 } else {
-                    boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.matchPhraseQuery(preReq, label));
+                    boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.termQuery(preReq, label));
                 }
             }
             return boolQueryBuilder;
         }
     }
 
-    public boolean isActive() { return labels!=null && labels.size() > 0; }
-
     @Override
     public List<String> getInputIds() {
-        List<String> list = Collections.synchronizedList(new ArrayList<>());
-        if(getMinShouldMatchId()!=null) list.add(getMinShouldMatchId());
-        list.add(getId());
+        List<String> list = super.getInputIds();
+        list.add(enforceCountryId());
+        list.add(enforceKindCodeId());
         return list;
     }
 
+    public String enforceCountryId() {
+        return getId()+ENFORCE_COUNTRY_SUFFIX;
+    }
+
+
+    public String enforceKindCodeId() {
+        return getId()+ENFORCE_KIND_CODE_SUFFIX;
+    }
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        if(getMinShouldMatchId()==null) {
-            this.minimumShouldMatch = DEFAULT_MINIMUM_SHOULD_MATCH;
-        } else {
-            this.minimumShouldMatch = extractInt(req, getMinShouldMatchId(), DEFAULT_MINIMUM_SHOULD_MATCH);
-        }
-
-        System.out.println("Minimum should match for "+getName()+": "+minimumShouldMatch);
-
-        if (!fieldType.equals(FieldType.Multiselect)||filterType.equals(FilterType.PrefixExclude)||filterType.equals(FilterType.PrefixInclude)) {
-            System.out.println("Params for "+getName()+": "+String.join("",SimilarPatentServer.extractArray(req, getName())));
-            labels = preProcess(String.join("",SimilarPatentServer.extractArray(req, getName())), "\n", null);
-            System.out.println("Should include labels for "+getName()+": "+String.join(", ",labels));
-        } else {
-            labels = SimilarPatentServer.extractArray(req, getName());
+        if(labels!=null) {
+            enforceCountryCode = SimilarPatentServer.extractBool(req, enforceCountryId());
+            if(!isApplication) enforceKindCode = SimilarPatentServer.extractBool(req, enforceKindCodeId());
+            labels = labels.stream().map(label->{
+                return label.toUpperCase().replaceAll("[^A-Z-0-9]", "");
+            }).collect(Collectors.toList());
+            if (isApplication) {
+                if(enforceCountryCode) {
+                    assetField = Attributes.APPLICATION_NUMBER_FORMATTED;
+                } else {
+                    assetField = Attributes.APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY;
+                }
+            } else {
+                if(enforceCountryCode && enforceKindCode) {
+                    assetField = Attributes.PUBLICATION_NUMBER_FULL;
+                } else if(enforceCountryCode) {
+                    assetField = Attributes.PUBLICATION_NUMBER_WITH_COUNTRY;
+                } else if(enforceKindCode) {
+                    throw new RuntimeException("Must use 'Enforce Country Code' when using 'Enforce Kind Code'.");
+                } else {
+                    assetField = Attributes.PUBLICATION_NUMBER;
+                }
+            }
         }
     }
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        ContainerTag tag;
-        if (!fieldType.equals(FieldType.Multiselect)||filterType.equals(FilterType.PrefixExclude)||filterType.equals(FilterType.PrefixInclude)) {
-            tag= div().with(
-                    textarea().withId(getId()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
+        ContainerTag tag = div().with(
+                textarea().withId(getId()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
+        );
+
+        // add asset specific stuff
+        String enforceCountryId = enforceCountryId();
+        String enforceKindCodeId = enforceKindCodeId();
+        tag = tag.with(
+                label("Enforce Country Code?").with(input().withType("checkbox").withId(enforceCountryId).withName(enforceCountryId))
+        );
+        if(!isApplication) {
+            tag = tag.with(
+                    label("Enforce Kind Code?").with(input().withType("checkbox").withId(enforceKindCodeId).withName(enforceKindCodeId))
             );
-        } else {
-            String clazz = "multiselect";
-            if(attribute instanceof AjaxMultiselect) {
-                tag= div().with(
-                        ajaxMultiSelect(getName(), ((AjaxMultiselect) attribute).ajaxUrl(), getId())
-                );
-            } else {
-                tag = div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(getName(), getId(), clazz, getAllValues())
-                );
-            }
         }
         // check if include
         String minShouldMatchId = getMinShouldMatchId();
@@ -162,7 +134,4 @@ public class AbstractIncludeFilter extends AbstractFilter {
         return tag;
     }
 
-    public static Tag ajaxMultiSelect(String name, String url, String id) {
-        return select().attr("style","width:100%;").withName(name).withId(id).withClass("multiselect-ajax").attr("data-url",url).attr("multiple","multiple");
-    }
 }

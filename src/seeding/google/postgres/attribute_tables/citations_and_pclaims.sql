@@ -133,3 +133,62 @@ insert into big_query_reverse_citations_by_pub (
 );
 
 
+
+
+-- priority claims
+drop table big_query_priority_claims_helper;
+create table big_query_priority_claims_helper (
+    publication_number_full varchar(32) not null,
+    num integer not null,
+    pc_publication_number_full varchar(32),
+    pc_publication_number_with_country varchar(32),
+    pc_publication_number varchar(32),
+    pc_application_number_formatted_with_country varchar(32),
+    pc_application_number_formatted varchar(32),
+    pc_family_id varchar(32),
+    pc_filing_date date,
+    primary key(publication_number_full, num)
+);
+
+insert into big_query_priority_claims_helper (
+    select distinct on (p.publication_number_full,num)
+    p.publication_number_full,
+    num,
+    p2.publication_number_full,
+    p2.country_code||p2.publication_number,
+    p2.publication_number,
+    p2.country_code||p2.application_number_formatted,
+    p2.application_number_formatted,
+    case when p2.family_id ='-1' then null else p2.family_id end,
+    t.pc_filing_date
+    from patents_global as p, unnest(p.pc_publication_number_full,p.pc_application_number_full,p.pc_filing_date)
+        with ordinality as t(pc_publication_number_full,pc_application_number_full,pc_filing_date,num)
+    left outer join patents_global as p2 on (p2.publication_number_full=t.pc_publication_number_full OR p2.application_number_full=t.pc_application_number_full)
+    order by p.publication_number_full,num,case when p2.publication_number_full is not null then 1 else 0 end desc
+);
+
+drop table big_query_priority_claims_by_pub;
+create table big_query_priority_claims_by_pub (
+    publication_number_full varchar(32) primary key,
+    pc_publication_number_full varchar(32)[] not null,
+    pc_publication_number_with_country varchar(32)[] not null,
+    pc_publication_number varchar(32)[] not null,
+    pc_application_number_formatted_with_country varchar(32)[] not null,
+    pc_application_number_formatted varchar(32)[] not null,
+    pc_family_id varchar(32)[] not null,
+    pc_filing_date date[] not null
+);
+
+insert into big_query_priority_claims_by_pub (
+    select publication_number_full,
+    array_agg(pc_publication_number_full),
+    array_agg(pc_publication_number_with_country),
+    array_agg(pc_publication_number),
+    array_agg(pc_application_number_formatted_with_country),
+    array_agg(pc_application_number_formatted),
+    array_agg(pc_family_id),
+    array_agg(pc_filing_date),
+    from big_query_priority_claims_helper
+    group by publication_number_full
+);
+

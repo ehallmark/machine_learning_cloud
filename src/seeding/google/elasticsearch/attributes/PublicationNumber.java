@@ -9,4 +9,13 @@ public class PublicationNumber extends AssetKeywordAttribute {
         return Attributes.PUBLICATION_NUMBER;
     }
 
+    @Override
+    public String getAssetPrefix() {
+        return "";
+    }
+
+    @Override
+    public boolean isApplication() {
+        return false;
+    }
 }

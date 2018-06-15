@@ -23,11 +23,11 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
 
 
     public enum FilterType {
-        Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword, PrefixExclude, PrefixInclude, Regexp, Exists, DoesNotExist, IncludeWithRelated, ExcludeWithRelated
+        Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword, PrefixExclude, PrefixInclude, Regexp, Exists, DoesNotExist, AssetInclude, AssetExclude, IncludeWithRelated, ExcludeWithRelated
     }
 
     public static boolean isPrefix(FilterType type) {
-        if(Arrays.asList(FilterType.Include,FilterType.Exclude,FilterType.BoolTrue,FilterType.BoolFalse).contains(type)) return true;
+        if(Arrays.asList(FilterType.Include,FilterType.Exclude,FilterType.IncludeWithRelated, FilterType.ExcludeWithRelated, FilterType.AssetExclude, FilterType.AssetInclude, FilterType.BoolTrue,FilterType.BoolFalse).contains(type)) return true;
         return false;
     }
 
@@ -216,6 +216,14 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
             }
             case IncludeWithRelated: {
                 description = "This filter excludes "+scope+" that match a related asset of";
+                break;
+            }
+            case AssetExclude: {
+                description = "This filter excludes "+scope+" that match";
+                break;
+            }
+            case AssetInclude: {
+                description = "This filter only includes "+scope+" that match";
                 break;
             }
             default: {

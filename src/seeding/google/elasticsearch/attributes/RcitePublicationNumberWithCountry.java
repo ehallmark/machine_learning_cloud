@@ -1,20 +1,29 @@
 package seeding.google.elasticsearch.attributes;
 
 import seeding.google.elasticsearch.Attributes;
+import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.filters.AbstractFilter;
 
-public class RcitePublicationNumber extends AssetKeywordAttribute {
+import java.util.Collection;
+import java.util.Collections;
+
+public class RcitePublicationNumberWithCountry extends AbstractAttribute {
+    public RcitePublicationNumberWithCountry() {
+        super(Collections.emptyList());
+    }
+
     @Override
     public String getName() {
-        return Attributes.RCITE_PUBLICATION_NUMBER;
+        return Attributes.RCITE_PUBLICATION_NUMBER_WITH_COUNTRY;
     }
 
     @Override
-    public String getAssetPrefix() {
-        return Attributes.RCITATIONS+".rcite_";
+    public String getType() {
+        return "keyword";
     }
 
     @Override
-    public boolean isApplication() {
-        return false;
+    public AbstractFilter.FieldType getFieldType() {
+        return AbstractFilter.FieldType.Text;
     }
 }

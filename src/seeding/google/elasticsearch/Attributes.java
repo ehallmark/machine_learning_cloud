@@ -40,9 +40,6 @@ public class Attributes {
     public static final String PUBLICATION_NUMBER_FULL = "publication_number_full";
     public static final String PUBLICATION_NUMBER = "publication_number";
     public static final String PUBLICATION_NUMBER_WITH_COUNTRY = "publication_number_with_country";
-    public static final String APPLICATION_NUMBER_FULL = "application_number_full";
-    public static final String APPLICATION_NUMBER = "application_number";
-    public static final String APPLICATION_NUMBER_WITH_COUNTRY = "application_number_with_country";
     public static final String APPLICATION_NUMBER_FORMATTED = "application_number_formatted";
     public static final String APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY = "application_number_formatted_with_country";
     public static final String FILING_DATE = "filing_date";
@@ -65,13 +62,21 @@ public class Attributes {
     public static final String ASSIGNEE_HARMONIZED_CC = "assignee_harmonized_cc";
     public static final String PRIORITY_CLAIMS = "priority_claims";
     public static final String PC_PUBLICATION_NUMBER_FULL = "pc_publication_number_full";
-    public static final String PC_APPLICATION_NUMBER_FULL = "pc_application_number_full";
+    public static final String PC_PUBLICATION_NUMBER = "pc_publication_number";
+    public static final String PC_PUBLICATION_NUMBER_WITH_COUNTRY = "pc_publication_number_with_country";
+    public static final String PC_APPLICATION_NUMBER_FORMATTED = "pc_application_number_formatted";
+    public static final String PC_APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY = "pc_application_number_formatted_with_country";
     public static final String PC_FILING_DATE = "pc_filing_date";
+    public static final String PC_FAMILY_ID = "pc_family_id";
     public static final String CODE = "code";
     public static final String TREE = "tree";
     public static final String CITATIONS = "citations";
     public static final String CITED_PUBLICATION_NUMBER_FULL = "cited_publication_number_full";
-    public static final String CITED_APPLICATION_NUMBER_FULL = "cited_application_number_full";
+    public static final String CITED_PUBLICATION_NUMBER = "cited_publication_number";
+    public static final String CITED_PUBLICATION_NUMBER_WITH_COUNTRY = "cited_publication_number_with_country";
+    public static final String CITED_FAMILY_ID = "cited_family_id";
+    public static final String CITED_APPLICATION_NUMBER_FORMATTED = "cited_application_number_formatted";
+    public static final String CITED_APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY = "cited_application_number_formatted_with_country";
     public static final String CITED_NPL_TEXT = "cited_npl_text";
     public static final String CITED_TYPE = "cited_type";
     public static final String CITED_CATEGORY = "cited_category";
@@ -117,7 +122,10 @@ public class Attributes {
     public static final String RECORDED_ASSIGNOR = "recorded_assignor";
     public static final String RCITATIONS = "rcitations";
     public static final String RCITE_PUBLICATION_NUMBER_FULL = "rcite_publication_number_full";
-    public static final String RCITE_APPLICATION_NUMBER_FULL = "rcite_application_number_full";
+    public static final String RCITE_PUBLICATION_NUMBER = "rcite_publication_number";
+    public static final String RCITE_PUBLICATION_NUMBER_WITH_COUNTRY = "rcite_publication_number_with_country";
+    public static final String RCITE_APPLICATION_NUMBER_FORMATTED = "rcite_application_number_formatted";
+    public static final String RCITE_APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY = "rcite_application_number_formatted_with_country";
     public static final String RCITE_FAMILY_ID = "rcite_family_id";
     public static final String RCITE_TYPE = "rcite_type";
     public static final String RCITE_CATEGORY = "rcite_category";
@@ -148,9 +156,6 @@ public class Attributes {
                 new PublicationNumberFull(),
                 new PublicationNumber(),
                 new PublicationNumberWithCountry(),
-                new ApplicationNumberFull(),
-                new ApplicationNumber(),
-                new ApplicationNumberWithCountry(),
                 new ApplicationNumberFormatted(),
                 new ApplicationNumberFormattedWithCountry(),
                 new FilingDate(),

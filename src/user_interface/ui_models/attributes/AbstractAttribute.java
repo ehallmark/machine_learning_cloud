@@ -221,6 +221,14 @@ public abstract class AbstractAttribute {
                     filter = new AbstractExcludeWithRelatedFilter(this,filterType,getFieldType(),null);
                     break;
                 }
+                case AssetExclude: {
+                    filter = new AbstractExcludeAssetFilter(this,filterType,getFieldType(),null);
+                    break;
+                }
+                case AssetInclude: {
+                    filter = new AbstractIncludeAssetFilter(this,filterType,getFieldType(),null);
+                    break;
+                }
                 default: {
                     filter = null;
                 }

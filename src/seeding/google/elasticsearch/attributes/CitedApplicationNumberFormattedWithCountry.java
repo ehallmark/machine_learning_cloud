@@ -6,14 +6,14 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Collections;
 
-public class CitedPublicationNumberWIthCountry extends AbstractAttribute {
-    public CitedPublicationNumberWIthCountry() {
+public class CitedApplicationNumberFormattedWithCountry extends AbstractAttribute {
+    public CitedApplicationNumberFormattedWithCountry() {
         super(Collections.emptyList());
     }
 
     @Override
     public String getName() {
-        return Attributes.CITED_PUBLICATION_NUMBER_WITH_COUNTRY;
+        return Attributes.CITED_APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY;
     }
 
     @Override
@@ -25,6 +25,5 @@ public class CitedPublicationNumberWIthCountry extends AbstractAttribute {
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Text;
     }
-
 
 }

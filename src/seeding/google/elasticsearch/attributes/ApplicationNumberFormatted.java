@@ -7,4 +7,14 @@ public class ApplicationNumberFormatted extends AssetKeywordAttribute {
     public String getName() {
         return Attributes.APPLICATION_NUMBER_FORMATTED;
     }
+
+    @Override
+    public String getAssetPrefix() {
+        return "";
+    }
+
+    @Override
+    public boolean isApplication() {
+        return true;
+    }
 }

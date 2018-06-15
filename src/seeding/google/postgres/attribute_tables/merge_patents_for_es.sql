@@ -37,7 +37,11 @@ create table patents_global_merged (
     assignee_count integer,
     -- priority claims
     pc_publication_number_full varchar(32)[],
-    pc_application_number_full varchar(32)[],
+    pc_publication_number_with_country varchar(32)[],
+    pc_publication_number varchar(32)[],
+    pc_application_number_formatted_with_country varchar(32)[],
+    pc_application_number_formatted varchar(32)[],
+    pc_family_id varchar(32)[],
     pc_filing_date date[],
     pc_count integer,
     -- cpc
@@ -47,10 +51,14 @@ create table patents_global_merged (
     inventive boolean[],
     -- citations
     cited_publication_number_full varchar(32)[],
-    cited_application_number_full varchar(32)[],
+    cited_publication_number_with_country varchar(32)[],
+    cited_publication_number varchar(32)[],
+    cited_application_number_formatted_with_country varchar(32)[],
+    cited_application_number_formatted varchar(32)[],
     cited_npl_text text[],
     cited_type varchar(32)[],
     cited_category varchar(32)[],
+    cited_family_id varchar(32)[],
     cited_filing_date date[],
     citation_count integer,
 
@@ -110,7 +118,10 @@ create table patents_global_merged (
     recorded_assignor text[][], -- first assignor of each reel frame
     -- reverse citations
     rcite_publication_number_full varchar(32)[],
-    rcite_application_number_full varchar(32)[],
+    rcite_publication_number_with_country varchar(32)[],
+    rcite_publication_number varchar(32)[] not null,
+    rcite_application_number_formatted_with_country varchar(32)[],
+    rcite_application_number_formatted varchar(32)[],
     rcite_family_id varchar(32)[],
     rcite_filing_date date[],
     rcite_type varchar(32)[],
@@ -176,7 +187,11 @@ insert into patents_global_merged (
         assignee_count,
         -- priority claims
         pc_publication_number_full,
-        pc_application_number_full,
+        pc_publication_number_with_country,
+        pc_publication_number,
+        pc_application_number_formatted_with_country,
+        pc_application_number_formatted,
+        pc_family_id,
         pc_filing_date,
         pc_count,
         -- cpc
@@ -186,10 +201,14 @@ insert into patents_global_merged (
         inventive,
         -- citations
         cited_publication_number_full,
-        cited_application_number_full,
+        cited_publication_number_with_country,
+        cited_publication_number,
+        cited_application_number_formatted_with_country,
+        cited_application_number_formatted,
         cited_npl_text,
         cited_type,
         cited_category,
+        cited_family_id,
         cited_filing_date,
         citation_count,
         -- value
@@ -245,7 +264,10 @@ insert into patents_global_merged (
         assignment_count,
         -- reverse citations
         rcite_publication_number_full,
-        rcite_application_number_full,
+        rcite_publication_number_with_country,
+        rcite_publication_number,
+        rcite_application_number_formatted_with_country,
+        rcite_application_number_formatted,
         rcite_family_id,
         rcite_filing_date,
         rcite_type,
@@ -311,9 +333,13 @@ insert into patents_global_merged (
         p.assignee_harmonized_cc,
         coalesce(array_length(p.assignee_harmonized,1),0),
         -- priority claims
-        p.pc_publication_number_full,
-        p.pc_application_number_full,
-        p.pc_filing_date,
+        pc.pc_publication_number_full,
+        pc.pc_publication_number_with_country,
+        pc.pc_publication_number,
+        pc.pc_application_number_formatted_with_country,
+        pc.pc_application_number_formatted,
+        pc.pc_family_id,
+        pc.pc_filing_date,
         coalesce(array_length(p.pc_publication_number_full,1),0),
         -- cpc
         p.code,
@@ -321,13 +347,17 @@ insert into patents_global_merged (
         coalesce(cpc_tree.tree,cpc_tree_by_fam.tree),
         p.inventive,
         -- citations
-        p.cited_publication_number_full,
-        p.cited_application_number_full,
-        p.cited_npl_text,
-        p.cited_type,
-        p.cited_category,
-        p.cited_filing_date,
-        coalesce(array_length(p.cited_publication_number_full,1),0),
+        cites.cited_publication_number_full,
+        cites.cited_publication_number_with_country,
+        cites.cited_publication_number,
+        cites.cited_application_number_formatted_with_country,
+        cites.cited_application_number_formatted,
+        cites.cited_npl_text,
+        cites.cited_type,
+        cites.cited_category,
+        cites.cited_family_id,
+        cites.cited_filing_date,
+        coalesce(array_length(cites.cited_publication_number_full,1),0),
         -- ai value
         ai_value.value,
         -- other value attrs
@@ -382,7 +412,10 @@ insert into patents_global_merged (
         coalesce(array_length(a.reel_frame,1),0),
         -- rcites
         rc.rcite_publication_number_full,
-        rc.rcite_application_number_full,
+        rc.rcite_publication_number_with_country,
+        rc.rcite_publication_number,
+        rc.rcite_application_number_formatted_with_country,
+        rc.rcite_application_number_formatted,
         rc.rcite_family_id,
         rc.rcite_filing_date,
         rc.rcite_type,
@@ -418,6 +451,8 @@ insert into patents_global_merged (
     left outer join big_query_maintenance_by_pub as m on (m.publication_number_full=p.publication_number_full)
     left outer join big_query_maintenance_codes_by_pub as m_codes on (m_codes.publication_number_full=p.publication_number_full)
     left outer join big_query_reverse_citations_by_pub as rc on (rc.publication_number_full=p.publication_number_full)
+    left outer join big_query_citations_by_pub as cites on (cites.publication_number_full=p.publication_number_full)
+    left outer join big_query_priority_claims_by_pub as pc on (pc.publication_number_full=p.publication_number_full)
     left outer join big_query_patent_to_latest_assignee_by_pub as latest_assignee on (latest_assignee.publication_number_full=p.publication_number_full)
         left outer join big_query_assignee as latest_assignee_join on (latest_assignee_join.name=latest_assignee.first_assignee)
     left outer join big_query_patent_to_latest_assignee_by_family as latest_assignee_fam on (latest_assignee_fam.family_id=p.family_id)
@@ -438,7 +473,6 @@ insert into patents_global_merged (
     left outer join big_query_ptab_by_pub as ptab on (p.publication_number_full=ptab.publication_number_full)
     left outer join big_query_granted as granted on (p.publication_number_full=granted.publication_number_full)
     left outer join big_query_priority_and_expiration as p_and_e on (p_and_e.publication_number_full=p.publication_number_full)
-    --left outer join big_query_expired as expired on (expired.publication_number_full=p.publication_number_full)
 );
 
 vacuum;

@@ -5,9 +5,9 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 
-public abstract class AssetKeywordAttribute extends AbstractAttribute {
+public abstract class AssetKeywordAttribute extends AbstractAttribute implements AssetAttribute {
     public AssetKeywordAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.IncludeWithRelated, AbstractFilter.FilterType.ExcludeWithRelated, AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
+        super(Arrays.asList(AbstractFilter.FilterType.IncludeWithRelated, AbstractFilter.FilterType.ExcludeWithRelated, AbstractFilter.FilterType.AssetInclude, AbstractFilter.FilterType.AssetExclude, AbstractFilter.FilterType.Exists, AbstractFilter.FilterType.DoesNotExist));
     }
 
     @Override
