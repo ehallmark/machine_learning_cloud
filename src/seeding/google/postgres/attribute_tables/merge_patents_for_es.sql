@@ -119,7 +119,7 @@ create table patents_global_merged (
     -- reverse citations
     rcite_publication_number_full varchar(32)[],
     rcite_publication_number_with_country varchar(32)[],
-    rcite_publication_number varchar(32)[] not null,
+    rcite_publication_number varchar(32)[],
     rcite_application_number_formatted_with_country varchar(32)[],
     rcite_application_number_formatted varchar(32)[],
     rcite_family_id varchar(32)[],
