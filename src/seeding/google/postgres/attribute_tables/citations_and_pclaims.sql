@@ -47,12 +47,12 @@ create table big_query_citations_by_pub (
     cited_type varchar(32)[] not null,
     cited_category varchar(32)[] not null,
     cited_family_id varchar(32)[] not null,
-    cited_filing_date date[] not null,
+    cited_filing_date date[] not null
 );
 
 insert into big_query_citations_by_pub (
     select publication_number_full,
-    array_agg(cited_application_number_full),
+    array_agg(cited_publication_number),
     array_agg(cited_publication_number_with_country),
     array_agg(cited_publication_number),
     array_agg(cited_application_number_formatted_with_country),
@@ -187,7 +187,7 @@ insert into big_query_priority_claims_by_pub (
     array_agg(pc_application_number_formatted_with_country),
     array_agg(pc_application_number_formatted),
     array_agg(pc_family_id),
-    array_agg(pc_filing_date),
+    array_agg(pc_filing_date)
     from big_query_priority_claims_helper
     group by publication_number_full
 );
