@@ -1654,7 +1654,6 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                 },
                 html: true
             });
-        }
         return true;
     });
 
