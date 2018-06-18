@@ -622,13 +622,7 @@ $(document).ready(function() {
     $(document).click(function() {
         $('.ui-tooltip').remove();
     }); */
-    $('[title]').tooltip({
-        delay: {
-            "show": 400,
-            "hide": 200
-        },
-        html: true
-    });
+
 
     if(document.getElementById('acclaim_expert_filter')) {
         var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
@@ -856,6 +850,22 @@ $(document).ready(function() {
     setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
     setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[lastGeneratedDatasetDataFunction,assetListDatasetDataFunction],["From Last Generated Report", "From Asset List", "From CSV File"]);
 
+    $('[title]').tooltip({
+        delay: {
+            "show": 400,
+            "hide": 200
+        },
+        html: true
+    });
+    $('.jstree-contextmenu').on('mouseenter', function(e) {
+        $(this).find('[title]').tooltip({
+               delay: {
+                   "show": 400,
+                   "hide": 200
+               },
+               html: true
+           });
+    });
 
 });
 
@@ -915,6 +925,8 @@ var setCollapsibleHeaders = function(selector) {
             });
         }
     });
+
+
 };
 
 var showDatasetFunction = function(data,tree,node){
@@ -1638,7 +1650,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         }
         return true;
     });
-    $(tree_id).bind("hover_node.jstree", function(event,data) {
+   /* $(tree_id).bind("hover_node.jstree", function(event,data) {
         var $node = $('#'+data.node.id);
         if($node && $node.attr('title')) {
             $node.tooltip({
@@ -1650,5 +1662,5 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
             });
         }
         return true;
-    });
+    });*/
 };
