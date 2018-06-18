@@ -1639,9 +1639,9 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         return true;
     });
     $(tree_id).bind("hover_node.jstree", function(event,data) {
-        if(data.node.title) {
-            $('#'+data.node.id).prop('title', data.node.title);
-            $('#'+data.node.id).tooltip({
+        var $node = $('#'+data.node.id);
+        if($node && $node.attr('title')) {
+            $node.tooltip({
                 delay: {
                     "show": 400,
                     "hide": 200
