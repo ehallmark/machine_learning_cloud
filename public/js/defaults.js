@@ -857,7 +857,7 @@ $(document).ready(function() {
         },
         html: true
     });
-    $('.jstree-contextmenu').on('mouseenter', function(e) {
+    $('ul.jstree-contextmenu.vakata-context li a').on('mouseenter', function(e) {
         $(this).find('[title]').tooltip({
                delay: {
                    "show": 400,
