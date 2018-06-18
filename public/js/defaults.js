@@ -1642,7 +1642,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         }
         return true;
     });
-    $(tree_id).bind("open_node.jstree", function(event,data) {
+/*    $(tree_id).bind("open_node.jstree", function(event,data) {
         $('ul.vakata-context.jstree-contextmenu li a[title]')
             .tooltip({
                 placement: 'right',
@@ -1655,5 +1655,5 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
             });
         return true;
     });
-
+*/
 };
