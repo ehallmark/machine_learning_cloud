@@ -1,5 +1,6 @@
 \connect patentdb
 
+drop table big_query_ai_value_family_size;
 create table big_query_ai_value_family_size (
     family_id varchar(32) primary key,
     family_size integer not null
@@ -9,6 +10,8 @@ insert into big_query_ai_value_family_size (family_id,family_size) (
     select family_id,count(*) from patents_global where family_id!='-1' group by family_id
 );
 
+
+drop table big_query_ai_value_claims;
 create table big_query_ai_value_claims (
     family_id varchar(32) primary key,
     means_present integer,
@@ -17,7 +20,7 @@ create table big_query_ai_value_claims (
 ); -- insert script is located in patent_text.sql
 
 
-
+drop table big_query_ai_value_assignments;
 create table big_query_ai_value_assignments (
     family_id varchar(32) primary key,
     num_assignments integer not null
@@ -34,6 +37,7 @@ insert into big_query_ai_value_assignments (family_id,num_assignments) (
     group by family_id
 );
 
+drop table big_query_ai_value_citations;
 create table big_query_ai_value_citations (
     family_id varchar(32) primary key,
     num_rcites integer not null
@@ -41,16 +45,10 @@ create table big_query_ai_value_citations (
 
 insert into big_query_ai_value_citations (
     select family_id,count(distinct rcited_family_id) from (select
-        doc_number_full,is_filing,t2.rcited_family_id from big_query_reverse_citations as t,unnest(t.rcite_family_id) with ordinality as t2(rcited_family_id,n)
+        publication_number_full,t2.rcited_family_id from big_query_reverse_citations_by_pub as t,unnest(t.rcite_family_id) with ordinality as t2(rcited_family_id,n)
     ) temp left outer join patents_global on
-    (
-
-        (patents_global.publication_number_full=doc_number_full and not is_filing)
-        OR
-        (patents_global.application_number_full=doc_number_full and is_filing)
-
-    )
-    where family_id !='-1' and not family_id in (select family_id from big_query_ai_value_citations)
+        (patents_global.publication_number_full=temp.publication_number_full)
+    where family_id !='-1' -- and not family_id in (select family_id from big_query_ai_value_citations)
     group by family_id
 );
 
