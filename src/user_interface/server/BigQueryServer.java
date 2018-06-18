@@ -1665,6 +1665,9 @@ public class BigQueryServer extends SimilarPatentServer {
         return req -> {
             String userGroup = getUserGroupFor(req.session());
             String[] assets = req.queryParamsValues("assets[]");
+            if(assets == null && extractBool(req, "emptyDataset")) {
+                assets = new String[]{};
+            }
             if(assets==null) assets = req.session(false).attribute("assets"); // default to last seen report
             String name = req.queryParams("name");
             if(assets!=null&&name!=null&&name.length()>0) {
