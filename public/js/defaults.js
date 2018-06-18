@@ -848,7 +848,7 @@ $(document).ready(function() {
 
 
     setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
-    setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[lastGeneratedDatasetDataFunction,assetListDatasetDataFunction],["From Last Generated Report", "From Asset List", "From CSV File"]);
+    setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[lastGeneratedDatasetDataFunction,assetListDatasetDataFunction,emptyDatasetDataFunction],["From Last Generated Report", "From Asset List", "Empty Dataset"]);
 
     $('[title]').tooltip({
         trigger: 'hover',
@@ -1120,6 +1120,30 @@ var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable,callbac
     var preData = {};
     preData["name"]=name;
     preData["createDataset"]= true;
+    preData["parentDirs"] = [];
+    preData["deletable"] = deletable;
+    if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
+        preData["file"] = node.data.file;
+    }
+    if(node.hasOwnProperty('data') && node.data.hasOwnProperty('user')) {
+        preData["user"] = node.data.user;
+    }
+    var nodeData = node;
+    while(typeof nodeData.text !== 'undefined') {
+        if(nodeData.type==='folder') {
+            preData["parentDirs"].unshift(nodeData.text);
+        }
+        var currId = nodeData.parent;
+        nodeData = tree.get_node(currId);
+    }
+    callback(preData);
+};
+
+var emptyDatasetDataFunction = function(tree,node,name,deletable,callback) {
+    var preData = {};
+    preData["name"]=name;
+    preData["createDataset"] = true;
+    preData["assets"] = [];
     preData["parentDirs"] = [];
     preData["deletable"] = deletable;
     if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
@@ -1465,12 +1489,12 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 }
                             }
                         }
-                        var menuName = "Update "+capitalize(node_type);
+                        var menuName = "Replace "+capitalize(node_type);
                         items[menuName] = {
                             "separator_before": false,
                             "separator_after": false,
                             "label": menuName,
-                            "title": "Update this "+node_type+".",
+                            "title": "Replace this "+node_type+". Caution: Existing "+node_type+" will be deleted.",
                             "submenu": subMenu
                         };
                     }
@@ -1515,7 +1539,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                             "separator_before": false,
                             "separator_after": false,
                             "label": newItemSubLabel,
-                            "title": "Add assets to this dataset "+newItemSubLabel.toLowerCase()+".",
+                            "title": "Add assets to this existing dataset "+newItemSubLabel.toLowerCase()+".",
                             "action": function(obj) {
                                 var name = node.text;
                                 var callback = function(data) {
