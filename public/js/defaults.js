@@ -851,7 +851,7 @@ $(document).ready(function() {
     setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[lastGeneratedDatasetDataFunction,assetListDatasetDataFunction],["From Last Generated Report", "From Asset List", "From CSV File"]);
 
     $('[title]').tooltip({
-        trigger: 'click',
+        trigger: 'hover',
         delay: {
             "show": 400,
             "hide": 200
@@ -1647,7 +1647,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         $(tree_id+' ul li a[title]')
             .tooltip({
                 placement: 'right',
-                trigger: 'click',
+                trigger: 'hover',
                 delay: {
                     "show": 400,
                     "hide": 200
