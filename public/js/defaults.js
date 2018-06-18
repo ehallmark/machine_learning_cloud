@@ -851,21 +851,14 @@ $(document).ready(function() {
     setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[lastGeneratedDatasetDataFunction,assetListDatasetDataFunction],["From Last Generated Report", "From Asset List", "From CSV File"]);
 
     $('[title]').tooltip({
+        trigger: 'click',
         delay: {
             "show": 400,
             "hide": 200
         },
         html: true
     });
-    $('ul.jstree-contextmenu.vakata-context li a').on('mouseenter', function(e) {
-        $(this).find('[title]').tooltip({
-               delay: {
-                   "show": 400,
-                   "hide": 200
-               },
-               html: true
-           });
-    });
+
 
 });
 
@@ -1650,10 +1643,11 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         }
         return true;
     });
-   /* $(tree_id).bind("hover_node.jstree", function(event,data) {
-        var $node = $('#'+data.node.id);
-        if($node && $node.attr('title')) {
-            $node.tooltip({
+    $(tree_id).bind("open_node.jstree", function(event,data) {
+        $(tree_id+' ul li a[title]')
+            .tooltip({
+                placement: 'right',
+                trigger: 'click',
                 delay: {
                     "show": 400,
                     "hide": 200
@@ -1662,5 +1656,6 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
             });
         }
         return true;
-    });*/
+    });
+
 };
