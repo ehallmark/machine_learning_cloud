@@ -66,6 +66,8 @@ create or replace function predict(double precision[], double precision[], doubl
     immutable
     returns null on null input;
 
+
+drop table big_query_ai_value_all;
 create table big_query_ai_value_all (
     family_id varchar(32) primary key,
     means_present integer,
@@ -105,6 +107,7 @@ insert into big_query_ai_value_weights (date,weights,intercept) values (
     -1.0491014::double precision
 );
 
+drop table big_query_gather_wipo_stats_by_family_id;
 create table big_query_gather_wipo_stats_by_family_id (
     family_id varchar(32) primary key,
     score double precision not null
@@ -118,6 +121,8 @@ insert into big_query_gather_wipo_stats_by_family_id (family_id,score) (
     --group by family_id
 );
 
+
+drop table big_query_ai_value;
 create table big_query_ai_value (
     family_id varchar(32) primary key, -- eg. US9923222B1
     value double precision not null
@@ -149,7 +154,7 @@ insert into big_query_ai_value (family_id,value) (
             coalesce(length_smallest_ind_claim,average.avg_length_smallest_ind_claim),
             coalesce(num_rcites,average.avg_num_rcites)
          ]
-    )::double precision[],weights,intercept)*(0.75))+(0.25*coalesce(cpc_stats.score,0.0)) as value
+    )::double precision[],weights,intercept)*(0.85))+(0.15*coalesce(cpc_stats.score,0.0)) as value
     from big_query_ai_value_all as ai
     left outer join big_query_gather_wipo_stats_by_family_id as cpc_stats
        on (cpc_stats.family_id=ai.family_id),
