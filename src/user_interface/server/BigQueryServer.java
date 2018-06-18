@@ -1149,6 +1149,9 @@ public class BigQueryServer extends SimilarPatentServer {
     private static Function3<Map<String,Object>,File,Boolean,Void> saveDatasetsFunction(String user, String userGroup) {
         return (formMap, file, shared) -> {
             String[] assets = (String[])formMap.get("assets");
+            if(assets == null && formMap.containsKey("emptyDataset")) {
+                assets = new String[]{};
+            }
             if(assets!=null&&file!=null) {
                 String username = shared ? userGroup : user;
                 DatasetIndex.index(username,file.getName(),Arrays.asList(assets));
@@ -1717,8 +1720,9 @@ public class BigQueryServer extends SimilarPatentServer {
         Random random = new Random(System.currentTimeMillis());
         Map<String,Object> responseMap = new HashMap<>();
 
-        Object prevFilename = formMap.get("file");
         if(formMap!=null) {
+            Object prevFilename = formMap.get("file");
+
             if(debug) System.out.println("Form "+name+" attributes: "+new Gson().toJson(formMap));
 
             if (parentDirs != null && parentDirs.length > 0) {
