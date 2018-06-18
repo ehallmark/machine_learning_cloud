@@ -1143,7 +1143,7 @@ var emptyDatasetDataFunction = function(tree,node,name,deletable,callback) {
     var preData = {};
     preData["name"]=name;
     preData["createDataset"] = true;
-    preData["assets"] = [];
+    preData["emptyDataset"] = true;
     preData["parentDirs"] = [];
     preData["deletable"] = deletable;
     if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
@@ -1478,7 +1478,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 "separator_before": false,
                                 "separator_after": false,
                                 "label": newItemSubLabel,
-                                "title": "Update this "+node_type+" "+newItemSubLabel.toLowerCase()+".",
+                                "title": "Replace this "+node_type+" "+newItemSubLabel.toLowerCase()+".",
                                 "action": function(obj) {
                                     var name = node.text;
                                     var callback = function(data) {
