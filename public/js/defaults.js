@@ -859,7 +859,6 @@ $(document).ready(function() {
         html: true
     });
 
-
 });
 
 var resetSearchForm = function() {
@@ -1644,7 +1643,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         return true;
     });
     $(tree_id).bind("open_node.jstree", function(event,data) {
-        $(tree_id+' ul li a[title]')
+        $('ul.vakata-context.jstree-contextmenu li a[title]')
             .tooltip({
                 placement: 'right',
                 trigger: 'hover',
