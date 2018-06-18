@@ -609,7 +609,7 @@ $(document).ready(function() {
     });
     $('#sidebar-jstree-wrapper').show();
 
-    $(document).uitooltip({
+    /*$(document).uitooltip({
         content: function() {
             return $(this).attr('title');
         },
@@ -621,6 +621,13 @@ $(document).ready(function() {
     });
     $(document).click(function() {
         $('.ui-tooltip').remove();
+    }); */
+    $('[title]').tooltip({
+        delay: {
+            "show": 400,
+            "hide": 200
+        },
+        html: true
     });
 
     if(document.getElementById('acclaim_expert_filter')) {
@@ -1631,8 +1638,17 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         }
         return true;
     });
-    //$(tree_id).bind("hover_node.jstree", function(event,data) {
-    //    $('#'+data.node.id).prop('title', 'Right click for more options...');
-    //    return true;
-    //});
+    $(tree_id).bind("hover_node.jstree", function(event,data) {
+        if(data.node.title) {
+            $('#'+data.node.id).prop('title', data.node.title);
+            $('#'+data.node.id).tooltip({
+                delay: {
+                    "show": 400,
+                    "hide": 200
+                },
+                html: true
+            });
+        }
+        return true;
+    });
 };
