@@ -2197,7 +2197,7 @@ public class SimilarPatentServer {
                         tr().with(
                                 th().attr("data-dynatable-no-sort", "true").attr("data-dynatable-column", "selection").with(
                                         label("Select All").with( br(),
-                                                input().withType("checkbox").attr("onclick", "$('#data-table table tbody tr input.tableSelection').prop('checked', $(this).prop('checked')).trigger('change');")
+                                                input().withType("checkbox").withId("data-table-select-all").attr("onclick", "$('#data-table table tbody tr input.tableSelection').prop('checked', $(this).prop('checked')).trigger('change');")
                                         )
                                 )
                         ).with(
