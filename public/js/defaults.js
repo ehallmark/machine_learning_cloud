@@ -1450,6 +1450,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                     };
                     // must create a folder first in the shared environment
                     if(!(topLevelFolder && node.text.startsWith("Shared"))) {
+                        var menuName = "New "+capitalize(node_type);
                         var subMenu = {};
                         var labelToFunctions = {};
                         for(var i = 0; i < jsNodeDataFunctions.length; i++) {
@@ -1471,7 +1472,6 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 }
                             }
                         }
-                        var menuName = "New "+capitalize(node_type);
                         items[menuName] = {
                             "separator_before": false,
                             "separator_after": false,
@@ -1481,7 +1481,6 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         };
                     }
                 }
-                var subMenu = {};
                 if(!topLevelFolder && deletable) {
                     items["Delete"] = {
                         "separator_before": false,
@@ -1517,7 +1516,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         var menuName = "Apply "+capitalize(node_type);
                         items[menuName] = {
                             "separator_before": false,
-                            "sepeartor_after": false,
+                            "separator_after": false,
                             "label": menuName,
                             "title": "Apply this "+node_type+".",
                             "action": function(obj) {
@@ -1527,38 +1526,42 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 }
                             }
                         };
-                        var labelToFunctions = {};
-                        for(var i = 0; i < jsNodeDataFunctions.length; i++) {
-                            var jsNodeDataFunction = jsNodeDataFunctions[i];
-                            var newItemSubLabel = newItemSubLabels[i];
-                            if (newItemSubLabel==='From Selection') {
-                                var val = $('#table-selection-counter').text();
-                                if (!val) { val = "0"; }
-                                newItemSubLabel += ' ('+val+")";
-                            }
-                            labelToFunctions[newItemSubLabel]=jsNodeDataFunction;
-                            subMenu[newItemSubLabel] = {
-                                "separator_before": false,
-                                "separator_after": false,
-                                "label": newItemSubLabel,
-                                "title": "Replace this "+node_type+" "+newItemSubLabel.toLowerCase()+".",
-                                "action": function(obj) {
-                                    var name = node.text;
-                                    var callback = function(data) {
-                                        saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false,null,false);
-                                    };
-                                    labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
-                                    return true;
-                                }
-                            }
-                        }
+
                         var menuName = "Replace "+capitalize(node_type);
                         items[menuName] = {
                             "separator_before": false,
                             "separator_after": false,
                             "label": menuName,
                             "title": "Replace this "+node_type+". Caution: Existing "+node_type+" will be deleted.",
-                            "submenu": subMenu
+                            "submenu": function() {
+                                var subMenu = {};
+                                var labelToFunctions = {};
+                                for(var i = 0; i < jsNodeDataFunctions.length; i++) {
+                                    var jsNodeDataFunction = jsNodeDataFunctions[i];
+                                    var newItemSubLabel = newItemSubLabels[i];
+                                    if (newItemSubLabel==='From Selection') {
+                                        var val = $('#table-selection-counter').text();
+                                        if (!val) { val = "0"; }
+                                        newItemSubLabel += ' ('+val+")";
+                                    }
+                                    labelToFunctions[newItemSubLabel]=jsNodeDataFunction;
+                                    subMenu[newItemSubLabel] = {
+                                        "separator_before": false,
+                                        "separator_after": false,
+                                        "label": newItemSubLabel,
+                                        "title": "Replace this "+node_type+" "+newItemSubLabel.toLowerCase()+".",
+                                        "action": function(obj) {
+                                            var name = node.text;
+                                            var callback = function(data) {
+                                                saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false,null,false);
+                                            };
+                                            labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
+                                            return true;
+                                        }
+                                    }
+                                }
+                                return subMenu;
+                            }
                         };
                     }
                 }
@@ -1592,38 +1595,40 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
 
                 }
                 if((node_type==='dataset') && !isFolder && deletable) {
-                    var addAssetsSubmenu = {};
-                    var labelToFunctions = {};
-                    for(var i = 0; i < jsNodeDataFunctions.length; i++) {
-                        var jsNodeDataFunction = jsNodeDataFunctions[i];
-                        var newItemSubLabel = newItemSubLabels[i];
-                        if (newItemSubLabel==='From Selection') {
-                            var val = $('#table-selection-counter').text();
-                            if (!val) { val = "0"; }
-                            newItemSubLabel += ' ('+val+")";
-                        }
-                        labelToFunctions[newItemSubLabel]=jsNodeDataFunction;
-                        addAssetsSubmenu[newItemSubLabel] = {
-                            "separator_before": false,
-                            "separator_after": false,
-                            "label": newItemSubLabel,
-                            "title": "Add assets to this existing dataset "+newItemSubLabel.toLowerCase()+".",
-                            "action": function(obj) {
-                                var name = node.text;
-                                var callback = function(data) {
-                                    saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false,null,true);
-                                };
-                                labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
-                                return true;
-                            }
-                        }
-                    }
                     items["Add Assets"] = {
                         "separator_before": false,
                         "separator_after": false,
                         "label": "Add Assets",
                         "title": "Add assets to this dataset.",
-                        "submenu": addAssetsSubmenu
+                        "submenu": function() {
+                            var addAssetsSubmenu = {};
+                            var labelToFunctions = {};
+                            for(var i = 0; i < jsNodeDataFunctions.length; i++) {
+                                var jsNodeDataFunction = jsNodeDataFunctions[i];
+                                var newItemSubLabel = newItemSubLabels[i];
+                                if (newItemSubLabel==='From Selection') {
+                                    var val = $('#table-selection-counter').text();
+                                    if (!val) { val = "0"; }
+                                    newItemSubLabel += ' ('+val+")";
+                                }
+                                labelToFunctions[newItemSubLabel]=jsNodeDataFunction;
+                                addAssetsSubmenu[newItemSubLabel] = {
+                                    "separator_before": false,
+                                    "separator_after": false,
+                                    "label": newItemSubLabel,
+                                    "title": "Add assets to this existing dataset "+newItemSubLabel.toLowerCase()+".",
+                                    "action": function(obj) {
+                                        var name = node.text;
+                                        var callback = function(data) {
+                                            saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false,null,true);
+                                        };
+                                        labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
+                                        return true;
+                                    }
+                                }
+                            }
+                            return addAssetsSubmenu;
+                        }
                     };
                     items["Cluster Dataset"] = {
                         "separator_before": false,
