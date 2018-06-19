@@ -125,7 +125,7 @@ $(document).ready(function() {
                         $check.prop('checked', !$check.prop('checked'));
                     });
                 });
-                $tableSelectionCounter.text(selectionCache.length.toString());
+                $tableSelectionCounter.text(selectionCache.size.toString());
                 $check.change(function() {
                     // add to selection cache
                     if($(this).prop('checked')) {
@@ -133,7 +133,7 @@ $(document).ready(function() {
                     } else {
                         selectionCache.delete($(this).val());
                     }
-                    $tableSelectionCounter.text(selectionCache.length.toString());
+                    $tableSelectionCounter.text(selectionCache.size.toString());
                 });
            })
            .dynatable({
