@@ -2186,7 +2186,7 @@ public class SimilarPatentServer {
                 ),
                 span().withText("Number of assets selected: ").attr("style", "float: left;").with(
                     span().withId("table-selection-counter")
-                ), br(),
+                ), br(), hr(),
                 dataTableFromHeadersAndData(attributes)
         );
     }
@@ -2197,7 +2197,7 @@ public class SimilarPatentServer {
                         tr().with(
                                 th().attr("data-dynatable-no-sort", "true").attr("data-dynatable-column", "selection").with(
                                         label("Select All").with( br(),
-                                                input().withType("checkbox").attr("onclick", "$('#data-table table tbody tr input.tableSelection').prop('checked', $(this).prop('checked'));")
+                                                input().withType("checkbox").attr("onclick", "$('#data-table table tbody tr input.tableSelection').prop('checked', $(this).prop('checked')).trigger('change');")
                                         )
                                 )
                         ).with(
