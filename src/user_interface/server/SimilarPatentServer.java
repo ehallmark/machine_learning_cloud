@@ -48,7 +48,7 @@ import user_interface.ui_models.attributes.script_attributes.*;
 import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.tables.TableResponse;
-import user_interface.ui_models.engines.*;
+import user_interface.ui_models.engines.SimilarityEngineController;
 import user_interface.ui_models.excel.ExcelHandler;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
@@ -63,7 +63,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -2193,7 +2192,11 @@ public class SimilarPatentServer {
         return table().withClass("table table-striped").withId("main-data-table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                 thead().with(
                         tr().with(
-                                th("").attr("data-dynatable-column", "selection")
+                                th().attr("data-dynatable-column", "selection").with(
+                                        label("Select All").with(
+                                                input().withType("checkbox").attr("onclick", "$('#data-table table tbody tr input.tableSelection').prop('checked', $(this).prop('checked'));")
+                                        )
+                                )
                         ).with(
                                 attributes.stream().map(attr -> th(fullHumanAttributeFor(attr)).attr("data-dynatable-column", attr)).collect(Collectors.toList())
                         )
