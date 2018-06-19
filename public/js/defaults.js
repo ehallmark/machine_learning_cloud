@@ -110,7 +110,15 @@ $(document).ready(function() {
            });
        }
        if($('#results #data-table table thead th').length > 0) {
-           $('#results #data-table table').dynatable({
+           var $table = $('#results #data-table table');
+           $table
+           .bind('dynatable:afterUpdate', function() {
+                $table.find('tbody tr').dblclick(function() {
+                    var $check = $(this).find('input.tableSelection');
+                    $check.prop('checked', !$check.prop('checked'));
+                });
+           })
+           .dynatable({
              dataset: {
                ajax: true,
                ajaxUrl: 'dataTable.json',
@@ -858,6 +866,8 @@ $(document).ready(function() {
         },
         html: true
     });
+
+
 
 });
 
