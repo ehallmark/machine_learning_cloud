@@ -1208,7 +1208,7 @@ var selectionDatasetDataFunction = function(tree,node,name,deletable,callback) {
     // get user input
     var assets = $('#data-table table tbody tr td input.tableSelection:checked').map(function() {
         return $(this).val();
-    });
+    }).toArray();
     var preData = {};
     preData["name"]=name;
     preData["assets"] = assets;
