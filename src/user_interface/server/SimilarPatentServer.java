@@ -2192,8 +2192,8 @@ public class SimilarPatentServer {
         return table().withClass("table table-striped").withId("main-data-table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                 thead().with(
                         tr().with(
-                                th().attr("data-dynatable-column", "selection").with(
-                                        label("Select All").with(
+                                th().attr("data-dynatable-no-sort", "true").attr("data-dynatable-column", "selection").with(
+                                        label("Select All").with( br(),
                                                 input().withType("checkbox").attr("onclick", "$('#data-table table tbody tr input.tableSelection').prop('checked', $(this).prop('checked'));")
                                         )
                                 )
