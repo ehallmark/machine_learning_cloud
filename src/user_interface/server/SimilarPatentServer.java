@@ -2186,7 +2186,7 @@ public class SimilarPatentServer {
                 ),
                 span().withText("Number of assets selected: ").attr("style", "float: left;").with(
                     span().withId("table-selection-counter")
-                ),
+                ), br(),
                 dataTableFromHeadersAndData(attributes)
         );
     }

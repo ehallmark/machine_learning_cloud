@@ -1,3 +1,4 @@
+var selectionCache = new Set([]);
 $(document).ready(function() {
     $('.loader').show();
 
@@ -110,32 +111,36 @@ $(document).ready(function() {
            });
        }
        if($('#results #data-table table thead th').length > 0) {
-           var selectionCache = new Set([]);
+           selectionCache.clear();
            var $table = $('#results #data-table table');
            var $tableSelectionCounter = $('#results #data-table #table-selection-counter');
+           var update_table_function = function() {
+               var $tableRows = $table.find('tbody tr');
+               $tableRows.each(function() {
+                   var $check = $(this).find('input.tableSelection');
+                   if(selectionCache.has($check.val())) {
+                       $check.prop('checked', true);
+                       $check.trigger('change');
+                   }
+                   $(this).dblclick(function() {
+                       $check.prop('checked', !$check.prop('checked'));
+                       $check.trigger('change');
+                   });
+                   $check.change(function() {
+                       // add to selection cache
+                       if($(this).prop('checked')) {
+                           selectionCache.add($(this).val());
+                       } else {
+                           selectionCache.delete($(this).val());
+                       }
+                       $tableSelectionCounter.text(selectionCache.size.toString());
+                   });
+               });
+               $tableSelectionCounter.text(selectionCache.size.toString());
+           };
            $table
-           .bind('dynatable:afterUpdate', function() {
-                var $tableRows = $table.find('tbody tr');
-                $tableRows.each(function() {
-                    var $check = $(this).find('input.tableSelection');
-                    if(selectionCache.has($check.val())) {
-                        $check.prop('checked', true);
-                    }
-                    $(this).dblclick(function() {
-                        $check.prop('checked', !$check.prop('checked'));
-                    });
-                    $check.change(function() {
-                        // add to selection cache
-                        if($(this).prop('checked')) {
-                            selectionCache.add($(this).val());
-                        } else {
-                            selectionCache.delete($(this).val());
-                        }
-                        $tableSelectionCounter.text(selectionCache.size.toString());
-                    });
-                });
-                $tableSelectionCounter.text(selectionCache.size.toString());
-           })
+           .bind('dynatable:afterUpdate', update_table_function)
+           .bind('dynatable:init', update_table_function)
            .dynatable({
              dataset: {
                ajax: true,
@@ -1224,9 +1229,7 @@ var getKFromClusterInputFunction = function(callbackWithValue) {
 
 var selectionDatasetDataFunction = function(tree,node,name,deletable,callback) {
     // get user input
-    var assets = $('#data-table table tbody tr td input.tableSelection:checked').map(function() {
-        return $(this).val();
-    }).toArray();
+    var assets = Array.from(selectionCache);
     var preData = {};
     preData["name"]=name;
     preData["assets"] = assets;
