@@ -2202,7 +2202,7 @@ public class SimilarPatentServer {
     }
 
     static String selectionTag(String id) {
-        return Base64.getEncoder().encodeToString(input().withType("checkbox").withClass(BigQueryServer.TABLE_SELECTION_FIELD).withValue(id).render().getBytes(StandardCharsets.UTF_8));
+        return input().withType("checkbox").withClass(BigQueryServer.TABLE_SELECTION_FIELD).withValue(id).render();
     }
 
     static List<Map<String,String>> getTableRowData(List<Item> items, List<String> attributes, boolean useHighlighter, String itemSeparator) {
