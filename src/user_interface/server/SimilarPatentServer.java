@@ -2184,6 +2184,9 @@ public class SimilarPatentServer {
                 form().withMethod("post").withTarget("_blank").withAction(DOWNLOAD_URL).with(
                         button("Download to CSV").withType("submit").withClass("btn btn-outline-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
                 ),
+                span().withText("Number of assets selected: ").attr("style", "float: left;").with(
+                    span().withId("table-selection-counter")
+                ),
                 dataTableFromHeadersAndData(attributes)
         );
     }

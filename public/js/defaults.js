@@ -110,12 +110,30 @@ $(document).ready(function() {
            });
        }
        if($('#results #data-table table thead th').length > 0) {
+           var selectionCache = new Set([]);
            var $table = $('#results #data-table table');
+           var $tableSelectionCounter = $('#results #data-table #table-selection-counter');
            $table
            .bind('dynatable:afterUpdate', function() {
-                $table.find('tbody tr').dblclick(function() {
+                var $tableRows = $table.find('tbody tr');
+                $tableRows.each(function() {
                     var $check = $(this).find('input.tableSelection');
-                    $check.prop('checked', !$check.prop('checked'));
+                    if(selectionCache.has($check.val())) {
+                        $check.prop('checked', true);
+                    }
+                    $(this).dblclick(function() {
+                        $check.prop('checked', !$check.prop('checked'));
+                    });
+                });
+                $tableSelectionCounter.text(selectionCache.length.toString());
+                $check.change(function() {
+                    // add to selection cache
+                    if($(this).prop('checked')) {
+                        selectionCache.add($(this).val());
+                    } else {
+                        selectionCache.delete($(this).val());
+                    }
+                    $tableSelectionCounter.text(selectionCache.length.toString());
                 });
            })
            .dynatable({
@@ -1510,6 +1528,11 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         for(var i = 0; i < jsNodeDataFunctions.length; i++) {
                             var jsNodeDataFunction = jsNodeDataFunctions[i];
                             var newItemSubLabel = newItemSubLabels[i];
+                            if (newItemSubLabel==='From Selection') {
+                                var val = $('#table-selection-counter').text();
+                                if (!val) { val = "0"; }
+                                newItemSubLabel += ' ('+val+")";
+                            }
                             labelToFunctions[newItemSubLabel]=jsNodeDataFunction;
                             subMenu[newItemSubLabel] = {
                                 "separator_before": false,
@@ -1571,6 +1594,11 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                     for(var i = 0; i < jsNodeDataFunctions.length; i++) {
                         var jsNodeDataFunction = jsNodeDataFunctions[i];
                         var newItemSubLabel = newItemSubLabels[i];
+                        if (newItemSubLabel==='From Selection') {
+                            var val = $('#table-selection-counter').text();
+                            if (!val) { val = "0"; }
+                            newItemSubLabel += ' ('+val+")";
+                        }
                         labelToFunctions[newItemSubLabel]=jsNodeDataFunction;
                         addAssetsSubmenu[newItemSubLabel] = {
                             "separator_before": false,
