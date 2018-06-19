@@ -75,6 +75,7 @@ import static spark.Spark.*;
 public class BigQueryServer extends SimilarPatentServer {
     private static final boolean TEST = false;
     private static final boolean debug = false;
+    public static final String TABLE_SELECTION_FIELD = "tableSelection";
     private static final Map<String,Lock> fileSynchronizationMap = Collections.synchronizedMap(new HashMap<>());
     private static final String GLOBAL_PREFIX = "";// "/_global";
     private static final String PROTECTED_URL_PREFIX = GLOBAL_PREFIX+"/secure";
@@ -1300,6 +1301,10 @@ public class BigQueryServer extends SimilarPatentServer {
                 if(map==null) return null;
 
                 headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
+                if(headers!=null) {
+                    headers.add("selection");
+                    headers = new ArrayList<>(headers);
+                }
                 data = (List<Map<String,String>>)map.getOrDefault("rows-highlighted",Collections.emptyList());
                 numericAttrNames = (Set<String>)map.getOrDefault("numericAttrNames",Collections.emptySet());
                 lock = (Lock)map.getOrDefault("lock",new ReentrantLock());

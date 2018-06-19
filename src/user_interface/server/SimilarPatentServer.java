@@ -63,6 +63,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -2192,14 +2193,24 @@ public class SimilarPatentServer {
         return table().withClass("table table-striped").withId("main-data-table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                 thead().with(
                         tr().with(
+                                th("").attr("data-dynatable-column", "selection")
+                        ).with(
                                 attributes.stream().map(attr -> th(fullHumanAttributeFor(attr)).attr("data-dynatable-column", attr)).collect(Collectors.toList())
                         )
                 ), tbody()
         );
     }
 
+    static String selectionTag(String id) {
+        return Base64.getEncoder().encodeToString(input().withType("checkbox").withClass(BigQueryServer.TABLE_SELECTION_FIELD).withValue(id).render().getBytes(StandardCharsets.UTF_8));
+    }
+
     static List<Map<String,String>> getTableRowData(List<Item> items, List<String> attributes, boolean useHighlighter, String itemSeparator) {
-        return items.stream().map(item -> item.getDataAsMap(attributes,useHighlighter,itemSeparator)).collect(Collectors.toList());
+        return items.stream().map(item -> {
+            Map<String,String> map = item.getDataAsMap(attributes,useHighlighter,itemSeparator);
+            map.put("selection", selectionTag(item.getName()));
+            return map;
+        }).collect(Collectors.toList());
     }
 
     public static Tag addAttributesToRow(ContainerTag tag, List<String> data, List<String> headers) {
