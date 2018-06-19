@@ -856,7 +856,7 @@ $(document).ready(function() {
 
 
     setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
-    setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[lastGeneratedDatasetDataFunction,assetListDatasetDataFunction,emptyDatasetDataFunction],["From Last Generated Report", "From Asset List", "Empty Dataset"]);
+    setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[selectionDatasetDataFunction,lastGeneratedDatasetDataFunction,assetListDatasetDataFunction,emptyDatasetDataFunction],["From Selection", "From Last Generated Report", "From Asset List", "Empty Dataset"]);
 
     $('[title]').tooltip({
         trigger: 'hover',
@@ -1203,6 +1203,33 @@ var getKFromClusterInputFunction = function(callbackWithValue) {
     });
 
 }
+
+var selectionDatasetDataFunction = function(tree,node,name,deletable,callback) {
+    // get user input
+    var assets = $('#data-table table tbody tr td input.tableSelection:checked').map(function() {
+        return $(this).val();
+    });
+    var preData = {};
+    preData["name"]=name;
+    preData["assets"] = assets;
+    preData["parentDirs"] = [];
+    preData["deletable"] = deletable;
+    if(node.hasOwnProperty('data') && node.data.hasOwnProperty('file')) {
+        preData["file"] = node.data.file;
+    }
+    if(node.hasOwnProperty('data') && node.data.hasOwnProperty('user')) {
+        preData["user"] = node.data.user;
+    }
+    var nodeData = node;
+    while(typeof nodeData.text !== 'undefined') {
+        if(nodeData.type==='folder') {
+            preData["parentDirs"].unshift(nodeData.text);
+        }
+        var currId = nodeData.parent;
+        nodeData = tree.get_node(currId);
+    }
+    callback(preData);
+};
 
 var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
     // get user input
