@@ -124,17 +124,17 @@ $(document).ready(function() {
                     $(this).dblclick(function() {
                         $check.prop('checked', !$check.prop('checked'));
                     });
+                    $check.change(function() {
+                        // add to selection cache
+                        if($(this).prop('checked')) {
+                            selectionCache.add($(this).val());
+                        } else {
+                            selectionCache.delete($(this).val());
+                        }
+                        $tableSelectionCounter.text(selectionCache.size.toString());
+                    });
                 });
                 $tableSelectionCounter.text(selectionCache.size.toString());
-                $check.change(function() {
-                    // add to selection cache
-                    if($(this).prop('checked')) {
-                        selectionCache.add($(this).val());
-                    } else {
-                        selectionCache.delete($(this).val());
-                    }
-                    $tableSelectionCounter.text(selectionCache.size.toString());
-                });
            })
            .dynatable({
              dataset: {
