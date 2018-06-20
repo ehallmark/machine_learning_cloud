@@ -13,6 +13,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import seeding.google.elasticsearch.Attributes;
 import seeding.google.elasticsearch.attributes.DateRangeAttribute;
 import seeding.google.elasticsearch.attributes.SignificantTermsAttribute;
 import spark.Request;
@@ -179,7 +180,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         } else if(attribute instanceof DatasetAttribute) {
             System.out.println("Building filters aggregations (datasets) for: "+attrName);
             List<Pair<String, Set<String>>> dataSets = ((DatasetAttribute) attribute).getCurrentDatasets();
-            final String _attrName = attrName;
+            final String _attrName = Attributes.PUBLICATION_NUMBER_FULL; // this is the actual field... not datasetName
             QueryBuilder[] queryBuilders = dataSets.stream().map(dataset -> {
                 return QueryBuilders.termsLookupQuery(_attrName, new TermsLookup(((DatasetAttribute) attribute).getTermsIndex(), ((DatasetAttribute) attribute).getTermsType(), dataset.getFirst(), ((DatasetAttribute) attribute).getTermsPath()));
             }).toArray(size -> new QueryBuilder[size]);
