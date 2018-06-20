@@ -408,6 +408,9 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         if(collectByAttribute!=null && collectByAttribute instanceof DependentAttribute) {
             ((DependentAttribute)collectByAttribute).extractRelevantInformationFromParams(req);
         }
+        if(attribute!=null && attribute instanceof DependentAttribute) {
+            ((DependentAttribute) attribute).extractRelevantInformationFromParams(req);
+        }
         BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName,null, aggSuffix, maxSlices, includeBlank, null);
         boolean isNested = attribute.getParent()!=null&&(!(attribute.getParent() instanceof AbstractChartAttribute))&&(!attribute.getParent().isObject());
         CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getStatsAggName(attrName), getStatsAggName(attrName+NESTED_SUFFIX), collectByAttribute, collectorType, isNested);
