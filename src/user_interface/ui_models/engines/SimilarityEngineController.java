@@ -9,7 +9,6 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.google.elasticsearch.Attributes;
-import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -30,8 +29,6 @@ import static user_interface.server.SimilarPatentServer.*;
  * Created by ehallmark on 2/28/17.
  */
 public class SimilarityEngineController {
-    @Getter
-    private Map<String,SimilarityAttribute> similarityAttributeMap;
     private Collection<AbstractFilter> preFilters;
     private Collection<AbstractAttribute> topLevelAttributes;
     private String comparator;
@@ -49,9 +46,6 @@ public class SimilarityEngineController {
     @Setter
     private List<AggregationBuilder> aggregationBuilders;
 
-    public SimilarityEngineController() {
-        this.similarityAttributeMap=new HashMap<>();
-    }
 
     public SimilarityEngineController dup() {
         return new SimilarityEngineController();
@@ -125,11 +119,6 @@ public class SimilarityEngineController {
                         return attrDup;
                     } else return attr;
                 }).collect(Collectors.toList());
-        topLevelAttributes.forEach(attr->{
-            if(attr instanceof SimilarityAttribute) {
-                similarityAttributeMap.put(attr.getName(),(SimilarityAttribute)attr);
-            }
-        });
     }
 
     public void extractRelevantInformationFromParams(Request req) {

@@ -4,10 +4,8 @@ import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
-import lombok.Setter;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
-import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -57,8 +55,6 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected boolean groupsPlottableOnSameChart;
     protected Map<String,Boolean> attrNameToIncludeBlanksMap;
     protected Collection<AbstractAttribute> collectByAttributes;
-    @Setter
-    protected Map<String,SimilarityAttribute> similarityModels;
     public AbstractChartAttribute(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttributes, Collection<AbstractAttribute> collectByAttributes, String name, boolean groupByPerAttribute, boolean groupsPlottableOnSameChart) {
         super(attributes);
         this.groupByAttributes=groupByAttributes;

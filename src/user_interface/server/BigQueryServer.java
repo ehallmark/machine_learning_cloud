@@ -23,7 +23,6 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import seeding.google.elasticsearch.Attributes;
-import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
@@ -1935,21 +1934,15 @@ public class BigQueryServer extends SimilarPatentServer {
                     SimilarityEngineController engine = similarityEngine.join().dup();
 
                     List<AggregationChart<?>> abstractCharts = chartModels.stream().map(chart -> chartModelMap.get(chart).dup()).collect(Collectors.toList());
+                    abstractCharts.forEach(chart->chart.extractRelevantInformationFromParams(req));
                     Set<String> chartPreReqs = abstractCharts.stream().flatMap(chart->chart.getAttrNames()==null?Stream.empty():chart.getAttrNames().stream()).collect(Collectors.toCollection(HashSet::new));
+                    System.out.println("Chart prereqs: "+String.join("; ", chartPreReqs));
                     chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrNameToGroupByAttrNameMap().values().stream()).collect(Collectors.toList()));
                     chartPreReqs.addAll(abstractCharts.stream().flatMap(chart->chart.getAttrToCollectByAttrMap().values().stream()).collect(Collectors.toList()));
                     engine.setChartPrerequisites(chartPreReqs);
 
                     engine.buildAttributes(req);
 
-                    Map<String,SimilarityAttribute> similarityAttributeMap = engine.getSimilarityAttributeMap();
-
-                    // set similarity engines
-                    abstractCharts.forEach(chart->{
-                        chart.setSimilarityModels(similarityAttributeMap);
-                    });
-
-                    abstractCharts.forEach(chart->chart.extractRelevantInformationFromParams(req));
                     List<AggregationBuilder> aggregationBuilders = abstractCharts.stream().flatMap(chart->{
                         List<AggregationBuilder> builders = new ArrayList<>();
                         for (int i = 0; i < chart.getAttrNames().size(); i++) {
