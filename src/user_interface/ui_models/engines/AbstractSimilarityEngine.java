@@ -8,10 +8,8 @@ import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
 import spark.Request;
-import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
@@ -26,7 +24,6 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
     @Getter
     protected INDArray avg;
     protected String tableName;
-    protected static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
     protected Function<Collection<String>,INDArray> inputsToAvgVectorFunction;
     public AbstractSimilarityEngine(Function<Collection<String>,INDArray> inputsToAvgVectorFunction) {
         super(Collections.emptyList());

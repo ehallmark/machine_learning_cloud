@@ -38,7 +38,7 @@ public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
             if(p==null) return Stream.empty();
             return p.getSecond().stream();
         }).collect(Collectors.toList());
-        patents = patents.stream().limit(1000).flatMap(patent-> Stream.of(assetToFilingMap.getPatentDataMap().getOrDefault(patent, patent),assetToFilingMap.getApplicationDataMap().getOrDefault(patent, patent))).distinct().collect(Collectors.toList());
+        patents = patents.stream().limit(1000).distinct().collect(Collectors.toList());
         System.out.println("Found "+patents.size()+" patents...");
         return patents;
     }
