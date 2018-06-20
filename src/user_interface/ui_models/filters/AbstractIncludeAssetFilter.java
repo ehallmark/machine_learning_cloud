@@ -82,6 +82,7 @@ public class AbstractIncludeAssetFilter extends AbstractIncludeFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
+        super.extractRelevantInformationFromParams(req);
         if(labels!=null) {
             enforceCountryCode = SimilarPatentServer.extractBool(req, enforceCountryId());
             if(!isApplication) enforceKindCode = SimilarPatentServer.extractBool(req, enforceKindCodeId());
