@@ -269,8 +269,8 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
 
     public Aggregation handlePotentiallyNestedAgg(Aggregations aggregations, String attrNameWithSuffix, String attrNameNestedWithSuffix) {
         if (aggregations == null) return null; // important to stop recursion
-        System.out.println("Handling potentially nested agg: "+attrNameNestedWithSuffix+" with nested name: "+attrNameNestedWithSuffix);
-        System.out.println("Available aggregations: "+String.join("; ", aggregations.getAsMap().keySet()));
+        //System.out.println("Handling potentially nested agg: "+attrNameNestedWithSuffix+" with nested name: "+attrNameNestedWithSuffix);
+        //System.out.println("Available aggregations: "+String.join("; ", aggregations.getAsMap().keySet()));
         Aggregation agg = aggregations.get(attrNameWithSuffix);
         if (agg == null) {
             agg = aggregations.get(attrNameWithSuffix + SignificantTermsAggregation.SAMPLER_SUFFIX);
@@ -301,15 +301,15 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 if(nested!=null) {
                     aggregations = nested.getAggregations();
                     if (aggregations != null) {
-                        System.out.println("Found reverse nested suffix!!: ");
+                        //System.out.println("Found reverse nested suffix!!: ");
                         return handlePotentiallyNestedAgg(aggregations, attrNameWithSuffix, null);
                     }
                 }
             }
             if (nested == null) {
-                System.out.println("Attr name with suffix: " + attrNameWithSuffix);
-                System.out.println("Attr name nested with suffix: " + attrNameNestedWithSuffix);
-                System.out.println("Available: " + String.join("; ", aggregations.getAsMap().keySet()));
+                //System.out.println("Attr name with suffix: " + attrNameWithSuffix);
+                //System.out.println("Attr name nested with suffix: " + attrNameNestedWithSuffix);
+                //System.out.println("Available: " + String.join("; ", aggregations.getAsMap().keySet()));
                 throw new RuntimeException("Unable to find nested attribute: " + attrNameNestedWithSuffix);
             }
             return handlePotentiallyNestedAgg(nested.getAggregations(), attrNameWithSuffix, null);
