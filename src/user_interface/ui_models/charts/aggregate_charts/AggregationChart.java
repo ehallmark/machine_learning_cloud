@@ -23,7 +23,6 @@ import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStat
 import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.nd4j.linalg.primitives.Pair;
-import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
@@ -406,10 +405,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         if(collectByAttribute==null) {
             System.out.println("Collect by attribute could not be found: "+collectByAttrName);
         }
-        if(collectByAttribute!=null && collectByAttribute instanceof SimilarityAttribute) {
-            // need to get the original model for the vectors
-            collectByAttribute=similarityModels.get(collectByAttribute.getName());
-        } else if(collectByAttribute!=null && collectByAttribute instanceof DependentAttribute) {
+        if(collectByAttribute!=null && collectByAttribute instanceof DependentAttribute) {
             ((DependentAttribute)collectByAttribute).extractRelevantInformationFromParams(req);
         }
         BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName,null, aggSuffix, maxSlices, includeBlank, null);
