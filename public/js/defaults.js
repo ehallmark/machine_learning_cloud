@@ -618,8 +618,9 @@ $(document).ready(function() {
                 templateSelection: select2SelectedFunction
             });
             if(usePrevType) {
-                $type.val(prevType).trigger('select2.change');
+                $type.val(prevType);
             }
+            $type.trigger('select2.change');
         } else {
             $type.val(null).trigger('select2.change');
         }
