@@ -43,7 +43,6 @@ import user_interface.ui_models.attributes.computable_attributes.asset_graphs.Ba
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.RelatedAssetsAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 import user_interface.ui_models.attributes.script_attributes.*;
-import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.tables.TableResponse;
 import user_interface.ui_models.engines.SimilarityEngineController;
@@ -139,7 +138,6 @@ public class SimilarPatentServer {
     public static RecursiveTask<SimilarityEngineController> similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
-    private static Map<String,AbstractChartAttribute> chartModelMap = new HashMap<>();
     static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
     static final Function<String,Boolean> DEFAULT_ROLE_TO_ATTR_FUNCTION = (str) -> false;
     //private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";

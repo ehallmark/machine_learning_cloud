@@ -4,6 +4,7 @@ import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
+import seeding.google.elasticsearch.attributes.NonStoredTextAttribute;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregate_charts.AggregatePivotChart;
@@ -87,7 +88,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
         String clazz = CLAZZ;
         String id = getId();
         Tag groupbyTag = additionalTagFunction!=null&&!perAttr ? additionalTagFunction.apply(null) : null;
-        List<AbstractAttribute> applicableAttributes = attributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
+        List<AbstractAttribute> applicableAttributes = attributes.stream().filter(attr->attr.isDisplayable()&&!(attr instanceof NonStoredTextAttribute)&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
         return div().with(
                 div().with(
                         groupbyTag==null?span():div().with(
