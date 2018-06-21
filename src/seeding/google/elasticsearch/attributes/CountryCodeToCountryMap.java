@@ -2,10 +2,11 @@ package seeding.google.elasticsearch.attributes;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CountryCodeToCountryMap {
-    public static final List<String> ALL_COUNTRIES = Collections.unmodifiableList(Arrays.asList(
+    public static final Set<String> ALL_COUNTRIES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "AL",
             "AP",
             "AR",
@@ -102,5 +103,5 @@ public class CountryCodeToCountryMap {
             "ZA",
             "ZM",
             "ZW"
-    ));
+    )));
 }

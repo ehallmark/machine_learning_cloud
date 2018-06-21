@@ -297,6 +297,7 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Priority Claim Publication Number Full", Attributes.PC_PUBLICATION_NUMBER_FULL);
             humanAttrToJavaAttrMap.put("Priority Claim Application Number", Attributes.PC_APPLICATION_NUMBER_FORMATTED);
             humanAttrToJavaAttrMap.put("Priority Claim Application Number w/ Country", Attributes.PC_APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY);
+            humanAttrToJavaAttrMap.put("Priority Claim Family ID", Attributes.PC_FAMILY_ID);
             humanAttrToJavaAttrMap.put("Priority Filing Date", Attributes.PC_FILING_DATE);
             humanAttrToJavaAttrMap.put("Number of Backward Citations", Attributes.CITATIONS_COUNT);
             humanAttrToJavaAttrMap.put("Number of Forward Citations", Attributes.RCITATIONS_COUNT);
