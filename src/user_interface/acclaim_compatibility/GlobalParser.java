@@ -19,6 +19,7 @@ import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
 import user_interface.ui_models.filters.AbstractBooleanExcludeFilter;
 import user_interface.ui_models.filters.AbstractBooleanIncludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.filters.AbstractIncludeAssetFilter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -79,6 +80,20 @@ public class GlobalParser {
                         return defaultDateTransformation.apply(name,val,user);
                     }
                     val = tryCoerceDate(val);
+                } else if(name.endsWith(Attributes.PUBLICATION_NUMBER)) {
+                    Map<String,List<String>> map = AbstractIncludeAssetFilter.buildAssetFieldToAssetsMap(false, Collections.singleton(val));
+                    String field = map.keySet().stream().findAny().orElse(null);
+                    if(field!=null && map.get(field).size()>0) {
+                        val = map.get(field).get(0);
+                        name = name.substring(0, name.length()-Attributes.PUBLICATION_NUMBER.length())+field;
+                    }
+                } else if(name.endsWith(Attributes.APPLICATION_NUMBER_FORMATTED)) {
+                    Map<String,List<String>> map = AbstractIncludeAssetFilter.buildAssetFieldToAssetsMap(true, Collections.singleton(val));
+                    String field = map.keySet().stream().findAny().orElse(null);
+                    if(field!=null && map.get(field).size()>0) {
+                        val = map.get(field).get(0);
+                        name = name.substring(0, name.length()-Attributes.APPLICATION_NUMBER_FORMATTED.length())+field;
+                    }
                 }
                 return QueryBuilders.queryStringQuery(name + ":" + val).defaultOperator(Operator.AND);
             } else {
