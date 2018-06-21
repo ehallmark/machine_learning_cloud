@@ -20,8 +20,6 @@ import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.sort.ScriptSortBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -29,7 +27,6 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import seeding.google.elasticsearch.Attributes;
-import seeding.google.elasticsearch.CreatePatentIndex;
 import seeding.google.mongo.ingest.IngestPatents;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -75,8 +72,6 @@ import java.util.stream.Stream;
 import static j2html.TagCreator.*;
 import static j2html.TagCreator.head;
 import static spark.Spark.*;
-import static user_interface.server.SimilarPatentServer.extractString;
-import static user_interface.server.SimilarPatentServer.preProcess;
 
 /**
  * Created by ehallmark on 7/27/16.
@@ -2597,7 +2592,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                                         div().withClass("col-12").with(authorized ? a("Change Password").withHref(EDIT_USER_URL) : span()),
                                                         div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withHref(DELETE_USER_URL) : span()),
                                                         div().withClass("col-12").with(authorized ? a("Update Defaults").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Help").withHref("/help") : span())
+                                                        div().withClass("col-12").with(authorized ? a("Help").withTarget("_blank").withHref("/help") : span())
 
                                                 ), hr(),
                                                 (!authorized) ? div() : div().with(

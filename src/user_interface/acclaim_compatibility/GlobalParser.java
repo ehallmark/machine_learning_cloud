@@ -365,10 +365,13 @@ public class GlobalParser {
             if(Arrays.asList("rfid","rfid2").contains(fullAttr.toLowerCase())) {
                 // need to set val equal to id to retrieve
                 List<String> allDatasets = new ArrayList<>();
-                List<String> userDatasets = BigQueryServer.searchForIds(user, val.split("/"));
-                List<String> userGroupDatasets = BigQueryServer.searchForIds(userGroup, val.split("/"));
+                List<String> userDatasets = BigQueryServer.searchForIds(user, val.replace("\\ ", " ").split("/"));
+                List<String> userGroupDatasets = Collections.emptyList();
                 allDatasets.addAll(userDatasets);
-                allDatasets.addAll(userGroupDatasets);
+                if(allDatasets.isEmpty()) {
+                    userGroupDatasets = BigQueryServer.searchForIds(userGroup, val.replace("\\ ", " ").split("/"));
+                    allDatasets.addAll(userGroupDatasets);
+                }
                 if(allDatasets.size()>0) {
                     BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
                     for(String dataset : userDatasets) {
