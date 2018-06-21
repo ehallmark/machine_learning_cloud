@@ -38,17 +38,21 @@ public class GlobalParser {
         }
         try {
             if(vals.length>0) {
-                date1 = LocalDate.parse(vals[0], DateTimeFormatter.ISO_DATE).format(DateTimeFormatter.ISO_DATE);
+                if(!vals[0].trim().equals("*")) {
+                    date1 = LocalDate.parse(vals[0], DateTimeFormatter.ISO_DATE).format(DateTimeFormatter.ISO_DATE);
+                }
             }
         } catch (Exception e) {
-
+            throw new RuntimeException("Unable to parse date: "+vals[0]);
         }
         try {
             if(vals.length>1) {
-                date2 = LocalDate.parse(vals[1], DateTimeFormatter.ISO_DATE).format(DateTimeFormatter.ISO_DATE);
+                if (!vals[1].trim().equals("*")) {
+                    date2 = LocalDate.parse(vals[1], DateTimeFormatter.ISO_DATE).format(DateTimeFormatter.ISO_DATE);
+                }
             }
         } catch(Exception e) {
-
+            throw new RuntimeException("Unable to parse date: "+vals[1]);
         }
         return QueryBuilders.rangeQuery(name)
                 .gte(date1)
@@ -76,9 +80,9 @@ public class GlobalParser {
                     }
                     val = tryCoerceDate(val);
                 }
-                return QueryBuilders.queryStringQuery(name + ":" + val.toLowerCase()).defaultOperator(Operator.AND);
+                return QueryBuilders.queryStringQuery(name + ":" + val).defaultOperator(Operator.AND);
             } else {
-                QueryBuilder query = QueryBuilders.queryStringQuery(val.toLowerCase()).fields(defaultFields).defaultOperator(Operator.AND);
+                QueryBuilder query = QueryBuilders.queryStringQuery(val).fields(defaultFields).defaultOperator(Operator.AND);
                 return QueryBuilders.boolQuery()
                         .must(query);
             }
