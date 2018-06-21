@@ -1767,7 +1767,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                                     };
                                                     $.each(data, function(k,v) { newData[k] = v; });
                                                     var newNode = tree.create_node(
-                                                        newFolder,
+                                                        node,
                                                         { 'data' : newData, 'text': data.name},
                                                         'first',
                                                         function(newNode) {
