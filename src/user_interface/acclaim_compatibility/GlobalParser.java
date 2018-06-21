@@ -191,6 +191,8 @@ public class GlobalParser {
             if(val.length()>4 && !val.contains("/")) {
                 val = val + "/00"; // MAIN GROUP
             }
+            val = val.replace("/", "\\/");
+            val = val.replace("\\\\/", "\\/");
             return QueryBuilders.queryStringQuery(Attributes.TREE+":"+val).defaultOperator(Operator.AND);
         });
 
