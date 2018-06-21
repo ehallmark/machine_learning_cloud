@@ -96,13 +96,17 @@ public class CombinedAggregation implements AbstractAggregation {
                     break;
                 }
             }
+
+
             if(isNested) {
                 aggregation = AggregationBuilders.nested(nestedName, collectByAttr.getParent().getName())
                         .subAggregation(aggregation);
             }
+
             if(baseIsNested) {
                 // needs reverse nested clause
-                aggregation = AggregationBuilders.reverseNested(aggregation.getName()+ AggregationChart.REVERSE_NESTED_SUFFIX)
+                System.out.println("Using reverse nested clause for agg: "+base.getAggregation().toString());
+                aggregation = AggregationBuilders.reverseNested(aggregation.getName() + AggregationChart.REVERSE_NESTED_SUFFIX)
                         .subAggregation(aggregation);
             }
 

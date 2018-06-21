@@ -10,7 +10,6 @@ import org.elasticsearch.indices.TermsLookup;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.google.elasticsearch.attributes.DateRangeAttribute;
@@ -230,7 +229,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             return new BucketAggregation() {
                 @Override
                 public AggregationBuilder getAggregation() {
-                    return new NestedAggregationBuilder(name,attribute.getParent().getName())
+                    return AggregationBuilders.nested(name,attribute.getParent().getName())
                             .subAggregation(aggregation.getAggregation());
                 }
             };
