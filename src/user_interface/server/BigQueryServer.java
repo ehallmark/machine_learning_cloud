@@ -8,14 +8,20 @@ import data_pipeline.helpers.Function3;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import detect_acquisitions.DetermineAcquisitionsServer;
 import elasticsearch.DatasetIndex;
+import elasticsearch.MyClient;
 import elasticsearch.TestNewFastVectors;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.NonNull;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
 import models.kmeans.AssetKMeans;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.sort.ScriptSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -23,6 +29,8 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import seeding.google.elasticsearch.Attributes;
+import seeding.google.elasticsearch.CreatePatentIndex;
+import seeding.google.mongo.ingest.IngestPatents;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
@@ -67,6 +75,8 @@ import java.util.stream.Stream;
 import static j2html.TagCreator.*;
 import static j2html.TagCreator.head;
 import static spark.Spark.*;
+import static user_interface.server.SimilarPatentServer.extractString;
+import static user_interface.server.SimilarPatentServer.preProcess;
 
 /**
  * Created by ehallmark on 7/27/16.
@@ -100,6 +110,7 @@ public class BigQueryServer extends SimilarPatentServer {
     public static final String SAVE_DATASET_URL = PROTECTED_URL_PREFIX+"/save_dataset";
     public static final String GET_DATASET_URL = PROTECTED_URL_PREFIX+"/get_dataset";
     public static final String CLUSTER_DATASET_URL = PROTECTED_URL_PREFIX+"/cluster_dataset";
+    public static final String ASSIGNEE_LIST_DATASETS_URL = PROTECTED_URL_PREFIX + "/assignee_datasets";
     public static final String DELETE_DATASET_URL = PROTECTED_URL_PREFIX+"/delete_dataset";
     public static final String RENAME_DATASET_URL = PROTECTED_URL_PREFIX+"/rename_dataset";
     public static final String RESET_DEFAULT_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/reset_default_template";
@@ -963,6 +974,12 @@ public class BigQueryServer extends SimilarPatentServer {
             return handleClusterForm(req,res,userGroup,Constants.USER_DATASET_FOLDER);
         });
 
+        post(ASSIGNEE_LIST_DATASETS_URL, (req, res)-> {
+            authorize(req, res);
+            String userGroup = getUserGroupFor(req.session());
+            return handleAssigneeListForm(req,res,userGroup,Constants.USER_DATASET_FOLDER);
+        });
+
         post(DELETE_DATASET_URL, (req, res) -> {
             authorize(req,res);
             return handleDeleteForm(req,res,Constants.USER_DATASET_FOLDER,true);
@@ -1533,6 +1550,82 @@ public class BigQueryServer extends SimilarPatentServer {
         }
 
         return new Gson().toJson(data);
+    }
+
+
+    private static Object handleAssigneeListForm(Request req, Response res, String userGroup, String baseFolder) {
+        Map<String, Object> response = new HashMap<>();
+
+        String parentFile = req.queryParams("parentFile");
+        boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
+
+        List<String> assignees = preProcess(extractString(req, "assignees", ""), "\\n", null);
+
+        System.out.println("Number of assignees: "+assignees.size());
+
+        StringJoiner message = new StringJoiner("; ", "Messages: ", ".");
+
+        String user = req.session().attribute("username");
+        if(user==null||user.isEmpty()) {
+            message.add("no user found");
+        } else {
+
+            String filename = baseFolder + (shared ? userGroup : user) + "/" + parentFile;
+            Map<String, Object> data = getMapFromFile(new File(filename), false);
+            System.out.println("Parent data: "+new Gson().toJson(data));
+
+            String parentName = (String) data.get("name");
+            if (parentName == null) {
+                message.add("no parent name");
+            } else {
+                String username = shared ? userGroup : user;
+                String[] parentParentDirs = Stream.of(new String[]{shared ? "Shared Datasets":"My Datasets"},(String[]) data.getOrDefault("parentDirs",new String[]{}))
+                        .flatMap(array->Stream.of(array)).toArray(size->new String[size]);
+                Map<String, List<String>> assigneeClusters = assignees.stream().distinct().map(assignee->{
+                    SearchHit[] hits = MyClient.get().prepareSearch(IngestPatents.INDEX_NAME).setTypes(IngestPatents.TYPE_NAME)
+                            .setQuery(
+                                    QueryBuilders.boolQuery()
+                                            .must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.randomFunction(1)))
+                                            .must(QueryBuilders.matchPhraseQuery(Attributes.LATEST_ASSIGNEES+"."+Attributes.LATEST_FIRST_ASSIGNEE, assignee))
+                            ).setFetchSource(false)
+                            .get().getHits().getHits();
+                    List<String> assets = Stream.of(hits).map(hit->hit.getId()).collect(Collectors.toList());
+                    System.out.println("Found "+assets.size()+" assets for assignee: "+assignee);
+                    return new Pair<>(assignee, assets);
+                }).collect(Collectors.toMap(e->e.getFirst(), e->e.getSecond()));
+                // search for assignee assets
+
+                if (assigneeClusters == null) {
+                    message.add("clusters are null");
+                } else {
+
+                    List<Map<String, Object>> assigneeData = new ArrayList<>(assigneeClusters.size());
+                    response.put("assignees", assigneeData);
+
+                    assigneeClusters.forEach((name, cluster) -> {
+                        //handleSaveForm()
+                        String[] parentDirs = Stream.of(Stream.of(parentParentDirs), Stream.of(parentName)).flatMap(stream -> stream).toArray(size -> new String[size]);
+
+                        Map<String, Object> formMap = new HashMap<>();
+
+                        formMap.put("name",name);
+                        formMap.put("assets", cluster.toArray(new String[cluster.size()]));
+
+                        System.out.println("Parent dirs of cluster: "+Arrays.toString(parentDirs));
+
+                        Pair<String, Map<String, Object>> pair = saveFormToFile(req, userGroup, formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user,userGroup), saveDatasetUpdatesFunction());
+
+                        Map<String, Object> clusterData = pair.getSecond();
+                        clusterData.put("name",name);
+                        assigneeData.add(clusterData);
+                    });
+                }
+            }
+        }
+
+        response.put("message", message.toString());
+
+        return new Gson().toJson(response);
     }
 
     private static Object handleClusterForm(Request req, Response res, String userGroup, String baseFolder) {
@@ -2471,7 +2564,14 @@ public class BigQueryServer extends SimilarPatentServer {
                                         button("Create").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-submit"),
                                         button("Cancel").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("new-dataset-from-asset-list-cancel")
                                 )
-                        ),div().withId("k-for-clustering-overlay").with(
+                        ), div().withId("create-assignee-datasets-overlay").with(
+                                div().withId("create-assignee-datasets-inside").attr("style","background-color: lightgray; padding: 5px;").with(
+                                        label("Assignee List").with(div().withText("(or leave blank to automatically find optimal number)"),input().withType("number").attr("min","2").withId("create-assignee-datasets")),br(),
+                                        button("Cluster").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("create-assignee-datasets-submit"),
+                                        button("Cancel").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("create-assignee-datasets-cancel")
+                                )
+                        ),
+                        div().withId("k-for-clustering-overlay").with(
                                 div().withId("k-for-clustering-inside").attr("style","background-color: lightgray; padding: 5px;").with(
                                         label("Number of Clusters").with(div().withText("(or leave blank to automatically find optimal number)"),input().withType("number").attr("min","2").withId("k-for-clustering")),br(),
                                         button("Cluster").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("k-for-clustering-submit"),
