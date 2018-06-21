@@ -1583,6 +1583,8 @@ public class BigQueryServer extends SimilarPatentServer {
                         .flatMap(array->Stream.of(array)).toArray(size->new String[size]);
                 Map<String, List<String>> assigneeClusters = assignees.stream().distinct().map(assignee->{
                     SearchHit[] hits = MyClient.get().prepareSearch(IngestPatents.INDEX_NAME).setTypes(IngestPatents.TYPE_NAME)
+                            .setFrom(0)
+                            .setSize(1000)
                             .setQuery(
                                     QueryBuilders.boolQuery()
                                             .must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.randomFunction(1)))
