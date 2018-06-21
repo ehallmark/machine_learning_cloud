@@ -2184,14 +2184,14 @@ public class SimilarPatentServer {
                         div().withClass("col-6").with(
                                 span().withText("Number of assets selected: ").attr("style", "float: left;").with(
                                     span().withId("table-selection-counter")
-                                ), br(), hr(),
-                                dataTableFromHeadersAndData(attributes)
+                                )
                         ), div().withClass("col-6").with(
                                 span().attr("style", "float: right;").with(
                                         div().withId("data-table-pagination-clone-holder")
                                 )
-                        )
-                )
+                        ),hr()
+                ),
+                dataTableFromHeadersAndData(attributes)
         );
     }
 

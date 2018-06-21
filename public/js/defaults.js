@@ -149,7 +149,9 @@ $(document).ready(function() {
                 var $paginationTable = $('#dynatable-pagination-links-main-data-table');
                 $paginationTable.click(function() {
                     setTimeout(function() {
-                        $(window).scrollTop($('#results #data-table table').scrollTop()+200);
+                        $('html,body').animate({
+                            scrollTop: $('#results #data-table').offset().top-200
+                        }, 200);
                     }, 100);
                 });
                 var all_rows_checked = update_table_function();
