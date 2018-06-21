@@ -66,8 +66,8 @@ public class AbstractIncludeAssetFilter extends AbstractIncludeFilter {
     @Override
     public List<String> getInputIds() {
         List<String> list = super.getInputIds();
-        //list.add(enforceCountryId());
-        //list.add(enforceKindCodeId());
+        list.add(enforceCountryId());
+        if(!isApplication) list.add(enforceKindCodeId());
         return list;
     }
 
