@@ -1721,6 +1721,101 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         }
                     };
                 }
+                if((node_type==='dataset') && isFolder && deletable) {
+                    items["Build Datasets from Assignee List"] = {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "Build Datasets from Assignee List",
+                        "title": "Creates a new folder with a dataset sample for each assignee in a list",
+                        "action": function(obj) {
+                            var callback = function(assignees) {
+                                // need to get data
+                                var nodeData = node;
+                                var parents = [];
+                                while(typeof nodeData.text !== 'undefined') {
+                                    if(nodeData.type==='folder') {
+                                        parents.unshift(nodeData.text);
+                                    }
+                                    var currId = nodeData.parent;
+                                    nodeData = tree.get_node(currId);
+                                }
+                                var shared = parents.length > 0 && parents[0].startsWith("Shared");
+                                var urlPrefix = $('#url-prefix').attr('prefix');
+                                if(!urlPrefix) {
+                                    urlPrefix = "/secure";
+                                }
+                                $.ajax({
+                                    type: "POST",
+                                    url: urlPrefix+'/assignee_datasets',
+                                    data: {
+                                        parentFile: node.data.file,
+                                        assignees: assignees,
+                                        shared: shared
+                                    },
+                                    success: function(clusters) {
+                                        if(!clusters.hasOwnProperty('assignees')) {
+                                             alert('Error saving template: '+clusters.message);
+                                        } else {
+                                            $.each(clusters.assignees, function(idx,data){
+                                                if(data.hasOwnProperty('file')&&data.hasOwnProperty('user')&&data.hasOwnProperty('name')) {
+                                                    var newData = {
+                                                        'text': data.name,
+                                                        'deletable': true,
+                                                        'type': 'file',
+                                                        'icon': 'jstree-file',
+                                                        'jstree': {'type': 'file'},
+                                                    };
+                                                    $.each(data, function(k,v) { newData[k] = v; });
+                                                    var newNode = tree.create_node(
+                                                        newFolder,
+                                                        { 'data' : newData, 'text': data.name},
+                                                        'first',
+                                                        function(newNode) {
+                                                            newNode.data=newData;
+                                                        }
+                                                    );
+                                                }
+                                            });
+
+                                        }
+                                    },
+                                    dataType: "json"
+                                });
+                            };
+
+                            // get user input
+                            var $input = $('#create-assignee-datasets');
+                            var $container = $('#create-assignee-datasets-overlay');
+                            var $inner = $('#create-assignee-datasets-inside');
+                            var $submit = $('#create-assignee-datasets-submit');
+                            var $cancel = $('#create-assignee-datasets-cancel');
+
+                            $input.val('');
+                            $container.show();
+                            $submit.off('click');
+                            $cancel.off('click');
+                            $input.off('click');
+                            $inner.off('click');
+
+                            $inner.click(function(e){
+                                e.stopPropagation();
+                            });
+                            $submit.click(function() {
+                                $container.hide();
+                                callback($input.val());
+                            });
+                            $cancel.click(function() {
+                                $container.hide();
+                            });
+                            $container.click(function() {
+                                $container.hide();
+                            });
+
+                            return true;
+                        }
+                    };
+
+                }
                 return items;
             }
         },
