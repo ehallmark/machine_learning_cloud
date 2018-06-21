@@ -416,6 +416,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         }
         BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName,null, aggSuffix, maxSlices, includeBlank, null);
         boolean isNested = attribute.getParent()!=null&&(!(attribute.getParent() instanceof AbstractChartAttribute))&&(!attribute.getParent().isObject());
+        System.out.println("Nested? "+attribute.getName()+": "+isNested);
         CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getStatsAggName(attrName), getStatsAggName(attrName+NESTED_SUFFIX), collectByAttribute, collectorType, isNested);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
             int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);
