@@ -318,6 +318,9 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         }
         if(agg!=null && agg instanceof MultiBucketsAggregation && attrNameWithSuffix.contains(Constants.DATASET_NAME)) {
             System.out.println("Dataset Filters agg: "+agg.toString());
+            ((MultiBucketsAggregation) agg).getBuckets().forEach(bucket->{
+                System.out.println("Bucket: "+bucket.getKeyAsString()+", "+bucket.getKey()+", "+bucket.getDocCount()+", "+String.join("; ", bucket.getAggregations().getAsMap().keySet()));
+            });
         }
         return agg;
     }
