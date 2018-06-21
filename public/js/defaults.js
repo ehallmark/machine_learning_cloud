@@ -150,7 +150,7 @@ $(document).ready(function() {
                 $paginationTable.click(function() {
                     setTimeout(function() {
                         $('html,body').animate({
-                            scrollTop: $('#main-data-table').offset().top-50
+                            scrollTop: $('#main-data-table').offset().top-100
                         }, 200);
                     }, 100);
                 });
