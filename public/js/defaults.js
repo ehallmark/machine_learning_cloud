@@ -144,7 +144,7 @@ $(document).ready(function() {
                $tableSelectionCounter.text(selectionCache.size.toString());
                return num_checked_rows>0 && num_checked_rows===num_rows;
            };
-           $table
+           $('#results #data-table table')
            .bind('dynatable:afterUpdate', function() {
                 var all_rows_checked = update_table_function();
                 $('#data-table-select-all').prop('checked', all_rows_checked).trigger('change');
