@@ -12,6 +12,7 @@ import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 6/17/2017.
@@ -30,9 +31,11 @@ public class AbstractIncludeWithRelatedFilter extends AbstractIncludeAssetFilter
     @Override
     public void extractRelevantInformationFromParams(Request req) {
         super.extractRelevantInformationFromParams(req);
-        if(labels!=null && assetField != null) {
+        if(assetFieldToAssetsMap!=null) {
             // expand
-            labels = Database.familyIdsForAssets(new ArrayList<>(labels), assetField);
+            labels = assetFieldToAssetsMap.entrySet().stream().flatMap(e->{
+                return Database.familyIdsForAssets(e.getValue(), e.getKey()).stream();
+            }).distinct().collect(Collectors.toList());
         }
     }
 
