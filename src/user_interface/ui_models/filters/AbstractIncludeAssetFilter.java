@@ -14,7 +14,6 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
@@ -67,12 +66,9 @@ public class AbstractIncludeAssetFilter extends AbstractIncludeFilter {
     @Override
     public List<String> getInputIds() {
         List<String> list = super.getInputIds();
-        list.addAll(getAdditionalIds());
+        //list.add(enforceCountryId());
+        //list.add(enforceKindCodeId());
         return list;
-    }
-
-    public List<String> getAdditionalIds() {
-        return Arrays.asList(enforceCountryId(),enforceKindCodeId());
     }
 
     public String enforceCountryId() {
