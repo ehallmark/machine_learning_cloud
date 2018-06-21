@@ -2568,8 +2568,8 @@ public class BigQueryServer extends SimilarPatentServer {
                                 )
                         ), div().withId("create-assignee-datasets-overlay").with(
                                 div().withId("create-assignee-datasets-inside").attr("style","background-color: lightgray; padding: 5px;").with(
-                                        label("Assignee List").with(div().withText("(or leave blank to automatically find optimal number)"),input().withType("number").attr("min","2").withId("create-assignee-datasets")),br(),
-                                        button("Cluster").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("create-assignee-datasets-submit"),
+                                        label("Assignee List").with(div().withText("(or leave blank to automatically find optimal number)"),textarea().withClass("form-control").withPlaceholder("1 assignee per line.").withId("create-assignee-datasets")),br(),
+                                        button("Create").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("create-assignee-datasets-submit"),
                                         button("Cancel").attr("style","cursor: pointer;").withClass("btn btn-sm btn-default").withId("create-assignee-datasets-cancel")
                                 )
                         ),
