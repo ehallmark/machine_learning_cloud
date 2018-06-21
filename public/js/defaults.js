@@ -1748,7 +1748,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                     type: "POST",
                                     url: urlPrefix+'/assignee_datasets',
                                     data: {
-                                        parentFile: node.data.file,
+                                        parentDirs: parents,
                                         assignees: assignees,
                                         shared: shared
                                     },

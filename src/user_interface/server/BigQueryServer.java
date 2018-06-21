@@ -1556,9 +1556,7 @@ public class BigQueryServer extends SimilarPatentServer {
     private static Object handleAssigneeListForm(Request req, Response res, String userGroup, String baseFolder) {
         Map<String, Object> response = new HashMap<>();
 
-        String parentFile = req.queryParams("parentFile");
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
-
         List<String> assignees = preProcess(extractString(req, "assignees", ""), "\\n", null);
 
         System.out.println("Number of assignees: "+assignees.size());
@@ -1570,31 +1568,25 @@ public class BigQueryServer extends SimilarPatentServer {
             message.add("no user found");
         } else {
 
-            String filename = baseFolder + (shared ? userGroup : user) + "/" + parentFile;
-            Map<String, Object> data = getMapFromFile(new File(filename), false);
-            System.out.println("Parent data: "+new Gson().toJson(data));
-
-            String parentName = (String) data.get("name");
-            if (parentName == null) {
-                message.add("no parent name");
+            String username = shared ? userGroup : user;
+            String[] parentDirs = req.queryParamsValues("parentDirs[]");
+            if(parentDirs==null) {
+                message.add("no parent dirs found.");
             } else {
-                String username = shared ? userGroup : user;
-                String[] parentParentDirs = Stream.of(new String[]{shared ? "Shared Datasets":"My Datasets"},(String[]) data.getOrDefault("parentDirs",new String[]{}))
-                        .flatMap(array->Stream.of(array)).toArray(size->new String[size]);
-                Map<String, List<String>> assigneeClusters = assignees.stream().distinct().map(assignee->{
+                Map<String, List<String>> assigneeClusters = assignees.stream().distinct().map(assignee -> {
                     SearchHit[] hits = MyClient.get().prepareSearch(IngestPatents.INDEX_NAME).setTypes(IngestPatents.TYPE_NAME)
                             .setFrom(0)
                             .setSize(1000)
                             .setQuery(
                                     QueryBuilders.boolQuery()
                                             .must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.randomFunction(1)))
-                                            .must(QueryBuilders.matchPhraseQuery(Attributes.LATEST_ASSIGNEES+"."+Attributes.LATEST_FIRST_ASSIGNEE, assignee))
+                                            .must(QueryBuilders.matchPhraseQuery(Attributes.LATEST_ASSIGNEES + "." + Attributes.LATEST_FIRST_ASSIGNEE, assignee))
                             ).setFetchSource(false)
                             .get().getHits().getHits();
-                    List<String> assets = Stream.of(hits).map(hit->hit.getId()).collect(Collectors.toList());
-                    System.out.println("Found "+assets.size()+" assets for assignee: "+assignee);
+                    List<String> assets = Stream.of(hits).map(hit -> hit.getId()).collect(Collectors.toList());
+                    System.out.println("Found " + assets.size() + " assets for assignee: " + assignee);
                     return new Pair<>(assignee, assets);
-                }).collect(Collectors.toMap(e->e.getFirst(), e->e.getSecond()));
+                }).collect(Collectors.toMap(e -> e.getFirst(), e -> e.getSecond()));
                 // search for assignee assets
 
                 if (assigneeClusters == null) {
@@ -1606,19 +1598,17 @@ public class BigQueryServer extends SimilarPatentServer {
 
                     assigneeClusters.forEach((name, cluster) -> {
                         //handleSaveForm()
-                        String[] parentDirs = Stream.of(Stream.of(parentParentDirs), Stream.of(parentName)).flatMap(stream -> stream).toArray(size -> new String[size]);
-
                         Map<String, Object> formMap = new HashMap<>();
 
-                        formMap.put("name",name);
+                        formMap.put("name", name);
                         formMap.put("assets", cluster.toArray(new String[cluster.size()]));
 
-                        System.out.println("Parent dirs of cluster: "+Arrays.toString(parentDirs));
+                        System.out.println("Parent dirs of cluster: " + Arrays.toString(parentDirs));
 
-                        Pair<String, Map<String, Object>> pair = saveFormToFile(req, userGroup, formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user,userGroup), saveDatasetUpdatesFunction());
+                        Pair<String, Map<String, Object>> pair = saveFormToFile(req, userGroup, formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user, userGroup), saveDatasetUpdatesFunction());
 
                         Map<String, Object> clusterData = pair.getSecond();
-                        clusterData.put("name",name);
+                        clusterData.put("name", name);
                         assigneeData.add(clusterData);
                     });
                 }
