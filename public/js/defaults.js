@@ -1721,7 +1721,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         }
                     };
                 }
-                if((node_type==='dataset') && isFolder && deletable) {
+                if((node_type==='dataset') && isFolder && deletable && !topLevelFolder) {
                     items["Build Datasets from Assignee List"] = {
                         "separator_before": false,
                         "separator_after": false,
