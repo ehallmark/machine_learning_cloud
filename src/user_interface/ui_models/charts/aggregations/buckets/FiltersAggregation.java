@@ -15,6 +15,7 @@ public class FiltersAggregation extends BucketAggregation {
         if(otherBucketKey!=null&&otherBucket) {
             _builder=_builder.otherBucketKey(otherBucketKey);
         }
+        System.out.println("Filters aggregation: "+_builder.toString());
         aggregation=_builder;
     }
 

@@ -270,7 +270,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
 
     public Aggregation handlePotentiallyNestedAgg(Aggregations aggregations, String attrNameWithSuffix, String attrNameNestedWithSuffix) {
         if (aggregations == null) return null; // important to stop recursion
-        System.out.println("Handling potentially nested agg: "+attrNameNestedWithSuffix+" with nested name: "+attrNameNestedWithSuffix);
+        System.out.println("Handling potentially nested agg: "+attrNameWithSuffix+" with nested name: "+attrNameNestedWithSuffix);
         System.out.println("Available aggregations: "+String.join("; ", aggregations.getAsMap().keySet()));
         Aggregation agg = aggregations.get(attrNameWithSuffix);
         if (agg == null) {
