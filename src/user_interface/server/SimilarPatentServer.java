@@ -41,8 +41,6 @@ import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.BackwardCitationAttribute;
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.RelatedAssetsAttribute;
-import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
-import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 import user_interface.ui_models.attributes.script_attributes.*;
 import user_interface.ui_models.charts.AbstractChartAttribute;
@@ -2182,10 +2180,18 @@ public class SimilarPatentServer {
                 form().withMethod("post").withTarget("_blank").withAction(DOWNLOAD_URL).with(
                         button("Download to CSV").withType("submit").withClass("btn btn-outline-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
                 ),
-                span().withText("Number of assets selected: ").attr("style", "float: left;").with(
-                    span().withId("table-selection-counter")
-                ), br(), hr(),
-                dataTableFromHeadersAndData(attributes)
+                div().withClass("row").with(
+                        div().withClass("col-6").with(
+                                span().withText("Number of assets selected: ").attr("style", "float: left;").with(
+                                    span().withId("table-selection-counter")
+                                ), br(), hr(),
+                                dataTableFromHeadersAndData(attributes)
+                        ), div().withClass("col-6").with(
+                                span().attr("style", "float: right;").with(
+                                        div().withId("data-table-pagination-clone-holder")
+                                )
+                        )
+                )
         );
     }
 
