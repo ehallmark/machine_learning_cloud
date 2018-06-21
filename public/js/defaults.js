@@ -110,10 +110,10 @@ $(document).ready(function() {
                $(this).html(data.message);
            });
        }
-       if($('#results #data-table table thead th').length > 0) {
+       if($('#main-data-table thead th').length > 0) {
            selectionCache.clear();
            var update_table_function = function() {
-               var $table = $('#results #data-table table');
+               var $table = $('#main-data-table');
                var $tableSelectionCounter = $('#results #data-table #table-selection-counter');
                var $tableRows = $table.find('tbody tr');
                var num_rows = $tableRows.length;
@@ -144,23 +144,34 @@ $(document).ready(function() {
                $tableSelectionCounter.text(selectionCache.size.toString());
                return num_checked_rows>0 && num_checked_rows===num_rows;
            };
-           $('#results #data-table table')
+           $('#main-data-table')
            .bind('dynatable:afterUpdate', function() {
                 var $paginationTable = $('#dynatable-pagination-links-main-data-table');
                 $paginationTable.click(function() {
                     setTimeout(function() {
                         $('html,body').animate({
-                            scrollTop: $('#results #data-table').offset().top-200
+                            scrollTop: $('#main-data-table').offset().top-50
                         }, 200);
                     }, 100);
                 });
                 var all_rows_checked = update_table_function();
                 $('#data-table-select-all').prop('checked', all_rows_checked).trigger('change');
-                var $clone = $paginationTable.clone(true);
+                var $clone = $paginationTable.clone(false);
                 $clone.attr('id', 'dynatable-pagination-links-main-data-table-clone');
                 var $holder = $('#data-table-pagination-clone-holder');
                 $holder.empty();
                 $holder.append($clone);
+                var $original_links = $paginationTable.find('a');
+                var $cloned_links = $clone.find('a');
+                $.each(function(index, element) {
+                    var $cloned_link = $($cloned_links.get(index));
+                    $cloned_link.attr('index', index.toString());
+                    $cloned_link.click(function() {
+                        var i = parseInt($cloned_link.attr('index'), 10);
+                        var $link = $($original_links.get(i));
+                        $link.click();
+                    });
+                });
                 return true;
            })
            .dynatable({

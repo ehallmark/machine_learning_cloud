@@ -10,6 +10,10 @@
     display: none;
 }
 
+.dynatable-pagination-links {
+    margin-right: 0 !important;
+}
+
 #new-dataset-from-asset-list-overlay,#k-for-clustering-overlay,#create-assignee-datasets-overlay {
     position: fixed;
     display: none;
