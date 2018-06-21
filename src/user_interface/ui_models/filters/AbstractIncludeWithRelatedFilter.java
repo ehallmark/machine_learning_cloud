@@ -12,6 +12,8 @@ import user_interface.ui_models.attributes.dataset_lookup.TermsLookupAttribute;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by Evan on 6/17/2017.
@@ -34,6 +36,11 @@ public class AbstractIncludeWithRelatedFilter extends AbstractIncludeAssetFilter
             // expand
             labels = Database.familyIdsForAssets(new ArrayList<>(labels), assetField);
         }
+    }
+
+    @Override
+    public List<String> getAdditionalIds() {
+        return Collections.emptyList();
     }
 
     @Override
