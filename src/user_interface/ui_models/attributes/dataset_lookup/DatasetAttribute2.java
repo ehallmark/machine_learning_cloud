@@ -20,12 +20,9 @@ public class DatasetAttribute2 extends DatasetAttribute {
 
     @Override
     public AbstractAttribute dup() {
-        return new DatasetAttribute2(getTermsName());
+        return new DatasetAttribute2(termsName);
     }
 
-    public static DatasetAttribute2 getOldDatasetAttribute() {
-        return new DatasetAttribute2(Constants.NAME);
-    }
 
     public static DatasetAttribute2 getDatasetAttribute() {
         return new DatasetAttribute2(Attributes.PUBLICATION_NUMBER_FULL);

@@ -112,9 +112,9 @@ $(document).ready(function() {
        }
        if($('#results #data-table table thead th').length > 0) {
            selectionCache.clear();
-           var $table = $('#results #data-table table');
-           var $tableSelectionCounter = $('#results #data-table #table-selection-counter');
            var update_table_function = function() {
+               var $table = $('#results #data-table table');
+               var $tableSelectionCounter = $('#results #data-table #table-selection-counter');
                var $tableRows = $table.find('tbody tr');
                var num_rows = $tableRows.length;
                $tableRows = $tableRows.filter(function() {

@@ -36,7 +36,7 @@ public class DatasetAttribute extends TermsLookupAttribute implements AjaxMultis
         }).filter(l->l!=null).collect(Collectors.toList());
     }
 
-    private String termsName;
+    protected String termsName;
     public DatasetAttribute(String termsName) {
         this.termsName=termsName;
     }
