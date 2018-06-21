@@ -6,22 +6,20 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
-import user_interface.ui_models.charts.aggregate_charts.AggregationChart;
 import user_interface.ui_models.charts.aggregations.AbstractAggregation;
 import user_interface.ui_models.charts.aggregations.Type;
-import user_interface.ui_models.charts.aggregations.buckets.BucketAggregation;
 
 public class CombinedAggregation implements AbstractAggregation {
     @Getter
     protected AggregationBuilder aggregation;
 
-    public CombinedAggregation(BucketAggregation base, String name, String nestedName, AbstractAttribute collectByAttr, Type mode, boolean baseIsNested) {
+    public CombinedAggregation(String name, String nestedName, AbstractAttribute collectByAttr, Type mode) {
         if(collectByAttr==null) {
             // default to count
             if(mode!=null&&!mode.equals(Type.Count)) {
                 throw new RuntimeException("Please choose a collect by attribute or collect by count.");
             }
-            aggregation = base.getAggregation();
+            aggregation = null;
         } else {
             boolean isScript = collectByAttr instanceof AbstractScriptAttribute;
             final boolean isNested = collectByAttr.getParent()!=null&&!(collectByAttr.getParent() instanceof AbstractChartAttribute)&&!collectByAttr.getParent().isObject();
@@ -102,18 +100,6 @@ public class CombinedAggregation implements AbstractAggregation {
                 aggregation = AggregationBuilders.nested(nestedName, collectByAttr.getParent().getName())
                         .subAggregation(aggregation);
             }
-
-            if(baseIsNested) {
-                // needs reverse nested clause
-                System.out.println("Using reverse nested clause for agg: "+base.getAggregation().toString());
-                aggregation = AggregationBuilders.reverseNested(aggregation.getName() + AggregationChart.REVERSE_NESTED_SUFFIX)
-                        .subAggregation(aggregation);
-            }
-
-            aggregation = base.getAggregation().subAggregation(
-                    aggregation
-            );
-
         }
     }
 

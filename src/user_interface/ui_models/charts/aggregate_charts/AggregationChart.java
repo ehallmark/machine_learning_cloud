@@ -414,19 +414,19 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             attribute = ((DependentAttribute) attribute).dup();
             ((DependentAttribute) attribute).extractRelevantInformationFromParams(req);
         }
-        BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName,null, aggSuffix, maxSlices, includeBlank, null);
+        CombinedAggregation statsAgg = new CombinedAggregation(getStatsAggName(attrName), getStatsAggName(attrName+NESTED_SUFFIX), collectByAttribute, collectorType);
+        BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName,null, aggSuffix, maxSlices, includeBlank, statsAgg.getAggregation());
         boolean isNested = attribute.getParent()!=null&&(!(attribute.getParent() instanceof AbstractChartAttribute))&&(!attribute.getParent().isObject());
         System.out.println("Nested? "+attribute.getName()+": "+isNested);
-        CombinedAggregation combinedAttrAgg = new CombinedAggregation(attrAgg, getStatsAggName(attrName), getStatsAggName(attrName+NESTED_SUFFIX), collectByAttribute, collectorType, isNested);
         if(groupedByAttrName!=null) { // handle two dimensional case (pivot)
             int groupLimit = attrNameToMaxGroupSizeMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);
-            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(req, attrName,groupedByAttrName,groupLimit,combinedAttrAgg.getAggregation(), includeBlank);
+            AbstractAggregation twoDimensionalAgg = createGroupedAttribute(req, attrName,groupedByAttrName,groupLimit,attrAgg.getAggregation(), includeBlank);
             return Collections.singletonList(
                     twoDimensionalAgg
             );
         } else {
             return Collections.singletonList(
-                    combinedAttrAgg
+                    attrAgg
             );
         }
     }
