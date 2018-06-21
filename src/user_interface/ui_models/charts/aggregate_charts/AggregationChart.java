@@ -23,6 +23,7 @@ import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStat
 import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.nd4j.linalg.primitives.Pair;
+import seeding.Constants;
 import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
@@ -270,8 +271,8 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
 
     public Aggregation handlePotentiallyNestedAgg(Aggregations aggregations, String attrNameWithSuffix, String attrNameNestedWithSuffix) {
         if (aggregations == null) return null; // important to stop recursion
-        System.out.println("Handling potentially nested agg: "+attrNameWithSuffix+" with nested name: "+attrNameNestedWithSuffix);
-        System.out.println("Available aggregations: "+String.join("; ", aggregations.getAsMap().keySet()));
+        //System.out.println("Handling potentially nested agg: "+attrNameWithSuffix+" with nested name: "+attrNameNestedWithSuffix);
+        //System.out.println("Available aggregations: "+String.join("; ", aggregations.getAsMap().keySet()));
         Aggregation agg = aggregations.get(attrNameWithSuffix);
         if (agg == null) {
             agg = aggregations.get(attrNameWithSuffix + SignificantTermsAggregation.SAMPLER_SUFFIX);
@@ -314,6 +315,9 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 throw new RuntimeException("Unable to find nested attribute: " + attrNameNestedWithSuffix);
             }
             return handlePotentiallyNestedAgg(nested.getAggregations(), attrNameWithSuffix, null);
+        }
+        if(agg!=null && agg instanceof MultiBucketsAggregation && attrNameWithSuffix.contains(Constants.DATASET_NAME)) {
+            System.out.println("Dataset Filters agg: "+agg.toString());
         }
         return agg;
     }
