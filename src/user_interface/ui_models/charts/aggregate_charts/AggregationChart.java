@@ -316,13 +316,6 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             }
             return handlePotentiallyNestedAgg(nested.getAggregations(), attrNameWithSuffix, null);
         }
-        if(agg!=null && agg instanceof MultiBucketsAggregation && attrNameWithSuffix.contains(Constants.DATASET_NAME)) {
-            System.out.println("Dataset Filters agg: "+agg.toString());
-            ((MultiBucketsAggregation) agg).getBuckets().forEach(bucket->{
-                System.out.println("Bucket: "+bucket.getKeyAsString()+", "+bucket.getKey()+", "+bucket.getDocCount()+", "+String.join("; ", bucket.getAggregations().getAsMap().keySet()));
-                Aggregation b = bucket.getAggregations().get("pivotFunctionTableChart_mStatdatasetName");
-            });
-        }
         return agg;
     }
 
@@ -366,7 +359,6 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             int i = 0;
             for (MultiBucketsAggregation.Bucket entry : agg.getBuckets()) {
                 String key = categories == null ? entry.getKeyAsString() : categories.get(i);
-                System.out.print(key+" ");
                 if (key == null && entry.getKey() != null) key = entry.getKey().toString();// bucket key
                 long docCount = entry.getDocCount();            // Doc count
                 if (subAggregationHandler == null) {
