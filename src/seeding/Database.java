@@ -187,10 +187,11 @@ public class Database {
 			for(int i = 0; i < assets.size(); i++) {
 				parens.add("?");
 			}
-			PreparedStatement ps = conn.prepareStatement("select publication_number_full from big_query_family_id where "+assetField+" in ("+parens+") where family_id !='-1'");
+			PreparedStatement ps = conn.prepareStatement("select publication_number_full from big_query_family_id where "+assetField+" in ("+parens+")");
 			for(int i = 0; i < assets.size(); i++) {
 				ps.setString(i+1, assets.get(i));
 			}
+			System.out.println("Query for publication number fulls: "+ps.toString());
 			ResultSet rs = ps.executeQuery();
 			while(rs.next()) {
 				publicationNumberFulls.add(rs.getString(1));

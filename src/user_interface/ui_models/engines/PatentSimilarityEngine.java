@@ -40,13 +40,13 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
         if(pubNumsFull!=null) {
             allPubNumFulls.addAll(pubNumsFull);
         }
-        if(pubNums!=null) {
+        if(pubNums!=null&&pubNums.size()>0) {
             allPubNumFulls.addAll(Database.publicationNumberFullForAssets(pubNums, Attributes.PUBLICATION_NUMBER));
         }
-        if(pubNumsWithCountry!=null) {
+        if(pubNumsWithCountry!=null&&pubNumsWithCountry.size()>0) {
             allPubNumFulls.addAll(Database.publicationNumberFullForAssets(pubNumsWithCountry, Attributes.PUBLICATION_NUMBER_WITH_COUNTRY));
         }
-        System.out.println("Found "+patents.size()+" full publication numbers...");
+        System.out.println("Found "+allPubNumFulls.size()+" full publication numbers...");
         return allPubNumFulls;
     }
 
