@@ -177,9 +177,9 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             }
         } else if(attribute instanceof DatasetAttribute) {
             System.out.println("Building filters aggregations (datasets) for: "+attrName);
-            List<Pair<String, Set<String>>> dataSets = ((DatasetAttribute) attribute).getCurrentDatasets();
-            QueryBuilder[] queryBuilders = dataSets.stream().map(dataset -> {
-                return QueryBuilders.termsLookupQuery(((DatasetAttribute) attribute).getTermsName(), new TermsLookup(((DatasetAttribute) attribute).getTermsIndex(), ((DatasetAttribute) attribute).getTermsType(), dataset.getFirst(), ((DatasetAttribute) attribute).getTermsPath()));
+            List<String> dataSetIds = ((DatasetAttribute) attribute).getCurrentIds();
+            QueryBuilder[] queryBuilders = dataSetIds.stream().map(id -> {
+                return QueryBuilders.termsLookupQuery(((DatasetAttribute) attribute).getTermsName(), new TermsLookup(((DatasetAttribute) attribute).getTermsIndex(), ((DatasetAttribute) attribute).getTermsType(), id, ((DatasetAttribute) attribute).getTermsPath()));
             }).toArray(size -> new QueryBuilder[size]);
             aggregation = new FiltersAggregation(aggNameWithPrefix + aggSuffix, false, null, queryBuilders);
             System.out.println("Dataset aggregation: "+aggregation.toString());

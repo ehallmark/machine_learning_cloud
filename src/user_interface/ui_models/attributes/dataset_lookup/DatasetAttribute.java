@@ -23,6 +23,8 @@ public class DatasetAttribute extends TermsLookupAttribute implements AjaxMultis
 
     @Getter
     private List<Pair<String,Set<String>>> currentDatasets;
+    @Getter
+    private List<String> currentIds;
     @Override
     public List<String> termsFor(String asset) {
         return currentDatasets.stream().map(ds->{
@@ -97,6 +99,7 @@ public class DatasetAttribute extends TermsLookupAttribute implements AjaxMultis
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         currentDatasets = Collections.synchronizedList(new ArrayList<Pair<String, Set<String>>>());
+        currentIds = Collections.synchronizedList(new ArrayList<>());
         AbstractIncludeFilter filter = new AbstractIncludeFilter(this, AbstractFilter.FilterType.Include,getFieldType(),null);
         filter.extractRelevantInformationFromParams(params);
         if(filter.isActive()) {
@@ -106,6 +109,7 @@ public class DatasetAttribute extends TermsLookupAttribute implements AjaxMultis
                     Pair<String,Set<String>> ds = createDatasetFor(label);
                     if(ds!=null) {
                         currentDatasets.add(ds);
+                        currentIds.add(label);
                     }
                 });
             }
