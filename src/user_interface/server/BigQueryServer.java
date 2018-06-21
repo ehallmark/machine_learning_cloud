@@ -191,7 +191,7 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("CompDB", Attributes.COMPDB);
             humanAttrToJavaAttrMap.put("Random Sort", Constants.RANDOM_SORT);
             humanAttrToJavaAttrMap.put("No Sort", Constants.NO_SORT);
-            humanAttrToJavaAttrMap.put("CPC With Children", Attributes.TREE);
+            humanAttrToJavaAttrMap.put("CPC Code With Children", Attributes.TREE);
             humanAttrToJavaAttrMap.put("Dataset Similarity", DATASETS_TO_SEARCH_IN_FIELD);
             humanAttrToJavaAttrMap.put("Filing Date", Attributes.FILING_DATE);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);

@@ -3,6 +3,7 @@ package seeding;
 
 import org.nd4j.linalg.primitives.Pair;
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
+import seeding.google.elasticsearch.Attributes;
 import user_interface.acclaim_compatibility.USParser;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.*;
@@ -283,28 +284,22 @@ public class Constants {
 
 	public static final Map<String,String> ATTRIBUTE_DESCRIPTION_MAP = Collections.synchronizedMap(new HashMap<>());
 	static {
-		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIMS+"."+CLAIM, "full text of a claim.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIMS+"."+CLAIM_LENGTH, "number of words in a claim.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIMS+"."+CLAIM_NUM, "number of the claim in the document.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIMS+"."+PARENT_CLAIM_NUM, "parent claim number of the claim.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(SMALLEST_INDEPENDENT_CLAIM_LENGTH, "number of words in the document's smallest independent claim.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(AI_VALUE, "AI value of the document. Developed by GTT Group.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(NAME,"asset number.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(LAPSED,"lapsed.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(GRANTED,"granted.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(EXPIRED,"expired.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(REINSTATED,"reinstated.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(PUBLICATION_DATE, "publication date of the asset.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(FILING_DATE, "date of the patent filing.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(ESTIMATED_EXPIRATION_DATE, "expiration date computed from the original expiration date and any term adjustment information.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.CLAIMS, "full claim text.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.LENGTH_OF_SMALLEST_IND_CLAIM, "number of words in the document's smallest independent claim.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.LAPSED,"lapsed.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.GRANTED,"granted.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.EXPIRED,"expired.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.REINSTATED,"reinstated.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.PUBLICATION_DATE, "publication date of the asset.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.FILING_DATE, "date of the patent filing.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.EXPIRATION_DATE_ESTIMATED, "expiration date computed from the original priority date, term length, and any available term adjustment information (US Only).");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.PRIORITY_DATE_ESTIMATED, "priority date computed from the original priority date and any available term adjustment information.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.TREE, "cpc code (includes child classes)");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.AI_VALUE, "AI Value of the document. Ranges from 0-1. Developed by GTT Group.");
 		ATTRIBUTE_DESCRIPTION_MAP.put("pie", "Create a pie chart.");
 		ATTRIBUTE_DESCRIPTION_MAP.put("line", "Create a timeline chart.");
 		ATTRIBUTE_DESCRIPTION_MAP.put("histogram", "Create a histogram.");
-		ATTRIBUTE_DESCRIPTION_MAP.put("groupedTable", "Create an aggregated function table.");
-		ATTRIBUTE_DESCRIPTION_MAP.put("groupedCountTable", "Create an aggregated counts table.");
-		ATTRIBUTE_DESCRIPTION_MAP.put("pivotFunctionTable", "Create an pivot function table.");
-		ATTRIBUTE_DESCRIPTION_MAP.put("pivotCountTable", "Create an pivot count table.");
-
+		ATTRIBUTE_DESCRIPTION_MAP.put("pivot", "Create an pivot table.");
 	}
 
 	public static final Map<String,String> PG_NAME_MAP = Collections.synchronizedMap(new HashMap<>());
