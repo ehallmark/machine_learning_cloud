@@ -114,8 +114,8 @@ $(document).ready(function() {
            selectionCache.clear();
            var $table = $('#results #data-table table');
            var $tableSelectionCounter = $('#results #data-table #table-selection-counter');
-           var update_table_function = function($tableRows) {
-               //var $tableRows = $table.find('tbody tr');
+           var update_table_function = function() {
+               var $tableRows = $table.find('tbody tr');
                var num_rows = $tableRows.length;
                $tableRows = $tableRows.filter(function() {
                    var $check = $(this).find('input.tableSelection');
@@ -145,9 +145,10 @@ $(document).ready(function() {
                return num_checked_rows>0 && num_checked_rows===num_rows;
            };
            $table
-           .bind('dynatable:afterUpdate', function($rows) {
-                var all_rows_checked = update_table_function($rows);
+           .bind('dynatable:afterUpdate', function() {
+                var all_rows_checked = update_table_function();
                 $('#data-table-select-all').prop('checked', all_rows_checked).trigger('change');
+                return true;
            })
            .dynatable({
              dataset: {
