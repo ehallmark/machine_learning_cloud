@@ -157,7 +157,7 @@ $(document).ready(function() {
                 var $clone = $paginationTable.clone(true);
                 $clone.attr('id', 'dynatable-pagination-links-main-data-table-clone');
                 var $holder = $('#data-table-pagination-clone-holder');
-                $holder.clear();
+                $holder.empty();
                 $holder.append($clone);
                 return true;
            })
