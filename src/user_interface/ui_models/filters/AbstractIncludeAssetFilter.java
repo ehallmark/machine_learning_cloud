@@ -25,14 +25,15 @@ public class AbstractIncludeAssetFilter extends AbstractIncludeFilter {
         if(!(attribute instanceof AssetAttribute)) throw new RuntimeException("Illegal filter type for asset attribute: "+attribute.getFullName());
         this.isApplication = ((AssetAttribute) attribute).isApplication();
         this.assetPrefix = ((AssetAttribute) attribute).getAssetPrefix();
-        this.assetFieldToAssetsMap = buildAssetFieldToAssetsMap(labels);
+        this.assetFieldToAssetsMap = buildAssetFieldToAssetsMap(isApplication, labels);
     }
 
 
-    protected Map<String,List<String>> buildAssetFieldToAssetsMap(Collection<String> labels) {
+    public static Map<String,List<String>> buildAssetFieldToAssetsMap(boolean isApplication, Collection<String> labels) {
         if (labels==null) return Collections.emptyMap();
         Map<String, List<String>> assetFieldToAssetsMap = new HashMap();
         for(String label : labels) {
+            label = label.toUpperCase().replaceAll("[^A-Z0-9]", "");
             if(label.length()>2) {
                 String suffix = label.substring(label.length()-2);
                 String kindCode = null;
@@ -112,7 +113,7 @@ public class AbstractIncludeAssetFilter extends AbstractIncludeFilter {
     public void extractRelevantInformationFromParams(Request req) {
         super.extractRelevantInformationFromParams(req);
         if(labels!=null) {
-            this.assetFieldToAssetsMap = buildAssetFieldToAssetsMap(labels);
+            this.assetFieldToAssetsMap = buildAssetFieldToAssetsMap(isApplication, labels);
         }
     }
 }

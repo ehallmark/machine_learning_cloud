@@ -172,12 +172,36 @@ public class Database {
 			while(rs.next()) {
 				familyIds.add(rs.getString(1));
 			}
+			rs.close();
+			ps.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return familyIds;
 	}
 
+	public static Set<String> publicationNumberFullForAssets(List<String> assets, String assetField) {
+		Set<String> publicationNumberFulls = new HashSet<>();
+		try {
+			StringJoiner parens = new StringJoiner(",");
+			for(int i = 0; i < assets.size(); i++) {
+				parens.add("?");
+			}
+			PreparedStatement ps = conn.prepareStatement("select publication_number_full from big_query_family_id where "+assetField+" in ("+parens+") where family_id !='-1'");
+			for(int i = 0; i < assets.size(); i++) {
+				ps.setString(i+1, assets.get(i));
+			}
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) {
+				publicationNumberFulls.add(rs.getString(1));
+			}
+			rs.close();
+			ps.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return publicationNumberFulls;
+	}
 
 	public static List<String> searchBigQueryAssignees(String tableName, String search, int limit, Map<String,Integer> portfolioSizeMap) {
 		if(search==null||search.trim().isEmpty()) return Collections.emptyList();
