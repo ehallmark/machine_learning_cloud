@@ -536,8 +536,6 @@ public class SimilarPatentServer {
     public static void loadAttributes(boolean loadHidden, boolean loadVectors) {
         if(attributesMap.isEmpty()) {
             attributesMap.put(Constants.MAINTENANCE_EVENT, new MaintenanceEventAttribute());
-            attributesMap.put(Constants.DATASET_NAME, DatasetAttribute.getOldDatasetAttribute());
-            attributesMap.put(Constants.DATASET2_NAME,  DatasetAttribute2.getOldDatasetAttribute());
             attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
             attributesMap.put(Constants.TECHNOLOGY, TechnologyAttribute.getOrCreate());

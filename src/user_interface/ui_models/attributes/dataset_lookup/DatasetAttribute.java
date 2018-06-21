@@ -41,10 +41,6 @@ public class DatasetAttribute extends TermsLookupAttribute implements AjaxMultis
         this.termsName=termsName;
     }
 
-    public static DatasetAttribute getOldDatasetAttribute() {
-        return new DatasetAttribute(Constants.NAME);
-    }
-
     public static DatasetAttribute getDatasetAttribute() {
         return new DatasetAttribute(Attributes.PUBLICATION_NUMBER_FULL);
     }

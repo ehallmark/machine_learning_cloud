@@ -212,6 +212,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             throw new RuntimeException("Unable to find grouping attribute attribute: " + groupedByAttrName);
         }
         if (groupByAttribute instanceof DependentAttribute) {
+            groupByAttribute = ((DependentAttribute)groupByAttribute).dup();
             ((DependentAttribute) groupByAttribute).extractRelevantInformationFromParams(req);
         }
         String groupBySuffix = getGroupSuffix();
@@ -406,9 +407,11 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             System.out.println("Collect by attribute could not be found: "+collectByAttrName);
         }
         if(collectByAttribute!=null && collectByAttribute instanceof DependentAttribute) {
+            collectByAttribute = ((DependentAttribute) collectByAttribute).dup();
             ((DependentAttribute)collectByAttribute).extractRelevantInformationFromParams(req);
         }
         if(attribute!=null && attribute instanceof DependentAttribute) {
+            attribute = ((DependentAttribute) attribute).dup();
             ((DependentAttribute) attribute).extractRelevantInformationFromParams(req);
         }
         BucketAggregation attrAgg = AggregatePieChart.buildDistributionAggregation(this,attribute, attrName,null, aggSuffix, maxSlices, includeBlank, null);

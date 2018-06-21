@@ -52,8 +52,7 @@ public class AbstractExcludeFilter extends AbstractIncludeFilter {
             for(String label : labels) {
                 boolQueryBuilder = boolQueryBuilder.mustNot(QueryBuilders.termsLookupQuery(termsLookupAttribute.getTermsName(), new TermsLookup(termsLookupAttribute.getTermsIndex(), termsLookupAttribute.getTermsType(), label, termsLookupAttribute.getTermsPath())));
             }
-        }
-        if(termQuery) {
+        } else if(termQuery) {
             boolQueryBuilder = boolQueryBuilder.mustNot(QueryBuilders.termsQuery(preReq, labels));
         } else {
             for (String label : labels) {
