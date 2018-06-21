@@ -163,8 +163,8 @@ $(document).ready(function() {
                 $holder.append($clone);
                 var $original_links = $paginationTable.find('a');
                 var $cloned_links = $clone.find('a');
-                $.each(function(index, element) {
-                    var $cloned_link = $($cloned_links.get(index));
+                $cloned_links.each(function(index, element) {
+                    var $cloned_link = $(element);
                     $cloned_link.attr('index', index.toString());
                     $cloned_link.click(function() {
                         var i = parseInt($cloned_link.attr('index'), 10);
