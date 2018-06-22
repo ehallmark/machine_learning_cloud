@@ -1438,12 +1438,15 @@ public class BigQueryServer extends SimilarPatentServer {
             return new Gson().toJson(new SimpleAjaxMessage("ERROR "+e.getClass().getName()+": " + e.getMessage()));
         }
     }
-
     private static Object handleRenameForm(Request req, Response res, String baseFolder, boolean useUpdatesFile, boolean isDataset) {
         String filename = req.queryParams("file");
         String name = req.queryParams("name");
         String[] parentDirs = req.queryParamsValues("parentDirs[]");
         String userGroup = getUserGroupFor(req.session());
+        return handleRenameFormHelper(filename, name, parentDirs, userGroup, req.session(false), baseFolder, useUpdatesFile, isDataset);
+    }
+
+    private static Object handleRenameFormHelper(String filename, String name, String[] parentDirs, String userGroup, Session session, String baseFolder, boolean useUpdatesFile, boolean isDataset) {
         String message;
         Map<String,Object> responseMap = new HashMap<>();
         if(filename!=null&&name!=null&&name.length()>0) {
@@ -1458,7 +1461,7 @@ public class BigQueryServer extends SimilarPatentServer {
             if(parentDirs!=null&&parentDirs.length>0&&parentDirs[0].startsWith("Shared")) {
                 isShared = true;
             }
-            String username = isShared ? userGroup : req.session().attribute("username");
+            String username = isShared ? userGroup : session.attribute("username");
             if(username!=null&&username.length()>0) {
                 String templateFolderStr = baseFolder+username+"/";
                 File formFile = new File(templateFolderStr+filename);
@@ -2389,7 +2392,16 @@ public class BigQueryServer extends SimilarPatentServer {
             FormTemplate template;
             Object name = templateMap.get("name");
             if (name != null) {
-                template = new FormTemplate(file, username, name.toString(), (Integer) templateMap.getOrDefault("asset_count", 0));
+                Integer assetCount =  (Integer) templateMap.get("asset_count");
+                if(assetCount == null) {
+                    assetCount = DatasetIndex.get(username, file.getName()).size();
+                    System.out.println("No asset count...");
+                    Map<String,Object> prevMap = (Map<String,Object>) Database.tryLoadObject(file);
+                    prevMap.put("asset_count", assetCount);
+                    Database.trySaveObject(prevMap, file);
+                    System.out.println("Saved new map: "+new Gson().toJson(prevMap));
+                }
+                template = new FormTemplate(file, username, name.toString(), assetCount);
             } else template = null;
             return template;
         };
