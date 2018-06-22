@@ -1679,6 +1679,7 @@ public class BigQueryServer extends SimilarPatentServer {
                 } else {
                     Map<String,INDArray> vectorMap = Database.loadPatentVectorsFor(assets);
                     Map<String,List<String>> technologyMap = Database.loadTechnologiesFor(assets);
+                    System.out.println("Total technologies found: "+technologyMap.size());
                     Function<String,List<String>> techPredictionFunction = asset -> technologyMap.getOrDefault(asset,Collections.emptyList());
                     AssetKMeans kMeans = new AssetKMeans(techPredictionFunction, vectorMap, k);
 

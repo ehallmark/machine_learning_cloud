@@ -343,7 +343,7 @@ public class Database {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
-			ps = conn.prepareStatement("select publication_number_full,technology2  from big_query_family_id as p join big_query_technologies2 as t on (p.family_id=t.family_id) where technology2 is not null and publication_number_full in ('" + String.join("','", assets) + "')");
+			ps = conn.prepareStatement("select p.publication_number_full,technology2  from big_query_family_id as p join big_query_technologies2 as t on (p.family_id=t.family_id) where technology2 is not null and p.publication_number_full in ('" + String.join("','", assets) + "')");
 			ps.setFetchSize(10);
 			rs = ps.executeQuery();
 			while(rs.next()) {
