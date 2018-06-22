@@ -1348,8 +1348,10 @@ var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
 
     $cancel.click(function() {
         $container.hide();
+        $(obj.reference).removeClass('spinner').off('contextmenu');
     });
     $container.click(function() {
+        $(obj.reference).removeClass('spinner').off('contextmenu');
         $container.hide();
     });
 };
@@ -1538,7 +1540,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                         $(obj.reference).removeClass('spinner').off('contextmenu');
                                         notify_success('Successfully created '+node_type+'.');
                                     };
-                                    labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
+                                    labelToFunctions[obj.item.label](tree,node,name,deletable,callback,obj);
                                     return true;
                                 }
                             }
@@ -1622,7 +1624,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                         $(obj.reference).removeClass('spinner').off('contextmenu');
                                         notify_success('Successfully replaced '+node_type+'.');
                                     };
-                                    labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
+                                    labelToFunctions[obj.item.label](tree,node,name,deletable,callback, obj);
                                     return true;
                                 }
                             }
@@ -1690,7 +1692,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                     $(obj.reference).removeClass('spinner').off('contextmenu');
                                     notify_success('Successfully added assets.');
                                 };
-                                labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
+                                labelToFunctions[obj.item.label](tree,node,name,deletable,callback, obj);
                                 return true;
                             }
                         }
