@@ -1901,8 +1901,20 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
     });
 
     $(tree_id).bind('open_node.jstree', function(e, data) {
-        var node = $(data.node.id);
-
+        var tree = $(this).jstree(true);
+        var children = data.node.children;
+        if(children && children.length>0) {
+            for(var i = 0; i < children.length; i++) {
+                var child = children[i];
+                var $childElem = $('#'+child);
+                if ($childElem.length>0 && $childElem.is('[data-assetcount]')) {
+                    var $childAnchor = $('#'+child+'_anchor');
+                    if($childAnchor.length) {
+                        $childAnchor.prev().text($childElem.attr('data-assetcount'));
+                    }
+                }
+            }
+        }
     });
 /*    $(tree_id).bind("open_node.jstree", function(event,data) {
         $('ul.vakata-context.jstree-contextmenu li a[title]')
