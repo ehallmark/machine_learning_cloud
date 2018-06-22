@@ -1468,6 +1468,16 @@ public class BigQueryServer extends SimilarPatentServer {
                     updates.put("name", name);
                     if (parentDirs != null && parentDirs.length > 0) updates.put("parentDirs", Arrays.copyOfRange(parentDirs,1,parentDirs.length));
 
+                    if(isDataset) {
+                        Map<String,Object> prevUpdates = (Map<String,Object>) Database.tryLoadObject(formFile);
+                        if(prevUpdates.containsKey("asset_count")) {
+                            updates.put("asset_count", prevUpdates.get("asset_count"));
+                        } else {
+                            // add asset count
+                            updates.put("asset_count", DatasetIndex.get(username, filename).size());
+                        }
+                    }
+
                     Lock sync;
                     synchronized (fileSynchronizationMap) {
                         fileSynchronizationMap.putIfAbsent(formFile.getAbsolutePath(),new ReentrantLock());
@@ -1886,6 +1896,9 @@ public class BigQueryServer extends SimilarPatentServer {
                 message = "Saved sucessfully.";
                 responseMap.put("file",file.getName());
                 responseMap.put("user",username);
+                if(formMap.containsKey("asset_count")) {
+                    responseMap.put("asset_count", formMap.get("asset_count"));
+                }
 
             } else {
                 message = "Unable to find user.";

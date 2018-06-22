@@ -1395,6 +1395,10 @@ var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,cre
                             function(newNode) {
                                 setTimeout(function() {
                                     newNode.data = newData;
+                                    if(node_type==='dataset' && data.hasOwnProperty('asset_count')) {
+                                        // update asset counts
+                                        $('#'+newNode.id).attr('data-assetcount', data['asset_count'])
+                                    }
                                     tree.edit(newNode,name,function(n,status,cancelled) {
                                         if(status && ! cancelled) {
                                             renameJSNodeFunction(tree,n,n.text,data['file'],node_type);
