@@ -1916,12 +1916,11 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         return true;
     });
 
-    $(tree_id).bind('open_node.jstree', function(e, data) {
+    $(tree_id).bind('redraw.jstree', function(e, nodes) {
         var tree = $(this).jstree(true);
-        var children = data.node.children;
-        if(children && children.length>0) {
-            for(var i = 0; i < children.length; i++) {
-                var child = children[i];
+        if(nodes && nodes.length>0) {
+            for(var i = 0; i < nodes.length; i++) {
+                var child = nodes[i];
                 var childNode = tree.get_node(child);
                 if (childNode.data.hasOwnProperty('assetcount')) {
                     var $childAnchor = $('#'+child+'_anchor');
