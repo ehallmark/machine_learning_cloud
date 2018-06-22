@@ -1471,11 +1471,14 @@ public class BigQueryServer extends SimilarPatentServer {
                     if(isDataset) {
                         Map<String,Object> prevUpdates = (Map<String,Object>) Database.tryLoadObject(formFile);
                         if(prevUpdates.containsKey("asset_count")) {
+                            System.out.println("Previous asset count: "+prevUpdates.get("asset_count"));
                             updates.put("asset_count", prevUpdates.get("asset_count"));
                         } else {
                             // add asset count
                             updates.put("asset_count", DatasetIndex.get(username, filename).size());
+                            System.out.println("New asset count: "+updates.get("asset_count"));
                         }
+                        responseMap.put("asset_count", updates.get("asset_count"));
                     }
 
                     Lock sync;

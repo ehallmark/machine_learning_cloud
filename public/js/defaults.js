@@ -1152,7 +1152,15 @@ var renameJSNodeFunction = function(tree,node,newName,file,node_type){
              file: file
          },
          success: function(data) {
-
+             var refresh = false;
+             if(node_type==='dataset' && data.hasOwnProperty('asset_count')) {
+                 // update asset counts
+                 node.data['assetcount'] = data['asset_count'];
+                 refresh = true;
+             }
+             if(refresh) {
+                 tree.redraw(true);
+             }
          },
          error: function(jqxhr,status,error) {
              if(jqxhr.status==404) {
