@@ -4,13 +4,11 @@ import lombok.Setter;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.primitives.Pair;
 import user_interface.ui_models.attributes.computable_attributes.TechnologyAttribute;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by Evan on 1/2/2018.
@@ -22,8 +20,6 @@ public class AssetKMeans {
     private static final int MAX_K = 50;
     private static final int APPROX_PER_GROUP = 100;
     private static final int B = 10;
-    private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
-
 
     private UnitCosineKMeans kMeans;
     private Map<String,INDArray> assetEncodingMap;
@@ -56,16 +52,9 @@ public class AssetKMeans {
         Map<Integer,Map<String,Long>> clusterIdxToTagFrequencyMap = new HashMap<>();
         for(int i = 0; i < clusters.size(); i++) {
             Set<String> cluster = clusters.get(i);
-
-            List<String> related = cluster.stream().flatMap(r->{
-                return Stream.of(r,assetToFilingMap.getPatentDataMap().getOrDefault(r,assetToFilingMap.getApplicationDataMap().get(r))).filter(f->f!=null);
-            }).collect(Collectors.toList());
-
-            List<String> keywords = related.stream().flatMap(asset->techPredictionFunction.apply(asset).stream()).collect(Collectors.toList());
-
+            List<String> keywords = cluster.stream().flatMap(asset->techPredictionFunction.apply(asset).stream()).collect(Collectors.toList());
             Map<String,Long> freqMap = keywords.stream().collect(Collectors.groupingBy(keyword->keyword,Collectors.counting()))
                     .entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(keywordSamples).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
-
             clusterIdxToTagFrequencyMap.put(i,freqMap);
         }
 

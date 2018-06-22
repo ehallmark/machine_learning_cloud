@@ -1757,10 +1757,10 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                                                     newNode.data=newData;
                                                                 }
                                                             );
-                                                            $(obj.reference).removeClass('spinner').off('contextmenu');
-                                                            notify_success('Successfully finished clustering.');
                                                         }
                                                     });
+                                                    $(obj.reference).removeClass('spinner').off('contextmenu');
+                                                    notify_success('Successfully finished clustering.');
                                                 }
                                             );
 
