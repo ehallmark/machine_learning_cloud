@@ -1916,7 +1916,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         return true;
     });
 
-    $(tree_id).bind('draw_node.jstree', function(e, node) {
+    $(tree_id).bind('set_text.jstree', function(e, node) {
         if(node.type==='dataset' && node.data.hasOwnProperty('assetcount')) {
             var $childAnchor = $('#'+node.id+'_anchor');
             if($childAnchor.length) {
@@ -1924,7 +1924,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
             }
         }
     });
-
+    
 /*    $(tree_id).bind("open_node.jstree", function(event,data) {
         $('ul.vakata-context.jstree-contextmenu li a[title]')
             .tooltip({
