@@ -1246,7 +1246,7 @@ var emptyDatasetDataFunction = function(tree,node,name,deletable,callback) {
     callback(preData);
 };
 
-var getKFromClusterInputFunction = function(callbackWithValue) {
+var getKFromClusterInputFunction = function(callbackWithValue, obj) {
     // get user input
     var $input = $('#k-for-clustering');
     var $container = $('#k-for-clustering-overlay');
@@ -1270,9 +1270,11 @@ var getKFromClusterInputFunction = function(callbackWithValue) {
     });
     $cancel.click(function() {
         $container.hide();
+        $(obj.reference).removeClass('spinner').off('contextmenu');
     });
     $container.click(function() {
         $container.hide();
+        $(obj.reference).removeClass('spinner').off('contextmenu');
     });
 
 }
@@ -1773,7 +1775,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                     dataType: "json"
                                 });
                             };
-                            getKFromClusterInputFunction(callback);
+                            getKFromClusterInputFunction(callback, obj);
                             return true;
                         }
                     };
@@ -1866,9 +1868,11 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                             });
                             $cancel.click(function() {
                                 $container.hide();
+                                $(obj.reference).removeClass('spinner').off('contextmenu');
                             });
                             $container.click(function() {
                                 $container.hide();
+                                $(obj.reference).removeClass('spinner').off('contextmenu');
                             });
 
                             return true;
