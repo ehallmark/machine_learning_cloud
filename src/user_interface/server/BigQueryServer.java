@@ -2393,7 +2393,7 @@ public class BigQueryServer extends SimilarPatentServer {
             Object name = templateMap.get("name");
             if (name != null) {
                 Integer assetCount =  (Integer) templateMap.get("asset_count");
-                if(assetCount == null) {
+                if(assetCount == null) { // TODO asset_count should never be null on new datasets... this is just to keep backwards compatibility
                     assetCount = DatasetIndex.get(username, file.getName()).size();
                     System.out.println("No asset count...");
                     Map<String,Object> prevMap = (Map<String,Object>) Database.tryLoadObject(file);
