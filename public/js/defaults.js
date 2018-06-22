@@ -1895,6 +1895,16 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                 return items;
             }
         },
+        node_customize: {
+            default: function(elem, node) {
+                if(node_type==='dataset' && node.type==='file' && node.hasOwnProperty('data') && node.data.hasOwnProperty('assetcount')) { // check node itself
+                    var $anchor = $('#'+node.id+'_anchor');
+                    if($anchor.length) {
+                        $anchor.prev().text(node.data['assetcount']);
+                    }
+                }
+            }
+        },
         "types": {
             "folder": {
                 "icon": "jstree-folder"
@@ -1903,7 +1913,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                 "icon": "jstree-file"
             }
         },
-        "plugins": ["types","wholerow","sort","contextmenu"]
+        "plugins": ["types","wholerow","sort","contextmenu","node_customize"]
     });
 
     $(tree_id).bind("dblclick.jstree", function(event) {
@@ -1920,7 +1930,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         return true;
     });
 
-    if(node_type==='dataset') {
+/*    if(node_type==='dataset') {
         var addAssetCountFunc = function(e, data) {
             if(data.hasOwnProperty('node')) {
                 var tree = $(tree_id).jstree(true);
@@ -1960,7 +1970,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
             addAssetCountFunc(e, data);
         });
     }
-
+*/
 /*    $(tree_id).bind("open_node.jstree", function(event,data) {
         $('ul.vakata-context.jstree-contextmenu li a[title]')
             .tooltip({
