@@ -1917,7 +1917,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
     });
 
     if(node_type==='dataset') {
-        $(tree_id).bind('changed.jstree', function(e, data) {
+        var addAssetCountFunc = function(e, data) {
             if(data.hasOwnProperty('node')) {
                 var tree = $(this).jstree(true);
                 var node = data.node;
@@ -1940,19 +1940,20 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                     }
                 }
             }
-        });
+        };
+        $(tree_id).bind('changed.jstree', addAssetCountFunc);
 
         $(tree_id).bind('rename_node.jstree', function(e, node) {
             var data = { 'node': node };
-            $(tree_id).trigger('changed.jstree', [e, data]);
+            addAssetCountFunc(e, data);
         });
         $(tree_id).bind('open_node.jstree', function(e, node) {
             var data = { 'node': node.node };
-            $(tree_id).trigger('changed.jstree', [e, data]);
+            addAssetCountFunc(e, data);
         });
         $(tree_id).bind('create_node.jstree', function(e, node) {
             var data = { 'node': node };
-            $(tree_id).trigger('changed.jstree', [e, data]);
+            addAssetCountFunc(e, data);
         });
     }
 
