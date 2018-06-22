@@ -1900,7 +1900,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                 if(node_type==='dataset' && node.type==='file' && node.hasOwnProperty('data') && node.data.hasOwnProperty('assetcount')) { // check node itself
                     var $anchor = $($(elem).children()[1]);
                     if($anchor) {
-                        $anchor.prev().text(node.data['assetcount']);
+                        $anchor.text(node.data['assetcount']);
                     }
                 }
             }
