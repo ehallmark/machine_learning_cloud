@@ -929,6 +929,18 @@ $(document).ready(function() {
 
 });
 
+var notify_success = function(text) {
+    $.notify(text, 'success', {
+        position: 'bottom left'
+    });
+};
+
+var notify_error = function(text) {
+    $.notify(text, 'error', {
+        position: 'bottom left'
+    });
+};
+
 var resetSearchForm = function() {
     $('.attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
     $('div.attribute').addClass("disabled");
@@ -1506,6 +1518,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                     var name = 'New '+capitalize(node_type);
                                     var callback = function(data) {
                                         saveJSNodeFunction(tree,node,name,deletable,data,node_type,true,false,null,false);
+                                        notify_success('Successfully created '+node_type+'.');
                                     };
                                     labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
                                     return true;
@@ -1587,6 +1600,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                     var name = node.text;
                                     var callback = function(data) {
                                         saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false,null,false);
+                                        notify_success('Successfully replaced '+node_type+'.');
                                     };
                                     labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
                                     return true;
@@ -1652,6 +1666,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 var name = node.text;
                                 var callback = function(data) {
                                     saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false,null,true);
+                                    notify_success('Successfully added assets.');
                                 };
                                 labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
                                 return true;
@@ -1731,6 +1746,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                                                     newNode.data=newData;
                                                                 }
                                                             );
+                                                            notify_success('Successfully finished clustering.');
                                                         }
                                                     });
                                                 }
@@ -1802,7 +1818,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                                     );
                                                 }
                                             });
-
+                                            notify_success('Successfully finished building assignee datasets.');
                                         }
                                     },
                                     dataType: "json"
