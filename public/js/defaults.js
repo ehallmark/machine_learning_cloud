@@ -925,18 +925,17 @@ $(document).ready(function() {
         html: true
     });
 
+    // defaults
+    $.notify.defaults({
+        position: 'bottom left',
+        globalPosition: 'bottom left',
+        elementPosition: 'bottom left',
+        autoHideDelay: 3000
 
-
-});
-
-// defaults
-$.notify.defaults({
-    position: 'bottom left',
-    globalPosition: 'bottom left',
-    elementPosition: 'bottom left',
-    autoHideDelay: 3000
+    });
 
 });
+
 var notify_success = function(text) {
     $.notify(text, 'success');
 };
