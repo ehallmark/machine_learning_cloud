@@ -283,6 +283,11 @@ input.form-control {
   border: 2px solid #ccc;
   border-top-color: #333;
   animation: spinner .6s linear infinite;
+  color: transparent;
+}
+
+.spinner {
+    color: transparent !important;
 }
 
 .richtext {

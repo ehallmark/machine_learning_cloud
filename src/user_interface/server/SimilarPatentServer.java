@@ -18,7 +18,6 @@ import lombok.NonNull;
 import models.assignee.database.MergeRawAssignees;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
 import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
-import models.kmeans.AssetKMeans;
 import models.similarity_models.DefaultSimilarityModel;
 import models.similarity_models.Vectorizer;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
@@ -1232,12 +1231,6 @@ public class SimilarPatentServer {
             return handleGetForm(req,res,Constants.USER_DATASET_FOLDER,true);
         });
 
-        post(CLUSTER_DATASET_URL, (req, res) -> {
-            authorize(req,res);
-            String userGroup = getUserGroupFor(req.session());
-            return handleClusterForm(req,res,userGroup,Constants.USER_DATASET_FOLDER);
-        });
-
         post(DELETE_DATASET_URL, (req, res) -> {
             authorize(req,res);
             return handleDeleteForm(req,res,Constants.USER_DATASET_FOLDER,true);
@@ -1779,94 +1772,6 @@ public class SimilarPatentServer {
         }
 
         return new Gson().toJson(data);
-    }
-
-    private static Object handleClusterForm(Request req, Response res, String userGroup, String baseFolder) {
-        Map<String, Object> response = new HashMap<>();
-
-        String file = req.queryParams("file");
-        boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
-
-        Integer k = null;
-        try {
-            k = Integer.valueOf(req.queryParams("k"));
-            if(k!=null && (k<2||k>500)) throw new RuntimeException("Number of clusters must be between 2 and 500");
-        } catch(Exception e) {
-
-        }
-        System.out.println("Number of clusters: "+k);
-
-        StringJoiner message = new StringJoiner("; ", "Messages: ", ".");
-
-        String user = req.session().attribute("username");
-        if(user==null||user.isEmpty()) {
-            message.add("no user found");
-        } else {
-
-            String filename = baseFolder + (shared ? userGroup : user) + "/" + file;
-
-            Map<String, Object> data = getMapFromFile(new File(filename), false);
-
-            System.out.println("Parent data: "+new Gson().toJson(data));
-
-            String parentName = (String) data.get("name");
-            if (parentName == null) {
-                message.add("no parent name");
-            } else {
-                String username = shared ? userGroup : user;
-                List<String> assets = DatasetIndex.get(username, file);
-
-                String[] parentParentDirs = Stream.of(new String[]{shared ? "Shared Datasets":"My Datasets"},(String[]) data.getOrDefault("parentDirs",new String[]{}))
-                        .flatMap(array->Stream.of(array)).toArray(size->new String[size]);
-
-                if (assets == null) {
-                    message.add("assets are null");
-                } else {
-
-                    AssetKMeans kMeans = new AssetKMeans(assets, keyphrasePredictionPipelineManagerTask.join().getWordCPC2VecPipelineManager().getOrLoadCPCVectors(), k);
-
-                    Map<String, List<String>> clusters = kMeans.clusterAssets();
-
-                    if (clusters == null) {
-                        message.add("clusters are null");
-                    } else {
-                        System.out.println("Num clusters: "+clusters.size());
-                        Set<String> valid = clusters.values().stream().flatMap(l->l.stream()).collect(Collectors.toSet());
-                        List<String> unknown = assets.stream().filter(asset->!valid.contains(asset)).collect(Collectors.toList());
-                        if(unknown.size()>0) {
-                            clusters.putIfAbsent("unknown", new ArrayList<>());
-                            clusters.get("unknown").addAll(unknown);
-                        }
-                        System.out.println("Num others: "+unknown.size());
-
-                        List<Map<String, Object>> clustersData = new ArrayList<>(clusters.size());
-                        response.put("clusters", clustersData);
-
-                        clusters.forEach((name, cluster) -> {
-                            //handleSaveForm()
-                            String[] parentDirs = Stream.of(Stream.of(parentParentDirs), Stream.of(parentName)).flatMap(stream -> stream).toArray(size -> new String[size]);
-
-                            Map<String, Object> formMap = new HashMap<>();
-
-                            formMap.put("name",name);
-                            formMap.put("assets", cluster.toArray(new String[cluster.size()]));
-
-                            System.out.println("Parent dirs of cluster: "+Arrays.toString(parentDirs));
-
-                            Pair<String, Map<String, Object>> pair = saveFormToFile(userGroup, formMap, name, parentDirs, user, baseFolder, saveDatasetsFunction(user,userGroup), saveDatasetUpdatesFunction());
-
-                            Map<String, Object> clusterData = pair.getSecond();
-                            clusterData.put("name",name);
-                            clustersData.add(clusterData);
-                        });
-                    }
-                }
-            }
-        }
-
-        response.put("message", message.toString());
-
-        return new Gson().toJson(response);
     }
 
 

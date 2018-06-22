@@ -297,9 +297,9 @@ public class Database {
 		Map<String,INDArray> data = new HashMap<>();
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String statement = "select "+attrName+","+vecName+" from "+tableName+" as p ";
+		String statement = "select "+attrName+","+vecName+" from "+tableName+" ";
 		if(join) {
-			statement += "join big_query_family_id as e on (p.family_id=e.family_id) ";
+			statement += " as p join big_query_family_id as e on (p.family_id=e.family_id) ";
 		}
 		StringJoiner anyClause = new StringJoiner(",","(",")");
 		int numAssets = assets.size();

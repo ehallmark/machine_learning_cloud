@@ -1,15 +1,8 @@
 package models.kmeans;
 
 import lombok.Setter;
-import models.keyphrase_prediction.KeyphrasePredictionPipelineManager;
-import models.keyphrase_prediction.PredictKeyphraseForFilings;
-import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
-import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
-import seeding.Database;
 import user_interface.ui_models.attributes.computable_attributes.TechnologyAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
@@ -43,32 +36,6 @@ public class AssetKMeans {
         this.techPredictionFunction = techPredictionFunction;
         this.assetEncodingMap = assetToEncodingMap;
         //System.out.println("Num tech predictions: "+techPredictions.size());
-    }
-
-    public AssetKMeans(Map<String,INDArray> assetToEncodingMap, Integer k) {
-        this(asset->PredictKeyphraseForFilings.loadOrGetTechnologyMap().getOrDefault(asset,Collections.emptyList()),assetToEncodingMap,k);
-    }
-
-    public AssetKMeans(Function<String,List<String>> techPredictionFunction, List<String> assets, Map<String,INDArray> cpcVectors, Integer k) {
-        this(techPredictionFunction,computeEncodingsForAssets(assets,cpcVectors), k);
-    }
-
-
-    public AssetKMeans(List<String> assets, Map<String,INDArray> cpcVectors, Integer k) {
-        this(computeEncodingsForAssets(assets,cpcVectors), k);
-    }
-
-    public static Map<String,INDArray> computeEncodingsForAssets(List<String> assets, Map<String,INDArray> cpcVectors) {
-
-        return assets.stream().distinct().map(asset->{
-            Collection<String> cpcs = Database.classificationsFor(asset);
-            List<INDArray> cpcVecs = cpcs.stream().map(cpc->cpcVectors.get(cpc)).filter(vec->vec!=null).collect(Collectors.toList());
-            if(cpcVecs.size()>0) {
-                INDArray cpcVec = Transforms.unitVec(Nd4j.vstack(cpcVecs).mean(0));
-                return new Pair<>(asset,cpcVec);
-            }
-            else return null;
-        }).filter(p->p!=null).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
     }
 
     public Map<String,List<String>> clusterAssets() {
@@ -130,21 +97,4 @@ public class AssetKMeans {
         return map;
     }
 
-
-    public static void main(String[] args) {
-        // test
-        final int k = 10;
-        Nd4j.setDataType(DataBuffer.Type.DOUBLE);
-        WordCPC2VecPipelineManager wordCPC2VecPipelineManager = new WordCPC2VecPipelineManager(WordCPC2VecPipelineManager.SMALL_MODEL_NAME,-1,-1,-1);
-        KeyphrasePredictionPipelineManager keyphrasePredictionPipelineManager = new KeyphrasePredictionPipelineManager(wordCPC2VecPipelineManager);
-        keyphrasePredictionPipelineManager.runPipeline(false,false,false,false,-1,false);
-
-        List<String> assets = Database.getAllPatentsAndApplications().stream().limit(10000).collect(Collectors.toList());
-        AssetKMeans kMeans = new AssetKMeans(assets,keyphrasePredictionPipelineManager.getWordCPC2VecPipelineManager().getOrLoadCPCVectors(),null);
-        Map<String,List<String>> clusters = kMeans.clusterAssets();
-
-        clusters.forEach((name,cluster)->{
-            System.out.println("Cluster "+name+": "+cluster.size());
-        });
-    }
 }
