@@ -1411,7 +1411,7 @@ var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,cre
                                     }
                                     newNode.data = newData;
                                     if(refresh) {
-                                        tree.refresh();
+                                        tree.redraw(true);
                                     }
                                     tree.edit(newNode,name,function(n,status,cancelled) {
                                         if(status && ! cancelled) {
@@ -1430,7 +1430,7 @@ var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,cre
                         }
                         node.data = newData;
                         if(refresh) {
-                            tree.refresh();
+                            tree.redraw(true);
                         }
                     }
                 }
