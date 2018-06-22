@@ -1919,7 +1919,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
     if(node_type==='dataset') {
         var addAssetCountFunc = function(e, data) {
             if(data.hasOwnProperty('node')) {
-                var tree = $(this).jstree(true);
+                var tree = $(tree_id).jstree(true);
                 var node = data.node;
                 if(node.type==='file' && node.hasOwnProperty('data') && node.data.hasOwnProperty('assetcount')) { // check node itself
                     var $anchor = $('#'+node.id+'_anchor');
