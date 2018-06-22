@@ -930,14 +930,16 @@ $(document).ready(function() {
 });
 
 var notify_success = function(text) {
-    $.notify(text, 'success', {
-        position: 'bottom left'
+    $.notify(text, {
+        position: 'bottom left',
+        class: 'success'
     });
 };
 
 var notify_error = function(text) {
-    $.notify(text, 'error', {
-        position: 'bottom left'
+    $.notify(text, {
+        position: 'bottom left',
+        class: 'error'
     });
 };
 
