@@ -1199,7 +1199,7 @@ var removeJSNodeFunction = function(tree,node,file,node_type){
      return false;
 };
 
-var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable,callback) {
+var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable,callback,obj) {
     var preData = {};
     preData["name"]=name;
     preData["createDataset"]= true;
@@ -1222,7 +1222,7 @@ var lastGeneratedDatasetDataFunction = function(tree,node,name,deletable,callbac
     callback(preData);
 };
 
-var emptyDatasetDataFunction = function(tree,node,name,deletable,callback) {
+var emptyDatasetDataFunction = function(tree,node,name,deletable,callback,obj) {
     var preData = {};
     preData["name"]=name;
     preData["createDataset"] = true;
@@ -1279,7 +1279,7 @@ var getKFromClusterInputFunction = function(callbackWithValue, obj) {
 
 }
 
-var selectionDatasetDataFunction = function(tree,node,name,deletable,callback) {
+var selectionDatasetDataFunction = function(tree,node,name,deletable,callback,obj) {
     // get user input
     var assets = Array.from(selectionCache);
     var preData = {};
@@ -1304,7 +1304,7 @@ var selectionDatasetDataFunction = function(tree,node,name,deletable,callback) {
     callback(preData);
 };
 
-var assetListDatasetDataFunction = function(tree,node,name,deletable,callback) {
+var assetListDatasetDataFunction = function(tree,node,name,deletable,callback,obj) {
     // get user input
     var $input = $('#new-dataset-from-asset-list');
     var $container = $('#new-dataset-from-asset-list-overlay');
