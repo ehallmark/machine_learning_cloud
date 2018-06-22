@@ -1402,12 +1402,17 @@ var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,cre
                             'first',
                             function(newNode) {
                                 setTimeout(function() {
+                                    var refresh = false;
                                     if(node_type==='dataset' && data.hasOwnProperty('asset_count')) {
                                         // update asset counts
                                         //$('#'+newNode.id).attr('data-assetcount', data['asset_count']);
                                         newData['assetcount'] = data['asset_count'];
+                                        refresh = true;
                                     }
                                     newNode.data = newData;
+                                    if(refresh) {
+                                        tree.refresh();
+                                    }
                                     tree.edit(newNode,name,function(n,status,cancelled) {
                                         if(status && ! cancelled) {
                                             renameJSNodeFunction(tree,n,n.text,data['file'],node_type);
@@ -1417,12 +1422,16 @@ var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,cre
                             }
                         );
                     } else {
+                        var refresh = false;
                         if(node_type==='dataset' && data.hasOwnProperty('asset_count')) {
                             // update asset counts
-                            //$('#'+node.id).attr('data-assetcount', data['asset_count']);
                             newData['assetcount'] = data['asset_count'];
+                            refresh = true;
                         }
                         node.data = newData;
+                        if(refresh) {
+                            tree.refresh();
+                        }
                     }
                 }
             },
