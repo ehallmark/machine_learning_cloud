@@ -66,7 +66,7 @@ curl -XPUT 'localhost:9200/ai_db/_settings?pretty' -H 'Content-Type: application
 
 # backup elasticsearch datasets
 mv data/elasticsearch_dataset_index.es data/elasticsearch_dataset_index.es.backup
-java -cp target/classes:"target/dependency/*" -Xms20000m -Xmx20000m elasticsearch.BackupDatasetsIndexToFile
+java -cp target/classes:"target/dependency/*" -Xms5000m -Xmx5000m elasticsearch.BackupDatasetsIndexToFile
 
 
 
