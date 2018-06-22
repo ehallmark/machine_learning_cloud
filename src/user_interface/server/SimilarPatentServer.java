@@ -2205,7 +2205,7 @@ public class SimilarPatentServer {
                 } else template = null;
             } else {
                 if (name != null) {
-                    template = new FormTemplate(file, username, name.toString());
+                    template = new FormTemplate(file, username, name.toString(), -1);
                 } else template = null;
             }
             return template;
@@ -2220,7 +2220,7 @@ public class SimilarPatentServer {
             FormTemplate template;
             Object name = templateMap.get("name");
             if (name != null) {
-                template = new FormTemplate(file, username, name.toString());
+                template = new FormTemplate(file, username, name.toString(), -1);
             } else template = null;
             return template;
         };
