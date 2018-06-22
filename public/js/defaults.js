@@ -1916,18 +1916,12 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         return true;
     });
 
-    $(tree_id).bind('redraw.jstree', function(e, nodes) {
-        var tree = $(this).jstree(true);
-        if(nodes && nodes.length>0) {
-            for(var i = 0; i < nodes.length; i++) {
-                var child = nodes[i];
-                var childNode = tree.get_node(child);
-                if (childNode.data.hasOwnProperty('assetcount')) {
-                    var $childAnchor = $('#'+child+'_anchor');
-                    if($childAnchor.length) {
-                        $childAnchor.prev().text(childNode.data['assetcount']);
-                    }
-                }
+    $(tree_id).bind('refresh_node.jstree', function(e, childNode, nodes) {
+        //var tree = $(this).jstree(true);
+        if (childNode.data.hasOwnProperty('assetcount')) {
+            var $childAnchor = $('#'+child+'_anchor');
+            if($childAnchor.length) {
+                $childAnchor.prev().text(childNode.data['assetcount']);
             }
         }
     });
