@@ -46,10 +46,7 @@ import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.tables.TableResponse;
 import user_interface.ui_models.engines.*;
 import user_interface.ui_models.excel.ExcelHandler;
-import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.filters.AbstractNestedFilter;
-import user_interface.ui_models.filters.AcclaimExpertSearchFilter;
-import user_interface.ui_models.filters.AssetDedupFilter;
+import user_interface.ui_models.filters.*;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.templates.FormTemplate;
 
@@ -1755,7 +1752,16 @@ public class BigQueryServer extends SimilarPatentServer {
             if(assets == null && extractBool(req, "emptyDataset")) {
                 assets = new String[]{};
             }
-            if(assets==null) assets = req.session(false).attribute("assets"); // default to last seen report
+            if(assets==null) {
+                assets = req.session(false).attribute("assets"); // default to last seen report
+            } else {
+                // asset list or empty dataset... check for other names
+                if (assets.length > 0) {
+                    System.out.println("Initial assets: "+String.join(", ", assets));
+                    assets = PatentSimilarityEngine.convertToFullPatentNumbers(Arrays.asList(assets)).toArray(new String[]{});
+                    System.out.println("Reconciled assets: "+String.join(", ", assets));
+                }
+            }
             String name = req.queryParams("name");
             if(assets!=null&&name!=null&&name.length()>0) {
                 name = decodeURLString(name);

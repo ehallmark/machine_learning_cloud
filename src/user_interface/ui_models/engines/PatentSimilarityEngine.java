@@ -24,15 +24,9 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
         super(tableName, Attributes.PUBLICATION_NUMBER_FULL, Attributes.ENC, false);
     }
 
-    @Override
-    protected Collection<String> getInputsToSearchFor(Request req) {
-        System.out.println("Collecting inputs to search for...");
-        // get input data
-        List<String> patents = preProcess(extractString(req, getId(), "").toUpperCase(), "\\s+", "[^0-9A-Z]");
-        Collections.shuffle(patents, new Random(125));
-        patents = patents.subList(0, Math.min(patents.size(),1000));
-        Map<String, List<String>> assetFieldToAssetsMap = AbstractIncludeAssetFilter.buildAssetFieldToAssetsMap(false, patents);
-        System.out.println("Found "+patents.size()+" patents...");
+    public static List<String> convertToFullPatentNumbers(List<String> rawAssets) {
+        Map<String, List<String>> assetFieldToAssetsMap = AbstractIncludeAssetFilter.buildAssetFieldToAssetsMap(false, rawAssets);
+        System.out.println("Found "+rawAssets.size()+" patents...");
         List<String> pubNumsWithCountry = assetFieldToAssetsMap.get(Attributes.PUBLICATION_NUMBER_WITH_COUNTRY);
         List<String> pubNums = assetFieldToAssetsMap.get(Attributes.PUBLICATION_NUMBER);
         List<String> pubNumsFull = assetFieldToAssetsMap.get(Attributes.PUBLICATION_NUMBER_FULL);
@@ -46,6 +40,17 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
         if(pubNumsWithCountry!=null&&pubNumsWithCountry.size()>0) {
             allPubNumFulls.addAll(Database.publicationNumberFullForAssets(pubNumsWithCountry, Attributes.PUBLICATION_NUMBER_WITH_COUNTRY));
         }
+        return allPubNumFulls;
+    }
+
+    @Override
+    protected Collection<String> getInputsToSearchFor(Request req) {
+        System.out.println("Collecting inputs to search for...");
+        // get input data
+        List<String> patents = preProcess(extractString(req, getId(), "").toUpperCase(), "\\s+", "[^0-9A-Z]");
+        Collections.shuffle(patents, new Random(125));
+        patents = patents.subList(0, Math.min(patents.size(),1000));
+        List<String> allPubNumFulls = convertToFullPatentNumbers(patents);
         System.out.println("Found "+allPubNumFulls.size()+" full publication numbers...");
         return allPubNumFulls;
     }
