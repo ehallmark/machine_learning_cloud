@@ -1400,7 +1400,7 @@ var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,cre
                                 setTimeout(function() {
                                     if(node_type==='dataset' && data.hasOwnProperty('asset_count')) {
                                         // update asset counts
-                                        $('#'+newNode.id).attr('data-assetcount', data['asset_count']);
+                                        //$('#'+newNode.id).attr('data-assetcount', data['asset_count']);
                                         newData['assetcount'] = data['asset_count'];
                                     }
                                     newNode.data = newData;
@@ -1415,7 +1415,7 @@ var saveJSNodeFunction = function(tree,node,name,deletable,preData,node_type,cre
                     } else {
                         if(node_type==='dataset' && data.hasOwnProperty('asset_count')) {
                             // update asset counts
-                            $('#'+node.id).attr('data-assetcount', data['asset_count']);
+                            //$('#'+node.id).attr('data-assetcount', data['asset_count']);
                             newData['assetcount'] = data['asset_count'];
                         }
                         node.data = newData;
@@ -1922,11 +1922,11 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         if(children && children.length>0) {
             for(var i = 0; i < children.length; i++) {
                 var child = children[i];
-                var $childElem = $('#'+child);
-                if ($childElem.length>0 && $childElem.is('[data-assetcount]')) {
+                var childNode = tree.get_node(child);
+                if (childNode.data.hasOwnProperty('assetcount')) {
                     var $childAnchor = $('#'+child+'_anchor');
                     if($childAnchor.length) {
-                        $childAnchor.prev().text($childElem.attr('data-assetcount'));
+                        $childAnchor.prev().text(childNode.data['assetcount']);
                     }
                 }
             }
