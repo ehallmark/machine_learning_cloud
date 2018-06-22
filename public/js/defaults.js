@@ -1916,15 +1916,33 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         return true;
     });
 
-    $(tree_id).bind('set_text.jstree', function(e, node) {
-        if(node.type==='dataset' && node.data.hasOwnProperty('assetcount')) {
-            var $childAnchor = $('#'+node.id+'_anchor');
-            if($childAnchor.length) {
-                $childAnchor.prev().text(childNode.data['assetcount']);
+    if(node_type==='dataset') {
+        $(tree_id).bind('changed.jstree', function(e, data) {
+            if(data.hasOwnProperty('selected') && data['selected'].length>0) {
+                var tree = $(this).jstree(true);
+                var node = data.selected[0];
+                if(node.data.hasOwnProperty('assetcount')) { // check node itself
+                    var $anchor = $('#'+node.id+'_anchor');
+                    if($anchor.length) {
+                        $anchor.prev().text(node.data['assetcount']);
+                    }
+                } // check children
+                if(node.children && node.children.length>0) {
+                    for(var i = 0; i < node.children.length; i++) {
+                        var child = node.children[i];
+                        child = tree.get_node(child);
+                        if(child.data.hasOwnProperty('assetcount')) {
+                            var $anchor = $('#'+child.id+'_anchor');
+                            if($anchor.length) {
+                                $anchor.prev().text(child.data['assetcount']);
+                            }
+                        }
+                    }
+                }
             }
-        }
-    });
-    
+        });
+    }
+
 /*    $(tree_id).bind("open_node.jstree", function(event,data) {
         $('ul.vakata-context.jstree-contextmenu li a[title]')
             .tooltip({
