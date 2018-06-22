@@ -1167,6 +1167,10 @@ public class BigQueryServer extends SimilarPatentServer {
             if(assets!=null&&file!=null) {
                 String username = shared ? userGroup : user;
                 DatasetIndex.index(username,file.getName(),Arrays.asList(assets));
+                formMap.put("asset_count", assets.length);
+            } else {
+                if(assets==null) formMap.put("asset_count", 0);
+                else formMap.put("asset_count", assets.length);
             }
             formMap.remove("assets");
             Database.trySaveObject(formMap,file);
@@ -1539,7 +1543,9 @@ public class BigQueryServer extends SimilarPatentServer {
 
         if(dataset) {
             String username = shared ? userGroup : user;
-            data.put("assets", DatasetIndex.get(username,file));
+            List<String> assets = DatasetIndex.get(username, file);
+            data.put("assets", assets);
+            data.put("asset_count", assets.size());
         }
 
         return new Gson().toJson(data);
@@ -1595,6 +1601,7 @@ public class BigQueryServer extends SimilarPatentServer {
 
                         formMap.put("name", name);
                         formMap.put("assets", cluster.toArray(new String[cluster.size()]));
+                        formMap.put("asset_count", cluster.size());
 
                         System.out.println("Parent dirs of cluster: " + Arrays.toString(parentDirs));
 
@@ -1684,6 +1691,7 @@ public class BigQueryServer extends SimilarPatentServer {
 
                             formMap.put("name",name);
                             formMap.put("assets", cluster.toArray(new String[cluster.size()]));
+                            formMap.put("asset_count", cluster.size());
 
                             System.out.println("Parent dirs of cluster: "+Arrays.toString(parentDirs));
 
@@ -1769,6 +1777,7 @@ public class BigQueryServer extends SimilarPatentServer {
                 Map<String, Object> formMap = new HashMap<>();
                 formMap.put("name", name);
                 formMap.put("assets", assets);
+                formMap.put("asset_count", assets.length);
                 boolean addToAssets = Boolean.valueOf(req.queryParamOrDefault("addToAssets","false"));
                 if(addToAssets&&file!=null) {
                     synchronized (DatasetIndex.class) {
@@ -1782,6 +1791,7 @@ public class BigQueryServer extends SimilarPatentServer {
                         if (prevAssets == null) prevAssets = Collections.emptyList();
                         List<String> allAssets = Stream.of(prevAssets, Arrays.asList(assets)).flatMap(s -> s.stream()).distinct().collect(Collectors.toList());
                         formMap.put("assets", allAssets.toArray(new String[allAssets.size()]));
+                        formMap.put("asset_count", allAssets.size());
                     }
                 }
 
@@ -2348,7 +2358,7 @@ public class BigQueryServer extends SimilarPatentServer {
                 } else template = null;
             } else {
                 if (name != null) {
-                    template = new FormTemplate(file, username, name.toString());
+                    template = new FormTemplate(file, username, name.toString(), -1);
                 } else template = null;
             }
             return template;
@@ -2363,7 +2373,7 @@ public class BigQueryServer extends SimilarPatentServer {
             FormTemplate template;
             Object name = templateMap.get("name");
             if (name != null) {
-                template = new FormTemplate(file, username, name.toString());
+                template = new FormTemplate(file, username, name.toString(), (Integer) templateMap.getOrDefault("asset_count", 0));
             } else template = null;
             return template;
         };
@@ -2480,6 +2490,9 @@ public class BigQueryServer extends SimilarPatentServer {
                                             .attr("data-name",template.getName())
                                             .attr("data-user",template.getUser())
                                             .attr("data-file", template.getFile().getName());
+                                    if(template.getAssetCount() >= 0) {
+                                        tag = tag.attr("data-assetcount", String.valueOf(template.getAssetCount()));
+                                    }
                                     if(loadData) {
                                         tag = tag
                                                 .attr("data-chartsMap", template.getChartsMap())

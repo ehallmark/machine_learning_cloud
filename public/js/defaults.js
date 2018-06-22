@@ -1899,6 +1899,11 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         }
         return true;
     });
+
+    $(tree_id).bind('open_node.jstree', function(e, data) {
+        var node = $(data.node.id);
+
+    });
 /*    $(tree_id).bind("open_node.jstree", function(event,data) {
         $('ul.vakata-context.jstree-contextmenu li a[title]')
             .tooltip({

@@ -25,7 +25,7 @@ public class FormTemplate {
     @Getter
     protected String user;
     @Getter
-    protected String[] assets;
+    protected int assetCount;
     public FormTemplate(File file, String user, String name, String searchOptionsMap, String attributesMap, String filtersMap, String chartsMap, String highlightMap) {
         this.file=file;
         this.user=user;
@@ -34,13 +34,15 @@ public class FormTemplate {
         this.attributesMap=attributesMap;
         this.filtersMap=filtersMap;
         this.chartsMap=chartsMap;
+        this.assetCount = -1;
         this.highlightMap=highlightMap;
     }
 
-    public FormTemplate(File file, String user, String name) {
+    public FormTemplate(File file, String user, String name, int assetCount) {
         this.file=file;
         this.user=user;
         this.name=name;
+        this.assetCount=assetCount;
     }
 
 }
