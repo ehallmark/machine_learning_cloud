@@ -1898,8 +1898,8 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         node_customize: {
             default: function(elem, node) {
                 if(node_type==='dataset' && node.type==='file' && node.hasOwnProperty('data') && node.data.hasOwnProperty('assetcount')) { // check node itself
-                    var $anchor = $('#'+node.id+'_anchor');
-                    if($anchor.length) {
+                    var $anchor = $(elem).children()[1];
+                    if($anchor) {
                         $anchor.prev().text(node.data['assetcount']);
                     }
                 }
