@@ -1921,13 +1921,13 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
             if(data.hasOwnProperty('node')) {
                 var tree = $(this).jstree(true);
                 var node = data.node;
-                if(node.data.hasOwnProperty('assetcount')) { // check node itself
+                if(node.type==='file' && node.hasOwnProperty('data') && node.data.hasOwnProperty('assetcount')) { // check node itself
                     var $anchor = $('#'+node.id+'_anchor');
                     if($anchor.length) {
                         $anchor.prev().text(node.data['assetcount']);
                     }
                 } // check children
-                if(node.children && node.children.length>0) {
+                if(node.type==='folder' && node.children && node.children.length>0) {
                     for(var i = 0; i < node.children.length; i++) {
                         var child = node.children[i];
                         child = tree.get_node(child);
