@@ -1519,8 +1519,10 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 "title": "Create new "+node_type+" "+newItemSubLabel.toLowerCase()+".",
                                 "action": function(obj) {
                                     var name = 'New '+capitalize(node_type);
+                                    $(obj.reference).addClass('spinner');
                                     var callback = function(data) {
                                         saveJSNodeFunction(tree,node,name,deletable,data,node_type,true,false,null,false);
+                                        $(obj.reference).removeClass('spinner');
                                         notify_success('Successfully created '+node_type+'.');
                                     };
                                     labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
@@ -1601,8 +1603,10 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                 "title": "Replace this "+node_type+" "+newItemSubLabel.toLowerCase()+".",
                                 "action": function(obj) {
                                     var name = node.text;
+                                    $(obj.reference).addClass('spinner');
                                     var callback = function(data) {
                                         saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false,null,false);
+                                        $(obj.reference).removeClass('spinner');
                                         notify_success('Successfully replaced '+node_type+'.');
                                     };
                                     labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
@@ -1667,8 +1671,10 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                             "title": "Add assets to this existing dataset "+newItemSubLabel.toLowerCase()+".",
                             "action": function(obj) {
                                 var name = node.text;
+                                $(obj.reference).addClass('spinner');
                                 var callback = function(data) {
                                     saveJSNodeFunction(tree,node,name,deletable,data,node_type,false,false,null,true);
+                                    $(obj.reference).removeClass('spinner');
                                     notify_success('Successfully added assets.');
                                 };
                                 labelToFunctions[obj.item.label](tree,node,name,deletable,callback);
@@ -1689,6 +1695,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         "label": "Cluster Dataset",
                         "title": "Cluster this dataset into technology categories.",
                         "action": function(obj) {
+                            $(obj.reference).addClass('spinner');
                             // num clusters
                             var callback = function(k) {
                                 // need to get data
@@ -1749,6 +1756,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                                                     newNode.data=newData;
                                                                 }
                                                             );
+                                                            $(obj.reference).removeClass('spinner');
                                                             notify_success('Successfully finished clustering.');
                                                         }
                                                     });
@@ -1760,7 +1768,6 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                     dataType: "json"
                                 });
                             };
-
                             getKFromClusterInputFunction(callback);
                             return true;
                         }
@@ -1773,6 +1780,8 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         "label": "Build Datasets from Assignee List",
                         "title": "Creates a new folder with a dataset sample for each assignee in a list",
                         "action": function(obj) {
+                            // start spinner
+                            $(obj.reference).addClass('spinner');
                             var callback = function(assignees) {
                                 // need to get data
                                 var nodeData = node;
@@ -1821,6 +1830,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                                                     );
                                                 }
                                             });
+                                            $(obj.reference).removeClass('spinner');
                                             notify_success('Successfully finished building assignee datasets.');
                                         }
                                     },
