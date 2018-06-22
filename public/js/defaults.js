@@ -1891,16 +1891,6 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                 return items;
             }
         },
-        node_customize: {
-            default: function(el, node) {
-                if(node.type==='dataset' && node.data.hasOwnProperty('assetcount')) {
-                    var $childAnchor = $('#'+node.id+'_anchor');
-                    if($childAnchor.length) {
-                        $childAnchor.prev().text(childNode.data['assetcount']);
-                    }
-                }
-            }
-        },
         "types": {
             "folder": {
                 "icon": "jstree-folder"
@@ -1909,7 +1899,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                 "icon": "jstree-file"
             }
         },
-        "plugins": ["types","wholerow","sort","contextmenu","node_customize"]
+        "plugins": ["types","wholerow","sort","contextmenu"]
     });
 
     $(tree_id).bind("dblclick.jstree", function(event) {
@@ -1924,6 +1914,15 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
             }
         }
         return true;
+    });
+
+    $(tree_id).bind('draw_node.jstree', function(e, node) {
+        if(node.type==='dataset' && node.data.hasOwnProperty('assetcount')) {
+            var $childAnchor = $('#'+node.id+'_anchor');
+            if($childAnchor.length) {
+                $childAnchor.prev().text(childNode.data['assetcount']);
+            }
+        }
     });
 
 /*    $(tree_id).bind("open_node.jstree", function(event,data) {
