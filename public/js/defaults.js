@@ -1918,9 +1918,9 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
 
     if(node_type==='dataset') {
         $(tree_id).bind('changed.jstree', function(e, data) {
-            if(data.hasOwnProperty('selected') && data['selected'].length>0) {
+            if(data.hasOwnProperty('node')) {
                 var tree = $(this).jstree(true);
-                var node = data.selected[0];
+                var node = data.node;
                 if(node.data.hasOwnProperty('assetcount')) { // check node itself
                     var $anchor = $('#'+node.id+'_anchor');
                     if($anchor.length) {
