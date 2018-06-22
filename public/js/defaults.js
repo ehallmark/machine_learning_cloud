@@ -929,18 +929,20 @@ $(document).ready(function() {
 
 });
 
+// defaults
+$.notify.defaults({
+    position: 'bottom left',
+    globalPosition: 'bottom left',
+    elementPosition: 'bottom left',
+    autoHideDelay: 3000
+
+});
 var notify_success = function(text) {
-    $.notify(text, {
-        position: 'bottom left',
-        class: 'success'
-    });
+    $.notify(text, 'success');
 };
 
 var notify_error = function(text) {
-    $.notify(text, {
-        position: 'bottom left',
-        class: 'error'
-    });
+    $.notify(text, 'error');
 };
 
 var resetSearchForm = function() {
