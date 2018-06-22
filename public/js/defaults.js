@@ -1944,7 +1944,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         $(tree_id).bind('changed.jstree', addAssetCountFunc);
 
         $(tree_id).bind('rename_node.jstree', function(e, node) {
-            var data = { 'node': node };
+            var data = { 'node': node.node };
             addAssetCountFunc(e, data);
         });
         $(tree_id).bind('open_node.jstree', function(e, node) {
@@ -1952,7 +1952,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
             addAssetCountFunc(e, data);
         });
         $(tree_id).bind('create_node.jstree', function(e, node) {
-            var data = { 'node': node };
+            var data = { 'node': node.node };
             addAssetCountFunc(e, data);
         });
     }
