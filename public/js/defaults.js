@@ -1282,11 +1282,11 @@ var getKFromClusterInputFunction = function(callbackWithValue, obj) {
 var selectionDatasetDataFunction = function(tree,node,name,deletable,callback,obj) {
     // get user input
     var assets = Array.from(selectionCache);
+    var preData = {};
     if(assets.length==0) {
         preData['emptyDataset'] = true;
         alert('Warning: No assets have been selected.');
     }
-    var preData = {};
     preData["name"]=name;
     preData["assets"] = assets;
     preData["parentDirs"] = [];
