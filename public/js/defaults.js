@@ -1941,6 +1941,19 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                 }
             }
         });
+
+        $(tree_id).bind('rename_node.jstree', function(e, node) {
+            var data = { 'node': node };
+            $(tree_id).trigger('changed.jstree', [e, data]);
+        });
+        $(tree_id).bind('open_node.jstree', function(e, node) {
+            var data = { 'node': node };
+            $(tree_id).trigger('changed.jstree', [e, data]);
+        });
+        $(tree_id).bind('create_node.jstree', function(e, node) {
+            var data = { 'node': node };
+            $(tree_id).trigger('changed.jstree', [e, data]);
+        });
     }
 
 /*    $(tree_id).bind("open_node.jstree", function(event,data) {
