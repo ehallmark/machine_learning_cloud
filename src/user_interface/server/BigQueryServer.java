@@ -56,6 +56,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
@@ -2298,7 +2299,7 @@ public class BigQueryServer extends SimilarPatentServer {
         try {
             String html = handleReportTask.get(maxTimeMillis, TimeUnit.MILLISECONDS);
             return html;
-        } catch(InterruptedException e) {
+        } catch(CancellationException|InterruptedException e) {
             System.out.println("Interupted!");
             return null;
         } catch (Exception e) {
