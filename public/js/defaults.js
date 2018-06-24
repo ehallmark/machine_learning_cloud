@@ -22,7 +22,7 @@ $(document).ready(function() {
     });
 
 
-    var submitFormFunction = function(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successFunction) {
+    var submitFormFunction = function(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successFunction,canceledFunction,stopCancellable) {
          e.preventDefault();
          update_expert_query_text_area();
 
@@ -63,6 +63,7 @@ $(document).ready(function() {
            url: url,
            data: $form.serialize(),
            complete: function(jqxhr,status) {
+             stopCancellable();
              $button.prop('disabled',false).text(buttonText);
              $form.prop('disabled', false);
              var $scrollTo = $('#data-table');
@@ -73,14 +74,22 @@ $(document).ready(function() {
              }
            },
            error: function(jqxhr,status,error) {
-             if(jqxhr.status==404 || jqxhr.status==502) {
-                alert("Unable to establish connection to platform. Try refreshing page. Error code: "+jqxhr.status.toString());
-             } else if(jqxhr.status==302) {
-                alert("Must sign in again. Try refreshing page. Error code: "+jqxhr.status.toString());
+             stopCancellable();
+             if(!canceledFunction()) {
+                 if(jqxhr.status==404 || jqxhr.status==502) {
+                    alert("Unable to establish connection to platform. Try refreshing page. Error code: "+jqxhr.status.toString());
+                 } else if(jqxhr.status==302) {
+                    alert("Must sign in again. Try refreshing page. Error code: "+jqxhr.status.toString());
+                 }
+                 $('#results .tab-pane .content').html('<div style="color: red;">Server error during ajax request:'+error+'</div>');
              }
-             $('#results .tab-pane .content').html('<div style="color: red;">Server error during ajax request:'+error+'</div>');
            },
-           success: successFunction
+           success: {
+                stopCancellable();
+                if(!canceledFunction()) {
+                    successFunction
+                }
+           }
          });
 
          // remove orderings
@@ -346,7 +355,7 @@ $(document).ready(function() {
         $(this).find('#only-excel-hidden-input').val(false);
         var buttonClass = "generate-reports-form-button";
         var buttonText = "Generate Report";
-        var buttonTextWhileSearching = "Generating...";
+        var buttonTextWhileSearching = "Generating... (Click to Cancel)";
         var formId = $(this).attr('id');
         $('#results .tab-pane .content').html(''); // clears results div
         return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFrom);
@@ -360,7 +369,7 @@ $(document).ready(function() {
         $('#generate-reports-form').find('#only-excel-hidden-input').val(true);
         var buttonClass = "download-to-excel-button";
         var buttonText = "Download to CSV";
-        var buttonTextWhileSearching = "Downloading...";
+        var buttonTextWhileSearching = "Downloading... (Click to Cancel)";
         var formId = 'generate-reports-form';
         return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFromExcelOnly);
     });

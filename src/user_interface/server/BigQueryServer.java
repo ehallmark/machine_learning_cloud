@@ -94,6 +94,7 @@ public class BigQueryServer extends SimilarPatentServer {
     public static final String UPDATE_USER_GROUP_URL = GLOBAL_PREFIX+"/update_user_group";
     public static final String REMOVE_USER_URL = GLOBAL_PREFIX+"/remove_user";
     public static final String CREATE_USER_URL = GLOBAL_PREFIX+"/create_user";
+    public static final String CANCEL_REPORT_URL = GLOBAL_PREFIX+"/cancel_report";
     public static final String UPDATE_DEFAULT_ATTRIBUTES_URL = PROTECTED_URL_PREFIX+"/update_defaults";
     public static final String SAVE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/save_template";
     public static final String GET_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/get_template";
@@ -1092,6 +1093,23 @@ public class BigQueryServer extends SimilarPatentServer {
             return handleAjaxRequest(req, resultsSearchFunction, displayFunction, null);
         });
 
+
+        post(CANCEL_REPORT_URL, (req,res)->{
+            RecursiveTask<String> reportTask = req.session().attribute("ongoingReportTask");
+            List<RecursiveTask> otherTasks = req.session().attribute("ongoingTasks");
+            if(reportTask!=null) {
+                reportTask.cancel(true);
+                req.session().removeAttribute("ongoingReportTask");
+            }
+            if(otherTasks!=null) {
+                for(RecursiveTask task : otherTasks) {
+                    task.cancel(true);
+                    req.session().removeAttribute("ongoingTasks");
+                }
+            }
+            return new Gson().toJson(Collections.singletonMap("success", true));
+        });
+
     }
 
     private static Object handleAjaxRequest(Request req, Function<String,List<String>> resultsSearchFunction, Function<String,String> labelFunction, Function<String,String> htmlResultFunction) {
@@ -2017,14 +2035,6 @@ public class BigQueryServer extends SimilarPatentServer {
     }
 
     private static Object handleReport(Request req, Response res) {
-        /*try {
-            ProcessBuilder ps = new ProcessBuilder("/bin/bash", "-c", "curl http://"+PLATFORM_STARTER_IP_ADDRESS+":8080/ping");
-            ps.start();
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("While pinging platform starter...");
-        }*/
-
         List<RecursiveTask> otherTasks = Collections.synchronizedList(new ArrayList<>());
         // start timer
         RecursiveTask<String> handleReportTask = new RecursiveTask<String>() {
@@ -2061,6 +2071,8 @@ public class BigQueryServer extends SimilarPatentServer {
                     engine.setChartPrerequisites(chartPreReqs);
 
                     engine.buildAttributes(req);
+
+                    if(Thread.currentThread().isInterrupted()) return null;
 
                     List<AggregationBuilder> aggregationBuilders = abstractCharts.stream().flatMap(chart->{
                         List<AggregationBuilder> builders = new ArrayList<>();
@@ -2279,12 +2291,17 @@ public class BigQueryServer extends SimilarPatentServer {
         };
 
         pool.execute(handleReportTask);
+        req.session().attribute("ongoingReportTask", handleReportTask);
+        req.session().attribute("ongoingTasks", otherTasks);
 
         long maxTimeMillis =  180 * 1000;
         try {
             String html = handleReportTask.get(maxTimeMillis, TimeUnit.MILLISECONDS);
             return html;
-        } catch(Exception e) {
+        } catch(InterruptedException e) {
+            System.out.println("Interupted!");
+            return null;
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Timeout exception!");
             return new Gson().toJson(new SimpleAjaxMessage("Timeout occurred after "+(maxTimeMillis/(60*1000))+" minutes."));
