@@ -354,7 +354,7 @@ $(document).ready(function() {
         $.ajax({
             type: "POST",
             dataType: "json",
-            url: "/cancel_report"
+            url: "/cancel_report",
             complete: function() {
 
             };
