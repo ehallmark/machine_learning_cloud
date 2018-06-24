@@ -369,7 +369,6 @@ $(document).ready(function() {
         var buttonTextWhileSearching = "Generating... (Click to Cancel)";
         var formId = $(this).attr('id');
         $('#results .tab-pane .content').html(''); // clears results div
-        $(this).prop('disabled', true);
         var $this = $(this);
         var canceledFunction = function() {
             return $this.prop('canceled');
