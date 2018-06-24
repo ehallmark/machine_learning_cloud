@@ -85,9 +85,9 @@ $(document).ready(function() {
                  $('#results .tab-pane .content').html('<div style="color: red;">Server error during ajax request:'+error+'</div>');
              }
            },
-           success: {
+           success: function(jqXHR,status,error) {
                 if(!canceledFunction()) {
-                    successFunction
+                    successFunction(jqXHR,status,error);
                 }
            }
          });
