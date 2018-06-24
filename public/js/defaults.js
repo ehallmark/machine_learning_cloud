@@ -358,7 +358,7 @@ $(document).ready(function() {
             complete: function() {
 
             }
-        };
+        });
     };
 
     $('#generate-reports-form').submit(function(e) {
