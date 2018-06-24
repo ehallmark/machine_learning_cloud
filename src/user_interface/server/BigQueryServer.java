@@ -2073,7 +2073,7 @@ public class BigQueryServer extends SimilarPatentServer {
 
                     engine.buildAttributes(req);
 
-                    if(Thread.currentThread().isInterrupted()) return null;
+                    if(Thread.currentThread().isInterrupted()) throw new CancellationException();
 
                     List<AggregationBuilder> aggregationBuilders = abstractCharts.stream().flatMap(chart->{
                         List<AggregationBuilder> builders = new ArrayList<>();
@@ -2096,7 +2096,7 @@ public class BigQueryServer extends SimilarPatentServer {
                         return builders.stream();
                     }).collect(Collectors.toList());
 
-                    if(Thread.currentThread().isInterrupted()) return null;
+                    if(Thread.currentThread().isInterrupted()) throw new CancellationException();
 
                     engine.setAggregationBuilders(aggregationBuilders);
                     engine.extractRelevantInformationFromParams(req);
@@ -2104,7 +2104,7 @@ public class BigQueryServer extends SimilarPatentServer {
                     final Aggregations aggregations = engine.getAggregations();
                     final long totalCount = engine.getTotalCount();
 
-                    if(Thread.currentThread().isInterrupted()) return null;
+                    if(Thread.currentThread().isInterrupted()) throw new CancellationException();
 
                     res.type("application/json");
 
@@ -2138,7 +2138,7 @@ public class BigQueryServer extends SimilarPatentServer {
                         tableHeaders.add(Math.min(1,tableHeaders.size()),Constants.SCORE);
                     }
 
-                    if(Thread.currentThread().isInterrupted()) return null;
+                    if(Thread.currentThread().isInterrupted()) throw new CancellationException();
 
                     System.out.println("Rendering table...");
                     boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
@@ -2163,7 +2163,7 @@ public class BigQueryServer extends SimilarPatentServer {
                     req.session().attribute(EXCEL_SESSION, excelRequestMap);
                     req.session().attribute("assets", portfolioList.getIds());
 
-                    if(Thread.currentThread().isInterrupted()) return null;
+                    if(Thread.currentThread().isInterrupted()) throw new CancellationException();
 
                     if (onlyExcel) {
                         System.out.println("ONLY EXCEL:: Skipping chart building and html building...");
@@ -2203,7 +2203,7 @@ public class BigQueryServer extends SimilarPatentServer {
                             e.printStackTrace();
                         }
 
-                        if(Thread.currentThread().isInterrupted()) return null;
+                        if(Thread.currentThread().isInterrupted()) throw new CancellationException();
 
 
                         List<String> sessionIds = new ArrayList<>();
@@ -2301,7 +2301,7 @@ public class BigQueryServer extends SimilarPatentServer {
             return html;
         } catch(CancellationException|InterruptedException e) {
             System.out.println("Interupted!");
-            return null;
+            return new Gson().toJson(new SimpleAjaxMessage("Report Canceled."));
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Timeout exception!");
