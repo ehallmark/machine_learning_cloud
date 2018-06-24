@@ -41,7 +41,7 @@ $(document).ready(function() {
          $form.prop('disabled', true);
          var $button = $('.'+buttonClass);
          var url = $form.attr('action');
-         $button.prop('disabled',true).text(buttonTextWhileSearching);
+         $button.text(buttonTextWhileSearching);
 
          $(".attributeElement .attribute").not('.disabled').each(function() {
             var $this = $(this);
@@ -63,18 +63,19 @@ $(document).ready(function() {
            url: url,
            data: $form.serialize(),
            complete: function(jqxhr,status) {
+             if(!canceledFunction()) {
+                var $scrollTo = $('#data-table');
+                if($scrollTo.length>0 && $scrollTo.is(':visible')) {
+                    $('html,body').animate({
+                        scrollTop: $scrollTo.offset().top-150
+                    }, 500);
+                }
+             }
              stopCancellable();
              $button.prop('disabled',false).text(buttonText);
              $form.prop('disabled', false);
-             var $scrollTo = $('#data-table');
-             if($scrollTo.length>0 && $scrollTo.is(':visible')) {
-                $('html,body').animate({
-                    scrollTop: $scrollTo.offset().top-150
-                }, 500);
-             }
            },
            error: function(jqxhr,status,error) {
-             stopCancellable();
              if(!canceledFunction()) {
                  if(jqxhr.status==404 || jqxhr.status==502) {
                     alert("Unable to establish connection to platform. Try refreshing page. Error code: "+jqxhr.status.toString());
@@ -85,7 +86,6 @@ $(document).ready(function() {
              }
            },
            success: {
-                stopCancellable();
                 if(!canceledFunction()) {
                     successFunction
                 }
@@ -350,6 +350,17 @@ $(document).ready(function() {
        }
     };
 
+    var cancelReportFunction = function() {
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/cancel_report"
+            complete: function() {
+
+            };
+        };
+    };
+
     $('#generate-reports-form').submit(function(e) {
         e.preventDefault();
         $(this).find('#only-excel-hidden-input').val(false);
@@ -358,20 +369,52 @@ $(document).ready(function() {
         var buttonTextWhileSearching = "Generating... (Click to Cancel)";
         var formId = $(this).attr('id');
         $('#results .tab-pane .content').html(''); // clears results div
-        return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFrom);
+        $(this).prop('disabled', true);
+        var $this = $(this);
+        var canceledFunction = function() {
+            return $this.prop('canceled');
+        };
+        var stopCancellable = function() {
+            $('.'+buttonClass).prop('disabled', false);
+            $('.'+buttonClass).prop('canceled', false);
+        };
+        return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFrom,canceledFunction,stopCancellable);
     });
     $('.generate-reports-form-button').click(function(e) {
         e.preventDefault();
-        $('#generate-reports-form').submit();
+        if($(this).prop('disabled')) {
+            // cancel!
+            $('.generate-reports-form-button').prop('canceled', true);
+            cancelReportFunction();
+        } else {
+            $('.generate-reports-form-button').prop('disabled', true);
+            $('#generate-reports-form').submit();
+        }
     });
     $('.download-to-excel-button').click(function(e) {
         e.preventDefault();
-        $('#generate-reports-form').find('#only-excel-hidden-input').val(true);
         var buttonClass = "download-to-excel-button";
         var buttonText = "Download to CSV";
         var buttonTextWhileSearching = "Downloading... (Click to Cancel)";
         var formId = 'generate-reports-form';
-        return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFromExcelOnly);
+        if($(this).prop('disabled')) {
+            // cancel!
+            $('.'+buttonClass).prop('canceled', true);
+            cancelReportFunction();
+
+        } else {
+            var $this = $(this);
+            var canceledFunction = function() {
+                return $this.prop('canceled');
+            };
+            var stopCancellable = function() {
+                $('.'+buttonClass).prop('disabled', false);
+                $('.'+buttonClass).prop('canceled', false);
+            };
+            $('#generate-reports-form').find('#only-excel-hidden-input').val(true);
+            $('.'+buttonClass).prop('disabled', true);
+            return submitFormFunction(e,buttonClass,buttonText,buttonTextWhileSearching,formId,successReportFromExcelOnly,canceledFunction,stopCancellable);
+        }
     });
 
     $('#update-default-attributes-form').submit(function(e) {
