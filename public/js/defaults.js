@@ -357,7 +357,7 @@ $(document).ready(function() {
             url: "/cancel_report",
             complete: function() {
 
-            };
+            }
         };
     };
 
