@@ -73,7 +73,7 @@ create table patents_global_merged (
     standard_count integer,
 
     -- wipo
-    wipo_technology text,
+    wipo_technology text[],
     -- gtt tech
     technology text,
     technology2 text,
