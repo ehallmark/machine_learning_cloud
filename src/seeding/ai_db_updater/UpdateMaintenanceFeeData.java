@@ -1,9 +1,10 @@
 package seeding.ai_db_updater;
 
 import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
-import seeding.data_downloader.MaintenanceFeeDataDownloader;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,11 +16,11 @@ public class UpdateMaintenanceFeeData {
     public static void main(String[] args) throws Exception{
         // update latest assignees
         System.out.println("Starting to update latest maintenance fee data...");
-        MaintenanceFeeDataDownloader downloader = new MaintenanceFeeDataDownloader();
-        downloader.pullMostRecentData();
+       // MaintenanceFeeDataDownloader downloader = new MaintenanceFeeDataDownloader();
+       // downloader.pullMostRecentData();
         System.out.println("Starting to ingest data...");
-        ingestMaintenanceFeeData(downloader.getDestinationFile(), new MaintenanceEventHandler(null));
-        downloader.cleanUp();
+        ////ingestMaintenanceFeeData(downloader.getDestinationFile(), new MaintenanceEventHandler(null));
+        //downloader.cleanUp();
     }
 
     public static void ingestMaintenanceFeeData(File destinationFile, MaintenanceEventHandler handler) throws Exception {

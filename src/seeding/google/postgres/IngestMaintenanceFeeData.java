@@ -1,6 +1,6 @@
 package seeding.google.postgres;
 
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.primitives.Triple;
 import seeding.Database;
 import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
 import seeding.data_downloader.MaintenanceFeeDataDownloader;
@@ -23,15 +23,15 @@ public class IngestMaintenanceFeeData {
     public static void main(String[] args) throws Exception{
         Connection conn = Database.getConn();
 
-        final String[] maintenaceFields = new String[]{
-                SeedingConstants.PUBLICATION_NUMBER,
+        final String[] maintenanceFields = new String[]{
+                SeedingConstants.APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY,
                 SeedingConstants.ENTITY_STATUS,
                 SeedingConstants.LAPSED,
                 SeedingConstants.REINSTATED
         };
 
         final String[] maintenanceCodeFields = new String[]{
-                SeedingConstants.PUBLICATION_NUMBER,
+                SeedingConstants.APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY,
                 SeedingConstants.EVENT_CODE
         };
 
@@ -41,10 +41,10 @@ public class IngestMaintenanceFeeData {
         downloader.pullMostRecentData();
         System.out.println("Starting to ingest data...");
 
-        String maintenanceSql = "insert into big_query_maintenance (publication_number,original_entity_status,lapsed,reinstated) values (?,?,?::boolean,?::boolean) on conflict (publication_number) do update set (original_entity_status,lapsed,reinstated) = (?,?::boolean,?::boolean);";
-        String maintenanceCodesSql = "insert into big_query_maintenance_codes (publication_number,code) values (?,?) on conflict (publication_number,code) do nothing;";
+        String maintenanceSql = "insert into big_query_maintenance (application_number_formatted_with_country,original_entity_status,lapsed,reinstated) values (?,?,?::boolean,?::boolean) on conflict (application_number_formatted_with_country) do update set (original_entity_status,lapsed,reinstated) = (?,?::boolean,?::boolean);";
+        String maintenanceCodesSql = "insert into big_query_maintenance_codes (application_number_formatted_with_country,code) values (?,?) on conflict (application_number_formatted_with_country,code) do nothing;";
 
-        DefaultApplier maintenanceApplier = new DefaultApplier(true, conn, maintenaceFields);
+        DefaultApplier maintenanceApplier = new DefaultApplier(true, conn, maintenanceFields);
         QueryStream<List<Object>> maintenanceQueryStream = new QueryStream<>(maintenanceSql,conn,maintenanceApplier);
 
         DefaultApplier maintenanceCodeApplier = new DefaultApplier(false, conn, maintenanceCodeFields);
@@ -56,38 +56,40 @@ public class IngestMaintenanceFeeData {
         Set<String> micro = Collections.synchronizedSet(new HashSet<>());
         Set<String> large = Collections.synchronizedSet(new HashSet<>());
 
-        Set<String> patents = Collections.synchronizedSet(new HashSet<>());
+        Set<String> filings = Collections.synchronizedSet(new HashSet<>());
 
-        Consumer<Pair<String,String>> postgresConsumer = pair -> {
-            String patent = pair.getFirst();
-            patents.add(patent);
-            String maintenanceCode = pair.getSecond();
-            if (maintenanceCode.equals("EXP.")) {
-                lapsed.add(patent);
-                reinstated.remove(patent);
+        Consumer<Triple<String,String,String>> postgresConsumer = pair -> {
+            String filing = pair.getFirst();
+            String entityStatus = pair.getSecond().toUpperCase().trim();
+            filings.add(filing);
+            String maintenanceCode = pair.getThird();
+            if (entityStatus.equals("EXP.")) {
+                lapsed.add(filing);
+                reinstated.remove(filing);
 
             } else if (maintenanceCode.equals("EXPX")) {
                 // reinstated
-                lapsed.remove(patent);
-                reinstated.add(patent);
+                lapsed.remove(filing);
+                reinstated.add(filing);
 
             } else if (maintenanceCode.equals("REM.")) {
                 // reminder
-            } else if (maintenanceCode.startsWith("M2") || maintenanceCode.startsWith("SM") || maintenanceCode.equals("LTOS") || maintenanceCode.equals("MTOS")) {
-                small.add(patent);
-                micro.remove(patent);
-                large.remove(patent);
-            } else if (maintenanceCode.startsWith("M1") || maintenanceCode.startsWith("LSM")) {
-                large.add(patent);
-                small.remove(patent);
-                micro.remove(patent);
-            } else if (maintenanceCode.startsWith("M3") || maintenanceCode.equals("STOM")) {
-                micro.add(patent);
-                small.remove(patent);
-                large.remove(patent);
+            }
+            if (entityStatus.equals("Y")) {
+                small.add(filing);
+                micro.remove(filing);
+                large.remove(filing);
+            } else if (maintenanceCode.startsWith("N")) {
+                large.add(filing);
+                small.remove(filing);
+                micro.remove(filing);
+            } else if (maintenanceCode.startsWith("M")) {
+                micro.add(filing);
+                small.remove(filing);
+                large.remove(filing);
             }
             try {
-                maintenanceCodeQueryStream.ingest(Arrays.asList(patent, maintenanceCode));
+                maintenanceCodeQueryStream.ingest(Arrays.asList(filing, maintenanceCode));
             } catch(Exception e) {
                 e.printStackTrace();
                 System.exit(1);
@@ -96,18 +98,18 @@ public class IngestMaintenanceFeeData {
 
         ingestMaintenanceFeeData(downloader.getDestinationFile(), new MaintenanceEventHandler(postgresConsumer));
 
-        for(String patent : patents) {
+        for(String filing : filings) {
             String entityStatus = null;
-            if(large.contains(patent)) {
+            if(large.contains(filing)) {
                 entityStatus = "large";
-            } else if(micro.contains(patent)) {
+            } else if(micro.contains(filing)) {
                 entityStatus = "micro";
-            } else if(small.contains(patent)) {
+            } else if(small.contains(filing)) {
                 entityStatus = "small";
             }
-            boolean isLapsed = lapsed.contains(patent);
-            boolean isReinstated = reinstated.contains(patent);
-            maintenanceQueryStream.ingest(Arrays.asList(patent,entityStatus,isLapsed,isReinstated));
+            boolean isLapsed = lapsed.contains(filing);
+            boolean isReinstated = reinstated.contains(filing);
+            maintenanceQueryStream.ingest(Arrays.asList(filing,entityStatus,isLapsed,isReinstated));
         }
 
         downloader.cleanUp();
