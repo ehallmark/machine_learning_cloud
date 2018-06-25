@@ -50,9 +50,10 @@ public class IngestWIPOTechnologies {
             try(BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 reader.lines().skip(1).parallel().forEach(line -> {
                     String[] fields = line.split("\t");
+                    if(fields.length<3) return;
                     String patent = fields[0];
                     String wipo = fields[1];
-                    String sequence = fields[2];
+                    int sequence = Integer.valueOf(fields[2]);
                     try {
                         String wipoTechnology;
                         if (patent.startsWith("D")) {
