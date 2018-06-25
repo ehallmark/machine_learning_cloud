@@ -1967,7 +1967,9 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
             default: function(elem, node) {
                 if(node && node_type==='dataset' && node.hasOwnProperty('type') && node.type==='file' && node.hasOwnProperty('data') && node.data.hasOwnProperty('assetcount')) { // check node itself
                     var $anchor = $(elem).find('a');
-                    if($anchor) {
+                    if($anchor && $anchor.length>0) {
+                        // hack to add icon back
+                        $(elem).find('i.jstree-icon').attr('class', 'jstree-icon jstree-themeicon jstree-file jstree-themeicon-custom');
                         $anchor.text($anchor.text()+' - ('+node.data['assetcount']+')');
                     }
                 }
