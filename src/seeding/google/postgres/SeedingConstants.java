@@ -19,6 +19,7 @@ public class SeedingConstants {
     public static final String PRIORITY_DATE = "priority_date";
     public static final String WIPO_TECHNOLOGY = "wipo_technology";
     public static final String PRIORITY_CLAIM = "priority_claim";
+    public static final String SEQUENCE = "sequence";
     public static final String NPL_TEXT = "npl_text";
     public static final String CATEGORY = "category";
     public static final String ABSTRACT_LOCALIZED = "abstract_localized";

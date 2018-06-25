@@ -5,14 +5,14 @@ import seeding.Database;
 import seeding.data_downloader.WIPOTechnologyDownloader;
 import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
-import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -33,11 +33,12 @@ public class IngestWIPOTechnologies {
             throw new RuntimeException("Unable to create definition map... map is null");
         }
 
-        final String valueStr = "(?,?)";
-        final String sql = "insert into big_query_wipo (publication_number,wipo_technology) values "+valueStr+" on conflict do nothing";
+        final String valueStr = "(?,?,?)";
+        final String sql = "insert into big_query_wipo (publication_number,sequence,wipo_technology) values "+valueStr+" on conflict (publication_number,sequence) do update set wipo_technology=excluded.wipo_technology";
 
         final String[] wipoFields = new String[]{
                 SeedingConstants.PUBLICATION_NUMBER,
+                SeedingConstants.SEQUENCE,
                 SeedingConstants.WIPO_TECHNOLOGY
         };
 
@@ -51,6 +52,7 @@ public class IngestWIPOTechnologies {
                     String[] fields = line.split("\t");
                     String patent = fields[0];
                     String wipo = fields[1];
+                    String sequence = fields[2];
                     try {
                         String wipoTechnology;
                         if (patent.startsWith("D")) {
@@ -62,7 +64,7 @@ public class IngestWIPOTechnologies {
                         }
 
                         if (wipoTechnology != null) {
-                            queryStream.ingest(Arrays.asList(patent,wipoTechnology));
+                            queryStream.ingest(Arrays.asList(patent,sequence,wipoTechnology));
                             if (cnt.getAndIncrement() % 100000 == 99999) {
                                 System.out.println("Seen " + cnt.get() + " wipo technologies...");
                             }
