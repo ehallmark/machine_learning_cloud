@@ -53,7 +53,7 @@ public class IngestAssignmentData {
         final String valueStrDocumentId = Util.getValueStrFor(documentIdFields,arrayFields,booleanFields);
 
         final String assignments = "insert into big_query_assignments (reel_frame,conveyance_text,recorded_date,execution_date,assignee,assignor) values "+valueStrAssignments+" on conflict do nothing";
-        final String assignmentDocumentId = "insert into big_query_assignment_documentid (reel_frame,application_number_formatted_with_country,doc_kind,is_filing,country_code,date) values "+valueStrDocumentId+" on conflict do nothing";
+        final String assignmentDocumentId = "insert into big_query_assignment_documentid (reel_frame,application_number_formatted_with_country,date) values "+valueStrDocumentId+" on conflict do nothing";
 
         DefaultApplier applierAssignments = new DefaultApplier(false, conn, assignmentFields);
         QueryStream<List<Object>> queryStreamAssignments = new QueryStream<>(assignments,conn,applierAssignments);
