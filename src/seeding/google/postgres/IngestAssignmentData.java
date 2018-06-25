@@ -40,10 +40,7 @@ public class IngestAssignmentData {
 
         final String[] documentIdFields = new String[]{
                 SeedingConstants.REEL_FRAME,
-                SeedingConstants.DOC_NUMBER,
-                SeedingConstants.KIND_CODE,
-                SeedingConstants.IS_FILING,
-                SeedingConstants.COUNTRY_CODE,
+                SeedingConstants.APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY,
                 SeedingConstants.DATE
         };
 
@@ -56,7 +53,7 @@ public class IngestAssignmentData {
         final String valueStrDocumentId = Util.getValueStrFor(documentIdFields,arrayFields,booleanFields);
 
         final String assignments = "insert into big_query_assignments (reel_frame,conveyance_text,recorded_date,execution_date,assignee,assignor) values "+valueStrAssignments+" on conflict do nothing";
-        final String assignmentDocumentId = "insert into big_query_assignment_documentid (reel_frame,doc_number,doc_kind,is_filing,country_code,date) values "+valueStrDocumentId+" on conflict do nothing";
+        final String assignmentDocumentId = "insert into big_query_assignment_documentid (reel_frame,application_number_formatted_with_country,doc_kind,is_filing,country_code,date) values "+valueStrDocumentId+" on conflict do nothing";
 
         DefaultApplier applierAssignments = new DefaultApplier(false, conn, assignmentFields);
         QueryStream<List<Object>> queryStreamAssignments = new QueryStream<>(assignments,conn,applierAssignments);
@@ -128,27 +125,24 @@ public class IngestAssignmentData {
                 List<Object> documentData = new ArrayList<>();
                 Object docNumber = record.get(seeding.Constants.NAME);
                 Object docKind = record.get(seeding.Constants.DOC_KIND);
-                Object countryCode = record.get(seeding.Constants.COUNTRY);
-                if(countryCode==null) countryCode = "US";
                 Object date = record.get(seeding.Constants.RECORDED_DATE);
                 if(docNumber==null||docKind==null) {
                     continue;
                 }
-                Object isFiling = docKind.equals("X0");
+                boolean isFiling = docKind.equals("X0");
+                if(!isFiling) continue;
 
                 documentData.add(reelFrame);
                 documentData.add(docNumber);
-                documentData.add(docKind);
-                documentData.add(isFiling);
-                documentData.add(countryCode);
                 documentData.add(date);
                 try {
                     queryStreamDocumentId.ingest(documentData);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("During document id data");
                     System.exit(1);
                 }
+
             }
 
         };
