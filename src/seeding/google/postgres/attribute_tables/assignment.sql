@@ -14,7 +14,7 @@ create table big_query_assignments (
 drop table big_query_assignment_documentid;
 create table big_query_assignment_documentid (
     reel_frame varchar(50) references big_query_assignments (reel_frame),
-    application_number_formatted_with_country varchar(32) not null,
+    application_number_formatted_with_country varchar(32) not null, -- really should be application_number_formatted :(
     date date, -- could be useful for matching
     primary key (reel_frame,application_number_formatted_with_country)
 );
@@ -43,7 +43,7 @@ insert into big_query_assignment_documentid_by_pub (publication_number_full,reel
         array_agg(r.assignor[1]) as assignor
     from big_query_assignment_documentid as d
     join big_query_assignments as r on (d.reel_frame=r.reel_frame)
-    join patents_global as p on ('US'||p.application_number_formatted=a.application_number_formatted_with_country)
+    join patents_global as p on ('US'||p.application_number_formatted='US'||a.application_number_formatted_with_country)
     where array_length(r.assignee,1)>0 and p.application_number_formatted is not null
     group by publication_number_full
 );
