@@ -956,7 +956,7 @@ $(document).ready(function() {
     };
 
     // prevent bug with text editor and sortable lists
-    $('.CodeMirror-wrap').mousedown(function(e) {
+    $('.CodeMirror-wrap').parent().mousedown(function(e) {
         e.stopPropagation();
     });
 

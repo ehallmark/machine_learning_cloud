@@ -17,6 +17,8 @@ import java.util.stream.Stream;
 
 /**
  * Created by Evan on 1/22/2017.
+ * curl https://www.courtlistener.com/api/bulk-data/courts/all.tar.gz > ~/data/all_court_data/all.tar.gz
+
  */
 public class IngestCourtData {
     private static final File tarDataFolder = new File("/home/ehallmark/data/all_courts_data/all_courts_data/");
