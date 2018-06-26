@@ -2,7 +2,7 @@
 
 drop table big_query_patent_to_latest_assignee;
 create table big_query_patent_to_latest_assignee (
-    application_number_formatted_with_country primary key, -- eg. US9923222B1
+    application_number_formatted_with_country varchar(32) primary key, -- eg. US9923222B1
     assignee text[] not null,
     date date
 );
@@ -21,7 +21,7 @@ insert into big_query_patent_to_latest_assignee (
 
 drop table big_query_patent_to_security_interest;
 create table big_query_patent_to_security_interest (
-    application_number_formatted_with_country primary key, -- eg. US9923222B1
+    application_number_formatted_with_country varchar(32) primary key, -- eg. US9923222B1
     security_interest_holder text[] not null,
     date date
 );
@@ -30,14 +30,13 @@ insert into big_query_patent_to_security_interest (
         select distinct on (application_number_formatted_with_country)
             application_number_formatted_with_country,
             assignee,
-            execution_date,
-            upper(coalesce(conveyance_text,'')) like '%SECURITY%' as security_interest
+            execution_date
             from big_query_assignments as latest
             join big_query_assignment_documentid as document
             on (latest.reel_frame=document.reel_frame)
-            where assignee is not null and not
+            where assignee is not null and upper(coalesce(conveyance_text,'')) like '%SECURITY%'
             order by application_number_formatted_with_country,execution_date desc nulls last,recorded_date desc NULLS LAST
-    ) as temp where security_interest
+    ) as temp
 );
 
 
