@@ -12,9 +12,11 @@ cd /home/ehallmark/repos/gtt_models/
 python3 src/java_compatibility/BuildCPCEncodings.py
 python3 src/java_compatibility/BuildPatentEncodings.py
 cd /home/ehallmark/repos/machine_learning_cloud
+java -cp target/classes:"target/dependency/*" -Xms10000m -Xmx10000m seeding.google.postgres.IngestAssigneeEmbeddingsToPostgres
 
 # run technology tagger
-java -cp target/classes:"target/dependency/*" -Xms10000m -Xmx10000m seeding.google.postgres.IngestAssigneeEmbeddingsToPostgres
+psql postgres < src/seeding/google/postgres/attribute_tables/patent_text_aggs.sql
+java -cp target/classes:"target/dependency/*" -Xms10000m -Xmx10000m seeding.google.tech_tag.PredictTechTags
 
 # run keyword prediction
 java -cp target/classes:"target/dependency/*" -Xms10000m -Xmx10000m seeding.google.tech_tag.PredictKeywords
