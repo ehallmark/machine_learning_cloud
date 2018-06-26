@@ -378,7 +378,7 @@ insert into patents_global_merged (
         -- maintenance events
         m_codes.codes,
         coalesce(array_length(m_codes.codes,1),0),
-        coalesce(coalesce(m.lapsed,pair.abandoned),'f'),
+        case when m.laspsed is null then coalesce(pair.abandoned, 'f') else (coalesce(pair.abandoned, 'f') and not coalesce(m.reinstated,'f')) OR m.lapsed end,
         coalesce(m.reinstated,'f'),
         -- latest assignee by pub
         latest_assignee.assignee,
