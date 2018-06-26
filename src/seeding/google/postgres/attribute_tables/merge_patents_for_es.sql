@@ -87,24 +87,26 @@ create table patents_global_merged (
 
     latest_assignee text[],
     latest_assignee_date date,
-    latest_security_interest boolean,
     latest_first_assignee text,
     latest_portfolio_size integer,
     latest_entity_type varchar(32),
     latest_first_filing_date date,
     latest_last_filing_date date,
     latest_assignee_count integer,
+    security_interest_holder text,
+    security_interest_date date,
 
     -- latest assignee fam
     latest_fam_assignee text[],
     latest_fam_assignee_date date,
-    latest_fam_security_interest boolean,
     latest_fam_first_assignee text,
     latest_fam_portfolio_size integer,
     latest_fam_entity_type varchar(32),
     latest_fam_first_filing_date date,
     latest_fam_last_filing_date date,
     latest_fam_assignee_count integer,
+    security_interest_fam_holder text,
+    security_interest_fam_date date,
 
     -- embedding
     enc float[],
@@ -235,23 +237,25 @@ insert into patents_global_merged (
         -- latest assignee pub
         latest_assignee,
         latest_assignee_date,
-        latest_security_interest,
         latest_first_assignee,
         latest_portfolio_size,
         latest_entity_type,
         latest_first_filing_date,
         latest_last_filing_date,
         latest_assignee_count,
+        security_interest_holder,
+        security_interest_date,
         -- latest assignee fam
         latest_fam_assignee,
         latest_fam_assignee_date,
-        latest_fam_security_interest,
         latest_fam_first_assignee,
         latest_fam_portfolio_size,
         latest_fam_entity_type,
         latest_fam_first_filing_date,
         latest_fam_last_filing_date,
         latest_fam_assignee_count,
+        security_interest_fam_holder,
+        security_interest_fam_date,
         -- embedding
         enc,
         -- assignments
@@ -383,23 +387,25 @@ insert into patents_global_merged (
         -- latest assignee by pub
         latest_assignee.assignee,
         latest_assignee.date,
-        latest_assignee.security_interest,
         latest_assignee.first_assignee,
         latest_assignee_join.portfolio_size,
         latest_assignee_join.entity_type,
         latest_assignee_join.first_filing_date,
         latest_assignee_join.last_filing_date,
         coalesce(array_length(latest_assignee.assignee,1),0),
+        security_interest.security_interest_holder,
+        security_interest.date,
         -- latest assignee by fam
         latest_assignee_fam.assignee,
         latest_assignee_fam.date,
-        latest_assignee_fam.security_interest,
         latest_assignee_fam.first_assignee,
         latest_assignee_fam_join.portfolio_size,
         latest_assignee_fam_join.entity_type,
         latest_assignee_fam_join.first_filing_date,
         latest_assignee_fam_join.last_filing_date,
         coalesce(array_length(latest_assignee_fam.assignee,1),0),
+        security_interest_fam.security_interest_holder,
+        security_interest_fam.date,
         -- embedding
         enc.enc,
         -- assignments
@@ -453,6 +459,8 @@ insert into patents_global_merged (
     left outer join big_query_reverse_citations_by_pub as rc on (rc.publication_number_full=p.publication_number_full)
     left outer join big_query_citations_by_pub as cites on (cites.publication_number_full=p.publication_number_full)
     left outer join big_query_priority_claims_by_pub as pc on (pc.publication_number_full=p.publication_number_full)
+    left outer join big_query_patent_to_security_interest_by_pub as security_interest on (security_interest.publication_number_full=p.publication_number_full)
+    left outer join big_query_patent_to_security_interest_by_fam as security_interest_fam on (security_interest_fam.publication_number_full=p.publication_number_full)
     left outer join big_query_patent_to_latest_assignee_by_pub as latest_assignee on (latest_assignee.publication_number_full=p.publication_number_full)
         left outer join big_query_assignee as latest_assignee_join on (latest_assignee_join.name=latest_assignee.first_assignee)
     left outer join big_query_patent_to_latest_assignee_by_family as latest_assignee_fam on (latest_assignee_fam.family_id=p.family_id)
