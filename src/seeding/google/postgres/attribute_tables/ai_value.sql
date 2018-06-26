@@ -1,5 +1,18 @@
 \connect patentdb
 
+-- update patent claim text
+insert into big_query_patent_english_claims (family_id,publication_number_full,abstract,claims) (
+    select distinct on (p.family_id)
+        p.family_id,p.publication_number_full,
+        p.abstract[array_position(p.abstract_lang,'en')],
+        p.claims[array_position(p.claims_lang,'en')]
+    from patents_global as p
+    full outer join big_query_patent_english_claims as c
+    on (p.family_id=c.family_id)
+    where p.claims[array_position(p.claims_lang,'en')] is not null and p.family_id != '-1' and c.family_id is null
+    order by p.family_id,case when p.country_code='US' then 1 else 0 end desc,p.publication_date desc nulls last,p.filing_date desc nulls last
+);
+
 drop table big_query_ai_value_family_size;
 create table big_query_ai_value_family_size (
     family_id varchar(32) primary key,
@@ -18,6 +31,16 @@ create table big_query_ai_value_claims (
     num_claims integer,
     length_smallest_ind_claim integer
 ); -- insert script is located in patent_text.sql
+
+insert into big_query_ai_value_claims (family_id,means_present,num_claims,length_smallest_ind_claim) (
+    select family_id,
+    case when bool_and(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else (claim like '% means %')::boolean end) then 1 else 0 end,
+    count(*) as num_claims,
+    min(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else array_length(array_remove(regexp_split_to_array(claim,'\s+'),''),1) end)
+    from big_query_patent_english_claims as p, unnest(regexp_split_to_array(claims, '((Iaddend..Iadd.)|(\n\s*\n\s*\n\s*))')) with ordinality as c(claim,n)
+    where claim is not null and char_length(trim(claim))>20
+    group by family_id
+);
 
 
 drop table big_query_ai_value_assignments;
@@ -93,7 +116,7 @@ insert into big_query_ai_value_all (family_id,means_present,num_claims,length_sm
     left outer join big_query_ai_value_assignments using(family_id)
 );
 
-
+drop table big_query_ai_value_weights;
 create table big_query_ai_value_weights (
     date date primary key,
     weights double precision[] not null,

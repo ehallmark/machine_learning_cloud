@@ -18,18 +18,6 @@ insert into big_query_patent_english_claims (family_id,publication_number_full,a
     order by family_id,case when country_code='US' then 1 else 0 end desc,publication_date desc nulls last,filing_date desc nulls last
 );
 
--- then redo claim value metrics
-
-insert into big_query_ai_value_claims (family_id,means_present,num_claims,length_smallest_ind_claim) (
-    select family_id,
-    case when bool_and(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else (claim like '% means %')::boolean end) then 1 else 0 end,
-    count(*) as num_claims,
-    min(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else array_length(array_remove(regexp_split_to_array(claim,'\s+'),''),1) end)
-    from big_query_patent_english_claims as p, unnest(regexp_split_to_array(claims, '((Iaddend..Iadd.)|(\n\s*\n\s*\n\s*))')) with ordinality as c(claim,n)
-    where claim is not null and char_length(trim(claim))>20
-    group by family_id
-);
-
 create table big_query_patent_english_abstract (
     family_id varchar(32) primary key,
     publication_number_full varchar(32) not null,
