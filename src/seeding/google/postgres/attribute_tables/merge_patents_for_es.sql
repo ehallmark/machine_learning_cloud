@@ -1,4 +1,3 @@
-
 \connect patentdb
 
 drop table patents_global_merged;
@@ -484,6 +483,3 @@ insert into patents_global_merged (
 );
 
 vacuum;
-
--- dump all
-pg_dump -Fc --dbname=postgresql://postgres:password@127.0.0.1:5432/patentdb > /usb/big_query_database.dump
