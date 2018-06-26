@@ -138,8 +138,12 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("First Assignee Last Filing Date (by Family)", Attributes.LATEST_FAM_LAST_FILING_DATE);
             humanAttrToJavaAttrMap.put("First Assignee Date", Attributes.LATEST_ASSIGNEE_DATE);
             humanAttrToJavaAttrMap.put("First Assignee Date (by Family)", Attributes.LATEST_FAM_ASSIGNEE_DATE);
-            humanAttrToJavaAttrMap.put("First Assignee Security Interest?", Attributes.LATEST_SECURITY_INTEREST);
-            humanAttrToJavaAttrMap.put("First Assignee Security Interest? (by Family)", Attributes.LATEST_FAM_SECURITY_INTEREST);
+            humanAttrToJavaAttrMap.put("Security Interest", Attributes.SECURITY_INTEREST);
+            humanAttrToJavaAttrMap.put("Security Interest (by Family)", Attributes.SECURITY_INTEREST_FAM);
+            humanAttrToJavaAttrMap.put("Security Interest Exec. Date", Attributes.SECURITY_INTEREST_DATE);
+            humanAttrToJavaAttrMap.put("Security Interest Exec. Date (by Family)", Attributes.SECURITY_INTEREST_FAM_DATE);
+            humanAttrToJavaAttrMap.put("Security Interest Holder", Attributes.SECURITY_INTEREST_HOLDER);
+            humanAttrToJavaAttrMap.put("Security Interest Holder (by Family)", Attributes.SECURITY_INTEREST_FAM_HOLDER);
             humanAttrToJavaAttrMap.put("Standards", Attributes.STANDARDS);
             humanAttrToJavaAttrMap.put("Standard", Attributes.STANDARD);
             humanAttrToJavaAttrMap.put("SSO",Attributes.SSO);

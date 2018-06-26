@@ -30,6 +30,8 @@ public class Attributes {
     public static final String COMPDB_COUNT = "compdb_count";
     public static final String STANDARD_COUNT = "standard_count";
     public static final String PTAB_COUNT = "ptab_count";
+    public static final String SECURITY_INTEREST_FAM = "security_interest_fam";
+    public static final String SECURITY_INTEREST = "security_interest";
     // helper
     public static final String PRIORITY_DATE_ESTIMATED = "priority_date_est";
     public static final String EXPIRED = "expired";
@@ -97,7 +99,6 @@ public class Attributes {
     public static final String LATEST_ASSIGNEES = "latest_assignees";
     public static final String LATEST_ASSIGNEE = "latest_assignee";
     public static final String LATEST_ASSIGNEE_DATE = "latest_assignee_date";
-    public static final String LATEST_SECURITY_INTEREST = "latest_security_interest";
     public static final String LATEST_FIRST_ASSIGNEE = "latest_first_assignee";
     public static final String LATEST_PORTFOLIO_SIZE = "latest_portfolio_size";
     public static final String LATEST_ENTITY_TYPE = "latest_entity_type";
@@ -106,7 +107,10 @@ public class Attributes {
     public static final String LATEST_FAM_ASSIGNEES = "latest_fam_assignees";
     public static final String LATEST_FAM_ASSIGNEE = "latest_fam_assignee";
     public static final String LATEST_FAM_ASSIGNEE_DATE = "latest_fam_assignee_date";
-    public static final String LATEST_FAM_SECURITY_INTEREST = "latest_fam_security_interest";
+    public static final String SECURITY_INTEREST_FAM_HOLDER = "security_interest_fam_holder";
+    public static final String SECURITY_INTEREST_FAM_DATE = "security_interest_fam_date";
+    public static final String SECURITY_INTEREST_HOLDER = "security_interest_holder";
+    public static final String SECURITY_INTEREST_DATE = "security_interest_date";
     public static final String LATEST_FAM_FIRST_ASSIGNEE = "latest_fam_first_assignee";
     public static final String LATEST_FAM_PORTFOLIO_SIZE = "latest_fam_portfolio_size";
     public static final String LATEST_FAM_ENTITY_TYPE = "latest_fam_entity_type";
@@ -216,7 +220,9 @@ public class Attributes {
                 new Gather(),
                 new PTAB(),
                 new PTABCount(),
-                new Granted()
+                new Granted(),
+                new SecurityInterest(),
+                new SecurityInterestFam()
         );
     }
 

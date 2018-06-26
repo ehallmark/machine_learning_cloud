@@ -2,9 +2,9 @@ package seeding.google.elasticsearch.attributes;
 
 import seeding.google.elasticsearch.Attributes;
 
-public class LatestFamSecurityInterest extends BooleanAttribute {
+public class SecurityInterestFamHolder extends KeywordAndTextAttribute {
     @Override
     public String getName() {
-        return Attributes.LATEST_FAM_SECURITY_INTEREST;
+        return Attributes.SECURITY_INTEREST_FAM_HOLDER;
     }
 }
