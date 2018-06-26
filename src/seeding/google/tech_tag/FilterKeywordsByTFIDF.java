@@ -49,7 +49,7 @@ public class FilterKeywordsByTFIDF {
 
         Connection insertConn = Database.newSeedConn();
         PreparedStatement insertPs = insertConn.prepareStatement("insert into big_query_keywords_tfidf (family_id, keywords) values (?,?) on conflict (family_id) do update set keywords=excluded.keywords");
-        PreparedStatement ps = conn.prepareStatement("select family_id, keywords from big_query_keywords_all");
+        PreparedStatement ps = conn.prepareStatement("select family_id, keywords from big_query_keywords_all as p full outer join big_query_keywords_tfidf as t on (t.family_id=p.family_id) where t.family_id is null");
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
         System.out.println("Starting to ingest...");

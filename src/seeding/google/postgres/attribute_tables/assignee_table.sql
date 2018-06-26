@@ -1,6 +1,6 @@
-
 \connect patentdb
 
+drop table big_query_assignee;
 create table big_query_assignee (
     name varchar(256) primary key,
     country_code varchar(8),

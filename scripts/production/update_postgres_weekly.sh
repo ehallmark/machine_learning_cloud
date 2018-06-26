@@ -22,6 +22,9 @@ psql postgres < src/seeding/google/postgres/attribute_tables/pair_aggs.sql
 java -cp target/classes:"target/dependency/*" -Xms10000m -Xmx10000m seeding.google.postgres.IngestPTABData
 psql postgres < src/seeding/google/postgres/attribute_tables/ptab_aggs.sql
 
+# granted
+psql postgres < src/seeding/google/postgres/attribute_tables/granted.sql
+
 # update
 source scripts/production/backup.sh
 
