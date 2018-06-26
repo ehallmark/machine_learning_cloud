@@ -70,7 +70,7 @@ insert into big_query_patent_to_security_interest_by_pub (
     select distinct on (publication_number_full) publication_number_full,si.security_interest_holder[1],si.date
     from patents_global as p
     left outer join big_query_patent_to_security_interest as si
-    on ('US'||p.application_number_formatted=si.'US'||application_number_formatted_with_country)
+    on ('US'||p.application_number_formatted='US'||si.application_number_formatted_with_country)
     where si.security_interest_holder is not null and si.security_interest_holder[1] is not null and p.application_number_formatted is not null
     order by publication_number_full,date desc nulls last,publication_date desc nulls last
 );
