@@ -43,7 +43,7 @@ insert into big_query_assignment_documentid_by_pub (publication_number_full,reel
         array_agg(r.assignor[1]) as assignor
     from big_query_assignment_documentid as d
     join big_query_assignments as r on (d.reel_frame=r.reel_frame)
-    join patents_global as p on ('US'||p.application_number_formatted='US'||a.application_number_formatted_with_country)
+    join patents_global as p on ('US'||p.application_number_formatted='US'||d.application_number_formatted_with_country)
     where array_length(r.assignee,1)>0 and p.application_number_formatted is not null
     group by publication_number_full
 );
