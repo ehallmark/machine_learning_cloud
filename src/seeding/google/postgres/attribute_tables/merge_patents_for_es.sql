@@ -47,7 +47,6 @@ create table patents_global_merged (
     code varchar(32)[],
     code_count integer,
     tree varchar(32)[],
-    inventive boolean[],
     -- citations
     cited_publication_number_full varchar(32)[],
     cited_publication_number_with_country varchar(32)[],
@@ -199,7 +198,6 @@ insert into patents_global_merged (
         code,
         code_count,
         tree,
-        inventive,
         -- citations
         cited_publication_number_full,
         cited_publication_number_with_country,
@@ -345,10 +343,9 @@ insert into patents_global_merged (
         pc.pc_filing_date,
         coalesce(array_length(p.pc_publication_number_full,1),0),
         -- cpc
-        (select array_agg(distinct cpc_code.cpc) from unnest(p.code) as cpc_code(cpc)),
-        coalesce((select count(distinct cpc_code.cpc) from unnest(p.code) as cpc_code(cpc)), 0),
+        coalesce(cpc_tree.code,cpc_tree_by_fam.code),
+        coalesce(array_length(cpc_tree.code,1), coalesce(array_length(cpc_tree_by_fam.code,1), 0)),
         coalesce(cpc_tree.tree,cpc_tree_by_fam.tree),
-        p.inventive,
         -- citations
         cites.cited_publication_number_full,
         cites.cited_publication_number_with_country,
@@ -387,10 +384,10 @@ insert into patents_global_merged (
         latest_assignee.assignee,
         latest_assignee.date,
         latest_assignee.first_assignee,
-        latest_assignee_join.portfolio_size,
-        latest_assignee_join.entity_type,
-        latest_assignee_join.first_filing_date,
-        latest_assignee_join.last_filing_date,
+        latest_assignee.portfolio_size,
+        latest_assignee.entity_type,
+        latest_assignee.first_filing_date,
+        latest_assignee.last_filing_date,
         coalesce(array_length(latest_assignee.assignee,1),0),
         security_interest.security_interest_holder,
         security_interest.date,
@@ -398,10 +395,10 @@ insert into patents_global_merged (
         latest_assignee_fam.assignee,
         latest_assignee_fam.date,
         latest_assignee_fam.first_assignee,
-        latest_assignee_fam_join.portfolio_size,
-        latest_assignee_fam_join.entity_type,
-        latest_assignee_fam_join.first_filing_date,
-        latest_assignee_fam_join.last_filing_date,
+        latest_assignee_fam.portfolio_size,
+        latest_assignee_fam.entity_type,
+        latest_assignee_fam.first_filing_date,
+        latest_assignee_fam.last_filing_date,
         coalesce(array_length(latest_assignee_fam.assignee,1),0),
         security_interest_fam.security_interest_holder,
         security_interest_fam.date,
@@ -460,10 +457,8 @@ insert into patents_global_merged (
     left outer join big_query_priority_claims_by_pub as pc on (pc.publication_number_full=p.publication_number_full)
     left outer join big_query_patent_to_security_interest_by_pub as security_interest on (security_interest.publication_number_full=p.publication_number_full)
     left outer join big_query_patent_to_security_interest_by_fam as security_interest_fam on (security_interest_fam.publication_number_full=p.publication_number_full)
-    left outer join big_query_patent_to_latest_assignee_by_pub as latest_assignee on (latest_assignee.publication_number_full=p.publication_number_full)
-        left outer join big_query_assignee as latest_assignee_join on (latest_assignee_join.name=latest_assignee.first_assignee)
-    left outer join big_query_patent_to_latest_assignee_by_family as latest_assignee_fam on (latest_assignee_fam.family_id=p.family_id)
-        left outer join big_query_assignee as latest_assignee_fam_join on (latest_assignee_fam.first_assignee=latest_assignee_fam_join.name)
+    left outer join big_query_patent_to_latest_assignee_join_by_pub as latest_assignee on (latest_assignee.publication_number_full=p.publication_number_full)
+    left outer join big_query_patent_to_latest_assignee_join_by_family as latest_assignee_fam on (latest_assignee_fam.family_id=p.family_id)
     left outer join big_query_technologies2 as tech on (p.family_id=tech.family_id)
     left outer join big_query_keywords_tfidf as ke on (p.family_id=ke.family_id)
     left outer join big_query_sep_by_family as sep on (sep.family_id=p.family_id)

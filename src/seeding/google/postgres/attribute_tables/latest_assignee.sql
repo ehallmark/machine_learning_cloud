@@ -110,3 +110,60 @@ insert into big_query_patent_to_security_interest_by_fam (
     where family_id!='-1' and si.security_interest_holder is not null and si.security_interest_holder[1] is not null and p.application_number_formatted is not null
     order by family_id,date desc nulls last,publication_date desc nulls last
 );
+
+
+
+-- aggregations (additional)
+drop table big_query_patent_to_latest_assignee_join_by_pub;
+create table big_query_patent_to_latest_assignee_join_by_pub (
+    publication_number_full varchar(32) primary key,
+    first_assignee text not null,
+    assignee text[] not null,
+    date date,
+    portfolio_size integer,
+    entity_type varchar(32),
+    first_filing_date date,
+    last_filing_date date
+);
+
+insert into big_query_patent_to_latest_assignee_join_by_pub (
+    select
+       latest_assignee.publication_number_full,
+       latest_assignee.first_assignee,
+       latest_assignee.assignee,
+       latest_assignee.date,
+       latest_assignee_join.portfolio_size,
+       latest_assignee_join.entity_type,
+       latest_assignee_join.first_filing_date,
+       latest_assignee_join.last_filing_date
+    from big_query_patent_to_latest_assignee_by_pub as latest_assignee
+    join big_query_assignee as latest_assignee_join on (latest_assignee_join.name=latest_assignee.first_assignee)
+);
+
+-- by fam
+drop table big_query_patent_to_latest_assignee_join_by_family;
+create table big_query_patent_to_latest_assignee_join_by_family (
+    family_id varchar(32) primary key,
+    first_assignee text not null,
+    assignee text[] not null,
+    date date,
+    portfolio_size integer,
+    entity_type varchar(32),
+    first_filing_date date,
+    last_filing_date date
+);
+
+insert into big_query_patent_to_latest_assignee_join_by_family (
+    select
+       latest_fam_assignee.family_id,
+       latest_fam_assignee.first_assignee,
+       latest_fam_assignee.assignee,
+       latest_fam_assignee.date,
+       latest_assignee_fam_join.portfolio_size,
+       latest_assignee_fam_join.entity_type,
+       latest_assignee_fam_join.first_filing_date,
+       latest_assignee_fam_join.last_filing_date
+    from big_query_patent_to_latest_assignee_by_family as latest_fam_assignee
+    join big_query_assignee as latest_assignee_fam_join on (latest_assignee_fam_join.name=latest_fam_assignee.first_assignee)
+);
+
