@@ -210,8 +210,6 @@ public class GlobalParser {
             if(val.length()>4 && !val.contains("/")) {
                 val = val + "/00"; // MAIN GROUP
             }
-            val = val.replace("/", "\\/");
-            val = val.replace("\\\\/", "\\/");
             return QueryBuilders.queryStringQuery(Attributes.TREE+":"+val).defaultOperator(Operator.AND);
         });
 
@@ -379,6 +377,7 @@ public class GlobalParser {
             }
         }
 
+
         // check for transformation
         if(fullAttr!=null) {
             Function3<String, String, String, QueryBuilder> builder = transformationsForAttr.getOrDefault(fullAttr, defaultTransformation);
@@ -432,9 +431,14 @@ public class GlobalParser {
 
     public QueryBuilder parseAcclaimQuery(String text) {
         if(text==null || text.isEmpty()) return null;
+        text = text
+                .replace(" to "," TO ")
+                .replace("/", "\\/")
+                .replace("\\\\/", "\\/");
+        System.out.println("Final parse string: "+text);
         Query query;
         try {
-            query = parser.parse(text.replace(" to "," TO "));
+            query = parser.parse(text);
         } catch(Exception e) {
             throw new RuntimeException("Parse error: "+e.getMessage());
         }
