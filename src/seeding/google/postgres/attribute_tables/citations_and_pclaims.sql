@@ -52,7 +52,7 @@ create table big_query_citations_by_pub (
 
 insert into big_query_citations_by_pub (
     select publication_number_full,
-    array_agg(cited_publication_number),
+    array_agg(cited_publication_number_full),
     array_agg(cited_publication_number_with_country),
     array_agg(cited_publication_number),
     array_agg(cited_application_number_formatted_with_country),

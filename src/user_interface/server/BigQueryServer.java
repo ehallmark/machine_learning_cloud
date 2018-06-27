@@ -269,12 +269,12 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Execution Date", Attributes.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("Original Assignee", Attributes.ASSIGNEES);
             humanAttrToJavaAttrMap.put("Inventors", Attributes.INVENTORS);
-            humanAttrToJavaAttrMap.put("Backward Citations", Constants.CITATIONS);
+            humanAttrToJavaAttrMap.put("Citations", Constants.CITATIONS);
             humanAttrToJavaAttrMap.put("Claim Text", Attributes.CLAIMS);
             humanAttrToJavaAttrMap.put("Description Text", Attributes.DESCRIPTION);
             humanAttrToJavaAttrMap.put("Priority Claims", Attributes.PRIORITY_CLAIMS);
             humanAttrToJavaAttrMap.put("Assignments", Attributes.ASSIGNMENTS);
-            humanAttrToJavaAttrMap.put("Citations", Attributes.RCITATIONS);
+            humanAttrToJavaAttrMap.put("Forward Citations", Attributes.RCITATIONS);
             humanAttrToJavaAttrMap.put("Cited Filing Date", Attributes.RCITE_FILING_DATE);
             humanAttrToJavaAttrMap.put("Cited Type", Attributes.RCITE_TYPE);
             humanAttrToJavaAttrMap.put("Cited Category", Attributes.RCITE_CATEGORY);
@@ -301,8 +301,8 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Priority Claim Application Number w/ Country", Attributes.PC_APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY);
             humanAttrToJavaAttrMap.put("Priority Claim Family ID", Attributes.PC_FAMILY_ID);
             humanAttrToJavaAttrMap.put("Priority Filing Date", Attributes.PC_FILING_DATE);
-            humanAttrToJavaAttrMap.put("Number of Backward Citations", Attributes.RCITATIONS_COUNT);
-            humanAttrToJavaAttrMap.put("Number of Forward Citations", Attributes.CITATIONS_COUNT);
+            humanAttrToJavaAttrMap.put("Number of Citations", Attributes.CITATIONS_COUNT);
+            humanAttrToJavaAttrMap.put("Number of Forward Citations", Attributes.RCITATIONS_COUNT);
             humanAttrToJavaAttrMap.put("Number of CPC Codes", Attributes.CODE_COUNT);
             humanAttrToJavaAttrMap.put("Number of Priority Claims", Attributes.PRIORITY_CLAIMS_COUNT);
             humanAttrToJavaAttrMap.put("Number of Inventors", Attributes.INVENTORS_COUNT);
