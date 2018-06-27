@@ -1557,6 +1557,7 @@ public class BigQueryServer extends SimilarPatentServer {
         String file = req.queryParams("file");
         boolean defaultFile = Boolean.valueOf(req.queryParamOrDefault("defaultFile","false"));
         boolean shared = Boolean.valueOf(req.queryParamOrDefault("shared","false"));
+        boolean preset = Boolean.valueOf(req.queryParamOrDefault("preset","false"));
         String userGroup = getUserGroupFor(req.session());
         String user = req.session().attribute("username");
         if(user==null||user.isEmpty()) {
@@ -1575,7 +1576,8 @@ public class BigQueryServer extends SimilarPatentServer {
                 }
             }
         } else {
-            filename = baseFolder + (shared ? userGroup : user) + "/" + file;
+            String group = (shared? userGroup : (preset? PRESET_USER_GROUP : user));
+            filename = baseFolder + group + "/" + file;
         }
 
         Map<String,Object> data = getMapFromFile(new File(filename),true);
@@ -2698,7 +2700,6 @@ public class BigQueryServer extends SimilarPatentServer {
 
                                                                 ),div().withClass("tab-pane").attr("role","tabpanel").withId("datasets-tree").with(
                                                                         ul().with(
-                                                                                getDatasetsForUser(PRESET_USER_GROUP,false,"Preset Datasets"),
                                                                                 getDatasetsForUser(req.session().attribute("username"),true,"My Datasets"),
                                                                                 getDatasetsForUser(userGroup,true, "Shared Datasets")
                                                                         )

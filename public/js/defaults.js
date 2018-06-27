@@ -919,9 +919,11 @@ $(document).ready(function() {
             $loaders.hide();
         } else if(data.hasOwnProperty('file')) {
             // need to get data
-            var defaultFile = node === null || !node.data.deletable;
+            var defaultFile = node === null;
             var shared = false;
+            var preset = false;
             if(node!==null) {
+                preset = !node.data.deletable;
                 var nodeData = node;
                 var parents = [];
                 while(typeof nodeData.text !== 'undefined') {
@@ -943,6 +945,7 @@ $(document).ready(function() {
                 data: {
                     file: data.file,
                     shared: shared,
+                    preset: preset,
                     defaultFile: defaultFile
                 },
                 success: function(data) {
