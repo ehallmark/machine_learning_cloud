@@ -2448,7 +2448,7 @@ public class BigQueryServer extends SimilarPatentServer {
         } else return Collections.emptyMap();
     }
 
-    public static List<String> searchForIds(String username, String[] query) {
+    public static List<String> searchForIds(String username, String[] query, boolean shared) {
         List<String> ret = new ArrayList<>();
         if(query==null||query.length==0) return ret;
         File folder = new File(Constants.USER_DATASET_FOLDER+username+"/");
@@ -2460,6 +2460,11 @@ public class BigQueryServer extends SimilarPatentServer {
             String[] parentDirs = (String[])templateMap.get("parentDirs");
             Pair<Map<String, Object>, List<FormTemplate>> currentDirectory = directoryStructure;
             StringJoiner toMatch = new StringJoiner("<<>>");
+            if(shared) {
+                toMatch.add("Shared Datasets");
+            } else {
+                toMatch.add("My Datasets");
+            }
             if (parentDirs != null) { // build directory as necessary
                 //System.out.println("Parent Dirs for "+file.getName()+": "+Arrays.toString(parentDirs));
                 for (String dir : parentDirs) {
