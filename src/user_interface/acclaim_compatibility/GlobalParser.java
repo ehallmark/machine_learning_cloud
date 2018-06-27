@@ -391,11 +391,11 @@ public class GlobalParser {
                 if(val.endsWith("\"") && val.length()>1) {
                     val = val.substring(0, val.length()-1);
                 }
-                List<String> userDatasets = BigQueryServer.searchForIds(user, val.split("/"));
+                List<String> userDatasets = BigQueryServer.searchForIds(user, val.split("/"), false);
                 List<String> userGroupDatasets = Collections.emptyList();
                 allDatasets.addAll(userDatasets);
                 if(allDatasets.isEmpty()) {
-                    userGroupDatasets = BigQueryServer.searchForIds(userGroup, val.split("/"));
+                    userGroupDatasets = BigQueryServer.searchForIds(userGroup, val.split("/"), true);
                     allDatasets.addAll(userGroupDatasets);
                 }
                 if(allDatasets.size()>0) {

@@ -1973,6 +1973,8 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         var text = $anchor.text();
                         if(text && text.trim().length > 0) {
                             $anchor.text(text+' - ('+node.data['assetcount']+')');
+                        } else {
+                            $anchor.text(text);
                         }
                     }
                 }
