@@ -1972,7 +1972,8 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                     var $anchor = $(elem).find('a');
                     if($anchor && $anchor.length>0) {
                         // hack to add icon back
-                        $(elem).find('i.jstree-icon').attr('class', 'jstree-icon jstree-themeicon jstree-file jstree-themeicon-custom');
+                        $(elem).find('i.jstree-icon').attr('class', 'jstree-icon jstree-themeicon jstree-file jstree-themeicon-custom')
+                            .css('margin-left', '20px');
                         var text = $anchor.text();
                         if(text && text.trim().length > 0) {
                             $anchor.text(text+' - ('+node.data['assetcount']+')');
