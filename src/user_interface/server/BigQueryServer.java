@@ -317,7 +317,12 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Number of Latest Assignees", Attributes.LATEST_ASSIGNEE_COUNT);
             humanAttrToJavaAttrMap.put("Number of Latest Assignees (by Family)", Attributes.LATEST_FAM_ASSIGNEE_COUNT);
             humanAttrToJavaAttrMap.put("Pivot Table", Constants.PIVOT_FUNCTION_TABLE_CHART);
-
+            // ACCLAIM RELATED
+            humanAttrToJavaAttrMap.put("Dataset Path Name (eg. RFID:\"My Datasets/Dataset 1\")", "RFID");
+            humanAttrToJavaAttrMap.put("2nd Dataset Path Name", "RFID2");
+            humanAttrToJavaAttrMap.put("Document Status (eg. DOC_STATUS:ACTIVE)", "DOC_STATUS");
+            humanAttrToJavaAttrMap.put("Document Type (eg. DT:G)", "DT");
+            humanAttrToJavaAttrMap.put("Patent Type (eg. PT:U OR PT:RE)", "PT");
             buildJavaToHumanAttrMap();
 
         }

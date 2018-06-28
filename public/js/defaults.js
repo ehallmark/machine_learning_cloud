@@ -18,7 +18,8 @@ $(document).ready(function() {
     $('.miniTip2').miniTip({
         title: 'Acclaim Expert Search Syntax',
         event: 'click',
-        content: "<div>Supports most functionality available in the Acclaim Expert Search form.</div><div>Note: To query by research folder (RFID), please use the Dataset Name Filter.</div><div>Supported Fields: </div>"+$('#acclaim-supported-fields').html()
+        maxW: '500px',
+        content: "<div>Supports most functionality available in the Acclaim Expert Search form.</div><div>Supported Fields: </div>"+$('#acclaim-supported-fields').html()
     });
 
 
