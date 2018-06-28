@@ -2571,7 +2571,7 @@ public class BigQueryServer extends SimilarPatentServer {
         req.session().removeAttribute("message");
         List<Pair<String,String>> acclaimAttrs;
         if(authorized) {
-            acclaimAttrs = Constants.acclaimAttrs;
+            acclaimAttrs = Attributes.acclaimAttrs;
         } else {
             acclaimAttrs = Collections.emptyList();
         }
