@@ -8,5 +8,5 @@ java -cp target/classes:"target/dependency/*" -Xms5000m -Xmx5000m elasticsearch.
 # backup
 rsync -arv /home/ehallmark/repos/machine_learning_cloud/ /usb/machine_learning_cloud_backup/
 
--- dump all
+# dump all
 pg_dump -Fc --dbname=postgresql://postgres:password@127.0.0.1:5432/patentdb > /usb/big_query_database.dump
