@@ -192,7 +192,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             ArraySeries d = data.get(i);
             double sum = 0d;
             int[] color = AbstractChart.getColor(i, 0);
-            outerColors.add(AbstractChart.innerRadialColorReference(color));
+            outerColors.add(new RgbaColor(color[0], color[1], color[2], 1f));
             int p = 0;
             for (List point : d.getData()) {
                 combinedSeries.addPoint(point);

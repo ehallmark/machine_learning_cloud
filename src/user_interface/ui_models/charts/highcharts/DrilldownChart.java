@@ -37,7 +37,7 @@ public class DrilldownChart {
             ArraySeries series = seriesPair.getRight();
             String seriesName = series.getName();
             groupesSeries.addPoint(new DrilldownParentPoint(seriesName, seriesPair.getFirst(),id));
-            drilldownSeries.add(createDrilldownSeries(color, series, id, colorPointSeriesByPoint));
+            drilldownSeries.add(createDrilldownSeries(color, series, id, colorPointSeriesByPoint, isHistogram));
             i++;
         }
         if(colorGroupBySeriesByPoint) {
@@ -48,16 +48,21 @@ public class DrilldownChart {
         return drilldownOptions;
     }
 
-    private static DrilldownPointSeries createDrilldownSeries(int[] color, ArraySeries series, String id, boolean colorByPoint) {
+    private static DrilldownPointSeries createDrilldownSeries(int[] color, ArraySeries series, String id, boolean colorByPoint, boolean isHistogram) {
         DrilldownPointSeries newSeries = new DrilldownPointSeries();
         newSeries.setId(id);
         newSeries.setShowInLegend(false);
         newSeries.setColorByPoint(colorByPoint);
         newSeries.setData(series.getData());
-        List<ColorReference> colors = new ArrayList<>();
         if(colorByPoint) {
+            List<ColorReference> colors = new ArrayList<>();
             for (int i = 0; i < series.getData().size(); i++) {
-                int[] pointColor = AbstractChart.brighten(color[0], color[1], color[2], Math.min(90, i * 10));
+                int[] pointColor;
+                if(isHistogram) {
+                    pointColor = AbstractChart.getColor(i, 0);
+                } else {
+                    pointColor = AbstractChart.brighten(color[0], color[1], color[2], Math.min(90, i * 10));
+                }
                 colors.add(new RgbaColor(pointColor[0], pointColor[1], pointColor[2], 1f));
             }
             newSeries.setColors(colors);
