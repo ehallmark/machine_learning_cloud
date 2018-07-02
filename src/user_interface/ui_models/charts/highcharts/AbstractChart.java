@@ -33,9 +33,15 @@ public abstract class AbstractChart {
 
 
     public static int[] brighten(int r, int g, int b, int brightenPercent) {
-        r += (brightenPercent * (255-r)) / 100;
-        g += (brightenPercent * (255-g)) / 100;
-        b += (brightenPercent * (255-b)) / 100;
+        if (brightenPercent >= 0) {
+            r += (brightenPercent * (255 - r)) / 100;
+            g += (brightenPercent * (255 - g)) / 100;
+            b += (brightenPercent * (255 - b)) / 100;
+        } else {
+            r -= (brightenPercent * r) / 100;
+            g -= (brightenPercent * g) / 100;
+            b -= (brightenPercent * b) / 100;
+        }
         return new int[]{r,g,b};
     }
 
