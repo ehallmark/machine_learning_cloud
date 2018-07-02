@@ -337,6 +337,9 @@ $(document).ready(function() {
                             chart = updateDatagroupingByIndex(j,chartJson,chartJson.series);
                         } else {
                             // add dbl click to buttons
+                            if(!chartJson.hasOwnProperty('plotOptions')) {
+                                chartJson['plotOptions'] = {};
+                            }
                             if(!chartJson['plotOptions'].hasOwnProperty('series')) {
                                 chartJson['plotOptions']['series'] = {};
                             }
