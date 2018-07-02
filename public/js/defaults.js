@@ -348,9 +348,8 @@ $(document).ready(function() {
                             }
                             chartJson['plotOptions']['series']['point']['events'] = {
                                 contextmenu: function(e) {
-                                    if(e.hasOwnProperty('drilldown')) {
-                                        e.preventDefault();
-                                        return false;
+                                    if(this.hasOwnProperty('drilldown')) {
+                                        return true;
                                     }
                                     var chartId = $(this.series.chart.renderTo).attr('id');
                                     var value = this.options.name;
