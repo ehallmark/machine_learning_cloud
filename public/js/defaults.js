@@ -337,11 +337,9 @@ $(document).ready(function() {
                             chart = updateDatagroupingByIndex(j,chartJson,chartJson.series);
                         } else {
                             // add dbl click to buttons
-                            chartJson['plotOptions']['series']['events'] = {
-                                contextmenu: function() {
-                                    alert('Right click on series!');
-                                }
-                            };
+                            if(!chartJson['plotOptions'].hasOwnProperty('series')) {
+                                chartJson['plotOptions']['series'] = {};
+                            }
                             if(!chartJson['plotOptions']['series'].hasOwnProperty('point')) {
                                 chartJson['plotOptions']['series']['point'] = {};
                             }
