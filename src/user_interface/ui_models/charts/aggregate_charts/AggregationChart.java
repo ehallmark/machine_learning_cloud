@@ -6,6 +6,7 @@ import com.googlecode.wickedcharts.highcharts.options.DataLabels;
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.PixelOrPercent;
 import com.googlecode.wickedcharts.highcharts.options.color.ColorReference;
+import com.googlecode.wickedcharts.highcharts.options.color.RgbaColor;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
@@ -197,7 +198,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 combinedSeries.addPoint(point);
                 sum += ((Number) point.get(1)).doubleValue();
                 int[] innerColor = AbstractChart.getColor(i, Math.min(90, p*10));
-                innerColors.add(AbstractChart.outerRadialColorReference(color, innerColor));
+                innerColors.add(new RgbaColor(innerColor[0], innerColor[1], innerColor[2], 1f));
                 p++;
             }
             series.addPoint(Arrays.asList(d.getName(), sum));

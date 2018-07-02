@@ -1,6 +1,8 @@
 package user_interface.ui_models.charts.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.options.Options;
+import com.googlecode.wickedcharts.highcharts.options.color.ColorReference;
+import com.googlecode.wickedcharts.highcharts.options.color.RgbaColor;
 import org.nd4j.linalg.primitives.Pair;
 
 import java.util.ArrayList;
@@ -11,34 +13,57 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DrilldownChart {
     public static Options createDrilldownChart(boolean isHistogram, boolean swapAxis, Options baseOptions, List<Pair<Number,ArraySeries>> baseSeries) {
         ExtendedPointSeries groupesSeries = new ExtendedPointSeries();
-        if(isHistogram) {
-            groupesSeries.setShowInLegend(false);
-            groupesSeries.setColorByPoint(!swapAxis);
-        } else {
-            groupesSeries.setColorByPoint(true);
-        }
+        groupesSeries.setShowInLegend(false);
+        boolean colorGroupBySeriesByPoint = !isHistogram || !swapAxis;
+        boolean colorPointSeriesByPoint = !isHistogram || swapAxis;
+        groupesSeries.setColorByPoint(colorGroupBySeriesByPoint);
+
         AtomicInteger inc = new AtomicInteger(0);
         List<DrilldownPointSeries> drilldownSeries = new ArrayList<>(baseSeries.size());
         DrilldownOptions drilldownOptions = new DrilldownOptions();
         drilldownOptions.copyFrom(baseOptions);
+        List<ColorReference> outerColors = new ArrayList<>();
+        int i = 0;
         for(Pair<Number,ArraySeries> seriesPair : baseSeries) {
+            int[] color = AbstractChart.getColor(i, 0);
+            if(colorGroupBySeriesByPoint) {
+                if (isHistogram) {
+                    outerColors.add(new RgbaColor(color[0], color[1], color[2], 1f));
+                } else {
+                    outerColors.add(AbstractChart.radialColorReference(color));
+                }
+            }
             String id = "drilldown"+String.valueOf(inc.getAndIncrement());
             ArraySeries series = seriesPair.getRight();
             String seriesName = series.getName();
             groupesSeries.addPoint(new DrilldownParentPoint(seriesName, seriesPair.getFirst(),id));
-            drilldownSeries.add(createDrilldownSeries(series, id, !isHistogram || swapAxis, false));
+            drilldownSeries.add(createDrilldownSeries(color, series, id, colorPointSeriesByPoint));
+            i++;
+        }
+        if(colorGroupBySeriesByPoint) {
+            groupesSeries.setColors(outerColors);
         }
         drilldownOptions.setDrilldownData(drilldownSeries);
         drilldownOptions.setSeries(Collections.singletonList(groupesSeries));
         return drilldownOptions;
     }
 
-    private static DrilldownPointSeries createDrilldownSeries(ArraySeries series, String id, boolean colorByPoint, boolean showInLegend) {
+    private static DrilldownPointSeries createDrilldownSeries(int[] color, ArraySeries series, String id, boolean colorByPoint) {
         DrilldownPointSeries newSeries = new DrilldownPointSeries();
         newSeries.setId(id);
-        newSeries.setShowInLegend(showInLegend);
+        newSeries.setShowInLegend(false);
         newSeries.setColorByPoint(colorByPoint);
         newSeries.setData(series.getData());
+        List<ColorReference> colors = new ArrayList<>();
+        if(colorByPoint) {
+            for (int i = 0; i < series.getData().size(); i++) {
+                int[] pointColor = AbstractChart.brighten(color[0], color[1], color[2], Math.min(90, i * 10));
+                colors.add(new RgbaColor(pointColor[0], pointColor[1], pointColor[2], 1f));
+            }
+            newSeries.setColors(colors);
+        } else {
+            newSeries.setColor(new RgbaColor(color[0], color[1], color[2], 1f));
+        }
         return newSeries;
     }
 }
