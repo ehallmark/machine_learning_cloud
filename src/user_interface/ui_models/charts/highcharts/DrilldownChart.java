@@ -57,13 +57,15 @@ public class DrilldownChart {
         if(colorByPoint) {
             List<ColorReference> colors = new ArrayList<>();
             for (int i = 0; i < series.getData().size(); i++) {
-                int[] pointColor;
+                ColorReference colorReference;
                 if(isHistogram) {
-                    pointColor = AbstractChart.getColor(i, 0);
+                    int[] pointColor = AbstractChart.getColor(i, 0);
+                    colorReference = new RgbaColor(pointColor[0], pointColor[1], pointColor[2], 1f);
                 } else {
-                    pointColor = AbstractChart.brighten(color[0], color[1], color[2], Math.min(90, i * 10));
+                    int[] pointColor = AbstractChart.brighten(color[0], color[1], color[2], Math.min(90, i * 10));
+                    colorReference = AbstractChart.radialColorReference(pointColor);
                 }
-                colors.add(new RgbaColor(pointColor[0], pointColor[1], pointColor[2], 1f));
+                colors.add(colorReference);
             }
             newSeries.setColors(colors);
         } else {
