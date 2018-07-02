@@ -45,6 +45,12 @@ public class PieChart extends AbstractChart {
                 series.setInnerSize(new PixelOrPercent(55, PixelOrPercent.Unit.PERCENT));
                 series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT));
             }
+            if(options instanceof DrilldownOptions) {
+                ((DrilldownOptions) options).getDrilldownData().forEach(series->{
+                    series.setInnerSize(new PixelOrPercent(55, PixelOrPercent.Unit.PERCENT));
+                    series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT));
+                });
+            }
         }
         for(Series<?> series : options.getSeries()) {
             if(series.getDataLabels()==null) {
