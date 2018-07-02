@@ -30,8 +30,8 @@ public abstract class AbstractChart {
     public static ColorReference radialColorReference(int[] color) {
         int[] darkened = brighten(color[0], color[1], color[2], -30);
         return new RadialGradient().setCx(0.5).setCy(0.5).setR(0.5)
-                .addStop(0.0, new RgbaColor(darkened[0], darkened[1], darkened[2], 1f))
-                .addStop(0.5, new RgbaColor(color[0], color[1], color[2], 1f))
+                .addStop(0.3, new RgbaColor(darkened[0], darkened[1], darkened[2], 1f))
+                .addStop(0.7, new RgbaColor(color[0], color[1], color[2], 1f))
                 .addStop(1.0, new RgbaColor(darkened[0], darkened[1], darkened[2], 1f));
     }
 

@@ -39,14 +39,14 @@ public class PieChart extends AbstractChart {
                 colorReferences.add(colorRef);
             }
             for(Series series : options.getSeries()) {
-                series.setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
+                series.setInnerSize(new PixelOrPercent(55, PixelOrPercent.Unit.PERCENT));
                 series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT));
             }
             options.setColors(colorReferences);
             if (options instanceof DrilldownOptions) {
                 List<? extends Series> drilldowns = ((DrilldownOptions) options).getDrilldownData();
                 drilldowns.forEach(series->{
-                    series.setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
+                    series.setInnerSize(new PixelOrPercent(55, PixelOrPercent.Unit.PERCENT));
                     series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT));
                 });
             }
