@@ -197,7 +197,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
                 combinedSeries.addPoint(point);
                 sum += ((Number) point.get(1)).doubleValue();
                 int[] innerColor = AbstractChart.getColor(i, Math.min(90, p*10));
-                innerColors.add(AbstractChart.outerRadialColorReference(innerColor));
+                innerColors.add(AbstractChart.outerRadialColorReference(color, innerColor));
                 p++;
             }
             series.addPoint(Arrays.asList(d.getName(), sum));

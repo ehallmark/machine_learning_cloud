@@ -38,15 +38,17 @@ public abstract class AbstractChart {
     public static ColorReference innerRadialColorReference(int[] color) {
         int[] darkened = brighten(color[0], color[1], color[2], -30);
         return new RadialGradient().setCx(0.5).setCy(0.5).setR(0.5)
-                .addStop(0.3, new RgbaColor(darkened[0], darkened[1], darkened[2], 1f))
-                .addStop(0.8, new RgbaColor(color[0], color[1], color[2], 1f));
+                .addStop(0.0, new RgbaColor(darkened[0], darkened[1], darkened[2], 1f))
+                .addStop(0.75, new RgbaColor(color[0], color[1], color[2], 1f))
+                .addStop(1.0, new RgbaColor(color[0], color[1], color[2], 1f));
     }
 
-    public static ColorReference outerRadialColorReference(int[] color) {
+    public static ColorReference outerRadialColorReference(int[] innerColor, int[] color) {
         int[] darkened = brighten(color[0], color[1], color[2], -30);
         return new RadialGradient().setCx(0.5).setCy(0.5).setR(0.5)
-                .addStop(0.2, new RgbaColor(color[0], color[1], color[2], 1f))
-                .addStop(0.7, new RgbaColor(darkened[0], darkened[1], darkened[2], 1f));
+                .addStop(0.0, new RgbaColor(innerColor[0], innerColor[1], innerColor[2], 1f))
+                .addStop(0.25, new RgbaColor(color[0], color[1], color[2], 1f))
+                .addStop(1.0, new RgbaColor(darkened[0], darkened[1], darkened[2], 1f));
     }
 
     public static int[] brighten(int r, int g, int b, int brightenPercent) {
