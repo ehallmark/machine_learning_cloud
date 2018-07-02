@@ -88,8 +88,9 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             limit = null; // turns off accumulating remaining pie piece
         }
         parentOptions = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,limit,drilldown,includeBlank);
-        boolean applyPieChartCenterFill = !isGrouped;
-        return Collections.singletonList(new PieChart(parentOptions, title,  subtitle, collectAttr, collectorType, applyPieChartCenterFill));
+        boolean applyPieChartCenterFill = !isGrouped || drilldown;
+        boolean setColors = !drilldown;
+        return Collections.singletonList(new PieChart(parentOptions, title,  subtitle, collectAttr, collectorType, applyPieChartCenterFill, setColors));
     }
 
     @Override

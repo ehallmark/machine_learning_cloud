@@ -18,7 +18,7 @@ public class PieChart extends AbstractChart {
         return "pie";
     }
 
-    public PieChart(Options _options, String title, String subTitle, String yLabel, Type collectorType, boolean applyPieChartCenterFill) {
+    public PieChart(Options _options, String title, String subTitle, String yLabel, Type collectorType, boolean applyPieChartCenterFill, boolean setColors) {
         SeriesType type = SeriesType.PIE;
         System.out.println("Starting to build: "+type);
         options=_options;
@@ -33,16 +33,18 @@ public class PieChart extends AbstractChart {
         if(applyPieChartCenterFill) {
             // add coloring
             List<int[]> colors = RGB_COLORS;
-            List<ColorReference> colorReferences = new ArrayList<>(colors.size());
-            for (int[] color : colors) {
-                ColorReference colorRef = radialColorReference(color);
-                colorReferences.add(colorRef);
+            if(setColors) {
+                List<ColorReference> colorReferences = new ArrayList<>(colors.size());
+                for (int[] color : colors) {
+                    ColorReference colorRef = radialColorReference(color);
+                    colorReferences.add(colorRef);
+                }
+                options.setColors(colorReferences);
             }
             for(Series series : options.getSeries()) {
                 series.setInnerSize(new PixelOrPercent(55, PixelOrPercent.Unit.PERCENT));
                 series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT));
             }
-            options.setColors(colorReferences);
         }
         for(Series<?> series : options.getSeries()) {
             if(series.getDataLabels()==null) {
