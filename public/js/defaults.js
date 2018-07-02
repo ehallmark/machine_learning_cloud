@@ -348,7 +348,10 @@ $(document).ready(function() {
                             }
                             chartJson['plotOptions']['series']['point']['events'] = {
                                 contextmenu: function(e) {
-                                    alert('Right click on point!');
+                                    var chartId = $(this.series.chart.renderTo).attr('id');
+                                    var value = this.options.name;
+                                    var seriesIndex = this.series.index;
+                                    var pointIndex = this.index;
                                 }
                             };
                             chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
