@@ -38,9 +38,9 @@ public abstract class AbstractChart {
             g += (brightenPercent * (255 - g)) / 100;
             b += (brightenPercent * (255 - b)) / 100;
         } else {
-            r -= (brightenPercent * r) / 100;
-            g -= (brightenPercent * g) / 100;
-            b -= (brightenPercent * b) / 100;
+            r += (brightenPercent * r) / 100;
+            g += (brightenPercent * g) / 100;
+            b += (brightenPercent * b) / 100;
         }
         return new int[]{r,g,b};
     }
