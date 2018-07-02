@@ -1,10 +1,13 @@
 package user_interface.ui_models.charts.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.options.*;
+import com.googlecode.wickedcharts.highcharts.options.color.*;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import user_interface.ui_models.charts.aggregations.Type;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by ehallmark on 2/14/17.
@@ -15,7 +18,7 @@ public class PieChart extends AbstractChart {
         return "pie";
     }
 
-    public PieChart(Options _options, String title, String subTitle, String yLabel, Type collectorType) {
+    public PieChart(Options _options, String title, String subTitle, String yLabel, Type collectorType, boolean applyPieChartCenterFill) {
         SeriesType type = SeriesType.PIE;
         System.out.println("Starting to build: "+type);
         options=_options;
@@ -26,8 +29,31 @@ public class PieChart extends AbstractChart {
                 .setSubtitle(new Title(subTitle))
                 .setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}%</b><br/>"+collectorType+": <b> {point.y} "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
-                .setyAxis(new Axis())
-                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT)).setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
+                .setyAxis(new Axis());
+        if(applyPieChartCenterFill) {
+            // add coloring
+            List<int[]> colors = RGB_COLORS;
+            List<ColorReference> colorReferences = new ArrayList<>(colors.size());
+            for (int[] color : colors) {
+                int[] darkened = brighten(color[0], color[1], color[2], -30);
+                ColorReference colorRef = new RadialGradient().setCx(0.5).setCy(0.5).setR(0.5)
+                        .addStop(0.5, new RgbaColor(color[0], color[1], color[2], 1f))
+                        .addStop(1.0, new RgbaColor(darkened[0], darkened[1], darkened[2], 1f));
+                colorReferences.add(colorRef);
+            }
+            for(Series series : options.getSeries()) {
+                series.setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
+                series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT));
+            }
+            options.setColors(colorReferences);
+            if (options instanceof DrilldownOptions) {
+                List<? extends Series> drilldowns = ((DrilldownOptions) options).getDrilldownData();
+                drilldowns.forEach(series->{
+                    series.setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
+                    series.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT));
+                });
+            }
+        }
         for(Series<?> series : options.getSeries()) {
             if(series.getDataLabels()==null) {
                 series.setDataLabels(new DataLabels(true)

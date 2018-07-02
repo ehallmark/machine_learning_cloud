@@ -11,7 +11,7 @@ import java.util.List;
  */
 public abstract class AbstractChart {
 
-    private static final List<int[]> RGB_COLORS = Arrays.asList(
+    public static final List<int[]> RGB_COLORS = Arrays.asList(
             new int[]{124,181,236},
             new int[]{67,67,72},
             new int[]{144,237,125},
@@ -24,11 +24,19 @@ public abstract class AbstractChart {
             new int[]{145,232,225}
     );
 
-    private static String convertToRGB(int r, int g, int b, int brightenPercent) {
+    public static String convertToRGB(int r, int g, int b, int brightenPercent) {
         r += (brightenPercent * (255-r)) / 100;
         g += (brightenPercent * (255-g)) / 100;
         b += (brightenPercent * (255-b)) / 100;
         return "rgb("+r+","+g+","+b+", 1.0)";
+    }
+
+
+    public static int[] brighten(int r, int g, int b, int brightenPercent) {
+        r += (brightenPercent * (255-r)) / 100;
+        g += (brightenPercent * (255-g)) / 100;
+        b += (brightenPercent * (255-b)) / 100;
+        return new int[]{r,g,b};
     }
 
     public static String getColor(int i, int brightenPercent) {

@@ -23,7 +23,6 @@ import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStat
 import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.nd4j.linalg.primitives.Pair;
-import seeding.Constants;
 import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;

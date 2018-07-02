@@ -10,7 +10,6 @@ import org.elasticsearch.indices.TermsLookup;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.google.elasticsearch.attributes.DateRangeAttribute;
 import seeding.google.elasticsearch.attributes.SignificantTermsAttribute;
@@ -89,7 +88,8 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
             limit = null; // turns off accumulating remaining pie piece
         }
         parentOptions = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,limit,drilldown,includeBlank);
-        return Collections.singletonList(new PieChart(parentOptions, title,  subtitle, collectAttr, collectorType));
+        boolean applyPieChartCenterFill = drilldown || !isGrouped;
+        return Collections.singletonList(new PieChart(parentOptions, title,  subtitle, collectAttr, collectorType, applyPieChartCenterFill));
     }
 
     @Override
