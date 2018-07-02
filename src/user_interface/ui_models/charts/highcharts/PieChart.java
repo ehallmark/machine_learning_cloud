@@ -35,10 +35,7 @@ public class PieChart extends AbstractChart {
             List<int[]> colors = RGB_COLORS;
             List<ColorReference> colorReferences = new ArrayList<>(colors.size());
             for (int[] color : colors) {
-                int[] darkened = brighten(color[0], color[1], color[2], -30);
-                ColorReference colorRef = new RadialGradient().setCx(0.5).setCy(0.5).setR(0.5)
-                        .addStop(0.5, new RgbaColor(color[0], color[1], color[2], 1f))
-                        .addStop(1.0, new RgbaColor(darkened[0], darkened[1], darkened[2], 1f));
+                ColorReference colorRef = radialColorReference(color);
                 colorReferences.add(colorRef);
             }
             for(Series series : options.getSeries()) {

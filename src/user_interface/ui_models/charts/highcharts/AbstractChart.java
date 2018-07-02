@@ -2,6 +2,9 @@ package user_interface.ui_models.charts.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import com.googlecode.wickedcharts.highcharts.options.Options;
+import com.googlecode.wickedcharts.highcharts.options.color.ColorReference;
+import com.googlecode.wickedcharts.highcharts.options.color.RadialGradient;
+import com.googlecode.wickedcharts.highcharts.options.color.RgbaColor;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,13 +27,13 @@ public abstract class AbstractChart {
             new int[]{145,232,225}
     );
 
-    public static String convertToRGB(int r, int g, int b, int brightenPercent) {
-        r += (brightenPercent * (255-r)) / 100;
-        g += (brightenPercent * (255-g)) / 100;
-        b += (brightenPercent * (255-b)) / 100;
-        return "rgb("+r+","+g+","+b+", 1.0)";
+    public static ColorReference radialColorReference(int[] color) {
+        int[] darkened = brighten(color[0], color[1], color[2], -30);
+        return new RadialGradient().setCx(0.5).setCy(0.5).setR(0.5)
+                .addStop(0.0, new RgbaColor(darkened[0], darkened[1], darkened[2], 1f))
+                .addStop(0.5, new RgbaColor(color[0], color[1], color[2], 1f))
+                .addStop(1.0, new RgbaColor(darkened[0], darkened[1], darkened[2], 1f));
     }
-
 
     public static int[] brighten(int r, int g, int b, int brightenPercent) {
         if (brightenPercent >= 0) {
@@ -45,9 +48,9 @@ public abstract class AbstractChart {
         return new int[]{r,g,b};
     }
 
-    public static String getColor(int i, int brightenPercent) {
+    public static int[] getColor(int i, int brightenPercent) {
         int[] rgb = RGB_COLORS.get(i%RGB_COLORS.size());
-        return convertToRGB(rgb[0], rgb[1], rgb[2], brightenPercent);
+        return brighten(rgb[0], rgb[1], rgb[2], brightenPercent);
     }
 
     protected Options options;

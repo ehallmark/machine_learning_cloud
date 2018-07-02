@@ -5,6 +5,8 @@ import com.googlecode.wickedcharts.highcharts.options.Axis;
 import com.googlecode.wickedcharts.highcharts.options.DataLabels;
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.PixelOrPercent;
+import com.googlecode.wickedcharts.highcharts.options.color.ColorReference;
+import com.googlecode.wickedcharts.highcharts.options.color.RgbaColor;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
@@ -177,25 +179,26 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
 
     public static List<ArraySeries> flattenSeriesForDonutChart(List<ArraySeries> data, String seriesTitle) {
         ArraySeries combinedSeries = new ArraySeries();
-        combinedSeries.setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT))
-                .setInnerSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT));
+        combinedSeries.setSize(new PixelOrPercent( 90, PixelOrPercent.Unit.PERCENT))
+                .setInnerSize(new PixelOrPercent(65, PixelOrPercent.Unit.PERCENT));
         ArraySeries series = new ArraySeries();
         series.setName(seriesTitle);
-        series.setSize(new PixelOrPercent(60, PixelOrPercent.Unit.PERCENT))
+        series.setSize(new PixelOrPercent(65, PixelOrPercent.Unit.PERCENT))
+                .setInnerSize(new PixelOrPercent(40, PixelOrPercent.Unit.PERCENT))
                 .setDataLabels(new DataLabels(true).setColor(Color.WHITE).setDistance(-40));
-        List<String> outerColors = new ArrayList<>();
-        List<String> innerColors = new ArrayList<>();
+        List<ColorReference> outerColors = new ArrayList<>();
+        List<ColorReference> innerColors = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
             ArraySeries d = data.get(i);
             double sum = 0d;
-            String color = AbstractChart.getColor(i, 0);
-            outerColors.add(color);
+            int[] color = AbstractChart.getColor(i, 0);
+            outerColors.add(AbstractChart.radialColorReference(color));
             int p = 0;
             for (List point : d.getData()) {
                 combinedSeries.addPoint(point);
                 sum += ((Number) point.get(1)).doubleValue();
-                String innerColor = AbstractChart.getColor(i, Math.min(90, p*10));
-                innerColors.add(innerColor);
+                int[] innerColor = AbstractChart.getColor(i, Math.min(90, p*10));
+                innerColors.add(new RgbaColor(innerColor[0],innerColor[1],innerColor[2]));
                 p++;
             }
             series.addPoint(Arrays.asList(d.getName(), sum));
