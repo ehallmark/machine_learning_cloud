@@ -347,7 +347,7 @@ $(document).ready(function() {
                                 chartJson['plotOptions']['series']['point'] = {};
                             }
                             chartJson['plotOptions']['series']['point']['events'] = {
-                                contextmenu: function() {
+                                contextmenu: function(e) {
                                     alert('Right click on point!');
                                 }
                             };
