@@ -191,13 +191,13 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             ArraySeries d = data.get(i);
             double sum = 0d;
             int[] color = AbstractChart.getColor(i, 0);
-            outerColors.add(AbstractChart.radialColorReference(color));
+            outerColors.add(AbstractChart.innerRadialColorReference(color));
             int p = 0;
             for (List point : d.getData()) {
                 combinedSeries.addPoint(point);
                 sum += ((Number) point.get(1)).doubleValue();
                 int[] innerColor = AbstractChart.getColor(i, Math.min(90, p*10));
-                innerColors.add(AbstractChart.radialColorReference(innerColor));
+                innerColors.add(AbstractChart.outerRadialColorReference(innerColor));
                 p++;
             }
             series.addPoint(Arrays.asList(d.getName(), sum));
