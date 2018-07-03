@@ -37,7 +37,7 @@ public class HeatMapChart extends AbstractChart {
                 .setColorAxis(new ColorAxis().setMin(0).setMinColor(new HexColor("#FFFFFF")).setMaxColor(maxColor))
                 .setChartOptions(new ChartOptions().setHeight(550).setType(SeriesType.HEATMAP))
                 .setTitle(new Title(title))
-                .setLegend(new Legend(true).setAlign(HorizontalAlignment.RIGHT).setLayout(LegendLayout.VERTICAL).setVerticalAlign(VerticalAlignment.BOTTOM).setY(-25).setSymbolHeight(280))
+                .setLegend(new Legend(true).setAlign(HorizontalAlignment.RIGHT).setLayout(LegendLayout.VERTICAL).setVerticalAlign(VerticalAlignment.MIDDLE).setSymbolHeight(280))
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()))
                 .setExporting(new ExportingOptions().setEnabled(true))
                 //.setTooltip(new Tooltip().setEnabled(true).setShared(false).setUseHTML(true)
