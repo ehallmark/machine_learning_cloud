@@ -420,16 +420,16 @@ $(document).ready(function() {
                                                     var value = $(this).attr('value');
                                                     if(value==='delete') {
                                                         axis.axis.categories.splice(axisIndex, 1);
-                                                        for(var i = 0; i < axis.axis.series; i++) {
+                                                        for(var i = 0; i < axis.axis.series.length; i++) {
                                                             var series = axis.axis.series[i];
                                                             for(var j = 0; j < series.points.length; j++) {
                                                                 var point = series.points[j];
                                                                 if(isYAxis) {
-                                                                    if(point.x===axisIndex) {
+                                                                    if(point.y===axisIndex) {
                                                                         point.remove();
                                                                     }
                                                                 } else {
-                                                                    if(point.y===axisIndex) {
+                                                                    if(point.x===axisIndex) {
                                                                         point.remove();
                                                                     };
                                                                 }
