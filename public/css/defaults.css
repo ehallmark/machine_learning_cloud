@@ -380,3 +380,9 @@ textarea, .richtext > pre {
   background:#284570;
   border-radius:2px;
 }
+
+#context-menu-cntnr li form:hover{
+  color: white;
+  background:#F9F9F9;
+  border-radius:2px;
+}

@@ -473,7 +473,7 @@ $(document).ready(function() {
                                                         e.stopPropagation();
                                                         var value = $target.text();
                                                         var oldHtml = $li.html();
-                                                        $li.html('<form><input class="form-control" type="text" ></input><button type="submit">Update</button></form>');
+                                                        $li.html('<form><input class="form-control" type="text" /><button>Update</button></form>');
                                                         var $input = $li.find('input');
                                                         $input.val(value);
                                                         var $form = $li.find('form');
@@ -482,6 +482,9 @@ $(document).ready(function() {
                                                             $li.html(oldHtml);
                                                             $container.hide();
                                                             $(document).off("click");
+                                                        });
+                                                        $form.on('click', function(e) {
+                                                            e.stopPropagation();
                                                         });
                                                         $form.on('submit', function(e) {
                                                             e.preventDefault();
