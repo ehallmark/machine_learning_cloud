@@ -1,6 +1,11 @@
 package user_interface.ui_models.charts.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.options.*;
+import com.googlecode.wickedcharts.highcharts.options.color.ColorReference;
+import com.googlecode.wickedcharts.highcharts.options.color.HexColor;
+import com.googlecode.wickedcharts.highcharts.options.color.HighchartsColor;
+import com.googlecode.wickedcharts.highcharts.options.color.RgbaColor;
+import com.googlecode.wickedcharts.highcharts.options.heatmap.ColorAxis;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import lombok.Getter;
 import user_interface.ui_models.charts.aggregations.Type;
@@ -19,19 +24,23 @@ public class HeatMapChart extends AbstractChart {
         return "heatmap";
     }
 
-    public HeatMapChart(Options _options, String title, String subTitle, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, Type collectorType, List<String> xCategories, List<String> yCategories) {
-        String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
-        String xFormatStr = "{point.key}"+xAxisSuffix;
+    public HeatMapChart(Options _options, String title, String subTitle, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String valueLabel, String valueSuffix, int valueDecimals, Type collectorType, List<String> xCategories, List<String> yCategories) {
+        String valueFormatStr = "{point.value:."+valueDecimals+"f}"+valueSuffix;
+        String yFormatStr = "{point.y}"+yAxisSuffix;
+        String xFormatStr = "{point.x}"+xAxisSuffix;
         options=_options;
+        int[] color = getColor(0, 0);
+        ColorReference maxColor = new RgbaColor(color[0],color[1],color[2], 1f);
         options = options
+                .setColorAxis(new ColorAxis().setMin(0).setMinColor(new HexColor("#FFFFFF")).setMaxColor(maxColor))
                 .setChartOptions(new ChartOptions().setHeight(450).setType(SeriesType.HEATMAP))
                 .setTitle(new Title(title))
                 .setLegend(new Legend(true).setAlign(HorizontalAlignment.CENTER).setLayout(LegendLayout.HORIZONTAL).setVerticalAlign(VerticalAlignment.BOTTOM))
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()))
                 .setExporting(new ExportingOptions().setEnabled(true))
                 .setTooltip(new Tooltip().setEnabled(true).setShared(false).setUseHTML(true)
-                        .setHeaderFormat("<small>"+xFormatStr+"</small><table>")
-                        .setPointFormat("<tr><td><span style=\"color:{point.color}\">\u25CF</span> {series.name}</td><td> <b> "+yFormatStr+" "+yLabel+"</b></td></tr>")
+                        .setHeaderFormat("<small>"+yFormatStr+"</small><table>")
+                        .setPointFormat("<tr><td><span style=\"color:{point.color}\">\u25CF</span>"+xFormatStr+"</td><td> <b> "+valueFormatStr+" "+valueLabel+"</b></td></tr>")
                         .setFooterFormat("</table>")
                 )
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"));
@@ -52,6 +61,7 @@ public class HeatMapChart extends AbstractChart {
                 .setFormat("{y}")
                 .setY(-5)
         );
+        combinedSeries.setBorderWidth(1);
         for (int i = 0; i < options.getSeries().size(); i++) {
             ArraySeries arraySeries = (ArraySeries)options.getSeries().get(i);
             for(List point : arraySeries.getData()) {

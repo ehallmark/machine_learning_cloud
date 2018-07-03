@@ -10,6 +10,9 @@ import java.util.List;
 public class ArraySeries extends Series<List> {
     private static final long serialVersionUID = 1L;
 
+    @Getter @Setter
+    Integer borderWidth;
+
     @Setter @Getter
     protected List<ColorReference> colors;
 

@@ -45,16 +45,25 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         } else {
             collectAttr = BigQueryServer.fullHumanAttributeFor(collectAttr);
         }
-        String humanSearchType = collectAttr;
+        AbstractAttribute collectByAttr = findAttribute(collectByAttributes, collectAttr);
+        int valueDecimals = 0;
+        String valueSuffix = "";
+        if(collectByAttr != null && collectByAttr instanceof RangeAttribute) {
+            valueSuffix = ((RangeAttribute) collectByAttr).valueSuffix();
+        }
+        if(collectByAttr != null && collectByAttr.getType().equals("double")) {
+            valueDecimals = 1;
+        }
         String title = humanAttr + " "+chartTitle;
-
-
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
+        String yLabel = BigQueryServer.fullHumanAttributeFor(groupedByAttrName);
         String subtitle;
         AbstractAttribute groupByAttr = findAttribute(groupByAttributes, groupedByAttrName);
         subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
         String xAxisSuffix;
         String yAxisSuffix;
+        int yDecimals = 0;
+        int xDecimals = 0;
         if(attribute instanceof RangeAttribute) {
             xAxisSuffix = ((RangeAttribute) attribute).valueSuffix();
         } else {
@@ -65,6 +74,12 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         } else {
             yAxisSuffix = "";
         }
+        if(attribute != null && attribute.getType().equals("double")) {
+            xDecimals = 1;
+        }
+        if(groupByAttr != null && groupByAttr.getType().equals("double")) {
+            yDecimals = 1;
+        }
 
         Type collectorType = attrToCollectTypeMap.getOrDefault(attrName, Type.Count);
         Options parentOptions = new Options();
@@ -73,7 +88,7 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         List<String> xCategories = parentOptions.getSeries().isEmpty()? Collections.emptyList() :
                 ((ArraySeries)parentOptions.getSeries().get(0)).getData().stream().map(data->(String)data.get(0)).collect(Collectors.toList());
         List<String> yCategories = parentOptions.getSeries().stream().map(series->series.getName()).collect(Collectors.toList());
-        return Collections.singletonList(new HeatMapChart(parentOptions, title, subtitle, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0, collectorType, xCategories, yCategories));
+        return Collections.singletonList(new HeatMapChart(parentOptions, title, subtitle, xAxisSuffix, xDecimals, yAxisSuffix, yDecimals, humanAttr, yLabel, valueSuffix, valueDecimals, collectorType, xCategories, yCategories));
     }
 
 
