@@ -52,10 +52,7 @@ public class AggregateWordCloudChart extends AggregationChart<WordCloudChart> {
     public List<? extends WordCloudChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
         String humanAttr = SimilarPatentServer.humanAttributeFor(attrName);
         String collectAttr = attrToCollectByAttrMap.get(attrName);
-        Integer limit = attrToLimitMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);
-        if(limit > MAXIMUM_AGGREGATION_SIZE) {
-            limit = MAXIMUM_AGGREGATION_SIZE;
-        }
+        Integer limit = null; // turns off accumulating remaining pie piece
         if(collectAttr==null) {
             collectAttr = "Occurrences";
         } else {

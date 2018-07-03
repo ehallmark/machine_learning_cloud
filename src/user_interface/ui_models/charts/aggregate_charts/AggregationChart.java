@@ -386,9 +386,15 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             // check for max slices
             maxSlices = ((AggregatePieChart) this).attrToLimitMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);
             boolean includeRemaining = ((AggregatePieChart) this).attrToIncludeRemainingMap.getOrDefault(attrName, false);
+            if(maxSlices > AggregatePieChart.MAXIMUM_AGGREGATION_SIZE) maxSlices = AggregatePieChart.MAXIMUM_AGGREGATION_SIZE;
             if (includeRemaining) {
                 maxSlices = AggregatePieChart.MAXIMUM_AGGREGATION_SIZE;
             }
+            System.out.println("Max slices: " + maxSlices);
+        } else if(this instanceof AggregateWordCloudChart) {
+            // check for max slices
+            maxSlices = ((AggregateWordCloudChart) this).attrToLimitMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);
+            if(maxSlices > AggregatePieChart.MAXIMUM_AGGREGATION_SIZE) maxSlices = AggregatePieChart.MAXIMUM_AGGREGATION_SIZE;
             System.out.println("Max slices: " + maxSlices);
         }
         if (maxSlices == null) {

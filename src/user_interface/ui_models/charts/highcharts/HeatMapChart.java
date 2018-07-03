@@ -56,8 +56,8 @@ public class HeatMapChart extends AbstractChart {
             ArraySeries arraySeries = (ArraySeries)options.getSeries().get(i);
             for(List point : arraySeries.getData()) {
                 List<Object> newData = new ArrayList<>(3);
+                newData.add(xCategories.indexOf((String)point.get(0)));
                 newData.add(i);
-                newData.add(point.get(0));
                 newData.add(point.get(1));
                 combinedSeries.addPoint(newData);
             }

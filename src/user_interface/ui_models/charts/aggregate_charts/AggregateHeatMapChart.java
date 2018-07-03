@@ -12,6 +12,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.charts.aggregations.Type;
+import user_interface.ui_models.charts.highcharts.ArraySeries;
 import user_interface.ui_models.charts.highcharts.ColumnChart;
 import user_interface.ui_models.charts.highcharts.HeatMapChart;
 
@@ -48,7 +49,6 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         String title = humanAttr + " "+chartTitle;
 
 
-        List<String> yCategories = getCategoriesForAttribute(attribute);
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         String subtitle;
         AbstractAttribute groupByAttr = findAttribute(groupByAttributes, groupedByAttrName);
@@ -70,7 +70,9 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         Options parentOptions = new Options();
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         parentOptions = createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,null,false,includeBlank);
-        List<String> xCategories = parentOptions.getSeries().stream().map(series->series.getName()).collect(Collectors.toList());
+        List<String> xCategories = parentOptions.getSeries().isEmpty()? Collections.emptyList() :
+                ((ArraySeries)parentOptions.getSeries().get(0)).getData().stream().map(data->(String)data.get(0)).collect(Collectors.toList());
+        List<String> yCategories = parentOptions.getSeries().stream().map(series->series.getName()).collect(Collectors.toList());
         return Collections.singletonList(new HeatMapChart(parentOptions, title, subtitle, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0, collectorType, xCategories, yCategories));
     }
 
