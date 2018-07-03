@@ -427,11 +427,15 @@ $(document).ready(function() {
                                                                 if(isYAxis) {
                                                                     if(point.y===axisIndex) {
                                                                         point.remove();
+                                                                    } else if (point.y>axisIndex) {
+                                                                        point.update({y: point.y-1});
                                                                     }
                                                                 } else {
                                                                     if(point.x===axisIndex) {
                                                                         point.remove();
-                                                                    };
+                                                                    } else if (point.x>axisIndex) {
+                                                                        point.update({x: point.x-1});
+                                                                    }
                                                                 }
                                                             }
                                                         }
