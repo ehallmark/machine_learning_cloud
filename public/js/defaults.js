@@ -385,6 +385,7 @@ $(document).ready(function() {
                                     if(this.hasOwnProperty('drilldown')) {
                                         return true;
                                     }
+                                    var point = this;
                                     var chartId = $(this.series.chart.renderTo).attr('id');
                                     var value = this.options.name;
                                     var seriesIndex = this.series.index;
@@ -401,6 +402,10 @@ $(document).ready(function() {
                                 	$("#context-menu-cntnr  li").off('click');
                                     $("#context-menu-cntnr  li").on('click', function(){
                                     	$("#context-menu-cntnr  li").off('click');
+                                    	var value = $(this).attr('value');
+                                    	if(value==='delete') {
+                                    	    point.remove();
+                                    	}
                                     	alert("You have selected "+$(this).attr('value'));
                                     });
                                 }
