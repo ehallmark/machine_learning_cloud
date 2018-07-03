@@ -380,41 +380,76 @@ $(document).ready(function() {
                             }
                             // add dbl click to axis labels
                             if(chartJson.hasOwnProperty('xAxis')) {
-
+                                var axis = chartJson['xAxis'];
+                                for(var i = 0; i < axis.length; i++) {
+                                    var axisOpts = axis[i];
+                                    if (axisOpts.hasOwnProperty('type') && axisOpts['type']=='category') {
+                                        if(!axisOpts.hasOwnProperty('labels')) {
+                                            axisOpts['labels'] = {};
+                                        }
+                                        var labels = axisOpts['labels'];
+                                        labels['events'] = {
+                                            contextmenu: function(e) {
+                                                var axis = this;
+                                                var $container = $('#context-menu-cntnr');
+                                                $container.css("left",e.pageX);
+                                                $container.css("top",e.pageY);
+                                                function startFocusOut(){
+                                                  $(document).on("click",function(){
+                                                    $container.hide();
+                                                    $(document).off("click");
+                                                  });
+                                                }
+                                                $container.fadeIn(200, startFocusOut());
+                                                var $lis = $container.find('li');
+                                                $lis.off('click');
+                                                $lis.on('click', function(){
+                                                    $lis.off('click');
+                                                    var value = $(this).attr('value');
+                                                    if(value==='delete') {
+                                                        axis.remove();
+                                                    }
+                                                });
+                                            }
+                                        };
+                                    }
+                                }
                             }
 
                             if(chartJson.hasOwnProperty('yAxis')) {
                                 var axis = chartJson['yAxis'];
                                 for(var i = 0; i < axis.length; i++) {
                                     var axisOpts = axis[i];
-                                    if(!axisOpts.hasOwnProperty('labels')) {
-                                        axisOpts['labels'] = {};
-                                    }
-                                    var labels = axisOpts['labels'];
-                                    labels['events'] = {
-                                        contextmenu: function(e) {
-                                            var axis = this;
-                                            var $container = $('#context-menu-cntnr');
-                                            $container.css("left",e.pageX);
-                                            $container.css("top",e.pageY);
-                                            function startFocusOut(){
-                                              $(document).on("click",function(){
-                                                $container.hide();
-                                                $(document).off("click");
-                                              });
-                                            }
-                                            $container.fadeIn(200, startFocusOut());
-                                            var $lis = $container.find('li');
-                                            $lis.off('click');
-                                            $lis.on('click', function(){
-                                                $lis.off('click');
-                                                var value = $(this).attr('value');
-                                                if(value==='delete') {
-                                                    axis.remove();
-                                                }
-                                            });
+                                    if (axisOpts.hasOwnProperty('type') && axisOpts['type']=='category') {
+                                        if(!axisOpts.hasOwnProperty('labels')) {
+                                            axisOpts['labels'] = {};
                                         }
-                                    };
+                                        var labels = axisOpts['labels'];
+                                        labels['events'] = {
+                                            contextmenu: function(e) {
+                                                var axis = this;
+                                                var $container = $('#context-menu-cntnr');
+                                                $container.css("left",e.pageX);
+                                                $container.css("top",e.pageY);
+                                                function startFocusOut(){
+                                                  $(document).on("click",function(){
+                                                    $container.hide();
+                                                    $(document).off("click");
+                                                  });
+                                                }
+                                                $container.fadeIn(200, startFocusOut());
+                                                var $lis = $container.find('li');
+                                                $lis.off('click');
+                                                $lis.on('click', function(){
+                                                    $lis.off('click');
+                                                    var value = $(this).attr('value');
+                                                    if(value==='delete') {
+                                                        axis.remove();
+                                                    }
+                                                });
+                                            }
+                                        };
+                                    }
                                 }
                             }
 
