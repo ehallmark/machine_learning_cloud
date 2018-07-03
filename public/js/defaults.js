@@ -411,7 +411,6 @@ $(document).ready(function() {
                                             });
                                         }
                                     }
-
                                 };
                             }
                             if(!chartJson['plotOptions']['series'].hasOwnProperty('point')) {
