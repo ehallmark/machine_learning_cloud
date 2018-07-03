@@ -392,29 +392,27 @@ $(document).ready(function() {
                                     }
                                     var labels = axisOpts['labels'];
                                     labels['events'] = {
-                                        events: {
-                                            contextmenu: function(e) {
-                                                var axis = this;
-                                                var $container = $('#context-menu-cntnr');
-                                                $container.css("left",e.pageX);
-                                                $container.css("top",e.pageY);
-                                                function startFocusOut(){
-                                                  $(document).on("click",function(){
-                                                    $container.hide();
-                                                    $(document).off("click");
-                                                  });
-                                                }
-                                                $container.fadeIn(200, startFocusOut());
-                                                var $lis = $container.find('li');
-                                                $lis.off('click');
-                                                $lis.on('click', function(){
-                                                    $lis.off('click');
-                                                    var value = $(this).attr('value');
-                                                    if(value==='delete') {
-                                                        axis.remove();
-                                                    }
-                                                });
+                                        contextmenu: function(e) {
+                                            var axis = this;
+                                            var $container = $('#context-menu-cntnr');
+                                            $container.css("left",e.pageX);
+                                            $container.css("top",e.pageY);
+                                            function startFocusOut(){
+                                              $(document).on("click",function(){
+                                                $container.hide();
+                                                $(document).off("click");
+                                              });
                                             }
+                                            $container.fadeIn(200, startFocusOut());
+                                            var $lis = $container.find('li');
+                                            $lis.off('click');
+                                            $lis.on('click', function(){
+                                                $lis.off('click');
+                                                var value = $(this).attr('value');
+                                                if(value==='delete') {
+                                                    axis.remove();
+                                                }
+                                            });
                                         }
                                     };
                                 }
@@ -431,6 +429,13 @@ $(document).ready(function() {
                                 chartJson['plotOptions']['series']['point'] = {};
                             }
                             chartJson['plotOptions']['series']['point']['events'] = {
+                                dblclick: function(e) {
+                                    if(this.hasOwnProperty('drilldown')) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        $(this).trigger('click.drillDown');
+                                    }
+                                },
                                 contextmenu: function(e) {
                                     var point = this;
                                     var chartId = $(this.series.chart.renderTo).attr('id');
