@@ -400,6 +400,7 @@ $(document).ready(function() {
                                         var labels = axisOpts['labels'];
                                         labels['events'] = {
                                             contextmenu: function(e) {
+                                                var $target = $(e.currentTarget);
                                                 var axis = this;
                                                 var isYAxis = axis.axis.coll === 'yAxis';
                                                 var axisIndex = axis.value;
@@ -465,8 +466,23 @@ $(document).ready(function() {
                                                             categories.splice(axisIndex, 1);
                                                             axis.axis.setCategories(categories);
                                                         }
-                                                        axis.chart.redraw();
+                                                    } else if(value==='edit') {
+                                                        var value = $target.text();
+                                                        $target.html('<input type="text" />');
+                                                        $target.find('input').val(value)
+                                                            .on('input', function(e) {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                $target.find('input').off('input');
+                                                                var userVal = $target.find('input').val();
+                                                                var categories = axis.axis.categories;
+                                                                categories[axisIndex] = userVal;
+                                                                axis.axis.setCategories(categories);
+                                                                $target.empty().text(userVal);
+                                                                axis.chart.redraw();
+                                                            });
                                                     }
+                                                    axis.chart.redraw();
                                                 });
                                             }
                                         };
