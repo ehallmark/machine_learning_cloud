@@ -24,7 +24,7 @@ public class HeatMapChart extends AbstractChart {
         return "heatmap";
     }
 
-    public HeatMapChart(Options _options, String title, String subTitle, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String valueLabel, String valueSuffix, int valueDecimals, Type collectorType, List<String> xCategories, List<String> yCategories) {
+    public HeatMapChart(Options _options, String title, String subTitle, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String valueSuffix, int valueDecimals, Type collectorType, List<String> xCategories, List<String> yCategories) {
         String valueFormatStr = "{point.value:."+valueDecimals+"f}"+valueSuffix;
         String yFormatStr = "{point.y}"+yAxisSuffix;
         String xFormatStr = "{point.x}"+xAxisSuffix;
@@ -35,12 +35,12 @@ public class HeatMapChart extends AbstractChart {
                 .setColorAxis(new ColorAxis().setMin(0).setMinColor(new HexColor("#FFFFFF")).setMaxColor(maxColor))
                 .setChartOptions(new ChartOptions().setHeight(450).setType(SeriesType.HEATMAP))
                 .setTitle(new Title(title))
-                .setLegend(new Legend(true).setAlign(HorizontalAlignment.CENTER).setLayout(LegendLayout.HORIZONTAL).setVerticalAlign(VerticalAlignment.BOTTOM))
+                .setLegend(new Legend(true).setAlign(HorizontalAlignment.RIGHT).setLayout(LegendLayout.VERTICAL).setVerticalAlign(VerticalAlignment.TOP).setY(25).setSymbolHeight(280))
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()))
                 .setExporting(new ExportingOptions().setEnabled(true))
                 .setTooltip(new Tooltip().setEnabled(true).setShared(false).setUseHTML(true)
                         .setHeaderFormat("<small>"+yFormatStr+"</small><table>")
-                        .setPointFormat("<tr><td><span style=\"color:{point.color}\">\u25CF</span>"+xFormatStr+"</td><td> <b> "+valueFormatStr+" "+valueLabel+"</b></td></tr>")
+                        .setPointFormat("<tr><td><span style=\"color:{point.color}\">\u25CF</span>"+xFormatStr+"</td><td> <b> "+valueFormatStr+" "+valueSuffix+"</b></td></tr>")
                         .setFooterFormat("</table>")
                 )
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"));

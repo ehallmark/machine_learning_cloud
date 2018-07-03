@@ -88,7 +88,7 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         List<String> xCategories = parentOptions.getSeries().isEmpty()? Collections.emptyList() :
                 ((ArraySeries)parentOptions.getSeries().get(0)).getData().stream().map(data->(String)data.get(0)).collect(Collectors.toList());
         List<String> yCategories = parentOptions.getSeries().stream().map(series->series.getName()).collect(Collectors.toList());
-        return Collections.singletonList(new HeatMapChart(parentOptions, title, subtitle, xAxisSuffix, xDecimals, yAxisSuffix, yDecimals, humanAttr, yLabel, valueSuffix, valueDecimals, collectorType, xCategories, yCategories));
+        return Collections.singletonList(new HeatMapChart(parentOptions, title, subtitle, xAxisSuffix, yAxisSuffix, humanAttr, yLabel, valueSuffix, valueDecimals, collectorType, xCategories, yCategories));
     }
 
 
