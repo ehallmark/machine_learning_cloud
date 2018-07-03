@@ -44,7 +44,7 @@ public class LineChart extends AbstractChart {
             if(options.getSingleXAxis()==null) {
                 options.setxAxis(Collections.singletonList(new Axis()));
             }
-            options.getSingleXAxis().setTitle(new Title(xLabel));
+            options.getSingleXAxis().setTitle(new Title(xLabel)).setType(AxisType.CATEGORY);
         }
         options.setyAxis(new Axis().setType(AxisType.LINEAR).setMin(0).setTitle(new Title(ColumnChart.capitalize(yLabel)+" "+collectorType)));
         if(options.getSeries().size()==1) {

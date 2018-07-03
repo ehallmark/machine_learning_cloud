@@ -401,6 +401,7 @@ $(document).ready(function() {
                                         labels['events'] = {
                                             contextmenu: function(e) {
                                                 var axis = this;
+                                                var isYAxis = axis.axis.coll === 'yAxis';
                                                 var axisIndex = axis.value;
                                                 var $container = $('#context-menu-cntnr');
                                                 $container.css("left",e.pageX);
@@ -419,6 +420,21 @@ $(document).ready(function() {
                                                     var value = $(this).attr('value');
                                                     if(value==='delete') {
                                                         axis.axis.categories.splice(axisIndex, 1);
+                                                        for(var i = 0; i < axis.axis.series; i++) {
+                                                            var series = axis.axis.series[i];
+                                                            for(var j = 0; j < series.points.length; j++) {
+                                                                var point = series.points[j];
+                                                                if(isYAxis) {
+                                                                    if(point.x===axisIndex) {
+                                                                        point.remove();
+                                                                    }
+                                                                } else {
+                                                                    if(point.y===axisIndex) {
+                                                                        point.remove();
+                                                                    };
+                                                                }
+                                                            }
+                                                        }
                                                         axis.chart.redraw();
                                                     }
                                                 });
