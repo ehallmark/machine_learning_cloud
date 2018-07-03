@@ -360,7 +360,7 @@ textarea, .richtext > pre {
 #context-menu-cntnr {
   z-index: 10000;
   display:none;
-  position:fixed;
+  position:absolute;
   border:1px solid #B2B2B2;
   width:150px;      background:#F9F9F9;
   box-shadow: 3px 3px 2px #E9E9E9;
