@@ -40,11 +40,11 @@ public class HeatMapChart extends AbstractChart {
                 .setLegend(new Legend(true).setAlign(HorizontalAlignment.RIGHT).setLayout(LegendLayout.VERTICAL).setVerticalAlign(VerticalAlignment.BOTTOM).setY(-25).setSymbolHeight(280))
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()))
                 .setExporting(new ExportingOptions().setEnabled(true))
-                .setTooltip(new Tooltip().setEnabled(true).setShared(false).setUseHTML(true)
-                        .setHeaderFormat("<small>"+yFormatStr+"</small><table>")
-                        .setPointFormat("<tr><td><span style=\"color:{point.color}\">\u25CF</span>"+xFormatStr+"</td><td> <b> "+valueFormatStr+" "+valueSuffix+"</b></td></tr>")
-                        .setFooterFormat("</table>")
-                )
+                //.setTooltip(new Tooltip().setEnabled(true).setShared(false).setUseHTML(true)
+                //        .setHeaderFormat("<small>"+yFormatStr+"</small><table>")
+                //        .setPointFormat("<tr><td><span style=\"color:{point.color}\">\u25CF</span>"+xFormatStr+"</td><td> <b> "+valueFormatStr+" "+valueSuffix+"</b></td></tr>")
+                //        .setFooterFormat("</table>")
+                //)
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"));
         if(subTitle!=null) options.setSubtitle(new Title(subTitle));
         if(options.getSingleXAxis()==null) {

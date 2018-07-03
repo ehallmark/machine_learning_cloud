@@ -339,6 +339,15 @@ $(document).ready(function() {
                             // hack for word cloud chart
                             if(chartJson.hasOwnProperty('chart') && !chartJson['chart'].hasOwnProperty('type')) {
                                 chartJson['chart']['type'] = 'wordcloud';
+                            } else if (chartJson.hasOwnProperty('chart') && chartJson['chart']['type']==='heatmap') {
+                                // hack for heatmap tooltips
+                                chartJson['tooltip'] = {
+                                    formatter: function () {
+                                        return '<small>' + this.series.yAxis.categories[this.point.y] + '</small><table>'
+                                              + '<tr><td>' + this.series.xAxis.categories[this.point.x] +'</td><td> <b> '+ this.point.y +'</b></td></tr>'
+                                              + '</table>';
+                                    }
+                                };
                             }
                             // add dbl click to buttons
                             if(!chartJson.hasOwnProperty('plotOptions')) {
