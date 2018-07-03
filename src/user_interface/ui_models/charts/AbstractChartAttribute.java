@@ -128,21 +128,32 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             newTagFunction = additionalTagFunction;
             newAdditionalIdsFunction = additionalInputIdsFunction;
         }
-        List<AbstractAttribute> availableGroups = collectByAttributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
-        Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
-                .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
-        Function<String,ContainerTag> collectorTagFunction = getCombineByTagFunction(groupedGroupAttrs);
-        Function<String,List<String>> collectorIdsFunction = attrName -> {
-            List<String> ids = Arrays.asList(getCollectByAttrFieldName(attrName),getCollectTypeFieldName(attrName));
-            return ids;
-        };
-        Function<String, ContainerTag> tagFunction = str -> div().withClass("row").with(
-                div().withClass("col-12").with(
-                        newTagFunction.apply(str)
-                ), div().withClass("col-12").with(
-                        collectorTagFunction.apply(str)
-                )
-        );
+        Function<String, ContainerTag> tagFunction;
+        Function<String, List<String>> collectorIdsFunction;
+        if(collectByAttributes!=null) {
+            List<AbstractAttribute> availableGroups = collectByAttributes.stream().filter(attr -> attr.isDisplayable() && userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
+            Map<String, List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter -> filter.getRootName())).entrySet()
+                    .stream().collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().stream().map(attr -> attr.getFullName()).collect(Collectors.toList()))));
+            Function<String, ContainerTag> collectorTagFunction = getCombineByTagFunction(groupedGroupAttrs);
+            collectorIdsFunction = attrName -> {
+                List<String> ids = Arrays.asList(getCollectByAttrFieldName(attrName), getCollectTypeFieldName(attrName));
+                return ids;
+            };
+            tagFunction = str -> div().withClass("row").with(
+                    div().withClass("col-12").with(
+                            newTagFunction.apply(str)
+                    ), div().withClass("col-12").with(
+                            collectorTagFunction.apply(str)
+                    )
+            );
+        } else {
+            collectorIdsFunction = str -> Collections.emptyList();
+            tagFunction = str -> div().withClass("row").with(
+                    div().withClass("col-12").with(
+                            newTagFunction.apply(str)
+                    )
+            );
+        }
         Function<String,List<String>> idsFunction = str -> {
             return Stream.of(collectorIdsFunction.apply(str), newAdditionalIdsFunction.apply(str)).flatMap(list->list.stream()).collect(Collectors.toList());
         };

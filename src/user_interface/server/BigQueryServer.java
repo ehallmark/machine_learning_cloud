@@ -186,6 +186,7 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Cited Date", Constants.CITED_DATE);
             humanAttrToJavaAttrMap.put("Heat Map", Constants.HEAT_MAP);
+            humanAttrToJavaAttrMap.put("Word Cloud", Constants.WORD_CLOUD);
             humanAttrToJavaAttrMap.put("Forward Citation", Constants.BACKWARD_CITATION);
             humanAttrToJavaAttrMap.put("Remove Duplicate Related Assets",AssetDedupFilter.NAME);
             humanAttrToJavaAttrMap.put("Gather", Attributes.GATHER);

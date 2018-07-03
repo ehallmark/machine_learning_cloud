@@ -154,6 +154,7 @@ public class Constants {
 	public static final String PIE_CHART = "pieChart[]";
 	public static final String HISTOGRAM = "histogram[]";
 	public static final String HEAT_MAP = "heatmap[]";
+	public static final String WORD_CLOUD = "wordcloud[]";
 	public static final String ALL_RELATED_ASSETS = "allRelatedAssets";
 	public static final String PORTFOLIO_SIZE = "portfolioSize";
 	public static final String PATENT_TERM_ADJUSTMENT = "patentTermAdjustment";
@@ -298,7 +299,8 @@ public class Constants {
 		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.TREE, "cpc code (includes child classes)");
 		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.AI_VALUE, "AI Value of the document. Ranges from 0-1. Developed by GTT Group.");
 		ATTRIBUTE_DESCRIPTION_MAP.put("pie", "Create a pie chart.");
-		ATTRIBUTE_DESCRIPTION_MAP.put("heatmap", "Create a heatmap chart.");
+		ATTRIBUTE_DESCRIPTION_MAP.put("heatmap", "Create a heat map chart.");
+		ATTRIBUTE_DESCRIPTION_MAP.put("wordcloud", "Create a word cloud chart.");
 		ATTRIBUTE_DESCRIPTION_MAP.put("line", "Create a timeline chart.");
 		ATTRIBUTE_DESCRIPTION_MAP.put("histogram", "Create a histogram.");
 		ATTRIBUTE_DESCRIPTION_MAP.put("pivot", "Create an pivot table.");
