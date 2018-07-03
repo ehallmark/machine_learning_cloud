@@ -382,15 +382,16 @@ $(document).ready(function() {
                                     var pointIndex = this.index;
                                     $("#context-menu-cntnr").css("left",e.pageX);
                                     $("#context-menu-cntnr").css("top",e.pageY);
-                                    $("#context-menu-cntnr").fadeIn(200, startFocusOut());
                                     function startFocusOut(){
                                       $(document).on("click",function(){
                                         $("#context-menu-cntnr").hide();
                                         $(document).off("click");
                                       });
                                     }
+                                    $("#context-menu-cntnr").fadeIn(200, startFocusOut());
                                     $("#context-menu-items > li").click(function(){
                                     	alert("You have selected "+$(this).attr('value'));
+                                    	$("#context-menu-items > li").off('click');
                                     });
                                 }
                             };
