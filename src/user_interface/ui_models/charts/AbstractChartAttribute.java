@@ -148,11 +148,15 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             );
         } else {
             collectorIdsFunction = str -> Collections.emptyList();
-            tagFunction = str -> div().withClass("row").with(
-                    div().withClass("col-12").with(
-                            newTagFunction.apply(str)
-                    )
-            );
+            if (newTagFunction == null) {
+                tagFunction = str -> div();
+            } else {
+                tagFunction = str -> div().withClass("row").with(
+                        div().withClass("col-12").with(
+                                newTagFunction.apply(str)
+                        )
+                );
+            }
         }
         Function<String,List<String>> idsFunction = str -> {
             return Stream.of(collectorIdsFunction.apply(str), newAdditionalIdsFunction.apply(str)).flatMap(list->list.stream()).collect(Collectors.toList());
