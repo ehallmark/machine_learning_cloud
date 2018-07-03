@@ -398,9 +398,10 @@ $(document).ready(function() {
                                       });
                                     }
                                     $("#context-menu-cntnr").fadeIn(200, startFocusOut());
-                                    $("#context-menu-items > li").click(function(){
+                                	$("#context-menu-cntnr  li").off('click');
+                                    $("#context-menu-cntnr  li").on('click', function(){
+                                    	$("#context-menu-cntnr  li").off('click');
                                     	alert("You have selected "+$(this).attr('value'));
-                                    	$("#context-menu-items > li").off('click');
                                     });
                                 }
                             };
