@@ -1,5 +1,18 @@
 var selectionCache = new Set([]);
 $(document).ready(function() {
+    $(document.body).append('<div id="context-menu-cntnr">'+
+                                '<ul id="context-menu-items">'+
+                                '  <li value="delete">Remove this Point</li>'+
+                                '  <li value="edit">Edit this Point</li>'+
+                                '  <li value="add">Add a new Point</li>'+
+                                '</ul>'+
+                                '<hr />'+
+                                '<ul id="context-menu-items">'+
+                                '  <li value="show">Preview Assets</li>'+
+                                '</ul>'+
+                               '</div>');
+
+
     $('.loader').show();
 
     $('.miniTip').miniTip({
@@ -367,6 +380,18 @@ $(document).ready(function() {
                                     var value = this.options.name;
                                     var seriesIndex = this.series.index;
                                     var pointIndex = this.index;
+                                    $("#context-menu-cntnr").css("left",e.pageX);
+                                    $("#context-menu-cntnr").css("top",e.pageY);
+                                    $("#context-menu-cntnr").fadeIn(200, startFocusOut());
+                                    function startFocusOut(){
+                                      $(document).on("click",function(){
+                                        $("#context-menu-cntnr").hide();
+                                        $(document).off("click");
+                                      });
+                                    }
+                                    $("#context-menu-items > li").click(function(){
+                                    	alert("You have selected "+$(this).attr('value'));
+                                    });
                                 }
                             };
                             chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
