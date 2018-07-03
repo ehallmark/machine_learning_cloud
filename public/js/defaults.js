@@ -422,19 +422,19 @@ $(document).ready(function() {
                                                         axis.axis.categories.splice(axisIndex, 1);
                                                         for(var i = 0; i < axis.axis.series.length; i++) {
                                                             var series = axis.axis.series[i];
-                                                            for(var j = 0; j < series.points.length; j++) {
-                                                                var point = series.points[j];
+                                                            for(var j = 0; j < series.data.length; j++) {
+                                                                var point = series.data[j];
                                                                 if(isYAxis) {
                                                                     if(point.y===axisIndex) {
                                                                         point.remove();
                                                                     } else if (point.y>axisIndex) {
-                                                                        point.update({y: point.y-1});
+                                                                        point.y = point.y-1;
                                                                     }
                                                                 } else {
                                                                     if(point.x===axisIndex) {
                                                                         point.remove();
                                                                     } else if (point.x>axisIndex) {
-                                                                        point.update({x: point.x-1});
+                                                                        point.x=point.x-1;
                                                                     }
                                                                 }
                                                             }
