@@ -25,7 +25,7 @@ import static j2html.TagCreator.*;
 public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     private static final String AGG_SUFFIX = "_hist";
     public AggregateHistogramChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectAttrs) {
-        super(false,"Histogram",AGG_SUFFIX, attributes, groupByAttrs, collectAttrs, Constants.HISTOGRAM, false);
+        super(false,"Histogram",AGG_SUFFIX, attributes, groupByAttrs, collectAttrs, Constants.HISTOGRAM);
     }
 
     @Override

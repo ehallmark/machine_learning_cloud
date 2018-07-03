@@ -51,15 +51,12 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected Map<String,Boolean> attrToPlotOnSameChartMap;
     @Getter
     protected String name;
-    protected boolean groupByPerAttribute;
-    protected boolean groupsPlottableOnSameChart;
     protected Map<String,Boolean> attrNameToIncludeBlanksMap;
     protected Collection<AbstractAttribute> collectByAttributes;
-    public AbstractChartAttribute(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttributes, Collection<AbstractAttribute> collectByAttributes, String name, boolean groupByPerAttribute, boolean groupsPlottableOnSameChart) {
+    public AbstractChartAttribute(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttributes, Collection<AbstractAttribute> collectByAttributes, String name) {
         super(attributes);
         this.groupByAttributes=groupByAttributes;
         this.collectByAttributes=collectByAttributes;
-        this.groupsPlottableOnSameChart=groupsPlottableOnSameChart;
         //if(groupByAttributes!=null)groupByAttributes.forEach(attr->attr.setParent(this));
         this.name=name;
         this.attrNameToGroupByAttrNameMap = Collections.synchronizedMap(new HashMap<>());
@@ -68,7 +65,6 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         this.attrNameToIncludeBlanksMap = Collections.synchronizedMap(new HashMap<>());
         this.attrToCollectByAttrMap = Collections.synchronizedMap(new HashMap<>());
         this.attrToCollectTypeMap = Collections.synchronizedMap(new HashMap<>());
-        this.groupByPerAttribute = groupByPerAttribute;
         this.attrToDrilldownMap = Collections.synchronizedMap(new HashMap<>());
         this.attrToSwapAxesMap = Collections.synchronizedMap(new HashMap<>());
     }
@@ -89,7 +85,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return this.getOptionsTag(userRoleFunction,null,null,DEFAULT_COMBINE_BY_FUNCTION,groupByPerAttribute);
+        return this.getOptionsTag(userRoleFunction,null,null,DEFAULT_COMBINE_BY_FUNCTION, true);
     }
 
     private ContainerTag getPlotGroupsTogetherTag(String attrName) {
@@ -110,45 +106,23 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         Function<String,List<String>> newAdditionalIdsFunction;
         if(groupByAttributes!=null) {
             Function<String,ContainerTag> groupByFunction = attrName -> getGroupedByFunction(attrName,userRoleFunction);
-            if(groupsPlottableOnSameChart) {
-                newTagFunction = attrName -> combineTagFunction.apply(
-                        div().withClass("row").with(
-                                div().withClass("col-10").with(
-                                        groupByFunction.apply(attrName)
-                                ),div().withClass("col-2").with(
-                                        getPlotGroupsTogetherTag(attrName)
-                                )
-                        ),additionalTagFunction==null?div():additionalTagFunction.apply(attrName)
-                );
-            } else {
-                newTagFunction = additionalTagFunction == null ? groupByFunction : attrName -> combineTagFunction.apply(groupByFunction.apply(attrName),additionalTagFunction.apply(attrName));
-            }
-            if(groupByPerAttribute) {
-                Function<String, List<String>> groupedByInputIdsFunction = attrName -> {
-                    String groupById = getGroupByChartFieldName(attrName);
-                    String groupByMaxLimit = groupById + MAX_GROUP_FIELD;
-                    String groupByIncludeBlanks = groupById + INCLUDE_BLANK_FIELD;
-                    return Arrays.asList(groupById, groupByMaxLimit, groupByIncludeBlanks);
-                };
-                Function<String,List<String>> _newAdditionalIdsFunction = additionalInputIdsFunction == null ? groupedByInputIdsFunction : attrName -> {
-                    return Stream.of(
-                            groupedByInputIdsFunction.apply(attrName),
-                            additionalInputIdsFunction.apply(attrName)
-                    ).flatMap(list -> list.stream()).collect(Collectors.toList());
-                };
-                if(groupsPlottableOnSameChart) {
-                    newAdditionalIdsFunction = attrName->{
-                        return Stream.of(
-                                _newAdditionalIdsFunction.apply(attrName),
-                                Collections.singletonList(getGroupByChartFieldName(attrName) + PLOT_GROUPS_ON_SAME_CHART_FIELD)
-                        ).flatMap(list -> list.stream()).collect(Collectors.toList());
-                    };
-                } else {
-                    newAdditionalIdsFunction = _newAdditionalIdsFunction;
-                }
-            } else {
-                newAdditionalIdsFunction = additionalInputIdsFunction;
-            }
+
+            newTagFunction = additionalTagFunction == null ? groupByFunction : attrName -> combineTagFunction.apply(groupByFunction.apply(attrName),additionalTagFunction.apply(attrName));
+
+            Function<String, List<String>> groupedByInputIdsFunction = attrName -> {
+                String groupById = getGroupByChartFieldName(attrName);
+                String groupByMaxLimit = groupById + MAX_GROUP_FIELD;
+                String groupByIncludeBlanks = groupById + INCLUDE_BLANK_FIELD;
+                return Arrays.asList(groupById, groupByMaxLimit, groupByIncludeBlanks);
+            };
+            Function<String,List<String>> _newAdditionalIdsFunction = additionalInputIdsFunction == null ? groupedByInputIdsFunction : attrName -> {
+                return Stream.of(
+                        groupedByInputIdsFunction.apply(attrName),
+                        additionalInputIdsFunction.apply(attrName)
+                ).flatMap(list -> list.stream()).collect(Collectors.toList());
+            };
+
+            newAdditionalIdsFunction = _newAdditionalIdsFunction;
 
         } else {
             newTagFunction = additionalTagFunction;
@@ -172,7 +146,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         Function<String,List<String>> idsFunction = str -> {
             return Stream.of(collectorIdsFunction.apply(str), newAdditionalIdsFunction.apply(str)).flatMap(list->list.stream()).collect(Collectors.toList());
         };
-        return super.getOptionsTag(userRoleFunction,tagFunction,idsFunction,DEFAULT_COMBINE_BY_FUNCTION,groupByPerAttribute);
+        return super.getOptionsTag(userRoleFunction,tagFunction,idsFunction,DEFAULT_COMBINE_BY_FUNCTION, true);
     }
 
     protected ContainerTag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
@@ -252,11 +226,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
         if(groupByAttributes!=null) {
             List<String> attrsToCheck = new ArrayList<>();
-            if(groupByPerAttribute) {
-                attrsToCheck.addAll(attrNames);
-            } else {
-                attrsToCheck.add("");
-            }
+            attrsToCheck.addAll(attrNames);
             attrsToCheck.forEach(attrName->{
                 String groupId = getGroupByChartFieldName(attrName);
                 String group = SimilarPatentServer.extractString(params, groupId, null);
@@ -273,12 +243,6 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 String groupIncludeBlanksId = groupId + INCLUDE_BLANK_FIELD;
                 boolean groupIncludeBlanks = SimilarPatentServer.extractBool(params, groupIncludeBlanksId);
                 attrNameToIncludeBlanksMap.put(attrName, groupIncludeBlanks);
-
-                if(groupsPlottableOnSameChart) {
-                    String plotOnSameChartId = groupId+PLOT_GROUPS_ON_SAME_CHART_FIELD;
-                    boolean plotOnSameChart = SimilarPatentServer.extractBool(params, plotOnSameChartId);
-                    attrToPlotOnSameChartMap.put(attrName,plotOnSameChart);
-                }
 
             });
         }

@@ -40,7 +40,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     protected Map<String,Integer> attrToLimitMap;
     protected Map<String,Boolean> attrToIncludeRemainingMap;
     public AggregatePieChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectAttrs) {
-        super(false,"Distribution",AGG_SUFFIX, attributes, groupByAttrs, collectAttrs,Constants.PIE_CHART, false);
+        super(false,"Distribution",AGG_SUFFIX, attributes, groupByAttrs, collectAttrs,Constants.PIE_CHART);
         this.attrToLimitMap=Collections.synchronizedMap(new HashMap<>());
         this.attrToIncludeRemainingMap = Collections.synchronizedMap(new HashMap<>());
     }

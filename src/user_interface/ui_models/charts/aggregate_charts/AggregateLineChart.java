@@ -24,7 +24,7 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
     protected Map<String,LocalDate> attrToMinMap;
     protected Map<String,LocalDate> attrToMaxMap;
     public AggregateLineChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectAttrs) {
-        super(false,"Timeline",AGG_SUFFIX, attributes, groupByAttrs, collectAttrs, Constants.LINE_CHART, false);
+        super(false,"Timeline",AGG_SUFFIX, attributes, groupByAttrs, collectAttrs, Constants.LINE_CHART);
         this.attrToMaxMap = Collections.synchronizedMap(new HashMap<>());
         this.attrToMinMap = Collections.synchronizedMap(new HashMap<>());
     }

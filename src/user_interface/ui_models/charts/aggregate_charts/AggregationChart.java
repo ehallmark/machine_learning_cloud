@@ -59,9 +59,8 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
     @Getter
     protected final boolean isTable;
     protected String chartTitle;
-
-    public AggregationChart(boolean isTable, String chartTitle, String aggSuffix, Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectByAttrs, String name, boolean groupsPlottableOnSameChart) {
-        super(attributes, groupByAttrs, collectByAttrs, name, true, groupsPlottableOnSameChart);
+    public AggregationChart(boolean isTable, String chartTitle, String aggSuffix, Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectByAttrs, String name) {
+        super(attributes, groupByAttrs, collectByAttrs, name);
         this.aggSuffix = aggSuffix;
         this.isTable = isTable;
         this.chartTitle = chartTitle;

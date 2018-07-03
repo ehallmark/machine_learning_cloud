@@ -22,7 +22,7 @@ import static j2html.TagCreator.*;
 public class AggregatePivotChart extends AggregationChart<TableResponse> {
     private static final String AGG_SUFFIX = "_pivot";
     public AggregatePivotChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectByAttrs) {
-        super(true,"Pivot Table",AGG_SUFFIX, attributes, groupByAttrs, collectByAttrs, Constants.PIVOT_FUNCTION_TABLE_CHART, false);
+        super(true,"Pivot Table",AGG_SUFFIX, attributes, groupByAttrs, collectByAttrs, Constants.PIVOT_FUNCTION_TABLE_CHART);
     }
 
 

@@ -185,6 +185,7 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Cited Date", Constants.CITED_DATE);
+            humanAttrToJavaAttrMap.put("Heat Map", Constants.HEAT_MAP);
             humanAttrToJavaAttrMap.put("Forward Citation", Constants.BACKWARD_CITATION);
             humanAttrToJavaAttrMap.put("Remove Duplicate Related Assets",AssetDedupFilter.NAME);
             humanAttrToJavaAttrMap.put("Gather", Attributes.GATHER);
@@ -350,7 +351,7 @@ public class BigQueryServer extends SimilarPatentServer {
         chartModelMap.put(Constants.PIE_CHART, new AggregatePieChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs), duplicateAttributes(discreteAndNumeric)));
         chartModelMap.put(Constants.HISTOGRAM, new AggregateHistogramChart(groupAttributesToNewParents(rangeAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAndNumeric)));
         chartModelMap.put(Constants.LINE_CHART, new AggregateLineChart(groupAttributesToNewParents(dateAttrs),duplicateAttributes(discreteAttrs), duplicateAttributes(discreteAndNumeric)));
-
+        chartModelMap.put(Constants.HEAT_MAP, new AggregateHeatMapChart(groupAttributesToNewParents(rangeAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAndNumeric)));
         chartModelMap.put(Constants.PIVOT_FUNCTION_TABLE_CHART, new AggregatePivotChart(groupAttributesToNewParents(discreteAttrs),duplicateAttributes(discreteAttrs),duplicateAttributes(discreteAndNumeric)));
 
         allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
