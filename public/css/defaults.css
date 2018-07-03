@@ -369,12 +369,13 @@ textarea, .richtext > pre {
 }
 
 #context-menu-cntnr li {
+  cursor: pointer;
   padding: 3px;
   padding-left:10px;
 }
 
 
-#context-menu-items :hover{
+#context-menu-cntnr li:hover{
   color: white;
   background:#284570;
   border-radius:2px;
