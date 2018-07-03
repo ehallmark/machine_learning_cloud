@@ -375,38 +375,65 @@ $(document).ready(function() {
                                 chartJson['plotOptions'] = {};
                             }
                             if(!chartJson['plotOptions'].hasOwnProperty('series')) {
-                                chartJson['plotOptions']['series'] = {};
+                                chartJson['plotOptions']['series'] = {
+                                    events: {
+                                        contextmenu: function(e) {
+                                            var series = this;
+                                            var chartId = $(series.chart.renderTo).attr('id');
+                                            var value = series.name;
+                                            var seriesIndex = series.index;
+                                            var $container = $('#context-menu-cntnr');
+                                            $container.css("left",e.pageX);
+                                            $container.css("top",e.pageY);
+                                            function startFocusOut(){
+                                              $(document).on("click",function(){
+                                                $container.hide();
+                                                $(document).off("click");
+                                              });
+                                            }
+                                            $container.fadeIn(200, startFocusOut());
+                                            var $lis = $container.find('li');
+                                            $lis.off('click');
+                                            $lis.on('click', function(){
+                                                $lis.off('click');
+                                                var value = $(this).attr('value');
+                                                if(value==='delete') {
+                                                    series.remove();
+                                                }
+                                            });
+                                        }
+                                    }
+
+                                };
                             }
                             if(!chartJson['plotOptions']['series'].hasOwnProperty('point')) {
                                 chartJson['plotOptions']['series']['point'] = {};
                             }
                             chartJson['plotOptions']['series']['point']['events'] = {
                                 contextmenu: function(e) {
-                                    if(this.hasOwnProperty('drilldown')) {
-                                        return true;
-                                    }
                                     var point = this;
                                     var chartId = $(this.series.chart.renderTo).attr('id');
                                     var value = this.options.name;
                                     var seriesIndex = this.series.index;
                                     var pointIndex = this.index;
-                                    $("#context-menu-cntnr").css("left",e.pageX);
-                                    $("#context-menu-cntnr").css("top",e.pageY);
+                                    var $container = $('#context-menu-cntnr');
+                                    $container.css("left",e.pageX);
+                                    $container.css("top",e.pageY);
                                     function startFocusOut(){
                                       $(document).on("click",function(){
-                                        $("#context-menu-cntnr").hide();
+                                        $container.hide();
                                         $(document).off("click");
                                       });
                                     }
-                                    $("#context-menu-cntnr").fadeIn(200, startFocusOut());
-                                	$("#context-menu-cntnr  li").off('click');
-                                    $("#context-menu-cntnr  li").on('click', function(){
-                                    	$("#context-menu-cntnr  li").off('click');
+                                    $container.fadeIn(200, startFocusOut());
+                                    var $lis = $container.find('li');
+                                	$lis.off('click');
+                                    $lis.on('click', function(){
+                                    	$lis.off('click');
                                     	var value = $(this).attr('value');
                                     	if(value==='delete') {
                                     	    point.remove();
                                     	}
-                                    	alert("You have selected "+$(this).attr('value'));
                                     });
                                 }
                             };
