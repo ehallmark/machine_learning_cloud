@@ -436,25 +436,27 @@ $(document).ready(function() {
                                                                 var datapoints = series.data.slice(0); // create a clone
                                                                 for(var j = 0; j < datapoints.length; j++) {
                                                                     var point = datapoints[j];
-                                                                    if(isYAxis) {
-                                                                        if(point.y===axisIndex) {
-                                                                            point.remove(false);
-                                                                        } else if (point.y>axisIndex) {
-                                                                            point.update({
-                                                                                x: point.x,
-                                                                                y: point.y-1,
-                                                                                value: point.value
-                                                                            }, false);
-                                                                        }
-                                                                    } else {
-                                                                        if(point.x===axisIndex) {
-                                                                            point.remove(false);
-                                                                        } else if (point.x>axisIndex) {
-                                                                            point.update({
-                                                                                x: point.x-1,
-                                                                                y: point.y,
-                                                                                value: point.value
-                                                                            }, false);
+                                                                    if(point) {
+                                                                        if(isYAxis) {
+                                                                            if(point.y===axisIndex) {
+                                                                                point.remove(false);
+                                                                            } else if (point.y>axisIndex) {
+                                                                                point.update({
+                                                                                    x: point.x,
+                                                                                    y: point.y-1,
+                                                                                    value: point.value
+                                                                                }, false);
+                                                                            }
+                                                                        } else {
+                                                                            if(point.x===axisIndex) {
+                                                                                point.remove(false);
+                                                                            } else if (point.x>axisIndex) {
+                                                                                point.update({
+                                                                                    x: point.x-1,
+                                                                                    y: point.y,
+                                                                                    value: point.value
+                                                                                }, false);
+                                                                            }
                                                                         }
                                                                     }
                                                                 }
