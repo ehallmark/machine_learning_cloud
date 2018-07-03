@@ -126,7 +126,11 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
         } else {
             newTagFunction = additionalTagFunction;
-            newAdditionalIdsFunction = additionalInputIdsFunction;
+            if (additionalInputIdsFunction == null) {
+                newAdditionalIdsFunction = str -> Collections.emptyList();
+            } else {
+                newAdditionalIdsFunction = additionalInputIdsFunction;
+            }
         }
         Function<String, ContainerTag> tagFunction;
         Function<String, List<String>> collectorIdsFunction;
