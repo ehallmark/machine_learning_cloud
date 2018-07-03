@@ -431,26 +431,38 @@ $(document).ready(function() {
                                                             }
 
                                                         } else {
-                                                            axis.axis.categories.splice(axisIndex, 1);
                                                             for(var i = 0; i < axis.axis.series.length; i++) {
                                                                 var series = axis.axis.series[i];
-                                                                for(var j = 0; j < series.data.length; j++) {
-                                                                    var point = series.data[j];
+                                                                var datapoints = series.data.slice(0); // create a clone
+                                                                for(var j = 0; j < datapoints.length; j++) {
+                                                                    var point = datapoints[j];
                                                                     if(isYAxis) {
                                                                         if(point.y===axisIndex) {
                                                                             point.remove();
                                                                         } else if (point.y>axisIndex) {
-                                                                            point.y = point.y-1;
+                                                                            point.update({
+                                                                                x: point.x,
+                                                                                y: point.y-1,
+                                                                                value: point.value
+                                                                            });
                                                                         }
                                                                     } else {
                                                                         if(point.x===axisIndex) {
                                                                             point.remove();
                                                                         } else if (point.x>axisIndex) {
-                                                                            point.x=point.x-1;
+                                                                            point.update({
+                                                                                x: point.x-1,
+                                                                                y: point.y,
+                                                                                value: point.value
+                                                                            });
                                                                         }
                                                                     }
                                                                 }
                                                             }
+                                                            var categories = axis.axis.categories;
+                                                            categories.splice(axisIndex, 1);
+                                                            axis.axis.setCategories(categories);
+                                                            axis.redraw();
                                                         }
                                                         axis.chart.redraw();
                                                     }
