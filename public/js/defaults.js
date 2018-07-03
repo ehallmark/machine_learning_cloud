@@ -342,10 +342,9 @@ $(document).ready(function() {
                             } else if (chartJson.hasOwnProperty('chart') && chartJson['chart']['type']==='heatmap') {
                                 // hack for heatmap tooltips
                                 chartJson['tooltip'] = {
+                                    useHtml: true,
                                     formatter: function () {
-                                        return '<small>' + this.series.yAxis.categories[this.point.y] + '</small><table>'
-                                              + '<tr><td>' + this.series.xAxis.categories[this.point.x] +'</td><td> <b> '+ this.point.y +'</b></td></tr>'
-                                              + '</table>';
+                                        return '<table><tr><td>'+this.series.yAxis.categories[this.point.y]+'</td></tr><tr><td>' + this.series.xAxis.categories[this.point.x] +'</td><td><b> '+ this.point.value +'</b></td></tr></table>';
                                     }
                                 };
                             }
