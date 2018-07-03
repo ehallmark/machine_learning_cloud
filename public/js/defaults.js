@@ -373,51 +373,17 @@ $(document).ready(function() {
                             if(!chartJson.hasOwnProperty('events')) {
                                 chartJson['events'] = {};
                             }
-                            if(!chartJson['events'].hasOwnProperty('drillup')) {
-                                chartJson['events']['drillup'] = function() {
 
-                                };
-                            }
                             // add dbl click to axis labels
+                            var axes = [];
                             if(chartJson.hasOwnProperty('xAxis')) {
-                                var axis = chartJson['xAxis'];
-                                for(var i = 0; i < axis.length; i++) {
-                                    var axisOpts = axis[i];
-                                    if (axisOpts.hasOwnProperty('type') && axisOpts['type']=='category') {
-                                        if(!axisOpts.hasOwnProperty('labels')) {
-                                            axisOpts['labels'] = {};
-                                        }
-                                        var labels = axisOpts['labels'];
-                                        labels['events'] = {
-                                            contextmenu: function(e) {
-                                                var axis = this;
-                                                var $container = $('#context-menu-cntnr');
-                                                $container.css("left",e.pageX);
-                                                $container.css("top",e.pageY);
-                                                function startFocusOut(){
-                                                  $(document).on("click",function(){
-                                                    $container.hide();
-                                                    $(document).off("click");
-                                                  });
-                                                }
-                                                $container.fadeIn(200, startFocusOut());
-                                                var $lis = $container.find('li');
-                                                $lis.off('click');
-                                                $lis.on('click', function(){
-                                                    $lis.off('click');
-                                                    var value = $(this).attr('value');
-                                                    if(value==='delete') {
-                                                        axis.remove();
-                                                    }
-                                                });
-                                            }
-                                        };
-                                    }
-                                }
+                                axes.push(chartJson['xAxis']);
                             }
-
                             if(chartJson.hasOwnProperty('yAxis')) {
-                                var axis = chartJson['yAxis'];
+                                axes.push(chartJson['yAxis']);
+                            }
+                            for(var a = 0; a < axes.length; a++) {
+                                var axis = axes[a];
                                 for(var i = 0; i < axis.length; i++) {
                                     var axisOpts = axis[i];
                                     if (axisOpts.hasOwnProperty('type') && axisOpts['type']=='category') {
@@ -428,6 +394,7 @@ $(document).ready(function() {
                                         labels['events'] = {
                                             contextmenu: function(e) {
                                                 var axis = this;
+                                                var axisIndex = axis.value;
                                                 var $container = $('#context-menu-cntnr');
                                                 $container.css("left",e.pageX);
                                                 $container.css("top",e.pageY);
@@ -444,7 +411,8 @@ $(document).ready(function() {
                                                     $lis.off('click');
                                                     var value = $(this).attr('value');
                                                     if(value==='delete') {
-                                                        axis.remove();
+                                                        axis.axis.categories.splice(axisIndex, 1);
+                                                        axis.chart.redraw();
                                                     }
                                                 });
                                             }
@@ -468,7 +436,7 @@ $(document).ready(function() {
                                     if(this.hasOwnProperty('drilldown')) {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        this.hcEvents['click.drilldown'](e);
+                                        this.firePointEvent('click.drillDown', e);
                                     }
                                 },
                                 contextmenu: function(e) {
