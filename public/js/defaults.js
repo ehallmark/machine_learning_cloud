@@ -419,22 +419,37 @@ $(document).ready(function() {
                                                     $lis.off('click');
                                                     var value = $(this).attr('value');
                                                     if(value==='delete') {
-                                                        axis.axis.categories.splice(axisIndex, 1);
-                                                        for(var i = 0; i < axis.axis.series.length; i++) {
-                                                            var series = axis.axis.series[i];
-                                                            for(var j = 0; j < series.data.length; j++) {
-                                                                var point = series.data[j];
-                                                                if(isYAxis) {
-                                                                    if(point.y===axisIndex) {
-                                                                        point.remove();
-                                                                    } else if (point.y>axisIndex) {
-                                                                        point.y = point.y-1;
+                                                        if(axis.axis.categories === true) {
+                                                            // DRILLDOWN ONLY?
+                                                            if(axis.axis.hasOwnProperty('ddPoints')) {
+                                                                var ddPoints = axis.axis['ddPoints'];
+                                                                if(ddPoints.length>axisIndex) {
+                                                                    var ddPoint = ddPoints[axisIndex];
+                                                                    if(ddPoint.length>0) {
+                                                                        ddPoint = ddPoint[0];
+                                                                        ddPoint.remove();
                                                                     }
-                                                                } else {
-                                                                    if(point.x===axisIndex) {
-                                                                        point.remove();
-                                                                    } else if (point.x>axisIndex) {
-                                                                        point.x=point.x-1;
+                                                                }
+                                                            }
+
+                                                        } else {
+                                                            axis.axis.categories.splice(axisIndex, 1);
+                                                            for(var i = 0; i < axis.axis.series.length; i++) {
+                                                                var series = axis.axis.series[i];
+                                                                for(var j = 0; j < series.data.length; j++) {
+                                                                    var point = series.data[j];
+                                                                    if(isYAxis) {
+                                                                        if(point.y===axisIndex) {
+                                                                            point.remove();
+                                                                        } else if (point.y>axisIndex) {
+                                                                            point.y = point.y-1;
+                                                                        }
+                                                                    } else {
+                                                                        if(point.x===axisIndex) {
+                                                                            point.remove();
+                                                                        } else if (point.x>axisIndex) {
+                                                                            point.x=point.x-1;
+                                                                        }
                                                                     }
                                                                 }
                                                             }
