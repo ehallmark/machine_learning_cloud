@@ -423,12 +423,10 @@ $(document).ready(function() {
                                                             // DRILLDOWN ONLY?
                                                             if(axis.axis.hasOwnProperty('ddPoints')) {
                                                                 var ddPoints = axis.axis['ddPoints'];
-                                                                if(ddPoints.length>axisIndex) {
-                                                                    var ddPoint = ddPoints[axisIndex];
-                                                                    if(ddPoint.length>0) {
-                                                                        ddPoint = ddPoint[0];
-                                                                        ddPoint.remove();
-                                                                    }
+                                                                var ddPoint = ddPoints[axisIndex];
+                                                                if(ddPoint.length>0) {
+                                                                    ddPoint = ddPoint[0];
+                                                                    ddPoint.remove();
                                                                 }
                                                             }
 
