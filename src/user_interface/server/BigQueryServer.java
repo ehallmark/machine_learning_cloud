@@ -2599,6 +2599,7 @@ public class BigQueryServer extends SimilarPatentServer {
                         script().withSrc("/js/popper.min.js"),
                         script().withSrc("/js/highcharts.js"),
                         script().withSrc("/js/drilldown.js"),
+                        script().withSrc("/js/word_cloud.js"),
                         script().withSrc("/js/exporting.js"),
                         script().withSrc("/js/offline-exporting.js"),
                         script().withSrc("/js/customEvents.js"),
