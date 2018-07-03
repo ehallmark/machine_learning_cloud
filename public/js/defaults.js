@@ -344,7 +344,7 @@ $(document).ready(function() {
                                 chartJson['tooltip'] = {
                                     useHtml: true,
                                     formatter: function () {
-                                        return '<table><tr><td>'+this.series.yAxis.categories[this.point.y]+'</td></tr><tr><td>' + this.series.xAxis.categories[this.point.x] +'</td><td><b> '+ this.point.value +'</b></td></tr></table>';
+                                        return this.series.yAxis.categories[this.point.y]+'<br>' + this.series.xAxis.categories[this.point.x] +'<br><b>'+ this.point.value +'</b>';
                                     }
                                 };
                             }
