@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
 
@@ -48,21 +49,10 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
 
 
         List<String> yCategories = getCategoriesForAttribute(attribute);
-        List<String> xCategories = null;
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
-        String subtitle = "";
+        String subtitle;
         AbstractAttribute groupByAttr = findAttribute(groupByAttributes, groupedByAttrName);
-        final boolean isGrouped = groupedByAttrName!=null;
-        if(isGrouped) {
-            subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
-            if(groupByAttr!=null) {
-                xCategories = getCategoriesForAttribute(groupByAttr);
-            }
-        }
-        if(xCategories == null) {
-            throw new RuntimeException("Unable to find categories for grouped attribute: "+groupedByAttrName);
-        }
-
+        subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
         String xAxisSuffix;
         String yAxisSuffix;
         if(attribute instanceof RangeAttribute) {
@@ -80,6 +70,7 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         Options parentOptions = new Options();
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         parentOptions = createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,null,false,includeBlank);
+        List<String> xCategories = parentOptions.getSeries().stream().map(series->series.getName()).collect(Collectors.toList());
         return Collections.singletonList(new HeatMapChart(parentOptions, title, subtitle, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0, collectorType, xCategories, yCategories));
     }
 
