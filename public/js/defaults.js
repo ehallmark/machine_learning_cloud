@@ -433,7 +433,7 @@ $(document).ready(function() {
                                     if(this.hasOwnProperty('drilldown')) {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        $(this).trigger('click.drillDown');
+                                        this.hcEvents['click.drilldown'](e);
                                     }
                                 },
                                 contextmenu: function(e) {
