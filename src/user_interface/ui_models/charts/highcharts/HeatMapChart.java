@@ -57,10 +57,7 @@ public class HeatMapChart extends AbstractChart {
         options.getSingleYAxis().setTitle(new Title(ColumnChart.capitalize(yLabel)+" "+collectorType)).setCategories(yCategories);
         ArraySeries combinedSeries = new ArraySeries();
         combinedSeries.setDataLabels(new DataLabels(true)
-                .setRotation(0)
                 .setColor(Color.black)
-                .setAlign(HorizontalAlignment.CENTER)
-                .setFormat("{value:.\"+valueDecimals+\"f}"+valueSuffix)
         );
         combinedSeries.setBorderWidth(1);
         for (int i = 0; i < options.getSeries().size(); i++) {
