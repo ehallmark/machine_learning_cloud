@@ -373,6 +373,9 @@ $(document).ready(function() {
                             if(!chartJson.hasOwnProperty('events')) {
                                 chartJson['events'] = {};
                             }
+                            chartJson['events']['drillup'] = function() {
+                                this.redraw(true);
+                            };
 
                             // add dbl click to axis labels
                             var axes = [];
@@ -433,11 +436,11 @@ $(document).ready(function() {
                             }
                             chartJson['plotOptions']['series']['point']['events'] = {
                                 dblclick: function(e) {
-                                    if(this.hasOwnProperty('drilldown')) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        this.firePointEvent('click.drilldown', e);
-                                    }
+                                   // if(this.hasOwnProperty('drilldown')) {
+                                   //     e.preventDefault();
+                                   //     e.stopPropagation();
+                                   //     this.firePointEvent('click.drilldown', e);
+                                   // }
                                 },
                                 contextmenu: function(e) {
                                     var point = this;
