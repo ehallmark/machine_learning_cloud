@@ -14,6 +14,8 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 2/14/17.
@@ -33,9 +35,9 @@ public class HeatMapChart extends AbstractChart {
         ColorReference maxColor = new RgbaColor(color[0],color[1],color[2], 1f);
         options = options
                 .setColorAxis(new ColorAxis().setMin(0).setMinColor(new HexColor("#FFFFFF")).setMaxColor(maxColor))
-                .setChartOptions(new ChartOptions().setHeight(450).setType(SeriesType.HEATMAP))
+                .setChartOptions(new ChartOptions().setHeight(550).setType(SeriesType.HEATMAP))
                 .setTitle(new Title(title))
-                .setLegend(new Legend(true).setAlign(HorizontalAlignment.RIGHT).setLayout(LegendLayout.VERTICAL).setVerticalAlign(VerticalAlignment.BOTTOM).setSymbolHeight(280))
+                .setLegend(new Legend(true).setAlign(HorizontalAlignment.RIGHT).setLayout(LegendLayout.VERTICAL).setVerticalAlign(VerticalAlignment.BOTTOM).setY(-25).setSymbolHeight(280))
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()))
                 .setExporting(new ExportingOptions().setEnabled(true))
                 .setTooltip(new Tooltip().setEnabled(true).setShared(false).setUseHTML(true)
@@ -58,17 +60,18 @@ public class HeatMapChart extends AbstractChart {
                 .setRotation(0)
                 .setColor(Color.black)
                 .setAlign(HorizontalAlignment.CENTER)
-                .setFormat("{y}")
-                .setY(-5)
+                .setFormat("{value:.\"+valueDecimals+\"f}"+valueSuffix)
         );
         combinedSeries.setBorderWidth(1);
         for (int i = 0; i < options.getSeries().size(); i++) {
             ArraySeries arraySeries = (ArraySeries)options.getSeries().get(i);
-            for(List point : arraySeries.getData()) {
+            Map<String,Number> dataMap = arraySeries.getData().stream().collect(Collectors.toMap(d->(String)d.get(0),d->(Number)d.get(1)));
+            for(int j = 0; j < xCategories.size(); j++) {
+                String x = xCategories.get(j);
                 List<Object> newData = new ArrayList<>(3);
-                newData.add(xCategories.indexOf((String)point.get(0)));
+                newData.add(j);
                 newData.add(i);
-                newData.add(point.get(1));
+                newData.add(dataMap.getOrDefault(x, 0));
                 combinedSeries.addPoint(newData);
             }
         }
