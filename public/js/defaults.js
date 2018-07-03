@@ -437,8 +437,6 @@ $(document).ready(function() {
                             chartJson['plotOptions']['series']['point']['events'] = {
                                 dblclick: function(e) {
                                    // if(this.hasOwnProperty('drilldown')) {
-                                   //     e.preventDefault();
-                                   //     e.stopPropagation();
                                    //     this.firePointEvent('click.drilldown', e);
                                    // }
                                 },
