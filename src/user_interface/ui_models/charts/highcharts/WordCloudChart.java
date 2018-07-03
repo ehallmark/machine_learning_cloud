@@ -26,7 +26,9 @@ public class WordCloudChart extends AbstractChart {
                 .setChartOptions(new ChartOptions().setHeight(450))
                 .setTitle(new Title(title))
                 .setSubtitle(new Title(subTitle))
-                .setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}%</b><br/>: <b> {point.y} "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"));
+        if(options.getSeries().size()>0) {
+            options.getSeries().get(0).setName(yLabel);
+        }
     }
 }
