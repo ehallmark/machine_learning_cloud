@@ -465,16 +465,18 @@ $(document).ready(function() {
                                                             var categories = axis.axis.categories;
                                                             categories.splice(axisIndex, 1);
                                                             axis.axis.setCategories(categories);
+                                                            axis.chart.redraw();
                                                         }
                                                     } else if(value==='edit') {
                                                         var value = $target.text();
                                                         $target.html('<input type="text" />');
                                                         $target.find('input').val(value)
-                                                            .on('input', function(e) {
+                                                            .on('change', function(e) {
                                                                 e.preventDefault();
                                                                 e.stopPropagation();
-                                                                $target.find('input').off('input');
-                                                                var userVal = $target.find('input').val();
+                                                                var $input = $target.find('input');
+                                                                $input.off('change');
+                                                                var userVal = $input.val();
                                                                 var categories = axis.axis.categories;
                                                                 categories[axisIndex] = userVal;
                                                                 axis.axis.setCategories(categories);
@@ -482,7 +484,6 @@ $(document).ready(function() {
                                                                 axis.chart.redraw();
                                                             });
                                                     }
-                                                    axis.chart.redraw();
                                                 });
                                             }
                                         };
