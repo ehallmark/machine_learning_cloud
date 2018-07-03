@@ -436,7 +436,7 @@ $(document).ready(function() {
                                     if(this.hasOwnProperty('drilldown')) {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        this.firePointEvent('click.drillDown', e);
+                                        this.firePointEvent('click.drilldown', e);
                                     }
                                 },
                                 contextmenu: function(e) {
