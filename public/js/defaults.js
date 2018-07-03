@@ -416,9 +416,10 @@ $(document).ready(function() {
                                                 $container.fadeIn(200, startFocusOut());
                                                 var $lis = $container.find('li');
                                                 $lis.off('click');
-                                                $lis.on('click', function(){
+                                                $lis.on('click', function(e){
+                                                    var $li = $(this);
                                                     $lis.off('click');
-                                                    var value = $(this).attr('value');
+                                                    var value = $li.attr('value');
                                                     if(value==='delete') {
                                                         if(axis.axis.categories === true) {
                                                             // DRILLDOWN ONLY?
@@ -468,11 +469,24 @@ $(document).ready(function() {
                                                             axis.chart.redraw();
                                                         }
                                                     } else if(value==='edit') {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
                                                         var value = $target.text();
-                                                        $target.text('').append('<input type="text" ></input>');
-                                                        var $input = $target.find('input');
-                                                        $input.val(value).on('change', function(e) {
-                                                            $input.off('change');
+                                                        var oldHtml = $li.html();
+                                                        $li.html('<form><input class="form-control" type="text" ></input><button type="submit">Update</button></form>');
+                                                        var $input = $li.find('input');
+                                                        $input.val(value);
+                                                        var $form = $li.find('form');
+                                                        $(document).off('click');
+                                                        $(document).on("click",function(){
+                                                            $li.html(oldHtml);
+                                                            $container.hide();
+                                                            $(document).off("click");
+                                                        });
+                                                        $form.on('submit', function(e) {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            $form.off('submit');
                                                             var userVal = $input.val();
                                                             var categories = axis.axis.categories;
                                                             categories[axisIndex] = userVal;
@@ -480,6 +494,7 @@ $(document).ready(function() {
                                                             alert('UserVal: '+userVal);
                                                             $target.empty().text(userVal);
                                                             axis.chart.redraw();
+                                                            $(document).trigger('click');
                                                         });
                                                     }
                                                 });
