@@ -1,13 +1,6 @@
 package user_interface.ui_models.charts.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.options.*;
-import com.googlecode.wickedcharts.highcharts.options.color.ColorReference;
-import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import user_interface.ui_models.charts.aggregations.Type;
-
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by ehallmark on 2/14/17.

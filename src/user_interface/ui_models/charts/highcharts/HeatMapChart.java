@@ -3,11 +3,8 @@ package user_interface.ui_models.charts.highcharts;
 import com.googlecode.wickedcharts.highcharts.options.*;
 import com.googlecode.wickedcharts.highcharts.options.color.ColorReference;
 import com.googlecode.wickedcharts.highcharts.options.color.HexColor;
-import com.googlecode.wickedcharts.highcharts.options.color.HighchartsColor;
 import com.googlecode.wickedcharts.highcharts.options.color.RgbaColor;
 import com.googlecode.wickedcharts.highcharts.options.heatmap.ColorAxis;
-import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import lombok.Getter;
 import user_interface.ui_models.charts.aggregations.Type;
 
 import java.awt.*;
@@ -26,10 +23,7 @@ public class HeatMapChart extends AbstractChart {
         return "heatmap";
     }
 
-    public HeatMapChart(Options _options, String title, String subTitle, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String valueSuffix, int valueDecimals, Type collectorType, List<String> xCategories, List<String> yCategories) {
-        String valueFormatStr = "{point.value:."+valueDecimals+"f}"+valueSuffix;
-        String yFormatStr = "{point.y}"+yAxisSuffix;
-        String xFormatStr = "{point.x}"+xAxisSuffix;
+    public HeatMapChart(Options _options, String title, String subTitle, String xLabel, String yLabel, Type collectorType, List<String> xCategories, List<String> yCategories) {
         options=_options;
         int[] color = getColor(0, 0);
         ColorReference maxColor = new RgbaColor(color[0],color[1],color[2], 1f);

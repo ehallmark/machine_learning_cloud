@@ -1,10 +1,6 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
 import com.googlecode.wickedcharts.highcharts.options.Options;
-import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import data_pipeline.helpers.Function2;
-import j2html.tags.ContainerTag;
-import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregations;
 import seeding.Constants;
 import user_interface.server.BigQueryServer;
@@ -13,17 +9,12 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.highcharts.ArraySeries;
-import user_interface.ui_models.charts.highcharts.ColumnChart;
 import user_interface.ui_models.charts.highcharts.HeatMapChart;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static j2html.TagCreator.*;
 
 public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
     private static final String AGG_SUFFIX = "_heatmap";
@@ -81,7 +72,7 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         List<String> xCategories = parentOptions.getSeries().isEmpty()? Collections.emptyList() :
                 parentOptions.getSeries().stream().flatMap(series->((ArraySeries)series).getData().stream().map(data->(String)data.get(0))).distinct().sorted().collect(Collectors.toList());
         List<String> yCategories = parentOptions.getSeries().stream().map(series->series.getName()).collect(Collectors.toList());
-        return Collections.singletonList(new HeatMapChart(parentOptions, title, subtitle, xAxisSuffix, yAxisSuffix, humanAttr, yLabel, valueSuffix, valueDecimals, collectorType, xCategories, yCategories));
+        return Collections.singletonList(new HeatMapChart(parentOptions, title, subtitle, humanAttr, yLabel, collectorType, xCategories, yCategories));
     }
 
 

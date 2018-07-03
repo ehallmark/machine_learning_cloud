@@ -352,6 +352,15 @@ $(document).ready(function() {
                             // hack for word cloud chart
                             if(chartJson.hasOwnProperty('chart') && !chartJson['chart'].hasOwnProperty('type')) {
                                 chartJson['chart']['type'] = 'wordcloud';
+                                if(!chartJson.hasOwnProperty('plotOptions')) {
+                                    chartJson['plotOptions'] = {};
+                                }
+                                if(!chartJson['plotOptions'].hasOwnProperty('wordcloud')) {
+                                    chartJson['plotOptions']['wordcloud'] = {
+                                        maxFontSize: 30,
+                                        minFontSize: 10
+                                    };
+                                }
                             } else if (chartJson.hasOwnProperty('chart') && chartJson['chart']['type']==='heatmap') {
                                 // hack for heatmap tooltips
                                 chartJson['tooltip'] = {
