@@ -23,7 +23,7 @@ public class WordCloudChart extends AbstractChart {
         options=_options;
         options = options
                 .setExporting(new ExportingOptions().setEnabled(true))
-                .setChartOptions(new ChartOptions().setHeight(450))
+                .setChartOptions(new ChartOptions())
                 .setTitle(new Title(title))
                 .setSubtitle(new Title(subTitle))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"));
