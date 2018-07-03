@@ -370,6 +370,14 @@ $(document).ready(function() {
                                     }
                                 };
                             }
+                            if(!chartJson.hasOwnProperty('events')) {
+                                chartJson['events'] = {};
+                            }
+                            if(!chartJson['events'].hasOwnProperty('drillup')) {
+                                chartJson['events']['drillup'] = function() {
+
+                                };
+                            }
                             // add dbl click to buttons
                             if(!chartJson.hasOwnProperty('plotOptions')) {
                                 chartJson['plotOptions'] = {};
