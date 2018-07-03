@@ -469,20 +469,18 @@ $(document).ready(function() {
                                                         }
                                                     } else if(value==='edit') {
                                                         var value = $target.text();
-                                                        $target.html('<input type="text" />');
-                                                        $target.find('input').val(value)
-                                                            .on('change', function(e) {
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                var $input = $target.find('input');
-                                                                $input.off('change');
-                                                                var userVal = $input.val();
-                                                                var categories = axis.axis.categories;
-                                                                categories[axisIndex] = userVal;
-                                                                axis.axis.setCategories(categories);
-                                                                $target.empty().text(userVal);
-                                                                axis.chart.redraw();
-                                                            });
+                                                        $target.text('').append('<input type="text" ></input>');
+                                                        var $input = $target.find('input');
+                                                        $input.val(value).on('change', function(e) {
+                                                            $input.off('change');
+                                                            var userVal = $input.val();
+                                                            var categories = axis.axis.categories;
+                                                            categories[axisIndex] = userVal;
+                                                            axis.axis.setCategories(categories);
+                                                            alert('UserVal: '+userVal);
+                                                            $target.empty().text(userVal);
+                                                            axis.chart.redraw();
+                                                        });
                                                     }
                                                 });
                                             }
