@@ -376,6 +376,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
     }
 
     public static AbstractAttribute findAttribute(Collection<AbstractAttribute> nonNestedAttributes, String attrName) {
+        if(nonNestedAttributes == null) return null;
         return nonNestedAttributes.stream().filter(attr -> attr.getFullName().equals(attrName)).limit(1).findFirst().orElse(null);
     }
 

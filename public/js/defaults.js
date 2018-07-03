@@ -336,6 +336,10 @@ $(document).ready(function() {
                             };
                             chart = updateDatagroupingByIndex(j,chartJson,chartJson.series);
                         } else {
+                            // hack for word cloud chart
+                            if(chartJson.hasOwnProperty('chart') && !chartJson['chart'].hasOwnProperty('type')) {
+                                chartJson['chart']['type'] = 'wordcloud';
+                            }
                             // add dbl click to buttons
                             if(!chartJson.hasOwnProperty('plotOptions')) {
                                 chartJson['plotOptions'] = {};

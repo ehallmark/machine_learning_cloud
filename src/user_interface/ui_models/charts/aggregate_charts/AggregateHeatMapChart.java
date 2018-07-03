@@ -36,7 +36,6 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
 
     @Override
     public List<? extends HeatMapChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
-        RangeAttribute rangeAttribute = (RangeAttribute)attribute;
         String humanAttr = SimilarPatentServer.humanAttributeFor(attrName);
         String collectAttr = attrToCollectByAttrMap.get(attrName);
         if(collectAttr==null) {
@@ -47,17 +46,15 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         String humanSearchType = collectAttr;
         String title = humanAttr + " "+chartTitle;
 
-        String xAxisSuffix = rangeAttribute.valueSuffix();
-        String yAxisSuffix = "";
 
         List<String> yCategories = getCategoriesForAttribute(attribute);
         List<String> xCategories = null;
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         String subtitle = "";
+        AbstractAttribute groupByAttr = findAttribute(groupByAttributes, groupedByAttrName);
         final boolean isGrouped = groupedByAttrName!=null;
         if(isGrouped) {
             subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
-            AbstractAttribute groupByAttr = findAttribute(groupByAttributes, groupedByAttrName);
             if(groupByAttr!=null) {
                 xCategories = getCategoriesForAttribute(groupByAttr);
             }
@@ -65,6 +62,20 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         if(xCategories == null) {
             throw new RuntimeException("Unable to find categories for grouped attribute: "+groupedByAttrName);
         }
+
+        String xAxisSuffix;
+        String yAxisSuffix;
+        if(attribute instanceof RangeAttribute) {
+            xAxisSuffix = ((RangeAttribute) attribute).valueSuffix();
+        } else {
+            xAxisSuffix = "";
+        }
+        if(groupByAttr instanceof RangeAttribute) {
+            yAxisSuffix = ((RangeAttribute) groupByAttr).valueSuffix();
+        } else {
+            yAxisSuffix = "";
+        }
+
         Type collectorType = attrToCollectTypeMap.getOrDefault(attrName, Type.Count);
         Options parentOptions = new Options();
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
