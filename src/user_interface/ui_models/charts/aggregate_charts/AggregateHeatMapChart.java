@@ -62,8 +62,7 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
         String xAxisSuffix;
         String yAxisSuffix;
-        int yDecimals = 0;
-        int xDecimals = 0;
+
         if(attribute instanceof RangeAttribute) {
             xAxisSuffix = ((RangeAttribute) attribute).valueSuffix();
         } else {
@@ -74,19 +73,13 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         } else {
             yAxisSuffix = "";
         }
-        if(attribute != null && attribute.getType().equals("double")) {
-            xDecimals = 1;
-        }
-        if(groupByAttr != null && groupByAttr.getType().equals("double")) {
-            yDecimals = 1;
-        }
 
         Type collectorType = attrToCollectTypeMap.getOrDefault(attrName, Type.Count);
         Options parentOptions = new Options();
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         parentOptions = createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,null,false,includeBlank);
         List<String> xCategories = parentOptions.getSeries().isEmpty()? Collections.emptyList() :
-                ((ArraySeries)parentOptions.getSeries().get(0)).getData().stream().map(data->(String)data.get(0)).collect(Collectors.toList());
+                parentOptions.getSeries().stream().flatMap(series->((ArraySeries)series).getData().stream().map(data->(String)data.get(0))).distinct().sorted().collect(Collectors.toList());
         List<String> yCategories = parentOptions.getSeries().stream().map(series->series.getName()).collect(Collectors.toList());
         return Collections.singletonList(new HeatMapChart(parentOptions, title, subtitle, xAxisSuffix, yAxisSuffix, humanAttr, yLabel, valueSuffix, valueDecimals, collectorType, xCategories, yCategories));
     }
