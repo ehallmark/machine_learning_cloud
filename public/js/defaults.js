@@ -438,23 +438,23 @@ $(document).ready(function() {
                                                                     var point = datapoints[j];
                                                                     if(isYAxis) {
                                                                         if(point.y===axisIndex) {
-                                                                            point.remove();
+                                                                            point.remove(false);
                                                                         } else if (point.y>axisIndex) {
                                                                             point.update({
                                                                                 x: point.x,
                                                                                 y: point.y-1,
                                                                                 value: point.value
-                                                                            });
+                                                                            }, false);
                                                                         }
                                                                     } else {
                                                                         if(point.x===axisIndex) {
-                                                                            point.remove();
+                                                                            point.remove(false);
                                                                         } else if (point.x>axisIndex) {
                                                                             point.update({
                                                                                 x: point.x-1,
                                                                                 y: point.y,
                                                                                 value: point.value
-                                                                            });
+                                                                            }, false);
                                                                         }
                                                                     }
                                                                 }
@@ -462,7 +462,6 @@ $(document).ready(function() {
                                                             var categories = axis.axis.categories;
                                                             categories.splice(axisIndex, 1);
                                                             axis.axis.setCategories(categories);
-                                                            axis.redraw();
                                                         }
                                                         axis.chart.redraw();
                                                     }
