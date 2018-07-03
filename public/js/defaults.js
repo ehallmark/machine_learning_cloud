@@ -370,10 +370,14 @@ $(document).ready(function() {
                                     }
                                 };
                             }
-                            if(!chartJson.hasOwnProperty('events')) {
-                                chartJson['events'] = {};
+                            if(!chartJson.hasOwnProperty('chart')) {
+                                chartJson['chart'] = {};
                             }
-                            chartJson['events']['drillup'] = function() {
+                            var chartOpts = chartJson['chart'];
+                            if(!chartOpts.hasOwnProperty('events')) {
+                                chartOpts['events'] = {};
+                            }
+                            chartOpts['events']['drillup'] = function() {
                                 this.redraw(true);
                             };
 
