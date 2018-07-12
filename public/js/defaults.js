@@ -395,6 +395,7 @@ $(document).ready(function() {
                                         var labels = axisOpts['labels'];
                                         labels['events'] = {
                                             contextmenu: function(e) {
+
                                                 var $target = $(e.currentTarget);
                                                 var axis = this;
                                                 var isYAxis = axis.axis.coll === 'yAxis';
@@ -457,13 +458,15 @@ $(document).ready(function() {
                                                         e.stopPropagation();
                                                         var value = $target.text();
                                                         var oldHtml = $li.html();
-                                                        $li.html('<form><input class="form-control" type="text" /><button>Update</button></form>');
+                                                        $li.html('<hr /><form><input class="form-control" type="text" /><button>Update</button></form><hr />');
+                                                        $li.addClass('nohover');
                                                         var $input = $li.find('input');
                                                         $input.val(value);
                                                         var $form = $li.find('form');
                                                         $(document).off('click');
                                                         $(document).on("click",function(){
                                                             $li.html(oldHtml);
+                                                            $li.removeClass('nohover');
                                                             $container.hide();
                                                             $(document).off("click");
                                                         });
@@ -522,15 +525,15 @@ $(document).ready(function() {
                                         var $lis = $container.find('li');
                                         $lis.off('click');
                                         $lis.on('click', function(){
+                                            var $li = $(this);
                                             $lis.off('click');
-                                            var value = $(this).attr('value');
+                                            var value = $li.attr('value');
                                             if(value==='delete') {
                                                 point.remove();
                                             } else if (value==='edit') {
                                                 e.preventDefault();
                                                 e.stopPropagation();
-                                                var $target = $(e.currentTarget);
-                                                var value = $target.text();
+                                                var value = point.value;
                                                 var oldHtml = $li.html();
                                                 $li.html('<hr /><form><input class="form-control" type="text" /><button>Update</button></form><hr />');
                                                 $li.addClass('nohover');
