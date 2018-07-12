@@ -533,7 +533,12 @@ $(document).ready(function() {
                                             } else if (value==='edit') {
                                                 e.preventDefault();
                                                 e.stopPropagation();
-                                                var value = point.value;
+                                                var value = null;
+                                                if(point.hasOwnProperty('value')) {
+                                                    value = point.value;
+                                                } else {
+                                                    value = point.y
+                                                }
                                                 var oldHtml = $li.html();
                                                 $li.html('<hr /><form><input class="form-control" type="text" /><button>Update</button></form><hr />');
                                                 $li.addClass('nohover');
@@ -547,7 +552,7 @@ $(document).ready(function() {
                                                     $container.hide();
                                                     $(document).off("click");
                                                 });
-                                                $form.on('click', function(e) {
+                                                $li.on('click', function(e) {
                                                     e.stopPropagation();
                                                 });
                                                 $form.on('submit', function(e) {
@@ -556,7 +561,11 @@ $(document).ready(function() {
                                                     $form.off('submit');
                                                     var userVal = $input.val();
                                                     var categories = point.axis.categories;
-                                                    point.update({value: userVal}, true);
+                                                    if(point.hasOwnProperty('value')) {
+                                                        point.update({value: userVal}, true);
+                                                    } else {
+                                                        point.update({y: userVal}, true);
+                                                    }
                                                     alert('UserVal: '+userVal);
                                                     $(document).trigger('click');
                                                 });
