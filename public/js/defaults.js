@@ -556,11 +556,8 @@ $(document).ready(function() {
                                                     $form.off('submit');
                                                     var userVal = $input.val();
                                                     var categories = point.axis.categories;
-                                                    categories[axisIndex] = userVal;
-                                                    point.axis.setCategories(categories);
+                                                    point.update({value: userVal}, true);
                                                     alert('UserVal: '+userVal);
-                                                    $target.empty().text(userVal);
-                                                    point.chart.redraw(true);
                                                     $(document).trigger('click');
                                                 });
 
