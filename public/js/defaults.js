@@ -4,13 +4,8 @@ $(document).ready(function() {
                                 '<ul id="context-menu-items">'+
                                 '  <li value="delete">Remove this Point</li>'+
                                 '  <li value="edit">Edit this Point</li>'+
-                                '  <li value="add">Add a new Point</li>'+
                                 '</ul>'+
-                                '<hr />'+
-                                '<ul id="context-menu-items">'+
-                                '  <li value="show">Preview Assets</li>'+
-                                '</ul>'+
-                               '</div>');
+                            '</div>');
 
 
     $('.loader').show();
@@ -421,18 +416,7 @@ $(document).ready(function() {
                                                     $lis.off('click');
                                                     var value = $li.attr('value');
                                                     if(value==='delete') {
-                                                        if(axis.axis.categories === true) {
-                                                            // DRILLDOWN ONLY?
-                                                            if(axis.axis.hasOwnProperty('ddPoints')) {
-                                                                var ddPoints = axis.axis['ddPoints'];
-                                                                var ddPoint = ddPoints[axisIndex];
-                                                                if(ddPoint.length>0) {
-                                                                    ddPoint = ddPoint[0];
-                                                                    ddPoint.remove();
-                                                                }
-                                                            }
-
-                                                        } else {
+                                                        if(axis.axis.categories !== true) {
                                                             for(var i = 0; i < axis.axis.series.length; i++) {
                                                                 var series = axis.axis.series[i];
                                                                 var datapoints = series.data.slice(0); // create a clone
@@ -466,7 +450,7 @@ $(document).ready(function() {
                                                             var categories = axis.axis.categories;
                                                             categories.splice(axisIndex, 1);
                                                             axis.axis.setCategories(categories);
-                                                            axis.chart.redraw();
+                                                            axis.chart.redraw(true);
                                                         }
                                                     } else if(value==='edit') {
                                                         e.preventDefault();
@@ -496,7 +480,7 @@ $(document).ready(function() {
                                                             axis.axis.setCategories(categories);
                                                             alert('UserVal: '+userVal);
                                                             $target.empty().text(userVal);
-                                                            axis.chart.redraw();
+                                                            axis.chart.redraw(true);
                                                             $(document).trigger('click');
                                                         });
                                                     }
@@ -518,36 +502,69 @@ $(document).ready(function() {
                                 chartJson['plotOptions']['series']['point'] = {};
                             }
                             chartJson['plotOptions']['series']['point']['events'] = {
-                                dblclick: function(e) {
-                                   // if(this.hasOwnProperty('drilldown')) {
-                                   //     this.firePointEvent('click.drilldown', e);
-                                   // }
-                                },
                                 contextmenu: function(e) {
-                                    var point = this;
-                                    var chartId = $(this.series.chart.renderTo).attr('id');
-                                    var value = this.options.name;
-                                    var seriesIndex = this.series.index;
-                                    var pointIndex = this.index;
-                                    var $container = $('#context-menu-cntnr');
-                                    $container.css("left",e.pageX);
-                                    $container.css("top",e.pageY);
-                                    function startFocusOut(){
-                                      $(document).on("click",function(){
-                                        $container.hide();
-                                        $(document).off("click");
-                                      });
+                                    if(!this.hasOwnProperty('drilldown')) {
+                                        var point = this;
+                                        var chartId = $(this.series.chart.renderTo).attr('id');
+                                        var value = this.options.name;
+                                        var seriesIndex = this.series.index;
+                                        var pointIndex = this.index;
+                                        var $container = $('#context-menu-cntnr');
+                                        $container.css("left",e.pageX);
+                                        $container.css("top",e.pageY);
+                                        function startFocusOut(){
+                                          $(document).on("click",function(){
+                                            $container.hide();
+                                            $(document).off("click");
+                                          });
+                                        }
+                                        $container.fadeIn(200, startFocusOut());
+                                        var $lis = $container.find('li');
+                                        $lis.off('click');
+                                        $lis.on('click', function(){
+                                            $lis.off('click');
+                                            var value = $(this).attr('value');
+                                            if(value==='delete') {
+                                                point.remove();
+                                            } else if (value==='edit') {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                var $target = $(e.currentTarget);
+                                                var value = $target.text();
+                                                var oldHtml = $li.html();
+                                                $li.html('<hr /><form><input class="form-control" type="text" /><button>Update</button></form><hr />');
+                                                $li.addClass('nohover');
+                                                var $input = $li.find('input');
+                                                $input.val(value);
+                                                var $form = $li.find('form');
+                                                $(document).off('click');
+                                                $(document).on("click",function(){
+                                                    $li.html(oldHtml);
+                                                    $li.removeClass('nohover');
+                                                    $container.hide();
+                                                    $(document).off("click");
+                                                });
+                                                $form.on('click', function(e) {
+                                                    e.stopPropagation();
+                                                });
+                                                $form.on('submit', function(e) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    $form.off('submit');
+                                                    var userVal = $input.val();
+                                                    var categories = point.axis.categories;
+                                                    categories[axisIndex] = userVal;
+                                                    point.axis.setCategories(categories);
+                                                    alert('UserVal: '+userVal);
+                                                    $target.empty().text(userVal);
+                                                    point.chart.redraw(true);
+                                                    $(document).trigger('click');
+                                                });
+
+                                            }
+
+                                        });
                                     }
-                                    $container.fadeIn(200, startFocusOut());
-                                    var $lis = $container.find('li');
-                                	$lis.off('click');
-                                    $lis.on('click', function(){
-                                    	$lis.off('click');
-                                    	var value = $(this).attr('value');
-                                    	if(value==='delete') {
-                                    	    point.remove();
-                                    	}
-                                    });
                                 }
                             };
                             chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);

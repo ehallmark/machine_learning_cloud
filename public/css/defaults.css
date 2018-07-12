@@ -381,6 +381,12 @@ textarea, .richtext > pre {
   border-radius:2px;
 }
 
+#context-menu-cntnr li.nohover:hover {
+  color: black !important;
+  background: white !important;
+  border-radius:2px;
+}
+
 #context-menu-cntnr li form:hover{
   color: white;
   background:#F9F9F9;
