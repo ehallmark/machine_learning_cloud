@@ -527,7 +527,7 @@ $(document).ready(function() {
                                 contextmenu: function(e) {
                                     if(!this.hasOwnProperty('drilldown')) {
                                         var point = this;
-                                        var chartId = $(point.chart.renderTo).attr('id');
+                                        var chartId = $(point.series.chart.renderTo).attr('id');
                                         var value = this.options.name;
                                         var seriesIndex = this.series.index;
                                         var pointIndex = this.index;
