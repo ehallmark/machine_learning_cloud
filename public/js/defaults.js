@@ -395,114 +395,115 @@ $(document).ready(function() {
                                         var labels = axisOpts['labels'];
                                         labels['events'] = {
                                             contextmenu: function(e) {
-
-                                                var $target = $(e.currentTarget);
-                                                var axis = this;
-                                                var isYAxis = axis.axis.coll === 'yAxis';
-                                                var axisIndex = axis.value;
-                                                $(document).trigger('click');
-                                                $(document).off('click');
-                                                var $container = $('#context-menu-cntnr');
-                                                $container.css("left",e.pageX);
-                                                $container.css("top",e.pageY);
-                                                function startFocusOut(){
-                                                  $(document).on("click",function(){
-                                                    $container.hide();
-                                                    $(document).off("click");
-                                                  });
-                                                }
-                                                $container.fadeIn(200, startFocusOut());
-                                                var $lis = $container.find('li');
-                                                $lis.off('click');
-                                                $lis.on('click', function(e){
-                                                    var $li = $(this);
+                                                if(!this.axis.hasOwnProperty('ddPoints')) {
+                                                    var $target = $(e.currentTarget);
+                                                    var axis = this;
+                                                    var isYAxis = axis.axis.coll === 'yAxis';
+                                                    var axisIndex = axis.value;
+                                                    $(document).trigger('click');
+                                                    $(document).off('click');
+                                                    var $container = $('#context-menu-cntnr');
+                                                    $container.css("left",e.pageX);
+                                                    $container.css("top",e.pageY);
+                                                    function startFocusOut(){
+                                                      $(document).on("click",function(){
+                                                        $container.hide();
+                                                        $(document).off("click");
+                                                      });
+                                                    }
+                                                    $container.fadeIn(200, startFocusOut());
+                                                    var $lis = $container.find('li');
                                                     $lis.off('click');
-                                                    var value = $li.attr('value');
-                                                    if(value==='delete') {
-                                                        if(axis.axis.categories !== true) {
-                                                            var category = axis.axis.categories[axisIndex];
-                                                            var options = axis.chart.options;
-                                                            for(var i = 0; i < options.series.length; i++) {
-                                                                var series = options.series[i];
-                                                                var datapoints = series.data; // create a clone
-                                                                var to_keep = [];
-                                                                for(var j = 0; j < datapoints.length; j++) {
-                                                                    var point = datapoints[j];
-                                                                    if(point) {
-                                                                        if(isYAxis) {
-                                                                            if(point[1]!==axisIndex) {
-                                                                                if (point[1]>axisIndex) {
-                                                                                    point[1] = point[1] - 1;
-                                                                                    to_keep.push(point);
-                                                                                } else {
-                                                                                    to_keep.push(point);
-                                                                                }
-                                                                            }
-                                                                        } else {
-                                                                            if(point.length==3) {
-                                                                                // heat map
-                                                                                if(point[0]!==axisIndex) {
-                                                                                    if (point[0]>axisIndex) {
-                                                                                        point[0] = point[0] - 1;
+                                                    $lis.on('click', function(e){
+                                                        var $li = $(this);
+                                                        $lis.off('click');
+                                                        var value = $li.attr('value');
+                                                        if(value==='delete') {
+                                                            if(axis.axis.categories !== true) {
+                                                                var category = axis.axis.categories[axisIndex];
+                                                                var options = axis.chart.options;
+                                                                for(var i = 0; i < options.series.length; i++) {
+                                                                    var series = options.series[i];
+                                                                    var datapoints = series.data; // create a clone
+                                                                    var to_keep = [];
+                                                                    for(var j = 0; j < datapoints.length; j++) {
+                                                                        var point = datapoints[j];
+                                                                        if(point) {
+                                                                            if(isYAxis) {
+                                                                                if(point[1]!==axisIndex) {
+                                                                                    if (point[1]>axisIndex) {
+                                                                                        point[1] = point[1] - 1;
                                                                                         to_keep.push(point);
                                                                                     } else {
                                                                                         to_keep.push(point);
                                                                                     }
                                                                                 }
-                                                                            } else { // regular
-                                                                                if(point[0]!==category) {
-                                                                                    to_keep.push(point);
+                                                                            } else {
+                                                                                if(point.length==3) {
+                                                                                    // heat map
+                                                                                    if(point[0]!==axisIndex) {
+                                                                                        if (point[0]>axisIndex) {
+                                                                                            point[0] = point[0] - 1;
+                                                                                            to_keep.push(point);
+                                                                                        } else {
+                                                                                            to_keep.push(point);
+                                                                                        }
+                                                                                    }
+                                                                                } else { // regular
+                                                                                    if(point[0]!==category) {
+                                                                                        to_keep.push(point);
+                                                                                    }
                                                                                 }
                                                                             }
                                                                         }
                                                                     }
-                                                                }
-                                                                series['data'] = to_keep;
+                                                                    series['data'] = to_keep;
 
+                                                                }
+                                                                if(isYAxis) {
+                                                                    options.yAxis[0]['categories'].splice(axisIndex, 1);
+                                                                } else {
+                                                                    options.xAxis[0]['categories'].splice(axisIndex, 1);
+                                                                }
+                                                                var newChart = Highcharts.chart(axis.chart.renderTo, options);
+                                                                newChart.redraw();
                                                             }
-                                                            if(isYAxis) {
-                                                                options.yAxis[0]['categories'].splice(axisIndex, 1);
-                                                            } else {
-                                                                options.xAxis[0]['categories'].splice(axisIndex, 1);
-                                                            }
-                                                            var newChart = Highcharts.chart(axis.chart.renderTo, options);
-                                                            newChart.redraw();
-                                                        }
-                                                    } else if(value==='edit') {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        var value = $target.text();
-                                                        var oldHtml = $li.html();
-                                                        $li.html('<hr /><form><input class="form-control" type="text" /><button>Update</button></form><hr />');
-                                                        $li.addClass('nohover');
-                                                        var $input = $li.find('input');
-                                                        $input.val(value);
-                                                        var $form = $li.find('form');
-                                                        $(document).off('click');
-                                                        $(document).on("click",function(){
-                                                            $li.html(oldHtml);
-                                                            $li.removeClass('nohover');
-                                                            $container.hide();
-                                                            $(document).off("click");
-                                                        });
-                                                        $form.on('click', function(e) {
-                                                            e.stopPropagation();
-                                                        });
-                                                        $form.on('submit', function(e) {
+                                                        } else if(value==='edit') {
                                                             e.preventDefault();
                                                             e.stopPropagation();
-                                                            $form.off('submit');
-                                                            var userVal = $input.val();
-                                                            var categories = axis.axis.categories;
-                                                            categories[axisIndex] = userVal;
-                                                            axis.axis.setCategories(categories);
-                                                            alert('UserVal: '+userVal);
-                                                            $target.empty().text(userVal);
-                                                            axis.chart.redraw(true);
-                                                            $(document).trigger('click');
-                                                        });
-                                                    }
-                                                });
+                                                            var value = $target.text();
+                                                            var oldHtml = $li.html();
+                                                            $li.html('<hr /><form><input class="form-control" type="text" /><button>Update</button></form><hr />');
+                                                            $li.addClass('nohover');
+                                                            var $input = $li.find('input');
+                                                            $input.val(value);
+                                                            var $form = $li.find('form');
+                                                            $(document).off('click');
+                                                            $(document).on("click",function(){
+                                                                $li.html(oldHtml);
+                                                                $li.removeClass('nohover');
+                                                                $container.hide();
+                                                                $(document).off("click");
+                                                            });
+                                                            $form.on('click', function(e) {
+                                                                e.stopPropagation();
+                                                            });
+                                                            $form.on('submit', function(e) {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                $form.off('submit');
+                                                                var userVal = $input.val();
+                                                                var categories = axis.axis.categories;
+                                                                categories[axisIndex] = userVal;
+                                                                axis.axis.setCategories(categories);
+                                                                alert('UserVal: '+userVal);
+                                                                $target.empty().text(userVal);
+                                                                axis.chart.redraw(true);
+                                                                $(document).trigger('click');
+                                                            });
+                                                        }
+                                                    });
+                                                }
                                             }
                                         };
                                     }
