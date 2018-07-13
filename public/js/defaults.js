@@ -420,6 +420,7 @@ $(document).ready(function() {
                                                     var value = $li.attr('value');
                                                     if(value==='delete') {
                                                         if(axis.axis.categories !== true) {
+                                                            var category = axis.axis.categories[axisIndex];
                                                             var options = axis.chart.options;
                                                             for(var i = 0; i < options.series.length; i++) {
                                                                 var series = options.series[i];
@@ -438,11 +439,18 @@ $(document).ready(function() {
                                                                                 }
                                                                             }
                                                                         } else {
-                                                                            if(point[0]!==axisIndex) {
-                                                                                if (point[0]>axisIndex) {
-                                                                                    point[0] = point[0] - 1;
-                                                                                    to_keep.push(point);
-                                                                                } else {
+                                                                            if(point.length==3) {
+                                                                                // heat map
+                                                                                if(point[0]!==axisIndex) {
+                                                                                    if (point[0]>axisIndex) {
+                                                                                        point[0] = point[0] - 1;
+                                                                                        to_keep.push(point);
+                                                                                    } else {
+                                                                                        to_keep.push(point);
+                                                                                    }
+                                                                                }
+                                                                            } else { // regular
+                                                                                if(point[0]!==category) {
                                                                                     to_keep.push(point);
                                                                                 }
                                                                             }
@@ -511,10 +519,7 @@ $(document).ready(function() {
                             if(!chartJson['plotOptions']['series'].hasOwnProperty('point')) {
                                 chartJson['plotOptions']['series']['point'] = {};
                             }
-                            if(!chartJson['plotOptions']['series']['point'].hasOwnProperty('dataLabels')) {
-                                chartJson['plotOptions']['series']['point']['dataLabels'] = {};
-                            }
-                            chartJson['plotOptions']['series']['point']['dataLabels']['events'] = {
+                            chartJson['plotOptions']['series']['point']['events'] = {
                                 contextmenu: function(e) {
                                     if(!this.hasOwnProperty('drilldown')) {
                                         var point = this.point;
