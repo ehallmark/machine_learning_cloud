@@ -503,7 +503,7 @@ $(document).ready(function() {
                                                                             var point = datapoints[j];
                                                                             if(point) {
                                                                                 if(!isYAxis) {
-                                                                                    if(point.length==2) {
+                                                                                    if(point.length==2 && point[0]===category) {
                                                                                         point[0] = userVal;
                                                                                     }
                                                                                 }
@@ -564,11 +564,11 @@ $(document).ready(function() {
                                         $container.fadeIn(200, startFocusOut());
                                         var $lis = $container.find('li');
                                         $lis.off('click');
-                                        $lis.on('click', function(){
+                                        $lis.on('click', function(e){
                                             var $li = $(this);
-                                            $lis.off('click');
                                             var value = $li.attr('value');
                                             if(value==='delete') {
+                                                $lis.off('click');
                                                 point.remove();
                                             } else if (value==='edit') {
                                                 e.preventDefault();
@@ -585,14 +585,8 @@ $(document).ready(function() {
                                                 var $input = $li.find('input');
                                                 $input.val(value);
                                                 var $form = $li.find('form');
-                                                $(document).off('click');
-                                                $(document).on("click",function(){
-                                                    $li.html(oldHtml);
-                                                    $li.removeClass('nohover');
-                                                    $container.hide();
-                                                    $(document).off("click");
-                                                });
                                                 $li.on('click', function(e) {
+                                                    e.preventDefault();
                                                     e.stopPropagation();
                                                 });
                                                 $form.on('submit', function(e) {
@@ -610,8 +604,16 @@ $(document).ready(function() {
                                                     $(document).trigger('click');
                                                 });
 
-                                            }
+                                                $(document).off('click');
+                                                $(document).on("click",function(){
+                                                    $li.html(oldHtml);
+                                                    $li.removeClass('nohover');
+                                                    $lis.off('click');
+                                                    $container.hide();
+                                                    $(document).off("click");
+                                                });
 
+                                            }
                                         });
                                     }
                                 }
