@@ -429,18 +429,18 @@ $(document).ready(function() {
                                                                     var point = datapoints[j];
                                                                     if(point) {
                                                                         if(isYAxis) {
-                                                                            if(point.y!==axisIndex) {
-                                                                                if (point.y>axisIndex) {
-                                                                                    point.y = point.y - 1;
+                                                                            if(point[1]!==axisIndex) {
+                                                                                if (point[1]>axisIndex) {
+                                                                                    point[1] = point[1] - 1;
                                                                                     to_keep.push(point);
                                                                                 } else {
                                                                                     to_keep.push(point);
                                                                                 }
                                                                             }
                                                                         } else {
-                                                                            if(point.x!==axisIndex) {
-                                                                                if (point.x>axisIndex) {
-                                                                                    point.x = point.x - 1;
+                                                                            if(point[0]!==axisIndex) {
+                                                                                if (point[0]>axisIndex) {
+                                                                                    point[0] = point[0] - 1;
                                                                                     to_keep.push(point);
                                                                                 } else {
                                                                                     to_keep.push(point);
