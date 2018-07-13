@@ -485,7 +485,7 @@ $(document).ready(function() {
                                                                 $container.hide();
                                                                 $(document).off("click");
                                                             });
-                                                            $form.on('click', function(e) {
+                                                            $input.on('click', function(e) {
                                                                 e.stopPropagation();
                                                             });
                                                             $form.on('submit', function(e) {
@@ -591,7 +591,7 @@ $(document).ready(function() {
                                                 var $input = $li.find('input');
                                                 $input.val(value);
                                                 var $form = $li.find('form');
-                                                $li.on('click', function(e) {
+                                                $input.on('click', function(e) {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                 });
@@ -616,9 +616,9 @@ $(document).ready(function() {
                                                 $(document).on("click",function(){
                                                     $li.html(oldHtml);
                                                     $li.removeClass('nohover');
-                                                    $lis.off('click');
                                                     $container.hide();
                                                     $(document).off("click");
+                                                    $lis.off('click');
                                                 });
 
                                             }
