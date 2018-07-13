@@ -520,7 +520,10 @@ $(document).ready(function() {
                             if(!chartJson['plotOptions']['series'].hasOwnProperty('point')) {
                                 chartJson['plotOptions']['series']['point'] = {};
                             }
-                            chartJson['plotOptions']['series']['point']['events'] = {
+                            if(!chartJson['plotOptions']['series'].hasOwnProperty('dataLabels')) {
+                                chartJson['plotOptions']['series']['dataLabels'] = {};
+                            }
+                            var clickEvents = {
                                 contextmenu: function(e) {
                                     if(!this.hasOwnProperty('drilldown')) {
                                         var point = this.point;
@@ -594,6 +597,8 @@ $(document).ready(function() {
                                     }
                                 }
                             };
+                            chartJson['plotOptions']['series']['point']['events'] = clickEvents;
+                            chartJson['plotOptions']['series']['dataLabels']['events'] = clickEvents;
                             chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
                         }
                         chart.redraw();
