@@ -511,8 +511,8 @@ $(document).ready(function() {
                             if(!chartJson['plotOptions']['series'].hasOwnProperty('point')) {
                                 chartJson['plotOptions']['series']['point'] = {};
                             }
-                            if(!chartJson['plotOptions']['series']['point'].hasOwnProperty('labels')) {
-                                chartJson['plotOptions']['series']['point']['labels'] = {};
+                            if(!chartJson['plotOptions']['series']['point'].hasOwnProperty('dataLabels')) {
+                                chartJson['plotOptions']['series']['point']['dataLabels'] = {};
                             }
                             chartJson['plotOptions']['series']['point']['dataLabels']['events'] = {
                                 contextmenu: function(e) {
