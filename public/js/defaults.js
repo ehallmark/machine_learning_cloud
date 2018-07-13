@@ -440,7 +440,7 @@ $(document).ready(function() {
                                                                         } else {
                                                                             if(point.x!==axisIndex) {
                                                                                 if (point.x>axisIndex) {
-                                                                                    point.x point.x - 1;
+                                                                                    point.x = point.x - 1;
                                                                                     to_keep.push(point);
                                                                                 } else {
                                                                                     to_keep.push(point);
