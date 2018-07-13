@@ -526,7 +526,7 @@ $(document).ready(function() {
                             var clickEvents = {
                                 contextmenu: function(e) {
                                     if(!this.hasOwnProperty('drilldown')) {
-                                        var point = this.point;
+                                        var point = this;
                                         var chartId = $(point.chart.renderTo).attr('id');
                                         var value = this.options.name;
                                         var seriesIndex = this.series.index;
@@ -598,7 +598,11 @@ $(document).ready(function() {
                                 }
                             };
                             chartJson['plotOptions']['series']['point']['events'] = clickEvents;
-                            chartJson['plotOptions']['series']['dataLabels']['events'] = clickEvents;
+                            chartJson['plotOptions']['series']['dataLabels']['events'] = {
+                                contextmenu: function(e) {
+                                    e.preventDefault();
+                                }
+                            };
                             chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
                         }
                         chart.redraw();
