@@ -400,6 +400,8 @@ $(document).ready(function() {
                                                 var axis = this;
                                                 var isYAxis = axis.axis.coll === 'yAxis';
                                                 var axisIndex = axis.value;
+                                                $(document).trigger('click');
+                                                $(document).off('click');
                                                 var $container = $('#context-menu-cntnr');
                                                 $container.css("left",e.pageX);
                                                 $container.css("top",e.pageY);
@@ -418,41 +420,45 @@ $(document).ready(function() {
                                                     var value = $li.attr('value');
                                                     if(value==='delete') {
                                                         if(axis.axis.categories !== true) {
-                                                            for(var i = 0; i < axis.axis.series.length; i++) {
-                                                                var series = axis.axis.series[i];
-                                                                var datapoints = series.data.slice(0); // create a clone
+                                                            var options = axis.chart.options;
+                                                            for(var i = 0; i < options.series.length; i++) {
+                                                                var series = options.series[i];
+                                                                var datapoints = series.data; // create a clone
+                                                                var to_keep = [];
                                                                 for(var j = 0; j < datapoints.length; j++) {
                                                                     var point = datapoints[j];
                                                                     if(point) {
                                                                         if(isYAxis) {
-                                                                            if(point.y===axisIndex) {
-                                                                                point.remove(false);
-                                                                            } else if (point.y>axisIndex) {
-                                                                                point.update({
-                                                                                    x: point.x,
-                                                                                    y: point.y-1,
-                                                                                    value: point.value
-                                                                                }, false);
+                                                                            if(point.y!==axisIndex) {
+                                                                                if (point.y>axisIndex) {
+                                                                                    point.y = point.y - 1;
+                                                                                    to_keep.push(point);
+                                                                                } else {
+                                                                                    to_keep.push(point);
+                                                                                }
                                                                             }
                                                                         } else {
-                                                                            if(point.x===axisIndex) {
-                                                                                point.remove(false);
-                                                                            } else if (point.x>axisIndex) {
-                                                                                point.update({
-                                                                                    x: point.x-1,
-                                                                                    y: point.y,
-                                                                                    value: point.value
-                                                                                }, false);
+                                                                            if(point.x!==axisIndex) {
+                                                                                if (point.x>axisIndex) {
+                                                                                    point.x point.x - 1;
+                                                                                    to_keep.push(point);
+                                                                                } else {
+                                                                                    to_keep.push(point);
+                                                                                }
                                                                             }
                                                                         }
                                                                     }
                                                                 }
+                                                                series['data'] = to_keep;
+
                                                             }
-                                                            var categories = axis.axis.categories;
-                                                            categories.splice(axisIndex, 1);
-                                                            axis.axis.setCategories(categories);
-                                                            axis.axis.update({max: categories.length});
-                                                            axis.chart.redraw(true);
+                                                            if(isYAxis) {
+                                                                options.yAxis[0]['categories'].splice(axisIndex, 1);
+                                                            } else {
+                                                                options.xAxis[0]['categories'].splice(axisIndex, 1);
+                                                            }
+                                                            var newChart = Highcharts.chart(axis.chart.renderTo, options);
+                                                            newChart.redraw();
                                                         }
                                                     } else if(value==='edit') {
                                                         e.preventDefault();
@@ -508,7 +514,7 @@ $(document).ready(function() {
                             if(!chartJson['plotOptions']['series']['point'].hasOwnProperty('labels')) {
                                 chartJson['plotOptions']['series']['point']['labels'] = {};
                             }
-                            chartJson['plotOptions']['series']['point']['labels']['events'] = {
+                            chartJson['plotOptions']['series']['point']['dataLabels']['events'] = {
                                 contextmenu: function(e) {
                                     if(!this.hasOwnProperty('drilldown')) {
                                         var point = this.point;
