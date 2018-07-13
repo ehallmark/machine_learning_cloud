@@ -493,12 +493,31 @@ $(document).ready(function() {
                                                                 e.stopPropagation();
                                                                 $form.off('submit');
                                                                 var userVal = $input.val();
-                                                                var categories = axis.axis.categories;
-                                                                categories[axisIndex] = userVal;
-                                                                axis.axis.setCategories(categories);
-                                                                alert('UserVal: '+userVal);
-                                                                $target.empty().text(userVal);
-                                                                axis.chart.redraw(true);
+                                                                if(axis.axis.categories !== true) {
+                                                                    var category = axis.axis.categories[axisIndex];
+                                                                    var options = axis.chart.options;
+                                                                    for(var i = 0; i < options.series.length; i++) {
+                                                                        var series = options.series[i];
+                                                                        var datapoints = series.data; // create a clone
+                                                                        for(var j = 0; j < datapoints.length; j++) {
+                                                                            var point = datapoints[j];
+                                                                            if(point) {
+                                                                                if(!isYAxis) {
+                                                                                    if(point.length==2) {
+                                                                                        point[0] = userVal;
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    if(isYAxis) {
+                                                                        options.yAxis[0]['categories'][axisIndex] = userVal;
+                                                                    } else {
+                                                                        options.xAxis[0]['categories'][axisIndex] = userVal;
+                                                                    }
+                                                                    var newChart = Highcharts.chart(axis.chart.renderTo, options);
+                                                                    newChart.redraw();
+                                                                }
                                                                 $(document).trigger('click');
                                                             });
                                                         }
