@@ -451,6 +451,7 @@ $(document).ready(function() {
                                                             var categories = axis.axis.categories;
                                                             categories.splice(axisIndex, 1);
                                                             axis.axis.setCategories(categories);
+                                                            axis.axis.update({max: categories.length});
                                                             axis.chart.redraw(true);
                                                         }
                                                     } else if(value==='edit') {
@@ -504,14 +505,19 @@ $(document).ready(function() {
                             if(!chartJson['plotOptions']['series'].hasOwnProperty('point')) {
                                 chartJson['plotOptions']['series']['point'] = {};
                             }
-                            chartJson['plotOptions']['series']['point']['events'] = {
+                            if(!chartJson['plotOptions']['series']['point'].hasOwnProperty('labels')) {
+                                chartJson['plotOptions']['series']['point']['labels'] = {};
+                            }
+                            chartJson['plotOptions']['series']['point']['labels']['events'] = {
                                 contextmenu: function(e) {
                                     if(!this.hasOwnProperty('drilldown')) {
-                                        var point = this;
-                                        var chartId = $(this.series.chart.renderTo).attr('id');
+                                        var point = this.point;
+                                        var chartId = $(point.chart.renderTo).attr('id');
                                         var value = this.options.name;
                                         var seriesIndex = this.series.index;
                                         var pointIndex = this.index;
+                                        $(document).trigger('click');
+                                        $(document).off('click');
                                         var $container = $('#context-menu-cntnr');
                                         $container.css("left",e.pageX);
                                         $container.css("top",e.pageY);
