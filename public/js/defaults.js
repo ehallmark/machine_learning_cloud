@@ -395,7 +395,7 @@ $(document).ready(function() {
                                         var labels = axisOpts['labels'];
                                         labels['events'] = {
                                             contextmenu: function(e) {
-                                                if(!this.axis.hasOwnProperty('ddPoints')) {
+                                                if(!this.axis.hasOwnProperty('ddPoints') || this.axis.ddPoints.length==0) {
                                                     var $target = $(e.currentTarget);
                                                     var axis = this;
                                                     var isYAxis = axis.axis.coll === 'yAxis';
