@@ -569,7 +569,13 @@ $(document).ready(function() {
                                             var value = $li.attr('value');
                                             if(value==='delete') {
                                                 $lis.off('click');
-                                                point.remove();
+                                                var options = point.series.chart.options;
+                                                var series = options.series[seriesIndex];
+                                                var data = series.data;
+                                                data.splice(pointIndex, 1);
+                                                var newChart = Highcharts.chart(point.series.chart.renderTo, options);
+                                                newChart.redraw();
+
                                             } else if (value==='edit') {
                                                 e.preventDefault();
                                                 e.stopPropagation();
@@ -595,11 +601,13 @@ $(document).ready(function() {
                                                     $form.off('submit');
                                                     var userVal = $input.val();
                                                     var categories = point.axis.categories;
-                                                    if(point.hasOwnProperty('value')) {
-                                                        point.update({value: userVal}, true);
-                                                    } else {
-                                                        point.update({y: userVal}, true);
-                                                    }
+                                                    var options = point.series.chart.options;
+                                                    var series = options.series[seriesIndex];
+                                                    var data = series.data;
+                                                    var datapoint = data[pointIndex];
+                                                    datapoint[datapoint.length-1] = userVal;
+                                                    var newChart = Highcharts.chart(point.series.chart.renderTo, options);
+                                                    newChart.redraw();
                                                     alert('UserVal: '+userVal);
                                                     $(document).trigger('click');
                                                 });
