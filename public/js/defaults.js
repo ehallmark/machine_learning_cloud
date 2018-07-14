@@ -462,7 +462,7 @@ $(document).ready(function() {
                                                                             } else {
                                                                                 if(point.hasOwnProperty('value')) {
                                                                                     // heat map
-                                                                                    if(point.x===axisIndex) {
+                                                                                    if(point.x!==axisIndex) {
                                                                                         if (point.x>axisIndex) {
                                                                                             point.update({x: point.x-1}, false);
                                                                                         }
