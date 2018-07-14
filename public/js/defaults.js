@@ -426,6 +426,13 @@ $(document).ready(function() {
                                                             if(axis.axis.categories !== true) {
                                                                 var category = axis.axis.categories[axisIndex];
                                                                 var options = axis.chart.options;
+                                                                if(isYAxis) {
+                                                                    options.yAxis[0]['categories'].splice(axisIndex, 1);
+                                                                    axis.axis.setCategories(options.yAxis[0]['categories']);
+                                                                } else {
+                                                                    options.xAxis[0]['categories'].splice(axisIndex, 1);
+                                                                    axis.axis.setCategories(options.xAxis[0]['categories']);
+                                                                }
                                                                 for(var i = 0; i < options.series.length; i++) {
                                                                     var series = options.series[i];
                                                                     var datapoints = series.data; // create a clone
@@ -465,13 +472,7 @@ $(document).ready(function() {
                                                                     axis.chart.series[i].setData(series['data']);
 
                                                                 }
-                                                                if(isYAxis) {
-                                                                    options.yAxis[0]['categories'].splice(axisIndex, 1);
-                                                                    axis.axis.setCategories(options.yAxis[0]['categories']);
-                                                                } else {
-                                                                    options.xAxis[0]['categories'].splice(axisIndex, 1);
-                                                                    axis.axis.setCategories(options.xAxis[0]['categories']);
-                                                                }
+
                                                             }
                                                         } else if(value==='edit') {
                                                             e.preventDefault();
@@ -489,7 +490,7 @@ $(document).ready(function() {
                                                                 $container.remove();
                                                                 $(document).off("click");
                                                             });
-                                                            $input.on('click', function(e) {
+                                                            $form.on('click', function(e) {
                                                                 e.stopPropagation();
                                                             });
                                                             $form.on('submit', function(e) {
@@ -582,7 +583,7 @@ $(document).ready(function() {
                                                 var $input = $li.find('input');
                                                 $input.val(value);
                                                 var $form = $li.find('form');
-                                                $input.on('click', function(e) {
+                                                $form.on('click', function(e) {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                 });
