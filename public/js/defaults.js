@@ -464,12 +464,9 @@ $(document).ready(function() {
                                                                                 if(point[1]!==axisIndex) {
                                                                                     if (point[1]>axisIndex) {
                                                                                         point[1] = point[1] - 1;
-                                                                                        to_keep.push(point);
                                                                                         points[j].update({
-                                                                                            y: points[j].y-1
+                                                                                            y: point[1]
                                                                                         }, false);
-                                                                                    } else {
-                                                                                        to_keep.push(point);
                                                                                     }
                                                                                 } else {
                                                                                     points[j].remove(false);
@@ -480,27 +477,21 @@ $(document).ready(function() {
                                                                                     if(point[0]!==axisIndex) {
                                                                                         if (point[0]>axisIndex) {
                                                                                             point[0] = point[0] - 1;
-                                                                                            to_keep.push(point);
                                                                                             points[j].update({
-                                                                                                x: points[j].x-1
+                                                                                                x: point[0]
                                                                                             }, false);
-                                                                                        } else {
-                                                                                            to_keep.push(point);
                                                                                         }
                                                                                     } else {
                                                                                         points[j].remove(false);
                                                                                     }
                                                                                 } else { // regular
-                                                                                    if(point[0]!==category) {
-                                                                                        to_keep.push(point);
-                                                                                    } else {
+                                                                                    if(point[0]===category) {
                                                                                         points[j].remove(false);
                                                                                     }
                                                                                 }
                                                                             }
                                                                         }
                                                                     }
-                                                                    series['data'] = to_keep;
                                                                     axis.chart.redraw(true);
 
                                                                 }
@@ -541,19 +532,21 @@ $(document).ready(function() {
                                                                     }
                                                                     for(var i = 0; i < options.series.length; i++) {
                                                                         var series = options.series[i];
-                                                                        var datapoints = series.data; // create a clone
+                                                                        var datapoints = series.data;
+                                                                        var points = axis.chart.series[i].data.slice(0); // create a clone
                                                                         for(var j = 0; j < datapoints.length; j++) {
                                                                             var point = datapoints[j];
                                                                             if(point) {
                                                                                 if(!isYAxis) {
                                                                                     if(point.length==2 && point[0]===category) {
                                                                                         point[0] = userVal;
+                                                                                        points[j].update({name: points[0]}, false);
                                                                                     }
                                                                                 }
                                                                             }
                                                                         }
-                                                                        axis.chart.series[i].setData(datapoints);
                                                                     }
+                                                                    axis.chart.redraw(true);
                                                                 }
                                                                 $(document).trigger('click');
                                                             });
@@ -615,8 +608,14 @@ $(document).ready(function() {
                                                 var $input = $li.find('input');
                                                 $input.val(value);
                                                 var $form = $li.find('form');
-                                                $li.on('click', function(e) {
-                                                    e.preventDefault();
+                                                $(document).on("click",function(){
+                                                    $li.html(oldHtml);
+                                                    $li.removeClass('nohover');
+                                                    $container.hide();
+                                                    $(document).off("click");
+                                                    $lis.off('click');
+                                                });
+                                                $form.on('click', function(e) {
                                                     e.stopPropagation();
                                                 });
                                                 $form.on('submit', function(e) {
@@ -640,13 +639,6 @@ $(document).ready(function() {
                                                     $(document).trigger('click');
                                                 });
 
-                                                $(document).on("click",function(){
-                                                    $li.html(oldHtml);
-                                                    $li.removeClass('nohover');
-                                                    $container.hide();
-                                                    $(document).off("click");
-                                                    $lis.off('click');
-                                                });
 
                                             }
                                         });
