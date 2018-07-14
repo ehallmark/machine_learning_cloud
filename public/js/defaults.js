@@ -454,7 +454,7 @@ $(document).ready(function() {
                                                                 }
                                                                 for(var i = 0; i < options.series.length; i++) {
                                                                     var series = options.series[i];
-                                                                    var datapoints = series.data;
+                                                                    var datapoints = series.data.slice(0);
                                                                     var points = axis.chart.series[i].data.slice(0); // cloned
                                                                     var to_keep = [];
                                                                     for(var j = 0; j < datapoints.length; j++) {
@@ -603,11 +603,13 @@ $(document).ready(function() {
                                                     value = point.y
                                                 }
                                                 var oldHtml = $li.html();
-                                                $li.html('<hr /><form><input class="form-control" type="text" /><button>Update</button></form><hr />');
+                                                $li.html('<hr /><input class="form-control" type="text" />');
                                                 $li.addClass('nohover');
                                                 var $input = $li.find('input');
                                                 $input.val(value);
-                                                var $form = $li.find('form');
+                                                var $button = $('<button>Update</button>');
+                                                $li.append($button);
+
                                                 $(document).on("click",function(){
                                                     $li.html(oldHtml);
                                                     $li.removeClass('nohover');
@@ -615,12 +617,10 @@ $(document).ready(function() {
                                                     $(document).off("click");
                                                     $lis.off('click');
                                                 });
-                                                $form.on('click', function(e) {
+                                                $li.on('click', function(e) {
                                                     e.stopPropagation();
                                                 });
-                                                $form.on('submit', function(e) {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
+                                                $button.on('click', function(e) {
                                                     $form.off('submit');
                                                     var userVal = $input.val();
                                                     var categories = point.axis.categories;
