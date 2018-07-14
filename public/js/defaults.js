@@ -444,8 +444,6 @@ $(document).ready(function() {
                                                         if(value==='delete') {
                                                             if(axis.axis.categories !== true) {
                                                                 var category = axis.axis.categories[axisIndex];
-                                                                axis.axis.categories.splice(axisIndex, 1);
-                                                                axis.axis.setCategories(axis.axis.categories);
                                                                 for(var i = 0; i < axis.chart.series.length; i++) {
                                                                     var datapoints = axis.chart.series[i].data.slice(0); // cloned
                                                                     for(var j = 0; j < datapoints.length; j++) {
@@ -454,7 +452,7 @@ $(document).ready(function() {
                                                                             if(isYAxis) {
                                                                                 if(point.y!==axisIndex) {
                                                                                     if (point.y>axisIndex) {
-                                                                                        point.update({y : point.y-1}, false);
+                                                                                        point.update({y : point.y-1, x: point.x, value: point.value}, false);
                                                                                     }
                                                                                 } else {
                                                                                     point.remove(false);
@@ -464,7 +462,7 @@ $(document).ready(function() {
                                                                                     // heat map
                                                                                     if(point.x!==axisIndex) {
                                                                                         if (point.x>axisIndex) {
-                                                                                            point.update({x: point.x-1}, false);
+                                                                                            point.update({x : point.x-1, y: point.y, value: point.value}, false);
                                                                                         }
                                                                                     } else {
                                                                                         point.remove(false);
@@ -477,11 +475,12 @@ $(document).ready(function() {
                                                                             }
                                                                         }
                                                                     }
-                                                                    axis.chart.redraw(true);
-
                                                                 }
-
+                                                                axis.axis.categories.splice(axisIndex, 1);
+                                                                axis.axis.setCategories(axis.axis.categories);
+                                                                axis.chart.redraw(true);
                                                             }
+
                                                         } else if(value==='edit') {
                                                             e.preventDefault();
                                                             e.stopPropagation();
