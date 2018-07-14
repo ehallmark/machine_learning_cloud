@@ -466,6 +466,7 @@ $(document).ready(function() {
                                                                                         point[1] = point[1] - 1;
                                                                                         points[j].update(point, false);
                                                                                     }
+                                                                                    to_keep.push(point);
                                                                                 } else {
                                                                                     points[j].remove(false);
                                                                                 }
@@ -477,17 +478,22 @@ $(document).ready(function() {
                                                                                             point[0] = point[0] - 1;
                                                                                             points[j].update(point, false);
                                                                                         }
+                                                                                        to_keep.push(point);
                                                                                     } else {
                                                                                         points[j].remove(false);
                                                                                     }
                                                                                 } else { // regular
                                                                                     if(point[0]===category) {
                                                                                         points[j].remove(false);
+                                                                                    } else {
+                                                                                        to_keep.push(point);
                                                                                     }
                                                                                 }
                                                                             }
                                                                         }
                                                                     }
+                                                                    series.data=to_keep;
+                                                                    axis.axis.isDirty=true;
                                                                     axis.chart.redraw(true);
 
                                                                 }
@@ -536,7 +542,7 @@ $(document).ready(function() {
                                                                                 if(!isYAxis) {
                                                                                     if(point.length==2 && point[0]===category) {
                                                                                         point[0] = userVal;
-                                                                                        points[j].update({name: points[0]}, false);
+                                                                                        points[j].update(points, false);
                                                                                     }
                                                                                 }
                                                                             }
@@ -618,7 +624,6 @@ $(document).ready(function() {
                                                 $form.on('submit', function(e) {
                                                     e.preventDefault();
                                                     var userVal = $input.val();
-                                                    var categories = point.axis.categories;
                                                     var options = point.series.chart.options;
                                                     var series = options.series[seriesIndex];
                                                     var data = series.data;
