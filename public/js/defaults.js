@@ -577,7 +577,7 @@ $(document).ready(function() {
                                                 if(point.hasOwnProperty('dataLabel') && point.dataLabel.hasOwnProperty('element')) {
                                                     dataLabel = $(point.dataLabel.element);
                                                 }
-                                                if(point.hasOwnProperty('value'));
+                                                if(point.hasOwnProperty('value')) {
                                                     value = point.value;
                                                 } else {
                                                     value = point.name;
