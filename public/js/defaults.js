@@ -468,8 +468,7 @@ $(document).ready(function() {
                                                                 } else {
                                                                     options.xAxis[0]['categories'].splice(axisIndex, 1);
                                                                 }
-                                                                var newChart = Highcharts.chart(axis.chart.renderTo, options);
-                                                                newChart.redraw();
+                                                                axis.chart.update(options);
                                                             }
                                                         } else if(value==='edit') {
                                                             e.preventDefault();
@@ -517,8 +516,7 @@ $(document).ready(function() {
                                                                     } else {
                                                                         options.xAxis[0]['categories'][axisIndex] = userVal;
                                                                     }
-                                                                    var newChart = Highcharts.chart(axis.chart.renderTo, options);
-                                                                    newChart.redraw();
+                                                                    axis.chart.update(options);
                                                                 }
                                                                 $(document).trigger('click');
                                                             });
@@ -596,8 +594,7 @@ $(document).ready(function() {
                                                     var data = series.data;
                                                     var datapoint = data[pointIndex];
                                                     datapoint[datapoint.length-1] = userVal;
-                                                    var newChart = Highcharts.chart(point.series.chart.renderTo, options);
-                                                    newChart.redraw();
+                                                    axis.chart.update(options);
                                                     alert('UserVal: '+userVal);
                                                 });
 
@@ -615,11 +612,11 @@ $(document).ready(function() {
                                 }
                             };
                             chartJson['plotOptions']['series']['point']['events'] = clickEvents;
-                            chartJson['plotOptions']['series']['dataLabels']['events'] = {
-                                contextmenu: function(e) {
-                                    e.preventDefault();
-                                }
-                            };
+                            //chartJson['plotOptions']['series']['dataLabels']['events'] = {
+                            //    contextmenu: function(e) {
+                            //        e.preventDefault();
+                            //    }
+                            //};
                             chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
                         }
                         chart.redraw();
